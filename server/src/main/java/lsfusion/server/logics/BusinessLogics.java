@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.interop.Compare;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
@@ -24,6 +25,8 @@ import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.ScannerDaemonTask;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.LogFormEntity;
@@ -43,6 +46,7 @@ import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.mail.NotificationActionProperty;
 import lsfusion.server.session.ApplyFilter;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
@@ -519,6 +523,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             logger.info("Finalizing actions.");
             finishActions();
 
+            initReflectionProperties();
+
             logger.info("Setup loggables.");
             finishLogInit();
 
@@ -613,6 +619,113 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
     }
 
+    private void initReflectionProperties() {
+
+        //временное решение
+        
+        try {
+            
+            systemLogger.info("Setting user logging for properties");
+            setUserLoggableProperties();
+
+            systemLogger.info("Setting user not null constraints for properties");
+            setNotNullProperties();
+            
+            systemLogger.info("Setting user notifications for property changes");
+            setupPropertyNotifications();
+            
+        } catch (Exception e) {
+            logger.error("error while settings user loggable properties", e);
+        }
+
+    }
+
+    private void setUserLoggableProperties() throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+        
+        LCP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
+        ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
+        query.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(key));
+        query.and(reflectionLM.userLoggableProperty.getExpr(key).getWhere());
+        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(ThreadLocalContext.getDbManager().createSQL());
+
+        for (ImMap<Object, Object> values : result.valueIt()) {
+            LM.makeUserLoggable(systemEventsLM, getLCP(values.get("SIDProperty").toString().trim()));
+        }
+    }
+
+    private void setNotNullProperties() throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+        
+        LCP isProperty = LM.is(reflectionLM.property);
+        ImRevMap<Object, KeyExpr> keys = isProperty.getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
+        query.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(key));
+        query.and(reflectionLM.isSetNotNullProperty.getExpr(key).getWhere());
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(ThreadLocalContext.getDbManager().createSQL());
+
+        for (ImMap<Object, Object> values : result.valueIt()) {
+            LCP<?> prop = getLCP(values.get("SIDProperty").toString().trim());
+            prop.property.setNotNull = true;
+            LM.setNotNull(prop);
+        }
+    }
+
+    private void setupPropertyNotifications() throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+
+        LCP isNotification = LM.is(emailLM.notification);
+        ImRevMap<Object, KeyExpr> keys = isNotification.getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
+        query.addProperty("isDerivedChange", emailLM.isEventNotification.getExpr(key));
+        query.addProperty("subject", emailLM.subjectNotification.getExpr(key));
+        query.addProperty("text", emailLM.textNotification.getExpr(key));
+        query.addProperty("emailFrom", emailLM.emailFromNotification.getExpr(key));
+        query.addProperty("emailTo", emailLM.emailToNotification.getExpr(key));
+        query.addProperty("emailToCC", emailLM.emailToCCNotification.getExpr(key));
+        query.addProperty("emailToBC", emailLM.emailToBCNotification.getExpr(key));
+        query.and(isNotification.getExpr(key).getWhere());
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(ThreadLocalContext.getDbManager().createSQL());
+
+        for (int i=0,size=result.size();i<size;i++) {
+            DataObject notificationObject = new DataObject(result.getKey(i).getValue(0), emailLM.notification);
+            KeyExpr propertyExpr2 = new KeyExpr("property");
+            KeyExpr notificationExpr2 = new KeyExpr("notification");
+            ImRevMap<String, KeyExpr> newKeys2 = MapFact.toRevMap("property", propertyExpr2, "notification", notificationExpr2);
+
+            QueryBuilder<String, String> query2 = new QueryBuilder<String, String>(newKeys2);
+            query2.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(propertyExpr2));
+            query2.and(emailLM.inNotificationProperty.getExpr(notificationExpr2, propertyExpr2).getWhere());
+            query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
+            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result2 = query2.execute(ThreadLocalContext.getDbManager().createSQL());
+            List<LCP> listInNotificationProperty = new ArrayList();
+            for (int j=0,size2=result2.size();j<size2;j++) {
+                listInNotificationProperty.add(getLCP(result2.getValue(i).get("SIDProperty").toString().trim()));
+            }
+            ImMap<Object, Object> rowValue = result.getValue(i);
+
+            for (LCP prop : listInNotificationProperty) {
+                boolean isDerivedChange = rowValue.get("isDerivedChange") == null ? false : true;
+                String subject = rowValue.get("subject") == null ? "" : rowValue.get("subject").toString().trim();
+                String text = rowValue.get("text") == null ? "" : rowValue.get("text").toString().trim();
+                String emailFrom = rowValue.get("emailFrom") == null ? "" : rowValue.get("emailFrom").toString().trim();
+                String emailTo = rowValue.get("emailTo") == null ? "" : rowValue.get("emailTo").toString().trim();
+                String emailToCC = rowValue.get("emailToCC") == null ? "" : rowValue.get("emailToCC").toString().trim();
+                String emailToBC = rowValue.get("emailToBC") == null ? "" : rowValue.get("emailToBC").toString().trim();
+                LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty(prop.property.getSID() + "emailNotificationProperty", "emailNotificationProperty", prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, emailLM)));
+
+                Integer[] params = new Integer[prop.listInterfaces.size()];
+                for (int j = 0; j < prop.listInterfaces.size(); j++)
+                    params[j] = j + 1;
+                if (isDerivedChange)
+                    emailNotificationProperty.setEventAction(LM, prop, params);
+                else
+                    emailNotificationProperty.setEventSetAction(LM, prop, params);
+            }
+        }
+    }
+    
     private void finishLogInit() {
         // с одной стороны нужно отрисовать на форме логирования все свойства из recognizeGroup, с другой - LogFormEntity с Action'ом должен уже существовать
         // поэтому makeLoggable делаем сразу, а LogFormEntity при желании заполняем здесь

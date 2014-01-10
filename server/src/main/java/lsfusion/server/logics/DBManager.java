@@ -24,7 +24,6 @@ import lsfusion.server.classes.*;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
@@ -41,14 +40,12 @@ import lsfusion.server.form.navigator.*;
 import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
-import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
-import lsfusion.server.mail.NotificationActionProperty;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import org.antlr.runtime.ANTLRInputStream;
@@ -170,14 +167,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         this.timeLM = businessLogics.timeLM;
         try {
             systemLogger.info("Synchronizing DB.");
-            synchronizeDB();
-
-            systemLogger.info("Setting user logging for properties");
-            setUserLoggableProperties();
-            systemLogger.info("Setting user not null constraints for properties");
-            setNotNullProperties();
-            systemLogger.info("Setting user notifications for property changes");
-            setupPropertyNotifications();
+            synchronizeDB();           
 
             if (!SystemProperties.isDebug) {
                 systemLogger.info("Synchronizing forms");
@@ -665,41 +655,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return 0;
     }
 
-    private void setUserLoggableProperties() throws SQLException {
-
-        DataSession session = createSession();
-
-        LCP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
-        ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
-        KeyExpr key = keys.singleValue();
-        QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
-        query.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(session.getModifier(), key));
-        query.and(reflectionLM.userLoggableProperty.getExpr(session.getModifier(), key).getWhere());
-        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(session.sql);
-
-        for (ImMap<Object, Object> values : result.valueIt()) {
-            LM.makeUserLoggable(systemEventsLM, businessLogics.getLCP(values.get("SIDProperty").toString().trim()));
-        }
-    }
-
-    private void setNotNullProperties() throws SQLException {
-        DataSession session = createSession();
-
-        LCP isProperty = LM.is(reflectionLM.property);
-        ImRevMap<Object, KeyExpr> keys = isProperty.getMapKeys();
-        KeyExpr key = keys.singleValue();
-        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
-        query.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(session.getModifier(), key));
-        query.and(reflectionLM.isSetNotNullProperty.getExpr(session.getModifier(), key).getWhere());
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session.sql);
-
-        for (ImMap<Object, Object> values : result.valueIt()) {
-            LCP<?> prop = businessLogics.getLCP(values.get("SIDProperty").toString().trim());
-            prop.property.setNotNull = true;
-            LM.setNotNull(prop);
-        }
-    }
-
     public void synchronizeTables() {
         ImportField tableSidField = new ImportField(reflectionLM.sidTable);
         ImportField tableKeySidField = new ImportField(reflectionLM.sidTableKey);
@@ -770,61 +725,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private void setupPropertyNotifications() throws SQLException {
-        DataSession session = createSession();
-
-        LCP isNotification = LM.is(emailLM.notification);
-        ImRevMap<Object, KeyExpr> keys = isNotification.getMapKeys();
-        KeyExpr key = keys.singleValue();
-        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
-        query.addProperty("isDerivedChange", emailLM.isEventNotification.getExpr(session.getModifier(), key));
-        query.addProperty("subject", emailLM.subjectNotification.getExpr(session.getModifier(), key));
-        query.addProperty("text", emailLM.textNotification.getExpr(session.getModifier(), key));
-        query.addProperty("emailFrom", emailLM.emailFromNotification.getExpr(session.getModifier(), key));
-        query.addProperty("emailTo", emailLM.emailToNotification.getExpr(session.getModifier(), key));
-        query.addProperty("emailToCC", emailLM.emailToCCNotification.getExpr(session.getModifier(), key));
-        query.addProperty("emailToBC", emailLM.emailToBCNotification.getExpr(session.getModifier(), key));
-        query.and(isNotification.getExpr(key).getWhere());
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session.sql);
-
-        for (int i=0,size=result.size();i<size;i++) {
-            DataObject notificationObject = new DataObject(result.getKey(i).getValue(0), emailLM.notification);
-            KeyExpr propertyExpr2 = new KeyExpr("property");
-            KeyExpr notificationExpr2 = new KeyExpr("notification");
-            ImRevMap<String, KeyExpr> newKeys2 = MapFact.toRevMap("property", propertyExpr2, "notification", notificationExpr2);
-
-            QueryBuilder<String, String> query2 = new QueryBuilder<String, String>(newKeys2);
-            query2.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(session.getModifier(), propertyExpr2));
-            query2.and(emailLM.inNotificationProperty.getExpr(session.getModifier(), notificationExpr2, propertyExpr2).getWhere());
-            query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
-            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result2 = query2.execute(session.sql);
-            List<LCP> listInNotificationProperty = new ArrayList();
-            for (int j=0,size2=result2.size();j<size2;j++) {
-                listInNotificationProperty.add(businessLogics.getLCP(result2.getValue(i).get("SIDProperty").toString().trim()));
-            }
-            ImMap<Object, Object> rowValue = result.getValue(i);
-
-            for (LCP prop : listInNotificationProperty) {
-                boolean isDerivedChange = rowValue.get("isDerivedChange") == null ? false : true;
-                String subject = rowValue.get("subject") == null ? "" : rowValue.get("subject").toString().trim();
-                String text = rowValue.get("text") == null ? "" : rowValue.get("text").toString().trim();
-                String emailFrom = rowValue.get("emailFrom") == null ? "" : rowValue.get("emailFrom").toString().trim();
-                String emailTo = rowValue.get("emailTo") == null ? "" : rowValue.get("emailTo").toString().trim();
-                String emailToCC = rowValue.get("emailToCC") == null ? "" : rowValue.get("emailToCC").toString().trim();
-                String emailToBC = rowValue.get("emailToBC") == null ? "" : rowValue.get("emailToBC").toString().trim();
-                LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty(prop.property.getSID() + "emailNotificationProperty", "emailNotificationProperty", prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, businessLogics.emailLM)));
-
-                Integer[] params = new Integer[prop.listInterfaces.size()];
-                for (int j = 0; j < prop.listInterfaces.size(); j++)
-                    params[j] = j + 1;
-                if (isDerivedChange)
-                    emailNotificationProperty.setEventAction(LM, prop, params);
-                else
-                    emailNotificationProperty.setEventSetAction(LM, prop, params);
-            }
         }
     }
 

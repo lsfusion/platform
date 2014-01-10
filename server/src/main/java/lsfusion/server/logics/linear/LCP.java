@@ -111,6 +111,7 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public void makeUserLoggable(SystemEventsLogicsModule systemEventsLM) {
+        property.loggable = true;
         setupLoggable(systemEventsLM, false);
     }
 

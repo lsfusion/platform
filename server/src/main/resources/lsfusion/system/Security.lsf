@@ -380,7 +380,7 @@ FORM propertyPolicy 'Политика безопасности для свойс
     OBJECTS p=Property FIXED PANEL, ur=UserRole
     PROPERTIES(p) READONLY captionProperty, SIDProperty
     PROPERTIES(ur) READONLY nameUserRole, sidUserRole
-    PROPERTIES(p) permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty
+    PROPERTIES(p) permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty, userLoggableProperty
     PROPERTIES(ur, p) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
 ;
 
@@ -398,6 +398,7 @@ EXTEND DESIGN propertyPolicy {
         ADD PROPERTY(forbidViewProperty);
         ADD PROPERTY(permitChangeProperty);
         ADD PROPERTY(forbidChangeProperty);
+        ADD PROPERTY(userLoggableProperty);
     }
     ADD ur.box;
     ADD functions.box;
