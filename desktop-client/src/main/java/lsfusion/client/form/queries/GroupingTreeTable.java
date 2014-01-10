@@ -1,8 +1,10 @@
 package lsfusion.client.form.queries;
 
 import lsfusion.base.OrderedMap;
+import lsfusion.client.Main;
 import lsfusion.client.form.renderer.ImagePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.logics.classes.ClientDateClass;
 import lsfusion.client.logics.classes.ClientImageClass;
 import lsfusion.client.logics.classes.ClientLogicalClass;
 import org.jdesktop.swingx.JXTreeTable;
@@ -284,9 +286,13 @@ public class GroupingTreeTable extends JXTreeTable {
             } else {
                 java.util.List<Object> row = values.get(node);
                 Object value = row.size() >= column ? row.get(column - 1) : null;
+                ClientPropertyDraw columnProperty = columnProperties.get(column - 1);
+                
                 if (value instanceof String) {
                     return value.toString().trim();
-                } else if (columnProperties.get(column - 1) != null && columnProperties.get(column - 1).baseType instanceof ClientLogicalClass) {
+                } else if (columnProperty != null && columnProperty.baseType instanceof ClientDateClass) {
+                    return value == null ? null : Main.dateFormat.format(value);  
+                } else if (columnProperty != null && columnProperty.baseType instanceof ClientLogicalClass) {
                     return value != null && (Boolean) value;     
                 }
                 return value;
