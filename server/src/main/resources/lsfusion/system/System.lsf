@@ -64,7 +64,9 @@ defaultReportCharWidth = 8;
 defaultReportRowHeight = 18;    
    
 reportCharWidth 'Ширина символа в пикселах в отчетах' = OVERRIDE defaultReportCharWidth(), customReportCharWidth();      
-reportRowHeight 'Высота поля в пикселах в отчетах' = OVERRIDE defaultReportRowHeight(), customReportRowHeight();      
+reportRowHeight 'Высота поля в пикселах в отчетах' = OVERRIDE defaultReportRowHeight(), customReportRowHeight();
+reportNotToStretch 'Не растягивать поле по вертикали' = DATA BOOLEAN (); 
+reportToStretch 'Растявивать поле по вертикали' = NOT reportNotToStretch(); 
   
 addedObject() = DATA SESSION Object ();
 confirmed() = DATA SESSION BOOLEAN ();

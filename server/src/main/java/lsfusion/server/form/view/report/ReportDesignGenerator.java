@@ -1,5 +1,6 @@
 package lsfusion.server.form.view.report;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.interop.FontInfo;
 import lsfusion.interop.form.ColumnUserPreferences;
@@ -57,6 +58,7 @@ public class ReportDesignGenerator {
 
     private int rowHeight = 18;
     private int charWidth = 8;
+    private boolean toStretch = true; 
     
     private Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
 
@@ -95,6 +97,7 @@ public class ReportDesignGenerator {
             DataSession session = ThreadLocalContext.getDbManager().createSession();
             charWidth = (Integer) baseLM.reportCharWidth.read(session);
             rowHeight = (Integer) baseLM.reportRowHeight.read(session);
+            toStretch = BaseUtils.nvl((Boolean) baseLM.reportToStretch.read(session), false);
             session.close();
         } catch (SQLException e) {
             ServerLoggers.systemLogger.warn("Error when reading report parameters", e);
@@ -313,11 +316,11 @@ public class ReportDesignGenerator {
             designCaptionText = '"' + reportField.caption + '"';
         }
         JRDesignExpression captionExpr = ReportUtils.createExpression(designCaptionText, reportField.captionClass);
-        JRDesignTextField captionField = ReportUtils.createTextField(captionStyle, captionExpr);
+        JRDesignTextField captionField = ReportUtils.createTextField(captionStyle, captionExpr, toStretch);
         captionField.setHorizontalAlignment(HorizontalAlignEnum.CENTER);
 
         JRDesignExpression dataExpr = ReportUtils.createExpression(ReportUtils.createFieldString(reportField.sID), reportField.valueClass);
-        JRDesignTextField dataField = ReportUtils.createTextField(style, dataExpr);
+        JRDesignTextField dataField = ReportUtils.createTextField(style, dataExpr, toStretch);
         dataField.setHorizontalAlignment(HorizontalAlignEnum.getByValue(reportField.alignment));
         dataField.setPositionType(PositionTypeEnum.FLOAT);
         dataField.setBlankWhenNull(true);

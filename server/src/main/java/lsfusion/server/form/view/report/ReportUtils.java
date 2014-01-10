@@ -30,12 +30,14 @@ class ReportUtils {
         return subreportExpr;
     }
 
-    public static JRDesignTextField createTextField(JRDesignStyle style, JRDesignExpression expr) {
+    public static JRDesignTextField createTextField(JRDesignStyle style, JRDesignExpression expr, boolean toStretch) {
         JRDesignTextField field = new JRDesignTextField();
         field.setStyle(style);
         field.setExpression(expr);
-        field.setStretchWithOverflow(true);
-        field.setStretchType(StretchTypeEnum.RELATIVE_TO_BAND_HEIGHT);
+        field.setStretchWithOverflow(toStretch);
+        if (toStretch) {
+            field.setStretchType(StretchTypeEnum.RELATIVE_TO_BAND_HEIGHT);
+        }
         return field;
     }
 
