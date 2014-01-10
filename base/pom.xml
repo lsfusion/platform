@@ -196,6 +196,7 @@
                                     <manifestEntries>
                                         <Main-Class>${assemble.mainClass}</Main-Class>
                                         <SCM-Version>${lsfusion.revision}</SCM-Version>
+                                        <Implementation-Version>${project.version}</Implementation-Version>
                                         <Permissions>all-permissions</Permissions>
                                     </manifestEntries>
                                 </transformer>
