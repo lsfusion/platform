@@ -5,6 +5,7 @@ import lsfusion.client.Main;
 import lsfusion.client.form.renderer.ImagePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientDateClass;
+import lsfusion.client.logics.classes.ClientDateTimeClass;
 import lsfusion.client.logics.classes.ClientImageClass;
 import lsfusion.client.logics.classes.ClientLogicalClass;
 import org.jdesktop.swingx.JXTreeTable;
@@ -223,7 +224,30 @@ public class GroupingTreeTable extends JXTreeTable {
                     row.addAll(map.get(keys));
                     SortableTreeTableNode node = new SortableTreeTableNode(index + 1, true);
                     parentNode.add(node);
-                    values.put(node, row);
+                    
+                    List<Object> convertedRow = new ArrayList<Object>();
+                    for (Object value : row) {
+                        Object convertedValue = value;
+
+                        if (value instanceof String) {
+                            convertedValue = value.toString().trim();
+                        } else {
+                            ClientPropertyDraw columnProperty = columnProperties.get(row.indexOf(value));
+                            if (columnProperty != null) {
+                                if (columnProperty.baseType instanceof ClientDateClass) {
+                                    convertedValue = value == null ? null : Main.dateFormat.format(value);
+                                } else if (columnProperty.baseType instanceof ClientDateTimeClass) {
+                                    convertedValue = value == null ? null : Main.dateTimeFormat.format(value);
+                                } else if (columnProperty.baseType instanceof ClientLogicalClass) {
+                                    convertedValue = value != null && (Boolean) value;
+                                }
+                            }
+                        }
+                        
+                        convertedRow.add(convertedValue);
+                    }
+                    
+                    values.put(node, convertedRow);
                     if (index < sources.size() - 1) {
                         addNodes(node, index + 1, keys);
                     }
@@ -285,17 +309,7 @@ public class GroupingTreeTable extends JXTreeTable {
                 return node.toString();
             } else {
                 java.util.List<Object> row = values.get(node);
-                Object value = row.size() >= column ? row.get(column - 1) : null;
-                ClientPropertyDraw columnProperty = columnProperties.get(column - 1);
-                
-                if (value instanceof String) {
-                    return value.toString().trim();
-                } else if (columnProperty != null && columnProperty.baseType instanceof ClientDateClass) {
-                    return value == null ? null : Main.dateFormat.format(value);  
-                } else if (columnProperty != null && columnProperty.baseType instanceof ClientLogicalClass) {
-                    return value != null && (Boolean) value;     
-                }
-                return value;
+                return row.size() >= column ? row.get(column - 1) : null;
             }
         }
         
