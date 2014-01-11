@@ -231,3 +231,24 @@ BEGIN
 RETURN v_int_value;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION convert_numeric_to_string(num IN NUMERIC)
+RETURNS VARCHAR AS $$
+  DECLARE
+v_result_field VARCHAR(42);
+
+BEGIN
+IF (num = NULL) THEN RETURN NULL;
+END IF;
+v_result_field = TRIM(TO_CHAR(num, 'FM99999999999999999999D99999999999999999999'));
+IF(SUBSTR(v_result_field, LENGTH(v_result_field), 1) = ',' OR SUBSTR(v_result_field, LENGTH(v_result_field), 1) = '.') THEN
+  v_result_field = SUBSTR(v_result_field, 0, LENGTH(v_result_field));
+END IF;
+IF((SUBSTR(v_result_field, 1, 1) = ',' OR SUBSTR(v_result_field, 1, 1) = '.')) THEN
+  v_result_field = '0' || v_result_field;
+END IF;
+
+RETURN v_result_field;
+END;
+
+$$ LANGUAGE plpgsql;
