@@ -407,24 +407,21 @@ public class ClientFormController implements AsyncListener {
     public void saveUserPreferences(final GridUserPreferences gridPreferences, final boolean forAllUsers, final Runnable successCallback, final Runnable failureCallback) throws RemoteException {
         commitOrCancelCurrentEditing();
 
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("saveUserPreferences") {
+        ServerResponse result = rmiQueue.syncRequest(new RmiCheckNullFormRequest<ServerResponse>("saveUserPreferences") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.saveUserPreferences(requestIndex, lastReceivedRequestIndex, gridPreferences.convertPreferences(), forAllUsers);
             }
-
-            @Override
-            protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
-                for (ClientAction action : result.actions) {
-                    if (action instanceof LogMessageClientAction) {
-                        actionDispatcher.execute((LogMessageClientAction) action);
-                        failureCallback.run();
-                        return;
-                    }
-                }
-                successCallback.run();
-            }
         });
+
+        for (ClientAction action : result.actions) {
+            if (action instanceof LogMessageClientAction) {
+                actionDispatcher.execute((LogMessageClientAction) action);
+                failureCallback.run();
+                return;
+            }
+        }
+        successCallback.run();
     }
 
     public void commitOrCancelCurrentEditing() {
