@@ -412,7 +412,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitNeighbourPropertyError(ScriptParser parser, String name1, String name2) throws SemanticErrorException {
-        emitSimpleError(parser, format("properties '%s' and '%s' should be in on group", name1, name2));
+        emitSimpleError(parser, format("properties '%s' and '%s' should be in one group", name1, name2));
     }
 
     public void emitMetacodeInsideMetacodeError(ScriptParser parser) throws SemanticErrorException {
