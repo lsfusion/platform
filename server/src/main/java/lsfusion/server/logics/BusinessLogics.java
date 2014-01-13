@@ -634,8 +634,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             systemLogger.info("Setting user notifications for property changes");
             setupPropertyNotifications();
             
-        } catch (Exception e) {
-            logger.error("error while settings user loggable properties", e);
+        } catch (Exception ignored) {
         }
 
     }
