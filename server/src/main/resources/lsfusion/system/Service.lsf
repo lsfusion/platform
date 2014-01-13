@@ -27,7 +27,7 @@ isNotServerRestarting () = NOT isServerRestarting();
 
 FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
-                 reportCharWidth, reportRowHeight, reportNotToStretch, reportToStretch, 
+                 reportCharWidth, reportRowHeight, reportNotToStretch, 
                  restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, checkClassesAction, 
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, 
                  vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, toggleExplainAnalyzeMode, 
