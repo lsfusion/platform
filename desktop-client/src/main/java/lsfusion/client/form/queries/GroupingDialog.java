@@ -4,6 +4,7 @@ import jxl.CellView;
 import jxl.Workbook;
 import jxl.biff.DisplayFormat;
 import jxl.format.BorderLineStyle;
+import jxl.format.VerticalAlignment;
 import jxl.write.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
@@ -113,15 +114,14 @@ public abstract class GroupingDialog extends JDialog {
         quantityCheck = new JCheckBox(getString("form.queries.number.of.entries"));
         otherChecksPanel.add(quantityCheck);
 
-        JPanel valuesChecksPanel = new JPanel();
-        valuesChecksPanel.setLayout(new BoxLayout(valuesChecksPanel, BoxLayout.Y_AXIS));
-        valuesChecksPanel.add(otherChecksPanel);
+        JPanel valuesChecksPanel = new JPanel(new BorderLayout());
+        valuesChecksPanel.add(otherChecksPanel, BorderLayout.NORTH);
 
-        TitledPanel sumPanel = new TitledPanel(getString("form.queries.grouping.sum"));
+        JPanel sumPanel = new JPanel();
         sumPanel.setLayout(new BoxLayout(sumPanel, BoxLayout.Y_AXIS));
         JScrollPane sumScrollPane = new JScrollPane();
 
-        TitledPanel maxPanel = new TitledPanel(getString("form.queries.grouping.maximum"));
+        JPanel maxPanel = new JPanel();
         maxPanel.setLayout(new BoxLayout(maxPanel, BoxLayout.Y_AXIS));
         JScrollPane maxScrollPane = new JScrollPane();
 
@@ -194,10 +194,10 @@ public abstract class GroupingDialog extends JDialog {
         sumScrollPane.setViewportView(sumPanel);
         maxScrollPane.setViewportView(maxPanel);
 
-        JSplitPane groupPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sumScrollPane, maxScrollPane);
-        groupPanel.setContinuousLayout(true);
-        groupPanel.setOneTouchExpandable(true);
-        valuesChecksPanel.add(groupPanel);
+        JTabbedPane sumMaxTab = new JTabbedPane();
+        sumMaxTab.addTab(getString("form.queries.grouping.sum"), sumScrollPane);
+        sumMaxTab.addTab(getString("form.queries.grouping.maximum"), maxScrollPane);
+        valuesChecksPanel.add(sumMaxTab);
         
         JButton resetAllButton = new JButton(getString("form.queries.grouping.reset"));
         resetAllButton.addActionListener(new ActionListener() {
@@ -227,7 +227,7 @@ public abstract class GroupingDialog extends JDialog {
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 if (!isCancelled) {
                     try {
-                        refreshChecks();
+                        refreshChecks(false);
                     } catch (IOException e1) {
                         throw new RuntimeException(e1);
                     }
@@ -246,7 +246,7 @@ public abstract class GroupingDialog extends JDialog {
             public void itemSelected(ItemEvent e) {
                 try {
                     if (!savedGroupsList.isPopupVisible()) { // чтобы дважды не обновлять состояние при выборе мышкой
-                        refreshChecks();
+                        refreshChecks(false);
                     }
                 } catch (IOException e1) {
                     throw new RuntimeException(e1);
@@ -341,7 +341,7 @@ public abstract class GroupingDialog extends JDialog {
 
         treeTableScroll.setViewportView(treeTable);
 
-        refreshChecks();
+        refreshChecks(true);
     }
 
     protected abstract void savePressed(FormGrouping grouping);
@@ -464,10 +464,14 @@ public abstract class GroupingDialog extends JDialog {
             box.setSelected(false);    
     }
     
-    private void refreshChecks() throws IOException {
+    private void refreshChecks(boolean initial) throws IOException {
+        if (groupsModel.getSize() == 0) {
+            return;
+        }
+        
         resetChecks();
         
-        if (groupsModel.getSize() == 0) {
+        if (initial) {
             quantityCheck.setSelected(true);
             int columnIndex = initialTable.getSelectedColumn();
             if (columnIndex == -1) {     //для пустых гридов. указываем выбранным по умолчанию первое свойство
@@ -645,10 +649,13 @@ public abstract class GroupingDialog extends JDialog {
                     columnName = columnName.substring(0, columnName.lastIndexOf(' '));
                 }
                 CellView cv = new CellView();
-                cv.setAutosize(true);
+                cv.setSize(50 * treeTable.getColumn(i).getPreferredWidth());
                 sheet.setColumnView(i, cv);
             }
-            sheet.addCell(new jxl.write.Label(i, 0, columnName, createCellFormat(null, true)));
+            WritableCellFormat cellFormat = createCellFormat(null, true);
+            cellFormat.setWrap(true);
+            cellFormat.setVerticalAlignment(VerticalAlignment.CENTRE);
+            sheet.addCell(new jxl.write.Label(i, 0, columnName, cellFormat));
         }
         
         addExcelSubrows(sheet, 1, (GroupingTreeTable.SortableTreeTableNode) treeTable.getRoot());
@@ -758,7 +765,10 @@ public abstract class GroupingDialog extends JDialog {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (KeyStrokes.isEnterEvent(e)) {
-                    saveByName(nameBox.getEditor().getItem().toString());
+                    String name = nameBox.getEditor().getItem().toString();
+                    if (!name.isEmpty()) {
+                        saveByName(name);
+                    }
                     saveAsDialog.dispose();    
                 } else {
                     super.keyTyped(e);
@@ -781,7 +791,12 @@ public abstract class GroupingDialog extends JDialog {
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                saveByName(nameBox.getSelectedItem().toString());
+                if (nameBox.getItemCount() > 0) {
+                    String name = nameBox.getSelectedItem().toString();
+                    if (!name.isEmpty()) {
+                        saveByName(name);
+                    }
+                }
                 saveAsDialog.dispose();
             }
         });
