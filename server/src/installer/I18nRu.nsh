@@ -10,13 +10,13 @@ LangString strShortcutsSectionDescription ${LANG_RUSSIAN} "Создать ярл
 LangString strPgSectionDescription ${LANG_RUSSIAN} "База данных PostgresSQL 9.2"
 LangString strJavaSectionDescription ${LANG_RUSSIAN} "Java Development Kit 1.7.0_45"
 LangString strTomcatSectionDescription ${LANG_RUSSIAN} "Apache Tomcat 7.0.47"
-LangString strIdeaSectionDescription ${LANG_RUSSIAN} "IntelliJ IDEA Community Edition 12.1.6 с встроенным плагином lsFusion"
+LangString strIdeaSectionDescription ${LANG_RUSSIAN} "IntelliJ IDEA Community Edition 13.0.1 с встроенным плагином lsFusion"
 
 LangString strPlatformUnSectionDescription ${LANG_RUSSIAN} "Удалить lsFusion Platform"
 LangString strPgUnSectionDescription ${LANG_RUSSIAN} "Удалить PostgresSQL database"
 LangString strJavaUnSectionDescription ${LANG_RUSSIAN} "Java Development Kit 1.7.0_45 не может быть удалена автоматически, поэтому удалите её вручную с помощью консоли 'Удаление программ'"
 LangString strTomcatUnSectionDescription ${LANG_RUSSIAN} "Удалить Apache Tomcat 7.0.47"
-LangString strIdeaUnSectionDescription ${LANG_RUSSIAN} "Удалить IntelliJ IDEA Community Edition 12.1.6"
+LangString strIdeaUnSectionDescription ${LANG_RUSSIAN} "Удалить IntelliJ IDEA Community Edition 13.0.1"
 
 LangString strPlatformIsNotSelected ${LANG_RUSSIAN} "Пожалуйста выберите хотя бы один компонент lsFusion Platform для установки."
 
@@ -35,8 +35,8 @@ LangString strTomcatDirHeader ${LANG_RUSSIAN} "Выберите папку дл�
 LangString strTomcatDirTextTop ${LANG_RUSSIAN} "Программа установит Apache Tomcat 7.0.47 в указанную папку."
 LangString strTomcatOptions ${LANG_RUSSIAN} "Настройки для установки Apached Tomcat."
 
-LangString strIdeaDirHeader ${LANG_RUSSIAN} "Выберите папку для установки IntelliJ IDEA Community Edition 12.1.6."
-LangString strIdeaDirTextTop ${LANG_RUSSIAN} "Программа установит IntelliJ IDEA Community Edition 12.1.6 в указанную папку."
+LangString strIdeaDirHeader ${LANG_RUSSIAN} "Выберите папку для установки IntelliJ IDEA Community Edition 13.0.1."
+LangString strIdeaDirTextTop ${LANG_RUSSIAN} "Программа установит IntelliJ IDEA Community Edition 13.0.1 в указанную папку."
 
 LangString strTomcatShutdownPort ${LANG_RUSSIAN} "Порт закрытия"
 LangString strTomcatHttpPort ${LANG_RUSSIAN} "HTTP/1.1 порт"

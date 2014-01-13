@@ -10,18 +10,18 @@ LangString strShortcutsSectionDescription ${LANG_ENGLISH} "Install shortcuts"
 LangString strPgSectionDescription ${LANG_ENGLISH} "PostgresSQL database"
 LangString strJavaSectionDescription ${LANG_ENGLISH} "Java Development Kit 1.7.0_45"
 LangString strTomcatSectionDescription ${LANG_ENGLISH} "Apache Tomcat 7.0.47"
-LangString strIdeaSectionDescription ${LANG_ENGLISH} "IntelliJ IDEA Community Edition 12.1.6 with bundled lsFusion plugin"
+LangString strIdeaSectionDescription ${LANG_ENGLISH} "IntelliJ IDEA Community Edition 13.0.1 with bundled lsFusion plugin"
 
 LangString strPlatformUnSectionDescription ${LANG_ENGLISH} "Uninstall lsFusion Platform"
 LangString strPgUnSectionDescription ${LANG_ENGLISH} "Uninstall PostgresSQL database"
 LangString strJavaUnSectionDescription ${LANG_ENGLISH} "Java Development Kit 1.7.0_45 can't be uninstalled automatically, please uninstall it manually from 'Add or remove programs' console"
 LangString strTomcatUnSectionDescription ${LANG_ENGLISH} "Uninstall Apache Tomcat 7.0.47"
-LangString strIdeaUnSectionDescription ${LANG_ENGLISH} "Uninstall IntelliJ IDEA Community Edition 12.1.6"
+LangString strIdeaUnSectionDescription ${LANG_ENGLISH} "Uninstall IntelliJ IDEA Community Edition 13.0.1"
 
 LangString strPlatformIsNotSelected ${LANG_ENGLISH} "You have to select at least one of lsFusion Platform components to install."
 
-LangString strPostgreDirHeader ${LANG_ENGLISH} "Choose the folder in which to install IntelliJ IDEA Community Edition 12.1.6."
-LangString strPostgreDirTextTop ${LANG_ENGLISH} "Setup will install IntelliJ IDEA Community Edition 12.1.6 to the folowing folder."
+LangString strPostgreDirHeader ${LANG_ENGLISH} "Choose the folder in which to install IntelliJ IDEA Community Edition 13.0.1."
+LangString strPostgreDirTextTop ${LANG_ENGLISH} "Setup will install IntelliJ IDEA Community Edition 13.0.1 to the folowing folder."
 LangString strDestinationFolder ${LANG_ENGLISH} "Destination Folder"
 
 LangString strJavaDirHeader ${LANG_ENGLISH} "Choose the folder in which to install JDK 1.7.0_45."

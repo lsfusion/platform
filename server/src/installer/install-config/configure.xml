@@ -41,7 +41,11 @@
 
     <target name="configureIdea">
         <copy file="../${idea.plugin}" tofile="${idea.dir}/plugins/${idea.plugin}" />
+        
         <replace file="jdk.table.xml" token="java.home" value="${jdk.home}" />
         <copy file="jdk.table.xml" tofile="${user.home}/.IdeaIC12/config/options/jdk.table.xml" />
+
+        <replace file="applicationLibraries.xml" token="server.archive" value="${server.archive}" />
+        <copy file="applicationLibraries.xml" tofile="${user.home}/.IdeaIC13/config/options/applicationLibraries.xml" />
     </target>
 </project>

@@ -17,7 +17,7 @@ SetCompressor lzma
 !define PG_SECTION_NAME "PostgreSQL 9.2"
 !define JAVA_SECTION_NAME "JDK 1.7.0_45"
 !define TOMCAT_SECTION_NAME "Apache Tomcat 7.0.47"
-!define IDEA_SECTION_NAME "IntelliJ IDEA Community Edition 12.1.6 with lsFusion plugin"
+!define IDEA_SECTION_NAME "IntelliJ IDEA Community Edition 13.0.1 with lsFusion plugin"
 
 !define CLIENT_JAR "lsfusion-client-${VERSION}.jar"
 !define SERVER_JAR "lsfusion-server-${VERSION}.jar"
@@ -198,7 +198,7 @@ Function .onInit
     
     StrCpy $javaDir "$ProgramFiles${ARCH}\Java\jdk1.7.0_45"
 
-    StrCpy $ideaDir "$ProgramFiles32\JetBrains\IDEA Community Edition 12.1.6"
+    StrCpy $ideaDir "$ProgramFiles32\JetBrains\IDEA Community Edition 13.0.1"
 
     StrCpy $pgDir "$ProgramFiles${ARCH}\PostgreSQL\9.2"
     StrCpy $pgHost "localhost"
@@ -371,6 +371,7 @@ Function execAntConfiguration
     ${if} ${SectionIsSelected} ${SecIdea}
         DetailPrint "Configuring Intellij IDEA"
 
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "server.archive=" "$INSTDIR\${SERVER_JAR}" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.dir=" "$ideaDir" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.plugin=" "${IDEA_PLUGIN}" $R0
         nsExec::ExecToLog '"${INSTCONFDIR}\configure.bat" configureIdea'
@@ -470,8 +471,8 @@ Function createShortcuts
     
     ${if} ${SectionIsSelected} ${SecIdea}
         SetOutPath "$ideaDir"
-        CreateShortCut "$SMPROGRAMS\JetBrains\IntelliJ IDEA Community Edition 12.1.6.lnk" "$ideaDir\bin\${IDEA_EXE}" "" "$ideaDir\bin\${IDEA_EXE}"
-        CreateShortCut "$DESKTOP\IntelliJ IDEA Community Edition 12.1.6.lnk" "$ideaDir\bin\${IDEA_EXE}" "" "$ideaDir\bin\${IDEA_EXE}"
+        CreateShortCut "$SMPROGRAMS\JetBrains\IntelliJ IDEA Community Edition 13.0.1.lnk" "$ideaDir\bin\${IDEA_EXE}" "" "$ideaDir\bin\${IDEA_EXE}"
+        CreateShortCut "$DESKTOP\IntelliJ IDEA Community Edition 13.0.1.lnk" "$ideaDir\bin\${IDEA_EXE}" "" "$ideaDir\bin\${IDEA_EXE}"
     ${endIf}
 
 FunctionEnd
