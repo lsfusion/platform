@@ -21,6 +21,7 @@ SetCompressor lzma
 
 !define CLIENT_JAR "lsfusion-client-${VERSION}.jar"
 !define SERVER_JAR "lsfusion-server-${VERSION}.jar"
+!define SERVER_LIBRARY_NAME "lsfusion-server-${VERSION}"
 !define WEBCLIENT_WAR "lsfusion-client-${VERSION}.war"
 
 !define INSTBINDIR "$INSTDIR\install-bin"
@@ -372,6 +373,7 @@ Function execAntConfiguration
         DetailPrint "Configuring Intellij IDEA"
 
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "server.archive=" "$INSTDIR\${SERVER_JAR}" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "lsfusuion.library.name=" "${SERVER_LIBRARY_NAME}" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.dir=" "$ideaDir" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.plugin=" "${IDEA_PLUGIN}" $R0
         nsExec::ExecToLog '"${INSTCONFDIR}\configure.bat" configureIdea'
