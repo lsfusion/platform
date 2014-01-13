@@ -150,7 +150,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     private final T BL;
 
     public BaseLogicsModule(T BL, SIDPolicy sidPolicy) throws IOException {
-        super(BaseLogicsModule.class.getResourceAsStream("/lsfusion/system/System.lsf"), null, BL);
+        super(BaseLogicsModule.class.getResourceAsStream("/lsfusion/system/System.lsf"), "/lsfusion/system/System.lsf", null, BL);
         setBaseLogicsModule(this);
         this.BL = BL;
         this.sidPolicy = sidPolicy; 

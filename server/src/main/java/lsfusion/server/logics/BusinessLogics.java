@@ -283,7 +283,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         InputStream is = getClass().getResourceAsStream("/" + path);
         if (is == null)
             throw new RuntimeException(String.format("[error]:\tmodule '%s' cannot be found", path));
-        return addModule(new ScriptingLogicsModule(is, LM, this));
+        return addModule(new ScriptingLogicsModule(is, path, LM, this));
     }
 
     private void fillNameToModules() {
@@ -295,7 +295,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private Map<String, Set<String>> buildModuleGraph() {
+    public Map<String, Set<String>> buildModuleGraph() {
         Map<String, Set<String>> graph = new HashMap<String, Set<String>>();
         for (LogicsModule module : logicModules) {
             graph.put(module.getName(), new HashSet<String>());

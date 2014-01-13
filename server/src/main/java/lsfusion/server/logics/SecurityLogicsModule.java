@@ -63,7 +63,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public FormEntity propertyPolicyForm;
 
     public SecurityLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(SecurityLogicsModule.class.getResourceAsStream("/lsfusion/system/Security.lsf"), baseLM, BL);
+        super(SecurityLogicsModule.class.getResourceAsStream("/lsfusion/system/Security.lsf"), "/lsfusion/system/Security.lsf", baseLM, BL);
         setBaseLogicsModule(baseLM);
     }
 

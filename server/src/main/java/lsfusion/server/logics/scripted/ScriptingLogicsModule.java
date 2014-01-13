@@ -105,6 +105,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private String code = null;
     private String filename = null;
+    private String path = null;
     private List<String> namespacePriority;
     private final ScriptingErrorLog errLog;
     private ScriptParser parser;
@@ -141,13 +142,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         this.filename = filename;
     }
 
-    public ScriptingLogicsModule(InputStream stream, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
-        this(stream, "utf-8", baseModule, BL);
+    public ScriptingLogicsModule(InputStream stream, String path, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
+        this(stream, path, "utf-8", baseModule, BL);
     }
 
-    public ScriptingLogicsModule(InputStream stream, String charsetName, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
+    public ScriptingLogicsModule(InputStream stream, String path, String charsetName, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
         this(baseModule, BL);
         this.code = IOUtils.readStreamToString(stream, charsetName);
+        this.path = path;
     }
 
     public ScriptingLogicsModule(BaseLogicsModule<?> baseModule, BusinessLogics<?> BL, String code) {
@@ -180,6 +182,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return parser;
     }
 
+    public String getPath() {
+        return path;
+    }
+    
     protected LogicsModule findModule(String name) throws ScriptingErrorLog.SemanticErrorException {
         LogicsModule module = BL.getModule(name);
         checkModule(module, name);
