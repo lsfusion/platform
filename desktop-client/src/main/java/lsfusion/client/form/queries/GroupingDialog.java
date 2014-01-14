@@ -781,7 +781,7 @@ public abstract class GroupingDialog extends JDialog {
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (nameBox.getItemCount() > 0) {
+                if (nameBox.getSelectedItem() != null) {
                     String name = nameBox.getSelectedItem().toString();
                     if (!name.isEmpty()) {
                         saveByName(name);
