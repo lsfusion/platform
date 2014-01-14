@@ -17,10 +17,7 @@ Function tomcatConfigPagePre
     ${LS_CreateNumber} $(strTomcatShutdownPort) $tomcatShutdownPort $tfTomcatShutdownPort
     ${LS_CreateNumber} $(strTomcatHttpPort) $tomcatHttpPort $tfTomcatHttpPort
     ${LS_CreateNumber} $(strTomcatAjpPort) $tomcatAjpPort $tfTomcatAjpPort
-
-    ${if} $createServices == "1"
-        ${LS_CreateText} $(strServiceName) $tomcatServiceName $tfTomcatServiceName
-    ${endIf}
+    ${LS_CreateText} $(strServiceName) $tomcatServiceName $tfTomcatServiceName
 
     nsDialogs::Show
 FunctionEnd
@@ -48,15 +45,13 @@ Function tomcatConfigPageLeave
         Abort
     ${endif}
 
-    ${if} $createServices == "1"
-        ${NSD_GetText} $tfTomcatServiceName $tomcatServiceName
-    
-        Push $tomcatServiceName
-        Call validateServiceName
-        ${if} $0 == "0"
-            MessageBox MB_ICONEXCLAMATION|MB_OK $(strInvalidServiceName)
-            Abort
-        ${endIf}
+    ${NSD_GetText} $tfTomcatServiceName $tomcatServiceName
+
+    Push $tomcatServiceName
+    Call validateServiceName
+    ${if} $0 == "0"
+        MessageBox MB_ICONEXCLAMATION|MB_OK $(strInvalidServiceName)
+        Abort
     ${endIf}
     
     StrCpy $webClientDirectory "$tomcatDir\webapps"

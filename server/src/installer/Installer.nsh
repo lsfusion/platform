@@ -277,9 +277,7 @@ Section -post SecPost
 
     Call execAntConfiguration
     
-    ${if} $createServices == "1"
-        CALL createServices
-    ${endIf}
+    CALL createServices
 
     ${if} $createShortcuts == "1"
         CALL createShortcuts
@@ -374,6 +372,10 @@ Function execAntConfiguration
 
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "server.archive=" "$INSTDIR\${SERVER_JAR}" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "lsfusuion.library.name=" "${SERVER_LIBRARY_NAME}" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "db.host=" "$pgHost" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "db.port=" "$pgPort" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "db.user=" "$pgUser" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "db.pass=" "$pgPassword" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.dir=" "$ideaDir" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.plugin=" "${IDEA_PLUGIN}" $R0
         nsExec::ExecToLog '"${INSTCONFDIR}\configure.bat" configureIdea'
@@ -386,7 +388,6 @@ Function execAntConfiguration
 FunctionEnd
 
 Function createServices
-
     ${if} ${SectionIsSelected} ${SecTomcat}
         ClearErrors
         DetailPrint "Installing Tomcat service"
@@ -411,29 +412,32 @@ Function createServices
         ${endIf}
     ${endIf}
 
-    ${if} ${SectionIsSelected} ${SecServer}
-        ClearErrors
-        DetailPrint "Installing lsFusion Server service"
-        nsExec::ExecToStack '"$INSTDIR\bin\lsfusion.exe" //IS//$platformServiceName --DisplayName "lsFusion Server" --Description "lsFusion server application http://lsfusion.ru" --LogPath "$INSTDIR\logs" --Install "$INSTDIR\bin\lsfusion.exe" --Jvm "$jvmDll" --StartPath "$INSTDIR" --StopPath "$INSTDIR"'
-        Pop $0
-        Pop $1
-        ${ifNot} $0 == "0"
-            DetailPrint $1
-            MessageBox MB_OK|MB_ICONSTOP $(strErrorInstallingServerService)
-        ${else}
-            DetailPrint "Configuring $platformServiceName service"
-
-            WriteRegStr HKLM "${REGKEY}" "platformServiceName" "$platformServiceName"
-
-            nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --Startup auto'
-            nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --Classpath "$INSTDIR\${SERVER_JAR};$INSTDIR\deploy-lib\*;$INSTDIR\deploy-class" --StartClass lsfusion.server.logics.BusinessLogicsBootstrap --StopClass lsfusion.server.logics.BusinessLogicsBootstrap --StartMethod start --StopMethod stop --StartMode jvm --StopMode jvm'
-            nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --JvmMs=512 --JvmMx=1024'
-            nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --StdOutput auto --StdError auto'
-
-            DetailPrint "Starting lsFusion Server service"
-            nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //ES//$platformServiceName'
+    ${if} $createServices == "1"
+        ${if} ${SectionIsSelected} ${SecServer}
+            ClearErrors
+            DetailPrint "Installing lsFusion Server service"
+            nsExec::ExecToStack '"$INSTDIR\bin\lsfusion.exe" //IS//$platformServiceName --DisplayName "lsFusion Server" --Description "lsFusion server application http://lsfusion.ru" --LogPath "$INSTDIR\logs" --Install "$INSTDIR\bin\lsfusion.exe" --Jvm "$jvmDll" --StartPath "$INSTDIR" --StopPath "$INSTDIR"'
+            Pop $0
+            Pop $1
+            ${ifNot} $0 == "0"
+                DetailPrint $1
+                MessageBox MB_OK|MB_ICONSTOP $(strErrorInstallingServerService)
+            ${else}
+                DetailPrint "Configuring $platformServiceName service"
+    
+                WriteRegStr HKLM "${REGKEY}" "platformServiceName" "$platformServiceName"
+    
+                nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --Startup auto'
+                nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --Classpath "$INSTDIR\${SERVER_JAR};$INSTDIR\deploy-lib\*;$INSTDIR\deploy-class" --StartClass lsfusion.server.logics.BusinessLogicsBootstrap --StopClass lsfusion.server.logics.BusinessLogicsBootstrap --StartMethod start --StopMethod stop --StartMode jvm --StopMode jvm'
+                nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --JvmMs=512 --JvmMx=1024'
+                nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //US//$platformServiceName --StdOutput auto --StdError auto'
+    
+                DetailPrint "Starting lsFusion Server service"
+                nsExec::ExecToLog '"$INSTDIR\bin\lsfusion.exe" //ES//$platformServiceName'
+            ${endIf}
         ${endIf}
     ${endIf}
+    
 FunctionEnd
 
 Function createShortcuts

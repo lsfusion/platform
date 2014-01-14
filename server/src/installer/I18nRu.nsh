@@ -61,6 +61,7 @@ LangString strWebClientContext ${LANG_RUSSIAN} "Веб-контекст"
 LangString strInvalidWebClientDirectory ${LANG_RUSSIAN} "Выбранная папка не существует"
 LangString strWebClientDirectory ${LANG_RUSSIAN} "Выберите папку, в которую будет скопирован настроенный war-архив WebClient (например C:\Apache Tomcat\webapps) (оставьте пустым, чтобы пропустить копирование)"
 LangString strInvalidWebClientContext ${LANG_RUSSIAN} 'Веб-контекст Web Client приложения не должен содержать пробелы или любые из следующих символов: <>:"/\:|?*'
+LangString strContinueOnEmptyPassword ${LANG_RUSSIAN} "Вы действительно хотите продолжить и использовать пустой пароль?"
 
 LangString strOldPostgreMessage ${LANG_RUSSIAN} "Установленная версия PostgreSQL устарела (<9.2). Пожалуйста деинсталлируйте эту версию или попробуйте произвести установку PostgreSQL вручную."
 

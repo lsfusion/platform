@@ -61,6 +61,7 @@ LangString strWebClientContext ${LANG_ENGLISH} "Web Client WebApp context"
 LangString strInvalidWebClientDirectory ${LANG_ENGLISH} "Selected directory doesn't exist"
 LangString strWebClientDirectory ${LANG_ENGLISH} "Select directory to copy WebClient war-archive to (i.e. C:\Apache Tomcat\webapps) (leave blank if not needed)"
 LangString strInvalidWebClientContext ${LANG_ENGLISH} 'The WebClient WebApp context may not contain a space or any of the following characters: <>:"/\:|?*'
+LangString strContinueOnEmptyPassword ${LANG_ENGLISH} "Do you really want to continue and use empty password?"
 
 LangString strOldPostgreMessage ${LANG_ENGLISH} "The installed version of PostgreSQL is too old (<9.2). Please uninstall this version or try a manual installation of PostgreSQL."
 

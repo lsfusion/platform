@@ -43,10 +43,16 @@
         <copy file="../${idea.plugin}" tofile="${idea.dir}/plugins/${idea.plugin}" />
         
         <replace file="jdk.table.xml" token="java.home" value="${jdk.home}" />
-        <copy file="jdk.table.xml" tofile="${user.home}/.IdeaIC12/config/options/jdk.table.xml" />
+        <copy file="jdk.table.xml" tofile="${user.home}/.IdeaIC13/config/options/jdk.table.xml" />
 
         <replace file="applicationLibraries.xml" token="lsfusuion.library.name" value="${lsfusuion.library.name}" />
         <replace file="applicationLibraries.xml" token="server.archive" value="${server.archive}" />
         <copy file="applicationLibraries.xml" tofile="${user.home}/.IdeaIC13/config/options/applicationLibraries.xml" />
+
+        <replace file="options.xml" token="db.host" value="${db.host}" />
+        <replace file="options.xml" token="db.port" value="${db.port}" />
+        <replace file="options.xml" token="db.user" value="${db.user}" />
+        <replace file="options.xml" token="db.pass" value="${db.pass}" />
+        <copy file="options.xml" tofile="${user.home}/.IdeaIC13/config/options/options.xml" />
     </target>
 </project>

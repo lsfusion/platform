@@ -71,8 +71,9 @@ Function platformConfigPageLeave
     
     ${NSD_GetText} $tfPlatformServerPassword1 $9
     ${if} $9 == ""
-        MessageBox MB_ICONEXCLAMATION|MB_OK $(strPasswordEmpty)
+        MessageBox MB_ICONEXCLAMATION|MB_YESNO $(strContinueOnEmptyPassword) IDYES yes
         Abort
+        yes:
     ${endIf}
 
     ${if} ${SectionIsSelected} ${SecServer}
@@ -90,8 +91,6 @@ Function platformConfigPageLeave
                 Abort
             ${endIf}
         ${endIf}
-    ${else}
-        
     ${endIf}
     
     StrCpy $platformServerPassword $9
