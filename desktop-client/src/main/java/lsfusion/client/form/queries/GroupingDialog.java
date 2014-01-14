@@ -226,11 +226,7 @@ public abstract class GroupingDialog extends JDialog {
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 if (!isCancelled) {
-                    try {
-                        refreshChecks(false);
-                    } catch (IOException e1) {
-                        throw new RuntimeException(e1);
-                    }
+                    refreshChecks();
                 }
                 isCancelled = false;
             }
@@ -244,12 +240,8 @@ public abstract class GroupingDialog extends JDialog {
         savedGroupsList.addItemListener(new ItemAdapter() {
             @Override
             public void itemSelected(ItemEvent e) {
-                try {
-                    if (!savedGroupsList.isPopupVisible()) { // чтобы дважды не обновлять состояние при выборе мышкой
-                        refreshChecks(false);
-                    }
-                } catch (IOException e1) {
-                    throw new RuntimeException(e1);
+                if (!savedGroupsList.isPopupVisible()) { // чтобы дважды не обновлять состояние при выборе мышкой
+                    refreshChecks();
                 }
             }
         });
@@ -261,10 +253,12 @@ public abstract class GroupingDialog extends JDialog {
         removeCurrentGroupingButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                savePressed(new FormGrouping((String) groupsModel.getSelectedItem(), initialTable.getGroupObject().getSID(), null, null));
-                
-                savedGroupings.remove(groupsModel.getIndexOf(groupsModel.getSelectedItem()));
-                refreshGroupingListModel(null);
+                if (groupsModel.getSelectedItem() != null) {
+                    savePressed(new FormGrouping((String) groupsModel.getSelectedItem(), initialTable.getGroupObject().getSID(), null, null));
+                    
+                    savedGroupings.remove(groupsModel.getIndexOf(groupsModel.getSelectedItem()) - 1);
+                    refreshGroupingListModel(null);
+                }
             }
         });
         
@@ -341,7 +335,7 @@ public abstract class GroupingDialog extends JDialog {
 
         treeTableScroll.setViewportView(treeTable);
 
-        refreshChecks(true);
+        refreshChecks();
     }
 
     protected abstract void savePressed(FormGrouping grouping);
@@ -464,14 +458,11 @@ public abstract class GroupingDialog extends JDialog {
             box.setSelected(false);    
     }
     
-    private void refreshChecks(boolean initial) throws IOException {
-        if (groupsModel.getSize() == 0) {
-            return;
-        }
-        
+    private void refreshChecks() {
         resetChecks();
-        
-        if (initial) {
+
+        String selectedName = (String) groupsModel.getSelectedItem();
+        if (selectedName == null) {
             quantityCheck.setSelected(true);
             int columnIndex = initialTable.getSelectedColumn();
             if (columnIndex == -1) {     //для пустых гридов. указываем выбранным по умолчанию первое свойство
@@ -481,7 +472,6 @@ public abstract class GroupingDialog extends JDialog {
             groupChecks.get(columnKey).setSelected(true);
             groupSpinners.get(columnKey).setVisible(true);
         } else {
-            String selectedName = (String) groupsModel.getSelectedItem();
             FormGrouping grouping = null;
             for (FormGrouping gr : savedGroupings) {
                 if (selectedName.equals(gr.name)) {
@@ -728,12 +718,12 @@ public abstract class GroupingDialog extends JDialog {
         removeCurrentGroupingButton.setVisible(savedGroupings.size() > 0);
         
         groupsModel.removeAllElements();
+        groupsModel.addElement(null);
         for (FormGrouping grouping : savedGroupings) {
             groupsModel.addElement(grouping.name);
         }
-        if (itemToSelect != null) {
-            groupsModel.setSelectedItem(itemToSelect.name);
-        }
+            
+        groupsModel.setSelectedItem(itemToSelect != null ? itemToSelect.name : null);
     }
     
     private void saveAsPressed() {
@@ -752,7 +742,7 @@ public abstract class GroupingDialog extends JDialog {
         
         JLabel enterName = new JLabel(getString("form.queries.grouping.save.choose.name"));
         final JComboBox nameBox = new JComboBox();
-        for (int i = 0; i < groupsModel.getSize(); i++) {
+        for (int i = 1; i < groupsModel.getSize(); i++) {
             nameBox.addItem(groupsModel.getElementAt(i));
         }
         nameBox.setPreferredSize(new Dimension(200, 20));
