@@ -79,7 +79,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(businessLogics, "businessLogics must be specified");
         Assert.notNull(dbManager, "dbManager must be specified");
-        if (BaseUtils.isRedundantString(initialAdminPassword)) {
+        if (initialAdminPassword == null) {
             initialAdminPassword = "fusion";
         }
     }

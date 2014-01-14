@@ -131,7 +131,7 @@
     <bean id="securityManager" class="lsfusion.server.logics.SecurityManager">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="dbManager" ref="dbManager"/>
-        <property name="initialAdminPassword" value="${logics.initialAdminPassword:}"/>
+        <property name="initialAdminPassword" value="${logics.initialAdminPassword:#{null}}"/>
     </bean>
 
     <bean id="logicsInstance" class="lsfusion.server.logics.LogicsInstance">
