@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+  <component name="PropertiesComponent">
+    <property name="lsfusion.dbhost.key" value="db.host" />
+    <property name="lsfusion.dbport.key" value="db.port" />
+    <property name="lsfusion.dbuser.key" value="db.user" />
+    <property name="lsfusion.dbpass.key" value="db.pass" />
+  </component>
+</application>
+
