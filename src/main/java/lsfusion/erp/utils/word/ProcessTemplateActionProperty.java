@@ -1,5 +1,6 @@
 package lsfusion.erp.utils.word;
 
+import lsfusion.server.data.SQLHandledException;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
@@ -40,7 +41,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
 

@@ -4,6 +4,7 @@ import lsfusion.interop.action.OpenUriClientAction;
 import lsfusion.server.classes.DoubleClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -32,7 +33,7 @@ public class ShowOnMapActionProperty extends ScriptingActionProperty {
         addressInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             DataObject latitude = context.getDataKeyValue(latitudeInterface);
             DataObject longitude = context.getDataKeyValue(longitudeInterface);

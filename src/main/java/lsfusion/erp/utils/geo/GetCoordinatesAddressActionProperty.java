@@ -5,6 +5,7 @@ import com.google.code.geocoder.GeocoderRequestBuilder;
 import com.google.code.geocoder.model.GeocodeResponse;
 import com.google.code.geocoder.model.GeocoderRequest;
 import com.google.code.geocoder.model.GeocoderResult;
+import lsfusion.server.data.SQLHandledException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import lsfusion.server.classes.StringClass;
@@ -35,7 +36,7 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
         mapProviderInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             DataSession session = context.getSession();
             DataObject fullAddress = context.getDataKeyValue(POIInterface);

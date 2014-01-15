@@ -2,6 +2,7 @@ package lsfusion.erp.utils.i18n;
 
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -31,7 +32,7 @@ public class TranslateActionProperty extends ScriptingActionProperty {
         languageToInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
 

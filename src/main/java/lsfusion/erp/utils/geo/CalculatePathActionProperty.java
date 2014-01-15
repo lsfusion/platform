@@ -1,5 +1,6 @@
 package lsfusion.erp.utils.geo;
 
+import lsfusion.server.data.SQLHandledException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,7 +32,7 @@ public class CalculatePathActionProperty extends ScriptingActionProperty {
         super(LM, new ValueClass[]{});
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
 
             LCP<PropertyInterface> isPOI = (LCP<PropertyInterface>) LM.is(LM.getClassByName("POI"));

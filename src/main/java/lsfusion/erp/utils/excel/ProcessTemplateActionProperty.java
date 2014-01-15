@@ -1,5 +1,6 @@
 package lsfusion.erp.utils.excel;
 
+import lsfusion.server.data.SQLHandledException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import lsfusion.base.col.MapFact;
@@ -35,7 +36,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
 

@@ -5,6 +5,7 @@ import lsfusion.base.IOUtils;
 import lsfusion.interop.action.ExportFileClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -13,6 +14,7 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.Iterator;
 
 public class SaveBackupActionProperty extends ScriptingActionProperty {
@@ -25,7 +27,7 @@ public class SaveBackupActionProperty extends ScriptingActionProperty {
         backupInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
 
             DataObject backupObject = context.getDataKeyValue(backupInterface);

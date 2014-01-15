@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.DataObject;
@@ -19,6 +20,7 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 
 import java.sql.Date;
+import java.sql.SQLException;
 import java.util.Calendar;
 
 public class DecimateBackupsActionProperty extends ScriptingActionProperty {
@@ -27,7 +29,7 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
         super(LM, new ValueClass[]{});
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             DataSession session = context.createSession();
 
@@ -60,7 +62,7 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
 
             }
 
-            session.apply(context.getBL());
+            session.apply(context);
 
             LM.findLAPByCompoundOldName("formRefresh").execute(context);
 

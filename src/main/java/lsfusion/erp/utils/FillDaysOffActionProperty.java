@@ -2,6 +2,7 @@ package lsfusion.erp.utils;
 
 import com.google.common.base.Throwables;
 import lsfusion.server.classes.DateClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -26,7 +27,7 @@ public class FillDaysOffActionProperty extends ScriptingActionProperty {
         countryInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             DataSession session = context.createSession();
 
@@ -35,11 +36,11 @@ public class FillDaysOffActionProperty extends ScriptingActionProperty {
 
             session.close();
         } catch (Exception e) {
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
         }
     }
 
-    private void generateDates(ExecutionContext<ClassPropertyInterface> context, DataObject countryObject) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+    private void generateDates(ExecutionContext<ClassPropertyInterface> context, DataObject countryObject) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, SQLHandledException {
         DataSession session = context.createSession();
         Calendar current = Calendar.getInstance();
         int currentYear = current.get(Calendar.YEAR);
@@ -67,11 +68,11 @@ public class FillDaysOffActionProperty extends ScriptingActionProperty {
                 addDayOff(context, session, countryObject, calendar.getTimeInMillis());
         }
 
-        session.apply(context.getBL());
+        session.apply(context);
         session.close();
     }
 
-    private void addDayOff(ExecutionContext<ClassPropertyInterface> context, DataSession session, DataObject countryObject, long timeInMillis) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+    private void addDayOff(ExecutionContext<ClassPropertyInterface> context, DataSession session, DataObject countryObject, long timeInMillis) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, SQLHandledException {
         context.getBL().getModule("Country").getLCPByOldName("isDayOffCountryDate").change(true, session, countryObject, new DataObject(new java.sql.Date(timeInMillis), DateClass.instance));
     }
 }

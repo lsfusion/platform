@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.DataObject;
@@ -19,6 +20,7 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,7 +35,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
         super(LM, new ValueClass[]{});
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
             DataSession session = context.createSession();
 
@@ -79,7 +81,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
                         LM.findLCPByCompoundOldName("excludeBackupTable").change(true, session, backupObject, (DataObject) tableObject);
                 }
 
-                session.apply(context.getBL());
+                session.apply(context);
 
                 LM.findLCPByCompoundOldName("backupFilePath").change(backupFilePath, context.getSession());
                 LM.findLCPByCompoundOldName("backupFileName").change(backupFileName + backupFileExtension, context.getSession());
