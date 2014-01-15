@@ -128,6 +128,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         };
     }
 
+    public String getDataBaseName() {
+        return adapter.dataBase;
+    } 
+    
     public void setAdapter(DataAdapter adapter) {
         this.adapter = adapter;
     }

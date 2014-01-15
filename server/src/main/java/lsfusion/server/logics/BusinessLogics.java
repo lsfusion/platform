@@ -1350,4 +1350,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     protected DBManager getDbManager() {
         return ThreadLocalContext.getDbManager();
     }
+    
+    public String getDataBaseName() {
+        return getDbManager().getDataBaseName();
+    }
 }
