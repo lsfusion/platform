@@ -36,6 +36,7 @@ import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.StringParseInterface;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.session.DataSession;
@@ -67,7 +68,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
     // создает таблицу batch'ем
-    public static SessionTable create(final SQLSession session, final ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
+    public static SessionTable create(final SQLSession session, final ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, Object owner) throws SQLException, SQLHandledException {
         // прочитаем классы
         return session.createTemporaryTable(keys, properties, rows.size(), new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
@@ -262,7 +263,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(keysClassWhere, propertiesClassWheres);
     }
 
-    public SessionTable modifyRecord(final SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, final Object owner, Result<Boolean> changed) throws SQLException {
+    public SessionTable modifyRecord(final SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, final Object owner, Result<Boolean> changed) throws SQLException, SQLHandledException {
 
         if(type==Modify.DELETE) { // статистику пока не учитываем
             int proceeded = deleteRecords(session, keyFields);
@@ -294,7 +295,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                             updateStatistics(session, count, owner).checkClasses(session, null);
     }
 
-    public SessionTable modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, Modify type, QueryEnvironment env, Object owner, Result<Boolean> changed) throws SQLException {
+    public SessionTable modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, Modify type, QueryEnvironment env, Object owner, Result<Boolean> changed) throws SQLException, SQLHandledException {
 
         if(query.isEmpty()) // оптимизация
             return this;
@@ -337,7 +338,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                         orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
                             updateStatistics(session, count, owner).checkClasses(session, null);
     }
-    public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Integer, Integer>[] shifts) throws SQLException {
+    public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Integer, Integer>[] shifts) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
         lsfusion.server.data.query.Join<PropertyField> join = join(query.getMapExprs());
 
@@ -367,7 +368,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         session.updateRecords(new ModifyQuery(this, query.getQuery()));
     }
 
-    public SessionTable updateCurrentClasses(DataSession session) throws SQLException {
+    public SessionTable updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException {
         final ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
         lsfusion.server.data.query.Join<PropertyField> join = join(mapKeys);
 
@@ -401,10 +402,10 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return new SessionTable(name, keys, properties, count, updatedClasses, updatedPropertyClasses).checkClasses(session.sql, null);
     }
 
-    public SessionTable updateStatistics(final SQLSession session, int prevCount, final Object owner) throws SQLException {
+    public SessionTable updateStatistics(final SQLSession session, int prevCount, final Object owner) throws SQLException, SQLHandledException {
         if(!SQLTemporaryPool.getDBStatistics(count).equals(SQLTemporaryPool.getDBStatistics(prevCount))) {
             return session.createTemporaryTable(keys, properties, count, new FillTemporaryTable() {
-                public Integer fill(String name) throws SQLException {
+                public Integer fill(String name) throws SQLException, SQLHandledException {
                     QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<KeyField, PropertyField>(SessionTable.this);
                     lsfusion.server.data.query.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
                     moveData.and(prevJoin.getWhere());
@@ -423,12 +424,12 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
 
-    public SessionTable addFields(final SQLSession session, final ImOrderSet<KeyField> keys, final ImMap<KeyField, DataObject> addKeys, final ImMap<PropertyField, ObjectValue> addProps, final Object owner) throws SQLException {
+    public SessionTable addFields(final SQLSession session, final ImOrderSet<KeyField> keys, final ImMap<KeyField, DataObject> addKeys, final ImMap<PropertyField, ObjectValue> addProps, final Object owner) throws SQLException, SQLHandledException {
         if(addKeys.isEmpty() && addProps.isEmpty())
             return this;
 
         return session.createTemporaryTable(keys, properties.addExcl(addProps.keys()), count, new FillTemporaryTable() {
-            public Integer fill(String name) throws SQLException {
+            public Integer fill(String name) throws SQLException, SQLHandledException {
                 // записать в эту таблицу insertSessionSelect из текущей + default поля
                 ImSet<KeyField> tableKeys = getTableKeys();
                 QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<KeyField, PropertyField>(tableKeys.addExcl(addKeys.keys()), addKeys);
@@ -443,7 +444,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         }, andFieldsClassWheres(classes, propertyClasses, addKeys, addProps), owner);
     }
 
-    public SessionTable removeFields(final SQLSession session, ImSet<KeyField> removeKeys, ImSet<PropertyField> removeProps, final Object owner) throws SQLException {
+    public SessionTable removeFields(final SQLSession session, ImSet<KeyField> removeKeys, ImSet<PropertyField> removeProps, final Object owner) throws SQLException, SQLHandledException {
         if(removeKeys.isEmpty() && removeProps.isEmpty())
             return this;
 
@@ -452,7 +453,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         final ImSet<KeyField> remainKeys = remainOrderKeys.getSet();
         final ImSet<PropertyField> remainProps = properties.remove(removeProps);
         return session.createTemporaryTable(remainOrderKeys, remainProps, count, new FillTemporaryTable() {
-            public Integer fill(String name) throws SQLException {
+            public Integer fill(String name) throws SQLException, SQLHandledException {
                 // записать в эту таблицу insertSessionSelect из текущей + default поля
                 QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<KeyField, PropertyField>(remainKeys);
 
@@ -501,7 +502,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
     // для проверки общей целостности есть специальные административные процедуры
-    private boolean assertCheckClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+    private boolean assertCheckClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
         if(1==1 || session.inconsistent)
             return true;
 
@@ -536,16 +537,16 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return true;
     }
 
-    public SessionTable checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+    public SessionTable checkClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
         assert assertCheckClasses(session, baseClass);
 
         return this;
     }
     
-    public void saveToDBForDebug(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+    public void saveToDBForDebug(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
         SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL();
         
-        dbSql.startTransaction();
+        dbSql.startTransaction(DBManager.DEBUG_TIL);
         dbSql.ensureTable(this);
         dbSql.insertBatchRecords(name, keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass).getMap());
         dbSql.commitTransaction();
@@ -553,7 +554,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         dbSql.close();
     }
     
-    public static void saveToDBForDebug(ImSet<? extends Value> values, SQLSession sql) throws SQLException, IllegalAccessException, ClassNotFoundException, InstantiationException {
+    public static void saveToDBForDebug(ImSet<? extends Value> values, SQLSession sql) throws SQLException, IllegalAccessException, ClassNotFoundException, InstantiationException, SQLHandledException {
         for(Value value : values)
             if(value instanceof SessionTable)
                 ((SessionTable)value).saveToDBForDebug(sql);

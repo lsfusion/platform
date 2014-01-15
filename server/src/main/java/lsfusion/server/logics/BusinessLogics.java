@@ -24,6 +24,7 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.ScannerDaemonTask;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -140,6 +141,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
+    @Override
+    protected void onStarted(LifecycleEvent event) {
+        super.onStarted(event);
+
+        try {
+            DataSession session = getDbManager().createSession();
+
+            LM.onStarted.execute(session);
+
+            session.apply(this);
+            session.close();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public LogicsModule getModule(String name) {
         return nameToModule.get(name);
     }
@@ -167,7 +184,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             scannerSingleRead = (Boolean) authenticationLM.scannerSingleReadComputer.read(session, new DataObject(compId, authenticationLM.computer));
             session.close();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
+        } catch (SQLHandledException e) {
+            throw Throwables.propagate(e);
         }
         if (scannerComPort != null) {
             IDaemonTask task = new ScannerDaemonTask(scannerComPort, ((Boolean)true).equals(scannerSingleRead));
@@ -639,7 +658,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     }
 
-    private void setUserLoggableProperties() throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+    private void setUserLoggableProperties() throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
         
         LCP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
         ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
@@ -654,7 +673,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private void setNotNullProperties() throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+    private void setNotNullProperties() throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
         
         LCP isProperty = LM.is(reflectionLM.property);
         ImRevMap<Object, KeyExpr> keys = isProperty.getMapKeys();
@@ -671,7 +690,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private void setupPropertyNotifications() throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+    private void setupPropertyNotifications() throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
 
         LCP isNotification = LM.is(emailLM.notification);
         ImRevMap<Object, KeyExpr> keys = isNotification.getMapKeys();
@@ -793,7 +812,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             property.prereadCaches();
     }
 
-    protected void initAuthentication(SecurityManager securityManager) throws SQLException {
+    protected void initAuthentication(SecurityManager securityManager) throws SQLException, SQLHandledException {
         securityManager.setupDefaultAdminUser();
     }
 
@@ -1194,13 +1213,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return logicModules;
     }
 
-    public void recalculateStats(DataSession session) throws SQLException {
+    public void recalculateStats(DataSession session) throws SQLException, SQLHandledException {
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
             dataTable.calculateStat(this.reflectionLM, session);
         }
     }
 
-    public void recalculateFollows(DataSession session) throws SQLException {
+    public void recalculateFollows(DataSession session) throws SQLException, SQLHandledException {
         for (Property property : getPropertyList())
             if (property instanceof ActionProperty) {
                 ActionProperty<?> action = (ActionProperty) property;
@@ -1209,7 +1228,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
     }
 
-    public String checkClasses(DataSession session) throws SQLException {
+    public String checkClasses(DataSession session) throws SQLException, SQLHandledException {
         String message = session.checkClasses();
         for (Property property : getPropertyList())
             if (property instanceof StoredDataProperty)
@@ -1217,10 +1236,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return message;
     }
 
-    public void recalculateClasses(SQLSession session) throws SQLException {
-        for (Property property : getPropertyList())
-            if (property instanceof StoredDataProperty)
-                ((StoredDataProperty)property).recalculateClasses(session, LM.baseClass);;
+    public void recalculateClasses(SQLSession session, boolean isolatedTransactions) throws SQLException, SQLHandledException {
+        for (final Property property : getPropertyList())
+            if (property instanceof StoredDataProperty) {
+                DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
+                    public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                        ((StoredDataProperty)property).recalculateClasses(sql, LM.baseClass);
+                    }});                
+            }
     }
 
     public LCP getLCP(String sID) {

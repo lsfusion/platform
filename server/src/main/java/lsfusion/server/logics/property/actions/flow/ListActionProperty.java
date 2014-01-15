@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -56,7 +57,7 @@ public class ListActionProperty extends ListCaseActionProperty {
     }
 
     @Override
-    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         FlowResult result = FlowResult.FINISH;
 
         for (ActionPropertyMapImplement<?, PropertyInterface> action : getActions()) {

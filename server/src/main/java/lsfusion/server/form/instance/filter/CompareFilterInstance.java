@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.Compare;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
@@ -39,7 +40,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         this.value = value;
     }
 
-    public CompareFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException {
+    public CompareFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         super(inStream,form);
         negate = inStream.readBoolean();
         compare = Compare.deserialize(inStream);
@@ -47,7 +48,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         junction = inStream.readBoolean();
     }
 
-    private static CompareValue deserializeCompare(DataInputStream inStream, FormInstance form, ValueClass valueClass) throws IOException, SQLException {
+    private static CompareValue deserializeCompare(DataInputStream inStream, FormInstance form, ValueClass valueClass) throws IOException, SQLException, SQLHandledException {
         byte type = inStream.readByte();
         switch(type) {
             case 0:
@@ -62,7 +63,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) {
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) throws SQLException, SQLHandledException {
         return super.dataUpdated(changedProps, reallyChanged, modifier) || value.dataUpdated(changedProps, reallyChanged, modifier);
     }
 
@@ -76,7 +77,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         return super.objectUpdated(gridGroups) || value.objectUpdated(gridGroups);
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) {
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         Where where = property.getExpr(mapKeys, modifier, reallyChanged).compare(value.getExpr(mapKeys, modifier, reallyChanged), compare);
         return negate ? where.not() : where;
     }
@@ -93,7 +94,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException {
+    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException, SQLHandledException {
 
         if(!resolveAdd)
             return;

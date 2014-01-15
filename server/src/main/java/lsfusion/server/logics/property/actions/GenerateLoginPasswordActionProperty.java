@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.AuthenticationLogicsModule;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.linear.LCP;
@@ -40,7 +41,7 @@ public class GenerateLoginPasswordActionProperty extends ScriptingActionProperty
         customUserInterface = i.next();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject userObject = context.getDataKeyValue(customUserInterface);
 
         String currentEmail = (String) email.read(context, userObject);

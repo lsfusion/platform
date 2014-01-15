@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.AsyncGetRemoteChangesClientAction;
 import lsfusion.interop.action.UpdateEditValueClientAction;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -27,7 +28,7 @@ public class AsyncUpdateEditValueActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         Object updatedValue = context.getSingleKeyObject();
         try {
             context.delayUserInteraction(new UpdateEditValueClientAction(serializeObject(updatedValue)));

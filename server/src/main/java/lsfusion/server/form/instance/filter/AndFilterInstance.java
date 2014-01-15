@@ -1,6 +1,7 @@
 package lsfusion.server.form.instance.filter;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.instance.FormInstance;
@@ -19,11 +20,11 @@ public class AndFilterInstance extends OpFilterInstance {
         super(op1, op2);
     }
 
-    protected AndFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException {
+    protected AndFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         super(inStream, form);
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) {
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         return op1.getWhere(mapKeys, modifier, reallyChanged).and(op2.getWhere(mapKeys, modifier, reallyChanged));
     }
 

@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.CustomClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataSession;
@@ -66,7 +67,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         return type == ChangeFlowType.NEWSESSION || (!(type == ChangeFlowType.APPLY || type == ChangeFlowType.CANCEL) && super.hasFlow(type));
     }
 
-    protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException {
+    protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
         if (doApply) {
             innerContext.apply();
         }

@@ -13,6 +13,7 @@ import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.FileClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.FormInstance;
@@ -60,7 +61,7 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
     }
 
     @Override
-    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         ImMap<ClassPropertyInterface,DataObject> keys = context.getDataKeys();
         Modifier modifier = context.getModifier();

@@ -2,8 +2,8 @@ package lsfusion.server.logics.service;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -19,19 +19,13 @@ public class PackActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        SQLSession sqlSession = context.getSession().sql;
-
-        BusinessLogics BL = context.getBL();
-
-        try {
-            sqlSession.startTransaction();
-            context.getDbManager().packTables(sqlSession, BL.LM.tableFactory.getImplementTables());
-            sqlSession.commitTransaction();
-        } catch (SQLException e) {
-            sqlSession.rollbackTransaction();
-        }
-
+    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        
+        ServiceDBActionProperty.run(context, new RunService() {
+            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+                context.getDbManager().packTables(session, context.getBL().LM.tableFactory.getImplementTables(), isolatedTransaction);
+            }
+        });
         context.delayUserInterfaction(new MessageClientAction(getString("logics.tables.packing.completed"), getString("logics.tables.packing")));
     }
 

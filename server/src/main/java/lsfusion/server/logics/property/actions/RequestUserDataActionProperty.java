@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.DataClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
@@ -33,7 +34,7 @@ public class RequestUserDataActionProperty extends SystemExplicitActionProperty 
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         //todo: init oldValue
         ObjectValue userValue = context.requestUserData(dataClass, null);
         if (userValue == null) {

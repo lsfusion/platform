@@ -13,6 +13,7 @@ import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.ModifyQuery;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -43,21 +44,24 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     // проверяет аггрегацию для отладки
     @ThisMessage
     @Message("logics.info.checking.aggregated.property")
-    public String checkAggregation(SQLSession session) throws SQLException {
+    public String checkAggregation(SQLSession session) throws SQLException, SQLHandledException {
         session.pushVolatileStats(null);
+        
+        try {
+    
+            String message = "";
+    
+            ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = getRecalculateQuery(true).execute(session);
+            if(checkResult.size() > 0) {
+                message += "---- Checking Aggregations : " + this + "-----" + '\n';
+                for(int i=0,size=checkResult.size();i<size;i++)
+                    message += "Keys : " + checkResult.getKey(i) + " : " + checkResult.getValue(i) + '\n';
+            }
 
-        String message = "";
-
-        ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = getRecalculateQuery(true).execute(session);
-        if(checkResult.size() > 0) {
-            message += "---- Checking Aggregations : " + this + "-----" + '\n';
-            for(int i=0,size=checkResult.size();i<size;i++)
-                message += "Keys : " + checkResult.getKey(i) + " : " + checkResult.getValue(i) + '\n';
+            return message;
+        } finally {
+            session.popVolatileStats(null);
         }
-
-        session.popVolatileStats(null);
-
-        return message;
     }
 
     public Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement) {
@@ -89,11 +93,14 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
     @Message("logics.info.recalculation.of.aggregated.property")
     @ThisMessage
-    public void recalculateAggregation(SQLSession session) throws SQLException {
+    public void recalculateAggregation(SQLSession session) throws SQLException, SQLHandledException {
         session.pushVolatileStats(null);
-        session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false).map(
-                mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue"))));
-        session.popVolatileStats(null);
+        try {
+            session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false).map(
+                    mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue"))));
+        } finally {
+            session.popVolatileStats(null);
+        }
     }
 
     @IdentityLazy

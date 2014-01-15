@@ -83,7 +83,7 @@ public class Settings {
 
     private boolean disablePoolConnections = false;
 
-    private boolean disablePoolPreparedStatements = true;
+    private boolean disablePoolPreparedStatements = false;
 
     private boolean disableWhenCalcDo = true;
 
@@ -884,5 +884,45 @@ public class Settings {
                 }
             }
         }
+    }
+    
+    private int queryLengthTimeout = 200; // после какой длины запроса использовать timeout'ы
+
+    public int getQueryLengthTimeout() {
+        return queryLengthTimeout;
+    }
+
+    public void setQueryLengthTimeout(int queryLengthTimeout) {
+        this.queryLengthTimeout = queryLengthTimeout;
+    }
+    
+    private int timeoutDegree = 10; // cтепень с которой растить timeout
+
+    public int getTimeoutDegree() {
+        return timeoutDegree;
+    }
+
+    public void setTimeoutDegree(int timeoutDegree) {
+        this.timeoutDegree = timeoutDegree;
+    }
+    
+    private int timeoutStart = 3; // со скольки секунд начинать timeout
+
+    public int getTimeoutStart() {
+        return timeoutStart;
+    }
+
+    public void setTimeoutStart(int timeoutStart) {
+        this.timeoutStart = timeoutStart;
+    }
+    
+    private int applyAutoAttemptCountLimit = 3; // количество попыток провести транзакцию, при отсутствии взаимодействия с пользователем
+
+    public int getApplyAutoAttemptCountLimit() {
+        return applyAutoAttemptCountLimit;
+    }
+
+    public void setApplyAutoAttemptCountLimit(int applyAutoAttemptCountLimit) {
+        this.applyAutoAttemptCountLimit = applyAutoAttemptCountLimit;
     }
 }

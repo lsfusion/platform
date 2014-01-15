@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.interop.action.ConfirmClientAction;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -19,7 +20,7 @@ public class ConfirmActionProperty extends MessageActionProperty {
     }
 
     @Override
-    protected void showMessage(ExecutionContext<PropertyInterface> context, Object msgValue) throws SQLException {
+    protected void showMessage(ExecutionContext<PropertyInterface> context, Object msgValue) throws SQLException, SQLHandledException {
         int result = (Integer)context.requestUserInteraction(
                 new ConfirmClientAction(toCaption(title), String.valueOf(msgValue))
         );

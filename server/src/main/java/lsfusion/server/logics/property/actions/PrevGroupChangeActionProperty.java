@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
@@ -116,7 +117,7 @@ public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends 
         return mResult.immutableRev();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ImRevMap<P, KeyExpr> mainKeys = KeyExpr.getMapKeys(mainProperty.interfaces);
 
         ImRevMap<P, PropertyObjectInterfaceInstance> mainMapObjects = getMapObjectsForMainProperty(context.getObjectInstances());
@@ -140,7 +141,7 @@ public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends 
         executeAction(context, mainProperty, mainKeys, mainMapObjects, changeWhere);
     }
 
-    private static <P extends PropertyInterface> void executeAction(ExecutionContext<ClassPropertyInterface> context, ActionProperty<P> property, ImRevMap<P, KeyExpr> keys, ImMap<P, PropertyObjectInterfaceInstance> objects, Where where) throws SQLException {
+    private static <P extends PropertyInterface> void executeAction(ExecutionContext<ClassPropertyInterface> context, ActionProperty<P> property, ImRevMap<P, KeyExpr> keys, ImMap<P, PropertyObjectInterfaceInstance> objects, Where where) throws SQLException, SQLHandledException {
         context.getEnv().execute(property, new PropertySet<P>(keys, where, MapFact.<Expr, Boolean>EMPTYORDER(), false),
                                     new FormEnvironment<P>(objects, context.getForm().getChangingDrawInstance()));
     }

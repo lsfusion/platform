@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
@@ -16,7 +17,7 @@ public abstract class DialogRequestAdapter implements DialogRequest {
         return dialogObjectInstance.getObjectValue();
     }
 
-    public final FormInstance createDialog() throws SQLException {
+    public final FormInstance createDialog() throws SQLException, SQLHandledException {
         FormInstance result = doCreateDialog();
         if (result != null) {
             dialogObjectInstance = result.instanceFactory.getInstance(dialogObject);
@@ -24,5 +25,5 @@ public abstract class DialogRequestAdapter implements DialogRequest {
         return result;
     }
 
-    protected abstract FormInstance doCreateDialog() throws SQLException;
+    protected abstract FormInstance doCreateDialog() throws SQLException, SQLHandledException;
 }

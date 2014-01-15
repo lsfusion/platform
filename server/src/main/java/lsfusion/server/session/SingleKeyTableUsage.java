@@ -5,6 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.Modify;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.Join;
@@ -28,7 +29,7 @@ public class SingleKeyTableUsage<P> extends SessionTableUsage<String, P> {
         return join(MapFact.singleton("key", key));
     }
 
-    public void modifyRecord(SQLSession session, DataObject key, ImMap<P, ObjectValue> propertyValues, Modify type) throws SQLException {
+    public void modifyRecord(SQLSession session, DataObject key, ImMap<P, ObjectValue> propertyValues, Modify type) throws SQLException, SQLHandledException {
         modifyRecord(session, MapFact.singleton("key", key), propertyValues, type);
     }
 

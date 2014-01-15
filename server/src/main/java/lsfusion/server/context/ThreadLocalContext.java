@@ -6,6 +6,7 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
@@ -20,6 +21,7 @@ import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class ThreadLocalContext {
     private static final ThreadLocal<Context> context = new ThreadLocal<Context>();
@@ -68,7 +70,7 @@ public class ThreadLocalContext {
         return get().getFormInstance();
     }
 
-    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException {
+    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
         return get().createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
     }
 
@@ -76,7 +78,7 @@ public class ThreadLocalContext {
         return get().createRemoteForm(formInstance);
     }
 
-    public static ObjectValue requestUserObject(DialogRequest dialogRequest) throws SQLException {
+    public static ObjectValue requestUserObject(DialogRequest dialogRequest) throws SQLException, SQLHandledException {
         return get().requestUserObject(dialogRequest);
     }
 
@@ -98,6 +100,10 @@ public class ThreadLocalContext {
 
     public static Object requestUserInteraction(ClientAction action) {
         return get().requestUserInteraction(action);
+    }
+
+    public static ScheduledExecutorService getExecutorService() {
+        return get().getExecutorService();
     }
 
     public static Object[] requestUserInteraction(ClientAction... actions) {

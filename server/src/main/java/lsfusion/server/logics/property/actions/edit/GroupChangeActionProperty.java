@@ -5,6 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.form.instance.GroupObjectInstance;
@@ -24,16 +25,18 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
 
     public <I extends PropertyInterface> GroupChangeActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> changeAction) {
         super(sID, caption, innerInterfaces, changeAction);
+        
+        finalizeInit();
     }
 
-    private ImOrderSet<ImMap<ObjectInstance, DataObject>> getObjectGroupKeys(ExecutionContext context) throws SQLException {
+    private ImOrderSet<ImMap<ObjectInstance, DataObject>> getObjectGroupKeys(ExecutionContext context) throws SQLException, SQLHandledException {
         GroupObjectInstance groupObject = context.getChangingPropertyToDraw();
         ImRevMap<ObjectInstance, KeyExpr> groupKeys = groupObject.getMapKeys();
         return new Query<ObjectInstance, Object>(groupKeys, groupObject.getWhere(groupKeys, context.getModifier())).executeClasses(context).keyOrderSet();
     }
 
     @Override
-    protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException {
+    protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ImOrderSet<ImMap<ObjectInstance, DataObject>> groupKeys = getObjectGroupKeys(context); // читаем вначале, чтобы избежать эффекта последействия и влияния его на хинты
 
         FlowResult flowResult = proceed(context);// вызываем CHANGE (для текущего)

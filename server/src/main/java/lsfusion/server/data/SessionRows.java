@@ -105,7 +105,7 @@ public class SessionRows extends SessionData<SessionRows> {
         return keys.equals(((SessionRows)obj).keys) && properties.equals(((SessionRows)obj).properties) && rows.equals(((SessionRows)obj).rows);
     }
 
-    public SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, Result<Boolean> changed) throws SQLException {
+    public SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, Result<Boolean> changed) throws SQLException, SQLHandledException {
 
         if(type==Modify.DELETE)
             return new SessionRows(keys, properties, rows.remove(keyFields));
@@ -188,7 +188,7 @@ public class SessionRows extends SessionData<SessionRows> {
         return this;
     }
 
-    public SessionRows updateCurrentClasses(final DataSession session) throws SQLException {
+    public SessionRows updateCurrentClasses(final DataSession session) throws SQLException, SQLHandledException {
         MExclMap<ImMap<KeyField, DataObject>,ImMap<PropertyField, ObjectValue>> mUpdatedRows = MapFact.mExclMap(rows.size());// exception кидается
         for(int i=0,size=rows.size();i<size;i++)
             mUpdatedRows.exclAdd(session.updateCurrentClasses(rows.getKey(i)), session.updateCurrentClasses(rows.getValue(i)));

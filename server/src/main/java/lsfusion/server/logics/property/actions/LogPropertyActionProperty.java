@@ -3,10 +3,16 @@ package lsfusion.server.logics.property.actions;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.interop.ModalityType;
+import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
+import lsfusion.interop.action.ReportClientAction;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyFormEntity;
 import lsfusion.server.form.instance.*;
@@ -16,6 +22,7 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -39,15 +46,32 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
         return true;
     }
 
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         DataSession session = context.getSession();
-        List<List<String>> data = new ArrayList<List<String>>();
-        FormInstance formInstance = context.createFormInstance(new PropertyFormEntity(property, recognizeGroup),
-                MapFact.<ObjectEntity, DataObject>EMPTY(), session, false, FormSessionScope.OLDSESSION, false, false, false, null);
+        PropertyFormEntity form = new PropertyFormEntity(property, recognizeGroup);
+        FormInstance<?> formInstance = context.createFormInstance(form, MapFact.<ObjectEntity, DataObject>EMPTY(), session, false, FormSessionScope.OLDSESSION, false, false, false, null);
 
         List<String> titleRow = new ArrayList<String>();
-        for (FormRow formRow : formInstance.getFormData(30).rows) {
+        List<List<String>> data = new ArrayList<List<String>>();
+        ImOrderSet<FormRow> formRows = formInstance.getFormData(30).rows;
+        for(int i=0;i<formRows.size();i++)
+            data.add(new ArrayList<String>());
+        
+        for(ObjectInstance object : formInstance.getObjects()) {
+            titleRow.add(object.getCaption());
+            
+            for(int j=0;j<formRows.size();j++)
+                data.get(j).add(String.valueOf(formRows.get(j).keys.get(object)));
+        }
+        
+        for(PropertyDrawInstance property : formInstance.getCalcProperties()) {
+            titleRow.add(property.toString());
+
+            for(int j=0;j<formRows.size();j++)
+                data.get(j).add(BaseUtils.toCaption(formRows.get(j).values.get(property)));
+        }
+/*        for (FormRow formRow : formRows) {
             ImMap<ImSet<ObjectInstance>, ImSet<PropertyDrawInstance>> groupRows = formRow.values.keys().group(new BaseUtils.Group<ImSet<ObjectInstance>, PropertyDrawInstance>() {
                 public ImSet<ObjectInstance> group(PropertyDrawInstance property) { // группируем по объектам
                     return property.propertyObject.mapping.values().toSet();
@@ -73,8 +97,12 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
                 }
                 data.add(propertyRow);
             }
-        }
-        context.delayUserInteraction(new LogMessageClientAction(property.toString(), titleRow, data, true));
+        }*/
+        context.delayUserInteraction(new LogMessageClientAction(property.toString() + " :", titleRow, data, true));
+
+        // todo : почему-то виснет
+//        RemoteForm newRemoteForm = context.createRemoteForm(formInstance);
+//        context.requestUserInteraction(new FormClientAction(form.getSID(), newRemoteForm, ModalityType.MODAL));
 
         formInstance.close();
     }

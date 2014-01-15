@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.CustomClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -89,7 +90,7 @@ public class IfActionProperty extends KeepContextActionProperty {
     }
 
     @Override
-    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         if (readIf(context)) {
             if (trueAction != null) {
                 return trueAction.execute(context);
@@ -102,7 +103,7 @@ public class IfActionProperty extends KeepContextActionProperty {
         return FlowResult.FINISH;
     }
 
-    private boolean readIf(ExecutionContext<PropertyInterface> context) throws SQLException {
+    private boolean readIf(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         return ifProp.read(context, context.getKeys()) != null;
     }
 

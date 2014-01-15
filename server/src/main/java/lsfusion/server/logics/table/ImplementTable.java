@@ -74,7 +74,7 @@ public class ImplementTable extends GlobalTable {
         return changesQuery.getQuery();
     }
 
-    public void moveColumn(SQLSession sql, PropertyField field, Table prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws SQLException {
+    public void moveColumn(SQLSession sql, PropertyField field, Table prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> moveColumn = new QueryBuilder<KeyField, PropertyField>(this);
         Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);
         moveColumn.addProperty(field, moveExpr);
@@ -217,7 +217,7 @@ public class ImplementTable extends GlobalTable {
             return SerializedTable.getStatProps(this);
     }
 
-    public Object readCount(DataSession session, Where where) throws SQLException {
+    public Object readCount(DataSession session, Where where) throws SQLException, SQLHandledException {
         QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(SetFact.EMPTY());
         ValueExpr one = new ValueExpr(1, IntegerClass.instance);
         query.addProperty("count", GroupExpr.create(MapFact.<Integer, Expr>EMPTY(), one,
@@ -225,7 +225,7 @@ public class ImplementTable extends GlobalTable {
         return query.execute(session).singleValue().singleValue();
     }
 
-    public void calculateStat(ReflectionLogicsModule reflectionLM, DataSession session) throws SQLException {
+    public void calculateStat(ReflectionLogicsModule reflectionLM, DataSession session) throws SQLException, SQLHandledException {
         if (!SystemProperties.doNotCalculateStats) {
             ValueExpr one = new ValueExpr(1, IntegerClass.instance);
 

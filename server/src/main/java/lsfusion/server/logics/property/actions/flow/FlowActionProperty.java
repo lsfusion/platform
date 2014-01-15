@@ -6,6 +6,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
 
@@ -22,9 +23,9 @@ public abstract class FlowActionProperty extends ActionProperty<PropertyInterfac
     }
 
     @Override
-    public abstract FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException;
+    public abstract FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException;
 
-    public static <P extends PropertyInterface, M extends  PropertyInterface> FlowResult execute(ExecutionContext<PropertyInterface> context, ActionPropertyMapImplement<P, M> implement, ImMap<M, ? extends ObjectValue> keys, ImRevMap<PropertyInterface, M> mapInterfaces) throws SQLException {
+    public static <P extends PropertyInterface, M extends  PropertyInterface> FlowResult execute(ExecutionContext<PropertyInterface> context, ActionPropertyMapImplement<P, M> implement, ImMap<M, ? extends ObjectValue> keys, ImRevMap<PropertyInterface, M> mapInterfaces) throws SQLException, SQLHandledException {
         return implement.property.execute(context.override(implement.mapping.join(keys),
                 BaseUtils.<ImMap<P, CalcPropertyInterfaceImplement<PropertyInterface>>>immutableCast(MapFact.innerCrossValues(implement.mapping, mapInterfaces))));
     }

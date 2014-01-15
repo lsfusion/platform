@@ -7,6 +7,7 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.data.Modify;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -53,14 +54,14 @@ public class ClassChange extends ImmutableObject {
         this.propValue = null;
     }
 
-    public ModifyResult modifyRows(SingleKeyPropertyUsage table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv) throws SQLException {
+    public ModifyResult modifyRows(SingleKeyPropertyUsage table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
         if(keyValue !=null)
             return table.modifyRecord(session, keyValue, propValue, type);
         else
             return table.modifyRows(session, getQuery(), baseClass, type, queryEnv);
     }
     
-    public boolean containsObject(SQLSession sql, DataObject object, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException {
+    public boolean containsObject(SQLSession sql, DataObject object, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
         if(keyValue != null)
             return keyValue.equals(object);
         
@@ -90,7 +91,7 @@ public class ClassChange extends ImmutableObject {
         return usage.table.used(getQuery());
     }
 
-    public SingleKeyPropertyUsage materialize(SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+    public SingleKeyPropertyUsage materialize(SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         SingleKeyPropertyUsage changedClasses = new SingleKeyPropertyUsage(ObjectType.instance, ObjectType.instance);
         changedClasses.writeRows(sql, getQuery(), baseClass, env);
         return changedClasses;

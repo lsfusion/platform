@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.server.classes.*;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
@@ -109,11 +110,11 @@ public class AnyValuePropertyHolder {
         }
     }
         
-    public void write(Type valueType, ObjectValue value, ExecutionContext context, DataObject... keys) throws SQLException {
+    public void write(Type valueType, ObjectValue value, ExecutionContext context, DataObject... keys) throws SQLException, SQLHandledException {
         getLCP(valueType).change(value, context, keys);
     }
 
-    public ObjectValue read(Type valueType, ExecutionContext context, DataObject... keys) throws SQLException {
+    public ObjectValue read(Type valueType, ExecutionContext context, DataObject... keys) throws SQLException, SQLHandledException {
         return getLCP(valueType).readClasses(context, keys);
     }
 }

@@ -2,8 +2,8 @@ package lsfusion.server.logics.service;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -19,18 +19,12 @@ public class RecalculateActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        BusinessLogics BL = context.getBL();
-        SQLSession sqlSession = context.getSession().sql;
-
-        try {
-            sqlSession.startTransaction();
-            context.getDbManager().recalculateAggregations(sqlSession);
-            sqlSession.commitTransaction();
-        } catch (SQLException e){
-            sqlSession.rollbackTransaction();
-        }
+        ServiceDBActionProperty.run(context, new RunService() {
+            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+                context.getDbManager().recalculateAggregations(session, isolatedTransaction);
+            }});
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
     }

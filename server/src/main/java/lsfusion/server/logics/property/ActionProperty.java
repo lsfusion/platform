@@ -8,12 +8,12 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
@@ -29,7 +29,6 @@ import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
-import java.util.Set;
 
 public abstract class ActionProperty<P extends PropertyInterface> extends Property<P> {
 
@@ -246,7 +245,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         events = ((MMap<BaseEvent, SessionEnvEvent>)events).immutable();
     }
 
-    public FlowResult execute(ExecutionContext<P> context) throws SQLException {
+    public FlowResult execute(ExecutionContext<P> context) throws SQLException, SQLHandledException {
         for(ActionPropertyMapImplement<?, P> aspect : getBeforeAspects()) {
             FlowResult beforeResult = aspect.execute(context);
             if(beforeResult != FlowResult.FINISH)
@@ -271,18 +270,18 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         getInterfaceClasses(ClassType.FULL);
     }
 
-    protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException;
+    protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException, SQLHandledException;
 
     public ActionPropertyMapImplement<P, P> getImplement() {
         return new ActionPropertyMapImplement<P, P>(this, getIdentityInterfaces());
     }
 
-    public void execute(ExecutionEnvironment env) throws SQLException {
+    public void execute(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         assert interfaces.size()==0;
         execute(MapFact.<P, DataObject>EMPTY(), env, null);
     }
 
-    public void execute(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env, FormEnvironment<P> formEnv) throws SQLException {
+    public void execute(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env, FormEnvironment<P> formEnv) throws SQLException, SQLHandledException {
         env.execute(this, keys, formEnv, null, null);
     }
 

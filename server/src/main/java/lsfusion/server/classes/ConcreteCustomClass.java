@@ -15,6 +15,7 @@ import lsfusion.server.classes.sets.ObjectClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.UpClassSet;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.StaticValueExpr;
@@ -190,7 +191,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return names;
     }
 
-    public Map<DataObject, String> fillIDs(DataSession session, LCP name, LCP staticName, Map<String, ConcreteCustomClass> usedSIds, Set<Integer> usedIds, Map<String, String> sidChanges, Map<DataObject, String> modifiedObjects) throws SQLException {
+    public Map<DataObject, String> fillIDs(DataSession session, LCP name, LCP staticName, Map<String, ConcreteCustomClass> usedSIds, Set<Integer> usedIds, Map<String, String> sidChanges, Map<DataObject, String> modifiedObjects) throws SQLException, SQLHandledException {
         Map<DataObject, String> modifiedNames = new HashMap<DataObject, String>();
 
         // Получаем старые sid и name
@@ -268,7 +269,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public ClassDataProperty dataProperty;
-    public Integer readData(Integer data, SQLSession sql) throws SQLException {
+    public Integer readData(Integer data, SQLSession sql) throws SQLException, SQLHandledException {
         return (Integer) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), Property.defaultModifier, QueryEnvironment.empty);
     }
 

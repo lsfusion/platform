@@ -17,6 +17,7 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.MaxFormulaImpl;
@@ -217,7 +218,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
                          }}), true)).getWhere()).compile(PostgreDataAdapter.debugSyntax);
     }
 
-    public static <K> ImMap<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, ImMap<K,Expr> mapExprs, QueryEnvironment env) throws SQLException { // assert что в mapExprs только values
+    public static <K> ImMap<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, ImMap<K,Expr> mapExprs, QueryEnvironment env) throws SQLException, SQLHandledException { // assert что в mapExprs только values
         MExclMap<K, ObjectValue> mMapValues = MapFact.<K, ObjectValue>mExclMap(mapExprs.size());
         MExclMap<K, Expr> mMapExprValues = MapFact.<K, Expr>mExclMap(mapExprs.size());
         for(int i=0,size=mapExprs.size();i<size;i++) {

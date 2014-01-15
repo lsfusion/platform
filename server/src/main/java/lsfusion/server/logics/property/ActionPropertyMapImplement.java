@@ -2,6 +2,7 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.LogicsModule;
@@ -48,7 +49,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return new LAP<P>(property, listInterfaces.mapOrder(mapping.reverse()));
     }
 
-    public FlowResult execute(ExecutionContext<T> context) throws SQLException {
+    public FlowResult execute(ExecutionContext<T> context) throws SQLException, SQLHandledException {
         return property.execute(context.map(mapping));
     }
 

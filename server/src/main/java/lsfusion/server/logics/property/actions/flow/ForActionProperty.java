@@ -7,11 +7,13 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
@@ -88,7 +90,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     }
 
     @Override
-    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
+    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
         FlowResult result = FlowResult.FINISH;
 
         boolean execElse = elseAction != null;
@@ -128,17 +130,18 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         return result;
     }
 
-    private ImOrderSet<ImMap<I, DataObject>> readRows(final ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends Expr> innerExprs) throws SQLException {
+    private ImOrderSet<ImMap<I, DataObject>> readRows(final ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends Expr> innerExprs) throws SQLException, SQLHandledException {
         if(ifProp == null)
             return SetFact.singletonOrder(MapFact.<I, DataObject>EMPTY());
             
         Where where = ifProp.mapExpr(innerExprs, context.getModifier()).getWhere();
 
         final ImMap<I, ? extends Expr> fInnerExprs = PropertyChange.simplifyExprs(innerExprs, where);
-        ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeys(new GetValue<Expr, CalcPropertyInterfaceImplement<I>>() {
-            public Expr getMapValue(CalcPropertyInterfaceImplement<I> value) {
+        ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx(new GetExValue<Expr, CalcPropertyInterfaceImplement<I>, SQLException, SQLHandledException>() {
+            public Expr getMapValue(CalcPropertyInterfaceImplement<I> value) throws SQLException, SQLHandledException {
                 return value.mapExpr(fInnerExprs, context.getModifier());
-            }});
+            }
+        });
 
         return new PropertySet<I>(innerKeys, where, orderExprs, ordersNotNull).executeClasses(context.getEnv());
     }

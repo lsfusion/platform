@@ -12,6 +12,7 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -202,7 +203,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return mapValues.translate(getExpr()).getDataObject();
     }
 
-    public DataObject refresh(SessionChanges session, ValueClass upClass) throws SQLException {
+    public DataObject refresh(SessionChanges session, ValueClass upClass) throws SQLException, SQLHandledException {
         return session.getDataObject(upClass, object);
     }
 

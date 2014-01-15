@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
@@ -109,7 +110,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
                  valueClass instanceof ConcreteCustomClass && ((ConcreteCustomClass)valueClass).hasChildren());
      }
 
-    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
+    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
         ConcreteObjectClass readClass;
 
         if (needDialog()) {

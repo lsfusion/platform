@@ -1,5 +1,7 @@
 package lsfusion.server.logics.table;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -14,8 +16,10 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.SystemClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.PropertyField;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.StructTable;
+import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 
@@ -100,10 +104,10 @@ public class TableFactory {
     }
 
 
-    public void fillDB(SQLSession sql, BaseClass baseClass) throws SQLException {
+    public void fillDB(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
 
         try {
-            sql.startTransaction();
+            sql.startTransaction(DBManager.START_TIL);
 
             sql.ensureTable(IDTable.instance);
             sql.ensureTable(StructTable.instance);
@@ -119,8 +123,9 @@ public class TableFactory {
             sql.ensureTable(EmptyTable.instance);
 
             sql.commitTransaction();
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             sql.rollbackTransaction();
+            throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
         }
     }
 

@@ -4,6 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.KeyStrokes;
@@ -11,6 +12,7 @@ import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ObjectClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
@@ -106,44 +108,51 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         } else
             readClass = valueClass;
 
-        executeRead(context, innerKeys, innerExprs, (ConcreteCustomClass) readClass);
+        try {
+            executeRead(context, innerKeys, innerExprs, (ConcreteCustomClass) readClass);
+        } catch (SQLHandledException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
 
         return FlowResult.FINISH;
     }
 
-    protected void executeRead(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, Expr> innerExprs, ConcreteCustomClass readClass) throws SQLException {
+    protected void executeRead(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, Expr> innerExprs, ConcreteCustomClass readClass) throws SQLException, SQLHandledException {
         SinglePropertyTableUsage<I> addedTable = null;
-        PropertyChange<I> resultChange;
-        if(where==null) // оптимизация, один объект добавляем
-            resultChange = new PropertyChange<I>(context.addObject(readClass));
-        else {
-            if(result!=null)
-                context.getSession().dropChanges((DataProperty) result.property);
-
-            final Modifier modifier = context.getModifier();
-            Where exprWhere = where.mapExpr(innerExprs, modifier).getWhere();
-            if(exprWhere.isFalse()) // оптимизация, важна так как во многих event'ах может учавствовать
-                return;
-
-            final ImMap<I, ? extends Expr> fInnerExprs = PropertyChange.simplifyExprs(innerExprs, exprWhere);
-            ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeys(new GetValue<Expr, CalcPropertyInterfaceImplement<I>>() {
-                public Expr getMapValue(CalcPropertyInterfaceImplement<I> value) {
-                    return value.mapExpr(fInnerExprs, modifier);
-                }});
-
-            addedTable = context.addObjects(readClass, new PropertySet<I>(innerKeys, exprWhere, orderExprs, ordersNotNull));
-            resultChange = SinglePropertyTableUsage.getChange(addedTable);
+        try {
+            PropertyChange<I> resultChange;
+            if(where==null) // оптимизация, один объект добавляем
+                resultChange = new PropertyChange<I>(context.addObject(readClass));
+            else {
+                if(result!=null)
+                    context.getSession().dropChanges((DataProperty) result.property);
+    
+                final Modifier modifier = context.getModifier();
+                Where exprWhere = where.mapExpr(innerExprs, modifier).getWhere();
+                if(exprWhere.isFalse()) // оптимизация, важна так как во многих event'ах может учавствовать
+                    return;
+    
+                final ImMap<I, ? extends Expr> fInnerExprs = PropertyChange.simplifyExprs(innerExprs, exprWhere);
+                ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx(new GetExValue<Expr, CalcPropertyInterfaceImplement<I>, SQLException, SQLHandledException>() {
+                    public Expr getMapValue(CalcPropertyInterfaceImplement<I> value) throws SQLException, SQLHandledException {
+                        return value.mapExpr(fInnerExprs, modifier);
+                    }
+                });
+    
+                addedTable = context.addObjects(readClass, new PropertySet<I>(innerKeys, exprWhere, orderExprs, ordersNotNull));
+                resultChange = SinglePropertyTableUsage.getChange(addedTable);
+            }
+    
+            if(result != null)
+                result.change(context.getEnv(), resultChange);
+        } finally {
+            if(addedTable!=null)
+                addedTable.drop(context.getSession().sql);
         }
-
-        if(result != null)
-            result.change(context.getEnv(), resultChange);
-
-        if(addedTable!=null)
-            addedTable.drop(context.getSession().sql);
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<PropertyInterface> entity, FormEntity<?> form) {
+    public void proceedDefaultDraw(PropertyDrawEntity <PropertyInterface> entity, FormEntity<?> form) {
         super.proceedDefaultDraw(entity, form);
         entity.setDrawToToolbar(true);
         entity.shouldBeLast = true;

@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -43,7 +44,7 @@ public interface Type<T> extends ClassReader<T> {
 
     Type getCompatible(Type type);
 
-    ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException;
+    ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException, SQLHandledException;
 
     ImList<AndClassSet> getUniversal(BaseClass baseClass);
 

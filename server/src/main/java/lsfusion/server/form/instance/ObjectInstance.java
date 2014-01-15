@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ObjectEntity;
@@ -64,7 +65,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract ValueClass getGridClass();
 
-    public abstract void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException;
+    public abstract void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException, SQLHandledException;
 
     public abstract boolean classChanged(ChangedData changedProps);
 

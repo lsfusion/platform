@@ -2,6 +2,7 @@ package lsfusion.server.mail;
 
 import jasperapi.ReportGenerator;
 import jasperapi.ReportHTMLExporter;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.NullValue;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
@@ -111,7 +112,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         attachmentProps.add(attachmentNameProp);
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         EmailLogicsModule emailLM = context.getBL().emailLM;
         try {
             if (emailLM.disableAccount.read(context) != null) {
@@ -197,7 +198,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         sender.sendMail(subject, inlineForms, attachments, attachmentFiles);
     }
 
-    private Map<String, Message.RecipientType> getRecipientEmails(ExecutionContext context) throws SQLException {
+    private Map<String, Message.RecipientType> getRecipientEmails(ExecutionContext context) throws SQLException, SQLHandledException {
         assert recipients.size() == recipientTypes.size();
 
         Map<String, Message.RecipientType> recipientEmails = new HashMap<String, Message.RecipientType>();
@@ -224,7 +225,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         return recipientEmails;
     }
 
-    private EmailSender.AttachmentProperties createAttachment(FormEntity form, AttachmentFormat attachmentFormat, CalcPropertyInterfaceImplement attachmentNameProp, ExecutionContext context, String filePath) throws SQLException {
+    private EmailSender.AttachmentProperties createAttachment(FormEntity form, AttachmentFormat attachmentFormat, CalcPropertyInterfaceImplement attachmentNameProp, ExecutionContext context, String filePath) throws SQLException, SQLHandledException {
         assert attachmentFormat != null;
 
         String attachmentName = null;
@@ -242,7 +243,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         return new EmailSender.AttachmentProperties(filePath, attachmentName, attachmentFormat);
     }
 
-    private RemoteForm createReportForm(ExecutionContext context, FormEntity form, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements) throws SQLException {
+    private RemoteForm createReportForm(ExecutionContext context, FormEntity form, Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements) throws SQLException, SQLHandledException {
         Map<ObjectEntity, ObjectValue> objectValues = new HashMap<ObjectEntity, ObjectValue>();
         for (Map.Entry<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectImpl : objectsImplements.entrySet())
             objectValues.put(objectImpl.getKey(), objectImpl.getValue().readClasses(context, context.getKeys()));

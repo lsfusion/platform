@@ -6,10 +6,7 @@ import lsfusion.server.Message;
 import lsfusion.server.ParamMessage;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.data.KeyField;
-import lsfusion.server.data.ModifyQuery;
-import lsfusion.server.data.PropertyField;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Query;
@@ -45,7 +42,7 @@ public class StoredDataProperty extends DataProperty {
 
 
     @Message("logics.recalculating.data.classes")
-    public void recalculateClasses(SQLSession sql, BaseClass baseClass) throws SQLException {
+    public void recalculateClasses(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
         ImRevMap<KeyField, KeyExpr> mapKeys = mapTable.table.getMapKeys();
         Where where = DataSession.getIncorrectWhere(this, baseClass, mapTable.mapKeys.join(mapKeys));
         Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(mapKeys, Expr.NULL, field, where);

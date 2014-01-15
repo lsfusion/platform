@@ -8,6 +8,7 @@ import lsfusion.server.Message;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
@@ -58,11 +59,11 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
         });
     }
 
-    public Expr getExpr(ImMap<ImportField, ? extends Expr> importKeys, Modifier modifier) {
+    public Expr getExpr(ImMap<ImportField, ? extends Expr> importKeys, Modifier modifier) throws SQLException, SQLHandledException {
         return implement.property.getExpr(getImplementExprs(importKeys), modifier);
     }
 
-    public Expr getExpr(ImMap<ImportField, ? extends Expr> importKeys, ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier modifier) {
+    public Expr getExpr(ImMap<ImportField, ? extends Expr> importKeys, ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier modifier) throws SQLException, SQLHandledException {
         ImMap<P, Expr> implementExprs = getImplementExprs(importKeys);
 
         Expr expr = implement.property.getExpr(implementExprs, modifier);
@@ -93,7 +94,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
     // не будет виден CGProp, который тут неявно assert'ися но это и не важно
     @Message("message.synchronize.key")
     @ThisMessage
-    public SinglePropertyTableUsage<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable) throws SQLException {
+    public SinglePropertyTableUsage<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable) throws SQLException, SQLHandledException {
 
         ImRevMap<P, KeyExpr> mapKeys = implement.property.getMapKeys();
         Where where = GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), Where.TRUE, mapKeys).getWhere().and( // в импортируемой таблице
@@ -103,7 +104,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
     }
 
     @Override
-    public Expr getDeleteExpr(SessionTableUsage<String, ImportField> importTable, KeyExpr intraKeyExpr, Modifier modifier) {
+    public Expr getDeleteExpr(SessionTableUsage<String, ImportField> importTable, KeyExpr intraKeyExpr, Modifier modifier) throws SQLException, SQLHandledException {
         ImMap<ImportField, Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
         Expr interfaceKeyExpr = getExpr(importExprs, modifier);
         return GroupExpr.create(MapFact.singleton("key", interfaceKeyExpr),

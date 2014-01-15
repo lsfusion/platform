@@ -1,5 +1,6 @@
 package lsfusion.server.data.type;
 
+import lsfusion.server.data.SQLHandledException;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import lsfusion.base.ExtInt;
 import lsfusion.base.col.MapFact;
@@ -85,7 +86,7 @@ public class ObjectType extends AbstractType<Integer> {
         return true;
     }
 
-    public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException {
+    public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException, SQLHandledException {
         ObjectValueClassSet objectClassSet = (ObjectValueClassSet)classSet.getValueClassSet(); // unknown не интересуют
         if(objectClassSet.isEmpty())
             return baseClass.unknown;

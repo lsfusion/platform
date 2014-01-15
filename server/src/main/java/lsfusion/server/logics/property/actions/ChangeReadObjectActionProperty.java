@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.interop.ClassViewType;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.CalcProperty;
@@ -25,7 +26,7 @@ public class ChangeReadObjectActionProperty extends SystemExplicitActionProperty
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         final FormInstance<?> formInstance = context.getFormInstance();
         PropertyObjectInterfaceInstance singleObjectInstance = context.getSingleObjectInstance();

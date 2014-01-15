@@ -326,7 +326,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public int execute(ConfirmClientAction action) {
-        return SwingUtils.showConfirmDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.QUESTION_MESSAGE);
+        return SwingUtils.showConfirmDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.QUESTION_MESSAGE, action.cancel);
     }
 
     public class ExtendedMessageDialog extends JDialog {

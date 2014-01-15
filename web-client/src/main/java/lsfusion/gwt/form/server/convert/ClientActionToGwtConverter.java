@@ -61,7 +61,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ConfirmClientAction.class)
     public GConfirmAction convertAction(ConfirmClientAction action) {
-        return new GConfirmAction(action.message, action.caption);
+        return new GConfirmAction(action.message, action.caption, action.cancel);
     }
 
     @Converter(from = FormClientAction.class)

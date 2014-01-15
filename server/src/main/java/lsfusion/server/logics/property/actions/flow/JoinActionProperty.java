@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.CustomClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
@@ -27,7 +28,7 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
         finalizeInit();
     }
 
-    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ImFilterValueMap<T, ObjectValue> mvReadValues = action.mapping.mapFilterValues();
         for (int i=0,size=action.mapping.size();i<size;i++)
             mvReadValues.mapValue(i, action.mapping.getValue(i).readClasses(context, context.getKeys()));

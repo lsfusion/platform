@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.logics.DataObject;
@@ -49,7 +50,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
     }
 
     @Override
-    protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException {
+    protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue pushedUserInput = context.getPushedUserInput();
         if (pushedUserInput == null) {
             proceed(context);
@@ -74,7 +75,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
         return FlowResult.FINISH;
     }
 
-    private void updateRequestedValue(ExecutionContext context, ObjectValue requestedValue) throws SQLException {
+    private void updateRequestedValue(ExecutionContext context, ObjectValue requestedValue) throws SQLException, SQLHandledException {
         context.setLastUserInput(requestedValue);
         requestedValueProperty.write(requestValueType, requestedValue, context);
         requestCanceledProperty.change((Object)null, context);

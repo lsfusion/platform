@@ -3,6 +3,7 @@ package lsfusion.server.logics.service;
 import lsfusion.base.SystemUtils;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -18,7 +19,7 @@ public class GetVMInfoActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         String message = SystemUtils.getVMInfo();
         context.delayUserInterfaction(new MessageClientAction(message, getString("vm.data")));

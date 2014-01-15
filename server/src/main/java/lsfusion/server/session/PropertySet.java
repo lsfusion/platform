@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -58,7 +59,7 @@ public class PropertySet<T extends PropertyInterface> {
         return query.getQuery();
     }
 
-    public ImOrderSet<ImMap<T, DataObject>> executeClasses(ExecutionEnvironment env) throws SQLException {
+    public ImOrderSet<ImMap<T, DataObject>> executeClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         return getExecuteQuery().executeClasses(env, orders).keyOrderSet();
     }
     

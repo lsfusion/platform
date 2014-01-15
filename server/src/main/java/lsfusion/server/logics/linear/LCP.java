@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -35,65 +36,65 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         super(property, listInterfaces);
     }
 
-    public Object read(FormInstance form, ObjectValue... objects) throws SQLException {
+    public Object read(FormInstance form, ObjectValue... objects) throws SQLException, SQLHandledException {
         return property.read(form, getMapValues(objects));
     }
 
-    public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException {
+    public Object read(SQLSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {
         return property.read(session, getMapValues(objects), modifier, env);
     }
 
-    public Object read(ExecutionContext context, ObjectValue... objects) throws SQLException {
+    public Object read(ExecutionContext context, ObjectValue... objects) throws SQLException, SQLHandledException {
         return read(context.getSession().sql, context.getModifier(), context.getQueryEnv(), objects);
     }
 
-    public Object read(DataSession session, ObjectValue... objects) throws SQLException {
+    public Object read(DataSession session, ObjectValue... objects) throws SQLException, SQLHandledException {
         return read(session.sql, session.getModifier(), session.env, objects);
     }
 
-    public ObjectValue readClasses(DataSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException {
+    public ObjectValue readClasses(DataSession session, Modifier modifier, QueryEnvironment env, ObjectValue... objects) throws SQLException, SQLHandledException {
         ImMap<T, ObjectValue> mapValues = getMapValues(objects);
         return property.readClasses(session, mapValues, modifier, env);
     }
 
-    public ObjectValue readClasses(ExecutionContext context, DataObject... objects) throws SQLException {
+    public ObjectValue readClasses(ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
         return readClasses(context.getSession(), context.getModifier(), context.getQueryEnv(), objects);
     }
 
-    public ObjectValue readClasses(DataSession session, DataObject... objects) throws SQLException {
+    public ObjectValue readClasses(DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
         return readClasses(session, session.getModifier(), session.env, objects);
     }
 
     // execute'ы без Form'
-    public void change(Object value, DataSession session, DataObject... objects) throws SQLException {
+    public void change(Object value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
         change(value, (ExecutionEnvironment)session, objects);
     }
 
-    public void change(ObjectValue value, ExecutionContext context, DataObject... objects) throws SQLException {
+    public void change(ObjectValue value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
         change(value, context.getEnv(), objects);
     }
 
-    public void change(Object value, ExecutionContext context, DataObject... objects) throws SQLException {
+    public void change(Object value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
         change(value, context.getEnv(), objects);
     }
 
-    public void change(Object value, ExecutionContext context, ImMap<T, DataObject> keys) throws SQLException {
+    public void change(Object value, ExecutionContext context, ImMap<T, DataObject> keys) throws SQLException, SQLHandledException {
         change(value, context.getEnv(), keys);
     }
 
-    public void change(ObjectValue value, ExecutionEnvironment env, DataObject... objects) throws SQLException {
+    public void change(ObjectValue value, ExecutionEnvironment env, DataObject... objects) throws SQLException, SQLHandledException {
         change(value, env, getMapDataValues(objects));
     }
 
-    public void change(Object value, ExecutionEnvironment env, DataObject... objects) throws SQLException {
+    public void change(Object value, ExecutionEnvironment env, DataObject... objects) throws SQLException, SQLHandledException {
         change(value, env, getMapDataValues(objects));
     }
 
-    public void change(ObjectValue value, ExecutionEnvironment env, ImMap<T, DataObject> keys) throws SQLException {
+    public void change(ObjectValue value, ExecutionEnvironment env, ImMap<T, DataObject> keys) throws SQLException, SQLHandledException {
         property.change(keys, env, value);
     }
 
-    public void change(Object value, ExecutionEnvironment env, ImMap<T, DataObject> keys) throws SQLException {
+    public void change(Object value, ExecutionEnvironment env, ImMap<T, DataObject> keys) throws SQLException, SQLHandledException {
         //отдельно обрабатываем false-значения: используем null вместо false
         if (value instanceof Boolean && !(Boolean)value) {
             value = null;
@@ -207,7 +208,7 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         return property.getMapKeys();
     }
 
-    public Expr getExpr(Modifier modifier, final Expr... exprs) {
+    public Expr getExpr(Modifier modifier, final Expr... exprs) throws SQLException, SQLHandledException {
         return property.getExpr(getMap(exprs),modifier);
     }
 

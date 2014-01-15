@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.FileClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
@@ -39,7 +40,7 @@ public class LoadActionProperty extends SystemExplicitActionProperty {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataClass readType = getReadType();
         ObjectValue objectValue = context.requestUserData(readType, null);
         if (objectValue == null)

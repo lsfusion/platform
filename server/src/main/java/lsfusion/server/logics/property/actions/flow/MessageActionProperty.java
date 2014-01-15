@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -26,13 +27,13 @@ public class MessageActionProperty extends SystemActionProperty {
         return DerivedProperty.createUnion(interfaces, DerivedProperty.createAnd(DerivedProperty.createTrue(), interfaces.single()), DerivedProperty.createNot(interfaces.single()));
     }
 
-    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue objValue = context.getSingleKeyValue();
         showMessage(context, objValue == null ? null : objValue.getValue());
         return FlowResult.FINISH;
     }
 
-    protected void showMessage(ExecutionContext<PropertyInterface> context, Object msgValue) throws SQLException {
+    protected void showMessage(ExecutionContext<PropertyInterface> context, Object msgValue) throws SQLException, SQLHandledException {
         context.requestUserInteraction(new MessageClientAction(String.valueOf(msgValue), title));
     }
 

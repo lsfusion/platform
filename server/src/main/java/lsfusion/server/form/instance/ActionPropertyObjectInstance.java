@@ -1,6 +1,7 @@
 package lsfusion.server.form.instance;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ActionProperty;
@@ -21,11 +22,11 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
         return new ActionPropertyObjectInstance<P>(property, remap(mapKeyValues));
     }
 
-    public FlowResult execute(ExecutionEnvironment env) throws SQLException {
+    public FlowResult execute(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         return execute(env, null, null, null);
     }
 
-    public FlowResult execute(ExecutionEnvironment env, ObjectValue pushValue, DataObject pushAdd, PropertyDrawInstance changingProperty) throws SQLException {
+    public FlowResult execute(ExecutionEnvironment env, ObjectValue pushValue, DataObject pushAdd, PropertyDrawInstance changingProperty) throws SQLException, SQLHandledException {
         return env.execute(property, getInterfaceValues(), new FormEnvironment<P>(mapping, changingProperty), pushValue, pushAdd);
     }
 

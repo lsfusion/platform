@@ -64,6 +64,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
     final ImRevMap<ParseValue,String> params;
     public final ExecuteEnvironment env;
+    
+    public final QueryExecuteEnvironment queryExecEnv; // mutable
 
     private boolean checkQuery() {
         return true;
@@ -94,6 +96,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }});
 
         env = compile.env.translateValues(mapValues);
+        queryExecEnv = compile.queryExecEnv;
 
         assert checkQuery();
     }
@@ -241,6 +244,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
             select = getSelect(from, keySelect, keyNames, resultKeyOrder, propertySelect, propertyNames, resultPropertyOrder, whereSelect, syntax, compileOrders, top, false);
         }
+
+        queryExecEnv = (select.length() > Settings.get().getQueryLengthTimeout() && syntax.noDynamicSampling() ? new AdjustVolatileExecuteEnvironment() : QueryExecuteEnvironment.DEFAULT);
 
         keyOrder = resultKeyOrder.result; propertyOrder = resultPropertyOrder.result;
 
@@ -1418,15 +1423,15 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         return fillSelect(getTranslate(mapValues), fillKeySelect, fillPropertySelect, fillWhereSelect, fillEnv);
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, QueryEnvironment queryEnv) throws SQLException {
-        return session.executeSelect(select, env, getQueryParams(queryEnv), keyNames, keyReaders, propertyNames, propertyReaders);
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
+        return session.executeSelect(select, env, getQueryParams(queryEnv), queryExecEnv, queryEnv.getTransactTimeout(), keyNames, keyReaders, propertyNames, propertyReaders);
     }
 
-    public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException {
+    public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
         System.out.println(select + '\n' + readSelect(session, env));
     }
 
-    public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException {
+    public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
         // выведем на экран
         ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> result = execute(session, env);
         String resultString = "";

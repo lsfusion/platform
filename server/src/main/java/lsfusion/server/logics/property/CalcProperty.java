@@ -1,9 +1,7 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
-import lsfusion.base.Pair;
-import lsfusion.base.SFunctionSet;
+import com.google.common.base.Throwables;
+import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -154,7 +152,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return (this instanceof DataProperty? ServerResourceBundle.getString("logics.property.primary"):ServerResourceBundle.getString("logics.property.calculated")) + " "+ServerResourceBundle.getString("logics.property")+" : " + caption+", "+mapTable.table.outputField(field, outputTable);
     }
     
-    public void outClasses(DataSession session, Modifier modifier) throws SQLException {
+    public void outClasses(DataSession session, Modifier modifier) throws SQLException, SQLHandledException {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         new Query<T, String>(mapKeys, getExpr(mapKeys, modifier), "value").outClassesSelect(session.sql, session.baseClass);
     }
@@ -169,27 +167,27 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         super(sID, caption, interfaces);
     }
 
-    public void change(ExecutionContext context, Object value) throws SQLException {
+    public void change(ExecutionContext context, Object value) throws SQLException, SQLHandledException {
         change(context.getEnv(), value);
     }
 
-    public void change(ExecutionEnvironment env, Object value) throws SQLException {
+    public void change(ExecutionEnvironment env, Object value) throws SQLException, SQLHandledException {
         change(MapFact.<T, DataObject>EMPTY(), env, value);
     }
 
-    public void change(ImMap<T, DataObject> keys, ExecutionContext context, Object value) throws SQLException {
+    public void change(ImMap<T, DataObject> keys, ExecutionContext context, Object value) throws SQLException, SQLHandledException {
         change(keys, context.getEnv(), value);
     }
 
-    public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, ObjectValue value) throws SQLException {
+    public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, ObjectValue value) throws SQLException, SQLHandledException {
         getImplement().change(keys, env, value);
     }
 
-    public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
+    public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException, SQLHandledException {
         getImplement().change(keys, env, value);
     }
 
-    public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitSingleApplyClasses(SinglePropertyTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+    public Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>> splitSingleApplyClasses(SinglePropertyTableUsage<T> changeTable, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         assert isSingleApplyStored();
 
         if(DataSession.notFitKeyClasses(this, changeTable)) // оптимизация
@@ -208,17 +206,25 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if(classWhere.isTrue())
             return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(changeTable, createChangeTable());
 
-        SinglePropertyTableUsage<T> fit = readChangeTable(sql, change.and(classWhere), baseClass, env);
-        SinglePropertyTableUsage<T> notFit = readChangeTable(sql, change.and(classWhere.not()), baseClass, env);
-        assert DataSession.fitClasses(this, fit);
-        assert DataSession.fitKeyClasses(this, fit);
+        try {
+            SinglePropertyTableUsage<T> fit = readChangeTable(sql, change.and(classWhere), baseClass, env);
+            SinglePropertyTableUsage<T> notFit;
+            try {
+                notFit = readChangeTable(sql, change.and(classWhere.not()), baseClass, env);
+            } catch (Throwable e) {
+                fit.drop(sql);
+                throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
+            }
+            assert DataSession.fitClasses(this, fit);
+            assert DataSession.fitKeyClasses(this, fit);
 
-        // это была не совсем правильная эвристика, например если изменение было таблицей с классом X, а свойство принадлежность классу Y, то X and not Y превращался назад в X (если X не равнялся / наследовался от Y)
-        // для того чтобы этот assertion продолжил работать надо совершенствовать ClassWhere.andNot, что пока нецелесообразность
-        // assert DataSession.notFitClasses(this, notFit);
-
-        changeTable.drop(sql);
-        return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(fit,notFit);
+            // это была не совсем правильная эвристика, например если изменение было таблицей с классом X, а свойство принадлежность классу Y, то X and not Y превращался назад в X (если X не равнялся / наследовался от Y)
+            // для того чтобы этот assertion продолжил работать надо совершенствовать ClassWhere.andNot, что пока нецелесообразность
+            // assert DataSession.notFitClasses(this, notFit);
+            return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(fit,notFit);
+        } finally {
+            changeTable.drop(sql);
+        }
     }
 
     public boolean noOld() { // именно так, а не через getSessionCalcDepends, так как может использоваться до инициализации логики
@@ -288,7 +294,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     // есть assertion, что не должен возвращать изменение null -> null, то есть или старое или новое не null, для подр. см usage
     @LogTime
-    public PropertyChange<T> getIncrementChange(Modifier modifier) {
+    public PropertyChange<T> getIncrementChange(Modifier modifier) throws SQLException, SQLHandledException {
         return getIncrementChange(modifier.getPropertyChanges());
     }
 
@@ -362,11 +368,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     @Message("message.increment.read.properties")
     @ThisMessage
-    public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, Modifier modifier, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+    public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, Modifier modifier, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         return readFixChangeTable(session, getIncrementChange(modifier), baseClass, env);
     }
 
-    public SinglePropertyTableUsage<T> readFixChangeTable(SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+    public SinglePropertyTableUsage<T> readFixChangeTable(SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         SinglePropertyTableUsage<T> readTable = readChangeTable(session, change, baseClass, env);
 
         // при вызове readChangeTable, используется assertion (см. assert fitKeyClasses) что если таблица подходит по классам для значения, то подходит по классам и для ключей
@@ -377,7 +383,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return readTable;
     }
 
-    public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+    public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         SinglePropertyTableUsage<T> changeTable = createChangeTable();
         change.writeRows(changeTable, session, baseClass, env);
         return changeTable;
@@ -631,25 +637,25 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getClassValueWhere(ClassType.ASSERTFULL).remap(MapFact.<Object, Field>addRevExcl(mapTable.mapKeys, "value", storedField)); //
     }
 
-    public Object read(ExecutionContext context) throws SQLException {
+    public Object read(ExecutionContext context) throws SQLException, SQLHandledException {
         return read(context.getSession().sql, MapFact.<T, ObjectValue>EMPTY(), context.getModifier(), context.getQueryEnv());
     }
 
-    public Object read(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException {
+    public Object read(SQLSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         String readValue = "readvalue";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<T, Object>(SetFact.<T>EMPTY());
         readQuery.addProperty(readValue, getExpr(ObjectValue.getMapExprs(keys), modifier));
         return readQuery.execute(session, env).singleValue().get(readValue);
     }
 
-    public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException {
+    public ObjectValue readClasses(SQLSession session, ImMap<T, Expr> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         String readValue = "readvalue";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<T, Object>(SetFact.<T>EMPTY());
         readQuery.addProperty(readValue, getExpr(keys, modifier));
         return readQuery.executeClasses(session, env, baseClass).singleValue().get(readValue);
     }
 
-    public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException {
+    public Pair<ObjectValue, Boolean> readClassesChanged(SQLSession session, ImMap<T, ObjectValue> keys, BaseClass baseClass, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         String readValue = "readvalue"; String readChanged = "readChanged";
         QueryBuilder<T, Object> readQuery = new QueryBuilder<T, Object>(SetFact.<T>EMPTY());
         WhereBuilder changedWhere = new WhereBuilder();
@@ -659,15 +665,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new Pair<ObjectValue, Boolean>(result.get(readValue), !result.get(readChanged).isNull());
     }
 
-    public Object read(FormInstance form, ImMap<T, ? extends ObjectValue> keys) throws SQLException {
+    public Object read(FormInstance form, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
         return read(form.session.sql, keys, form.getModifier(), form.getQueryEnv());
     }
 
-    public ObjectValue readClasses(FormInstance form, ImMap<T, ? extends ObjectValue> keys) throws SQLException {
+    public ObjectValue readClasses(FormInstance form, ImMap<T, ? extends ObjectValue> keys) throws SQLException, SQLHandledException {
         return readClasses(form.session, keys, form.getModifier(), form.getQueryEnv());
     }
 
-    public ObjectValue readClasses(DataSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException {
+    public ObjectValue readClasses(DataSession session, ImMap<T, ? extends ObjectValue> keys, Modifier modifier, QueryEnvironment env) throws SQLException, SQLHandledException {
         return readClasses(session.sql, ObjectValue.getMapExprs(keys), session.baseClass, modifier, env);
     }
 
@@ -796,14 +802,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
     }
 
-    public void setNotNull(ImMap<T, DataObject> values, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException {
+    public void setNotNull(ImMap<T, DataObject> values, ExecutionEnvironment env, boolean notNull, boolean check) throws SQLException, SQLHandledException {
         if(!check || (read(env.getSession().sql, values, env.getModifier(), env.getQueryEnv())!=null) != notNull) {
             ActionPropertyMapImplement<?, T> action = getSetNotNullAction(notNull);
             if(action!=null)
                 action.execute(new ExecutionContext<T>(values , null, null, env, null, null));
         }
     }
-    public void setNotNull(ImRevMap<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull) throws SQLException {
+    public void setNotNull(ImRevMap<T, KeyExpr> mapKeys, Where where, ExecutionEnvironment env, boolean notNull) throws SQLException, SQLHandledException {
         for(ImMap<T, DataObject> row : new Query<T, Object>(mapKeys, where).executeClasses(env).keys())
             setNotNull(row, env, notNull, true);
     }
@@ -973,10 +979,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getExpr(joinImplement, PropertyChanges.EMPTY);
     }
 
-    public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier) {
+    public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier) throws SQLException, SQLHandledException {
         return getExpr(joinImplement, modifier, null);
     }
-    public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder changedWhere) {
+    public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier, WhereBuilder changedWhere) throws SQLException, SQLHandledException {
         return getExpr(joinImplement, modifier.getPropertyChanges(), changedWhere);
     }
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, PropertyChanges propChanges) {

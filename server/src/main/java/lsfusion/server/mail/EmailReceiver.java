@@ -6,6 +6,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.integration.*;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.EmailLogicsModule;
@@ -41,7 +42,7 @@ public class EmailReceiver {
         this.deleteMessagesAccount = deleteMessagesAccount;
     }
 
-    public void receiveEmail(ExecutionContext context) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException {
+    public void receiveEmail(ExecutionContext context) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
 
         List<List<List<Object>>> data = downloadEmailList();
 
@@ -51,7 +52,7 @@ public class EmailReceiver {
         LM.findLAPByCompoundOldName("formRefresh").execute(context);
     }
 
-    public void importEmails(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException {
+    public void importEmails(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
         List<ImportField> fields = new ArrayList<ImportField>();
@@ -99,12 +100,12 @@ public class EmailReceiver {
         session.sql.pushVolatileStats(null);
         IntegrationService service = new IntegrationService(session, table, keys, props);
         service.synchronize(true, false);
-        session.apply(context.getBL());
+        session.apply(context);
         session.sql.popVolatileStats(null);
         session.close();
     }
 
-    public void importAttachments(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException {
+    public void importAttachments(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
         List<ImportField> fields = new ArrayList<ImportField>();
@@ -140,7 +141,7 @@ public class EmailReceiver {
         session.sql.pushVolatileStats(null);
         IntegrationService service = new IntegrationService(session, table, keys, props);
         service.synchronize(true, false);
-        session.apply(context.getBL());
+        session.apply(context);
         session.sql.popVolatileStats(null);
         session.close();
     }

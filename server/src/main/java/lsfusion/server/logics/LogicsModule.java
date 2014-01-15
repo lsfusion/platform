@@ -714,12 +714,19 @@ public abstract class LogicsModule {
 
     // ------------------- NEWSESSION ----------------- //
 
-    protected LP addNewSessionAProp(AbstractGroup group, String name, String caption, LAP action, boolean doApply, boolean singleApply, ImSet<SessionDataProperty> local, ImSet<SessionDataProperty> sessionUsed) {
+    protected LAP addNewSessionAProp(AbstractGroup group, String name, String caption, LAP action, boolean doApply, boolean singleApply, ImSet<SessionDataProperty> local, ImSet<SessionDataProperty> sessionUsed) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
         return addProperty(group, new LAP(new NewSessionActionProperty(name, caption, listInterfaces, actionImplement, doApply,
                 singleApply, sessionUsed, local)));
+    }
+
+    protected LAP addNewThreadAProp(AbstractGroup group, String name, String caption, LAP action, long delay, Long period) {
+        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
+        ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
+
+        return addProperty(group, new LAP(new NewThreadActionProperty(name, caption, listInterfaces, actionImplement, period, delay)));
     }
 
     // ------------------- Request action ----------------- //
@@ -1553,7 +1560,7 @@ public abstract class LogicsModule {
 
     protected <T extends LP<?, ?>> void setPropertySID(T lp, String name, String oldName, boolean generated) {
         String oldSID = lp.property.getSID();
-        lp.property.setName(name);
+        lp.property.setName(name, generated);
         String newSID = baseLM.getSIDPolicy().createSID(getNamePrefix(), name, null, oldName);
         if (baseLM.idSet.contains(oldSID)) {
             baseLM.idSet.remove(oldSID);

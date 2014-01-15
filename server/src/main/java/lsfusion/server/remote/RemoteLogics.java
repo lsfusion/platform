@@ -22,6 +22,7 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.*;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -310,7 +311,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return new ArrayList<String>();
     }
 
-    protected Integer getUserByEmail(DataSession session, String email) throws SQLException {
+    protected Integer getUserByEmail(DataSession session, String email) throws SQLException, SQLHandledException {
         return (Integer) businessLogics.contactLM.contactEmail.read(session, new DataObject(email));
     }
 

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.service;
 
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -15,7 +16,7 @@ public class ToggleVolatileStatsActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         context.getSession().sql.toggleVolatileStats();
     }
 }

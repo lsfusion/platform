@@ -1,6 +1,7 @@
 package lsfusion.server.logics.scripted;
 
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -57,7 +58,7 @@ public abstract class ScriptingActionProperty extends UserActionProperty {
         return LM.findFormByCompoundName(name);
     }
 
-    protected boolean applySession(ExecutionContext context, DataSession session) throws SQLException {
-        return session.apply(context.getBL());
+    protected boolean applySession(ExecutionContext context, DataSession session) throws SQLException, SQLHandledException {
+        return session.apply(context);
     }
 }

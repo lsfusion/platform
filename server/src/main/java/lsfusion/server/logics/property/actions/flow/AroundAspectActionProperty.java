@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions.flow;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.*;
 
 import java.sql.SQLException;
@@ -20,11 +21,11 @@ public abstract class AroundAspectActionProperty extends KeepContextActionProper
         return SetFact.singleton((ActionProperty) aspectActionImplement.property);
     }
 
-    public final FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public final FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         return aroundAspect(context);
     }
 
-    protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException {
+    protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ExecutionContext<PropertyInterface> innerContext = beforeAspect(context);
         if(innerContext==null)
             return FlowResult.FINISH;
@@ -36,15 +37,15 @@ public abstract class AroundAspectActionProperty extends KeepContextActionProper
         return result;
     }
 
-    protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException {
+    protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         return context;
     }
 
-    protected FlowResult proceed(ExecutionContext<PropertyInterface> innerContext) throws SQLException {
+    protected FlowResult proceed(ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
         return aspectActionImplement.execute(innerContext);
     }
 
-    protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException {
+    protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
     }
 
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {

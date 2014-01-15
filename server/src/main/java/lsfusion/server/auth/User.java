@@ -24,4 +24,14 @@ public class User extends PolicyAgent {
         resultPolicy.override(super.getSecurityPolicy());
         return resultPolicy;
     }
+    
+    public int timeout = 0;
+    
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
+    
+    public int getTimeout() {
+        return timeout;
+    }
 }

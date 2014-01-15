@@ -3,6 +3,7 @@ package lsfusion.server.form.instance;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ObjectEntity;
@@ -62,7 +63,7 @@ public class CustomObjectInstance extends ObjectInstance {
 
     ObjectValue value = NullValue.instance;
 
-    public void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException {
+    public void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException, SQLHandledException {
         if(changeValue.equals(value)) return;
 
         value = changeValue;
@@ -73,12 +74,12 @@ public class CustomObjectInstance extends ObjectInstance {
         groupTo.updated = groupTo.updated | GroupObjectInstance.UPDATED_OBJECT;
     }
 
-    public void refreshValueClass(SessionChanges session) throws SQLException {
+    public void refreshValueClass(SessionChanges session) throws SQLException, SQLHandledException {
         value = value.refresh(session, getBaseClass());
         updateCurrentClass(session);
     }
 
-    public void updateCurrentClass(SessionChanges session) throws SQLException {
+    public void updateCurrentClass(SessionChanges session) throws SQLException, SQLHandledException {
         // запишем класс объекта
         ConcreteCustomClass changeClass;
         if(value instanceof NullValue)
@@ -120,7 +121,7 @@ public class CustomObjectInstance extends ObjectInstance {
         return value;
     }
 
-    public void changeClass(SessionChanges session, DataObject change, ConcreteObjectClass cls) throws SQLException {
+    public void changeClass(SessionChanges session, DataObject change, ConcreteObjectClass cls) throws SQLException, SQLHandledException {
 
         // запишем объекты, которые надо будет сохранять
         session.changeClass(change,cls);

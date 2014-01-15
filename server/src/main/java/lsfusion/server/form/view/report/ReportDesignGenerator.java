@@ -9,6 +9,7 @@ import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.form.entity.PropertyObjectEntity;
@@ -100,6 +101,8 @@ public class ReportDesignGenerator {
             toStretch = BaseUtils.nvl((Boolean) baseLM.reportToStretch.read(session), false);
             session.close();
         } catch (SQLException e) {
+            ServerLoggers.systemLogger.warn("Error when reading report parameters", e);
+        } catch (SQLHandledException e) {
             ServerLoggers.systemLogger.warn("Error when reading report parameters", e);
         }
     

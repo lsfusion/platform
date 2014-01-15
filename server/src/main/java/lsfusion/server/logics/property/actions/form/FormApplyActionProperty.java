@@ -1,7 +1,7 @@
 package lsfusion.server.logics.property.actions.form;
 
-import lsfusion.base.ApiResourceBundle;
 import lsfusion.server.classes.ColorClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -30,8 +30,8 @@ public class FormApplyActionProperty extends FormToolbarActionProperty {
     }
 
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.getFormInstance().formApply();
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        context.getFormInstance().formApply(context);
     }
 
     @Override

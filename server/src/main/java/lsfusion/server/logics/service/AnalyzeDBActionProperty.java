@@ -2,6 +2,7 @@ package lsfusion.server.logics.service;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -19,14 +20,13 @@ public class AnalyzeDBActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        BusinessLogics BL = context.getBL();
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         DataSession session = context.createSession();
 
         context.getDbManager().analyzeDB(session.sql);
 
-        session.apply(BL);
+        session.apply(context);
         session.close();
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.vacuum.analyze.was.completed"), getString("logics.vacuum.analyze")));

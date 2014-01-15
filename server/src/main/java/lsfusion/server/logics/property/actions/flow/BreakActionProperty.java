@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.flow;
 
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -18,7 +19,7 @@ public class BreakActionProperty extends ChangeFlowActionProperty {
         return type == ChangeFlowType.BREAK;
     }
 
-    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         return FlowResult.BREAK;
     }
 

@@ -11,6 +11,7 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.session.*;
@@ -121,7 +122,7 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     @Override
-    public void addHintIncrement(CalcProperty property) {
+    public void addHintIncrement(CalcProperty property) throws SQLException, SQLHandledException {
         assert allowHintIncrement(property);
 
         // если не зависит от override'а проталкиваем внутрь
@@ -134,7 +135,7 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     @Override
-    public <P extends PropertyInterface> void addPrereadValues(CalcProperty<P> property, ImMap<P, Expr> values) {
+    public <P extends PropertyInterface> void addPrereadValues(CalcProperty<P> property, ImMap<P, Expr> values) throws SQLException, SQLHandledException {
         // если не зависит от override'а проталкиваем внутрь
         if(pushHint(property)) {
             modifier.addPrereadValues(property, values);

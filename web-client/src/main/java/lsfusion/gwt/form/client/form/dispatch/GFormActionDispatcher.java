@@ -79,7 +79,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public int execute(GConfirmAction action) {
         pauseDispatching();
-        form.blockingConfirm(action.caption, action.message, new DialogBoxHelper.CloseCallback() {
+        form.blockingConfirm(action.caption, action.message, action.cancel, new DialogBoxHelper.CloseCallback() {
             @Override
             public void closed(DialogBoxHelper.OptionType chosenOption) {
                 continueDispatching(chosenOption.asInteger());

@@ -3,6 +3,7 @@ package lsfusion.server.session;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.server.data.Modify;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
@@ -26,7 +27,7 @@ public class SingleKeyNoPropertyUsage extends NoPropertyTableUsage<String> {
         return getWhere(MapFact.singleton("key", expr));
     }
 
-    public void modifyRecord(SQLSession session, DataObject keyObject, Modify type) throws SQLException {
+    public void modifyRecord(SQLSession session, DataObject keyObject, Modify type) throws SQLException, SQLHandledException {
         modifyRecord(session, MapFact.singleton("key", keyObject), MapFact.<Object, ObjectValue>EMPTY(), type);
     }
 

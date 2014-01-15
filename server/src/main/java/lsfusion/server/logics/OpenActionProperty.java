@@ -7,6 +7,7 @@ import lsfusion.interop.action.OpenFileClientAction;
 import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.FileClass;
 import lsfusion.server.classes.StaticFormatFileClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.linear.LCP;
@@ -43,7 +44,7 @@ public class OpenActionProperty extends SystemExplicitActionProperty {
         return (FileClass) fileProperty.property.getType();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue[] objects = new ObjectValue[context.getKeyCount()];
         int i = 0; // здесь опять учитываем, что порядок тот же
         for (ClassPropertyInterface classInterface : interfaces)

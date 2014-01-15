@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.caches.AbstractValuesContext;
 import lsfusion.server.caches.MapValuesIterable;
 import lsfusion.server.caches.hash.HashValues;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.logics.DataObject;
@@ -61,7 +62,7 @@ public class DataChanges extends AbstractValuesContext<DataChanges> {
         return changes.keys();
     }
 
-    public ImMap<DataProperty, ImOrderMap<ImMap<ClassPropertyInterface, DataObject>, ImMap<String, ObjectValue>>> read(ExecutionEnvironment env) throws SQLException {
+    public ImMap<DataProperty, ImOrderMap<ImMap<ClassPropertyInterface, DataObject>, ImMap<String, ObjectValue>>> read(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         ImValueMap<DataProperty, ImOrderMap<ImMap<ClassPropertyInterface, DataObject>, ImMap<String, ObjectValue>>> mvResult = changes.mapItValues(); // exception кидается
         for(int i=0,size=changes.size();i<size;i++)
             mvResult.mapValue(i, changes.getValue(i).executeClasses(env));

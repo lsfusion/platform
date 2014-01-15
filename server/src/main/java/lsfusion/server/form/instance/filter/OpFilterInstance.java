@@ -3,6 +3,7 @@ package lsfusion.server.form.instance.filter;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
@@ -26,7 +27,7 @@ public abstract class OpFilterInstance extends FilterInstance {
         this.op2 = op2;
     }
 
-    protected OpFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException {
+    protected OpFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         super(inStream, form);
         op1 = deserialize(inStream, form);
         op2 = deserialize(inStream, form);
@@ -40,7 +41,7 @@ public abstract class OpFilterInstance extends FilterInstance {
         return op1.objectUpdated(gridGroups) || op2.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) {
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) throws SQLException, SQLHandledException {
         return op1.dataUpdated(changedProps, reallyChanged, modifier) || op2.dataUpdated(changedProps, reallyChanged, modifier);
     }
 
@@ -59,7 +60,7 @@ public abstract class OpFilterInstance extends FilterInstance {
     }
 
     @Override
-    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException {
+    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException, SQLHandledException {
         op1.resolveAdd(env, object, addObject);
         op2.resolveAdd(env, object, addObject);
     }

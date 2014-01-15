@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsModule;
@@ -44,7 +45,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
         return true;
     }
 
-    private String getScript(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    private String getScript(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<P, ? extends ObjectValue> sourceToData = mapSource.join(context.getKeys());
         return (String) source.read(context, source.listInterfaces.mapOrder(sourceToData).toArray(new ObjectValue[interfaces.size()]));
     }
@@ -73,7 +74,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         BusinessLogics BL = context.getBL();
 
         String script = getScript(context);
@@ -95,7 +96,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
                     DataObject scriptObject = session.addObject((ConcreteCustomClass) module.findClassByCompoundName("Script"));
                     module.findLCPByCompoundOldName("textScript").change(textScript, session, scriptObject);
                     module.findLCPByCompoundOldName("dateTimeScript").change(new Timestamp(Calendar.getInstance().getTime().getTime()), session, scriptObject);
-                    session.apply(BL);
+                    session.apply(context);
                 }
                 runAction.execute(context);
             }

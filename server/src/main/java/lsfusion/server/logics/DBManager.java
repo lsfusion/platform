@@ -1,9 +1,7 @@
 package lsfusion.server.logics;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.OrderedMap;
-import lsfusion.base.Pair;
-import lsfusion.base.SystemUtils;
+import com.google.common.base.Throwables;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMap;
@@ -24,6 +22,7 @@ import lsfusion.server.classes.*;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
@@ -40,12 +39,14 @@ import lsfusion.server.form.navigator.*;
 import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
+import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.mail.NotificationActionProperty;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import org.antlr.runtime.ANTLRInputStream;
@@ -191,18 +192,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     @IdentityStrongLazy // ресурсы потребляет
     private SQLSession getIDSql() throws SQLException { // подразумевает synchronized использование
         try {
-            return createSQL(Connection.TRANSACTION_REPEATABLE_READ);
+            return createSQL();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        return createSQL(-1);
-    }
-
-    public SQLSession createSQL(int isolationLevel) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        return new SQLSession(adapter, isolationLevel);
+        return new SQLSession(adapter);
     }
 
     public SQLSession getThreadLocalSql() {
@@ -236,14 +233,19 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                                  public boolean isFullClient() {
                                      return false;
                                  }
-                             }
+                             },
+                new TimeoutController() {
+                    public int getTransactionTimeout() {
+                        return 0;
+                    }
+                }
         );
     }
 
-    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController) throws SQLException {
+    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController, TimeoutController timeoutController) throws SQLException {
         //todo: неплохо бы избавиться от зависимости на restartManager, а то она неестественна
         return new DataSession(sql, userController, computerController,
-                               new IsServerRestartingController() {
+                timeoutController, new IsServerRestartingController() {
                                    public boolean isServerRestarting() {
                                        return restartManager.isPendingRestart();
                                    }
@@ -476,58 +478,58 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertySID.getMapping(sidPropertyField));
 
-        List<List<Object>> dataProperty = new ArrayList<List<Object>>();
-        for (Property property : businessLogics.getOrderProperties()) {
-            if (needsToBeSynchronized(property)) {
-                String commonClasses = "";
-                String returnClass = "";
-                String classProperty = "";
-                Long complexityProperty = null;
-                try {
-                    classProperty = property.getClass().getSimpleName();
-                    if(property instanceof CalcProperty) {
-                        complexityProperty = ((CalcProperty)property).getExpr(((CalcProperty)property).getMapKeys(), Property.defaultModifier).getComplexity(false);
-                    }
-                    returnClass = property.getValueClass().getSID();
-                    for (Object cc : property.getInterfaceClasses(property instanceof ActionProperty ? ClassType.FULL : ClassType.ASSERTFULL).valueIt()) {
-                        if (cc instanceof CustomClass)
-                            commonClasses += ((CustomClass) cc).getSID() + ", ";
-                        else if (cc instanceof DataClass)
-                            commonClasses += ((DataClass) cc).getSID() + ", ";
-                    }
-                    if (!"".equals(commonClasses))
-                        commonClasses = commonClasses.substring(0, commonClasses.length() - 2);
-                } catch (NullPointerException e) {
-                    commonClasses = "";
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    commonClasses = "";
-                }
-                dataProperty.add(asList((Object) property.getSID(), property.caption, property.loggable ? true : null,
-                        property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
-                        property instanceof CalcProperty && ((CalcProperty) property).setNotNull ? true : null,
-                        commonClasses, returnClass, classProperty, complexityProperty));
-            }
-        }
-
-        List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-        properties.add(new ImportProperty(sidPropertyField, reflectionLM.SIDProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(captionPropertyField, reflectionLM.captionProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(loggablePropertyField, reflectionLM.loggableProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(storedPropertyField, reflectionLM.storedProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(isSetNotNullPropertyField, reflectionLM.isSetNotNullProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(signaturePropertyField, reflectionLM.signatureProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(returnPropertyField, reflectionLM.returnProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(classPropertyField, reflectionLM.classProperty.getMapping(keyProperty)));
-        properties.add(new ImportProperty(complexityPropertyField, reflectionLM.complexityProperty.getMapping(keyProperty)));
-
-        List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(keyProperty, LM.is(reflectionLM.property).getMapping(keyProperty), false));
-
-        ImportTable table = new ImportTable(asList(sidPropertyField, captionPropertyField, loggablePropertyField,
-                storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField,
-                classPropertyField, complexityPropertyField), dataProperty);
-
         try {
+            List<List<Object>> dataProperty = new ArrayList<List<Object>>();
+            for (Property property : businessLogics.getOrderProperties()) {
+                if (needsToBeSynchronized(property)) {
+                    String commonClasses = "";
+                    String returnClass = "";
+                    String classProperty = "";
+                    Long complexityProperty = null;
+                    try {
+                        classProperty = property.getClass().getSimpleName();
+                        if(property instanceof CalcProperty) {
+                            complexityProperty = ((CalcProperty)property).getExpr(((CalcProperty)property).getMapKeys(), Property.defaultModifier).getComplexity(false);
+                        }
+                        returnClass = property.getValueClass().getSID();
+                        for (Object cc : property.getInterfaceClasses(property instanceof ActionProperty ? ClassType.FULL : ClassType.ASSERTFULL).valueIt()) {
+                            if (cc instanceof CustomClass)
+                                commonClasses += ((CustomClass) cc).getSID() + ", ";
+                            else if (cc instanceof DataClass)
+                                commonClasses += ((DataClass) cc).getSID() + ", ";
+                        }
+                        if (!"".equals(commonClasses))
+                            commonClasses = commonClasses.substring(0, commonClasses.length() - 2);
+                    } catch (NullPointerException e) {
+                        commonClasses = "";
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        commonClasses = "";
+                    }
+                    dataProperty.add(asList((Object) property.getSID(), property.caption, property.loggable ? true : null,
+                            property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
+                            property instanceof CalcProperty && ((CalcProperty) property).setNotNull ? true : null,
+                            commonClasses, returnClass, classProperty, complexityProperty));
+                }
+            }
+    
+            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+            properties.add(new ImportProperty(sidPropertyField, reflectionLM.SIDProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(captionPropertyField, reflectionLM.captionProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(loggablePropertyField, reflectionLM.loggableProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(storedPropertyField, reflectionLM.storedProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(isSetNotNullPropertyField, reflectionLM.isSetNotNullProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(signaturePropertyField, reflectionLM.signatureProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(returnPropertyField, reflectionLM.returnProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(classPropertyField, reflectionLM.classProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(complexityPropertyField, reflectionLM.complexityProperty.getMapping(keyProperty)));
+    
+            List<ImportDelete> deletes = new ArrayList<ImportDelete>();
+            deletes.add(new ImportDelete(keyProperty, LM.is(reflectionLM.property).getMapping(keyProperty), false));
+    
+            ImportTable table = new ImportTable(asList(sidPropertyField, captionPropertyField, loggablePropertyField,
+                    storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField,
+                    classPropertyField, complexityPropertyField), dataProperty);
+
             DataSession session = createSession();
             session.pushVolatileStats();
 
@@ -538,7 +540,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -728,6 +730,61 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
+    private void setupPropertyNotifications() throws SQLException, SQLHandledException {
+        DataSession session = createSession();
+
+        LCP isNotification = LM.is(emailLM.notification);
+        ImRevMap<Object, KeyExpr> keys = isNotification.getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
+        query.addProperty("isDerivedChange", emailLM.isEventNotification.getExpr(session.getModifier(), key));
+        query.addProperty("subject", emailLM.subjectNotification.getExpr(session.getModifier(), key));
+        query.addProperty("text", emailLM.textNotification.getExpr(session.getModifier(), key));
+        query.addProperty("emailFrom", emailLM.emailFromNotification.getExpr(session.getModifier(), key));
+        query.addProperty("emailTo", emailLM.emailToNotification.getExpr(session.getModifier(), key));
+        query.addProperty("emailToCC", emailLM.emailToCCNotification.getExpr(session.getModifier(), key));
+        query.addProperty("emailToBC", emailLM.emailToBCNotification.getExpr(session.getModifier(), key));
+        query.and(isNotification.getExpr(key).getWhere());
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session.sql);
+
+        for (int i=0,size=result.size();i<size;i++) {
+            DataObject notificationObject = new DataObject(result.getKey(i).getValue(0), emailLM.notification);
+            KeyExpr propertyExpr2 = new KeyExpr("property");
+            KeyExpr notificationExpr2 = new KeyExpr("notification");
+            ImRevMap<String, KeyExpr> newKeys2 = MapFact.toRevMap("property", propertyExpr2, "notification", notificationExpr2);
+
+            QueryBuilder<String, String> query2 = new QueryBuilder<String, String>(newKeys2);
+            query2.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(session.getModifier(), propertyExpr2));
+            query2.and(emailLM.inNotificationProperty.getExpr(session.getModifier(), notificationExpr2, propertyExpr2).getWhere());
+            query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
+            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result2 = query2.execute(session.sql);
+            List<LCP> listInNotificationProperty = new ArrayList();
+            for (int j=0,size2=result2.size();j<size2;j++) {
+                listInNotificationProperty.add(businessLogics.getLCP(result2.getValue(i).get("SIDProperty").toString().trim()));
+            }
+            ImMap<Object, Object> rowValue = result.getValue(i);
+
+            for (LCP prop : listInNotificationProperty) {
+                boolean isDerivedChange = rowValue.get("isDerivedChange") == null ? false : true;
+                String subject = rowValue.get("subject") == null ? "" : rowValue.get("subject").toString().trim();
+                String text = rowValue.get("text") == null ? "" : rowValue.get("text").toString().trim();
+                String emailFrom = rowValue.get("emailFrom") == null ? "" : rowValue.get("emailFrom").toString().trim();
+                String emailTo = rowValue.get("emailTo") == null ? "" : rowValue.get("emailTo").toString().trim();
+                String emailToCC = rowValue.get("emailToCC") == null ? "" : rowValue.get("emailToCC").toString().trim();
+                String emailToBC = rowValue.get("emailToBC") == null ? "" : rowValue.get("emailToBC").toString().trim();
+                LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty(prop.property.getSID() + "emailNotificationProperty", "emailNotificationProperty", prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, businessLogics.emailLM)));
+
+                Integer[] params = new Integer[prop.listInterfaces.size()];
+                for (int j = 0; j < prop.listInterfaces.size(); j++)
+                    params[j] = j + 1;
+                if (isDerivedChange)
+                    emailNotificationProperty.setEventAction(LM, prop, params);
+                else
+                    emailNotificationProperty.setEventSetAction(LM, prop, params);
+            }
+        }
+    }
+
     private void resetConnectionStatus() {
         try {
             DataSession session = createSession();
@@ -745,7 +802,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private void logLaunch() throws SQLException {
+    private void logLaunch() throws SQLException, SQLHandledException {
         DataSession session = createSession();
 
         DataObject newLaunch = session.addObject(systemEventsLM.launch);
@@ -798,7 +855,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private void synchronizeDB() throws SQLException, IOException {
+    private void synchronizeDB() throws SQLException, IOException, SQLHandledException {
         SQLSession sql = getThreadLocalSql();
 
         // инициализируем таблицы
@@ -819,7 +876,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         Map<String, String> columnsToDrop = new HashMap<String, String>();
 
         try {
-            sql.startTransaction();
+            sql.pushNoHandled();
+            sql.startTransaction(DBManager.START_TIL);
 
             // новое состояние базы
             ByteArrayOutputStream outDBStruct = new ByteArrayOutputStream();
@@ -1028,7 +1086,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
 
             systemLogger.info("Packing tables");
-            packTables(sql, mPackTables.immutable()); // упакуем таблицы
+            packTables(sql, mPackTables.immutable(), false); // упакуем таблицы
 
             systemLogger.info("Updating stats");
             updateStats();  // пересчитаем статистику
@@ -1060,13 +1118,15 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             updateClassStat(sql);
 
             systemLogger.info("Recalculating aggregations");
-            recalculateAggregations(sql, recalculateProperties); // перерасчитаем агрегации
+            recalculateAggregations(sql, recalculateProperties, false); // перерасчитаем агрегации
             //        recalculateAggregations(sql, getAggregateStoredProperties());
 
             sql.commitTransaction();
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             sql.rollbackTransaction();
-            throw new RuntimeException("Error while synchronizing DB : ", e);
+            throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
+        } finally {
+            sql.popNoHandled();
         }
 
         DataSession session = createSession();
@@ -1083,7 +1143,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         initSystemUser();
     }
 
-    private void fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException {
+    private void fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         DataSession session = createSession();
 
         LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
@@ -1093,31 +1153,62 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         session.close();
     }
 
-    private void updateClassStat(SQLSession session) throws SQLException {
+    private void updateClassStat(SQLSession session) throws SQLException, SQLHandledException {
         LM.baseClass.updateClassStat(session);
     }
 
-    public String checkAggregations(SQLSession session) throws SQLException {
+    public String checkAggregations(SQLSession session) throws SQLException, SQLHandledException {
         String message = "";
         for (AggregateProperty property : businessLogics.getAggregateStoredProperties())
             message += property.checkAggregation(session);
         return message;
     }
 
-    public void recalculateAggregations(SQLSession session) throws SQLException {
-        recalculateAggregations(session, businessLogics.getAggregateStoredProperties());
+    public void recalculateAggregations(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        recalculateAggregations(session, businessLogics.getAggregateStoredProperties(), isolatedTransaction);
     }
 
-    public void recalculateAggregations(SQLSession session, List<AggregateProperty> recalculateProperties) throws SQLException {
-        for (AggregateProperty property : recalculateProperties)
-            property.recalculateAggregation(session);
+    public static interface RunService {
+        void run(SQLSession sql) throws SQLException, SQLHandledException;
+    }
+    
+    public static void run(SQLSession session, boolean isolatedTransaction, RunService run) throws SQLException, SQLHandledException {
+        if(isolatedTransaction) {
+            session.startTransaction(RECALC_TIL);
+            try {
+                run.run(session);
+                session.commitTransaction();
+            } catch (Throwable t) {
+                session.rollbackTransaction();
+                if(t instanceof SQLHandledException && ((SQLHandledException)t).isRepeatableApply()) { // update conflict или deadlock или timeout - пробуем еще раз
+                    run(session, isolatedTransaction, run);
+                    return;
+                }
+                
+                throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
+            }
+                
+        } else
+            run.run(session);
+        
+        
+    }
+    public void recalculateAggregations(SQLSession session, List<AggregateProperty> recalculateProperties, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        for (final AggregateProperty property : recalculateProperties)
+            run(session, isolatedTransaction, new RunService() {
+                public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                    property.recalculateAggregation(sql);
+                }});    
     }
 
-    public void recalculateAggregationTableColumn(SQLSession session, String propertySID) throws SQLException {
+    public void recalculateAggregationTableColumn(SQLSession session, String propertySID, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         for (CalcProperty property : businessLogics.getAggregateStoredProperties())
             if (property.getSID().equals(propertySID)) {
-                AggregateProperty aggregateProperty = (AggregateProperty) property;
-                aggregateProperty.recalculateAggregation(session);
+                final AggregateProperty aggregateProperty = (AggregateProperty) property;
+                run(session, isolatedTransaction, new RunService() {
+                    public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                        aggregateProperty.recalculateAggregation(sql);
+                    }});
             }
     }
 
@@ -1302,17 +1393,27 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         session.executeDDL(adapter.getVacuumDB());
     }
 
-    public void packTables(SQLSession session, ImCol<ImplementTable> tables) throws SQLException {
-        for (Table table : tables) {
+    public void packTables(SQLSession session, ImCol<ImplementTable> tables, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        for (final Table table : tables) {
             logger.debug(getString("logics.info.packing.table") + " (" + table + ")... ");
-            session.packTable(table);
+            run(session, isolatedTransaction, new RunService() {
+                @Override
+                public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                    sql.packTable(table);
+                }});
             logger.debug("Done");
         }
     }
 
+    public static int START_TIL = -1;
+    public static int DEBUG_TIL = -1;
+    public static int RECALC_TIL = -1;
+    public static int SESSION_TIL = -1;
+    public static int ID_TIL = Connection.TRANSACTION_REPEATABLE_READ;
+
     public void dropColumn(String tableName, String columnName) throws SQLException {
         SQLSession sql = getThreadLocalSql();
-        sql.startTransaction();
+        sql.startTransaction(DBManager.START_TIL);
         try {
             sql.dropColumn(tableName, columnName);
             ImplementTable table = LM.tableFactory.getImplementTablesMap().get(tableName); // надо упаковать таблицу, если удалили колонку
@@ -1325,13 +1426,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private void updateStats() throws SQLException {
+    private void updateStats() throws SQLException, SQLHandledException {
         updateStats(true); // чтобы сами таблицы статистики получили статистику
         if (!SystemProperties.doNotCalculateStats)
             updateStats(false);
     }
 
-    private <T> ImMap<String, T> readStatsFromDB(DataSession session, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException {
+    private <T> ImMap<String, T> readStatsFromDB(DataSession session, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException, SQLHandledException {
         QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.toSet("key"));
         Expr sidToObject = sIDProp.getExpr(session.getModifier(), query.getMapExprs().singleValue());
         query.and(sidToObject.getWhere());
@@ -1350,7 +1451,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                                                                 }});
     }
 
-    public void updateStats(boolean statDefault) throws SQLException {
+    public void updateStats(boolean statDefault) throws SQLException, SQLHandledException {
         DataSession session = createSession();
 
         ImMap<String, Integer> tableStats;
@@ -1508,7 +1609,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
         }
 
-        public DBStructure(DataInputStream inputDB, SQLSession sql) throws IOException, SQLException {
+        public DBStructure(DataInputStream inputDB, SQLSession sql) throws IOException, SQLException, SQLHandledException {
             if (inputDB == null) {
                 version = -2;
                 dbVersion = new DBVersion("0.0");

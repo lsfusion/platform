@@ -10,6 +10,7 @@ import lsfusion.server.Message;
 import lsfusion.server.caches.AbstractInnerContext;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -61,7 +62,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     public abstract ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders);
 
     @Message("message.query.execute")
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException {
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException, SQLHandledException {
         return compile(session.syntax, orders, selectTop).execute(session, env);
     }
 
@@ -84,17 +85,17 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         return getWhere().isFalse();
     }
 
-    public void outSelect(SQLSession session) throws SQLException {
+    public void outSelect(SQLSession session) throws SQLException, SQLHandledException {
         outSelect(session, QueryEnvironment.empty);
     }
-    public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException {
+    public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
         compile(session.syntax).outSelect(session, env);
     }
 
-    public String readSelect(SQLSession session) throws SQLException {
+    public String readSelect(SQLSession session) throws SQLException, SQLHandledException {
         return readSelect(session,  QueryEnvironment.empty);
     }
-    public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException {
+    public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
         return compile(session.syntax).readSelect(session, env);
     }
 
@@ -131,7 +132,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         }
     }
     public abstract PullValues<K, V> pullValues();
-    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException {
+    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         return getQuery().executeClasses(env);
     }
 }

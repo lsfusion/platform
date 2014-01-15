@@ -17,6 +17,7 @@ import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.context.Context;
 import lsfusion.server.context.ContextAwareThread;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.lifecycle.LifecycleAdapter;
@@ -82,6 +83,8 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             throw new RuntimeException("Error starting Scheduler: ", e);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException("Error starting Scheduler: ", e);
+        } catch (SQLHandledException e) {
+            throw new RuntimeException("Error starting Scheduler: ", e);
         }
     }
 
@@ -146,13 +149,12 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             }
 
             session.close();
-        } catch (SQLException e) {
-            logger.error("Error changing current date: ", e);
-            Throwables.propagate(e);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
     }
 
-    public void setupScheduledTasks(DataSession session) throws SQLException, ScriptingErrorLog.SemanticErrorException {
+    public void setupScheduledTasks(DataSession session) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
 
         KeyExpr scheduledTaskExpr = new KeyExpr("scheduledTask");
         ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTaskExpr);
@@ -249,11 +251,13 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     }
                 }
             } catch (SQLException e) {
-                Throwables.propagate(e);
+                throw Throwables.propagate(e);
+            } catch (SQLHandledException e) {
+                throw Throwables.propagate(e);
             }
         }
 
-        private boolean executeLAP(LAP lap, DataObject scheduledTask) throws SQLException {
+        private boolean executeLAP(LAP lap, DataObject scheduledTask) throws SQLException, SQLHandledException {
             ThreadLocalContext.set(new SchedulerContext());
             
             DataSession beforeStartLogSession = dbManager.createSession();
@@ -314,7 +318,9 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                                 .change(currentScheduledTaskLogFinishObject, (ExecutionEnvironment) afterFinishLogSession, scheduledClientTaskLogObject);
                         businessLogics.schedulerLM.messageScheduledClientTaskLog.change(message, afterFinishLogSession, scheduledClientTaskLogObject);
                     } catch (SQLException e) {
-                        Throwables.propagate(e);
+                        throw Throwables.propagate(e);
+                    } catch (SQLHandledException e) {
+                        throw Throwables.propagate(e);
                     }
                 }
                 super.delayUserInteraction(action);

@@ -2,7 +2,7 @@ package lsfusion.server.logics.service;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -20,7 +20,7 @@ public class CheckClassesActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataSession session = context.createSession();
 
         BusinessLogics BL = context.getBL();

@@ -2,6 +2,7 @@ package lsfusion.server.logics.reflection;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ReflectionLogicsModule;
@@ -21,7 +22,7 @@ public class DropColumnActionProperty extends ScriptingActionProperty {
         delete = LM.getDeleteAction(LM.dropColumn, true);
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         BusinessLogics BL = context.getBL();
         DataObject dropColumnObject = context.getSingleDataKeyValue();
         String columnName = (String) BL.reflectionLM.sidDropColumn.getOld().read(context, dropColumnObject);

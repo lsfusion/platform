@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.AbstractValuesContext;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
@@ -80,7 +81,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
 
     public abstract Where order(Expr expr, boolean desc, Where orderWhere);
 
-    public abstract ObjectValue refresh(SessionChanges session, ValueClass upClass) throws SQLException;
+    public abstract ObjectValue refresh(SessionChanges session, ValueClass upClass) throws SQLException, SQLHandledException;
 
     public abstract boolean isNull();
 

@@ -428,4 +428,20 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
         ensuredRecursion.put(types, true);
     }
+
+    public boolean isDeadLock(SQLException e) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean isUpdateConflict(SQLException e) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean isTimeout(SQLException e) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean isTransactionCanceled(SQLException e) {
+        throw new UnsupportedOperationException();
+    }
 }

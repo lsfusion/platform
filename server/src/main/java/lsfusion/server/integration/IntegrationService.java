@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.Message;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.IntegerClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
@@ -45,16 +46,16 @@ public class IntegrationService {
         this.deletes = deletes;
     }
 
-    public void synchronize() throws SQLException {
+    public void synchronize() throws SQLException, SQLHandledException {
         synchronize(false);
     }
 
-    public void synchronize(boolean replaceNull) throws SQLException {
+    public void synchronize(boolean replaceNull) throws SQLException, SQLHandledException {
         synchronize(replaceNull, true);
     }
 
     @Message("message.synchronize")
-    public void synchronize(boolean replaceNull, boolean replaceEqual) throws SQLException {
+    public void synchronize(boolean replaceNull, boolean replaceEqual) throws SQLException, SQLHandledException {
         SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<ImportField>(IntegerClass.instance, table.fields, ImportField.typeGetter);
         
         MExclMap<ImMap<String, DataObject>, ImMap<ImportField, ObjectValue>> mRows = MapFact.mExclMap();
@@ -89,7 +90,7 @@ public class IntegrationService {
         importTable.drop(session.sql);
     }
 
-    private <P extends PropertyInterface> void deleteObjects(SingleKeyTableUsage<ImportField> importTable) throws SQLException {
+    private <P extends PropertyInterface> void deleteObjects(SingleKeyTableUsage<ImportField> importTable) throws SQLException, SQLHandledException {
         for (ImportDelete delete : deletes) {
             KeyExpr keyExpr = new KeyExpr("key");
 

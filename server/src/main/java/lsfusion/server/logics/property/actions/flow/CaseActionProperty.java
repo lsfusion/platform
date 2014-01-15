@@ -11,6 +11,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -125,7 +126,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
     }
 
     @Override
-    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException {
+    public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         FlowResult result = FlowResult.FINISH;
         for(Case<PropertyInterface> aCase : getCases()) {
             if(aCase.where.read(context, context.getKeys()) != null) {

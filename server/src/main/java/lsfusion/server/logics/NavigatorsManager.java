@@ -5,6 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.auth.User;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -139,7 +140,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
     }
 
-    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator, boolean skipLogging) throws SQLException {
+    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator, boolean skipLogging) throws SQLException, SQLHandledException {
         synchronized (navigators) {
 
             if (!skipLogging) {
@@ -175,7 +176,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
     }
 
-    private void removeNavigator(RemoteNavigator navigator, DataSession session) throws SQLException {
+    private void removeNavigator(RemoteNavigator navigator, DataSession session) throws SQLException, SQLHandledException {
         if (navigator != null && navigator.getConnection() != null) {
             businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("disconnectedConnection"), session, navigator.getConnection());
         }

@@ -1243,7 +1243,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ArrayList<Integer>(s);
     }
 
-    public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, boolean singleApply, PropertyUsage used, List<LPWithParams> properties, List<LP> localProps) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, boolean singleApply, PropertyUsage used, List<LPWithParams> properties, List<LP> localProps, boolean newThread, long delay, Long period) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedListAProp(" + newSession + ", " + doApply + ", " + properties + ");");
 
         ImSet<SessionDataProperty> sessionUsed = used != null ? SetFact.singleton((SessionDataProperty) findLPByPropertyUsage(used).property) : SetFact.<SessionDataProperty>EMPTY();
@@ -1264,9 +1264,15 @@ public class ScriptingLogicsModule extends LogicsModule {
             mUpLocal.exclAdd((SessionDataProperty) local.property);
         }
 
-        return !newSession
-               ? new LPWithParams(listLP, usedParams)
-               : new LPWithParams(addNewSessionAProp(null, genSID(), "", listLP, doApply, singleApply, mUpLocal.immutable(), sessionUsed), usedParams);
+        if(newSession)
+            listLP = addNewSessionAProp(null, genSID(), "", listLP, doApply, singleApply, mUpLocal.immutable(), sessionUsed); 
+
+        if(newThread) {
+            assert newSession;
+            listLP = addNewThreadAProp(null, genSID(), "", listLP, delay, period);
+        }
+
+        return new LPWithParams(listLP, usedParams);
     }
 
     public LPWithParams addScriptedRequestUserInputAProp(String typeId, String chosenKey, LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {

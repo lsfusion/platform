@@ -16,6 +16,7 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
@@ -36,8 +37,9 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.concurrent.ScheduledExecutorService;
 
-public class ExecutionContext<P extends PropertyInterface> implements UpdateCurrentClasses {
+public class ExecutionContext<P extends PropertyInterface> implements UpdateCurrentClasses, UserInteraction {
     private ImMap<P, ? extends ObjectValue> keys;
 
     private final ObjectValue pushedUserInput;
@@ -102,6 +104,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
 
     public void delayUserInterfaction(ClientAction action) {
         ThreadLocalContext.delayUserInteraction(action);
+    }
+
+    public ScheduledExecutorService getExecutorService() {
+        return ThreadLocalContext.getExecutorService();
     }
 
     public FormInstance<?> getFormInstance() {
@@ -180,44 +186,44 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         return getEnv().getModifier();
     }
 
-    public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
+    public DataObject addObject(ConcreteCustomClass cls) throws SQLException, SQLHandledException {
         return getSession().addObject(cls, pushedAddObject);
     }
 
-    public <T extends PropertyInterface> SinglePropertyTableUsage<T> addObjects(ConcreteCustomClass cls, PropertySet<T> set) throws SQLException {
+    public <T extends PropertyInterface> SinglePropertyTableUsage<T> addObjects(ConcreteCustomClass cls, PropertySet<T> set) throws SQLException, SQLHandledException {
         return getSession().addObjects(cls, set);
     }
 
-    public DataObject addFormObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException {
+    public DataObject addFormObject(ObjectEntity object, ConcreteCustomClass cls) throws SQLException, SQLHandledException {
         FormInstance<?> form = getFormInstance();
         return form.addFormObject((CustomObjectInstance) form.instanceFactory.getInstance(object), cls, pushedAddObject);
     }
 
-    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass changeClass) throws SQLException {
+    public void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject object, ConcreteObjectClass changeClass) throws SQLException, SQLHandledException {
         getEnv().changeClass(objectInstance, object, changeClass);
     }
 
-    public void changeClass(ClassChange change) throws SQLException {
+    public void changeClass(ClassChange change) throws SQLException, SQLHandledException {
         getSession().changeClass(change);
     }
 
-    public boolean checkApply(BusinessLogics BL) throws SQLException {
-        return getSession().check(BL, getFormInstance());
+    public boolean checkApply(BusinessLogics BL) throws SQLException, SQLHandledException {
+        return getSession().check(BL, getFormInstance(), this);
     }
 
-    public boolean checkApply() throws SQLException {
+    public boolean checkApply() throws SQLException, SQLHandledException {
         return checkApply(getBL());
     }
 
-    public boolean apply(BusinessLogics BL) throws SQLException {
-        return getEnv().apply(BL, this);
+    public boolean apply(BusinessLogics BL) throws SQLException, SQLHandledException {
+        return getEnv().apply(BL, this, this);
     }
 
-    public boolean apply() throws SQLException {
+    public boolean apply() throws SQLException, SQLHandledException {
         return apply(getBL());
     }
 
-    public void cancel() throws SQLException {
+    public void cancel() throws SQLException, SQLHandledException {
         getEnv().cancel();
     }
 
@@ -251,12 +257,22 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     public void update(DataSession session) {
         try {
             keys = session.updateCurrentClasses(keys);
+
+            final ImMap<P, ? extends ObjectValue> prevKeys = keys;
+            session.addRollbackInfo(new Runnable() {
+                public void run() {
+                    keys = prevKeys;
+                }});
         } catch (SQLException e) {
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
+        } catch (SQLHandledException e) {
+            throw Throwables.propagate(e);
         }
         if(stack != null)
             stack.update(session);
     }
+    
+    
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, FormEnvironment<T> form, ObjectValue pushedUserInput) {
         return new ExecutionContext<T>(keys, pushedUserInput, pushedAddObject, env, form, this);
@@ -283,7 +299,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
 
     // чтение пользователя
-    public ObjectValue requestUserObject(DialogRequest dialog) throws SQLException { // null если canceled
+    public ObjectValue requestUserObject(DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
         ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserObject(dialog);
         env.setLastUserInput(userInput);
         return userInput;
@@ -313,12 +329,12 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         return env.getWasUserInput();
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters)  throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException, SQLHandledException {
         return createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, null, null);
     }
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps)  throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
         return ThreadLocalContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
     }
 
@@ -326,11 +342,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         return ThreadLocalContext.createRemoteForm(formInstance);
     }
 
-    public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException {
+    public RemoteForm createReportForm(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException, SQLHandledException {
         return createRemoteForm(createFormInstance(formEntity, mapObjects, getSession(), false, FormSessionScope.OLDSESSION, false, false, false, null));
     }
 
-    public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException {
+    public File generateFileFromForm(BusinessLogics BL, FormEntity formEntity, ObjectEntity objectEntity, DataObject dataObject) throws SQLException, SQLHandledException {
 
         RemoteForm remoteForm = createReportForm(formEntity, MapFact.singleton(objectEntity, dataObject));
         try {

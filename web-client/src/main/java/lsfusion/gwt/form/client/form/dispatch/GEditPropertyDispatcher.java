@@ -40,7 +40,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         final boolean asyncModifyObject = form.isAsyncModifyObject(editProperty);
         if (GEditBindingMap.CHANGE.equals(actionSID) && (asyncModifyObject || editProperty.changeType != null)) {
             if (editProperty.askConfirm) {
-                form.blockingConfirm("lsFusion", editProperty.askConfirmMessage, new DialogBoxHelper.CloseCallback() {
+                form.blockingConfirm("lsFusion", editProperty.askConfirmMessage, false, new DialogBoxHelper.CloseCallback() {
                     @Override
                     public void closed(DialogBoxHelper.OptionType chosenOption) {
                         if (chosenOption == DialogBoxHelper.OptionType.YES) {

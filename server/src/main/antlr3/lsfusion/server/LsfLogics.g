@@ -2092,13 +2092,17 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	boolean newSession = false;
 	boolean doApply = false;
 	boolean singleApply = false;
+	boolean newThread = false;
+	long ldelay = 0;
+	Long lperiod = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedListAProp(newSession, doApply, singleApply, null, props, localProps);
+		$property = self.addScriptedListAProp(newSession, doApply, singleApply, null, props, localProps, newThread, ldelay, lperiod);
 	}
 }
-	:	('NEWSESSION' { newSession = true; } ('AUTOAPPLY' {doApply = true; } )?
+	:	((('NEWTHREAD' { newThread = true; } (period=intLiteral { lperiod = (long)$period.val; })? ('DELAY' delay=intLiteral { ldelay = $delay.val; })? ) 
+	                | 'NEWSESSION') { newSession = true; } ('AUTOAPPLY' {doApply = true; } )?
 					('SINGLE' { singleApply = true; })? )?
 		'{'
 			(	(PDB=actionPropertyDefinitionBody[context, dynamic] { props.add($PDB.property); }

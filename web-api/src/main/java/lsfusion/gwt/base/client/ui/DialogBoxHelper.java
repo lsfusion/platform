@@ -54,12 +54,16 @@ public class DialogBoxHelper {
         new MessageBox(caption, contents, closeCallback, OptionType.CLOSE, OptionType.CLOSE).showCenter();
     }
 
-    public static void showConfirmBox(String caption, String message, final CloseCallback closeCallback) {
-        showConfirmBox(caption, message, true, closeCallback);
+    public static void showConfirmBox(String caption, String message, boolean cancel, final CloseCallback closeCallback) {
+        showConfirmBox(caption, message, cancel, true, closeCallback);
     }
 
-    public static void showConfirmBox(String caption, String message, boolean escapeMessage, final CloseCallback closeCallback) {
-        new MessageBox(caption, escapedIf(message, escapeMessage), closeCallback, OptionType.YES, OptionType.YES, OptionType.NO).showCenter();
+    public static void showConfirmBox(String caption, String message, boolean cancel, boolean escapeMessage, final CloseCallback closeCallback) {
+        OptionType[] options = {OptionType.YES, OptionType.NO};
+        if(cancel)
+            options = new OptionType[]{OptionType.YES, OptionType.NO, OptionType.CLOSE};
+        MessageBox messageBox = new MessageBox(caption, escapedIf(message, escapeMessage), closeCallback, OptionType.YES, options);
+        messageBox.showCenter();
     }
 
     private static final class MessageBox extends DialogBox {

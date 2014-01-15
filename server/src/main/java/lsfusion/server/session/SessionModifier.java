@@ -13,6 +13,7 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.logics.ObjectValue;
@@ -245,21 +246,22 @@ public abstract class SessionModifier implements Modifier {
         return Settings.get().getLimitHintNoUpdateComplexity();
     }
 
-    public void addHintIncrement(CalcProperty property) {
+    public void addHintIncrement(CalcProperty property) throws SQLException, SQLHandledException {
         assert allowHintIncrement(property);
 
         try {
             readProperty = property;
             increment.add(property, property.readChangeTable(getSQL(), this, getBaseClass(), getQueryEnv()));
+        } catch(Exception e) {
+            throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
+        } finally {
             readProperty = null;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
 
         eventChange(property, false, true); // используется только в случаях когда гарантировано меняется "источник"
     }
 
-    public <P extends PropertyInterface> void addPrereadValues(CalcProperty<P> property, ImMap<P, Expr> values) {
+    public <P extends PropertyInterface> void addPrereadValues(CalcProperty<P> property, ImMap<P, Expr> values) throws SQLException, SQLHandledException {
         assert property.complex && allowPrereadValues(property, values);
 
         try {
@@ -292,10 +294,8 @@ public abstract class SessionModifier implements Modifier {
                 readRows = prereadRows.addExcl(readRows);
 
             preread.put(property, readRows);
-
+        } finally {
             prereadProps.remove(property);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
 
         eventChange(property, false, true); // используется только в случаях когда гарантировано меняется "источник"

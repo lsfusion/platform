@@ -48,7 +48,13 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         // I1=I1' AND … In = In' AND G!=G' == false
         CalcProperty constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createTrue(),
                 getMapInterfaces().values(), groupProperty, new Result<ImRevMap<I, JoinProperty.Interface>>(), Compare.GREATER);
-        constraint.caption = ServerResourceBundle.getString("logics.property.derived.violate.property.uniqueness.for.objects", groupProperty.toString());
+        
+        String cycleCaption;
+        if(groupProperty instanceof CalcPropertyMapImplement)
+            cycleCaption = ((CalcPropertyMapImplement<?, I>)groupProperty).property.toString();
+        else
+            cycleCaption = groupProperty.toString();
+        constraint.caption = ServerResourceBundle.getString("logics.property.derived.violate.property.uniqueness.for.objects", cycleCaption);
         return constraint;
     }
 

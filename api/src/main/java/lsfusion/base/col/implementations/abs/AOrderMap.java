@@ -127,6 +127,18 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
         return mapMergeItOrderKeys(getter);
     }
 
+    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapMergeItOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E2, E1 {
+        MOrderMap<M, V> mResult = MapFact.mOrderMapMax(size());
+        for(int i=0,size=size();i<size;i++)
+            mResult.add(getter.getMapValue(getKey(i)), getValue(i));
+        return mResult.immutableOrder();
+    }
+
+    @Override
+    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapMergeOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E1, E2 {
+        return mapMergeItOrderKeysEx(getter);
+    }
+
     public <M> ImOrderSet<M> mapOrderSetValues(GetKeyValue<M, K, V> getter) {
         MOrderExclSet<M> mResult = SetFact.mOrderExclSet(size());
         for(int i=0,size=size();i<size;i++)
@@ -160,6 +172,13 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
     }
 
     public <M> ImOrderMap<M, V> mapOrderKeys(GetValue<M, K> getter) {
+        MOrderExclMap<M, V> mResult = MapFact.mOrderExclMap(size());
+        for(int i=0,size=size();i<size;i++)
+            mResult.exclAdd(getter.getMapValue(getKey(i)), getValue(i));
+        return mResult.immutableOrder();
+    }
+
+    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E1, E2 {
         MOrderExclMap<M, V> mResult = MapFact.mOrderExclMap(size());
         for(int i=0,size=size();i<size;i++)
             mResult.exclAdd(getter.getMapValue(getKey(i)), getValue(i));

@@ -410,7 +410,26 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         return mapItValues(getter);
     }
 
+    public <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapItValuesEx(GetExValue<M, V, E1, E2> getter) throws E1, E2{
+        ImValueMap<K, M> mvResult = mapItValues();
+        for(int i=0,size=size();i<size;i++)
+            mvResult.mapValue(i, getter.getMapValue(getValue(i)));
+        return mvResult.immutableValue();
+    }
+
+    @Override
+    public <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapValuesEx(GetExValue<M, V, E1, E2> getter) throws E1, E2 {
+        return mapItValuesEx(getter);
+    }
+
     public <M> ImMap<K, M> mapKeyValues(GetValue<M, K> getter) {
+        ImValueMap<K, M> mvResult = mapItValues();
+        for(int i=0,size=size();i<size;i++)
+            mvResult.mapValue(i, getter.getMapValue(getKey(i)));
+        return mvResult.immutableValue();
+    }
+
+    public <M, E1 extends Exception, E2 extends Exception> ImMap<K, M> mapKeyValuesEx(GetExValue<M, K, E1, E2> getter) throws E1, E2{
         ImValueMap<K, M> mvResult = mapItValues();
         for(int i=0,size=size();i<size;i++)
             mvResult.mapValue(i, getter.getMapValue(getKey(i)));

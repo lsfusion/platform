@@ -111,4 +111,13 @@ public interface SQLSyntax {
     boolean noDynamicSampling();
 
     boolean orderTopTrouble();
+    
+    boolean isDeadLock(SQLException e);
+
+    boolean isUpdateConflict(SQLException e);
+
+    boolean isTimeout(SQLException e);
+
+    boolean isTransactionCanceled(SQLException e);
+
 }

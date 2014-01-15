@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -23,7 +24,7 @@ public class ApplyActionProperty extends ScriptingActionProperty {
         return type == ChangeFlowType.APPLY;
     }
 
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         if(!context.apply() && canceled!=null) // если apply'ся то canceled по опререлению сбросится
             canceled.change(context, true);
     }

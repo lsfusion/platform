@@ -67,6 +67,9 @@ public interface ImOrderMap<K,V> {
     <M> ImList<M> mapListValues(GetValue<M, V> getter);
 
     public <M> ImOrderMap<M, V> mapMergeOrderKeys(GetValue<M, K> getter);
+
+    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E1, E2;
+    public <M, E1 extends Exception, E2 extends Exception> ImOrderMap<M, V> mapMergeOrderKeysEx(GetExValue<M, K, E1, E2> getter) throws E1, E2;
     
     boolean starts(ImSet<K> set);
     public ImOrderMap<K,V> moveStart(ImSet<K> col);

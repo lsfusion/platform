@@ -29,6 +29,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
+import lsfusion.server.logics.property.actions.LogPropertyActionProperty;
 import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
 import lsfusion.server.logics.property.actions.flow.ReturnActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -111,6 +112,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     public LAP<?> apply;
     public LCP<?> canceled;
+    public LAP<?> onStarted;
 
     public LAP flowBreak;
     public LAP flowReturn;
@@ -270,6 +272,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         apply = getLAPByOldName("apply");
         cancel = getLAPByOldName("cancel");
+
+        onStarted = getLAPByOldName("onStarted");
 
         // только через операторы 
         flowBreak = addProperty(null, new LAP(new BreakActionProperty()));

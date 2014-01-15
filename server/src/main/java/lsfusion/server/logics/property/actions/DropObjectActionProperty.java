@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.NullValue;
@@ -17,7 +18,7 @@ public class DropObjectActionProperty extends SystemExplicitActionProperty {
         super("drop" + valueClass.getSID(), ServerResourceBundle.getString("logics.property.actions.drop") + " " + valueClass, new ValueClass[]{valueClass});
     }
 
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         PropertyObjectInterfaceInstance objectInstance = context.getSingleObjectInstance();
         if(objectInstance instanceof ObjectInstance) // не changeObject чтобы fire не вызывать, временно так
             context.getFormInstance().seekObject((ObjectInstance)objectInstance, NullValue.instance);

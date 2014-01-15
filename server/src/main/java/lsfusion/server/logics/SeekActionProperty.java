@@ -3,17 +3,16 @@ package lsfusion.server.logics;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ConcreteValueClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
@@ -40,7 +39,7 @@ public class SeekActionProperty extends ScriptingActionProperty {
         return object != null;
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         context.emitExceptionIfNotInFormSession();
 
         FormInstance<?> form = context.getFormInstance();

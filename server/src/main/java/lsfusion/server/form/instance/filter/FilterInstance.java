@@ -2,6 +2,7 @@ package lsfusion.server.form.instance.filter;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.FilterType;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.instance.*;
@@ -31,7 +32,7 @@ public abstract class FilterInstance implements Updated {
     public FilterInstance(DataInputStream inStream, FormInstance form) throws IOException {
     }
 
-    public static FilterInstance deserialize(DataInputStream inStream, FormInstance form) throws IOException, SQLException {
+    public static FilterInstance deserialize(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         byte type = inStream.readByte();
         switch(type) {
             case FilterType.OR:
@@ -66,9 +67,9 @@ public abstract class FilterInstance implements Updated {
 
     public abstract GroupObjectInstance getApplyObject();
 
-    public abstract Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged);
+    public abstract Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException;
 
-    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException {
+    public void resolveAdd(ExecutionEnvironment env, CustomObjectInstance object, DataObject addObject) throws SQLException, SQLHandledException {
     }
 
     public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(CalcProperty<X> toChange) {

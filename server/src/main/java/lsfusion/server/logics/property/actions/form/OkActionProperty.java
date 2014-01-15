@@ -1,6 +1,6 @@
 package lsfusion.server.logics.property.actions.form;
 
-import lsfusion.base.ApiResourceBundle;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
@@ -17,8 +17,8 @@ public class OkActionProperty extends FormToolbarActionProperty {
         super(lm);
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-        context.getFormInstance().formOk();
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        context.getFormInstance().formOk(context);
     }
 
     @Override

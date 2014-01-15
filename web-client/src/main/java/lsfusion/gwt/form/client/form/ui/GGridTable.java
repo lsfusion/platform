@@ -703,7 +703,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         boolean singleC = table.size() == 1 && tableColumns == 1;
 
         if (!singleC) {
-            DialogBoxHelper.showConfirmBox("lsFusion", "Вы уверены, что хотите изменить значения нескольких ячеек?", new DialogBoxHelper.CloseCallback() {
+            DialogBoxHelper.showConfirmBox("lsFusion", "Вы уверены, что хотите изменить значения нескольких ячеек?", false, new DialogBoxHelper.CloseCallback() {
                 @Override
                 public void closed(DialogBoxHelper.OptionType chosenOption) {
                     if (chosenOption == DialogBoxHelper.OptionType.YES) {

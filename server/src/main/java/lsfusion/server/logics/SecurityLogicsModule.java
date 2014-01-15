@@ -50,6 +50,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP permitUserNavigatorElement;
     public LCP forbidUserNavigatorElement;
 
+    public LCP transactTimeoutUser;
+    
     public LCP sidUserRole;
     public LCP userRoleSID;
     public LCP nameUserRole;
@@ -138,6 +140,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         // Разрешения для каждого элемента
         permitUserNavigatorElement = getLCPByOldName("permitUserNavigatorElement");
         forbidUserNavigatorElement = getLCPByOldName("forbidUserNavigatorElement");
+
+        transactTimeoutUser = getLCPByOldName("transactTimeoutUser");
 
         propertyPolicyForm = (FormEntity) getNavigatorElementByName("propertyPolicy");
     }

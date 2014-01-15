@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -16,7 +17,7 @@ public abstract class CustomReadValueActionProperty extends UserActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         Object userValue = null;
 
         DataClass readType = getReadType();
@@ -37,7 +38,7 @@ public abstract class CustomReadValueActionProperty extends UserActionProperty {
         return getReadType();
     }
 
-    protected abstract void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException;
+    protected abstract void executeRead(ExecutionContext<ClassPropertyInterface> context, Object userValue) throws SQLException, SQLHandledException;
 
     protected abstract DataClass getReadType();
 }

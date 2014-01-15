@@ -17,6 +17,8 @@ public class ServerLoggers {
 
     public static final Logger sqlLogger = Logger.getLogger("SQLLogger");
 
+    public static final Logger sqlHandLogger = Logger.getLogger("SQLHandLogger");
+
     public static final Logger scriptLogger = Logger.getLogger("ScriptLogger");
 
     public static final Logger pausablesInvocationLogger = Logger.getLogger("PausableInvocationsLogger");

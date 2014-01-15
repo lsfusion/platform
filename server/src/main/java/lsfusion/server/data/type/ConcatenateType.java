@@ -13,6 +13,7 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ConcatenateClassSet;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.DeconcatenateExpr;
 import lsfusion.server.data.expr.Expr;
@@ -212,7 +213,7 @@ public class ConcatenateType extends AbstractType<Object[]> {
         return new ConcatenateClassSet(classes);
     }
 
-    public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException {
+    public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException, SQLHandledException {
         Object[] objects = read(value);
         assert objects!=null;
 

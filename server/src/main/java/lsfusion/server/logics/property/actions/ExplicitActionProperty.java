@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
@@ -21,13 +22,13 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
         super(sID, caption, IsClassProperty.getInterfaces(classes));
     }
 
-    protected abstract void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException;
+    protected abstract void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;
 
     protected boolean allowNulls() {
         return false;
     }
 
-    public final FlowResult aspectExecute(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public final FlowResult aspectExecute(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<ClassPropertyInterface, ? extends ObjectValue> keys = context.getKeys();
         ImMap<ClassPropertyInterface,DataObject> dataKeys = DataObject.filterDataObjects(keys);
         if(!allowNulls() && dataKeys.size() < keys.size())

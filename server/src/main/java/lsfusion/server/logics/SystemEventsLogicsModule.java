@@ -5,6 +5,7 @@ import lsfusion.base.DateConverter;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -118,7 +119,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 //        baseLM.objectClassName.makeLoggable(this, true);
     }
 
-    public void logException(BusinessLogics bl, Throwable t, DataObject user, String clientName, boolean client) throws SQLException {
+    public void logException(BusinessLogics bl, Throwable t, DataObject user, String clientName, boolean client) throws SQLException, SQLHandledException {
         String message = Throwables.getRootCause(t).getLocalizedMessage();
         String errorType = t.getClass().getName();
         String erTrace = ExceptionUtils.getStackTraceString(t);

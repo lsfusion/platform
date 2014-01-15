@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.ByteArrayClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
@@ -21,10 +22,12 @@ public class PasteActionProperty extends AroundAspectActionProperty {
 
     public <I extends PropertyInterface> PasteActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> changeWYSAction) {
         super(sID, caption, innerInterfaces, changeWYSAction);
+        
+        finalizeInit();
     }
 
     @Override
-    protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException {
+    protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
 
         ObjectValue objectValue = context.requestUserData(ByteArrayClass.instance, null);
         if(!(objectValue instanceof DataObject))

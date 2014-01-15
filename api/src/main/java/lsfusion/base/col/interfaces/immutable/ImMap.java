@@ -93,6 +93,9 @@ public interface ImMap<K, V> {
     <M> ImRevMap<K,M> mapRevValues(GetKeyValue<M,K, V> getter);
     <MK, MV> ImMap<MK,MV> mapKeyValues(GetValue<MK, K> getterKey, GetValue<MV, V> getterValue);
 
+    <M, E1 extends Exception, E2 extends Exception> ImMap<K,M> mapKeyValuesEx(GetExValue<M,K,E1,E2> getter) throws E1, E2;
+    <M, E1 extends Exception, E2 extends Exception> ImMap<K,M> mapValuesEx(GetExValue<M,V,E1,E2> getter) throws E1, E2;
+
     <M> ImSet<M> mapMergeSetValues(GetKeyValue<M, K, V> getter);
 
     <M> ImMap<M,V> mapKeys(GetValue<M,K> getter);

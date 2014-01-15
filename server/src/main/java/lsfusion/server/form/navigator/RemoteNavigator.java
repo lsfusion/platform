@@ -18,6 +18,7 @@ import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -121,6 +122,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         this.classCache = new ClassCache();
 
         this.securityPolicy = currentUser.getSecurityPolicy();
+        this.transactionTimeout = currentUser.getTimeout();
 
         this.user = new DataObject(currentUser.ID, businessLogics.authenticationLM.customUser);
         this.computer = new DataObject(computer, businessLogics.authenticationLM.computer);
@@ -135,7 +137,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public void changeCurrentUser(DataObject user) throws SQLException {
         this.user = user;
-        this.securityPolicy = getUserSecurityPolicy();
+        Result<Integer> timeout = new Result<Integer>();
+        this.securityPolicy = getUserSecurityPolicy(timeout);
+        this.transactionTimeout = timeout.result;
         updateEnvironmentProperty((CalcProperty) businessLogics.authenticationLM.currentUser.property, user);
     }
 
@@ -144,9 +148,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             session.updateProperties(SetFact.singleton(property), true); // редко используется поэтому все равно
     }
 
-    public SecurityPolicy getUserSecurityPolicy() {
+    public SecurityPolicy getUserSecurityPolicy(Result<Integer> timeout) {
         try {
-            return securityManager.readUser(getUserLogin(), createSession()).getSecurityPolicy();
+            User user = securityManager.readUser(getUserLogin(), createSession());
+            timeout.set(user.getTimeout());
+            return user.getSecurityPolicy();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -181,6 +187,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         try {
             businessLogics.systemEventsLM.logException(businessLogics, t, this.user, hostname, true);
         } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
@@ -255,8 +263,25 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
+    private static class WeakTimeoutController implements TimeoutController { // чтобы помочь сборщику мусора и устранить цикл
+        WeakReference<RemoteNavigator> weakThis;
+
+        private WeakTimeoutController(RemoteNavigator navigator) {
+            this.weakThis = new WeakReference<RemoteNavigator>(navigator);
+        }
+
+        public int getTransactionTimeout() {
+            return weakThis.get().getTransactionTimeout();
+        }
+    }
+
+    private int transactionTimeout;
+    public int getTransactionTimeout() {
+        return transactionTimeout;
+    }
+    
     private DataSession createSession() throws SQLException {
-        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this));
+        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakTimeoutController(this));
         sessions.add(session);
         return session;
     }
@@ -306,6 +331,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 session.close();
             }
         } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
@@ -384,6 +411,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                                                null, null)
             );
         } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }

@@ -6,10 +6,16 @@ public class ConfirmClientAction implements ClientAction {
 
     public String message;
     public String caption;
+    public boolean cancel;
 
     public ConfirmClientAction(String caption, String message) {
+        this(caption, message, false);
+    }
+
+    public ConfirmClientAction(String caption, String message, boolean cancel) {
         this.caption = caption;
         this.message = message;
+        this.cancel = cancel;
     }
 
     @Override

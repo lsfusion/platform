@@ -2,6 +2,7 @@ package lsfusion.server.logics.authentication;
 
 import lsfusion.interop.action.UserChangedClientAction;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.AuthenticationLogicsModule;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -17,7 +18,7 @@ public class ReloginUserActionProperty extends ScriptingActionProperty {
         super(LM, "reloginUser", new ValueClass[]{LM.findClassByCompoundName("CustomUser")});
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject user = context.getSingleDataKeyValue();
         context.getSession().user.changeCurrentUser(user);
         context.delayUserInterfaction(new UserChangedClientAction());

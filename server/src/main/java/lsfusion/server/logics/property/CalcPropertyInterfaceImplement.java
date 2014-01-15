@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -24,14 +25,14 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges changes, WhereBuilder changedWhere);
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere);
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, PropertyChanges propChanges);
-    Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, Modifier modifier);
+    Expr mapExpr(ImMap<P, ? extends Expr> joinImplement, Modifier modifier) throws SQLException, SQLHandledException;
     Expr mapExpr(ImMap<P, ? extends Expr> joinImplement);
 
     void mapFillDepends(MSet<CalcProperty> depends);
     ImSet<OldProperty> mapOldDepends();
 
-    Object read(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException;
-    ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException;
+    Object read(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
+    ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
 
     public ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty);
 

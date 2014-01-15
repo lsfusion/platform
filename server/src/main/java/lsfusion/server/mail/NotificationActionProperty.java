@@ -1,5 +1,6 @@
 package lsfusion.server.mail;
 
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.NullValue;
 import org.apache.log4j.Logger;
 import lsfusion.base.BaseUtils;
@@ -64,7 +65,7 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
         return sourceProperty.getInterfaceClasses();
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         if (emailLM.disableAccount.read(context) != null) {
             logger.error(ServerResourceBundle.getString("mail.disabled"));

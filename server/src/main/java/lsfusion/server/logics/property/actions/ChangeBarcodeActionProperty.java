@@ -3,6 +3,7 @@ package lsfusion.server.logics.property.actions;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -40,7 +41,7 @@ public class ChangeBarcodeActionProperty extends SystemExplicitActionProperty {
         return barcode12 + checkDigit;
     }
 
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject object = context.getSingleDataKeyValue();
         String prefix = null;
         if (barcodePrefix != null)

@@ -9,6 +9,7 @@ import lsfusion.interop.action.*;
 import lsfusion.interop.form.UserInputResult;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
@@ -30,6 +31,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Stack;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.data.type.TypeSerializer.serializeType;
@@ -44,7 +47,7 @@ public abstract class AbstractContext implements Context {
         return null;
     }
 
-    public ObjectValue requestUserObject(DialogRequest dialog) throws SQLException { // null если canceled
+    public ObjectValue requestUserObject(DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
         FormInstance dialogInstance = dialog.createDialog();
         if (dialogInstance == null) {
             return null;
@@ -105,7 +108,7 @@ public abstract class AbstractContext implements Context {
         throw new UnsupportedOperationException("requestUserInteraction is not supported");
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
         throw new UnsupportedOperationException("createFormInstance is not supported");
     }
 
@@ -142,5 +145,16 @@ public abstract class AbstractContext implements Context {
         public synchronized String popOrEmpty() {
             return isEmpty() ? "" : pop();
         }
+    }
+
+    private ScheduledExecutorService executor;
+    @Override
+    public ScheduledExecutorService getExecutorService() {
+        if(executor==null)
+            synchronized (this) { 
+                if(executor==null)
+                    executor = Executors.newScheduledThreadPool(50, new ContextAwareDaemonThreadFactory(this, "newthread-pool"));
+            }
+        return executor;
     }
 }

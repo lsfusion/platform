@@ -1,5 +1,7 @@
 package lsfusion.server.logics.table;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -14,6 +16,7 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 
 import java.sql.SQLException;
@@ -105,7 +108,7 @@ public class IDTable extends GlobalTable {
     public int reserveIDs(int count, SQLSession dataSession, int idType) throws SQLException {
         int freeID = 0;
         try {
-            dataSession.startTransaction();
+            dataSession.startTransaction(DBManager.ID_TIL);
 
             freeID = (Integer) getGenerateQuery(idType).execute(dataSession).singleValue().get(value) + 1; // замещаем
 
@@ -114,8 +117,12 @@ public class IDTable extends GlobalTable {
             dataSession.updateRecords(new ModifyQuery(this, updateQuery.getQuery()));
 
             dataSession.commitTransaction();
-        } catch (SQLException e) {
+        } catch (Throwable e) {
+            if(e instanceof SQLHandledException && ((SQLHandledException)e).isRepeatableApply()) // update conflict или deadlock или timeout - пробуем еще раз
+                return reserveIDs(count, dataSession, idType);
+            
             dataSession.rollbackTransaction();
+            throw ExceptionUtils.propagate(e, SQLException.class);
         }
         return freeID;
     }

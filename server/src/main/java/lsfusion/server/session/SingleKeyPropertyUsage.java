@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.Modify;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -31,11 +32,11 @@ public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
         }, propertyType);
     }
 
-    public ModifyResult modifyRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, Modify type) throws SQLException {
+    public ModifyResult modifyRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, Modify type) throws SQLException, SQLHandledException {
         return modifyRecord(session, MapFact.singleton("key", keyObject), MapFact.singleton("value", propertyObject), type);
     }
     
-    public void writeRows(SQLSession session, KeyExpr key, Expr expr, Where where, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+    public void writeRows(SQLSession session, KeyExpr key, Expr expr, Where where, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         writeRows(session, new Query<String, String>(MapFact.singletonRev("key", key), expr, "value", where), baseClass, env);
     }
 
@@ -63,7 +64,7 @@ public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
         return new ClassChange(key, join.getWhere(), join.getExpr("value"));
     }
 
-    public ImCol<ImMap<String, Object>> read(DataSession session, DataObject object) throws SQLException {
+    public ImCol<ImMap<String, Object>> read(DataSession session, DataObject object) throws SQLException, SQLHandledException {
         return read(session, MapFact.singleton("key", object));
     }
 }

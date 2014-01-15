@@ -4,8 +4,10 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.WhereBuilder;
@@ -31,7 +33,7 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         return new CalcPropertyValueImplement<P>(property, getInterfaceValues());
     }
 
-    public Object read(FormInstance formInstance) throws SQLException {
+    public Object read(FormInstance formInstance) throws SQLException, SQLHandledException {
         return property.read(formInstance, getInterfaceValues());
     }
 
@@ -43,20 +45,21 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         return property.getValueClass();
     }
 
-    private Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, WhereBuilder whereBuilder) {
+    private Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, WhereBuilder whereBuilder) throws SQLException, SQLHandledException {
 
-        ImMap<P, Expr> joinImplement = mapping.mapValues(new GetValue<Expr, PropertyObjectInterfaceInstance>() {
-            public Expr getMapValue(PropertyObjectInterfaceInstance value) {
+        ImMap<P, Expr> joinImplement = mapping.mapValuesEx(new GetExValue<Expr, PropertyObjectInterfaceInstance, SQLException, SQLHandledException>() {
+            public Expr getMapValue(PropertyObjectInterfaceInstance value) throws SQLException, SQLHandledException {
                 return value.getExpr(classSource, modifier);
-            }});
+            }
+        });
         return property.getExpr(joinImplement, modifier, whereBuilder);
     }
 
-    public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier) {
+    public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier) throws SQLException, SQLHandledException {
         return getExpr(classSource, modifier, (WhereBuilder)null);
     }
 
-    public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, ReallyChanged reallyChanged) {
+    public Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         WhereBuilder changedWhere = null;
         if(reallyChanged!=null)
             changedWhere = new WhereBuilder();
@@ -67,7 +70,7 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         return expr;
     }
 
-    public boolean isReallyChanged(Modifier modifier, ReallyChanged reallyChanged) {
+    public boolean isReallyChanged(Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         if(reallyChanged.containsChange(this))
             return true;
             
@@ -97,7 +100,7 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         properties.add(property);
     }
 
-    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) {
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) throws SQLException, SQLHandledException {
         if(!changedProps.props.contains(property))
             return false;
         

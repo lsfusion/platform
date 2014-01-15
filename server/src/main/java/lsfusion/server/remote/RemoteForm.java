@@ -22,6 +22,7 @@ import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.form.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
@@ -193,7 +194,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return mMapValues.immutable();
     }
 
-    private ImMap<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, byte[] columnKeys) throws IOException, SQLException {
+    private ImMap<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, byte[] columnKeys) throws IOException, SQLException, SQLHandledException {
         ImMap<ObjectInstance, Object> dataKeys = deserializeKeysValues(columnKeys);
 
         ImFilterValueMap<ObjectInstance, DataObject> mvKeys = dataKeys.mapFilterValues();
@@ -769,7 +770,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return currentInvocation.pauseForUserInteraction(actions);
     }
 
-    public void disconnect() throws SQLException {
+    public void disconnect() throws SQLException, SQLHandledException {
         form.refreshData();
         if (currentInvocation != null && currentInvocation.isPaused()) {
             try {

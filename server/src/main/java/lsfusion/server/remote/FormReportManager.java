@@ -1,5 +1,7 @@
 package lsfusion.server.remote;
 
+import com.google.common.base.Throwables;
+import lsfusion.server.data.SQLHandledException;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.design.JasperDesign;
@@ -208,7 +210,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         }
     }
 
-    private InputStream getCustomReportInputStream(String sid, GroupObjectHierarchy.ReportNode node, boolean toExcel, Integer groupId) throws SQLException {
+    private InputStream getCustomReportInputStream(String sid, GroupObjectHierarchy.ReportNode node, boolean toExcel, Integer groupId) throws SQLException, SQLHandledException {
         InputStream iStream = null;
         if (node != null) {
             CalcPropertyObjectEntity reportPathProp = node.getGroupList().get(0).reportPathProp;
@@ -300,10 +302,8 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             }
 
             return outStream.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (Throwable e) {
+            throw Throwables.propagate(e);
         }
     }
 

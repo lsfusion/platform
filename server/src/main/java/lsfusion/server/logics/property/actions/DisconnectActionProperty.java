@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.Pair;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.DataObject;
@@ -18,7 +19,7 @@ public class DisconnectActionProperty extends ScriptingActionProperty {
         super(lm, new ValueClass[] {lm.getClassByName("Connection")});
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject connection = context.getDataKeyValue(getOrderInterfaces().get(0));
 
         String login = ((String) context.getBL().systemEventsLM.userLoginConnection.read(context, connection)).trim();

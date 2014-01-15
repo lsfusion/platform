@@ -4,6 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.Compare;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.instance.*;
@@ -14,6 +15,7 @@ import lsfusion.server.session.Modifier;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 
 public abstract class PropertyFilterInstance<P extends PropertyInterface> extends FilterInstance {
 
@@ -43,7 +45,7 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         return property.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) {
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) throws SQLException, SQLHandledException {
         return property.dataUpdated(changedProps, reallyChanged, modifier);
     }
 

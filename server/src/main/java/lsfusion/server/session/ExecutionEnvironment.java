@@ -1,9 +1,9 @@
 package lsfusion.server.session;
 
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.BusinessLogics;
@@ -30,7 +30,7 @@ public abstract class ExecutionEnvironment {
 
     public abstract boolean isInTransaction();
 
-    public <P extends PropertyInterface> void change(CalcProperty<P> property, PropertyChange<P> change) throws SQLException {
+    public <P extends PropertyInterface> void change(CalcProperty<P> property, PropertyChange<P> change) throws SQLException, SQLHandledException {
         if(change.isEmpty()) // оптимизация
             return;
         
@@ -40,29 +40,37 @@ public abstract class ExecutionEnvironment {
         change(userDataChanges != null ? userDataChanges : property.getDataChanges(change, getModifier()));
     }
 
-    public <P extends PropertyInterface> void change(DataChanges mapChanges) throws SQLException {
+    public <P extends PropertyInterface> void change(DataChanges mapChanges) throws SQLException, SQLHandledException {
         for(DataProperty change : mapChanges.getProperties())
             getSession().changeProperty(change, mapChanges.get(change));
     }
 
-    public <P extends PropertyInterface> void execute(ActionProperty<P> property, PropertySet<P> set, FormEnvironment<P> formEnv) throws SQLException {
+    public <P extends PropertyInterface> void execute(ActionProperty<P> property, PropertySet<P> set, FormEnvironment<P> formEnv) throws SQLException, SQLHandledException {
         for(ImMap<P, DataObject> row : set.executeClasses(this))
             execute(property, row, formEnv, null, null);
     }
 
-    public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, ImMap<P, ? extends ObjectValue> change, FormEnvironment<P> formEnv, ObjectValue pushUserInput, DataObject pushAddObject) throws SQLException {
+    public <P extends PropertyInterface> FlowResult execute(ActionProperty<P> property, ImMap<P, ? extends ObjectValue> change, FormEnvironment<P> formEnv, ObjectValue pushUserInput, DataObject pushAddObject) throws SQLException, SQLHandledException {
         return property.execute(new ExecutionContext<P>(change, pushUserInput, pushAddObject, this, formEnv, null));
     }
 
-    public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException;
+    public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException, SQLHandledException;
 
-    public boolean apply(BusinessLogics BL) throws SQLException {
-        return apply(BL, null);
+    public boolean apply(BusinessLogics BL) throws SQLException, SQLHandledException {
+        return apply(BL, null, null);
     }
 
-    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update) throws SQLException;
+    public boolean apply(BusinessLogics BL, UserInteraction interaction) throws SQLException, SQLHandledException {
+        return apply(BL, null, null);
+    }
 
-    public abstract void cancel() throws SQLException;
+    public boolean apply(ExecutionContext context) throws SQLException, SQLHandledException {
+        return apply(context.getBL(), context);
+    }
+
+    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction) throws SQLException, SQLHandledException;
+
+    public abstract void cancel() throws SQLException, SQLHandledException;
 
     public ObjectValue getLastUserInput() {
         return lastUserInput;

@@ -477,7 +477,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         ImOrderSet<ValueClassWrapper> orderInterfaces = orderObjects.mapOrder(objectToClass);
         for (PropertyClassImplement implement : group.getProperties(classSubsets, upClasses)) {
-            propertyDraws.add(addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(implement.mapping.valuesSet())), groupObject, orderObjects.toArray(new ObjectEntity[orderObjects.size()])));
+            ImSet<ValueClassWrapper> wrapers = implement.mapping.valuesSet();
+            ImOrderSet<ObjectEntity> filterObjects = orderObjects.filterOrderIncl(objectToClass.filterValuesRev(wrapers).keys());
+            propertyDraws.add(addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(wrapers)), groupObject, filterObjects.toArray(new ObjectEntity[filterObjects.size()])));
         }
 
         return propertyDraws;

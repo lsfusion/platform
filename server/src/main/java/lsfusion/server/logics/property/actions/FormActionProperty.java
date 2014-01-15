@@ -14,6 +14,7 @@ import lsfusion.interop.action.ReportClientAction;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormCloseType;
@@ -129,7 +130,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         return false;
     }
 
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         Result<ImSet<PullChangeProperty>> pullProps = new Result<ImSet<PullChangeProperty>>();
         ImSet<FilterEntity> contextFilters = null;

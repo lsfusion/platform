@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
 import lsfusion.interop.form.ReportConstants;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.Type;
@@ -68,13 +69,13 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         }
     }
 
-    public Map<String, ReportData> generate() throws SQLException {
+    public Map<String, ReportData> generate() throws SQLException, SQLHandledException {
         iterateChildReports(hierarchy.getRootNodes(), SetFact.<GroupObjectInstance>EMPTYORDER(), null);
         return sources;
     }
 
     private Query<ObjectInstance, Pair<Object, PropertyType>> createQuery(ImOrderSet<GroupObjectInstance> groups, SessionTableUsage<ObjectInstance,
-            Pair<Object, PropertyType>> parentTable, Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders, Result<ImMap<Pair<Object, PropertyType>, Type>> types) {
+            Pair<Object, PropertyType>> parentTable, Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders, Result<ImMap<Pair<Object, PropertyType>, Type>> types) throws SQLException, SQLHandledException {
 
         QueryBuilder<ObjectInstance, Pair<Object, PropertyType>> newQuery;
         if (groupId == null) {
@@ -150,7 +151,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return newQuery.getQuery();
     }
 
-    private void iterateChildReports(List<ReportNode> children, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable) throws SQLException {
+    private void iterateChildReports(List<ReportNode> children, ImOrderSet<GroupObjectInstance> parentGroups, SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> parentTable) throws SQLException, SQLHandledException {
         for (ReportNode node : children) {
             String sid = node.getID();
             List<GroupObjectEntity> groupList = node.getGroupList();
@@ -239,7 +240,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return resultList;
     }
 
-    public ColumnGroupCaptionsData getColumnGroupCaptions() throws SQLException {
+    public ColumnGroupCaptionsData getColumnGroupCaptions() throws SQLException, SQLHandledException {
         ColumnGroupCaptionsData resultData = new ColumnGroupCaptionsData();
 
         for (PropertyDrawInstance<?> property : form.properties) {
@@ -292,7 +293,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return resultData;
     }
 
-    private ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> getColumnPropQueryResult(ImOrderSet<GroupObjectInstance> groups, PropertyDrawInstance<?> property) throws SQLException {
+    private ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> getColumnPropQueryResult(ImOrderSet<GroupObjectInstance> groups, PropertyDrawInstance<?> property) throws SQLException, SQLHandledException {
         ImSet<ObjectInstance> objects = GroupObjectInstance.getObjects(groups.getSet());
         QueryBuilder<ObjectInstance, Object> query = new QueryBuilder<ObjectInstance, Object>(objects);
         MOrderMap<Object, Boolean> mQueryOrders = MapFact.mOrderMap();

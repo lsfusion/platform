@@ -489,6 +489,8 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
     }
     
     // получает подможнство join'ов которое дает joinKeys, пропуская skipJoin. тут же алгоритм по определению достаточных ключей
+    // !!! ТЕОРЕТИЧЕСКИ НЕСМОТРЯ НА REMOVE из-за паковки может проталкивать бесконечно (впоследствии нужен будет GUARD), например X = L(G1 + G2) AND (G1 OR G2) спакуется в X = L(G1 + G2) AND (G1' OR G2) , (а не L(G1' + G2), и будет G1 проталкивать бесконечно) 
+    //  но это очень редкая ситуация и важно проследить за ее природой, так как возможно есть аналогичные assertion'ы  
     public <K extends Expr> Where getPushWhere(ImMap<K, BaseExpr> joinKeys, ImMap<WhereJoin, Where> upWheres, QueryJoin<K, ?, ?, ?> skipJoin, KeyStat keyStat, Stat currentStat, Stat currentJoinStat) {
         // joinKeys из skipJoin.getJoins()
 

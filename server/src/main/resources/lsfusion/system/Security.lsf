@@ -27,6 +27,9 @@ permitViewAllPropertyUser 'Разрешить просмотр всех свой
 forbidViewAllPropertyUserRole 'Запретить просмотр всех свойств' = DATA BOOLEAN (UserRole);
 forbidViewAllPropertyUser 'Запретить просмотр всех свойств' (user) = forbidViewAllPropertyUserRole (mainRoleUser(user));
 
+transactTimeoutUserRole 'Таймаут для транз. (сек.)' = DATA INTEGER (UserRole);
+transactTimeoutUser 'Таймаут для транз. (сек.)' (user) = transactTimeoutUserRole (mainRoleUser(user));
+
 permitChangeAllPropertyUserRole 'Разрешить изменение всех свойств' = DATA BOOLEAN (UserRole);
 permitChangeAllPropertyUser 'Разрешить изменение всех свойств' (user) = permitChangeAllPropertyUserRole(mainRoleUser(user));
 forbidChangeAllPropertyUserRole 'Запретить изменение всех свойств' = DATA BOOLEAN (UserRole);
@@ -248,7 +251,7 @@ FORM securityPolicy 'Политика безопасности'
 
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY nameUserRole, sidUserRole
-    PROPERTIES(ur) permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole, permitChangeAllPropertyUserRole,
+    PROPERTIES(ur) transactTimeoutUserRole, permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole, permitChangeAllPropertyUserRole,
                    forbidChangeAllPropertyUserRole, nameDefaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole
 
     OBJECTS p=Policy

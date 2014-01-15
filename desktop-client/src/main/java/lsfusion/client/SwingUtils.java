@@ -2,6 +2,7 @@ package lsfusion.client;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import org.jdesktop.swingx.SwingXUtilities;
 import lsfusion.base.ERunnable;
 import lsfusion.client.form.layout.ClientFormLayout;
@@ -136,18 +137,21 @@ public class SwingUtils {
     public static final int YES_BUTTON = 0;
     public static final int NO_BUTTON = 1;
 
-    public static int showConfirmDialog(Component parentComponent, Object message, String title, int messageType) {
-        return showConfirmDialog(parentComponent, message, title, messageType, 0);
+    public static int showConfirmDialog(Component parentComponent, Object message, String title, int messageType, boolean cancel) {
+        return showConfirmDialog(parentComponent, message, title, messageType, 0, cancel);
     }
 
-    public static int showConfirmDialog(Component parentComponent, Object message, String title, int messageType, int initialValue) {
+    public static int showConfirmDialog(Component parentComponent, Object message, String title, int messageType, int initialValue, boolean cancel) {
 
         Object[] options = {UIManager.getString("OptionPane.yesButtonText"),
                 UIManager.getString("OptionPane.noButtonText")};
+        if(cancel) {
+            options = BaseUtils.add(options, UIManager.getString("OptionPane.cancelButtonText"));
+        }
 
         JOptionPane dialogPane = new JOptionPane(message,
                                                  messageType,
-                                                 JOptionPane.YES_NO_OPTION,
+                                                 cancel ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION,
                                                  null, options, options[initialValue]);
 
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("RIGHT"));
@@ -161,7 +165,10 @@ public class SwingUtils {
         if (dialogPane.getValue() == options[0]) {
             return JOptionPane.YES_OPTION;
         } else {
-            return JOptionPane.NO_OPTION;
+            if(!cancel || dialogPane.getValue() == options[1])
+                return JOptionPane.NO_OPTION;
+            else
+                return JOptionPane.CANCEL_OPTION;
         }
     }
 

@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
@@ -19,6 +20,7 @@ import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
+import java.util.concurrent.ScheduledExecutorService;
 
 public interface Context {
 
@@ -26,10 +28,10 @@ public interface Context {
 
     FormInstance getFormInstance();
 
-    FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps)  throws SQLException;
+    FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException;
     RemoteForm createRemoteForm(FormInstance formInstance);
 
-    ObjectValue requestUserObject(DialogRequest dialogRequest) throws SQLException;
+    ObjectValue requestUserObject(DialogRequest dialogRequest) throws SQLException, SQLHandledException;
     ObjectValue requestUserData(DataClass dataClass, Object oldValue);
     ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete);
 
@@ -42,4 +44,5 @@ public interface Context {
     String getActionMessage();
     void pushActionMessage(String segment);
     String popActionMessage();
+    ScheduledExecutorService getExecutorService();
 }

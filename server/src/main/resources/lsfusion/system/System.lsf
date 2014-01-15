@@ -25,6 +25,7 @@ canceled 'Canceled' = DATA SESSION BOOLEAN ();
 
 apply = ACTION CUSTOM 'lsfusion.server.logics.property.actions.flow.ApplyActionProperty';
 cancel = ACTION CUSTOM 'lsfusion.server.logics.property.actions.flow.CancelActionProperty';
+onStarted = ABSTRACT ACTION LIST ();
 
 upper = FORMULA 'upper($1)';
 

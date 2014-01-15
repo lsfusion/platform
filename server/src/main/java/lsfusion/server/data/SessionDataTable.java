@@ -95,7 +95,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return keys.equals(((SessionDataTable) obj).keys) && table.equals(((SessionDataTable) obj).table) && keyValues.equals(((SessionDataTable) obj).keyValues);
     }
 
-    public SessionDataTable modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, Result<Boolean> changed) throws SQLException {
+    public SessionDataTable modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, Result<Boolean> changed) throws SQLException, SQLHandledException {
 
         ImMap<KeyField, DataObject> fixedKeyValues;
         ImMap<PropertyField, ObjectValue> fixedPropValues;
@@ -117,14 +117,14 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     }
 
     @Override
-    public SessionData modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, Modify type, QueryEnvironment env, Object owner, Result<Boolean> changed) throws SQLException {
+    public SessionData modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, Modify type, QueryEnvironment env, Object owner, Result<Boolean> changed) throws SQLException, SQLHandledException {
         if(keyValues.isEmpty() && propertyValues.isEmpty() && (Settings.get().isModifySessionTableInsteadOfRewrite() || type == Modify.LEFT || type== Modify.ADD || type==Modify.DELETE)) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
             return new SessionDataTable(table.modifyRows(session, query, type, env, owner, changed), keys, keyValues, propertyValues);
         return super.modifyRows(session, query, baseClass, type, env, owner, changed);
     }
 
     @Override
-    public SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Integer,Integer>[] shifts) throws SQLException {
+    public SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Integer,Integer>[] shifts) throws SQLException, SQLHandledException {
         if(propertyValues.containsKey(property))
             return new SessionDataTable(table, keys, keyValues, SessionRows.updateAdded(propertyValues, property, shifts));
         else {
@@ -134,7 +134,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     }
 
     // для оптимизации групповых добавлений (batch processing'а)
-    public SessionDataTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, Object owner) throws SQLException {
+    public SessionDataTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, Object owner) throws SQLException, SQLHandledException {
 
         this.keys = keys;
         // сначала пробежим по всем проверим с какими field'ами создавать таблицы и заодно propertyClasses узнаем, после этого batch'ем запишем
@@ -172,7 +172,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     }
 
     @Override
-    public void out(SQLSession session) throws SQLException {
+    public void out(SQLSession session) throws SQLException, SQLHandledException {
         System.out.println("Key Values : " + keyValues);
         System.out.println("Prop Values : " + propertyValues);
         table.out(session);
@@ -207,7 +207,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
             return this;
     }
 
-    public SessionData updateCurrentClasses(DataSession session) throws SQLException {
+    public SessionData updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException {
         return new SessionDataTable(table.updateCurrentClasses(session), keys, session.updateCurrentClasses(keyValues), session.updateCurrentClasses(propertyValues));
     }
 
@@ -224,7 +224,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return table + "{k:" + keyValues + ",v:" + propertyValues + "}";
     }
 
-    public SessionDataTable checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+    public SessionDataTable checkClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
         SessionTable checkTable = table.checkClasses(session, baseClass);
         if(BaseUtils.hashEquals(checkTable, table))
             return this;

@@ -78,8 +78,9 @@
             <artifactId>report-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>postgresql</groupId>
+            <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>9.3-1100-jdbc4</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.jtds</groupId>

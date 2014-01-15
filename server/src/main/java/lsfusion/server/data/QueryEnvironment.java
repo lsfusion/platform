@@ -5,6 +5,8 @@ import lsfusion.server.data.type.ParseInterface;
 public interface QueryEnvironment {
 
     ParseInterface getSQLUser();
+    
+    int getTransactTimeout();
 
     ParseInterface getIsFullClient();
     ParseInterface getSQLComputer();
@@ -25,6 +27,10 @@ public interface QueryEnvironment {
 
         public ParseInterface getIsServerRestarting() {
             return ParseInterface.empty;
+        }
+        
+        public int getTransactTimeout() {
+            return 0;
         }
     };
 }

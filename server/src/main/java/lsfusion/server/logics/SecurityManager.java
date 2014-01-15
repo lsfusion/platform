@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DefaultFormsType;
 import lsfusion.base.col.MapFact;
@@ -16,6 +17,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.User;
 import lsfusion.server.classes.StringClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -108,6 +110,8 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             allowConfiguratorPolicy.configurator = true;
         } catch (SQLException e) {
             throw new RuntimeException("Error initializing Security Manager: ", e);
+        } catch (SQLHandledException e) {
+            throw new RuntimeException("Error initializing Security Manager: ", e);
         }
     }
 
@@ -117,6 +121,8 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         try {
             businessLogics.initAuthentication(this);
         } catch (SQLException e) {
+            throw new RuntimeException("Error starting Security Manager: ", e);
+        } catch (SQLHandledException e) {
             throw new RuntimeException("Error starting Security Manager: ", e);
         }
     }
@@ -141,7 +147,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         return userPolicies.get(userId);
     }
 
-    public void setupDefaultAdminUser() throws SQLException {
+    public void setupDefaultAdminUser() throws SQLException, SQLHandledException {
         DataSession session = createSession();
         setUserPolicies(addUser("admin", initialAdminPassword, session).ID, permitAllPolicy, allowConfiguratorPolicy);
         session.apply(businessLogics);
@@ -151,26 +157,29 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         return dbManager.createSession();
     }
 
-    public SecurityPolicy addPolicy(String policyName, String description) throws SQLException {
+    public SecurityPolicy addPolicy(String policyName, String description) throws SQLException, SQLHandledException {
         DataSession session = createSession();
 
-        Integer policyID = readPolicy(policyName, session);
-        if (policyID == null) {
-            DataObject addObject = session.addObject(securityLM.policy);
-            securityLM.namePolicy.change(policyName, session, addObject);
-            securityLM.descriptionPolicy.change(description, session, addObject);
-            policyID = (Integer) addObject.object;
-            session.apply(businessLogics);
+        Integer policyID;
+        try {
+            policyID = readPolicy(policyName, session);
+            if (policyID == null) {
+                DataObject addObject = session.addObject(securityLM.policy);
+                securityLM.namePolicy.change(policyName, session, addObject);
+                securityLM.descriptionPolicy.change(description, session, addObject);
+                policyID = (Integer) addObject.object;
+                session.apply(businessLogics);
+            }
+        } finally {
+            session.close();
         }
-
-        session.close();
 
         SecurityPolicy policyObject = new SecurityPolicy(policyID);
         putPolicy(policyID, policyObject);
         return policyObject;
     }
 
-    private Integer readPolicy(String name, DataSession session) throws SQLException {
+    private Integer readPolicy(String name, DataSession session) throws SQLException, SQLHandledException {
         return (Integer) securityLM.policyName.read(session, new DataObject(name, StringClass.get(50)));
     }
 
@@ -197,11 +206,13 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             session.apply(businessLogics);
         } catch (SQLException e) {
             return getString("logics.error.registration");
+        } catch (SQLHandledException e) {
+            return getString("logics.error.registration");
         }
         return null;
     }
 
-    protected User addUser(String login, String defaultPassword, DataSession session) throws SQLException {
+    protected User addUser(String login, String defaultPassword, DataSession session) throws SQLException, SQLHandledException {
 
         User user = readUser(login, session);
         if (user == null) {
@@ -215,7 +226,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         return user;
     }
 
-    public User readUser(String login, DataSession session) throws SQLException {
+    public User readUser(String login, DataSession session) throws SQLException, SQLHandledException {
         Integer userId = (Integer) authenticationLM.customUserLogin.read(session, new DataObject(login, StringClass.get(30)));
         if (userId == null) {
             return null;
@@ -237,6 +248,8 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
         // политика для роли из формы "Политика безопасности"
         applyFormDefinedUserPolicy(userObject);
+        
+        applyTimeout(userObject);
 
         // дополнительные политики из формы "Политика безопасности"
         List<Integer> userPoliciesIds = readUserPoliciesIds(userId);
@@ -248,6 +261,27 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         }
 
         return userObject;
+    }
+
+    private void applyTimeout(User user) throws SQLException, SQLHandledException {
+        DataSession session = createSession();
+
+        DataObject userObject = new DataObject(user.ID, authenticationLM.customUser);
+
+        QueryBuilder<String, String> qu = new QueryBuilder<String, String>(SetFact.toExclSet("userId"));
+        Expr userExpr = qu.getMapExprs().get("userId");
+        qu.and(userExpr.compare(userObject, Compare.EQUALS));
+        qu.addProperty("transactTimeoutUser", securityLM.transactTimeoutUser.getExpr(session.getModifier(), userExpr));
+
+        ImCol<ImMap<String, Object>> timeoutValues = qu.execute(session.sql).values();
+        for (ImMap<String, Object> valueMap : timeoutValues) {
+            Integer timeout = (Integer)valueMap.get("transactTimeoutUser");
+            if (timeout != null) {
+                user.setTimeout(timeout);
+            }
+        }
+        
+        session.close();
     }
 
     private List<Integer> readUserPoliciesIds(Integer userId) {
@@ -278,7 +312,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         }
     }
 
-    public User authenticateUser(DataSession session, String login, String password) throws SQLException {
+    public User authenticateUser(DataSession session, String login, String password) throws SQLException, SQLHandledException {
         boolean needAuthentication = true;
 
         User user = readUser(login, session);
@@ -561,6 +595,8 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             }
         } catch (SQLException se) {
             throw new RuntimeException(getString("logics.info.error.reading.user.data"), se);
+        } catch (SQLHandledException se) {
+            throw new RuntimeException(getString("logics.info.error.reading.user.data"), se);
         }
     }
 
@@ -599,6 +635,8 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
         } catch (SQLException e) {
             throw new RuntimeException(getString("logics.info.error.reading.list.of.roles"), e);
+        } catch (SQLHandledException e) {
+            throw Throwables.propagate(e);
         }
     }
 
@@ -618,7 +656,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 securityLM.mainRoleCustomUser.change(userRole.getValue(), session, customUser);
             }
         } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw Throwables.propagate(e);
+        } catch (SQLHandledException e) {
+            throw Throwables.propagate(e);
         }
     }
 
@@ -631,7 +671,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 permitView = policy.property.view.checkPermission(businessLogics.getProperty(propertySID));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
+        } catch (SQLHandledException e) {
+            throw Throwables.propagate(e);
         }
         return permitView;
     }
@@ -645,7 +687,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 permitChange = policy.property.change.checkPermission(businessLogics.getProperty(propertySID));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
+        } catch (SQLHandledException e) {
+            throw Throwables.propagate(e);
         }
         return permitChange;
     }
@@ -658,7 +702,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 DataObject propertyObject = new DataObject(reflectionLM.propertySID.read(session, new DataObject(propertySid)), reflectionLM.property);
                 return securityLM.permitViewProperty.read(session, propertyObject) != null;
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
+            } catch (SQLHandledException e) {
+                throw Throwables.propagate(e);
             }
         }
         return false;
@@ -674,7 +720,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             DataObject formObject = new DataObject(form, reflectionLM.navigatorElement);
             return securityLM.permitExportNavigatorElement.read(session, formObject) != null;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
+        } catch (SQLHandledException e) {
+            throw Throwables.propagate(e);
         }
     }
 }

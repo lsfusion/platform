@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -37,7 +38,7 @@ public class ChangeClassValueActionProperty extends SystemExplicitActionProperty
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         context.changeClass(context.getObjectInstance(objectInterface), context.getDataKeyValue(objectInterface),
                 getBaseClass().findConcreteClassID((Integer) context.getKeyObject(classInterface)));
     }

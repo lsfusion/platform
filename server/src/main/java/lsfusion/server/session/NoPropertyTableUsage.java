@@ -5,6 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.Modify;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
@@ -22,7 +23,7 @@ public class NoPropertyTableUsage<K> extends SessionTableUsage<K,Object> {
         });
     }
 
-    public void modifyRecord(SQLSession session, ImMap<K, DataObject> keyFields, Modify type) throws SQLException {
+    public void modifyRecord(SQLSession session, ImMap<K, DataObject> keyFields, Modify type) throws SQLException, SQLHandledException {
         modifyRecord(session, keyFields, MapFact.<Object, ObjectValue>EMPTY(), type);
     }
 }

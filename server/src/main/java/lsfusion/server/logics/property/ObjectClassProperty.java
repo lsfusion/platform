@@ -8,6 +8,7 @@ import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.form.entity.FormEntity;
@@ -18,6 +19,8 @@ import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
+
+import java.sql.SQLException;
 
 public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
@@ -35,7 +38,7 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
         return joinImplement.singleValue().classExpr(baseClass);
     }
     
-    public Expr getExpr(Expr expr, Modifier modifier) {
+    public Expr getExpr(Expr expr, Modifier modifier) throws SQLException, SQLHandledException {
         return getExpr(MapFact.singleton(getInterface(), expr), modifier);
     }
 

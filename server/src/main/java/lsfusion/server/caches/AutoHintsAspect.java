@@ -1,5 +1,6 @@
 package lsfusion.server.caches;
 
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.CalcType;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -36,6 +37,10 @@ import lsfusion.server.logics.property.PropertyQueryType;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.session.SessionModifier;
+
+import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
+import java.text.ParseException;
 
 import static lsfusion.base.BaseUtils.max;
 
@@ -134,7 +139,11 @@ public class AutoHintsAspect {
             if(resultHint.result instanceof PrereadHint && (isFirst = catchNotFirst.get())==null) // оптимизация
                 catchNotFirst.set(true);
 
-            result = ((MethodSignature) thisJoinPoint.getSignature()).getMethod().invoke(thisJoinPoint.getTarget(), thisJoinPoint.getArgs());
+            try {
+                result = ((MethodSignature) thisJoinPoint.getSignature()).getMethod().invoke(thisJoinPoint.getTarget(), thisJoinPoint.getArgs());
+            } catch (InvocationTargetException e) {
+                throw e.getTargetException();                
+            }
 
             if(isFirst == null) {
                 catchNotFirst.set(null);
@@ -270,7 +279,7 @@ public class AutoHintsAspect {
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
     @Around("execution(* lsfusion.server.logics.property.CalcProperty.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.logics.property.CalcType,lsfusion.server.session.PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,calcType,propChanges,changedWhere)")
-    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, CalcType calcType,  ImMap joinExprs, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
+    public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, ImMap joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
 
         if(!property.isFull() || !calcType.isExpr())
@@ -287,7 +296,7 @@ public class AutoHintsAspect {
             return thisJoinPoint.proceed();
 
         WhereBuilder cascadeWhere = CalcProperty.cascadeWhere(changedWhere);
-        Expr result = (Expr) thisJoinPoint.proceed(new Object[]{property, calcType, joinExprs, propChanges, cascadeWhere});
+        Expr result = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, calcType, propChanges, cascadeWhere});
 
         long complexity = max(result.getComplexity(false), (changedWhere != null ? cascadeWhere.toWhere().getComplexity(false) : 0));
         if(complexity > Settings.get().getLimitHintIncrementComplexity() && property.hasChanges(propChanges))
@@ -322,7 +331,7 @@ public class AutoHintsAspect {
             return 31 * property.hashCode() + AbstractOuterContext.hashOuter(values, new HashContext(HashCodeKeys.instance, hash));
         }
 
-        public void resolve(SessionModifier modifier) {
+        public void resolve(SessionModifier modifier) throws SQLException, SQLHandledException {
             modifier.addPrereadValues(property, values);
         }
     }
@@ -353,7 +362,7 @@ public class AutoHintsAspect {
         }
 
         @Override
-        public void resolve(SessionModifier modifier) {
+        public void resolve(SessionModifier modifier) throws SQLException, SQLHandledException {
             if(lowstat)
                 modifier.addHintIncrement(property);
             else
@@ -363,7 +372,7 @@ public class AutoHintsAspect {
 
     public abstract static class Hint<H extends Hint<H>> extends AbstractValuesContext<H> {
 
-        public abstract void resolve(SessionModifier modifier);
+        public abstract void resolve(SessionModifier modifier) throws SQLException, SQLHandledException;
     }
 
     public static class HintException extends RuntimeException {

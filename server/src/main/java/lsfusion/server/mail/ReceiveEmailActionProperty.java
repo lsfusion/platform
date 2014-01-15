@@ -3,6 +3,7 @@ package lsfusion.server.mail;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.NullValue;
@@ -33,7 +34,7 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
         setImage("email.png");
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
 
@@ -62,7 +63,7 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
     }
 
     private void receiveEmail(ExecutionContext context, DataObject accountObject, String pop3HostAccount,
-                              String nameAccount, String passwordAccount, boolean deleteMessagesAccount) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException {
+                              String nameAccount, String passwordAccount, boolean deleteMessagesAccount) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
         if (pop3HostAccount == null) {
             logError(context, getString("mail.pop3.host.not.specified.letters.will.not.be.received"));
             return;

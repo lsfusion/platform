@@ -16,10 +16,7 @@ import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.BaseClass;
-import lsfusion.server.data.Modify;
-import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -219,7 +216,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return null;
     }
 
-    public ImOrderMap<ImMap<T, DataObject>, ImMap<String, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException {
+    public ImOrderMap<ImMap<T, DataObject>, ImMap<String, ObjectValue>> executeClasses(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
             return MapFact.singletonOrder(mapValues, MapFact.<String, ObjectValue>singleton("value", exprValue));
@@ -227,7 +224,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return getQuery().executeClasses(env);
     }
 
-    public ModifyResult modifyRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv) throws SQLException {
+    public ModifyResult modifyRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
             return table.modifyRecord(session, mapValues, exprValue, type);
@@ -235,7 +232,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
             return table.modifyRows(session, getQuery(), baseClass, type, queryEnv);
     }
 
-    public void writeRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException {
+    public void writeRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
             table.writeRows(session, MapFact.singleton(mapValues, MapFact.singleton("value", exprValue)));
@@ -291,7 +288,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return where.needMaterialize() || expr.needMaterialize();
     }
 
-    public SinglePropertyTableUsage<T> materialize(CalcProperty<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+    public SinglePropertyTableUsage<T> materialize(CalcProperty<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         SinglePropertyTableUsage<T> result = property.createChangeTable();
         writeRows(result, sql, baseClass, env);
         return result;
@@ -301,7 +298,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return where.needMaterialize();
     }
 
-    public static <K> NoPropertyTableUsage<K> materializeWhere(DataSession session, final ImRevMap<K, KeyExpr> mapKeys, final Where where) throws SQLException {
+    public static <K> NoPropertyTableUsage<K> materializeWhere(DataSession session, final ImRevMap<K, KeyExpr> mapKeys, final Where where) throws SQLException, SQLHandledException {
         NoPropertyTableUsage<K> result = new NoPropertyTableUsage<K>(mapKeys.keys().toOrderSet(), new Type.Getter<K>() {
             public Type getType(K key) {
                 return where.getKeyType(mapKeys.get(key));

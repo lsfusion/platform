@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
@@ -30,6 +31,8 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
         super(sID, caption, listInterfaces, changeAction);
         this.aggProp = aggProp;
         this.aggClass = aggClass;
+        
+        finalizeInit();
     }
 
     @Override
@@ -39,7 +42,7 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
     }
 
     @Override
-    protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException {
+    protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ObjectValue readValue = null;
 
         Type type = aggProp.getType();

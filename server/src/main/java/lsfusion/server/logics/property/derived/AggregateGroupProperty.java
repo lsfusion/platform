@@ -27,7 +27,15 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
     // чисто из-за ограничения конструктора
     public static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(String sID, String caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
         CalcPropertyMapImplement<?, T> and = DerivedProperty.createAnd(innerInterfaces, aggrInterface, property);
-        and.property.caption = caption + "(аггр.)";
+        if(caption.isEmpty()) {
+            ImCol<CalcPropertyMapImplement<?, T>> groupMapProps = CalcPropertyMapImplement.filter(groupProps);
+            for(CalcPropertyMapImplement<?, T> groupProp : groupMapProps)
+                caption = (caption.isEmpty() ? "" : caption + ",") + groupProp.property.toString();
+            if(groupMapProps.size() > 1)
+                caption = "(" + caption + ")"; 
+        } else
+            caption = caption + "(аггр.)";
+        and.property.caption = caption;
         assert groupProps.toSet().containsAll(innerInterfaces.removeIncl(aggrInterface));
         return create(sID, caption, and, groupProps, innerInterfaces, property, aggrInterface, groupProps);
     }

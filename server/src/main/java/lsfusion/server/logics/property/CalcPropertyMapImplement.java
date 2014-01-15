@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -48,7 +49,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return new CalcPropertyValueImplement<P>(property, mapping.join(mapValues));
     }
 
-    public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException {
+    public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException, SQLHandledException {
         change(keys, env, env.getSession().getObjectValue(property.getValueClass(), value));
     }
 
@@ -56,11 +57,11 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return new CalcPropertyMapImplement<P, K>(property, mapping.join(remap));
     }
 
-    public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, ObjectValue objectValue) throws SQLException {
+    public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, ObjectValue objectValue) throws SQLException, SQLHandledException {
         env.change(property, mapValues(keys).getPropertyChange(objectValue.getExpr()));
     }
 
-    public void change(ExecutionEnvironment env, PropertyChange<T> change) throws SQLException {
+    public void change(ExecutionEnvironment env, PropertyChange<T> change) throws SQLException, SQLHandledException {
         env.change(property, change.mapChange(mapping));
     }
 
@@ -81,7 +82,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return checkInterfaces.size() >= interfaces.size() && property.isFull(checkInterfaces);
     }
 
-    public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier) {
+    public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier) throws SQLException, SQLHandledException {
         return property.getExpr(mapping.join(joinImplement), modifier);
     }
     public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, PropertyChanges propChanges) {
@@ -100,11 +101,11 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return property.getOldDepends();
     }
 
-    public Object read(ExecutionContext context, ImMap<T, ? extends ObjectValue> interfaceValues) throws SQLException {
+    public Object read(ExecutionContext context, ImMap<T, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException {
         return property.read(context.getSession().sql, mapping.join(interfaceValues), context.getModifier(), context.getQueryEnv());
     }
 
-    public ObjectValue readClasses(ExecutionContext context, ImMap<T, ? extends ObjectValue> interfaceValues) throws SQLException {
+    public ObjectValue readClasses(ExecutionContext context, ImMap<T, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException {
         return property.readClasses(context.getSession(), mapping.join(interfaceValues), context.getModifier(), context.getQueryEnv());
     }
 

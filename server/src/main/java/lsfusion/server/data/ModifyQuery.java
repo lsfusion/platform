@@ -102,7 +102,7 @@ public class ModifyQuery {
                 throw new RuntimeException();
         }
 
-        return new SQLExecute(update,changeCompile.getQueryParams(env), changeCompile.env);
+        return new SQLExecute(update,changeCompile.getQueryParams(env), changeCompile.env, changeCompile.queryExecEnv, env.getTransactTimeout());
     }
 
     public SQLExecute getDelete(final SQLSyntax syntax) {
@@ -117,7 +117,7 @@ public class ModifyQuery {
 
         String delete = "DELETE FROM " + table.getName(syntax) + " USING (" + deleteCompile.select + ") " + deleteAlias + " WHERE " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
 
-        return new SQLExecute(delete, deleteCompile.getQueryParams(env), deleteCompile.env);
+        return new SQLExecute(delete, deleteCompile.getQueryParams(env), deleteCompile.env, deleteCompile.queryExecEnv, env.getTransactTimeout());
     }
 
     public SQLExecute getInsertLeftKeys(SQLSyntax syntax, boolean updateProps, boolean insertOnlyNotNull) {
@@ -176,7 +176,7 @@ public class ModifyQuery {
         ExecuteEnvironment execEnv = new ExecuteEnvironment();
         execEnv.add(changeCompile.env);
 
-        return new SQLExecute("INSERT INTO " + name + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax, execEnv),changeCompile.getQueryParams(env), execEnv);
+        return new SQLExecute("INSERT INTO " + name + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax, execEnv),changeCompile.getQueryParams(env), execEnv, changeCompile.queryExecEnv, env.getTransactTimeout());
     }
 
     public SQLExecute getInsertSelect(SQLSyntax syntax) {

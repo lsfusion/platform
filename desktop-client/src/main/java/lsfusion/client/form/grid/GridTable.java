@@ -706,7 +706,7 @@ public class GridTable extends ClientPropertyTable {
         }
         boolean singleC = table.size() == 1 && tableColumns == 1;
         if (!singleV || !singleC) {
-            int answer = SwingUtils.showConfirmDialog(form.getLayout(), getString("form.grid.sure.to.paste.multivalue"), "", JOptionPane.QUESTION_MESSAGE, 1);
+            int answer = SwingUtils.showConfirmDialog(form.getLayout(), getString("form.grid.sure.to.paste.multivalue"), "", JOptionPane.QUESTION_MESSAGE, 1, false);
             if (answer == JOptionPane.NO_OPTION) {
                 return;
             }

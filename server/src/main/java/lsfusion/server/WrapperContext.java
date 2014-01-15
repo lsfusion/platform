@@ -7,6 +7,7 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.context.AbstractContext;
 import lsfusion.server.context.Context;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
@@ -38,7 +39,7 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.getFormInstance();
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
         return wrappedContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
     }
 
@@ -46,7 +47,7 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.createRemoteForm(formInstance);
     }
 
-    public ObjectValue requestUserObject(DialogRequest dialogRequest) throws SQLException {
+    public ObjectValue requestUserObject(DialogRequest dialogRequest) throws SQLException, SQLHandledException {
         return wrappedContext.requestUserObject(dialogRequest);
     }
 

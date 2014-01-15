@@ -1,8 +1,8 @@
 package lsfusion.server.logics.property.actions.form;
 
-import lsfusion.base.ApiResourceBundle;
 import lsfusion.interop.action.RunPrintReportClientAction;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
@@ -19,7 +19,7 @@ public class PrintActionProperty extends FormToolbarActionProperty {
         super(lm, false);
     }
 
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         context.delayUserInterfaction(new RunPrintReportClientAction(SystemProperties.isDebug));
     }
 

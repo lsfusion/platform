@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.Modify;
 import lsfusion.server.data.QueryEnvironment;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -33,11 +34,11 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         });
     }
 
-    public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyFields, ObjectValue propertyValue, Modify type) throws SQLException {
+    public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyFields, ObjectValue propertyValue, Modify type) throws SQLException, SQLHandledException {
         return modifyRecord(session, keyFields, MapFact.singleton("value", propertyValue), type);
     }
 
-    public ModifyResult modifyRows(SQLSession session, ImRevMap<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException {
+    public ModifyResult modifyRows(SQLSession session, ImRevMap<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException, SQLHandledException {
         return modifyRows(session, new Query<K, String>(mapKeys, expr, "value", where), baseClass, type, env);
     }
 
@@ -55,15 +56,15 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         table = table.fixKeyClasses(classes.remap(mapKeys.reverse()));
     }
 
-    public void updateAdded(SQLSession sql, BaseClass baseClass, Pair<Integer,Integer>[] shifts) throws SQLException {
+    public void updateAdded(SQLSession sql, BaseClass baseClass, Pair<Integer,Integer>[] shifts) throws SQLException, SQLHandledException {
         updateAdded(sql, baseClass, "value", shifts);
     }
 
-    public void updateCurrentClasses(DataSession session) throws SQLException {
+    public void updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException {
         table = table.updateCurrentClasses(session);
     }
 
-    public void checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+    public void checkClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
         table = table.checkClasses(session, baseClass);
     }
 }

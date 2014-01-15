@@ -1,6 +1,7 @@
 package lsfusion.server.logics.reflection;
 
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ReflectionLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -15,9 +16,9 @@ public class RecalculateStatsActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
         context.getBL().recalculateStats(session);
-        session.apply(context.getBL());
+        session.apply(context);
     }
 }

@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -20,6 +21,8 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
+
+import java.sql.SQLException;
 
 import static lsfusion.base.BaseUtils.capitalize;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -61,7 +64,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     // для resolve'а следствий в частности
-    public PropertyChange<T> getFullChange(Modifier modifier) {
+    public PropertyChange<T> getFullChange(Modifier modifier) throws SQLException, SQLHandledException {
         assert scope.onlyDB(); // так как event Apply
 
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();

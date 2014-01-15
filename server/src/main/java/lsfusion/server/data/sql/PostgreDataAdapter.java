@@ -296,4 +296,24 @@ public class PostgreDataAdapter extends DataAdapter {
     public boolean noMaxImplicitCast() {
         return true;
     }
+
+    @Override
+    public boolean isDeadLock(SQLException e) {
+        return e.getSQLState().equals("40P01");
+    }
+
+    @Override
+    public boolean isUpdateConflict(SQLException e) {
+        return e.getSQLState().equals("40001");
+    }
+
+    @Override
+    public boolean isTimeout(SQLException e) {
+        return e.getSQLState().equals("57014");
+    }
+
+    @Override
+    public boolean isTransactionCanceled(SQLException e) {
+        return e.getSQLState().equals("25P02");
+    }    
 }

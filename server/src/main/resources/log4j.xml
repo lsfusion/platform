@@ -56,6 +56,21 @@
         </layout>
     </appender>
 
+    <appender name="sqlhandlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="12"/>
+            <param name="activeFileName" value="logs/sqlhand.log"/>
+            <param name="fileNamePattern" value="logs/sqlhand-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.EnhancedPatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
+        </layout>
+    </appender>
+
     <appender name="remotelog" class="org.apache.log4j.rolling.RollingFileAppender">
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
@@ -148,6 +163,11 @@
     <category name="SQLLogger">
         <priority value="INFO"/>
         <appender-ref ref="sqllog"/>
+    </category>
+
+    <category name="SQLHandLogger" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="sqlhandlog"/>
     </category>
 
     <category name="PausableInvocationsLogger" additivity="false">

@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.logics.table.ImplementTable;
@@ -86,7 +87,7 @@ public class BaseClass extends AbstractCustomClass {
         objectClass = ConcreteCustomClass.createObjectClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), sidClasses, nameClasses, this);
     }
 
-    public void fillIDs(DataSession session, LCP staticCaption, LCP staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException {
+    public void fillIDs(DataSession session, LCP staticCaption, LCP staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         Map<String, ConcreteCustomClass> usedSIds = new HashMap<String, ConcreteCustomClass>();
         Set<Integer> usedIds = new HashSet<Integer>();
 
@@ -142,7 +143,7 @@ public class BaseClass extends AbstractCustomClass {
         }
     }
 
-    public void updateClassStat(SQLSession session) throws SQLException {
+    public void updateClassStat(SQLSession session) throws SQLException, SQLHandledException {
         for(ObjectValueClassSet tableClasses : getUpTables().valueIt()) {
             QueryBuilder<Integer, Integer> classes = new QueryBuilder<Integer, Integer>(SetFact.singleton(0));
 
@@ -172,25 +173,25 @@ public class BaseClass extends AbstractCustomClass {
         return new ObjectClassProperty("objectClass", this);
     }
 
-    public DataObject getDataObject(SQLSession sql, Object value, AndClassSet classSet) throws SQLException {
+    public DataObject getDataObject(SQLSession sql, Object value, AndClassSet classSet) throws SQLException, SQLHandledException {
         return new DataObject(value, classSet.getType().getDataClass(value, sql, classSet, this));
     }
 
-    public <K> ImMap<K, DataObject> getDataObjects(SQLSession sql, ImMap<K, Object> values, ImMap<K, AndClassSet> classes) throws SQLException {
+    public <K> ImMap<K, DataObject> getDataObjects(SQLSession sql, ImMap<K, Object> values, ImMap<K, AndClassSet> classes) throws SQLException, SQLHandledException {
         ImValueMap<K, DataObject> mvResult = values.mapItValues(); // exception кидается
         for(int i=0,size=values.size();i<size;i++)
             mvResult.mapValue(i, getDataObject(sql, values.getValue(i), classes.get(values.getKey(i))));
         return mvResult.immutableValue();
     }
 
-    public ObjectValue getObjectValue(SQLSession sql, Object value, AndClassSet type) throws SQLException {
+    public ObjectValue getObjectValue(SQLSession sql, Object value, AndClassSet type) throws SQLException, SQLHandledException {
         if(value==null)
             return NullValue.instance;
         else
             return getDataObject(sql, value, type);
     }
 
-    public <K> ImMap<K, ObjectValue> getObjectValues(SQLSession sql, ImMap<K, Object> values, ImMap<K, AndClassSet> classes) throws SQLException {
+    public <K> ImMap<K, ObjectValue> getObjectValues(SQLSession sql, ImMap<K, Object> values, ImMap<K, AndClassSet> classes) throws SQLException, SQLHandledException {
         ImValueMap<K, ObjectValue> mvResult = values.mapItValues(); // exception кидается
         for(int i=0,size=values.size();i<size;i++)
             mvResult.mapValue(i, getObjectValue(sql, values.getValue(i), classes.get(values.getKey(i))));

@@ -1,6 +1,7 @@
 package lsfusion.server;
 
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.Scheduler;
 import lsfusion.server.logics.SchedulerLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -18,7 +19,7 @@ public class SetupSchedulerActionProperty extends ScriptingActionProperty {
     }
 
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
+    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
         try {
             scheduler.setupScheduledTasks(context.getSession());
