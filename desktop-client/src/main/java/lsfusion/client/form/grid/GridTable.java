@@ -79,7 +79,6 @@ public class GridTable extends ClientPropertyTable {
 
     private boolean isLayouting;
 
-    private final GridView gridView;
     private final GridController gridController;
     private final GroupObjectController groupController;
 
@@ -105,12 +104,13 @@ public class GridTable extends ClientPropertyTable {
     private GridUserPreferences userGridPreferences;
     private GridUserPreferences currentGridPreferences;
 
+    private boolean skipScrollingAdjusments = false;
+
     public GridTable(GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         super(new GridTableModel());
 
         form = iform;
-        gridView = igridView;
-        gridController = gridView.getGridController();
+        gridController = igridView.getGridController();
         groupController = gridController.getGroupController();
         groupObject = groupController.getGroupObject();
 
@@ -348,13 +348,21 @@ public class GridTable extends ClientPropertyTable {
             selectionController.keysChanged(viewMoveInterval < 0);
         }
 
+        invalidate();
+        if (getParent() != null) {
+            // нам нужно вызвать validate(), чтобы применить новые размеры
+            // но при этом срабатывает scrolling AdjusmentListener, который select'ает неправильный ряд
+            // поэтому отключаем эту логику, т.к. мы сами скроллим в adjustSelection
+            skipScrollingAdjusments = true;
+            getParent().getParent().validate();
+            skipScrollingAdjusments = false;
+        }
+
         adjustSelection();
 
         previousSelectedRow = getCurrentRow();
-
-        revalidate();
     }
-    
+
     public boolean containsProperty(ClientPropertyDraw property) {
         return properties.contains(property);
     }
@@ -497,7 +505,6 @@ public class GridTable extends ClientPropertyTable {
                 viewRect.y = currentRowBottom - viewRect.height;
             }
             ((JViewport) getParent()).setViewPosition(viewRect.getLocation());
-
             selectRow(currentRow);
         }
 
@@ -768,7 +775,7 @@ public class GridTable extends ClientPropertyTable {
             }
             updateTable();
         } catch (IOException e) {
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -1087,6 +1094,9 @@ public class GridTable extends ClientPropertyTable {
             pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
                 @Override
                 public void adjustmentValueChanged(AdjustmentEvent e) {
+                    if (skipScrollingAdjusments) {
+                        return;
+                    }
                     int currRow = getCurrentRow();
                     if (currRow != -1) {
                         Rectangle viewRect = pane.getViewport().getViewRect();
