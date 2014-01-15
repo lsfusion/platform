@@ -26,7 +26,7 @@
         <google.guava.version>13.0.1</google.guava.version>
         <jdom.version>1.1</jdom.version>
         <netty.version>3.2.1.Final</netty.version>
-        <postgresql.version>9.0-801.jdbc4</postgresql.version>
+        <postgresql.version>9.3-1100-jdbc4</postgresql.version>
         <jasper.version>5.5.0</jasper.version>
         <apache.poi.version>3.7</apache.poi.version>
         <docking.frames.version>1.1.2p9d</docking.frames.version>
@@ -604,7 +604,7 @@
                 <version>${netty.version}</version>
             </dependency>
             <dependency>
-                <groupId>postgresql</groupId>
+                <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.version}</version>
             </dependency>
