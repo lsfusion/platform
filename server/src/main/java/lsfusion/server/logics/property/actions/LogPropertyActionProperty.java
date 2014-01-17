@@ -94,6 +94,8 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
         formInstance.close();
 
         // todo : Раскомментить для использования форм....
+        // todo: пока это не будет работать, т.к. мы не можем вызвать блокирующий requestUserInteraction, т.к. находимся в транзакции
+        // todo: но вызывать delayUserInteraction тоже бессмысленно, т.к. к моменту показа формы всё состояние, которое привело к констрейнту - откатиться вместе с откатом транзакции
 //        DataSession session = context.getSession();
 //        PropertyFormEntity form = new PropertyFormEntity(context.getBL().LM, property, recognizeGroup);
 //        FormInstance<?> formInstance = context.createFormInstance(form, MapFact.<ObjectEntity, DataObject>EMPTY(), session, false, FormSessionScope.OLDSESSION, false, false, true, null);
