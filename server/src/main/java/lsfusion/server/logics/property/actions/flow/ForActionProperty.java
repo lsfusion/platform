@@ -5,7 +5,9 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -22,11 +24,14 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertySet;
+import lsfusion.server.session.UpdateCurrentClasses;
 
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.Iterator;
 
 import static lsfusion.server.logics.property.derived.DerivedProperty.*;
 
@@ -88,6 +93,39 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
            order.mapFillDepends(mUsed);
        return mUsed.immutable().toMap(false).merge(super.aspectUsedExtProps(), addValue);
     }
+    
+    private static class RowUpdateIterate<I extends PropertyInterface> implements Iterable<ImMap<I, DataObject>>, Iterator<ImMap<I, DataObject>>, UpdateCurrentClasses {
+        private ImOrderSet<ImMap<I, DataObject>> rows;
+
+        private RowUpdateIterate(ImOrderSet<ImMap<I, DataObject>> rows) {
+            this.rows = rows;
+        }
+
+        public Iterator<ImMap<I, DataObject>> iterator() {
+            return this;
+        }
+
+        public void update(DataSession session) throws SQLException, SQLHandledException {
+            MOrderExclSet<ImMap<I, DataObject>> mRows = SetFact.mOrderExclSet(rows.size() - i);
+            for(int j=i;j<rows.size();j++)
+                mRows.exclAdd(session.updateCurrentClasses(rows.get(i)));
+            i=0;
+            rows = mRows.immutableOrder();
+        }
+
+        int i = 0;
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        public ImMap<I, DataObject> next() {
+            return rows.get(i++);
+        }
+
+        public boolean hasNext() {
+            return i < rows.size(); 
+        }
+    }
 
     @Override
     protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
@@ -108,18 +146,24 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             if (!rows.isEmpty()) {
                 execElse = false;
             }
-            for (ImMap<I, DataObject> row : rows) {
-                ImMap<I, ObjectValue> newValues = MapFact.addExcl(innerValues, row);
-                if(addObject!=null)
-                    newValues = MapFact.addExcl(newValues, addObject, context.addObject((ConcreteCustomClass) addClass));
-                
-                FlowResult actionResult = execute(context, action, newValues, mapInterfaces);
-                if (actionResult != FlowResult.FINISH) {
-                    if (actionResult != FlowResult.BREAK) {
-                        result = actionResult;
+            RowUpdateIterate<I> rowUpdate = new RowUpdateIterate<I>(rows);
+            context.pushUpdate(rowUpdate);
+            try {
+                for (ImMap<I, DataObject> row : rowUpdate) {
+                    ImMap<I, ObjectValue> newValues = MapFact.addExcl(innerValues, row);
+                    if(addObject!=null)
+                        newValues = MapFact.addExcl(newValues, addObject, context.addObject((ConcreteCustomClass) addClass));
+                    
+                    FlowResult actionResult = execute(context, action, newValues, mapInterfaces);
+                    if (actionResult != FlowResult.FINISH) {
+                        if (actionResult != FlowResult.BREAK) {
+                            result = actionResult;
+                        }
+                        break RECURSIVE;
                     }
-                    break RECURSIVE;
                 }
+            } finally {
+                context.popUpdate();
             }
         } while (recursive && !rows.isEmpty());
 

@@ -729,7 +729,7 @@ public class SQLSession extends MutableObject {
             else
                 throw new SQLConflictException();
         }
-        logger.error(statement.toString());
+        logger.error(statement.toString()); // duplicate keys валится при : неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses), неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями, недетерминированные ORDER функции (GROUP LAST и т.п.), нецелостной базой (значения классов в базе не правильные)
         throw e;
     }
 
@@ -745,6 +745,9 @@ public class SQLSession extends MutableObject {
         long runTime = 0;
         boolean isTransactTimeout = false;
         try {
+            env.before(this, connection, command);
+            isTransactTimeout = queryExecEnv.beforeStatement(statement, this, transactTimeout);
+
             if(explainAnalyzeMode) {
                 PreparedStatement explainStatement = statement;
                 Result<ReturnStatement> returnExplain = null; long explainStarted = 0;
@@ -761,16 +764,13 @@ public class SQLSession extends MutableObject {
                     returnExplain.result.proceed(explainStatement, System.currentTimeMillis() - explainStarted);
             }
 
-            env.before(this, connection, command);            
-            isTransactTimeout = queryExecEnv.beforeStatement(statement, this, transactTimeout);
-
             if(!(explainAnalyzeMode && !explainNoAnalyze)) {
                 long started = System.currentTimeMillis();
                 result = statement.executeUpdate();
                 runTime = System.currentTimeMillis() - started;
             }
         } catch (SQLException e) {
-            throw propagate(e, statement, isTransactTimeout); // duplicate keys валится при : неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses), неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями, нецелостной базой (значения классов в базе не правильные)
+            throw propagate(e, statement, isTransactTimeout);
         } finally {
             env.after(this, connection, command);
 

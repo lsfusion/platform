@@ -37,10 +37,20 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Stack;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class ExecutionContext<P extends PropertyInterface> implements UpdateCurrentClasses, UserInteraction {
     private ImMap<P, ? extends ObjectValue> keys;
+    private Stack<UpdateCurrentClasses> updateClasses;
+    public void pushUpdate(UpdateCurrentClasses push) {
+        if(updateClasses == null)
+            updateClasses = new Stack<UpdateCurrentClasses>();
+        updateClasses.push(push);
+    }
+    public void popUpdate() {
+        updateClasses.pop();
+    }
 
     private final ObjectValue pushedUserInput;
     private final DataObject pushedAddObject;
@@ -254,19 +264,18 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
 
     @Override
-    public void update(DataSession session) {
-        try {
-            keys = session.updateCurrentClasses(keys);
+    public void update(DataSession session) throws SQLException, SQLHandledException {
+        keys = session.updateCurrentClasses(keys);
 
-            final ImMap<P, ? extends ObjectValue> prevKeys = keys;
-            session.addRollbackInfo(new Runnable() {
-                public void run() {
-                    keys = prevKeys;
-                }});
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
-            throw Throwables.propagate(e);
+        final ImMap<P, ? extends ObjectValue> prevKeys = keys;
+        session.addRollbackInfo(new Runnable() {
+            public void run() {
+                keys = prevKeys;
+            }});
+        
+        if(updateClasses!=null) {
+            for(UpdateCurrentClasses update : updateClasses)
+                update.update(session);
         }
         if(stack != null)
             stack.update(session);
