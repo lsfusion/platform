@@ -50,6 +50,8 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.mail.NotificationActionProperty;
 import lsfusion.server.session.ApplyFilter;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.SessionCreator;
+import lsfusion.server.session.UserInteraction;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -1219,20 +1221,25 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public void recalculateFollows(DataSession session) throws SQLException, SQLHandledException {
+    public void recalculateFollows(SessionCreator creator, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         for (Property property : getPropertyList())
             if (property instanceof ActionProperty) {
-                ActionProperty<?> action = (ActionProperty) property;
-                if (action.hasResolve())
-                    session.resolve(action);
+                final ActionProperty<?> action = (ActionProperty) property;
+                if (action.hasResolve()) {
+                    DBManager.runData(creator, isolatedTransaction, new DBManager.RunServiceData() {
+                        public void run(SessionCreator session) throws SQLException, SQLHandledException {
+                            ((DataSession)session).resolve(action);
+                        }
+                    });
+                }
             }
     }
 
-    public String checkClasses(DataSession session) throws SQLException, SQLHandledException {
-        String message = session.checkClasses();
+    public String checkClasses(SQLSession session) throws SQLException, SQLHandledException {
+        String message = DataSession.checkClasses(session, LM.baseClass);
         for (Property property : getPropertyList())
             if (property instanceof StoredDataProperty)
-                message += session.checkClasses((StoredDataProperty)property);
+                message += DataSession.checkClasses((StoredDataProperty)property, session, LM.baseClass);
         return message;
     }
 

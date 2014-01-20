@@ -206,7 +206,7 @@ public class CacheAspect {
     }
     @Around("execution(@lsfusion.server.caches.IdentityInstanceLazy * *.*(..)) && target(object)")
     public Object callInstanceMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return callMethod(object, thisJoinPoint, false);
+        return callMethod(object, thisJoinPoint, true);
     }
     @Around("execution(@lsfusion.server.caches.IdentityStrongLazy * *.*(..)) && target(object)")
     public Object callStrongMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {

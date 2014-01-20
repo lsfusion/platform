@@ -53,7 +53,7 @@ import java.util.*;
 import static lsfusion.base.BaseUtils.filterKeys;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
-public class DataSession extends ExecutionEnvironment implements SessionChanges {
+public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator {
 
     private Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> data = MapFact.mAddRemoveMap();
     private SingleKeyPropertyUsage news = null;
@@ -826,7 +826,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
     }
 
-    public String checkClasses() throws SQLException, SQLHandledException {
+    public static String checkClasses(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
 
         // тут можно было бы использовать нижнюю конструкцию, но с учетом того что не все базы поддерживают FULL JOIN, на UNION'ах и их LEFT JOIN'ах с проталкиванием, запросы получаются мегабайтные и СУБД не справляется
 //        KeyExpr key = new KeyExpr("key");
@@ -850,7 +850,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
                 }});
             Expr sumExpr = IsClassExpr.create(key, group, IsClassType.SUMCONSISTENT);
 //            Expr aggExpr = IsClassExpr.create(key, group, IsClassType.AGGCONSISTENT);
-            table.writeRows(sql, new Query<String,String>(MapFact.singletonRev("key", key), MapFact.singleton("sum", sumExpr), sumExpr.getWhere()), baseClass, env); //, "agg", aggExpr
+            table.writeRows(sql, new Query<String,String>(MapFact.singletonRev("key", key), MapFact.singleton("sum", sumExpr), sumExpr.getWhere()), baseClass, QueryEnvironment.empty); //, "agg", aggExpr
 
             Join<String> tableJoin = table.join(key);
             mSum.add(tableJoin.getExpr("sum"), 1);
@@ -860,7 +860,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
         }
 
         // FormulaUnionExpr.create(new StringAggConcatenateFormulaImpl(","), mAgg.immutableList()) , "value",
-        String incorrect = new Query<String,String>(MapFact.singletonRev("key", key), mSum.getExpr().compare(ValueExpr.COUNT, Compare.GREATER)).readSelect(sql, env);
+        String incorrect = new Query<String,String>(MapFact.singletonRev("key", key), mSum.getExpr().compare(ValueExpr.COUNT, Compare.GREATER)).readSelect(sql, QueryEnvironment.empty);
 
         for(SingleKeyTableUsage<String> usedTable : usedTables.it())
             usedTable.drop(sql);
@@ -871,12 +871,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges 
     }
 
     @Message("logics.checking.data.classes")
-    public String checkClasses(@ParamMessage StoredDataProperty property) throws SQLException, SQLHandledException {
+    public static String checkClasses(@ParamMessage StoredDataProperty property, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
         ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = property.getMapKeys();
         Where where = getIncorrectWhere(property, baseClass, mapKeys);
         Query<ClassPropertyInterface, String> query = new Query<ClassPropertyInterface, String>(mapKeys, where);
 
-        String incorrect = query.readSelect(sql, env);
+        String incorrect = query.readSelect(sql, QueryEnvironment.empty);
         if(!incorrect.isEmpty())
             return "---- Checking Classes for DataProperty : " + property + "-----" + '\n' + incorrect;
         return "";

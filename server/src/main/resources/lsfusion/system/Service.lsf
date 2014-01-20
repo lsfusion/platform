@@ -19,6 +19,8 @@ toggleExplainMode 'Выводить в лог EXPLAIN запросов' = ACTION
 toggleVolatileStats 'Не использовать nested loop' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleVolatileStatsActionProperty';
 toggleSQLLoggerDebugMode 'Выводить в лог доп.информацию' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleSQLLoggerDebugModeActionProperty';
 
+singleTransaction 'Перерасчет одной транзакцией' = DATA BOOLEAN ();
+
 setRepeatableReadTILMode 'Включить SERIALIZABLE' = ACTION CUSTOM 'lsfusion.server.logics.service.SetRepeatableReadTILModeActionProperty' (BOOLEAN);
 TILMode 'Включен SERIALIZABLE' = DATA BOOLEAN ();
 refreshRepeatableReadTILMode 'Обновить SERIALIZABLE в VM'() = ACTION {
@@ -44,7 +46,7 @@ FORM admin 'Администрирование'
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, 
                  vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, toggleExplainAnalyzeMode, 
                  toggleExplainMode, toggleVolatileStats,
-                 toggleSQLLoggerDebugMode, TILMode
+                 toggleSQLLoggerDebugMode, TILMode, singleTransaction
 ;
 
 DESIGN admin FROM DEFAULT {
@@ -91,6 +93,7 @@ DESIGN admin FROM DEFAULT {
             ADD PROPERTY(vacuumDBAction);
             ADD PROPERTY(toggleVolatileStats);
             ADD PROPERTY(TILMode);
+            ADD PROPERTY(singleTransaction);
         }
         NEW virtualMachine {
             caption = 'Виртуальная машина';

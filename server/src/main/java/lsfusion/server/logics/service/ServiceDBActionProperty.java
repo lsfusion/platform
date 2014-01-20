@@ -4,12 +4,13 @@ import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.SessionCreator;
 
 import java.sql.SQLException;
 
@@ -37,13 +38,15 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
                 context.getDbManager().packTables(session, context.getBL().LM.tableFactory.getImplementTables(), isolatedTransaction);
             }});
 
-        DataSession dataSession = context.getSession();
-        SQLSession sqlSession = dataSession.sql;
+        SQLSession sqlSession = context.getSession().sql;
         context.getDbManager().analyzeDB(sqlSession);
 
-        context.getBL().recalculateFollows(dataSession);
-        dataSession.apply(context);
+        runData(context, new RunServiceData() {
+            public void run(SessionCreator session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+                context.getBL().recalculateFollows(session, isolatedTransaction);
+            }});
 
+        DataSession dataSession = context.getSession();
         context.getBL().recalculateStats(dataSession);
         dataSession.apply(context);
 
@@ -54,17 +57,27 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
     protected boolean isVolatile() {
         return true;
     }
+    
+    public static boolean singleTransaction(ExecutionContext context) throws SQLException, SQLHandledException {
+        return context.getBL().serviceLM.singleTransaction.read(context)!=null;
+    }
 
-    public static void run(ExecutionContext<?> context, RunService run) throws SQLException, SQLHandledException {
+    public static void runData(ExecutionContext<?> context, final RunServiceData run) throws SQLException, SQLHandledException {
+        final boolean singleTransaction = singleTransaction(context);
+        DBManager.runData(context, singleTransaction, new DBManager.RunServiceData() {
+            public void run(SessionCreator session) throws SQLException, SQLHandledException {
+                run.run(session, !singleTransaction);
+            }
+        });
+    }
+
+    public static void run(ExecutionContext<?> context, final RunService run) throws SQLException, SQLHandledException {
         // транзакция в Service Action'ах не особо нужна, так как действия атомарные
+        final boolean singleTransaction = singleTransaction(context); 
         SQLSession sql = context.getSession().sql;
-//        sql.startTransaction(DBManager.RECALC_TIL);
-//        try {
-            run.run(sql, true);
-//        } catch (Exception e) {
-//            sql.rollbackTransaction();
-//            throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
-//        }
-//        sql.commitTransaction();
+        DBManager.run(sql, singleTransaction, new DBManager.RunService() {
+            public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                run.run(sql, !singleTransaction);
+            }});
     }
 }

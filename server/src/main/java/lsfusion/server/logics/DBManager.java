@@ -49,6 +49,8 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.mail.NotificationActionProperty;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
+import lsfusion.server.session.SessionCreator;
+import lsfusion.server.session.UserInteraction;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
@@ -1172,12 +1174,27 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         recalculateAggregations(session, businessLogics.getAggregateStoredProperties(), isolatedTransaction);
     }
 
+    public static interface RunServiceData {
+        void run(SessionCreator sql) throws SQLException, SQLHandledException;
+    }
+
+    public static void runData(SessionCreator creator, boolean runInTransaction, RunServiceData run) throws SQLException, SQLHandledException {
+        if(runInTransaction) {
+            ExecutionContext context = (ExecutionContext) creator;
+            DataSession session = context.createSession();
+            run.run(session);
+            session.apply(context);            
+            session.close();
+        } else
+            run.run(creator);
+    }
+
     public static interface RunService {
         void run(SQLSession sql) throws SQLException, SQLHandledException;
     }
     
-    public static void run(SQLSession session, boolean isolatedTransaction, RunService run) throws SQLException, SQLHandledException {
-        if(isolatedTransaction) {
+    public static void run(SQLSession session, boolean runInTransaction, RunService run) throws SQLException, SQLHandledException {
+        if(runInTransaction) {
             session.startTransaction(RECALC_TIL);
             try {
                 run.run(session);
@@ -1185,7 +1202,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             } catch (Throwable t) {
                 session.rollbackTransaction();
                 if(t instanceof SQLHandledException && ((SQLHandledException)t).isRepeatableApply()) { // update conflict или deadlock или timeout - пробуем еще раз
-                    run(session, isolatedTransaction, run);
+                    run(session, runInTransaction, run);
                     return;
                 }
                 
@@ -1194,8 +1211,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 
         } else
             run.run(session);
-        
-        
     }
     public void recalculateAggregations(SQLSession session, List<AggregateProperty> recalculateProperties, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         for (final AggregateProperty property : recalculateProperties)

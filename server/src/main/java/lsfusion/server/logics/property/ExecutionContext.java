@@ -40,7 +40,7 @@ import java.util.HashMap;
 import java.util.Stack;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class ExecutionContext<P extends PropertyInterface> implements UpdateCurrentClasses, UserInteraction {
+public class ExecutionContext<P extends PropertyInterface> implements UpdateCurrentClasses, UserInteraction, SessionCreator {
     private ImMap<P, ? extends ObjectValue> keys;
     private Stack<UpdateCurrentClasses> updateClasses;
     public void pushUpdate(UpdateCurrentClasses push) {

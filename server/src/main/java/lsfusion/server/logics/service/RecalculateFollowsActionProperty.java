@@ -3,12 +3,14 @@ package lsfusion.server.logics.service;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.SessionCreator;
 
 import java.sql.SQLException;
 
@@ -19,12 +21,12 @@ public class RecalculateFollowsActionProperty extends ScriptingActionProperty {
         super(LM, new ValueClass[]{});
     }
     @Override
-    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        DataSession session = context.createSession();
-
-        context.getBL().recalculateFollows(session);
-        session.apply(context);
-        session.close();
+    public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        ServiceDBActionProperty.runData(context, new RunServiceData() {
+            public void run(SessionCreator session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+                context.getBL().recalculateFollows(session, isolatedTransaction);
+            }
+        });
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.follows")));
     }

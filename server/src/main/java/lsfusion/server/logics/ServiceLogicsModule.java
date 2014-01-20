@@ -22,7 +22,9 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LAP restartServerAction;
     public LAP runGarbageCollector;
     public LAP cancelRestartServerAction;
-    
+
+    public LCP singleTransaction;
+
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ServiceLogicsModule.class.getResourceAsStream("/lsfusion/system/Service.lsf"), "/lsfusion/system/Service.lsf", baseLM, BL);
         setBaseLogicsModule(baseLM);
@@ -39,5 +41,6 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         analyzeDBAction = getLAPByOldName("analyzeDBAction");
         packAction = getLAPByOldName("packAction");
         serviceDBAction = getLAPByOldName("serviceDBAction");
+        singleTransaction = getLCPByOldName("singleTransaction");
     }
 }
