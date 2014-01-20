@@ -686,7 +686,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (ImMap<Object, Object> values : result.valueIt()) {
             LCP<?> prop = getLCP(values.get("SIDProperty").toString().trim());
             prop.property.setNotNull = true;
-            LM.setNotNull(prop);
+            LM.setNotNull(prop, PropertyFollows.RESOLVE_NOTHING);
         }
     }
 

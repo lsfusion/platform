@@ -29,7 +29,6 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
-import lsfusion.server.logics.property.actions.LogPropertyActionProperty;
 import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
 import lsfusion.server.logics.property.actions.flow.ReturnActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -58,12 +57,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public ConcreteCustomClass formResult;
 
     // groups
-    public AbstractGroup rootGroup;
-    public AbstractGroup publicGroup;
-    public AbstractGroup privateGroup;
-    public AbstractGroup baseGroup;
     public AbstractGroup actionGroup;
-    public AbstractGroup recognizeGroup;
     public AbstractGroup drillDownGroup;
     public AbstractGroup propertyPolicyGroup;
 

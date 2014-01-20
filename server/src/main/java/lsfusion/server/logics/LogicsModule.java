@@ -291,11 +291,11 @@ public abstract class LogicsModule {
     // aliases для использования внутри иерархии логических модулей
     protected BaseClass baseClass;
 
-    protected AbstractGroup rootGroup;
-    protected AbstractGroup publicGroup;
-    protected AbstractGroup privateGroup;
-    protected AbstractGroup baseGroup;
-    protected AbstractGroup recognizeGroup;
+    public AbstractGroup rootGroup;
+    public AbstractGroup publicGroup;
+    public AbstractGroup privateGroup;
+    public AbstractGroup baseGroup;
+    public AbstractGroup recognizeGroup;
 
     protected void setBaseLogicsModule(BaseLogicsModule<?> baseLM) {
         this.baseLM = baseLM;
