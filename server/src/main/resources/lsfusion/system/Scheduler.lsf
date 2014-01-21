@@ -39,7 +39,7 @@ TABLE scheduledTaskDetail (ScheduledTaskDetail);
 activeScheduledTaskDetail 'Активно' = DATA BOOLEAN (ScheduledTaskDetail);
 orderScheduledTaskDetail 'Порядок' = DATA INTEGER (ScheduledTaskDetail);
 
-scheduledTaskScheduledTaskDetail = DATA ScheduledTask (ScheduledTaskDetail);
+scheduledTaskScheduledTaskDetail = DATA ScheduledTask (ScheduledTaskDetail) NOT NULL DELETE;
 propertyScheduledTaskDetail = DATA Property (ScheduledTaskDetail);
 captionPropertyScheduledTaskDetail 'Свойство' (scheduledTaskDetail) = captionProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
 SIDPropertyScheduledTaskDetail 'Код свойства' (scheduledTaskDetail) = SIDProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
