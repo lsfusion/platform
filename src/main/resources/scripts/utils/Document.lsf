@@ -1,6 +1,6 @@
 MODULE Document;
 
-REQUIRE System, Numerator, Authentication, Time;
+REQUIRE System, Numerator, Authentication, Time, Utils;
 
 // Стандартные группы
 GROUP documentHeader 'Шапка документа' : base;
@@ -349,6 +349,25 @@ META defineDocumentInterfacePosted (object)
 END
 
 // Closed
+closeDocumentsDate = ABSTRACT ACTION LIST (DATE);
+dialogCloseDocumentsDate 'Закрыть документы' = ACTION () {
+    FORM dialogDate MODAL;
+    IF formResult() == FormResult.ok THEN {
+        closeDocumentsDate(chosenDate('d'));
+        apply();
+    }
+}
+
+EXTEND FORM options
+    PROPERTIES dialogCloseDocumentsDate()
+;
+
+EXTEND DESIGN options {
+    commons{
+        ADD PROPERTY(dialogCloseDocumentsDate());
+    }
+}
+
 META defineDocumentHeaderClosed (objectClass)
     isClosed##objectClass 'Закрыт' = DATA BOOLEAN (objectClass);
     isOpened##objectClass 'Не закрыт' (o) = o IS objectClass AND NOT isClosed##objectClass(o) PERSISTENT;
@@ -356,6 +375,8 @@ META defineDocumentHeaderClosed (objectClass)
     close##objectClass 'Закрыть' (o) = ACTION NEWSESSION AUTOAPPLY { isClosed##objectClass(o) <- TRUE; } TOOLBAR CONFIRM;
 
     open##objectClass 'Открыть' (o) = ACTION NEWSESSION AUTOAPPLY { isClosed##objectClass(o) <- NULL; } TOOLBAR CONFIRM;
+    
+    closeDocumentsDate(date) += ACTION isClosed###objectClass(o) <- TRUE WHERE date###objectClass(o) < date AND date IS DATE;
 END
 
 META defineDocumentAbstractHeaderClosed (objectClass)
