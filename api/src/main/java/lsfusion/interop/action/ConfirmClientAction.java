@@ -7,15 +7,19 @@ public class ConfirmClientAction implements ClientAction {
     public String message;
     public String caption;
     public boolean cancel;
+    public int timeout;
+    public int initialValue;
 
     public ConfirmClientAction(String caption, String message) {
-        this(caption, message, false);
+        this(caption, message, false, 0, 0);
     }
 
-    public ConfirmClientAction(String caption, String message, boolean cancel) {
+    public ConfirmClientAction(String caption, String message, boolean cancel, int timeout, int initialValue) {
         this.caption = caption;
         this.message = message;
         this.cancel = cancel;
+        this.timeout = timeout;
+        this.initialValue = initialValue;
     }
 
     @Override

@@ -93,6 +93,7 @@
                 <entry key="modifySessionTableInsteadOfRewrite" value="${settings.modifySessionTableInsteadOfRewrite:}"/>
                 <entry key="checkAlwaysNull" value="${settings.checkAlwaysNull:}"/>
                 <entry key="checkClassWhere" value="${settings.checkClassWhere:}"/>
+                <entry key="dialogTransactionTimeout" value="${settings.dialogTransactionTimeout:}"/>
             </map>
         </property>
     </bean>

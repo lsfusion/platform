@@ -138,34 +138,51 @@ public class SwingUtils {
     public static final int NO_BUTTON = 1;
 
     public static int showConfirmDialog(Component parentComponent, Object message, String title, int messageType, boolean cancel) {
-        return showConfirmDialog(parentComponent, message, title, messageType, 0, cancel);
+        return showConfirmDialog(parentComponent, message, title, messageType, 0, cancel, 0);
+    }
+    
+    public static int showConfirmDialog(Component parentComponent, Object message, String title, int messageType, boolean cancel, int timeout, int initialValue) {
+        return showConfirmDialog(parentComponent, message, title, messageType, initialValue, cancel, timeout);
     }
 
-    public static int showConfirmDialog(Component parentComponent, Object message, String title, int messageType, int initialValue, boolean cancel) {
+    public static int showConfirmDialog(Component parentComponent, Object message, String title, int messageType, int initialValue,
+                                        boolean cancel, int timeout) {
 
         Object[] options = {UIManager.getString("OptionPane.yesButtonText"),
                 UIManager.getString("OptionPane.noButtonText")};
-        if(cancel) {
+        if (cancel) {
             options = BaseUtils.add(options, UIManager.getString("OptionPane.cancelButtonText"));
         }
 
         JOptionPane dialogPane = new JOptionPane(message,
-                                                 messageType,
-                                                 cancel ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION,
-                                                 null, options, options[initialValue]);
+                messageType,
+                cancel ? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION,
+                null, options, options[initialValue]);
 
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("RIGHT"));
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("UP"));
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("LEFT"));
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("DOWN"));
 
-        JDialog dialog = dialogPane.createDialog(parentComponent, title);
+        final JDialog dialog = dialogPane.createDialog(parentComponent, title);
+        if (timeout != 0) {
+            final java.util.Timer timer = new java.util.Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    timer.cancel();
+                    dialog.setVisible(false);
+                }
+            }, timeout);
+        }
         dialog.setVisible(true);
 
+        if (dialogPane.getValue() == JOptionPane.UNINITIALIZED_VALUE)
+            return initialValue;
         if (dialogPane.getValue() == options[0]) {
             return JOptionPane.YES_OPTION;
         } else {
-            if(!cancel || dialogPane.getValue() == options[1])
+            if (!cancel || dialogPane.getValue() == options[1])
                 return JOptionPane.NO_OPTION;
             else
                 return JOptionPane.CANCEL_OPTION;

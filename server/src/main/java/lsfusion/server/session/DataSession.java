@@ -1308,7 +1308,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                             return false;
                         }
                     } else {
-                        int option = (Integer)interaction.requestUserInteraction(new ConfirmClientAction("lsFusion",getString("logics.server.restart.transaction"), true));
+                        int option = (Integer)interaction.requestUserInteraction(new ConfirmClientAction("lsFusion",getString("logics.server.restart.transaction"), true, Settings.get().getDialogTransactionTimeout(), JOptionPane.CANCEL_OPTION));
                         if(option == JOptionPane.CANCEL_OPTION)
                             return false;
                         if(option == JOptionPane.YES_OPTION)

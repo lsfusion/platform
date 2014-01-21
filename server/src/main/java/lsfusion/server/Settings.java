@@ -196,6 +196,8 @@ public class Settings {
 
     private boolean checkClassWhere = true;
 
+    private int dialogTransactionTimeout = 5000;
+
     public static Settings get() {
         return ThreadLocalContext.getSettings();
     }
@@ -861,6 +863,14 @@ public class Settings {
 
     public boolean isCheckClassWhere() {
         return checkClassWhere;
+    }
+
+    public int getDialogTransactionTimeout() {
+        return dialogTransactionTimeout;
+    }
+
+    public void setDialogTransactionTimeout(int dialogTransactionTimeout) {
+        this.dialogTransactionTimeout = dialogTransactionTimeout;
     }
 
     public void setCheckClassWhere(boolean checkClassWhere) {

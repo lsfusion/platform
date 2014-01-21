@@ -968,7 +968,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     }
 
     public void blockingConfirm(String caption, String message, boolean cancel, final DialogBoxHelper.CloseCallback callback) {
-        DialogBoxHelper.showConfirmBox(caption, message, cancel, callback);
+        DialogBoxHelper.showConfirmBox(caption, message, cancel, 0, 0, callback);
+    }
+    
+    public void blockingConfirm(String caption, String message, boolean cancel, int timeout, int initialValue, final DialogBoxHelper.CloseCallback callback) {
+        DialogBoxHelper.showConfirmBox(caption, message, cancel, timeout, initialValue, callback);
     }
 
     public void blockingMessage(String caption, String message, final DialogBoxHelper.CloseCallback callback) {

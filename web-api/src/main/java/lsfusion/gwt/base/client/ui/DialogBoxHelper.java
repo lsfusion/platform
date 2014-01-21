@@ -3,6 +3,7 @@ package lsfusion.gwt.base.client.ui;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.EscapeUtils;
@@ -43,7 +44,7 @@ public class DialogBoxHelper {
     }
 
     public static void showMessageBox(boolean isError, String caption, String message, boolean escapeMessage, final CloseCallback closeCallback) {
-        new MessageBox(caption, escapedIf(message, escapeMessage), closeCallback, OptionType.CLOSE, OptionType.CLOSE).showCenter();
+        new MessageBox(caption, escapedIf(message, escapeMessage), 0, closeCallback, OptionType.CLOSE, OptionType.CLOSE).showCenter();
     }
 
     private static String escapedIf(String message, boolean escapeMessage) {
@@ -51,18 +52,22 @@ public class DialogBoxHelper {
     }
 
     public static void showMessageBox(boolean isError, String caption, Widget contents, final CloseCallback closeCallback) {
-        new MessageBox(caption, contents, closeCallback, OptionType.CLOSE, OptionType.CLOSE).showCenter();
+        new MessageBox(caption, contents, 0, closeCallback, OptionType.CLOSE, OptionType.CLOSE).showCenter();
     }
 
     public static void showConfirmBox(String caption, String message, boolean cancel, final CloseCallback closeCallback) {
-        showConfirmBox(caption, message, cancel, true, closeCallback);
+        showConfirmBox(caption, message, cancel, 0, 0, true, closeCallback);
     }
 
-    public static void showConfirmBox(String caption, String message, boolean cancel, boolean escapeMessage, final CloseCallback closeCallback) {
+    public static void showConfirmBox(String caption, String message, boolean cancel, int timeout, int initialValue, final CloseCallback closeCallback) {
+        showConfirmBox(caption, message, cancel, timeout, initialValue, true, closeCallback);
+    }
+
+    public static void showConfirmBox(String caption, String message, boolean cancel, int timeout, int initialValue, boolean escapeMessage, final CloseCallback closeCallback) {
         OptionType[] options = {OptionType.YES, OptionType.NO};
-        if(cancel)
+        if (cancel)
             options = new OptionType[]{OptionType.YES, OptionType.NO, OptionType.CLOSE};
-        MessageBox messageBox = new MessageBox(caption, escapedIf(message, escapeMessage), closeCallback, OptionType.YES, options);
+        MessageBox messageBox = new MessageBox(caption, escapedIf(message, escapeMessage), timeout, closeCallback, options[initialValue], options);
         messageBox.showCenter();
     }
 
@@ -71,11 +76,11 @@ public class DialogBoxHelper {
         private FlowPanel buttonPane;
         private Button activeButton;
 
-        private MessageBox(String caption, String message, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
-            this(caption, new HTML(message), closeCallback, activeOption, options);
+        private MessageBox(String caption, String message, int timeout, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
+            this(caption, new HTML(message), timeout, closeCallback, activeOption, options);
         }
 
-        private MessageBox(String caption, Widget contents, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
+        private MessageBox(String caption, Widget contents, int timeout, final CloseCallback closeCallback, final OptionType activeOption, OptionType... options) {
             this.contents = contents;
 
             ResizableSimplePanel contentsContainer = new ResizableSimplePanel(this.contents);
@@ -85,6 +90,19 @@ public class DialogBoxHelper {
             contentsContainerStyle.setProperty("maxHeight", (Window.getClientHeight() * 0.75) + "px");
 
             createButtonsPanel(activeOption, options, closeCallback);
+
+            if (timeout != 0) {
+                final Timer timer = new Timer() {
+                    @Override
+                    public void run() {
+                        hide();
+                        if (closeCallback != null) {
+                            closeCallback.closed(activeOption);
+                        }
+                    }
+                };
+                timer.schedule(timeout);
+            }
 
             final VerticalPanel mainPane = new VerticalPanel();
             mainPane.add(contentsContainer);
