@@ -48,8 +48,8 @@ userLoginConnection 'Логин пользователя' (connection) = loginCu
 //countConnectionUser 'Кол-во подключений' = GROUP SUM 1 BY userConnection(connection) PERSISTENT; 
 //CONSTRAINT DROPPED(u IS CustomUser) AND PREV(countConnectionUser(u))
 //    MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
-CONSTRAINT DROPPED(userConnection(c)) 
-    MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
+//CONSTRAINT DROPPED(userConnection(c)) 
+//    MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
 
 connectionStatusConnection 'Статус подключения' =  DATA ConnectionStatus (Connection);
 nameConnectionStatusConnection 'Статус подключения' (connection) = staticCaption(connectionStatusConnection(connection));
