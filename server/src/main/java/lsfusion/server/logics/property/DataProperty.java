@@ -18,9 +18,12 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.DataDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.actions.ChangeEvent;
-import lsfusion.server.session.*;
+import lsfusion.server.session.DataChanges;
+import lsfusion.server.session.PropertyChange;
+import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.session.StructChanges;
 
 import static lsfusion.base.BaseUtils.capitalize;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -201,10 +204,10 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new DataDrillDownFormEntity(
                 "drillDown" + capitalize(getSID()) + "Form",
-                getString("logics.property.drilldown.form.data"), this, BL
+                getString("logics.property.drilldown.form.data"), this, LM
         );
     }
 }

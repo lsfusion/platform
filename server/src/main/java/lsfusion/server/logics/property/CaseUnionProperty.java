@@ -19,7 +19,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.CaseUnionDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ScriptParsingException;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.DataChanges;
@@ -394,10 +394,10 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new CaseUnionDrillDownFormEntity(
                 "drillDown" + capitalize(getSID()) + "Form",
-                getString("logics.property.drilldown.form.case.union"), this, BL
+                getString("logics.property.drilldown.form.case.union"), this, LM
         );
     }
 }

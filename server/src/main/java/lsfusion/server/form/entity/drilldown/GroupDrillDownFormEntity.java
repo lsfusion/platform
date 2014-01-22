@@ -17,7 +17,7 @@ import lsfusion.server.form.entity.filter.CompareFilterEntity;
 import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.GroupProperty;
@@ -28,8 +28,8 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
     private PropertyDrawEntity implPropertyDraw;
     private GroupObjectEntity detailsGroup;
 
-    public GroupDrillDownFormEntity(String sID, String caption, GroupProperty<I> property, BusinessLogics BL) {
-        super(sID, caption, property, BL);
+    public GroupDrillDownFormEntity(String sID, String caption, GroupProperty<I> property, LogicsModule LM) {
+        super(sID, caption, property, LM);
     }
 
     @Override
@@ -58,8 +58,8 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 innerObject = new ObjectEntity(genID(), innerIntClass, "");
                 detailsGroup.add(innerObject);
 
-                addPropertyDraw(BL.LM.objectValue, false, innerObject);
-                addPropertyDraw(BL.LM.recognizeGroup, true, innerObject);
+                addPropertyDraw(LM.baseLM.objectValue, false, innerObject);
+                addPropertyDraw(LM.recognizeGroup, true, innerObject);
             }
 
             mInnerObjects.add(innerInterface, innerObject);
@@ -94,7 +94,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
 
                 addFixedFilter(new CompareFilterEntity(addPropertyObject(mapImplement.property, mapImplMapping), Compare.EQUALS, interfaceObjects.get(groupInterface)));
                 //добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                if (mapImplMapping.size() != 1 || !BL.LM.recognizeGroup.hasChild(mapImplement.property)) {
+                if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
                     if (mapImplement.property.isFull()) {
                         addPropertyDraw(mapImplement.property, mapImplMapping);
                     }

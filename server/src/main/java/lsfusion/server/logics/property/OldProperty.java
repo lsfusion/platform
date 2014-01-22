@@ -10,7 +10,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.OldDrillDownFormEntity;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.session.PropertyChanges;
 
 import static lsfusion.base.BaseUtils.capitalize;
@@ -62,10 +62,10 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new OldDrillDownFormEntity(
                 "drillDown" + capitalize(getSID()) + "Form",
-                getString("logics.property.drilldown.form.old"), this, BL
+                getString("logics.property.drilldown.form.old"), this, LM
         );
     }
 

@@ -8,7 +8,7 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.CaseUnionProperty;
@@ -25,8 +25,8 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
     protected List<PropertyDrawEntity> whereProperties;
     protected PropertyDrawEntity implPropertyDraw;
 
-    public CaseUnionDrillDownFormEntity(String sID, String caption, CaseUnionProperty property, BusinessLogics BL) {
-        super(sID, caption, property, BL);
+    public CaseUnionDrillDownFormEntity(String sID, String caption, CaseUnionProperty property, LogicsModule LM) {
+        super(sID, caption, property, LM);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
                 ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(interfaceObjects).mapping;
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                if (mapImplMapping.size() != 1 || !BL.LM.recognizeGroup.hasChild(mapImplement.property)) {
+                if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
                     if (mapImplement.property.isFull()) {
                         propProperties.add(
                                 addPropertyDraw(mapImplement.property, mapImplMapping)
@@ -62,7 +62,7 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
                 ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(interfaceObjects).mapping;
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                if (mapImplMapping.size() != 1 || !BL.LM.recognizeGroup.hasChild(mapImplement.property)) {
+                if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
                     if (mapImplement.property.isFull()) {
                         whereProperties.add(
                                 addPropertyDraw(mapImplement.property, mapImplMapping)

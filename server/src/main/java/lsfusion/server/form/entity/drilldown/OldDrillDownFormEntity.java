@@ -4,7 +4,7 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.OldProperty;
 
@@ -15,8 +15,8 @@ public class OldDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyInt
     private PropertyDrawEntity propertyDraw;
     private PropertyDrawEntity oldPropertyDraw;
 
-    public OldDrillDownFormEntity(String sID, String caption, OldProperty property, BusinessLogics BL) {
-        super(sID, caption, property, BL);
+    public OldDrillDownFormEntity(String sID, String caption, OldProperty property, LogicsModule LM) {
+        super(sID, caption, property, LM);
     }
 
     @Override

@@ -13,7 +13,7 @@ import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.view.PropertyDrawView;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.*;
 
 import java.util.ArrayList;
@@ -27,8 +27,8 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
     private List<PropertyDrawEntity> detailsProperties;
     private PropertyDrawEntity implPropertyDraw;
 
-    public JoinDrillDownFormEntity(String sID, String caption, JoinProperty<I> property, BusinessLogics BL) {
-        super(sID, caption, property, BL);
+    public JoinDrillDownFormEntity(String sID, String caption, JoinProperty<I> property, LogicsModule LM) {
+        super(sID, caption, property, LM);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
                 addFixedFilter(new CompareFilterEntity(addPropertyObject(mapImplement.property, mapImplMapping), Compare.EQUALS, innerObject));
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                if (mapImplMapping.size() != 1 || !BL.LM.recognizeGroup.hasChild(mapImplement.property)) {
+                if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
                     if (mapImplement.property.isFull()) {
                         detailsProperties.add(
                                 addPropertyDraw(mapImplement.property, mapImplMapping)

@@ -8,7 +8,7 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.*;
 
 import java.util.ArrayList;
@@ -21,8 +21,8 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Pro
     protected List<PropertyDrawEntity> operandProperties;
     protected PropertyDrawEntity implPropertyDraw;
 
-    public UnionDrillDownFormEntity(String sID, String caption, UnionProperty property, BusinessLogics BL) {
-        super(sID, caption, property, BL);
+    public UnionDrillDownFormEntity(String sID, String caption, UnionProperty property, LogicsModule LM) {
+        super(sID, caption, property, LM);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Pro
                 ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(interfaceObjects).mapping;
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                if (mapImplMapping.size() != 1 || !BL.LM.recognizeGroup.hasChild(mapImplement.property)) {
+                if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
                     if (mapImplement.property.isFull()) {
                         operandProperties.add(
                                 addPropertyDraw(mapImplement.property, mapImplMapping)

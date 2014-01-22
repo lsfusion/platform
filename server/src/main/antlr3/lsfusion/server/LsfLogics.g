@@ -1824,6 +1824,7 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	mailPDB=emailActionPropertyDefinitionBody[context, dynamic] { $property = $mailPDB.property; }
 	|	filePDB=fileActionPropertyDefinitionBody[context, dynamic] { $property = $filePDB.property; }
 	|	evalPDB=evalActionPropertyDefinitionBody[context, dynamic] { $property = $evalPDB.property; }
+	|	drillDownPDB=drillDownActionPropertyDefinitionBody[context, dynamic] { $property = $drillDownPDB.property; }
 	;
 	
 contextIndependentActionPDB returns [LPWithParams property, List<AndClassSet> signature]
@@ -2072,6 +2073,15 @@ evalActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 }
 	:	'EVAL' expr=propertyExpression[context, dynamic]
 	;
+	
+drillDownActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedDrillDownActionProp($expr.property);
+	}
+}
+	:	'DRILLDOWN' expr=propertyExpression[context, dynamic]
+	;	
 
 requestInputActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {

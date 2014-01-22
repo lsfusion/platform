@@ -13,12 +13,10 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.GroupDrillDownFormEntity;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.session.PropertyChanges;
 
 import static lsfusion.base.BaseUtils.capitalize;
@@ -157,10 +155,10 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new GroupDrillDownFormEntity(
                 "drillDown" + capitalize(getSID()) + "Form",
-                getString("logics.property.drilldown.form.group." + getGroupType().name().toLowerCase()), this, BL
+                getString("logics.property.drilldown.form.group." + getGroupType().name().toLowerCase()), this, LM
         );
     }
 

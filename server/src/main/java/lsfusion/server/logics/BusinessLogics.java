@@ -32,7 +32,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.LogFormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -51,7 +50,6 @@ import lsfusion.server.mail.NotificationActionProperty;
 import lsfusion.server.session.ApplyFilter;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
-import lsfusion.server.session.UserInteraction;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -549,10 +547,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             logger.info("Setup loggables.");
             finishLogInit();
 
-            if (!SystemProperties.isDebug) {
-                logger.info("Setup drill-down.");
-                setupDrillDown();
+            logger.info("Setup drill-down.");
+            setupDrillDown(SystemProperties.isDebug);
 
+            if (!SystemProperties.isDebug) {                
                 logger.info("Setup property policy.");
                 setupPropertyPolicyForms();
             }
@@ -767,21 +765,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private void setupDrillDown() {
+    private void setupDrillDown(boolean isDebug) {
         for (Property property : getOrderProperties()) {
-            if (property.supportsDrillDown()) {
-                DrillDownFormEntity drillDownFormEntity = property.createDrillDownForm(this);
-                if (drillDownFormEntity != null) {
-                    String drillDownActionSID = LM.isGeneratedSID(property.getSID()) ? LM.genSID() : "drillDownAction_" + property.getSID();
-                    LAP<?> drillDownFormProperty =
-                            LM.addMFAProp(LM.drillDownGroup, drillDownActionSID, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
-
-                    ActionProperty formProperty = drillDownFormProperty.property;
-                    formProperty.checkReadOnly = false;
-                    property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
-                    property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getOrderInterfaces()));
-                }
-            }
+            LM.setupDrillDownProperty(property, isDebug);
         }
     }
 

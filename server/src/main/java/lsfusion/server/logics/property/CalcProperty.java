@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -34,6 +33,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsModule;
@@ -1015,6 +1015,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public boolean isFull(ImCol<T> checkInterfaces) {
         return getClassValueWhere(ClassType.ASIS).isFull(checkInterfaces);
+    }
+
+    public boolean supportsDrillDown() {
+        return false;
+    }
+
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+        return null;
     }
 
     private boolean calculateIsFull() {

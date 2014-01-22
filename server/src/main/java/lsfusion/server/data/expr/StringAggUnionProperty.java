@@ -8,7 +8,7 @@ import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.StringAggUnionDrillDownFormEntity;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.FormulaUnionProperty;
 
@@ -44,10 +44,10 @@ public class StringAggUnionProperty extends FormulaUnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new StringAggUnionDrillDownFormEntity(
                 "drillDown" + capitalize(getSID()) + "Form",
-                getString("logics.property.drilldown.form.agg.union"), this, BL
+                getString("logics.property.drilldown.form.agg.union"), this, LM
         );
     }
 }

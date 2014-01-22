@@ -1397,6 +1397,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(res, property.usedParams);
     }
 
+    public LPWithParams addScriptedDrillDownActionProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedDrillDownActionProp(" + property + ")");
+        LAP<?> res = addDrillDownAProp((LCP) property.property);
+        return new LPWithParams(res, property.usedParams);
+    }
+
     public LPWithParams addScriptedAssignPropertyAProp(List<TypedParameter> context, PropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedAssignPropertyAProp(" + context + ", " + toPropertyUsage + ", " + fromProperty + ", " + whereProperty + ");");
         LP toPropertyLP = findLPByPropertyUsage(toPropertyUsage);

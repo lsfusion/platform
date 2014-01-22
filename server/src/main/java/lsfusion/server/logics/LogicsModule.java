@@ -28,6 +28,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
+import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorAction;
 import lsfusion.server.form.navigator.NavigatorElement;
@@ -41,6 +42,7 @@ import lsfusion.server.logics.property.actions.flow.*;
 import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.EvalActionProperty;
+import lsfusion.server.logics.scripted.LazyActionProperty;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
@@ -55,6 +57,7 @@ import java.util.*;
 import static java.util.Arrays.copyOfRange;
 import static lsfusion.base.BaseUtils.add;
 import static lsfusion.server.logics.PropertyUtils.*;
+import static lsfusion.server.logics.ServerResourceBundle.getString;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createAnd;
 import static lsfusion.server.logics.property.derived.DerivedProperty.createStatic;
 
@@ -1379,6 +1382,40 @@ public abstract class LogicsModule {
 
     public LAP addEvalAProp(LCP<?> scriptSource) {
         return addAProp(null, new EvalActionProperty(genSID(), "", scriptSource));
+    }
+
+    // ------------------- DRILLDOWN ----------------- //
+
+    public void setupDrillDownProperty(Property property, boolean isDebug) {
+        if (property instanceof CalcProperty && ((CalcProperty) property).supportsDrillDown()) {
+            LAP<?> drillDownFormProperty = isDebug ? addLazyAProp((CalcProperty) property) : addDDAProp((CalcProperty) property);
+            ActionProperty formProperty = drillDownFormProperty.property;
+            formProperty.checkReadOnly = false;
+            property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
+            property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getOrderInterfaces()));
+        }
+    }
+    
+    public LAP addDrillDownAProp(LCP<?> property) {
+        return addDDAProp(property);
+    }
+
+    public LAP<?> addDDAProp(LCP property) {
+        assert property.property.getOrderInterfaces().equals(property.listInterfaces);
+        if (property.property instanceof CalcProperty && ((CalcProperty) property.property).supportsDrillDown())
+            return addDDAProp((CalcProperty) property.property);
+        else return null;
+    }
+
+    public LAP<?> addDDAProp(CalcProperty property) {
+        DrillDownFormEntity drillDownFormEntity = property.createDrillDownForm(this);
+        String drillDownActionSID = baseLM.isGeneratedSID(property.getSID()) ? genSID() : "drillDownAction_" + property.getSID();
+        return addMFAProp(baseLM.drillDownGroup, drillDownActionSID, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());        
+    }
+
+    public LAP<?> addLazyAProp(CalcProperty property) {
+        String sid = baseLM.isGeneratedSID(property.getSID()) ? genSID() : "lazyAction_" + property.getSID();
+        return addAProp(null, new LazyActionProperty(sid, getString("logics.property.drilldown.action"), property));
     }
 
     public SessionDataProperty getAddedObjectProperty() {

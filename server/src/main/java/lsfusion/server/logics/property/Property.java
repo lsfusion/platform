@@ -5,6 +5,8 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.implementations.simple.EmptyOrderMap;
+import lsfusion.base.col.implementations.simple.EmptyRevMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MList;
@@ -29,7 +31,7 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
@@ -249,14 +251,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public void setContextMenuAction(String actionSID, String caption) {
-        if (contextMenuBindings == null) {
+        if (contextMenuBindings == null || contextMenuBindings instanceof EmptyOrderMap) {
             contextMenuBindings = MapFact.mOrderMap(MapFact.override());
         }
         ((MOrderMap<String, String>)contextMenuBindings).add(actionSID, caption);
     }
 
     public void setEditAction(String editActionSID, ActionPropertyMapImplement<?, T> editActionImplement) {
-        if (editActions == null) {
+        if (editActions == null || editActions instanceof EmptyRevMap) {
             editActions = MapFact.mMap(MapFact.override());
         }
         ((MMap<String, ActionPropertyMapImplement<?, T>>)editActions).add(editActionSID, editActionImplement);
@@ -483,16 +485,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         });
     }
 
-    public boolean supportsDrillDown() {
-        return false;
-    }
-
     public boolean drillDownInNewSession() {
         return false;
-    }
-
-    public DrillDownFormEntity createDrillDownForm(BusinessLogics BL) {
-        return null;
     }
 
     public Property showDep; // assert что не null когда events не isEmpty
