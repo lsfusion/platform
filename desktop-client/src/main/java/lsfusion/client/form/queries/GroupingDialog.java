@@ -39,6 +39,8 @@ import java.lang.Boolean;
 import java.lang.Number;
 import java.math.BigDecimal;
 import java.sql.Time;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
@@ -630,7 +632,9 @@ public abstract class GroupingDialog extends JDialog {
         File file = File.createTempFile("tableContents", ".xls");
         WritableWorkbook workbook = Workbook.createWorkbook(file);
         WritableSheet sheet = workbook.createSheet(getString("form.queries.grouping.sheet1"), 0);
-        
+
+        addExcelSubrows(sheet, 1, (GroupingTreeTable.SortableTreeTableNode) treeTable.getRoot(), new int[treeTable.getColumnCount()]);
+
         for (int i = 0; i < treeTable.getColumnCount(); i++) {
             String columnName = treeTable.getColumnName(i);
             if (i != 0) {
@@ -638,18 +642,13 @@ public abstract class GroupingDialog extends JDialog {
                 if (columnName.contains("↑") || columnName.contains("↓")) {
                     columnName = columnName.substring(0, columnName.lastIndexOf(' '));
                 }
-                CellView cv = new CellView();
-                cv.setSize(50 * treeTable.getColumn(i).getPreferredWidth());
-                sheet.setColumnView(i, cv);
             }
             WritableCellFormat cellFormat = createCellFormat(null, true);
             cellFormat.setWrap(true);
             cellFormat.setVerticalAlignment(VerticalAlignment.CENTRE);
             sheet.addCell(new jxl.write.Label(i, 0, columnName, cellFormat));
         }
-        
-        addExcelSubrows(sheet, 1, (GroupingTreeTable.SortableTreeTableNode) treeTable.getRoot());
-        
+               
         workbook.write();
         workbook.close();
 
@@ -668,20 +667,26 @@ public abstract class GroupingDialog extends JDialog {
         return format;
     }
     
-    private int addExcelSubrows(WritableSheet sheet, int currentRow, GroupingTreeTable.SortableTreeTableNode parent) throws WriteException {
+    private int addExcelSubrows(WritableSheet sheet, int currentRow, GroupingTreeTable.SortableTreeTableNode parent, int[] maxWidth) throws WriteException {
         if (parent.getParent() != null) {
             List<Object> row = treeTable.getRow(parent);
             for (int column = 0; column <= row.size(); column++) {
                 Object value = treeTable.getValueAt(parent, column);
+                int length = 0;
                 if (value instanceof BigDecimal || value instanceof Double) {
+                    length = new DecimalFormat("#,##0.00").format(value).length();
                     sheet.addCell(new jxl.write.Number(column, currentRow, Double.valueOf(value.toString()), createCellFormat(NumberFormats.THOUSANDS_FLOAT, false)));    
                 } else if (value instanceof Number) {
+                    length = new DecimalFormat("#,##0").format(value).length();
                     sheet.addCell(new jxl.write.Number(column, currentRow, Double.valueOf(value.toString()), createCellFormat(NumberFormats.THOUSANDS_INTEGER, false)));
                 } else if (value instanceof Time) {
+                    length = new SimpleDateFormat("H:mm:ss").format(value).length();
                     sheet.addCell(new jxl.write.DateTime(column, currentRow, (Date) value, createCellFormat(DateFormats.FORMAT8, false)));
                 } else if (value instanceof Date) {
+                    length = new SimpleDateFormat("M/d/yy").format(value).length();
                     sheet.addCell(new jxl.write.DateTime(column, currentRow, (Date) value, createCellFormat(DateFormats.DEFAULT, false)));
                 } else if (value instanceof Boolean) {
+                    length = value.toString().length();
                     sheet.addCell(new jxl.write.Boolean(column, currentRow, (Boolean) value, createCellFormat(null, false)));
                 } else if (value instanceof byte[]) { // здесь ожидается изображение
                     WritableCellFormat format = new WritableCellFormat();
@@ -694,8 +699,16 @@ public abstract class GroupingDialog extends JDialog {
                     image.setImageAnchor(WritableImage.MOVE_AND_SIZE_WITH_CELLS);
                     sheet.addImage(image);
                 } else {
+                    length = value == null ? 0 : value.toString().length();
                     sheet.addCell(new jxl.write.Label(column, currentRow, value == null ? "" : value.toString(), createCellFormat(null, false)));
                 }
+                
+                if(maxWidth[column]<length){
+                    maxWidth[column] = length;
+                    CellView cv = new CellView();
+                    cv.setSize(256 * Math.max(10, length));
+                    sheet.setColumnView(column, cv);
+                }                
             }
             currentRow++;
         }
@@ -705,7 +718,7 @@ public abstract class GroupingDialog extends JDialog {
         while (children.hasMoreElements()) {
             GroupingTreeTable.SortableTreeTableNode child = (GroupingTreeTable.SortableTreeTableNode) children.nextElement();
             
-            currentRow = addExcelSubrows(sheet, currentRow, child);
+            currentRow = addExcelSubrows(sheet, currentRow, child, maxWidth);
         }
         if (parent.children().hasMoreElements() && parent.getParent() != null) {
             sheet.setRowGroup(parentRow , currentRow - 1, false);
