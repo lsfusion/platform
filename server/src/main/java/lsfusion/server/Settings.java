@@ -198,6 +198,8 @@ public class Settings {
 
     private int dialogTransactionTimeout = 5000;
 
+    private boolean disableExplicitVolatileStats = false;  
+
     public static Settings get() {
         return ThreadLocalContext.getSettings();
     }
@@ -871,6 +873,14 @@ public class Settings {
 
     public void setDialogTransactionTimeout(int dialogTransactionTimeout) {
         this.dialogTransactionTimeout = dialogTransactionTimeout;
+    }
+
+    public boolean isDisableExplicitVolatileStats() {
+        return disableExplicitVolatileStats;
+    }
+
+    public void setDisableExplicitVolatileStats(boolean disableExplicitVolatileStats) {
+        this.disableExplicitVolatileStats = disableExplicitVolatileStats;
     }
 
     public void setCheckClassWhere(boolean checkClassWhere) {

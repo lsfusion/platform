@@ -5,6 +5,7 @@ import com.sun.mail.pop3.POP3Store;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.integration.*;
@@ -46,13 +47,14 @@ public class EmailReceiver {
 
         List<List<List<Object>>> data = downloadEmailList();
 
-        importEmails(context, data.get(0));
-        importAttachments(context, data.get(1));
+        boolean disableVolatileStats = Settings.get().isDisableExplicitVolatileStats();
+        importEmails(context, data.get(0), disableVolatileStats);
+        importAttachments(context, data.get(1), disableVolatileStats);
 
         LM.findLAPByCompoundOldName("formRefresh").execute(context);
     }
 
-    public void importEmails(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    public void importEmails(ExecutionContext context, List<List<Object>> data, boolean disableVolatileStats) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
         List<ImportField> fields = new ArrayList<ImportField>();
@@ -97,15 +99,17 @@ public class EmailReceiver {
         ImportTable table = new ImportTable(fields, data);
 
         DataSession session = context.createSession();
-        session.sql.pushVolatileStats(null);
+        if(!disableVolatileStats)
+            session.pushVolatileStats();
         IntegrationService service = new IntegrationService(session, table, keys, props);
         service.synchronize(true, false);
         session.apply(context);
-        session.sql.popVolatileStats(null);
+        if(!disableVolatileStats)
+            session.popVolatileStats();
         session.close();
     }
 
-    public void importAttachments(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    public void importAttachments(ExecutionContext context, List<List<Object>> data, boolean disableVolatileStats) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
         List<ImportField> fields = new ArrayList<ImportField>();
@@ -138,11 +142,13 @@ public class EmailReceiver {
         ImportTable table = new ImportTable(fields, data);
 
         DataSession session = context.createSession();
-        session.sql.pushVolatileStats(null);
+        if(!disableVolatileStats)
+            session.pushVolatileStats();
         IntegrationService service = new IntegrationService(session, table, keys, props);
         service.synchronize(true, false);
         session.apply(context);
-        session.sql.popVolatileStats(null);
+        if(!disableVolatileStats)
+            session.popVolatileStats();
         session.close();
     }
 

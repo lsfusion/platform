@@ -13,10 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
-import lsfusion.server.AlterationScriptLexer;
-import lsfusion.server.AlterationScriptParser;
-import lsfusion.server.ServerLoggers;
-import lsfusion.server.SystemProperties;
+import lsfusion.server.*;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.context.ThreadLocalContext;
@@ -50,7 +47,6 @@ import lsfusion.server.mail.NotificationActionProperty;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SessionCreator;
-import lsfusion.server.session.UserInteraction;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
@@ -173,20 +169,23 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         this.systemEventsLM = businessLogics.systemEventsLM;
         this.timeLM = businessLogics.timeLM;
         try {
+
+            boolean disableVolatileStats = Settings.get().isDisableExplicitVolatileStats();
+            
             systemLogger.info("Synchronizing DB.");
             synchronizeDB();           
 
             if (!SystemProperties.isDebug) {
                 systemLogger.info("Synchronizing forms");
-                synchronizeForms();
+                synchronizeForms(disableVolatileStats);
                 systemLogger.info("Synchronizing groups of properties");
-                synchronizeGroupProperties();
+                synchronizeGroupProperties(disableVolatileStats);
                 systemLogger.info("Synchronizing properties");
-                synchronizeProperties();
+                synchronizeProperties(disableVolatileStats);
             }
 
             systemLogger.info("Synchronizing tables");
-            synchronizeTables();
+            synchronizeTables(disableVolatileStats);
 
             resetConnectionStatus();
             logLaunch();
@@ -260,16 +259,16 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
 
-    private void synchronizeForms() {
-        synchronizeNavigatorElements(reflectionLM.form, FormEntity.class, false, reflectionLM.isForm);
-        synchronizeNavigatorElements(reflectionLM.navigatorAction, NavigatorAction.class, true, reflectionLM.isNavigatorAction);
-        synchronizeNavigatorElements(reflectionLM.navigatorElement, NavigatorElement.class, true, reflectionLM.isNavigatorElement);
-        synchronizeParents();
-        synchronizeGroupObjects();
-        synchronizePropertyDraws();
+    private void synchronizeForms(boolean disableVolatileStats) {
+        synchronizeNavigatorElements(reflectionLM.form, FormEntity.class, false, reflectionLM.isForm, disableVolatileStats);
+        synchronizeNavigatorElements(reflectionLM.navigatorAction, NavigatorAction.class, true, reflectionLM.isNavigatorAction, disableVolatileStats);
+        synchronizeNavigatorElements(reflectionLM.navigatorElement, NavigatorElement.class, true, reflectionLM.isNavigatorElement, disableVolatileStats);
+        synchronizeParents(disableVolatileStats);
+        synchronizeGroupObjects(disableVolatileStats);
+        synchronizePropertyDraws(disableVolatileStats);
     }
 
-    private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, boolean exactJavaClass, LCP deleteLP) {
+    private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, boolean exactJavaClass, LCP deleteLP, boolean disableVolatileStats) {
         ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
 
@@ -294,12 +293,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         try {
             DataSession session = createSession();
-            session.pushVolatileStats();
+            if(!disableVolatileStats)
+                session.pushVolatileStats();
 
             IntegrationService service = new IntegrationService(session, table, asList(keyNavigatorElement), propsNavigatorElement, deletes);
             service.synchronize(true, false);
 
-            session.popVolatileStats();
+            if(!disableVolatileStats)
+                session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -307,7 +308,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private void synchronizeParents() {
+    private void synchronizeParents(boolean disableVolatileStats) {
         ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportField numberField = new ImportField(reflectionLM.numberNavigatorElement);
@@ -322,12 +323,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         ImportTable table = new ImportTable(asList(sidField, parentSidField, numberField), dataParents);
         try {
             DataSession session = createSession();
-            session.pushVolatileStats();
+            if(!disableVolatileStats)
+                session.pushVolatileStats();
 
             IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
             service.synchronize(true, false);
 
-            session.popVolatileStats();
+            if(!disableVolatileStats)
+                session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -373,7 +376,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             return parentInfo;
     }
 
-    private void synchronizePropertyDraws() {
+    private void synchronizePropertyDraws(boolean disableVolatileStats) {
 
         List<List<Object>> dataPropertyDraws = new ArrayList<List<Object>>();
         for (FormEntity formElement : businessLogics.getFormEntities()) {
@@ -407,12 +410,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         try {
             DataSession session = createSession();
-            session.pushVolatileStats();
+            if(!disableVolatileStats)
+                session.pushVolatileStats();
 
             IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw, keyGroupObject), propsPropertyDraw, deletes);
             service.synchronize(true, false);
 
-            session.popVolatileStats();
+            if(!disableVolatileStats)
+                session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -420,7 +425,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private void synchronizeGroupObjects() {
+    private void synchronizeGroupObjects(boolean disableVolatileStats) {
 
         List<List<Object>> dataGroupObjectList = new ArrayList<List<Object>>();
         for (FormEntity<?> formElement : businessLogics.getFormEntities()) { //formSID - sidGroupObject
@@ -449,12 +454,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         try {
             DataSession session = createSession();
-            session.pushVolatileStats();
+            if(!disableVolatileStats)
+                session.pushVolatileStats();
 
             IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyGroupObject), propsGroupObject, deletes);
             service.synchronize(true, false);
 
-            session.popVolatileStats();
+            if(!disableVolatileStats)
+                session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -466,12 +473,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return !LM.isGeneratedSID(property.getSID()) && (property instanceof ActionProperty || (((CalcProperty)property).isFull() && !(((CalcProperty)property).isEmpty())));
     }
 
-    private void synchronizeProperties() {
-        synchronizePropertyEntities();
-        synchronizePropertyParents();
+    private void synchronizeProperties(boolean disableVolatileStats) {
+        synchronizePropertyEntities(disableVolatileStats);
+        synchronizePropertyParents(disableVolatileStats);
     }
 
-    private void synchronizePropertyEntities() {
+    private void synchronizePropertyEntities(boolean disableVolatileStats) {
         ImportField sidPropertyField = new ImportField(reflectionLM.propertySIDValueClass);
         ImportField captionPropertyField = new ImportField(reflectionLM.propertyCaptionValueClass);
         ImportField loggablePropertyField = new ImportField(reflectionLM.propertyLoggableValueClass);
@@ -537,12 +544,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     classPropertyField, complexityPropertyField), dataProperty);
 
             DataSession session = createSession();
-            session.pushVolatileStats();
+            if(!disableVolatileStats)
+                session.pushVolatileStats();
 
             IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties, deletes);
             service.synchronize(true, false);
 
-            session.popVolatileStats();
+            if(!disableVolatileStats)
+                session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -550,7 +559,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private void synchronizePropertyParents() {
+    private void synchronizePropertyParents(boolean disableVolatileStats) {
         ImportField sidPropertyField = new ImportField(reflectionLM.propertySIDValueClass);
         ImportField numberPropertyField = new ImportField(reflectionLM.numberProperty);
         ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
@@ -571,12 +580,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         try {
             DataSession session = createSession();
-            session.pushVolatileStats();
+            if(!disableVolatileStats)
+                session.pushVolatileStats();
 
             IntegrationService service = new IntegrationService(session, table, asList(keyProperty, keyParent), properties);
             service.synchronize(true, false);
 
-            session.popVolatileStats();
+            if(!disableVolatileStats)
+                session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -584,7 +595,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    protected void synchronizeGroupProperties() {
+    protected void synchronizeGroupProperties(boolean disableVolatileStats) {
         ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
         ImportField numberField = new ImportField(reflectionLM.numberPropertyGroup);
@@ -623,7 +634,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         try {
             DataSession session = createSession();
-            session.pushVolatileStats();
+            if(!disableVolatileStats)
+                session.pushVolatileStats();
 
             IntegrationService service = new IntegrationService(session, table, asList(key), props, deletes);
             service.synchronize(true, false);
@@ -631,7 +643,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             service = new IntegrationService(session, table2, asList(key, key2), props2);
             service.synchronize(true, false);
 
-            session.popVolatileStats();
+            if(!disableVolatileStats)
+                session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -663,7 +676,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return 0;
     }
 
-    public void synchronizeTables() {
+    public void synchronizeTables(boolean disableVolatileStats) {
         ImportField tableSidField = new ImportField(reflectionLM.sidTable);
         ImportField tableKeySidField = new ImportField(reflectionLM.sidTableKey);
         ImportField tableKeyNameField = new ImportField(reflectionLM.nameTableKey);
@@ -717,7 +730,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         try {
             DataSession session = createSession();
-            session.pushVolatileStats();
+            if(!disableVolatileStats)
+                session.pushVolatileStats();
 
             IntegrationService service = new IntegrationService(session, table, asList(tableKey), properties, delete);
             service.synchronize(true, false);
@@ -728,7 +742,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             service = new IntegrationService(session, tableColumns, asList(tableColumnKey), propertiesColumns, deleteColumns);
             service.synchronize(true, false);
 
-            session.popVolatileStats();
+            if(!disableVolatileStats)
+                session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
