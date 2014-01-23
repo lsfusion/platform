@@ -120,4 +120,6 @@ public interface SQLSyntax {
 
     boolean isTransactionCanceled(SQLException e);
 
+    boolean isConnectionClosed(SQLException e);
+
 }

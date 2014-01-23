@@ -444,4 +444,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public boolean isTransactionCanceled(SQLException e) {
         throw new UnsupportedOperationException();
     }
+
+    public boolean isConnectionClosed(SQLException e) {
+        throw new UnsupportedOperationException();
+    }
 }

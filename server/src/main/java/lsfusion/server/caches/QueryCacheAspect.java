@@ -1,5 +1,6 @@
 package lsfusion.server.caches;
 
+import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
@@ -117,7 +118,7 @@ public class QueryCacheAspect {
         IQuery cache = cacheTwin(query);
         if(cache!=query) {
             MethodSignature signature = (MethodSignature) thisJoinPoint.getSignature();
-            return cache.getClass().getMethod(signature.getName(), signature.getParameterTypes()).invoke(cache, thisJoinPoint.getArgs());
+            return ReflectionUtils.invokeTransp(cache.getClass().getMethod(signature.getName(), signature.getParameterTypes()), cache, thisJoinPoint.getArgs());
         }
         return thisJoinPoint.proceed();
     }

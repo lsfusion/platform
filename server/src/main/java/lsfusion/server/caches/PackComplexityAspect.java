@@ -1,5 +1,6 @@
 package lsfusion.server.caches;
 
+import lsfusion.base.ReflectionUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -17,7 +18,7 @@ public class PackComplexityAspect {
         IQuery pack = ((Query<?,?>)query).pack();
         if(pack!=query) {
             MethodSignature signature = (MethodSignature) thisJoinPoint.getSignature();
-            return pack.getClass().getMethod(signature.getName(), signature.getParameterTypes()).invoke(pack, thisJoinPoint.getArgs());
+            return ReflectionUtils.invokeTransp(pack.getClass().getMethod(signature.getName(), signature.getParameterTypes()), pack, thisJoinPoint.getArgs());
         }
         return thisJoinPoint.proceed();
     }

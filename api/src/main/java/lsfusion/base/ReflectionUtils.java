@@ -143,6 +143,14 @@ public class ReflectionUtils {
             throw Throwables.propagate(e);
         }
     }
+    
+    public static Object invokeTransp(Method method, Object object, Object... args) throws Throwable {
+        try {
+            return method.invoke(object, args);
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        }
+    }
 
     private static class Handler<T> implements InvocationHandler {
         private final T object;

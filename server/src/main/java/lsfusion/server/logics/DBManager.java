@@ -1014,13 +1014,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 if (!keep) {
                     if (oldProperty.isDataProperty && !moved) {
                         String newName = oldProperty.sID + "_deleted";
-                        Savepoint savepoint = sql.getConnection().setSavepoint();
+                        Connection connection = sql.getConnection().sql;
+                        Savepoint savepoint = connection.setSavepoint();
                         try {
-                            savepoint = sql.getConnection().setSavepoint();
+                            savepoint = connection.setSavepoint();
                             sql.renameColumn(oldProperty.tableName, oldProperty.sID, newName);
                             columnsToDrop.put(newName, oldProperty.tableName);
                         } catch (PSQLException e) { // колонка с новым именем (с '_deleted') уже существует
-                            sql.getConnection().rollback(savepoint);
+                            connection.rollback(savepoint);
                             mDropColumns.exclAdd(new Pair<String, String>(oldTable.name, oldProperty.sID));
                         }
                     } else
@@ -1216,7 +1217,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 session.commitTransaction();
             } catch (Throwable t) {
                 session.rollbackTransaction();
-                if(t instanceof SQLHandledException && ((SQLHandledException)t).isRepeatableApply()) { // update conflict или deadlock или timeout - пробуем еще раз
+                if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session)) { // update conflict или deadlock или timeout - пробуем еще раз
                     run(session, runInTransaction, run);
                     return;
                 }
@@ -1445,7 +1446,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public static int SESSION_TIL = -1;
     public static int ID_TIL = Connection.TRANSACTION_REPEATABLE_READ;
 
-    public void dropColumn(String tableName, String columnName) throws SQLException {
+    public void dropColumn(String tableName, String columnName) throws SQLException, SQLHandledException {
         SQLSession sql = getThreadLocalSql();
         sql.startTransaction(DBManager.START_TIL);
         try {

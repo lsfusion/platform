@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractTranslateValues;
+import lsfusion.server.data.ExConnection;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.ConcatenateType;
@@ -68,23 +69,23 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         concTypes = concTypes.merge(types);
     }
 
-    public void before(SQLSession sqlSession, Connection connection, String command) throws SQLException {
+    public void before(SQLSession sqlSession, ExConnection connection, String command) throws SQLException {
         for(ConcatenateType concType : concTypes)
             sqlSession.typePool.ensureConcType(concType);
         for(ImList<Type> recursion : recursions)
             sqlSession.typePool.ensureRecursion(recursion);
 
         if(noReadOnly)
-            sqlSession.pushNoReadOnly(connection);
+            sqlSession.pushNoReadOnly(connection.sql);
         if(volatileStats || command.length() > Settings.get().getCommandLengthVolatileStats())
-            sqlSession.pushVolatileStats(connection);
+            sqlSession.pushVolatileStats(connection.sql);
     }
 
-    public void after(SQLSession sqlSession, Connection connection, String command) throws SQLException {
+    public void after(SQLSession sqlSession, ExConnection connection, String command) throws SQLException {
         if(noReadOnly)
-            sqlSession.popNoReadOnly(connection);
+            sqlSession.popNoReadOnly(connection.sql);
         if(volatileStats || command.length() > Settings.get().getCommandLengthVolatileStats())
-            sqlSession.popVolatileStats(connection);
+            sqlSession.popVolatileStats(connection.sql);
     }
 
     public boolean isNoPrepare() {

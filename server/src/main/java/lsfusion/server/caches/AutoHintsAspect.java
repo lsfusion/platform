@@ -1,14 +1,12 @@
 package lsfusion.server.caches;
 
+import lsfusion.base.*;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.CalcType;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.Result;
-import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMap;
@@ -139,11 +137,7 @@ public class AutoHintsAspect {
             if(resultHint.result instanceof PrereadHint && (isFirst = catchNotFirst.get())==null) // оптимизация
                 catchNotFirst.set(true);
 
-            try {
-                result = ((MethodSignature) thisJoinPoint.getSignature()).getMethod().invoke(thisJoinPoint.getTarget(), thisJoinPoint.getArgs());
-            } catch (InvocationTargetException e) {
-                throw e.getTargetException();                
-            }
+            result = ReflectionUtils.invokeTransp(((MethodSignature) thisJoinPoint.getSignature()).getMethod(), thisJoinPoint.getTarget(), thisJoinPoint.getArgs());
 
             if(isFirst == null) {
                 catchNotFirst.set(null);

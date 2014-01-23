@@ -25,7 +25,7 @@ setRepeatableReadTILMode 'Включить SERIALIZABLE' = ACTION CUSTOM 'lsfusi
 TILMode 'Включен SERIALIZABLE' = DATA BOOLEAN ();
 refreshRepeatableReadTILMode 'Обновить SERIALIZABLE в VM'() = ACTION {
     setRepeatableReadTILMode(TILMode());
-};
+}
 WHEN CHANGED(TILMode()) DO {
     refreshRepeatableReadTILMode();
 }

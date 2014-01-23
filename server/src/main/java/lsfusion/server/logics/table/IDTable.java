@@ -1,6 +1,5 @@
 package lsfusion.server.logics.table;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
@@ -118,10 +117,11 @@ public class IDTable extends GlobalTable {
 
             dataSession.commitTransaction();
         } catch (Throwable e) {
-            if(e instanceof SQLHandledException && ((SQLHandledException)e).isRepeatableApply()) // update conflict или deadlock или timeout - пробуем еще раз
+            dataSession.rollbackTransaction();
+
+            if(e instanceof SQLHandledException && ((SQLHandledException)e).repeatApply(dataSession)) // update conflict или deadlock или timeout - пробуем еще раз
                 return reserveIDs(count, dataSession, idType);
             
-            dataSession.rollbackTransaction();
             throw ExceptionUtils.propagate(e, SQLException.class);
         }
         return freeID;

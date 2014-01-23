@@ -60,10 +60,10 @@ public class SQLSession extends MutableObject {
     private final ConnectionPool connectionPool;
     public final TypePool typePool;
 
-    public Connection getConnection() throws SQLException {
+    public ExConnection getConnection() throws SQLException {
         temporaryTablesLock.lock();
         if (privateConnection != null) {
-            Connection resultConnection = privateConnection;
+            ExConnection resultConnection = privateConnection;
             temporaryTablesLock.unlock();
             return resultConnection;
         } else {
@@ -71,7 +71,7 @@ public class SQLSession extends MutableObject {
         }
     }
 
-    private void returnConnection(Connection connection) throws SQLException {
+    private void returnConnection(ExConnection connection) throws SQLException {
         if(privateConnection !=null)
             assert privateConnection == connection;
         else {
@@ -80,7 +80,7 @@ public class SQLSession extends MutableObject {
         }
     }
 
-    private Connection privateConnection = null;
+    private ExConnection privateConnection = null;
 
     public boolean inconsistent = true; // для отладки
 
@@ -106,7 +106,8 @@ public class SQLSession extends MutableObject {
 
     private void tryCommon() throws SQLException { // пытается вернуться к
         removeUnusedTemporaryTables();
-        if(inTransaction == 0 && volatileStats.get() == 0 && getSQLTemporaryPool().isEmpty(sessionTablesMap)) { // вернемся к commonConnection'у
+        // в зависимости от политики или локальный пул (для сессии) или глобальный пул
+        if(inTransaction == 0 && volatileStats.get() == 0 && sessionTablesMap.isEmpty()) { // вернемся к commonConnection'у
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
         }
@@ -157,49 +158,53 @@ public class SQLSession extends MutableObject {
     }
 
     private Integer prevIsolation;
-    public void startTransaction(int isolationLevel) throws SQLException {
+    public void startTransaction(int isolationLevel) throws SQLException, SQLHandledException {
         lock.writeLock().lock();
-        if(Settings.get().isApplyVolatileStats())
-            pushVolatileStats(null);
-
-        needPrivate();
-
-        if(inTransaction++ == 0) {
-            if(isolationLevel > 0) {
-                prevIsolation = privateConnection.getTransactionIsolation();
-                privateConnection.setTransactionIsolation(isolationLevel);
+        try {
+            if(Settings.get().isApplyVolatileStats())
+                pushVolatileStats(null);
+    
+            if(inTransaction++ == 0) {
+                needPrivate();
+                if(isolationLevel > 0) {
+                    prevIsolation = privateConnection.sql.getTransactionIsolation();
+                    privateConnection.sql.setTransactionIsolation(isolationLevel);
+                }
+                setACID(privateConnection.sql, true);
             }
-            setACID(privateConnection, true);
+        } catch (SQLException e) {
+            throw propagate(e, "START TRANSACTION");
         }
     }
 
     private void endTransaction() throws SQLException {
         assert isInTransaction();
-        if(--inTransaction == 0) {
-            setACID(privateConnection, false);
-            if(prevIsolation != null) {
-                privateConnection.setTransactionIsolation(prevIsolation);
-                prevIsolation = null;
+        try {
+            if(--inTransaction == 0) {
+                setACID(privateConnection.sql, false);
+                if(prevIsolation != null) {
+                    privateConnection.sql.setTransactionIsolation(prevIsolation);
+                    prevIsolation = null;
+                }
             }
+    
+            transactionCounter = null;
+            transactionTables.clear();
+    
+            if(Settings.get().isApplyVolatileStats())
+                popVolatileStats(null);
+        } finally {
+            try { tryCommon(); } catch (Throwable t) {}
+
+            lock.writeLock().unlock();
         }
-
-        transactionCounter = null;
-        transactionTables.clear();
-
-        tryCommon();
-
-        if(Settings.get().isApplyVolatileStats())
-            popVolatileStats(null);
-
-
-        lock.writeLock().unlock();
     }
 
     public void rollbackTransaction() throws SQLException {
         if(inTransaction == 1) { // транзакция заканчивается
             if(transactionCounter!=null) {
-                SQLTemporaryPool temporaryPool = getSQLTemporaryPool();
-                int transTablesCount = temporaryPool.getCounter() - transactionCounter;
+                // в зависимости от политики или локальный пул (для сессии) или глобальный пул
+                int transTablesCount = privateConnection.temporary.getCounter() - transactionCounter;
                 assert transactionTables.size() == transTablesCount;
                 for(int i=0;i<transTablesCount;i++) {
     //                dropTemporaryTableFromDB(transactionTable);
@@ -208,16 +213,17 @@ public class SQLSession extends MutableObject {
                     
                     assert transactionTables.contains(transactionTable);                        
                     sessionTablesMap.remove(transactionTable);
-                    temporaryPool.removeTable(transactionTable);
+                    privateConnection.temporary.removeTable(transactionTable);
                 }
-                temporaryPool.setCounter(transactionCounter);
+                privateConnection.temporary.setCounter(transactionCounter);
             } else
                 assert transactionTables.size() == 0;
-            privateConnection.rollback();            
-            exceptionInTransaction = false; 
+            if(!(problemInTransaction == Problem.CLOSED)) 
+                try { privateConnection.sql.rollback(); } catch (Throwable t) {}            
+            problemInTransaction = null; 
         }
 
-        endTransaction();
+        try { endTransaction(); } catch (Throwable t) {}
     }
 
     public void checkSessionTableMap(SessionTable table, Object owner) {
@@ -225,17 +231,17 @@ public class SQLSession extends MutableObject {
     }
 
     public void commitTransaction() throws SQLException {
-        privateConnection.commit();
+        privateConnection.sql.commit();
         endTransaction();
     }
 
     // удостоверивается что таблица есть
     public void ensureTable(Table table) throws SQLException {
         lockRead();
-        Connection connection = getConnection();
+        ExConnection connection = getConnection();
 
         try {
-            DatabaseMetaData metaData = connection.getMetaData();
+            DatabaseMetaData metaData = connection.sql.getMetaData();
             ResultSet tables = metaData.getTables(null, null, table.name, new String[]{"TABLE"});
             if (!tables.next()) {
                 createTable(table.name, table.keys);
@@ -370,11 +376,6 @@ public class SQLSession extends MutableObject {
         executeDML("DELETE FROM " + table.getName(syntax) + (dropWhere.length() == 0 ? "" : " WHERE " + dropWhere));
     }
 
-    private SQLTemporaryPool temporaryPool = new SQLTemporaryPool();
-    private SQLTemporaryPool getSQLTemporaryPool() { // в зависимости от политики или локальный пул (для сессии) или глобальный пул
-        return temporaryPool;
-    }
-
     private final Map<String, WeakReference<Object>> sessionTablesMap = MapFact.mAddRemoveMap();
     private int sessionCounter = 0;
 
@@ -397,17 +398,17 @@ public class SQLSession extends MutableObject {
             removeUnusedTemporaryTables();
 
             Result<Boolean> isNew = new Result<Boolean>();
-            SQLTemporaryPool temporaryPool = getSQLTemporaryPool();
-            table = temporaryPool.getTable(this, keys, properties, count, sessionTablesMap, isNew, owner);
+            // в зависимости от политики или локальный пул (для сессии) или глобальный пул
+            table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, isNew, owner);
             try {
-                temporaryPool.fillData(this, fill, count, actual, table);
+                privateConnection.temporary.fillData(this, fill, count, actual, table);
             } catch (Throwable t) {
                 returnTemporaryTable(table, owner); // вернем таблицу, если не смогли ее заполнить
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
             } finally {
                 if(isNew.result && isInTransaction()) { // пометим как transaction
                     if(transactionCounter==null)
-                        transactionCounter = temporaryPool.getCounter() - 1;                   
+                        transactionCounter = privateConnection.temporary.getCounter() - 1;                   
                     transactionTables.add(table);
                 }
             }
@@ -532,7 +533,7 @@ public class SQLSession extends MutableObject {
     public void popVolatileStats(Connection connection) throws SQLException {
         if (syntax.noDynamicSampling())
             if (volatileStats.decrementAndGet() == 0) {
-                if(!exceptionInTransaction)
+                if(problemInTransaction == null)
                     executeDDL("SET enable_nestloop=on");
 
                 lockRead();
@@ -598,9 +599,9 @@ public class SQLSession extends MutableObject {
     private void executeDDL(String DDL, ExecuteEnvironment env) throws SQLException {
         lockRead();
 
-        Connection connection = getConnection();
+        ExConnection connection = getConnection();
 
-        Statement statement = createSingleStatement(connection);
+        Statement statement = createSingleStatement(connection.sql);
         try {
             env.before(this, connection, DDL);
 
@@ -716,35 +717,59 @@ public class SQLSession extends MutableObject {
         return rows;
     }
     
-    private boolean exceptionInTransaction = false;
-    private SQLException propagate(SQLException e, Statement statement, boolean isTransactTimeout) throws SQLException, SQLHandledException {
-        boolean timeout = false;
-        if(syntax.isUpdateConflict(e) || syntax.isDeadLock(e) || (timeout = syntax.isTimeout(e))) {
-            boolean inTransaction = isInTransaction();
-            if(inTransaction)
-                exceptionInTransaction = true;
-            handLogger.info(statement.toString() + (inTransaction ? " TRANSACTION" : "") + (timeout ? " TIMEOUT" + (isTransactTimeout ? " MAX" : "") : ""));
-            if(timeout)
-                throw new SQLTimeoutException(isTransactTimeout);
-            else
-                throw new SQLConflictException();
+    private static enum Problem {
+        EXCEPTION, CLOSED
+    }
+    private Problem problemInTransaction = null;
+
+    private SQLException propagate(SQLException e, PreparedStatement statement, boolean isTransactTimeout) throws SQLException, SQLHandledException {
+        return propagate(e, statement != null ? statement.toString() : "PREPARING STATEMENT", isTransactTimeout);
+    }
+
+    private SQLException propagate(SQLException e, String message) throws SQLException, SQLHandledException {
+        return propagate(e, message, false);
+    }
+    
+    private SQLException propagate(SQLException e, String message, boolean isTransactTimeout) throws SQLException, SQLHandledException {
+        boolean inTransaction = isInTransaction();
+        if(inTransaction)
+            problemInTransaction = Problem.EXCEPTION;
+
+        SQLHandledException handled = null;
+        boolean deadLock = false;
+        if(syntax.isUpdateConflict(e) || (deadLock = syntax.isDeadLock(e)))
+            handled = new SQLConflictException(!deadLock);
+        
+        if(syntax.isTimeout(e))
+            handled = new SQLTimeoutException(isTransactTimeout);
+        
+        if(syntax.isConnectionClosed(e)) {
+            handled = new SQLClosedException();
+            problemInTransaction = Problem.CLOSED;
         }
-        logger.error(statement.toString()); // duplicate keys валится при : неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses), неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями, недетерминированные ORDER функции (GROUP LAST и т.п.), нецелостной базой (значения классов в базе не правильные)
+
+        if(handled != null) {
+            handLogger.info(message + (inTransaction ? " TRANSACTION" : "") + " " + handled.toString());
+            throw handled;
+        }
+        
+        logger.error(message); // duplicate keys валится при : неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses), неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями, недетерминированные ORDER функции (GROUP LAST и т.п.), нецелостной базой (значения классов в базе не правильные)
         throw e;
     }
 
     @Message("message.sql.execute")
     public int executeDML(@ParamMessage String command, ImMap<String, ParseInterface> paramObjects, ExecuteEnvironment env, QueryExecuteEnvironment queryExecEnv, int transactTimeout) throws SQLException, SQLHandledException { // public для аспекта
         lockRead();
-        Connection connection = getConnection();
+        ExConnection connection = getConnection();
 
-        Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
-        PreparedStatement statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
-
+        boolean isTransactTimeout = false;
         int result = 0;
         long runTime = 0;
-        boolean isTransactTimeout = false;
+        Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
+        PreparedStatement statement = null;
         try {
+            statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
+
             env.before(this, connection, command);
             isTransactTimeout = queryExecEnv.beforeStatement(statement, this, transactTimeout);
 
@@ -774,7 +799,8 @@ public class SQLSession extends MutableObject {
         } finally {
             env.after(this, connection, command);
 
-            returnStatement.result.proceed(statement, runTime);
+            if(statement!=null)
+                returnStatement.result.proceed(statement, runTime);
 
             returnConnection(connection);
             unlockRead();
@@ -786,10 +812,10 @@ public class SQLSession extends MutableObject {
     @Message("message.sql.execute")
     private int executeDML(@ParamMessage String command) throws SQLException {
         lockRead();
-        Connection connection = getConnection();
+        ExConnection connection = getConnection();
 
         int result = 0;
-        Statement statement = createSingleStatement(connection);
+        Statement statement = createSingleStatement(connection.sql);
         try {
             result = statement.executeUpdate(command);
         } catch (SQLException e) {
@@ -835,7 +861,7 @@ public class SQLSession extends MutableObject {
     public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(@ParamMessage String select, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, QueryExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders) throws SQLException, SQLHandledException {
         lockRead();
 
-        Connection connection = getConnection();
+        ExConnection connection = getConnection();
 
         if(explainAnalyzeMode) {
 //            systemLogger.info(select);
@@ -853,15 +879,17 @@ public class SQLSession extends MutableObject {
             select = fixConcSelect(select, keyNames.crossJoin(keyReaders), propertyNames.crossJoin(propertyReaders), env);
 
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
-        PreparedStatement statement = getStatement(select, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
-        
-        if(outStatement)
-            System.out.println(statement.toString());                    
-                    
-        MOrderExclMap<ImMap<K,Object>,ImMap<V,Object>> mExecResult = MapFact.mOrderExclMap();
         long runTime = 0;
         boolean isTransactTimeout = false;
+        PreparedStatement statement = null;
+
         try {
+            statement = getStatement(select, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
+            
+            if(outStatement)
+                System.out.println(statement.toString());                    
+                    
+            MOrderExclMap<ImMap<K,Object>,ImMap<V,Object>> mExecResult = MapFact.mOrderExclMap();
             env.before(this, connection, select);
             isTransactTimeout = queryExecEnv.beforeStatement(statement, this, transactTimeout);
 
@@ -881,26 +909,25 @@ public class SQLSession extends MutableObject {
             } finally {
                 result.close();
             }
+
+            return mExecResult.immutableOrder();
         } catch (SQLException e) {
             throw propagate(e, statement, isTransactTimeout);
-        } finally {
-            env.after(this, connection, select);
+        } finally { // suppress'м все exception'ы, чтобы вернулся исходный
+            try { env.after(this, connection, select); } catch (Throwable t) {}
 
-            returnStatement.result.proceed(statement, runTime);
+            try { returnStatement.result.proceed(statement, runTime); } catch (Throwable t) {}
 
-            returnConnection(connection);
+            try { returnConnection(connection); } catch (Throwable t) {}
 
             unlockRead();
-
         }
-
-        return mExecResult.immutableOrder();
     }
 
     public void insertBatchRecords(String table, ImOrderSet<KeyField> keys, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) throws SQLException {
         lockRead();
 
-        Connection connection = getConnection();
+        ExConnection connection = getConnection();
 
         ImOrderSet<PropertyField> properties = rows.getValue(0).keys().toOrderSet();
         ImOrderSet<Field> fields = SetFact.addOrderExcl(keys, properties);
@@ -920,7 +947,7 @@ public class SQLSession extends MutableObject {
         }
 
         String command = "INSERT INTO " + syntax.getSessionTableName(table) + " (" + insertString + ") VALUES (" + valueString + ")";
-        PreparedStatement statement = connection.prepareStatement(command);
+        PreparedStatement statement = connection.sql.prepareStatement(command);
 
         try {
             for(int i=0,size=rows.size();i<size;i++) {
@@ -1157,9 +1184,9 @@ public class SQLSession extends MutableObject {
 
         lockRead();
 
-        Connection connection = getConnection();
+        ExConnection connection = getConnection();
 
-        Statement statement = createSingleStatement(connection);
+        Statement statement = createSingleStatement(connection.sql);
         try {
             ResultSet result = statement.executeQuery(select);
             try {
@@ -1257,8 +1284,28 @@ public class SQLSession extends MutableObject {
     }
 
     public void close() throws SQLException {
-        if(privateConnection !=null)
-            privateConnection.close();
+        if(privateConnection !=null) {
+            connectionPool.returnPrivate(this, privateConnection);
+            privateConnection = null;
+        }
+    }
+    
+    public boolean tryRestore() {
+        lockRead();
+        temporaryTablesLock.lock();
+        try {
+            if(privateConnection != null || Settings.get().isCommonUnique()) // вторая штука перестраховка, но такая опция все равно не используется
+                return false;
+            // повалился common
+            assert sessionTablesMap.isEmpty();
+            connectionPool.restoreCommon();
+            return true;
+        } catch(Exception e) {
+            return false;
+        } finally {
+            temporaryTablesLock.unlock();
+            unlockRead();
+        }
     }
 
     private static class ParsedStatement {
@@ -1388,7 +1435,7 @@ public class SQLSession extends MutableObject {
         }
     }
 
-    private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, Connection connection, SQLSyntax syntax, ExecuteEnvironment env, Result<ReturnStatement> returnStatement, boolean noPrepare) throws SQLException {
+    private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, ExConnection connection, SQLSyntax syntax, ExecuteEnvironment env, Result<ReturnStatement> returnStatement, boolean noPrepare) throws SQLException {
 
         boolean poolPrepared = !noPrepare && !Settings.get().isDisablePoolPreparedStatements() && command.length() > Settings.get().getQueryPrepareLength();
 
@@ -1398,7 +1445,7 @@ public class SQLSession extends MutableObject {
         if(poolPrepared)
             parsed = statementPool.get(this, parse);
         if(parsed==null) {
-            parsed = parseStatement(parse, connection, syntax);
+            parsed = parseStatement(parse, connection.sql, syntax);
             if(poolPrepared) {
                 final ParsedStatement fParsed = parsed;
                 returnStatement.set(new ReturnStatement() {
@@ -1414,10 +1461,15 @@ public class SQLSession extends MutableObject {
         } else
             returnStatement.set(keepStatement);
 
-        ParamNum paramNum = new ParamNum();
-        for (String param : parsed.preparedParams)
-            paramObjects.get(param).writeParam(parsed.statement, paramNum, syntax, env);
-        env.add(parsed.env);
+        try {
+            ParamNum paramNum = new ParamNum();
+            for (String param : parsed.preparedParams)
+                paramObjects.get(param).writeParam(parsed.statement, paramNum, syntax, env);
+            env.add(parsed.env);
+        } catch (SQLException e) {
+            returnStatement.result.proceed(parsed.statement, 0);
+            throw e;
+        }
 
         return parsed.statement;
     }

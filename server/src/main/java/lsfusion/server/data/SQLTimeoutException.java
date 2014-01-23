@@ -7,4 +7,8 @@ public class SQLTimeoutException extends SQLHandledException {
     public SQLTimeoutException(boolean isTransactTimeout) {
         this.isTransactTimeout = isTransactTimeout;
     }
+
+    public String toString() {
+        return "TIMEOUT" + (isTransactTimeout ? " MAX" : "");
+    }
 }

@@ -29,7 +29,7 @@ public class SQLTemporaryPool {
         this.counter = counter;
     }
 
-    public boolean isEmpty(Map<String, WeakReference<Object>> used) {
+    public boolean isEmpty() {
         return tables.isEmpty();
     }
 

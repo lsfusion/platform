@@ -216,7 +216,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private Transaction applyTransaction; // restore point
     private boolean isInTransaction;
 
-    private void startTransaction(UpdateCurrentClasses update) throws SQLException {
+    private void startTransaction(UpdateCurrentClasses update) throws SQLException, SQLHandledException {
         assert !isInTransaction;
         sql.startTransaction(DBManager.SESSION_TIL);
         isInTransaction = true;
@@ -1298,7 +1298,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         } catch (Throwable t) { // assert'им что последняя SQL комманда, работа с транзакцией
             rollbackApply();
             
-            if(t instanceof SQLHandledException && ((SQLHandledException)t).isRepeatableApply()) { // update conflict или deadlock или timeout - пробуем еще раз
+            if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(sql)) { // update conflict или deadlock или timeout - пробуем еще раз
                 boolean noTimeout = false;
                 if(t instanceof SQLTimeoutException && ((SQLTimeoutException)t).isTransactTimeout) {
                     if(interaction == null) {

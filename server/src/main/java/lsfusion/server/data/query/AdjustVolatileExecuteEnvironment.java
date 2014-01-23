@@ -1,7 +1,9 @@
 package lsfusion.server.data.query;
 
 import lsfusion.server.Settings;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.SQLTimeoutException;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -44,7 +46,11 @@ public class AdjustVolatileExecuteEnvironment implements QueryExecuteEnvironment
         }
     }
 
-    public synchronized void failed(Object state) {
+    public synchronized void failed(Object state, SQLHandledException e) {
+        
+        if(!(e instanceof SQLTimeoutException))
+            return;
+        
         // discard'м если состояние на конец отличается от состояния на начало
         if(volatileStats) {
             if(!(state instanceof State && ((State)state).prevTimeout==timeout))

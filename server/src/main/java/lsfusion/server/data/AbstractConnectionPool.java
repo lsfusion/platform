@@ -16,36 +16,46 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
 
     public abstract Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
 
-    private Connection common;
+    private ExConnection common;
 
-    public Connection getCommon(MutableObject object) throws SQLException {
+    public ExConnection getCommon(MutableObject object) throws SQLException {
         if(Settings.get().isCommonUnique())
             return getPrivate(object);
         else {
             synchronized(lock) {
                 if(common==null)
-                    common = newConnection();
+                    common = newExConnection();
                 return common;
             }
         }
     }
 
-    public void returnCommon(MutableObject object, Connection connection) throws SQLException {
+    public void returnCommon(MutableObject object, ExConnection connection) throws SQLException {
         if(Settings.get().isCommonUnique())
             returnPrivate(object, connection);
         else
             assert common==connection;
     }
 
+    public void restoreCommon() throws SQLException {
+        assert !Settings.get().isCommonUnique(); 
+        synchronized(lock) {
+            if(common.sql.isClosed()) { // мог восстановиться кем-то другим
+                common.sql = newConnection();
+                assert common.temporary.isEmpty();
+            }
+        }
+    }
+
     private final Object lock = new Object();
-    private final Map<Connection, WeakReference<MutableObject>> usedConnections = MapFact.mAddRemoveMap(); // обычный map так как надо добавлять, remove'ить
-    private final Stack<Connection> freeConnections = new Stack<Connection>();
+    private final Map<ExConnection, WeakReference<MutableObject>> usedConnections = MapFact.mAddRemoveMap(); // обычный map так как надо добавлять, remove'ить
+    private final Stack<ExConnection> freeConnections = new Stack<ExConnection>();
 
     private void checkUsed() throws SQLException {
         synchronized(lock) {
-            Iterator<Map.Entry<Connection,WeakReference<MutableObject>>> it = usedConnections.entrySet().iterator();
+            Iterator<Map.Entry<ExConnection,WeakReference<MutableObject>>> it = usedConnections.entrySet().iterator();
             while(it.hasNext()) {
-                Map.Entry<Connection, WeakReference<MutableObject>> usedEntry = it.next();
+                Map.Entry<ExConnection, WeakReference<MutableObject>> usedEntry = it.next();
                 if(usedEntry.getValue().get()==null) {
                     it.remove(); // можно было бы попробовать использовать повторно, но connection может быть "грязным" то есть с транзакцией или временными таблицами
                     usedEntry.getKey().close();
@@ -54,12 +64,16 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         }
     }
 
-    private void addFreeConnection(Connection connection) throws SQLException {
+    private void addFreeConnection(ExConnection connection) throws SQLException {
         // assert что synchronized lock
         if(freeConnections.size() < Settings.get().getFreeConnections())
             freeConnections.push(connection);
         else
             connection.close();
+    }
+
+    public ExConnection newExConnection() throws SQLException {
+        return new ExConnection(newConnection(), new SQLTemporaryPool());
     }
 
     public Connection newConnection() throws SQLException {
@@ -77,21 +91,21 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         }
     }
 
-    public Connection getPrivate(MutableObject object) throws SQLException {
+    public ExConnection getPrivate(MutableObject object) throws SQLException {
         if(Settings.get().isDisablePoolConnections())
-            return newConnection();
+            return newExConnection();
 
         checkUsed();
 
         synchronized(lock) {
-            Connection freeConnection = freeConnections.isEmpty() ? newConnection() : freeConnections.pop();
+            ExConnection freeConnection = freeConnections.isEmpty() ? newExConnection() : freeConnections.pop();
 
             usedConnections.put(freeConnection, new WeakReference<MutableObject>(object));
             return freeConnection;
         }
     }
 
-    public void returnPrivate(MutableObject object, Connection connection) throws SQLException {
+    public void returnPrivate(MutableObject object, ExConnection connection) throws SQLException {
         if(Settings.get().isDisablePoolConnections()) {
             connection.close();
             return;
@@ -100,9 +114,15 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         synchronized(lock) {
             WeakReference<MutableObject> weakObject = usedConnections.remove(connection);
             assert weakObject.get() == object;
-            assert connection.getAutoCommit();
-            addFreeConnection(connection);
+            if(!connection.sql.isClosed()) {
+                assert connection.sql.getAutoCommit();
+                addFreeConnection(connection);
+            }
         }
     }
 
+    public void restorePrivate(ExConnection connection) throws SQLException {
+        connection.sql = newConnection();
+        connection.temporary = new SQLTemporaryPool();
+    }
 }

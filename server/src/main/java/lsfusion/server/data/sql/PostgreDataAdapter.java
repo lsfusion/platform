@@ -315,5 +315,11 @@ public class PostgreDataAdapter extends DataAdapter {
     @Override
     public boolean isTransactionCanceled(SQLException e) {
         return e.getSQLState().equals("25P02");
-    }    
+    }
+
+    @Override
+    public boolean isConnectionClosed(SQLException e) {
+        String sqlState = e.getSQLState();
+        return sqlState.equals("08003") || sqlState.equals("08006");
+    }
 }
