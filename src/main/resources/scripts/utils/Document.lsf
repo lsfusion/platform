@@ -1066,7 +1066,7 @@ META defineDocumentAggregationHeaderNumberCustom (primObject, aggrObject, suffix
 END
 
 META defineDocumentAggregationHeaderNumber (primObject, aggrObject)
-    @defineDocumentAggregationHeaderNumberCustom (primObject, aggrObject, Object);
+    @defineDocumentAggregationHeaderNumberCustom (primObject, aggrObject, primObject);
 END
 
 // Description
