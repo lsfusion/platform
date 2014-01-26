@@ -94,9 +94,13 @@
                 <entry key="checkAlwaysNull" value="${settings.checkAlwaysNull:}"/>
                 <entry key="checkClassWhere" value="${settings.checkClassWhere:}"/>
                 <entry key="dialogTransactionTimeout" value="${settings.dialogTransactionTimeout:}"/>
+                <entry key="queryLengthTimeout" value="${settings.queryLengthTimeout:}"/>
+                <entry key="timeoutDegree" value="${settings.timeoutDegree:}"/>
+                <entry key="timeoutStart" value="${settings.timeoutStart:}"/>
+                <entry key="applyAutoAttemptCountLimit" value="${settings.applyAutoAttemptCountLimit:}"/>
             </map>
         </property>
-    </bean>
+        </bean>
 
     <bean id="dataAdapter" class="lsfusion.server.data.sql.PostgreDataAdapter">
         <constructor-arg value="${db.name}"/>
