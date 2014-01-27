@@ -145,7 +145,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         if(isAbstract() && calcType.isClass())
-            return getClassTableExpr(joinImplement);
+            return getClassTableExpr(joinImplement, calcType);
 
         ImList<Case> cases = getCases();
 
@@ -334,19 +334,19 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return classValueWhere != null;
     }
 
-    public ClassWhere<Object> getClassValueWhere(ClassType type) {
+    public ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses) {
         if(isAbstract())
             return classValueWhere;
 
-        return super.getClassValueWhere(type);
+        return super.getClassValueWhere(type, prevSameClasses);
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
         if(isAbstract())
-            return getInterfaceClasses(ClassType.ASSERTFULL);
+            return getInterfaceClasses(ClassType.ASSERTFULL, prevSameClasses);
 
-        return super.getInterfaceCommonClasses(commonValue);
+        return super.getInterfaceCommonClasses(commonValue, prevSameClasses);
     }
 
     protected boolean isChecked() {

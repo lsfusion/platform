@@ -148,19 +148,34 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Type getType() {
-        return getValueClass() != null ? getValueClass().getType() : null;
+        return getType(defaultPrevSameClasses);
     }
 
-    public abstract ValueClass getValueClass();
+    public Type getType(PrevClasses prevSameClasses) {
+        ValueClass valueClass = getValueClass(prevSameClasses);
+        return valueClass != null ? valueClass.getType() : null;
+    }
+
+    public ValueClass getValueClass() {
+        return getValueClass(defaultPrevSameClasses);
+    }
+    public abstract ValueClass getValueClass(PrevClasses prevSameClasses);
 
     public ValueClass[] getInterfaceClasses(ImOrderSet<T> listInterfaces) {
         return listInterfaces.mapOrder(getInterfaceClasses(ClassType.ASSERTFULL)).toArray(new ValueClass[listInterfaces.size()]);
     }
     public abstract ImMap<T, ValueClass> getInterfaceClasses(ClassType type);
-    public abstract ClassWhere<T> getClassWhere(ClassType type);
+    
+    public static final PrevClasses defaultPrevSameClasses = PrevClasses.SAME;
+    public static final PrevClasses constraintPrevSameClasses = PrevClasses.BASE;
+    
+    public ClassWhere<T> getClassWhere(ClassType type) {
+        return getClassWhere(type, defaultPrevSameClasses);
+    }
+    public abstract ClassWhere<T> getClassWhere(ClassType type, PrevClasses prevSameClasses);
 
-    public boolean check() {
-        return !getClassWhere(ClassType.ASIS).isFalse();
+    public boolean check(boolean constraint) {
+        return !getClassWhere(ClassType.ASIS, constraint ? constraintPrevSameClasses : defaultPrevSameClasses).isFalse();
     }
 
     @IdentityLazy

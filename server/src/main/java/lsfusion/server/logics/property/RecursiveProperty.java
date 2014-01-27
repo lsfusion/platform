@@ -182,14 +182,14 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue) {
-        return or(interfaces, super.getInterfaceCommonClasses(commonValue),
-                mapInterfaces.rightJoin(getInnerInterfaceCommonClasses()));
+    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
+        return or(interfaces, super.getInterfaceCommonClasses(commonValue, prevSameClasses),
+                mapInterfaces.rightJoin(getInnerInterfaceCommonClasses(prevSameClasses)));
     }
 
-    private ImMap<T, ValueClass> getInnerInterfaceCommonClasses() {
+    private ImMap<T, ValueClass> getInnerInterfaceCommonClasses(PrevClasses prevSameClasses) {
         ImSet<T> outerInnerKeys = mapIterate.valuesSet();
-        ImMap<T, ValueClass> stepClasses = step.mapInterfaceCommonClasses(null);
-        return or(outerInnerKeys, or(outerInnerKeys, stepClasses.remove(mapIterate.keys()), mapIterate.reverse().innerJoin(stepClasses)), initial.mapInterfaceCommonClasses(null));
+        ImMap<T, ValueClass> stepClasses = step.mapInterfaceCommonClasses(null, prevSameClasses);
+        return or(outerInnerKeys, or(outerInnerKeys, stepClasses.remove(mapIterate.keys()), mapIterate.reverse().innerJoin(stepClasses)), initial.mapInterfaceCommonClasses(null, prevSameClasses));
     }
 }

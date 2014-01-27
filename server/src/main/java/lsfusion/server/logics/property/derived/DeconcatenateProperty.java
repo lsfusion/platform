@@ -9,6 +9,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.FormulaProperty;
+import lsfusion.server.logics.property.PrevClasses;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.PropertyChanges;
 
@@ -41,8 +42,8 @@ public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
         // так как не знаем соседних типов не можем построить valueclass
-        return super.getInterfaceCommonClasses(commonValue);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.getInterfaceCommonClasses(commonValue, prevSameClasses);    //To change body of overridden methods use File | Settings | File Templates.
     }
 }

@@ -8,9 +8,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassType;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 
 public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
@@ -19,17 +17,22 @@ public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<
         super(null, null);
 
         ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.ASSERTFULL);
+        boolean prev = false;
+        if(interfaceClasses.isEmpty()) {
+            interfaceClasses = property.getInterfaceClasses(ClassType.ASSERTFULL, PrevClasses.INVERTSAME);
+            prev = true;
+        }
         ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues(new GetValue<ObjectEntity, ValueClass>() {
             public ObjectEntity getMapValue(ValueClass value) {
                 return new ObjectEntity(genID(), value, value.toString());
             }});
 
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet());
+        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet(), prev);
         addGroupObject(groupObject);
 
         // добавляем все свойства
         ImSet<ObjectEntity> objects = groupObject.getObjects();
-        addPropertyDraw(recognizeGroup, true, true, objects.toList().toArray(new ObjectEntity[objects.size()]));
+        addPropertyDraw(recognizeGroup, prev, true, true, objects.toList().toArray(new ObjectEntity[objects.size()]));
 
         //todo: раскомментить, чтобы можно было использовать форму в LogPropertyActionProperty
 //        for (ObjectEntity object : objects) {

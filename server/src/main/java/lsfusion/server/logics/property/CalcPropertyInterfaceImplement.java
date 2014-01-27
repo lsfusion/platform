@@ -45,5 +45,5 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
     void fill(MSet<P> interfaces, MSet<CalcPropertyMapImplement<?, P>> properties);
     ImCol<P> getInterfaces();
 
-    ImMap<P, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue);
+    ImMap<P, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses);
 }

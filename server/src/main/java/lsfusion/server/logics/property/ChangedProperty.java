@@ -75,7 +75,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
                 where = expr.getWhere();
                 break;
             case DROP:
-                where = expr.getWhere().not();
+                where = expr.getWhere().not().and(property.getClassProperty().mapExpr(mapKeys, modifier).getWhere());
                 break;
             default:
                 throw new RuntimeException();
@@ -92,12 +92,12 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     @Override
-    public ClassWhere<Object> getClassValueWhere(ClassType type) {
-        return new ClassWhere<Object>("value", LogicalClass.instance).and(BaseUtils.<ClassWhere<Object>>immutableCast(property.getClassWhere(ClassType.ASSERTFULL))); // assert что full
+    public ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses) {
+        return new ClassWhere<Object>("value", LogicalClass.instance).and(BaseUtils.<ClassWhere<Object>>immutableCast(property.getClassWhere(ClassType.ASSERTFULL, prevSameClasses))); // assert что full
     }
 
-    public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
-        return property.getInterfaceCommonClasses(null);
+    public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
+        return property.getInterfaceCommonClasses(null, prevSameClasses);
     }
 
     @Override

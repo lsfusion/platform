@@ -45,11 +45,9 @@ remoteAddressConnection 'IP пользователя' = DATA VARSTRING[40] (Conn
 userConnection 'Пользователь' = DATA CustomUser (Connection);
 userLoginConnection 'Логин пользователя' (connection) = loginCustomUser(userConnection(connection));
 
-//countConnectionUser 'Кол-во подключений' = GROUP SUM 1 BY userConnection(connection) PERSISTENT; 
-//CONSTRAINT DROPPED(u IS CustomUser) AND PREV(countConnectionUser(u))
-//    MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
-//CONSTRAINT DROPPED(userConnection(c)) 
-//    MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
+countConnectionUser 'Кол-во подключений' = GROUP SUM 1 BY userConnection(connection) PERSISTENT; 
+CONSTRAINT DROPPED(u IS CustomUser) AND PREV(countConnectionUser(u))
+    MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
 
 connectionStatusConnection 'Статус подключения' =  DATA ConnectionStatus (Connection);
 nameConnectionStatusConnection 'Статус подключения' (connection) = staticCaption(connectionStatusConnection(connection));

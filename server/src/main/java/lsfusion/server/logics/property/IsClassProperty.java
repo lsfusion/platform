@@ -17,6 +17,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.Modifier;
@@ -124,10 +125,18 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return true;
     }
 
+    @Override
+    public ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevClasses) {
+        return new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", LogicalClass.instance), true);
+    }
+
     public ValueClass getInterfaceClass() {
         return interfaces.single().interfaceClass;
     }
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        if(calcType.isClassInvert()) // жесткий хак
+            return getClassTableExpr(joinImplement, calcType);
+
         return ValueExpr.get(joinImplement.singleValue().isUpClass(getInterfaceClass()));
     }
 

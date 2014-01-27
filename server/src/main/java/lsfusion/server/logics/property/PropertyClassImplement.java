@@ -27,5 +27,5 @@ public abstract class PropertyClassImplement<P extends PropertyInterface, T exte
         return property.hashCode() * 31 + mapping.hashCode();
     }
     
-    public abstract LP<P, ?> createLP(ImOrderSet<ValueClassWrapper> listInterfaces);
+    public abstract LP<P, ?> createLP(ImOrderSet<ValueClassWrapper> listInterfaces, boolean prev);
 }

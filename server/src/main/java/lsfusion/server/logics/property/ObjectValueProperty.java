@@ -57,9 +57,9 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     }
 
     @Override
-    public ImMap<ClassPropertyInterface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+    public ImMap<ClassPropertyInterface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
         if(commonValue!=null)
             return MapFact.singleton(getInterface(), commonValue);
-        return super.getInterfaceCommonClasses(commonValue); 
+        return super.getInterfaceCommonClasses(commonValue, prevSameClasses); 
     }
 }

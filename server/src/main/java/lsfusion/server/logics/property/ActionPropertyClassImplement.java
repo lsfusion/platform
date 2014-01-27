@@ -9,7 +9,7 @@ public class ActionPropertyClassImplement<P extends PropertyInterface> extends P
         super(property, classes, interfaces);
     }
 
-    public LAP<P> createLP(ImOrderSet<ValueClassWrapper> listInterfaces) {
+    public LAP<P> createLP(ImOrderSet<ValueClassWrapper> listInterfaces, boolean prev) {
         return new LAP<P>(property, listInterfaces.mapOrder(mapping.reverse()));
     }
 }

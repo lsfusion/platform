@@ -1686,11 +1686,11 @@ public abstract class LogicsModule {
                 DerivedProperty.createListAction(
                         SetFact.<ClassPropertyInterface>EMPTY(),
                         ListFact.<ActionPropertyMapImplement<?, ClassPropertyInterface>>toList(
-                                new LogPropertyActionProperty<T>(property, recognizeGroup).getImplement(),
+                                new LogPropertyActionProperty<T>(property).getImplement(),
                                 baseLM.cancel.property.getImplement(SetFact.<ClassPropertyInterface>EMPTYORDER())
                         )
                 );
-        constraintAction.mapEventAction(this, DerivedProperty.createAnyGProp(property).getImplement(), event, true);
+        constraintAction.mapEventAction(this, DerivedProperty.createAnyGProp(property, Property.constraintPrevSameClasses).getImplement(), event, true);
         addProp(constraintAction.property);
     }
 

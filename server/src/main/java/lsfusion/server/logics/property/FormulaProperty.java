@@ -9,7 +9,7 @@ abstract public class FormulaProperty<T extends PropertyInterface> extends NoInc
     }
 
     @Override
-    public boolean check() {
+    public boolean check(boolean constraint) {
         return true;
     }
 }

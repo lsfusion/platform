@@ -250,14 +250,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return !noOld();
     }
 
-    protected Expr getClassTableExpr(ImMap<T, ? extends Expr> joinImplement) {
-        ClassTable<T> classTable = getClassTable();
+    protected Expr getClassTableExpr(ImMap<T, ? extends Expr> joinImplement, CalcType classCalcType) {
+        ClassTable<T> classTable = getClassTable(classCalcType.getPrevClasses());
         return classTable.join(classTable.mapFields.join(joinImplement)).getExpr(classTable.propValue);
     }
 
     @IdentityStrongLazy
-    public ClassTable<T> getClassTable() {
-        return new ClassTable<T>(this);
+    public ClassTable<T> getClassTable(PrevClasses prevSameClasses) {
+        return new ClassTable<T>(this, prevSameClasses);
     }
 
     public static class ClassTable<P extends PropertyInterface> extends Table {
@@ -265,7 +265,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         public final ImRevMap<KeyField, P> mapFields;
         public final PropertyField propValue;
 
-        public ClassTable(final CalcProperty<P> property) {
+        public ClassTable(final CalcProperty<P> property, PrevClasses prevSameClasses) {
             super(property.getSID());
 
             ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues(new GetValue<KeyField, P>() {
@@ -275,11 +275,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             mapFields = revMapFields.reverse();
             keys = property.getOrderInterfaces().mapOrder(revMapFields);
 
-            ValueClass valueClass = property.getValueClass();
+            ValueClass valueClass = property.getValueClass(prevSameClasses);
             propValue = new PropertyField("value", valueClass.getType());
             properties = SetFact.singleton(propValue);
 
-            classes = property.getClassWhere(ClassType.ASSERTFULL).remap(revMapFields);
+            classes = property.getClassWhere(ClassType.ASSERTFULL, prevSameClasses).remap(revMapFields);
             propertyClasses = MapFact.singleton(propValue, BaseUtils.<ClassWhere<Field>>immutableCast(classes).and(new ClassWhere<Field>(propValue, valueClass.getUpSet())));
         }
 
@@ -614,24 +614,30 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         this.field = field;
     }
 
-    public ValueClass getValueClass() {
-        return getClassValueWhere(ClassType.ASIS).getCommonParent(SetFact.singleton("value")).get("value");
+    public ValueClass getValueClass(PrevClasses prevSameClasses) {
+        return getClassValueWhere(ClassType.ASIS, prevSameClasses).getCommonParent(SetFact.singleton("value")).get("value");
     }
     
     public AndClassSet getValueClassSet() {
         return getClassValueWhere(ClassType.ASIS).getCommonClass("value");
     }
 
-    @IdentityLazy
     public ImMap<T, ValueClass> getInterfaceClasses(ClassType type) {
-        return getClassWhere(type).getCommonParent(interfaces);
+        return getInterfaceClasses(type, defaultPrevSameClasses);
     }
     @IdentityLazy
-    public ClassWhere<T> getClassWhere(ClassType type) {
-        return getClassValueWhere(type).filterKeys(interfaces); // не полностью, собсно для этого и есть full
+    public ImMap<T, ValueClass> getInterfaceClasses(ClassType type, PrevClasses prevSameClasses) {
+        return getClassWhere(type, prevSameClasses).getCommonParent(interfaces);
+    }
+    @IdentityLazy
+    public ClassWhere<T> getClassWhere(ClassType type, PrevClasses prevSameClasses) {
+        return getClassValueWhere(type, prevSameClasses).filterKeys(interfaces); // не полностью, собсно для этого и есть full
     }
 
-    protected abstract ClassWhere<Object> getClassValueWhere(ClassType type);
+    protected ClassWhere<Object> getClassValueWhere(ClassType type) {
+        return getClassValueWhere(type, defaultPrevSameClasses);
+    }
+    protected abstract ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses);
 
     public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
         return getClassValueWhere(ClassType.ASSERTFULL).remap(MapFact.<Object, Field>addRevExcl(mapTable.mapKeys, "value", storedField)); //
@@ -880,10 +886,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return v1.getUpSet().getOr().or(v2.getUpSet().getOr()).getCommonClass();
     }
 
-    public static <T extends PropertyInterface, X> ImMap<T, ValueClass> or(ImSet<T> interfaces, ImList<CalcPropertyInterfaceImplement<T>> operands, ImList<ValueClass> operandClasses) {
+    public static <T extends PropertyInterface, X> ImMap<T, ValueClass> or(ImSet<T> interfaces, ImList<CalcPropertyInterfaceImplement<T>> operands, ImList<ValueClass> operandClasses, PrevClasses prevSameClasses) {
         ImMap<T, ValueClass> result = MapFact.EMPTY();
         for(int i=0,size=operands.size();i<size;i++)
-            result = or(interfaces, result, operands.get(i).mapInterfaceCommonClasses(operandClasses.get(i)));
+            result = or(interfaces, result, operands.get(i).mapInterfaceCommonClasses(operandClasses.get(i), prevSameClasses));
         return result;
     }
 
@@ -897,8 +903,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
         return mvResult.immutableValue();
     }
-    public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) { // эвристично определяет классы, для входных значений
-        return getClassValueWhere(ClassType.ASIS).getCommonParent(interfaces);
+    public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) { // эвристично определяет классы, для входных значений
+        return getClassValueWhere(ClassType.ASIS, prevSameClasses).getCommonParent(interfaces);
     }
 
     // костыль для email

@@ -2121,7 +2121,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void addScriptedConstraint(LP property, Event event, boolean checked, List<PropertyUsage> propUsages, String message) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedConstraint(" + property + ", " + checked + ", " + propUsages + ", " + message + ");");
-        if (!property.property.check()) {
+        if (!property.property.check(true)) {
             errLog.emitConstraintPropertyAlwaysNullError(parser);
         }
         property.property.caption = message;
@@ -2554,7 +2554,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void checkPropertyValue(LP property) throws ScriptingErrorLog.SemanticErrorException {
-        if (property.property instanceof CalcProperty && !property.property.check() && !alwaysNullProperties.containsKey(property.property)) {
+        if (property.property instanceof CalcProperty && !property.property.check(false) && !alwaysNullProperties.containsKey(property.property)) {
             String path = parser.getCurrentScriptPath(getName(), parser.getCurrentParserLineNumber(), "\n\t\t\t");
             String location = path + ":" + (parser.getCurrentParser().input.LT(1).getCharPositionInLine() + 1);
             alwaysNullProperties.put(property.property, location);

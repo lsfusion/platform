@@ -1,9 +1,12 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
+import lsfusion.server.classes.CustomClass;
+import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
@@ -37,18 +40,27 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
 
     protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(calcType.isClass())
-            return getClassTableExpr(joinImplement);
+            return getClassTableExpr(joinImplement, calcType);
 
         return property.getExpr(joinImplement); // возвращаем старое значение
     }
 
     @Override
-    public ClassWhere<Object> getClassValueWhere(ClassType type) {
-        return property.getClassValueWhere(ClassType.ASSERTFULL);
+    public ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses) {
+        ClassWhere<Object> classValueWhere = property.getClassValueWhere(ClassType.ASSERTFULL, prevSameClasses);
+        switch (prevSameClasses) {
+            case SAME:
+                return classValueWhere;
+            case INVERTSAME:
+                return classValueWhere;
+            case BASE:
+                return classValueWhere.getBase();
+        }
+        throw new UnsupportedOperationException();    
     }
 
-    public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
-        return property.getInterfaceCommonClasses(commonValue);
+    public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
+        return property.getInterfaceCommonClasses(commonValue, prevSameClasses);
     }
 
     @Override

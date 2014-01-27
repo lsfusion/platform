@@ -148,18 +148,18 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     }
 
     @Override
-    public ImMap<Interface<T>, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue) {
-        return or(interfaces, super.getInterfaceCommonClasses(commonValue),
-                getMapInterfaces().rightJoin(getInnerInterfaceCommonClasses(commonValue)));
+    public ImMap<Interface<T>, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
+        return or(interfaces, super.getInterfaceCommonClasses(commonValue, prevSameClasses),
+                getMapInterfaces().rightJoin(getInnerInterfaceCommonClasses(commonValue, prevSameClasses)));
     }
 
-    private ImMap<T, ValueClass> getInnerInterfaceCommonClasses(final ValueClass commonValue) {
+    private ImMap<T, ValueClass> getInnerInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
         final boolean isSelect = partitionType.isSelect();
         ImList<CalcPropertyInterfaceImplement<T>> used = props.addList(partitions.toList()).addList(orders.keyOrderSet());
         return or(innerInterfaces, used, ListFact.toList(used.size(), new GetIndex<ValueClass>() {
             public ValueClass getMapValue(int i) {
                 return isSelect && i == 0 ? commonValue : null;
             }
-        }));
+        }), prevSameClasses);
     }
 }

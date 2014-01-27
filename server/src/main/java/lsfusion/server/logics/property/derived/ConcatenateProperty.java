@@ -13,6 +13,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.FormulaProperty;
+import lsfusion.server.logics.property.PrevClasses;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.PropertyChanges;
 
@@ -55,13 +56,13 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue) {
+    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
         if(commonValue!=null) {
             return getOrderInterfaces().mapOrderValues(new GetIndex<ValueClass>() {
                 public ValueClass getMapValue(int i) {
                     return ((ConcatenateValueClass)commonValue).get(i);
                 }});
         }
-        return super.getInterfaceCommonClasses(commonValue);
+        return super.getInterfaceCommonClasses(commonValue, prevSameClasses);
     }
 }

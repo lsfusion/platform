@@ -444,7 +444,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected void addPropertyDraw(AbstractNode group, boolean upClasses, boolean useObjSubsets, ObjectEntity... objects) {
-        addPropertyDraw(group, upClasses, null, useObjSubsets, objects);
+        addPropertyDraw(group, false, upClasses, null, useObjSubsets, objects);
+    }
+
+    protected void addPropertyDraw(AbstractNode group, boolean prev, boolean upClasses, boolean useObjSubsets, ObjectEntity... objects) {
+        addPropertyDraw(group, prev, upClasses, null, useObjSubsets, objects);
     }
 
     protected void addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, ObjectEntity... objects) {
@@ -452,6 +456,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, boolean useObjSubsets, ObjectEntity... objects) {
+        return addPropertyDraw(group, false, upClasses, groupObject, useObjSubsets, objects);
+    }
+    
+    protected List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, boolean prev, boolean upClasses, GroupObjectEntity groupObject, boolean useObjSubsets, ObjectEntity... objects) {
         ImOrderSet<ObjectEntity> orderObjects = SetFact.toOrderExclSet(objects);
         ImRevMap<ObjectEntity, ValueClassWrapper> objectToClass = orderObjects.getSet().mapRevValues(new GetValue<ValueClassWrapper, ObjectEntity>() {
             public ValueClassWrapper getMapValue(ObjectEntity value) {
@@ -479,7 +487,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         for (PropertyClassImplement implement : group.getProperties(classSubsets, upClasses)) {
             ImSet<ValueClassWrapper> wrapers = implement.mapping.valuesSet();
             ImOrderSet<ObjectEntity> filterObjects = orderObjects.filterOrderIncl(objectToClass.filterValuesRev(wrapers).keys());
-            propertyDraws.add(addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(wrapers)), groupObject, filterObjects.toArray(new ObjectEntity[filterObjects.size()])));
+            propertyDraws.add(addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(wrapers), prev), groupObject, filterObjects.toArray(new ObjectEntity[filterObjects.size()])));
         }
 
         return propertyDraws;

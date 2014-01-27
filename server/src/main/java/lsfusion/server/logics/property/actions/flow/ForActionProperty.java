@@ -238,7 +238,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             }
 
             // затем сделать GROUP ANY TRUE IF с группировкой по noInline интерфейсам, затем
-            CalcPropertyMapImplement<?, I> groupNoInline = DerivedProperty.createAnyGProp(noInlineIfProp, noInlineInterfaces);
+            CalcPropertyMapImplement<?, I> groupNoInline = DerivedProperty.createAnyGProp(noInlineIfProp, noInlineInterfaces, Property.defaultPrevSameClasses);
             // по нему уже сгруппировать FOR noInline интерфейсам с опцией Inline.NO, а внутри FOR по материализованному условию где noInline уже будут внешними интерфейсами
             ActionPropertyMapImplement<?, I> cleanAction = createForAction(innerInterfaces, extNoInline, noInlineIfProp, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false,
                     action, null, addObject, addClass, forceDialog, recursive, SetFact.<I>EMPTY(), forceInline);

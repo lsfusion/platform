@@ -62,10 +62,10 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
         if(commonValue!=null)
             return MapFact.singleton((AndFormulaProperty.Interface) objectInterface, commonValue);
-        return super.getInterfaceCommonClasses(commonValue);
+        return super.getInterfaceCommonClasses(commonValue, prevSameClasses);
     }
 
 }

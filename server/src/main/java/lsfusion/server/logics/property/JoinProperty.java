@@ -322,10 +322,10 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
         ImOrderSet<T> orderImplement = implement.property.getOrderInterfaces();
-        return or(interfaces, super.getInterfaceCommonClasses(commonValue),
-                or(interfaces, orderImplement.mapList(implement.mapping), orderImplement.mapList(implement.property.getInterfaceCommonClasses(commonValue))));
+        return or(interfaces, super.getInterfaceCommonClasses(commonValue, prevSameClasses),
+                or(interfaces, orderImplement.mapList(implement.mapping), orderImplement.mapList(implement.property.getInterfaceCommonClasses(commonValue, prevSameClasses)), prevSameClasses));
     }
 
     @Override

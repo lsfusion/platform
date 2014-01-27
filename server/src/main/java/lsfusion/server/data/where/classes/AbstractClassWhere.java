@@ -139,6 +139,13 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return new And<K>(map.remove(keys));
         }
 
+        public And<K> getBase() {
+            return new And<K>(map.mapValues(new GetValue<AndClassSet, AndClassSet>() {
+                public AndClassSet getMapValue(AndClassSet value) {
+                    return value.getOr().getCommonClass().getBaseClass().getUpSet();
+                }}));
+        }
+
         public <T extends K> And<T> filterKeys(ImSet<T> keys) {
             return new And<T>(map.filter(keys));
         }

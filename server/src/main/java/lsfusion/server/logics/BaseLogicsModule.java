@@ -20,6 +20,7 @@ import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.form.entity.ClassFormEntity;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyFormEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.form.window.NavigatorWindow;
@@ -350,6 +351,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         super.initIndexes();
         
         addIndex(staticCaption);
+    }
+
+    @IdentityStrongLazy
+    public <P extends PropertyInterface> PropertyFormEntity<T> getLogForm(CalcProperty<P> property) {
+        return new PropertyFormEntity<T>(this, property, recognizeGroup);        
     }
 
     public static int generateStaticNewID() {

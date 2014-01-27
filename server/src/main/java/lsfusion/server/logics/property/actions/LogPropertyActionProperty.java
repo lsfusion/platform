@@ -24,13 +24,11 @@ import java.util.List;
 public class LogPropertyActionProperty<P extends PropertyInterface> extends SystemExplicitActionProperty {
 
     private final CalcProperty<P> property;
-    private final AbstractGroup recognizeGroup;
 
-    public LogPropertyActionProperty(CalcProperty<P> property, AbstractGroup recognizeGroup) {
+    public LogPropertyActionProperty(CalcProperty<P> property) {
         super("LogProp" + property.getSID(), property.caption, new ValueClass[]{});
 
         this.property = property;
-        this.recognizeGroup = recognizeGroup;
     }
 
     @Override
@@ -41,8 +39,8 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         DataSession session = context.getSession();
-        PropertyFormEntity form = new PropertyFormEntity(context.getBL().LM, property, recognizeGroup);
-        FormInstance<?> formInstance = context.createFormInstance(form, MapFact.<ObjectEntity, DataObject>EMPTY(), session, false, FormSessionScope.OLDSESSION, false, false, false, null);
+        FormInstance<?> formInstance = context.createFormInstance(context.getBL().LM.getLogForm(property), 
+                MapFact.<ObjectEntity, DataObject>EMPTY(), session, false, FormSessionScope.OLDSESSION, false, false, false, null);
 
         List<String> titleRow = new ArrayList<String>();
         List<List<String>> data = new ArrayList<List<String>>();

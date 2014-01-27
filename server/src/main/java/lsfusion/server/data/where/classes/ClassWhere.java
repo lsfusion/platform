@@ -186,5 +186,12 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     public boolean isEqual(ImSet<K> interfaces) {
         return isFalse() || BaseUtils.hashEquals(getFullInterfaces(), interfaces);
     }
+    
+    public ClassWhere<K> getBase() {
+        ClassWhere<K> result = ClassWhere.FALSE();
+        for(And<K> andWhere : wheres)
+            result = result.or(new ClassWhere<K>(andWhere.getBase()));
+        return result;
+    } 
 }
 

@@ -69,7 +69,10 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return mapping.rightCrossJoin(property.getInterfaceClasses(type));
     }
     public ClassWhere<T> mapClassWhere(ClassType type) {
-        return new ClassWhere<T>(property.getClassWhere(type),mapping);
+        return mapClassWhere(type, Property.defaultPrevSameClasses); 
+    }
+    public ClassWhere<T> mapClassWhere(ClassType type, PrevClasses prevSameClasses) {
+        return new ClassWhere<T>(property.getClassWhere(type, prevSameClasses),mapping);
     }
 
     public boolean mapIsFull(ImSet<T> interfaces) {
@@ -135,8 +138,8 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return editAction == null ? null : editAction.map(mapping);
     }
     
-    public ImMap<T, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue) {
-        return mapping.crossJoin(property.getInterfaceCommonClasses(commonValue));
+    public ImMap<T, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
+        return mapping.crossJoin(property.getInterfaceCommonClasses(commonValue, prevSameClasses));
     }
 
     public ClassWhere<Object> mapClassValueWhere(ClassType type) {

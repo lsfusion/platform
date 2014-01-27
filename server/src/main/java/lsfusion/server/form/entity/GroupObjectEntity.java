@@ -40,6 +40,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public TreeGroupEntity treeGroup;
 
     public CalcPropertyObjectEntity<?> reportPathProp;
+    
+    public boolean noClassFilter = false;
 
     public GroupObjectEntity() {
     }
@@ -179,8 +181,14 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.objects = objects;
     }
     public GroupObjectEntity(int ID, ImOrderSet<ObjectEntity> objects) {
+        this(ID, objects, false);
+    }
+
+    public GroupObjectEntity(int ID, ImOrderSet<ObjectEntity> objects, boolean noClassFilter) {
         this(ID, (String)null);
 
+        this.noClassFilter = noClassFilter; 
         setObjects(objects);
     }
+
 }

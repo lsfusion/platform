@@ -53,19 +53,19 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
 
     public abstract ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders();
 
-    public ImMap<I, ValueClass> getInnerInterfaceCommonClasses(final ValueClass commonValue) {
+    public ImMap<I, ValueClass> getInnerInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
         final boolean isSelect = getGroupType().isSelect();
         ImList<CalcPropertyInterfaceImplement<I>> props = getProps().addList(getMapInterfaces().values().toList()).addList(getOrders().keyOrderSet());
         return or(innerInterfaces, props, ListFact.toList(props.size(), new GetIndex<ValueClass>() {
                     public ValueClass getMapValue(int i) {
                         return isSelect && i==0 ? commonValue : null;
-                    }}));
+                    }}), prevSameClasses);
     }
 
     @Override
-    public ImMap<Interface<I>, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue) {
-        return or(interfaces, super.getInterfaceCommonClasses(commonValue),
-                MapFact.innerJoin(getMapInterfaces(), getInnerInterfaceCommonClasses(commonValue)));
+    public ImMap<Interface<I>, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
+        return or(interfaces, super.getInterfaceCommonClasses(commonValue, prevSameClasses),
+                MapFact.innerJoin(getMapInterfaces(), getInnerInterfaceCommonClasses(commonValue, prevSameClasses)));
     }
 
     protected ImMap<Interface<I>, Expr> getGroupImplements(ImMap<I, ? extends Expr> mapKeys, PropertyChanges changes) {
@@ -137,7 +137,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
 
     public ImMap<I, ValueClass> getInnerInterfaceClasses() {
-        return getInnerInterfaceCommonClasses(null);
+        return getInnerInterfaceCommonClasses(null, defaultPrevSameClasses);
 /*        ImRevMap<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
         Where w = Expr.getWhere(getGroupImplements(mapKeys, PropertyChanges.EMPTY))
                 .and(Expr.getWhere(getExprImplements(mapKeys, PropertyChanges.EMPTY)))

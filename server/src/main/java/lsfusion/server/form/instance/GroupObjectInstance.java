@@ -54,6 +54,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
     public final CalcPropertyObjectInstance propertyBackground;
     public final CalcPropertyObjectInstance propertyForeground;
+    private final boolean noClassFilter;
     final static int DIRECTION_DOWN = 1;
     final static int DIRECTION_UP = 2;
     final static int DIRECTION_CENTER = 3;
@@ -134,7 +135,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         } else {
             this.pageSize = GroupObjectEntity.PAGE_SIZE_DEFAULT_VALUE;
         }
-
+        
+        this.noClassFilter = entity.noClassFilter;
         this.parent = parent;
         this.props = props;
     }
@@ -361,6 +363,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             }});
     }
     private Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
+        if(noClassFilter)
+            return Where.TRUE;
         return IsClassProperty.getWhere(getGridClasses(objects), mapKeys, modifier);
     }
 

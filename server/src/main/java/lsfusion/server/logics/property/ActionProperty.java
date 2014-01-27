@@ -155,8 +155,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public ImMap<P, ValueClass> getInterfaceClasses(ClassType type) {
         return getWhereProperty().mapInterfaceClasses(type);
     }
-    public ClassWhere<P> getClassWhere(ClassType type) {
-        return getWhereProperty().mapClassWhere(type);
+    public ClassWhere<P> getClassWhere(ClassType type, PrevClasses prevSameClasses) {
+        return getWhereProperty().mapClassWhere(type, prevSameClasses);
     }
 
     public abstract CalcPropertyMapImplement<?, P> getWhereProperty();
@@ -285,7 +285,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         env.execute(this, keys, formEnv, null, null);
     }
 
-    public ValueClass getValueClass() {
+    public ValueClass getValueClass(PrevClasses prevSameClasses) {
         return ActionClass.instance;
     }
 

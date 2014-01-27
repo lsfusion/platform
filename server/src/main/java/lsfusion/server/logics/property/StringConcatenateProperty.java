@@ -4,7 +4,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
 import lsfusion.server.data.expr.formula.StringJoinConcatenateFormulaImpl;
 
 public class StringConcatenateProperty extends FormulaImplProperty {
@@ -18,7 +17,7 @@ public class StringConcatenateProperty extends FormulaImplProperty {
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue) {
+    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
         if (commonValue != null) {
             return interfaces.mapValues(new GetStaticValue<ValueClass>() {
                 public ValueClass getMapValue() {
@@ -26,6 +25,6 @@ public class StringConcatenateProperty extends FormulaImplProperty {
                 }
             });
         }
-        return super.getInterfaceCommonClasses(commonValue);
+        return super.getInterfaceCommonClasses(commonValue, prevSameClasses);
     }
 }

@@ -127,7 +127,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
     }
 
-    public ImMap<P, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue) {
+    public ImMap<P, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
         if(commonValue!=null)
             return MapFact.singleton((P) this, commonValue);
         return MapFact.EMPTY();

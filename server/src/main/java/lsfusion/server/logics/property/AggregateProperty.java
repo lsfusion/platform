@@ -22,7 +22,6 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
-import lsfusion.server.data.translator.MapValuesTranslator;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.session.DataSession;
@@ -68,8 +67,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return calculateExpr(joinImplement, CalcType.EXPR, PropertyChanges.EMPTY, null);
     }
 
-    public Expr calculateClassExpr(ImMap<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
-        return calculateExpr(joinImplement, CalcType.CLASS, PropertyChanges.EMPTY, null);
+    public Expr calculateClassExpr(ImMap<T, ? extends Expr> joinImplement, PrevClasses prevSameClasses) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
+        return calculateExpr(joinImplement, prevSameClasses.getCalc(), PropertyChanges.EMPTY, null);
     }
 
     public Expr calculateStatExpr(ImMap<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
@@ -104,20 +103,20 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     }
 
     @IdentityLazy
-    public ClassWhere<Object> getClassValueWhere(ClassType type) {
+    public ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses) {
         if(type == ClassType.ASSERTFULL) {
             assert isFull();
-            return getClassValueWhere(ClassType.ASIS);
+            return getClassValueWhere(ClassType.ASIS, prevSameClasses);
         }
         if(type == ClassType.FULL) {
-            ClassWhere<Object> result = getClassValueWhere(ClassType.ASIS);
+            ClassWhere<Object> result = getClassValueWhere(ClassType.ASIS, prevSameClasses);
             if(!isFull())
-                result = result.and(new ClassWhere<Object>(BaseUtils.<ImMap<Object, ValueClass>>immutableCast(getInterfaceCommonClasses(null)), true));
+                result = result.and(new ClassWhere<Object>(BaseUtils.<ImMap<Object, ValueClass>>immutableCast(getInterfaceCommonClasses(null, prevSameClasses)), true));
             return result;
         }
 
         ImRevMap<T,NotNullKeyExpr> mapExprs = getMapNotNullKeys();
-        return Query.getClassWhere(Where.TRUE, mapExprs, MapFact.singleton((Object)"value", calculateClassExpr(mapExprs)));
+        return Query.getClassWhere(Where.TRUE, mapExprs, MapFact.singleton((Object)"value", calculateClassExpr(mapExprs, prevSameClasses)));
     }
 
     private ImRevMap<T, NotNullKeyExpr> getMapNotNullKeys() {
