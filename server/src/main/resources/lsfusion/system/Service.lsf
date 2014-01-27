@@ -18,6 +18,7 @@ toggleExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запро�
 toggleExplainMode 'Выводить в лог EXPLAIN запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleExplainModeActionProperty';
 toggleVolatileStats 'Не использовать nested loop' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleVolatileStatsActionProperty';
 toggleSQLLoggerDebugMode 'Выводить в лог доп.информацию' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleSQLLoggerDebugModeActionProperty';
+toggleRemoteLoggerDebugMode 'Выводить в лог действия пользователей' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleRemoteLoggerDebugModeActionProperty';
 
 singleTransaction 'Перерасчет одной транзакцией' = DATA BOOLEAN ();
 
@@ -46,7 +47,7 @@ FORM admin 'Администрирование'
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, 
                  vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, toggleExplainAnalyzeMode, 
                  toggleExplainMode, toggleVolatileStats,
-                 toggleSQLLoggerDebugMode, TILMode, singleTransaction
+                 toggleSQLLoggerDebugMode, toggleRemoteLoggerDebugMode, TILMode, singleTransaction
 ;
 
 DESIGN admin FROM DEFAULT {
@@ -105,6 +106,7 @@ DESIGN admin FROM DEFAULT {
             ADD PROPERTY(toggleExplainAnalyzeMode);
             ADD PROPERTY(toggleExplainMode);
             ADD PROPERTY(toggleSQLLoggerDebugMode);
+            ADD PROPERTY(toggleRemoteLoggerDebugMode);
         }
     }
     ADD functions.box;

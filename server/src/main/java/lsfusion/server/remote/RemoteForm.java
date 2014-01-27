@@ -96,6 +96,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<ReportGenerationData>() {
             @Override
             public ReportGenerationData call() throws Exception {
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("getReportData Action. GroupID: %s", groupId));
+                }
+                
                 return reportManager.getReportData(groupId, toExcel, userPreferences);
             }
         });
@@ -105,6 +110,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<Map<String, String>>() {
             @Override
             public Map<String, String> call() throws Exception {
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("getReportPath Action. GroupID: ", groupId));
+                }
+                
                 return reportManager.getReportPath(toExcel, groupId, userPreferences);
             }
         });
@@ -146,13 +156,27 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
      * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается, что он отработаывает как ImmutableMethod через createAndExecute
      */
     public FormUserPreferences getUserPreferences() throws RemoteException {
-        return form.loadUserPreferences();
+
+        FormUserPreferences result = form.loadUserPreferences();
+        
+        if (logger.isTraceEnabled()) {
+            logger.trace("getUserPreferences Action");
+        }
+        
+        return result;
     }
 
     public ServerResponse changePageSize(long requestIndex, long lastReceivedRequestIndex, final int groupID, final Integer pageSize) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
+
+                if (logger.isTraceEnabled()) {
+                    GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+                    logger.trace(String.format("changePageSize: [ID: %1$d]", groupObject.getID()));
+                    logger.trace(String.format("new page size %s:", pageSize));
+                }
+                
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
                 form.changePageSize(groupObject, pageSize);
             }
@@ -163,6 +187,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace("gainedFocus Action");                    
+                }
+                
                 form.gainedFocus();
                 return null;
             }
@@ -243,6 +272,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 GroupObjectInstance group = form.getGroupObjectInstance(groupId);
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
                 if (valueToSet != null) {
+                    if (logger.isTraceEnabled()) {
+                        GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
+                        logger.trace(String.format("expandGroupObject: [ID: %1$d]", groupObject.getID()));
+                        logger.trace("   keys: ");
+                        for (int i = 0, size = valueToSet.size(); i < size; i++) {
+                            logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
+                        }
+                    }
                     form.expandGroupObject(group, valueToSet);
                 }
             }
@@ -256,6 +293,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 GroupObjectInstance group = form.getGroupObjectInstance(groupId);
                 ImMap<ObjectInstance, DataObject> valueToSet = deserializeGroupObjectKeys(group, groupValues);
                 if (valueToSet != null) {
+                    if (logger.isTraceEnabled()) {
+                        GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
+                        logger.trace(String.format("collapseGroupObject: [ID: %1$d]", groupObject.getID()));
+                        logger.trace("   keys: ");
+                        for (int i = 0, size = valueToSet.size(); i < size; i++) {
+                            logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
+                        }
+                    }
                     form.collapseGroupObject(group, valueToSet);
                 }
             }
@@ -279,6 +324,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public void run() throws Exception {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("changePageSize: [ID: %1$d]", groupObject.getID()));
+                    logger.trace(String.format("new type: %s", changeType));
+                }
+                
                 form.changeGroupObject(groupObject, Scroll.deserialize(changeType));
             }
         });
@@ -295,6 +346,15 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     properties.add(property);
                     keys.add(deserializePropertyKeys(property, columnKeys.get(i)));
                 }
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace("pasteExternalTable Action");
+
+                    for (int i =0; i < propertyIDs.size(); i++) {
+                        logger.trace(String.format("%s-%s", form.getPropertyDraw(propertyIDs.get(i)).getsID(), String.valueOf(columnKeys.get(i))));
+                    }                  
+                }
+                
                 form.pasteExternalTable(properties, keys, values);
             }
         });
@@ -306,12 +366,20 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             public void run() throws Exception {
                 Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> keysValues
                         = new HashMap<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>>();
+
+                if (logger.isTraceEnabled())
+                    logger.trace("pasteMultiCellValue Action");
+                
                 for (Map.Entry<Integer, List<byte[]>> e : bkeys.entrySet()) {
                     PropertyDrawInstance propertyDraw = form.getPropertyDraw(e.getKey());
                     Object propValue = deserializeObject(bvalues.get(e.getKey()));
 
                     MOrderMap<ImMap<ObjectInstance, DataObject>, Object> propKeys = MapFact.mOrderMap();
                     for (byte[] bkey : e.getValue()) {
+                        
+                        if(logger.isTraceEnabled())
+                            logger.trace(String.format("propertyDraw: %s", propertyDraw.getsID()));
+                        
                         propKeys.add(deserializePropertyKeys(propertyDraw, bkey), propValue);
                     }
 
@@ -327,6 +395,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("changeGridClass: [ID: %1$d]", objectID));
+                    logger.trace(String.format("new grid class id: %s", idClass));
+                }
+                
                 ((CustomObjectInstance) form.getObjectInstance(objectID)).changeGridClass(idClass);
             }
         });
@@ -336,6 +410,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
+
+                GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("changeClassView: [ID: %1$d]", groupObject.getID()));
+                    logger.trace(String.format("new classView: %s", String.valueOf(classView)));
+                }
+                
                 form.changeClassView(form.getGroupObjectInstance(groupID), classView);
             }
         });
@@ -347,6 +429,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             public void run() throws Exception {
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
                 ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
+
+                Order order = Order.deserialize(modiType);
+                
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("changePropertyOrder: [ID: %1$d]", propertyID));
+                    logger.trace(String.format("new order: %s", order.toString()));
+                }
+                
                 propertyDraw.toDraw.changeOrder(propertyDraw.propertyObject.getDrawProperty().getRemappedPropertyObject(keys), Order.deserialize(modiType));
             }
         });
@@ -356,6 +446,13 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
+
+                GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("clearPropertyOrders: [ID: %1$d]", groupObject.getID()));
+                }
+                
                 form.getFormInstance().getGroupObjectInstance(groupObjectID).clearOrders();
             }
         });
@@ -365,7 +462,15 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return form.countRecords(groupObjectID);
+
+                int result = form.countRecords(groupObjectID);
+                
+                if (logger.isTraceEnabled()) {
+                    GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);                    
+                    logger.trace(String.format("countRecords Action. GroupObjectID: %s. Result: %s", groupObject.getID(), result));
+                }
+                
+                return result;
             }
         });
     }
@@ -376,7 +481,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             public Object call() throws Exception {
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
                 ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
-                return form.calculateSum(propertyDraw, keys);
+
+                Object result = form.calculateSum(propertyDraw, keys);
+                
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("calculateSum Action. propertyDrawID: %s. Result: %s", propertyDraw.getsID(), result));
+                }
+                
+                return result;
             }
         });
     }
@@ -403,6 +515,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     }
                     outMaps.add(mOutMap.immutableCopy());
                 }
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace("groupData Action");
+                }
+                
                 return form.groupData(BaseUtils.<ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(0)),
                                       outMaps.get(1), BaseUtils.<ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(2)), onlyNotNull);
             }
@@ -414,6 +531,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<List<FormGrouping>>() {
             @Override
             public List<FormGrouping> call() throws Exception {
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("readGroupings Action. GroupObjectSID: %s", groupObjectSID));
+                }
                 return form.readGroupings(groupObjectSID);
             }
         });
@@ -424,6 +544,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("readGroupings Action: [ID: %s]", grouping.groupObjectSID));
+                }
+                
                 form.saveGrouping(grouping);
                 return null;
             }
@@ -440,6 +565,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 for (byte[] state : filters) {
                     FilterInstance filter = FilterInstance.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
                     filter.getApplyObject().addUserFilter(filter);
+                    if (logger.isTraceEnabled()) {
+                        logger.trace(String.format("set user filter: [CLASS: %1$s]", filter.getClass()));
+                        logger.trace(String.format("apply object: %s", filter.getApplyObject().getID()));
+                    }
                 }
             }
         });
@@ -450,6 +579,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public void run() throws Exception {
                 form.setRegularFilter(form.getRegularFilterGroup(groupID), filterID);
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("set regular filter: [GROUP: %1$s]", groupID));
+                    logger.trace(String.format("filter ID: %s", filterID));
+                }
             }
         });
     }
@@ -466,6 +599,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace("closedPressed Action");
+                }
+                
                 form.onQueryClose();
             }
         });
@@ -475,6 +613,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
+                
+                if (logger.isTraceEnabled()) {
+                    logger.trace("okPressed Action");
+                }
+                
                 form.onQueryOk();
             }
         });
@@ -484,6 +627,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace("setTabVisible Action");
+                }
+                
                 form.setTabVisible((ContainerView) richDesign.findById(tabPaneID), richDesign.findById(childId));
             }
         });
@@ -494,6 +642,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace("saveUserPreferences Action");
+                }
+                
                 form.saveUserPreferences(preferences, forAllUsers);
             }
         });
@@ -517,6 +670,23 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 }
 
                 form.executeEditAction(propertyDraw, ServerResponse.CHANGE, keys, pushChangeObject, pushAddObject, true);
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace(String.format("changeProperty: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getsID()));
+                    if (keys.size() > 0) {
+                        logger.trace("   columnKeys: ");
+                        for (int i = 0, size = keys.size(); i < size; i++) {
+                            logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
+                        }
+                    }
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("   current object's values: ");
+                        for (ObjectInstance obj : form.getObjects()) {
+                            logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                        }
+                    }
+
+                }
             }
         });
     }

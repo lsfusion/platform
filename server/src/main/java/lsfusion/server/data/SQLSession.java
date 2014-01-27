@@ -41,6 +41,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static lsfusion.server.ServerLoggers.remoteLogger;
 import static lsfusion.server.ServerLoggers.sqlLogger;
 import static lsfusion.server.ServerLoggers.systemLogger;
 
@@ -590,6 +591,14 @@ public class SQLSession extends MutableObject {
             sqlLogger.setLevel(Level.DEBUG);
         else
             sqlLogger.setLevel(Level.INFO);
+    }
+
+    public void toggleRemoteLoggerDebugMode() {
+
+        if(remoteLogger.getLevel()== Level.INFO)
+            remoteLogger.setLevel(Level.TRACE);
+        else
+            remoteLogger.setLevel(Level.INFO);
     }
 
     public void executeDDL(String DDL) throws SQLException {
