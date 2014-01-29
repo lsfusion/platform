@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.lru.LRULogger;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.Compare;
 import lsfusion.interop.event.IDaemonTask;
@@ -72,6 +73,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends LifecycleAdapter implements InitializingBean {
     protected final static Logger logger = ServerLoggers.systemLogger;
     protected final static Logger debuglogger = Logger.getLogger(BusinessLogics.class);
+    protected final static Logger lruLogger = ServerLoggers.lruLogger;
 
     public static final List<String> defaultExcludedScriptPaths = Arrays.asList("lsfusion/system");
     public static final List<String> defaultIncludedScriptPaths = Arrays.asList("");
@@ -117,7 +119,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        LRUUtil.initLRUTuner();
+        LRUUtil.initLRUTuner(new LRULogger() {
+            @Override
+            public void log(String log) {
+                lruLogger.info(log);
+            }
+        });
     }
 
     @Override

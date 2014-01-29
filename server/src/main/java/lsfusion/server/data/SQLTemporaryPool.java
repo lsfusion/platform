@@ -44,7 +44,7 @@ public class SQLTemporaryPool {
 
         for(String matchTable : matchTables) // ищем нужную таблицу
             if(!used.containsKey(matchTable)) { // если не используется
-                session.truncate(matchTable); // удаляем старые данные
+//                session.truncate(matchTable); // удаляем старые данные
                 assert !used.containsKey(matchTable);
                 used.put(matchTable, new WeakReference<Object>(owner));
                 session.unlockTemporary();

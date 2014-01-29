@@ -46,6 +46,7 @@ seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekActio
 sleep 'Sleep' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty';
 
 applyOnlyWithoutRecalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyWithoutRecalcActionProperty';
+applyOnlyData = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyDataActionProperty';
 applyAll = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyAllActionProperty';
 
 staticName 'Статическое имя' = DATA STRING[250] (Object);

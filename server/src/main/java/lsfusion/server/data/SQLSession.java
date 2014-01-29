@@ -106,7 +106,7 @@ public class SQLSession extends MutableObject {
     }
 
     private void tryCommon() throws SQLException { // пытается вернуться к
-        removeUnusedTemporaryTables();
+        removeUnusedTemporaryTables(false);
         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
         if(inTransaction == 0 && volatileStats.get() == 0 && sessionTablesMap.isEmpty()) { // вернемся к commonConnection'у
             connectionPool.returnPrivate(this, privateConnection);
@@ -396,7 +396,7 @@ public class SQLSession extends MutableObject {
 
         String table;
         try {
-            removeUnusedTemporaryTables();
+            removeUnusedTemporaryTables(false);
 
             Result<Boolean> isNew = new Result<Boolean>();
             // в зависимости от политики или локальный пул (для сессии) или глобальный пул
@@ -420,11 +420,12 @@ public class SQLSession extends MutableObject {
         return table;
     }
 
-    private void removeUnusedTemporaryTables() throws SQLException {
+    private void removeUnusedTemporaryTables(boolean force) throws SQLException {
         for (Iterator<Map.Entry<String, WeakReference<Object>>> iterator = sessionTablesMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String, WeakReference<Object>> entry = iterator.next();
-            if (entry.getValue().get() == null) {
+            if (force || entry.getValue().get() == null) {
 //                    dropTemporaryTableFromDB(entry.getKey());
+                truncate(entry.getKey());
                 iterator.remove();
             }
         }
@@ -435,6 +436,7 @@ public class SQLSession extends MutableObject {
         temporaryTablesLock.lock();
 
         try {
+            truncate(table.name);
             returnTemporaryTable(table.name, owner);
         } finally {
             temporaryTablesLock.unlock();
@@ -1293,9 +1295,21 @@ public class SQLSession extends MutableObject {
     }
 
     public void close() throws SQLException {
-        if(privateConnection !=null) {
-            connectionPool.returnPrivate(this, privateConnection);
-            privateConnection = null;
+        lock.writeLock().lock();
+        temporaryTablesLock.lock();
+
+        try {
+            if(privateConnection !=null) {
+                try {
+                    removeUnusedTemporaryTables(true);
+                } finally {
+                    connectionPool.returnPrivate(this, privateConnection);
+                    privateConnection = null;
+                }
+            }
+        } finally {
+            temporaryTablesLock.unlock();
+            lock.writeLock().unlock();
         }
     }
     

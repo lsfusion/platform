@@ -59,7 +59,7 @@ public class LRUUtil {
     private static long lastCollected;
     private static boolean runningCleanLRU = false;
 
-    public static void initLRUTuner() {
+    public static void initLRUTuner(final LRULogger logger) {
         final MemoryPoolMXBean tenuredGenPool = getTenuredPool();
         final long maxMem = tenuredGenPool.getUsage().getMax();
         final double criticalMem = maxMem * criticalRate;
@@ -84,13 +84,16 @@ public class LRUUtil {
                         synchronized (lockCleanLRU) {
                             if(!runningCleanLRU) {
                                 runningCleanLRU = true;
+                                logger.log("MEMORY THRESHOLD EXCEEDED");
                                 
                                 scheduler.schedule(new Runnable() {
                                     public void run() {
                                         assert runningCleanLRU;
                                         long used = tenuredGenPool.getUsage().getUsed();
+                                        logger.log("MEMORY THRESHOLD EXCEEDED, USED : " + used + ", CRITICAL : " + longCriticalMem);
                                         if(used > longCriticalMem) { // если все еще used вырезаем еще
                                             double cleanMem = 1.0 - (averageMem / used);
+                                            logger.log("REMOVED " + cleanMem + " / RESCHEDULE " + " " + (long) (100 * cleanMem / memGCIn100Millis));
 //                                            System.out.println("REMOVED / RESCHEDULE " + cleanMem + " " + (long) (100 * cleanMem / memGCIn100Millis));
 
                                             ALRUMap.forceRemoveAllLRU(cleanMem);
@@ -105,7 +108,9 @@ public class LRUUtil {
                 } else {
                     if (n.getType().equals(MemoryNotificationInfo.MEMORY_COLLECTION_THRESHOLD_EXCEEDED)) {
                         long used = tenuredGenPool.getCollectionUsage().getUsed();
-                        ALRUMap.forceRemoveAllLRU(1.0 - (averageMem / used));
+                        double cleanMem = 1.0 - (averageMem / used);
+                        logger.log("MEMORY COLLECTION THRESHOLD EXCEEDED, USED : " + used + ", CLEAN : " + cleanMem);
+                        ALRUMap.forceRemoveAllLRU(cleanMem);
                     }
                 }
             }}, null, null);
@@ -123,13 +128,14 @@ public class LRUUtil {
                     used = tenuredGenPool.getCollectionUsage().getUsed();
                 
                 if(used!=lastCollected) { // прошла сборка мусора
+                    logger.log("COLLECTED, USED : " + used + ", LASTCOLLECTED : " + lastCollected + ", UPAVERAGE : " + upAverageMem + ", DOWNAVERAGE : " + downAverageMem);
                     if (used > lastCollected && used > upAverageMem) { // память растет и мы ниже критического предела, ускоряем сборку LRU
                         multiplier /= adjustLRU;
-//                        System.out.println("DEC MULTI " + multiplier);
+                        logger.log("DEC MULTI " + multiplier);
                     }
                     if (used < lastCollected && used < downAverageMem && multiplier < MAX_MULTIPLIER) { // память уменьшается и мы выше критического предела, замедляем сборку LRU
                         multiplier *= adjustLRU;
-//                        System.out.println("INC MULTI " + multiplier);
+                        logger.log("INC MULTI " + multiplier);
                     }
 
                     lastCollected = used;

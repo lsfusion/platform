@@ -945,4 +945,14 @@ public class Settings {
     public void setApplyAutoAttemptCountLimit(int applyAutoAttemptCountLimit) {
         this.applyAutoAttemptCountLimit = applyAutoAttemptCountLimit;
     }
+
+    private boolean alwaysDropSessionTableAfter = true; // если false то может использовать меньше таблиц, но есть риск что при exception'е не востановится таблица, что может привести к непредсказуемым последствиям 
+
+    public boolean isAlwaysDropSessionTableAfter() {
+        return alwaysDropSessionTableAfter;
+    }
+
+    public void setAlwaysDropSessionTableAfter(boolean alwaysDropSessionTableAfter) {
+        this.alwaysDropSessionTableAfter = alwaysDropSessionTableAfter;
+    }
 }

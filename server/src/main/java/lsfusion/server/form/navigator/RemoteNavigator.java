@@ -599,7 +599,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return currentInvocation.resumeWithThrowable(clientThrowable);
     }
 
-    public void close() throws RemoteException {
+    public synchronized void close() throws RemoteException {
+        assert !closed;
         shutdown();
     }
 
@@ -607,8 +608,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     public void unreferenced() {
         unexportNow();
         //TODO:
-//        ThreadLocalContext.set(context);
-//        shutdown();
+        systemShutdown();
     }
 
     @Override
@@ -638,15 +638,29 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         super.unexportNow();
     }
 
-    private void shutdown() {
-        navigatorManager.navigatorClosed(this);
-        try {
-            sql.close();
-        } catch (SQLException e) {
-            Throwables.propagate(e);
-        } finally {
-            unexportLater();
+    private synchronized void systemShutdown() {
+        ThreadLocalContext.set(context);
+        shutdown();
+    }
+
+    private boolean closed;
+    private synchronized void shutdown() {
+        if(!closed) {
+            closed = true;
+            navigatorManager.navigatorClosed(this);
+            try {
+                sql.close();
+            } catch (SQLException e) {
+                Throwables.propagate(e);
+            } finally {
+                unexportLater();
+            }
         }
+    }
+
+    protected void finalize() throws Throwable {
+        super.finalize();
+        systemShutdown();
     }
 
     //todo: вернуть, когда/если починиться механизм восстановления сессии
