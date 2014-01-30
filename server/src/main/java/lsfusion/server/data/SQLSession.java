@@ -425,7 +425,7 @@ public class SQLSession extends MutableObject {
             Map.Entry<String, WeakReference<Object>> entry = iterator.next();
             if (force || entry.getValue().get() == null) {
 //                    dropTemporaryTableFromDB(entry.getKey());
-                truncate(entry.getKey());
+//                truncate(entry.getKey());
                 iterator.remove();
             }
         }
@@ -436,7 +436,7 @@ public class SQLSession extends MutableObject {
         temporaryTablesLock.lock();
 
         try {
-            truncate(table.name);
+//            truncate(table.name);
             returnTemporaryTable(table.name, owner);
         } finally {
             temporaryTablesLock.unlock();
