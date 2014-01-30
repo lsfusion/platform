@@ -800,9 +800,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     private void prereadCaches() {
+        logger.info("Prereading properties graph...");
         getAppliedProperties(ApplyFilter.ONLYCHECK);
         getAppliedProperties(ApplyFilter.NO);
         getOrderMapSingleApplyDepends(ApplyFilter.NO);
+        logger.info("Prereading caches for properties...");
         for (Property property : getPropertyList())
             property.prereadCaches();
     }
@@ -1099,12 +1101,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return session.filterOrderEnv(getAppliedProperties(session.applyFilter));
     }
 
-    private void fillSingleApplyDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, SessionEnvEvent appliedSet, MExclMap<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mapDepends) {
-        if (!fill.equals(applied) && fill.isSingleApplyStored())
-            mapDepends.get(fill).add(applied, appliedSet);
-        else
+    private void fillSingleApplyDependFrom(CalcProperty<?> fill, CalcProperty<?> applied, SessionEnvEvent appliedSet, MExclMap<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mapDepends, boolean canBeOutOfDepends) {
+        if (!fill.equals(applied) && fill.isSingleApplyStored()) {
+            MMap<CalcProperty, SessionEnvEvent> fillDepends = mapDepends.get(fill);
+            if(!canBeOutOfDepends || fillDepends!=null)
+                fillDepends.add(applied, appliedSet);
+        } else
             for (CalcProperty depend : fill.getDepends(false)) // derived'ы отдельно отрабатываются
-                fillSingleApplyDependFrom(depend, applied, appliedSet, mapDepends);
+                fillSingleApplyDependFrom(depend, applied, appliedSet, mapDepends, canBeOutOfDepends);
     }
 
     private ImMap<CalcProperty, ImMap<CalcProperty, SessionEnvEvent>> getMapSingleApplyDepends(ApplyFilter increment) {
@@ -1134,7 +1138,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         MExclMap<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mMapDepends = MapFact.mExclMap();
         for (CalcProperty property : singleAppliedStored) {
             mMapDepends.exclAdd(property, MapFact.mMap(SessionEnvEvent.<CalcProperty>mergeSessionEnv()));
-            fillSingleApplyDependFrom(property, property, SessionEnvEvent.ALWAYS, mMapDepends);
+            fillSingleApplyDependFrom(property, property, SessionEnvEvent.ALWAYS, mMapDepends, false);
         }
 
         assert singleAppliedOld.keys().filterFn(new SFunctionSet<OldProperty>() {
@@ -1144,7 +1148,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         for (int i=0,size= singleAppliedOld.size();i<size;i++) {
             OldProperty old = singleAppliedOld.getKey(i);
-            fillSingleApplyDependFrom(old.property, old, singleAppliedOld.getValue(i), mMapDepends);
+            fillSingleApplyDependFrom(old.property, old, singleAppliedOld.getValue(i), mMapDepends, increment != ApplyFilter.NO);
         }
 
         return mMapDepends.immutable().mapValues(new GetValue<ImMap<CalcProperty, SessionEnvEvent>, MMap<CalcProperty, SessionEnvEvent>>() {
@@ -1156,7 +1160,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private void fillSingleApplyDependFrom(ImMap<CalcProperty, SessionEnvEvent> singleApplied, MExclMap<CalcProperty, MMap<CalcProperty, SessionEnvEvent>> mMapDepends) {
         for (int i=0,size=singleApplied.size();i<size;i++) {
             CalcProperty property = singleApplied.getKey(i);
-            fillSingleApplyDependFrom(property, property, singleApplied.getValue(i), mMapDepends);
+            fillSingleApplyDependFrom(property, property, singleApplied.getValue(i), mMapDepends, false);
         }
     }
 
