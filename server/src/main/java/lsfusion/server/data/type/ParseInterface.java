@@ -31,4 +31,6 @@ public interface ParseInterface {
             throw new RuntimeException("not supported");
         }
     };
+    
+    void checkSessionTable(SQLSession sql);
 }

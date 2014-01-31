@@ -1,5 +1,6 @@
 package lsfusion.server.data;
 
+import lsfusion.server.ServerLoggers;
 import org.postgresql.PGConnection;
 import lsfusion.base.MutableObject;
 import lsfusion.base.col.MapFact;
@@ -37,14 +38,18 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
             assert common==connection;
     }
 
-    public void restoreCommon() throws SQLException {
+    public boolean restoreCommon() throws SQLException {
         assert !Settings.get().isCommonUnique(); 
         synchronized(lock) {
             if(common.sql.isClosed()) { // мог восстановиться кем-то другим
                 common.sql = newConnection();
                 assert common.temporary.isEmpty();
+                ServerLoggers.sqlHandLogger.info("RESTORED COMMON " + common.sql.isClosed());
+                return !common.sql.isClosed();
             }
         }
+
+        return true;
     }
 
     private final Object lock = new Object();

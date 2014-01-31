@@ -67,8 +67,8 @@ import static lsfusion.base.SystemUtils.getRevision;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class DBManager extends LifecycleAdapter implements InitializingBean {
-    private static final Logger logger = Logger.getLogger(DBManager.class);
-    private static final Logger systemLogger = ServerLoggers.systemLogger;
+    public static final Logger logger = Logger.getLogger(DBManager.class);
+    public static final Logger systemLogger = ServerLoggers.systemLogger;
 
     private static Comparator<DBVersion> dbVersionComparator = new Comparator<DBVersion>() {
         @Override

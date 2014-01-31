@@ -135,6 +135,11 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             public String getString(SQLSyntax syntax) {
                 return getName(syntax);
             }
+
+            @Override
+            public void checkSessionTable(SQLSession sql) {
+                sql.checkSessionTable(SessionTable.this);
+            }
         };
     }
 

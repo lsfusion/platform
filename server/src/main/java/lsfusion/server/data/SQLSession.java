@@ -1,7 +1,9 @@
 package lsfusion.server.data;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.query.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -31,6 +33,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
+import org.supercsv.cellprocessor.ParseInt;
 
 import java.lang.ref.WeakReference;
 import java.sql.*;
@@ -425,7 +428,7 @@ public class SQLSession extends MutableObject {
             Map.Entry<String, WeakReference<Object>> entry = iterator.next();
             if (force || entry.getValue().get() == null) {
 //                    dropTemporaryTableFromDB(entry.getKey());
-//                truncate(entry.getKey());
+                truncate(entry.getKey());
                 iterator.remove();
             }
         }
@@ -436,7 +439,7 @@ public class SQLSession extends MutableObject {
         temporaryTablesLock.lock();
 
         try {
-//            truncate(table.name);
+            truncate(table.name);
             returnTemporaryTable(table.name, owner);
         } finally {
             temporaryTablesLock.unlock();
@@ -1135,6 +1138,15 @@ public class SQLSession extends MutableObject {
         executeDML("DELETE FROM " + syntax.getSessionTableName(table));
     }
 
+    public int getCount(String table) throws SQLException {
+//        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
+        try {
+            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + syntax.getSessionTableName(table), ExecuteEnvironment.EMPTY, MapFact.<String, ParseInterface>EMPTY(), QueryExecuteEnvironment.DEFAULT, 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance), MapFact.<Object, String>EMPTYREV(), MapFact.<Object, Reader>EMPTY()).singleKey().singleValue();
+        } catch (SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public <X> int deleteKeyRecords(Table table, ImMap<KeyField, X> keys) throws SQLException {
         String deleteWhere = keys.toString(new GetKeyValue<String, KeyField, X>() {
             public String getMapValue(KeyField key, X value) {
@@ -1321,8 +1333,7 @@ public class SQLSession extends MutableObject {
                 return false;
             // повалился common
             assert sessionTablesMap.isEmpty();
-            connectionPool.restoreCommon();
-            return true;
+            return connectionPool.restoreCommon();
         } catch(Exception e) {
             return false;
         } finally {
@@ -1457,11 +1468,24 @@ public class SQLSession extends MutableObject {
             return paramNum++;
         }
     }
+    
+    private void checkSessionTables(ImMap<String, ParseInterface> paramObjects) {
+        for(ParseInterface paramObject : paramObjects.valueIt())
+            paramObject.checkSessionTable(this);
+    }
+    
+    public void checkSessionTable(SessionTable table) {
+        boolean tableUsed = sessionTablesMap.get(table.name).get() != null;
+        if(!tableUsed)
+            ServerLoggers.assertLogger.info("USED RETURNED TABLE : " + table.name);
+        assert tableUsed;
+    }
 
     private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, ExConnection connection, SQLSyntax syntax, ExecuteEnvironment env, Result<ReturnStatement> returnStatement, boolean noPrepare) throws SQLException {
 
         boolean poolPrepared = !noPrepare && !Settings.get().isDisablePoolPreparedStatements() && command.length() > Settings.get().getQueryPrepareLength();
 
+        checkSessionTables(paramObjects);
         final ParseStatement parse = preparseStatement(command, poolPrepared, paramObjects, syntax);
 
         ParsedStatement parsed = null;

@@ -175,8 +175,8 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     }
 
     public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException, SQLHandledException {
-        boolean dropBefore = !Settings.get().isAlwaysDropSessionTableAfter() && used(query);
-        if(!dropBefore)
+        boolean dropBefore = !Settings.get().isAlwaysDropSessionTableAfter() && !used(query);
+        if(dropBefore)
             drop(session, owner);
 
         SessionData result;
@@ -187,7 +187,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             throw e;
         }
 
-        if(dropBefore)
+        if(!dropBefore)
             drop(session, owner);
         return result;
     }
