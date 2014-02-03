@@ -46,6 +46,7 @@ seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekActio
 sleep 'Sleep' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty';
 
 applyOnlyWithoutRecalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyWithoutRecalcActionProperty';
+applyOnlyCalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyCalcActionProperty';
 applyOnlyData = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyDataActionProperty';
 applyAll = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyAllActionProperty';
 

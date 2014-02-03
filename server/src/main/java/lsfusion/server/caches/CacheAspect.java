@@ -187,14 +187,15 @@ public class CacheAspect {
             return lazyExecute(target, thisJoinPoint, args, changedArgs);     
         }
 
-        IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
-        Object result = lazyIdentityExecute.get(invocation);
-        if (result == null && !lazyIdentityExecute.containsKey(invocation)) { // здесь и в lazyExecute кривовато, но пока такой способ handl'ить null
-            result = execute(target, thisJoinPoint, args, changedArgs);
-            lazyIdentityExecute.put(invocation, result);
+        synchronized (lazyIdentityExecute) {
+            IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
+            Object result = lazyIdentityExecute.get(invocation);
+            if (result == null && !lazyIdentityExecute.containsKey(invocation)) { // здесь и в lazyExecute кривовато, но пока такой способ handl'ить null
+                result = execute(target, thisJoinPoint, args, changedArgs);
+                lazyIdentityExecute.put(invocation, result);
+            }
+            return result;
         }
-
-        return result;
     }
 
     public static Object callMethod(Object object, ProceedingJoinPoint thisJoinPoint, boolean strong) throws Throwable {
@@ -206,7 +207,7 @@ public class CacheAspect {
     }
     @Around("execution(@lsfusion.server.caches.IdentityInstanceLazy * *.*(..)) && target(object)")
     public Object callInstanceMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return callMethod(object, thisJoinPoint, true);
+        return callMethod(object, thisJoinPoint, false); // есть и для мелких объектов, а в этом случае нужна более быстрая синхронизация
     }
     @Around("execution(@lsfusion.server.caches.IdentityStrongLazy * *.*(..)) && target(object)")
     public Object callStrongMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {

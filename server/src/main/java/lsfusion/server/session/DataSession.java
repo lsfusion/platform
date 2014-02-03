@@ -216,11 +216,22 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private Transaction applyTransaction; // restore point
     private boolean isInTransaction;
 
-    private void startTransaction(UpdateCurrentClasses update) throws SQLException, SQLHandledException {
+    private void startTransaction(UpdateCurrentClasses update, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
         assert !isInTransaction;
         sql.startTransaction(DBManager.SESSION_TIL);
         isInTransaction = true;
+        if(applyFilter == ApplyFilter.ONLY_DATA)
+            onlyDataModifier = new OverrideSessionModifier(new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
     }
+    
+    private void cleanOnlyDataModifier() throws SQLException {
+        if(onlyDataModifier != null) {
+            assert applyFilter == ApplyFilter.ONLY_DATA;
+            onlyDataModifier.clean(sql);
+            onlyDataModifier = null;
+        }
+    }
+    
     private void checkTransaction() {
         if(isInTransaction() && applyTransaction==null)
             applyTransaction = new Transaction();
@@ -230,16 +241,20 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             info.run();
         
         try {
-            if(applyTransaction!=null) {
+            if(applyTransaction!=null)
                 applyTransaction.rollback();
-                applyTransaction = null;
-            }
         } finally {
-            isInTransaction = false;
-            rollbackInfo.clear();
+            endTransaction();
             sql.rollbackTransaction();
         }
 //        checkSessionTableMap();
+    }
+
+    private void endTransaction() throws SQLException {
+        applyTransaction = null;
+        isInTransaction = false;
+        rollbackInfo.clear();
+        cleanOnlyDataModifier();
     }
 /*    private void checkSessionTableMap() {
         checkSessionTableMap(add);
@@ -258,10 +273,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     
 
     private void commitTransaction() throws SQLException {
-        applyTransaction = null;
-        rollbackInfo.clear();
+        endTransaction();
         sql.commitTransaction();
-        isInTransaction = false;
     }
 
     private ImSet<CalcProperty<ClassPropertyInterface>> getClassChanges(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses) {
@@ -1229,6 +1242,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     // хранит агрегированные изменения для уменьшения сложности (в транзакции очищает ветки от single applied)
     private IncrementTableProps apply = new IncrementTableProps();
     private OverrideSessionModifier applyModifier = new OverrideSessionModifier(apply, dataModifier);
+    private OverrideSessionModifier onlyDataModifier = null;
 
     @Override
     public SessionModifier getModifier() {
@@ -1238,8 +1252,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(isInSessionEvent())
             return sessionEventModifier;
 
-        if(isInTransaction())
+        if(isInTransaction()) {
+            if(onlyDataModifier!=null) {
+                assert applyFilter == ApplyFilter.ONLY_DATA;
+                return onlyDataModifier;
+            }
             return applyModifier;
+        }
 
         return dataModifier;
     }
@@ -1291,7 +1310,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private boolean transactApply(BusinessLogics<?> BL, UpdateCurrentClasses update, UserInteraction interaction, int autoAttemptCount) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
-        startTransaction(update);
+        startTransaction(update, BL);
 
         try {
             return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, update);

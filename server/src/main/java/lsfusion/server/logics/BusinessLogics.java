@@ -850,17 +850,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // находит свойство входящее в "верхнюю" сильносвязную компоненту
-    private static HSet<Link> goDown(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, List<Property> order, HSet<Link> removedLinks, boolean include, HSet<Property> component) {
+    private static HSet<Link> goDown(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, List<Property> order, HSet<Link> removedLinks, boolean include, HSet<Property> component, boolean calcEvents) {
         HSet<Link> linksIn = linksMap.get(property);
         if (linksIn == null) { // уже были, linksMap - одновременно используется и как пометки, и как список, и как обратный обход
             linksIn = new HSet<Link>();
             linksMap.add(property, linksIn);
 
-            ImSet<Link> links = property.getLinks();
+            ImSet<Link> links = property.getLinks(calcEvents);
             for (int i = 0,size = links.size(); i < size; i++) {
                 Link link = links.get(i);
                 if (!removedLinks.contains(link) && component.contains(link.to) == include)
-                    goDown(link.to, linksMap, order, removedLinks, include, component).add(link);
+                    goDown(link.to, linksMap, order, removedLinks, include, component, calcEvents).add(link);
             }
             order.add(property);
         }
@@ -884,7 +884,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // upComponent нужен так как изначально неизвестны все элементы
-    private static HSet<Property> buildList(HSet<Property> props, HSet<Property> exclude, HSet<Link> removedLinks, MOrderExclSet<Property> mResult) {
+    private static HSet<Property> buildList(HSet<Property> props, HSet<Property> exclude, HSet<Link> removedLinks, MOrderExclSet<Property> mResult, boolean calcEvents) {
         HSet<Property> proceeded;
 
         List<Property> order = new ArrayList<Property>();
@@ -892,7 +892,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (int i = 0; i < props.size; i++) {
             Property property = props.get(i);
             if (linksMap.get(property) == null) // проверка что не было
-                goDown(property, linksMap, order, removedLinks, exclude == null, exclude != null ? exclude : props);
+                goDown(property, linksMap, order, removedLinks, exclude == null, exclude != null ? exclude : props, calcEvents);
         }
 
         Result<Link> minLink = new Result<Link>();
@@ -911,7 +911,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
                     if (minLink.result.type.equals(LinkType.DEPEND)) { // нашли сильный цикл
                         MOrderExclSet<Property> mCycle = SetFact.mOrderExclSet();
-                        buildList(innerComponent, null, removedLinks, mCycle);
+                        buildList(innerComponent, null, removedLinks, mCycle, calcEvents);
                         ImOrderSet<Property> cycle = mCycle.immutableOrder();
 
                         String print = "";
@@ -919,7 +919,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                             print = (print.length() == 0 ? "" : print + " -> ") + property.toString();
                         throw new RuntimeException(getString("message.cycle.detected") + " : " + print + " -> " + minLink.result.to);
                     }
-                    buildList(innerComponent, null, removedLinks, mResult);
+                    buildList(innerComponent, null, removedLinks, mResult, calcEvents);
                 }
                 proceeded.exclAddAll(innerComponent);
             }
@@ -935,7 +935,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         if (proceeded.add(property))
             return false;
 
-        for (Link link : property.getLinks()) {
+        for (Link link : property.getLinks(true)) {
             path.push(link);
             if (link.type.getNum() <= desiredType.getNum() && findDependency(link.to, with, proceeded, path, desiredType))
                 return true;
@@ -1007,16 +1007,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 else
                     rest.add(property);
             }
+        boolean calcEvents = filter != ApplyFilter.ONLY_DATA;
 
         MOrderExclSet<Property> mCancelResult = SetFact.mOrderExclSet();
-        HSet<Property> proceeded = buildList(cancelActions, new HSet<Property>(), new HSet<Link>(), mCancelResult);
+        HSet<Property> proceeded = buildList(cancelActions, new HSet<Property>(), new HSet<Link>(), mCancelResult, calcEvents);
         ImOrderSet<Property> cancelResult = mCancelResult.immutableOrder();
 
         // потом бежим по всем остальным, за исключением proceeded
         MOrderExclSet<Property> mRestResult = SetFact.mOrderExclSet();
         HSet<Property> removed = new HSet<Property>();
         removed.addAll(rest.remove(proceeded));
-        buildList(removed, proceeded, new HSet<Link>(), mRestResult); // потом этот cast уберем
+        buildList(removed, proceeded, new HSet<Link>(), mRestResult, calcEvents); // потом этот cast уберем
         ImOrderSet<Property> restResult = mRestResult.immutableOrder();
 
         // затем по всем кроме proceeded на прошлом шаге

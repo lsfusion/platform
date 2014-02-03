@@ -1319,7 +1319,7 @@ public abstract class LogicsModule {
         return addJoinAProp(group, genSID(), caption, addMAProp(title), params);
     }
 
-    @IdentityInstanceLazy
+    @IdentityStrongLazy
     protected LAP addMAProp(String title) {
         return addProperty(null, new LAP(new MessageActionProperty(genSID(), "Message", title)));
     }
@@ -1334,7 +1334,7 @@ public abstract class LogicsModule {
         return addJoinAProp(group, genSID(), caption, addConfirmAProp(title), params);
     }
 
-    @IdentityInstanceLazy
+    @IdentityStrongLazy
     protected LAP addConfirmAProp(String title) {
         return addProperty(null, new LAP(new ConfirmActionProperty(genSID(), "Confirm", title, getConfirmedProperty())));
     }
@@ -1353,7 +1353,7 @@ public abstract class LogicsModule {
         return addJoinAProp(group, genSID(), caption, addAsyncUpdateAProp(), params);
     }
 
-    @IdentityInstanceLazy
+    @IdentityStrongLazy
     protected LAP addAsyncUpdateAProp() {
         return addProperty(null, new LAP(new AsyncUpdateEditValueActionProperty(genSID(), "Async Update")));
     }

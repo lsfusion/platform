@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -65,7 +66,7 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
             }});
     }
 
-    @IdentityInstanceLazy
+    @IdentityStrongLazy
     private CalcPropertyRevImplement<?, Interface<P>> getIsClassProperty() {
         return IsClassProperty.getProperty(getMapInterfaces().crossJoin(property.getInterfaceClasses(ClassType.ASSERTFULL))); // obsolete по идее
     }

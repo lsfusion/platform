@@ -158,7 +158,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     @Override
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks() {
+    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents) {
         MCol<Pair<Property<?>, LinkType>> mResult = ListFact.mCol();
 
         mResult.addAll(getActionChangeProps()); // только у Data и IsClassProperty
@@ -171,7 +171,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         for(CalcProperty property : mRemoveDepends.immutable())
             mResult.add(new Pair<Property<?>, LinkType>(property, LinkType.DEPEND));
 
-        return super.calculateLinks().mergeCol(mResult.immutableCol()); // чтобы удаления классов зацеплять
+        return super.calculateLinks(calcEvents).mergeCol(mResult.immutableCol()); // чтобы удаления классов зацеплять
     }
 
     // не сильно структурно поэтому вынесено в метод

@@ -28,10 +28,8 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
@@ -462,13 +460,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public abstract void prereadCaches();
 
-    protected abstract ImCol<Pair<Property<?>, LinkType>> calculateLinks();
+    protected abstract ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents);
 
     private ImSet<Link> links;
     @ManualLazy
-    public ImSet<Link> getLinks() { // чисто для лексикографики
+    public ImSet<Link> getLinks(boolean calcEvents) { // чисто для лексикографики
         if(links==null) {
-            links = calculateLinks().mapColSetValues(new GetValue<Link, Pair<Property<?>, LinkType>>() {
+            links = calculateLinks(calcEvents).mapColSetValues(new GetValue<Link, Pair<Property<?>, LinkType>>() {
                 public Link getMapValue(Pair<Property<?>, LinkType> value) {
                     return new Link(Property.this, value.first, value.second);
                 }});

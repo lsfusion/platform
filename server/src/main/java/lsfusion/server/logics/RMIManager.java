@@ -10,13 +10,21 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import javax.management.MBeanServer;
+import javax.management.remote.JMXConnectorServer;
+import javax.management.remote.JMXConnectorServerFactory;
+import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
@@ -32,6 +40,8 @@ public class RMIManager extends LifecycleAdapter implements InitializingBean {
     private int registryPort = 0;
 
     private int exportPort = 0;
+
+    private int jmxPort = 0;
 
     public RMIManager() {
         super(RMIMANAGER_ORDER);
@@ -51,6 +61,14 @@ public class RMIManager extends LifecycleAdapter implements InitializingBean {
 
     public void setRegistryPort(int registryPort) {
         this.registryPort = registryPort;
+    }
+
+    public int getJmxPort() {
+        return jmxPort;
+    }
+
+    public void setJmxPort(int jmxPort) {
+        this.jmxPort = jmxPort;
     }
 
     public String getExportName() {
@@ -75,6 +93,7 @@ public class RMIManager extends LifecycleAdapter implements InitializingBean {
     protected void onStarted(LifecycleEvent event) {
         logger.info("Starting RMI Manager.");
         try {
+            initJMX(); // важно, что до initRMI, так как должен использовать SocketFactory по умолчанию
             initRMI();
             initRegistry();
         } catch (RemoteException e) {
@@ -98,6 +117,63 @@ public class RMIManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
+    private void initJMX() {
+        if(jmxPort == 0)
+            return;
+
+        // Ensure cryptographically strong random number generator used
+        // to choose the object number - see java.rmi.server.ObjID
+        //
+//        System.setProperty("java.rmi.server.randomIDs", "true");
+
+        try {
+            final int port= jmxPort;
+            //logger.info("Create RMI registry on port "+port);
+            LocateRegistry.createRegistry(port);
+    
+            // Retrieve the PlatformMBeanServer.
+            //logger.info("Get the platform's MBean server");
+            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+    
+            // This where we would enable security - left out of this
+            // for the sake of the example....
+            //
+    
+            // Create an RMI connector server.
+            //
+            // As specified in the JMXServiceURL the RMIServer stub will be
+            // registered in the RMI registry running in the local host on
+            // port 3000 with the name "jmxrmi". This is the same name the
+            // out-of-the-box management agent uses to register the RMIServer
+            // stub too.
+            //
+            // The port specified in "service:jmx:rmi://"+hostname+":"+port
+            // is the second port, where RMI connection objects will be exported.
+            // Here we use the same port as that we choose for the RMI registry. 
+            // The port for the RMI registry is specified in the second part
+            // of the URL, in "rmi://"+hostname+":"+port
+            //
+            // logger.info("Create an RMI connector server");
+            final String hostname = InetAddress.getLocalHost().getHostName();
+            JMXServiceURL url =
+                    new JMXServiceURL("service:jmx:rmi://"+hostname+
+                            ":"+port+"/jndi/rmi://"+hostname+":"+port+"/jmxrmi");
+    
+            // Now create the server from the JMXServiceURL
+            //
+            JMXConnectorServer cs =
+                    JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);
+    
+            // Start the RMI connector server.
+            //
+            logger.info("Start the RMI connector server on port "+port);
+            cs.start();
+        } catch (IOException e) {
+            logger.error("Error starting JMX: ", e);
+            Throwables.propagate(e);
+        }
+    }
+    
     private void initRegistry() throws RemoteException {
         //сначала ищем внешний registry на этом порту
         registry = RMIUtils.getRmiRegistry(registryPort);

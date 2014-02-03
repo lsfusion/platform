@@ -162,7 +162,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public abstract CalcPropertyMapImplement<?, P> getWhereProperty();
 
     @Override
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks() {
+    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents) {
         if(getEvents().isEmpty()) // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
             return SetFact.EMPTY();
 

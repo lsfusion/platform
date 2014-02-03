@@ -5,7 +5,7 @@ import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 
 public enum ApplyFilter {
-    WITHOUT_RECALC, ONLYCHECK, NO, ONLY_DATA;
+    WITHOUT_RECALC, ONLYCHECK, NO, ONLY_CALC, ONLY_DATA;
 
 /*    public String getSID() {
         switch (this) {
@@ -27,6 +27,7 @@ public enum ApplyFilter {
         switch (this) {
             case NO:
                 return true;
+            case ONLY_CALC:
             case ONLY_DATA:
                 return property instanceof DataProperty || property instanceof ClassDataProperty;
             case WITHOUT_RECALC:

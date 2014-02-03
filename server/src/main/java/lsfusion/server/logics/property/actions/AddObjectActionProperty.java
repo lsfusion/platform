@@ -98,7 +98,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         return null;
     }
 
-    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException {
+    protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
         ObjectClass readClass;
         if (needDialog()) {
             ObjectValue objectValue = context.requestUserClass(valueClass, valueClass, true);
@@ -108,11 +108,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         } else
             readClass = valueClass;
 
-        try {
-            executeRead(context, innerKeys, innerExprs, (ConcreteCustomClass) readClass);
-        } catch (SQLHandledException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        executeRead(context, innerKeys, innerExprs, (ConcreteCustomClass) readClass);
 
         return FlowResult.FINISH;
     }

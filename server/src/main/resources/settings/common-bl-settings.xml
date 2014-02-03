@@ -172,7 +172,8 @@
     <!-- Remoting -->
     <bean id="rmiManager" class="lsfusion.server.logics.RMIManager">
         <property name="registryPort" value="${rmi.registryPort}"/>
-        <property name="exportPort" value="${rmi.exportPort?:0}"/>
+        <property name="jmxPort" value="${rmi.jmxPort:0}"/>
+        <property name="exportPort" value="${rmi.exportPort:0}"/>
         <property name="exportName" value="${rmi.exportName:}"/>
     </bean>
 

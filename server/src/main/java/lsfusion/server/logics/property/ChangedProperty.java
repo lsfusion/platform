@@ -84,11 +84,11 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     @Override
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks() {
+    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents) {
         if(property instanceof IsClassProperty) {
             return getActionChangeProps(); // только у Data и IsClassProperty
         } else
-            return super.calculateLinks();
+            return super.calculateLinks(calcEvents);
     }
 
     @Override
