@@ -455,7 +455,7 @@ public class SQLSession extends MutableObject {
 
 //            dropTemporaryTableFromDB(table.name);
 
-        tryCommon();
+        try { tryCommon(); } catch (Throwable t) {}
     }
     
     public void rollReturnTemporaryTable(SessionTable table, Object owner) throws SQLException {
@@ -545,7 +545,7 @@ public class SQLSession extends MutableObject {
                 lockRead();
                 temporaryTablesLock.lock();
                 try {
-                    tryCommon();
+                    try { tryCommon(); } catch (Throwable t) {}
                 } finally {
                     temporaryTablesLock.unlock();
                     unlockRead();
@@ -1135,7 +1135,10 @@ public class SQLSession extends MutableObject {
 
     public void truncate(String table) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
-        executeDML("DELETE FROM " + syntax.getSessionTableName(table));
+        if(problemInTransaction == null) {                                
+//            executeDML("TRUNCATE TABLE " + syntax.getSessionTableName(table)); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
+            executeDML("DELETE FROM " + syntax.getSessionTableName(table));
+        }
     }
 
     public int getCount(String table) throws SQLException {
