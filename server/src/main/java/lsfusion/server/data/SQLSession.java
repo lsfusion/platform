@@ -1481,7 +1481,7 @@ public class SQLSession extends MutableObject {
         WeakReference<Object> sessionTable = sessionTablesMap.get(table.name);
         boolean tableUsed = sessionTable != null && sessionTable.get() != null;
         if(!tableUsed)
-            ServerLoggers.assertLogger.info("USED RETURNED TABLE : " + table.name);
+            ServerLoggers.assertLogger.info("USED RETURNED TABLE : " + table.name + '\n' + ExceptionUtils.getStackTrace());
         assert tableUsed;
     }
 

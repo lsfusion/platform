@@ -17,6 +17,17 @@ public class ExceptionUtils {
         return result;
     }
 
+    public static String getStackTrace() {
+        Exception e = new Exception();
+        
+        String s = "";
+        StackTraceElement[] trace = e.getStackTrace();
+        for (StackTraceElement aTrace : trace) 
+            s += "\tat " + aTrace + '\n';
+        
+        return s;
+    }
+
     public static boolean isRecoverableRemoteException(Throwable remote) {
         return remote instanceof RemoteException &&
                (remote.getClass() == RemoteException.class
