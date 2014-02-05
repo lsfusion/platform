@@ -15,7 +15,7 @@ DESIGN defaultData FROM DEFAULT {
         type = TABBED;
         NEW commons {
             caption = 'Общие';
-            ADD PROPERTY(loadDefaultData);
+            ADD PROPERTY(loadDefaultData());
         }
     }
 }
@@ -33,7 +33,7 @@ META implementLoadDefaultData (property)
     ;
     EXTEND DESIGN defaultData {
         commons {
-            ADD PROPERTY(property);
+            ADD PROPERTY(property());
         }
     }
 END

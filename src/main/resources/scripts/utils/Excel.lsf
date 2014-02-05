@@ -50,13 +50,13 @@ DESIGN template FROM DEFAULT{
         ADD t.box {
             type = CONTAINERH;
             NEW row1 {
-                ADD PROPERTY(nameTemplate);
-                ADD PROPERTY(idTemplate);
+                ADD PROPERTY(nameTemplate(t));
+                ADD PROPERTY(idTemplate(t));
             };
             NEW row2 {
                 type = CONTAINERH;
-                ADD PROPERTY(loadFileTemplate);
-                ADD PROPERTY(openFileTemplate);
+                ADD PROPERTY(loadFileTemplate(t));
+                ADD PROPERTY(openFileTemplate(t));
             };
         }
         ADD te.box;

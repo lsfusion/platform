@@ -154,13 +154,13 @@ DESIGN dictionary FROM DEFAULT {
         ADD e.box;
         NEW test {
             type = CONTAINERH;
-            ADD PROPERTY(translationOriginalString) {
+            ADD PROPERTY(translationOriginalString()) {
                 fill = 1;
                 caption = 'Фраза для перевода';
                 panelLabelAbove = TRUE;
                 font = 'bold 24';
             }
-            ADD PROPERTY(translationResultString){
+            ADD PROPERTY(translationResultString()){
                 fill = 1;
                 caption = 'Перевод';
                 panelLabelAbove = TRUE;

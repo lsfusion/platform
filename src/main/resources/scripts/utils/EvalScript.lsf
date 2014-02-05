@@ -36,7 +36,7 @@ EXTEND DESIGN chooseScriptName {
             font = 'Tahoma 24';
         }
     REMOVE leftControls;
-    REMOVE PROPERTY(formRefresh);
+    REMOVE PROPERTY(formRefresh());
     }
 }
 
@@ -68,20 +68,20 @@ DESIGN script FROM DEFAULT {
     NEW script {
         caption = 'Сохранённые скрипты';
         type = CONTAINERH;
-        ADD PROPERTY(nameScript) { font = 'bold 24'; alignment = STRETCH; } 
-        ADD PROPERTY(saveScriptAction) { font = 'bold 24'; alignment = STRETCH; }
-        ADD PROPERTY(saveAsScriptAction) { font = 'bold 24'; alignment = STRETCH; }
+        ADD PROPERTY(nameScript(s)) { font = 'bold 24'; alignment = STRETCH; }
+        ADD PROPERTY(saveScriptAction(s)) { font = 'bold 24'; alignment = STRETCH; }
+        ADD PROPERTY(saveAsScriptAction()) { font = 'bold 24'; alignment = STRETCH; }
     }
-    ADD PROPERTY(scriptStorage) {
+    ADD PROPERTY(scriptStorage()) {
         panelLabelAbove = TRUE;    
         fill = 1;
     }
     NEW run {
         caption = 'Запуск';
         type = CONTAINERH;
-        ADD PROPERTY(scriptExecution) { font = 'bold 24'; }
-        ADD PROPERTY(actionBodyExecution) { font = 'bold 24'; }
-        ADD PROPERTY(formExecution) { font = 'bold 24'; }
+        ADD PROPERTY(scriptExecution()) { font = 'bold 24'; }
+        ADD PROPERTY(actionBodyExecution()) { font = 'bold 24'; }
+        ADD PROPERTY(formExecution()) { font = 'bold 24'; }
     }
     ADD functions.box;
 }
@@ -98,7 +98,7 @@ FORM scriptsLog 'Скрипты'
     OBJECTS s=Script
     PROPERTIES(s) nameScript, textScript READONLY, dateTimeScript READONLY 
     PROPERTIES(s) DELETE FORCE PANEL TOOLBAR
-    ORDER BY dateTimeScript DESC
+    ORDER BY dateTimeScript(s) DESC
 
     FILTERGROUP user FILTER 'Только пользовательские' 'F9' nameScript(s)
 
