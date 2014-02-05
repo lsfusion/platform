@@ -1479,10 +1479,7 @@ public class SQLSession extends MutableObject {
     
     public void checkSessionTable(SessionTable table) {
         WeakReference<Object> sessionTable = sessionTablesMap.get(table.name);
-        boolean tableUsed = sessionTable != null && sessionTable.get() != null;
-        if(!tableUsed)
-            ServerLoggers.assertLogger.info("USED RETURNED TABLE : " + table.name + '\n' + ExceptionUtils.getStackTrace());
-        assert tableUsed;
+        ServerLoggers.assertLog(sessionTable != null && sessionTable.get() != null, "USED RETURNED TABLE : " + table.name);
     }
 
     private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, ExConnection connection, SQLSyntax syntax, ExecuteEnvironment env, Result<ReturnStatement> returnStatement, boolean noPrepare) throws SQLException {

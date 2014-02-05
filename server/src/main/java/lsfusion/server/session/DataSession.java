@@ -19,6 +19,7 @@ import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.server.Message;
 import lsfusion.server.ParamMessage;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
@@ -1315,35 +1316,39 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         try {
             return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, update);
         } catch (Throwable t) { // assert'им что последняя SQL комманда, работа с транзакцией
-            rollbackApply();
-            
-            if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(sql)) { // update conflict или deadlock или timeout - пробуем еще раз
-                boolean noTimeout = false;
-                if(t instanceof SQLTimeoutException && ((SQLTimeoutException)t).isTransactTimeout) {
-                    if(interaction == null) {
-                        autoAttemptCount++;
-                        if(autoAttemptCount > Settings.get().getApplyAutoAttemptCountLimit()) {
-                            ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(getString("logics.server.apply.timeout.canceled"), true));                            
-                            return false;
+            try {
+                rollbackApply();
+                
+                if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(sql)) { // update conflict или deadlock или timeout - пробуем еще раз
+                    boolean noTimeout = false;
+                    if(t instanceof SQLTimeoutException && ((SQLTimeoutException)t).isTransactTimeout) {
+                        if(interaction == null) {
+                            autoAttemptCount++;
+                            if(autoAttemptCount > Settings.get().getApplyAutoAttemptCountLimit()) {
+                                ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(getString("logics.server.apply.timeout.canceled"), true));                            
+                                return false;
+                            }
+                        } else {
+                            int option = (Integer)interaction.requestUserInteraction(new ConfirmClientAction("lsFusion",getString("logics.server.restart.transaction"), true, Settings.get().getDialogTransactionTimeout(), JOptionPane.CANCEL_OPTION));
+                            if(option == JOptionPane.CANCEL_OPTION)
+                                return false;
+                            if(option == JOptionPane.YES_OPTION)
+                                noTimeout = true;
                         }
-                    } else {
-                        int option = (Integer)interaction.requestUserInteraction(new ConfirmClientAction("lsFusion",getString("logics.server.restart.transaction"), true, Settings.get().getDialogTransactionTimeout(), JOptionPane.CANCEL_OPTION));
-                        if(option == JOptionPane.CANCEL_OPTION)
-                            return false;
-                        if(option == JOptionPane.YES_OPTION)
-                            noTimeout = true;
+                    }
+                    
+                    if(noTimeout)
+                        sql.pushNoTransactTimeout();
+                        
+                    try {
+                        return transactApply(BL, update, interaction, 0);
+                    } finally {
+                        if(noTimeout)
+                            sql.popNoTransactTimeout();
                     }
                 }
-                
-                if(noTimeout)
-                    sql.pushNoTransactTimeout();
-                    
-                try {
-                    return transactApply(BL, update, interaction, 0);
-                } finally {
-                    if(noTimeout)
-                        sql.popNoTransactTimeout();
-                }
+            } catch (Throwable rs) {
+                ServerLoggers.sqlHandLogger.info("ROLLBACK EXCEPTION " + rs.toString() + '\n' + ExceptionUtils.getStackTrace(rs));
             }
 
             throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);

@@ -20,6 +20,7 @@ import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.server.Message;
 import lsfusion.server.ParamMessage;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
@@ -1115,6 +1116,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     private boolean closed = false;
 
     public void close() throws SQLException {
+        ServerLoggers.assertLog(!closed, "ALREADY CLOSED");
         closed = true;
         session.unregisterForm(this);
         for (GroupObjectInstance group : getGroups()) {
