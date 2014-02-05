@@ -391,18 +391,18 @@ EXTEND DESIGN propertyPolicy {
     NEW property {
         type = CONTAINERH;
         caption = 'Свойства';
-        ADD PROPERTY(captionProperty);
-        ADD PROPERTY(SIDProperty);
+        ADD PROPERTY(captionProperty(p));
+        ADD PROPERTY(SIDProperty(p));
     }
     NEW permission {
         type = CONTAINERH;
         caption = 'Доступ';
-        ADD PROPERTY(permitViewProperty);
-        ADD PROPERTY(forbidViewProperty);
-        ADD PROPERTY(permitChangeProperty);
-        ADD PROPERTY(forbidChangeProperty);
-        ADD PROPERTY(userLoggableProperty);
-        ADD PROPERTY(isSetNotNullProperty);
+        ADD PROPERTY(permitViewProperty(p));
+        ADD PROPERTY(forbidViewProperty(p));
+        ADD PROPERTY(permitChangeProperty(p));
+        ADD PROPERTY(forbidChangeProperty(p));
+        ADD PROPERTY(userLoggableProperty(p));
+        ADD PROPERTY(isSetNotNullProperty(p));
     }
     ADD ur.box;
     ADD functions.box;

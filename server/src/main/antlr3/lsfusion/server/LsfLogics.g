@@ -585,7 +585,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 
 formPropertyDraw returns [PropertyDrawEntity property]
 	:	id=ID              	{ if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($id.text); }
-	|	prop=formMappedProperty { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.propUsage, $prop.mapping); }
+	|	prop=mappedPropertyDraw { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping); }
 	;
 
 formMappedPropertiesList returns [List<String> aliases, List<PropertyUsage> properties, List<List<String>> mapping, List<FormPropertyOptions> options]
@@ -651,6 +651,12 @@ formMappedProperty returns [PropertyUsage propUsage, List<String> mapping]
 		')'
 	;
 
+mappedPropertyDraw returns [String name, List<String> mapping]
+	:	pDrawName=ID { $name = $pDrawName.text; }
+		'('
+		list=idList { $mapping = $list.ids; }
+		')'
+	;
 
 formPropertyUList returns [List<String> aliases, List<PropertyUsage> properties, List<FormPropertyOptions> options]
 @init {
@@ -2875,10 +2881,10 @@ propertySelector returns [PropertyDrawView propertyView = null]
 				$propertyView = $designStatement::design.getPropertyView($pname.text);
 			}
 		}
-	|	mappedProp=formMappedProperty
+	|	mappedProp=mappedPropertyDraw	
 		{
 			if (inPropParseState()) {
-				$propertyView = $designStatement::design.getPropertyView($mappedProp.propUsage, $mappedProp.mapping);
+				$propertyView = $designStatement::design.getPropertyView($mappedProp.name, $mappedProp.mapping);
 			}
 		}
 	;

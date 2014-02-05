@@ -137,7 +137,7 @@ EXTEND DESIGN reloginLoginUser {
             }
         }
         REMOVE leftControls;
-        REMOVE PROPERTY(formRefresh);
+        REMOVE PROPERTY(formRefresh());
     }
 }
 
@@ -180,7 +180,7 @@ EXTEND DESIGN reloginPasswordUser {
             }
         }
         REMOVE leftControls;
-        REMOVE PROPERTY(formRefresh);
+        REMOVE PROPERTY(formRefresh());
     }
 }
 
@@ -236,7 +236,7 @@ EXTEND DESIGN changePasswordUser {
             }
         }
         REMOVE leftControls;
-        REMOVE PROPERTY(formRefresh);
+        REMOVE PROPERTY(formRefresh());
     }
 }
 

@@ -3,7 +3,9 @@ package lsfusion.server.logics.property;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
@@ -40,6 +42,11 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
         this.innerInterfaces = innerInterfaces;
     }
 
+    protected GroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImList<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
+        super(sID, caption, getTempInterfaces(groupInterfaces));
+        this.innerInterfaces = innerInterfaces;
+    }
+    
     public ImMap<Interface<I>,CalcPropertyInterfaceImplement<I>> getMapInterfaces() {
         return interfaces.mapValues(new GetValue<CalcPropertyInterfaceImplement<I>, Interface<I>>() {
             public CalcPropertyInterfaceImplement<I> getMapValue(Interface<I> value) {
@@ -162,6 +169,13 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
         );
     }
 
+    private static <I extends PropertyInterface> ImOrderSet<Interface<I>> getTempInterfaces(ImList<? extends CalcPropertyInterfaceImplement<I>> interfaceImplements) {
+        MOrderExclSet<Interface<I>> mResult = SetFact.mOrderExclSet(interfaceImplements.size());
+        for (int i = 0, size = interfaceImplements.size(); i < size; i++)
+            mResult.exclAdd(new Interface<I>(i, interfaceImplements.get(i)));
+        return mResult.immutableOrder();
+    }
+    
     private static <I extends PropertyInterface> ImOrderSet<Interface<I>> getInterfaces(ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaceImplements) {
         return ((ImCol<CalcPropertyInterfaceImplement<I>>) interfaceImplements).mapColSetValues(
                 new GetIndexValue<Interface<I>, CalcPropertyInterfaceImplement<I>>() {

@@ -2,8 +2,12 @@ package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyObjectEntity;
+import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyInterface;
 
 import java.util.List;
 import java.util.Map;
@@ -27,11 +31,11 @@ public class TempSIDPolicy implements SIDPolicy {
     }
 
     @Override
-    public String createPropertyDrawSID(Property property) {
-        if (property.getOldName() != null) {
-            return property.getOldName();
+    public String createPropertyDrawSID(PropertyObjectEntity<?, ?> property) {
+        if (property.property.getName() == null) {  // Для обратной совместимости. Для OBJVALUE, SELECTION пока берется внутренний SID   
+            return property.property.getSID();
         } else {
-            return BaseUtils.nvl(property.getName(), property.getSID());
+            return OldSIDPolicy.createPropertyDrawSID(BaseUtils.nvl(property.property.getOldName(), property.property.getName()), property);
         }
     }
 }

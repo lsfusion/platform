@@ -1097,7 +1097,7 @@ public abstract class LogicsModule {
 
     protected <T extends PropertyInterface> LCP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, ImOrderSet<T> innerInterfaces, ImList<CalcPropertyInterfaceImplement<T>> implement) {
         ImList<CalcPropertyInterfaceImplement<T>> listImplements = implement.subList(1, implement.size());
-        SumGroupProperty<T> property = new SumGroupProperty<T>(name, caption, innerInterfaces.getSet(), listImplements.getCol(), implement.get(0));
+        SumGroupProperty<T> property = new SumGroupProperty<T>(name, caption, innerInterfaces.getSet(), listImplements, implement.get(0));
 
         LCP lp = mapLGProp(group, persistent, property, listImplements);
         lp.listGroupInterfaces = innerInterfaces;

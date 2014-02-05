@@ -137,7 +137,7 @@ FORM mail 'Почта'
     PROPERTIES(n, p) inNotificationProperty
     PROPERTIES(n) subjectNotification, textNotification FORCE PANEL, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification, isEventNotification, ADDOBJ
     PROPERTIES(p) READONLY captionProperty, SIDProperty
-    ORDER BY SIDProperty
+    ORDER BY SIDProperty(p)
         
     FILTERGROUP emailFilter
         FILTER 'Только отмеченные' 'F9' inNotificationProperty(n, p)
@@ -177,7 +177,7 @@ EXTEND DESIGN mail {
                         fill = 1;
                         type = CONTAINERH;
                         ADD p.box;
-                        ADD PROPERTY(textNotification) {
+                        ADD PROPERTY(textNotification(n)) {
                             fill = 1;
                             panelLabelAbove = TRUE;
                         }

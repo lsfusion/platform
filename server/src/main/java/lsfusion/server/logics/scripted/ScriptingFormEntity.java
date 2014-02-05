@@ -245,7 +245,6 @@ public class ScriptingFormEntity {
                 MappedProperty prop = getPropertyWithMapping(pUsage, mapping);
 
                 checkPropertyParameters(prop.property, prop.mapping);
-
                 property = form.addPropertyDraw(prop.property, prop.mapping);
             }
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
@@ -393,7 +392,7 @@ public class ScriptingFormEntity {
         property.setSID(alias);
 
         if (oldSIDOwner != null && oldSIDOwner != property) {
-            form.setPropertyDrawGeneratedSID(oldSIDOwner, alias);
+            form.setPropertyDrawSID(oldSIDOwner, alias);
         }
     }
 
@@ -402,11 +401,15 @@ public class ScriptingFormEntity {
     }
 
     static public PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, String sid) throws ScriptingErrorLog.SemanticErrorException {
-        PropertyDrawEntity property = form.getPropertyDraw(sid);
-        if (property == null) {
-            LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), sid);
-        }
-        return property;
+        return checkPropertyDraw(LM, form.getPropertyDraw(sid), sid);
+    }
+
+    public PropertyDrawEntity getPropertyDraw(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        return getPropertyDraw(LM, form, name, mapping);
+    }
+    
+    static public PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        return checkPropertyDraw(LM, form.getPropertyDraw(name, mapping), name);    
     }
 
     public PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule.PropertyUsage propUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
@@ -418,17 +421,15 @@ public class ScriptingFormEntity {
         PropertyDrawEntity property = form.getPropertyDraw(mappedProp.property, mappedProp.mapping);
 
         if (property == null) {
-            String params = "(";
-            for (int i = 0; i < mapping.size(); i++) {
-                if (i > 0) {
-                    params = params + ", ";
-                }
-                params = params + mapping.get(i);
-            }
-            params = params + ")";
-            LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), pUsage.name + params);
+            LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), PropertyDrawEntity.createSID(pUsage.name, mapping));
         }
+        return property;
+    }
 
+    static private PropertyDrawEntity checkPropertyDraw(ScriptingLogicsModule LM, PropertyDrawEntity property, String sid) throws ScriptingErrorLog.SemanticErrorException {
+        if (property == null) {
+            LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), sid);
+        }
         return property;
     }
 

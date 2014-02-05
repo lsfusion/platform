@@ -219,7 +219,7 @@ EXTEND DESIGN physicalModel {
                 ADD tc.box {
                     caption = 'Колонки';
                 }
-                ADD PROPERTY(recalculateStats);
+                ADD PROPERTY(recalculateStats());
             }
 
             NEW dropColumnsContainer {
@@ -295,7 +295,7 @@ FORM properties 'Свойства'
     PROPERTIES(tps) READONLY captionPropertyGroup, SIDPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, parentPropertyGroup, numberPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup
     PROPERTIES(ps) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
-    ORDER BY numberProperty
+    ORDER BY numberProperty(p)
     ORDER BY numberPropertyGroup(tps)
 
     FILTERS

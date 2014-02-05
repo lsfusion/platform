@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.form.entity.PropertyObjectEntity;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.Property;
 
@@ -15,5 +16,5 @@ import java.util.List;
 public interface SIDPolicy {
     String createSID(String namespaceName, String name, List<ValueClass> signature, String oldName);
     
-    String createPropertyDrawSID(Property property);
+    String createPropertyDrawSID(PropertyObjectEntity<?, ?> property);
 }

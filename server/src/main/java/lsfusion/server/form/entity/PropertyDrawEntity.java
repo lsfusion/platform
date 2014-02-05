@@ -33,6 +33,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static lsfusion.interop.form.ServerResponse.*;
@@ -392,5 +393,19 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         if (drawToToolbar) {
             forceViewType = ClassViewType.PANEL;
         }
+    }
+    
+    static public String createSID(String name, List<String> mapping) {
+        StringBuilder sidBuilder = new StringBuilder();
+        sidBuilder.append(name);
+        sidBuilder.append("(");
+        for (int i = 0; i < mapping.size(); i++) {
+            if (i > 0) {
+                sidBuilder.append(",");
+            }
+            sidBuilder.append(mapping.get(i));
+        }
+        sidBuilder.append(")");
+        return sidBuilder.toString();        
     }
 }
