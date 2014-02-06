@@ -161,9 +161,10 @@ CLASS GroupObject 'Группа объектов';
 TABLE groupObjectCustomUser (GroupObject, CustomUser);
 TABLE groupObject (GroupObject);
 
-sidGroupObject 'Код группы объектов' = DATA VARSTRING[100] (GroupObject);
+sidGroupObject 'Код группы объектов' = DATA VARSTRING[100] (GroupObject) IN recognize;
 navigatorElementGroupObject 'Элемент навигатора' = DATA NavigatorElement (GroupObject);
-sidNavigatorElementGroupObject (groupObject) = sidNavigatorElement (navigatorElementGroupObject(groupObject));
+sidNavigatorElementGroupObject (groupObject) = sidNavigatorElement (navigatorElementGroupObject(groupObject)) IN recognize;
+captionNavigatorElementGroupObject (groupObject) = captionNavigatorElement (navigatorElementGroupObject(groupObject)) IN recognize; 
 groupObjectSIDGroupObjectSIDNavigatorElementGroupObject  'Группа объектов' (sidNavigatorElement, sidGroupObject) = GROUP AGGR groupObject BY sidGroupObject (groupObject), sidNavigatorElementGroupObject (groupObject) WHERE groupObject IS GroupObject;
 
 CLASS FormGrouping 'Группировка';

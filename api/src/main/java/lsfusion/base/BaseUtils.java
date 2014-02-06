@@ -1618,7 +1618,7 @@ public class BaseUtils {
     }
 
     public static String padLeft(String s, int n) {
-        return String.format("%1$#" + n + "s", s);
+        return String.format("%1$" + n + "s", s);
     }
 
     public static String capitalize(String s) {
