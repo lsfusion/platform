@@ -552,7 +552,7 @@ META defineDocumentDetailDescription(object, detailClass)
     descriptionIndex##detailClass 'Название документа' (d) =
         [= FORMULA VARSTRING[200]  ' CAST($1 AS TEXT) || \', позиция \' || \'  \' || CAST($2 AS TEXT)'](
             description##detailClass(d),
-            index##detailClass(d)) MINCHARWIDTH 30 PREFCHARWIDTH 50;
+            index##detailClass(d)) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN recognize;
 END
 
 META defineDocumentDescription(object, detailClass, caption)
