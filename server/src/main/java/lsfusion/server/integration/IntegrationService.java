@@ -79,11 +79,8 @@ public class IntegrationService {
                 mAddedKeys.exclAdd(key, key.synchronize(session, importTable));
         ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys = mAddedKeys.immutable();
 
-        DataChanges propertyChanges = DataChanges.EMPTY;
-        for (ImportProperty<?> property : properties)
-            propertyChanges = propertyChanges.add(property.synchronize(session, importTable, addedKeys, replaceNull, replaceEqual));
-        
-        session.change(propertyChanges);
+        for (ImportProperty<?> property : properties) // именно так, потому как в synchronize могут быть hint'ы, которые при change'е сбросятся
+            session.change(property.synchronize(session, importTable, addedKeys, replaceNull, replaceEqual));
 
         for(SinglePropertyTableUsage<?> addedTable : addedKeys.valueIt())
             addedTable.drop(session.sql);
