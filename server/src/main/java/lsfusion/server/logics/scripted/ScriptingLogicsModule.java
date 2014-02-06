@@ -1968,7 +1968,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping,
                                           String contextObjectName, LPWithParams contextProperty,
-                                          String initFilterPropertyName, PropertyUsage initFilterPropertyUsage, List<TypedParameter> initFilterPropertyMapping,
+                                          String initFilterPropertyName, List<String> initFilterPropertyMapping,
                                           ModalityType modalityType, FormSessionScope sessionScope,
                                           boolean checkOnOk, boolean showDrop, FormPrintType printType) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + mapping + ", " + modalityType + ", " + sessionScope + ");");
@@ -1987,11 +1987,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         ObjectEntity contextObject = contextObjectName == null ? null : findObjectEntity(form, contextObjectName);
 
         PropertyDrawEntity initFilterProperty = null;
-        if (initFilterPropertyUsage != null || initFilterPropertyName != null) {
-            
-            initFilterProperty = initFilterPropertyName != null
+        if (initFilterPropertyName != null) {
+            initFilterProperty = initFilterPropertyMapping == null
                                  ? getPropertyDraw(this, form, initFilterPropertyName)
-                                 : getPropertyDraw(this, form, initFilterPropertyUsage, getParamNamesFromTypedParams(initFilterPropertyMapping));
+                                 : getPropertyDraw(this, form, PropertyDrawEntity.createSID(initFilterPropertyName, initFilterPropertyMapping));
         }
 
         LAP property = addFAProp(null, genSID(), "", form, objects, null, contextObject,

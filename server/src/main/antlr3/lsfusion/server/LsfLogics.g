@@ -1855,18 +1855,17 @@ formActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	String contextObjectName = null;
 	LPWithParams contextProperty = null;
 	String initFilterPropertyName = null;
-	PropertyUsage initFilterPropertyUsage = null;
-	List<TypedParameter> initFilterPropertyMapping = null;
+	List<String> initFilterPropertyMapping = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyUsage, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, printType);
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, printType);
 	}
 }
 	:	'FORM' formName=compoundID 
 		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })?
 		('CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; })?
-		(initFilter = initFilterDefinition { initFilterPropertyUsage = $initFilter.propUsage; initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; })?
+		(initFilter = initFilterDefinition { initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; })?
 		(sessScope = formSessionScopeLiteral { sessionScope = $sessScope.val; })?
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('CHECK' { checkOnOk = true; })?
@@ -1874,10 +1873,10 @@ formActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 		(print = formPrintTypeLiteral { printType = $print.val; })?
 	;
 
-initFilterDefinition returns [String propName = null, PropertyUsage propUsage, List<TypedParameter> mapping]
+initFilterDefinition returns [String propName, List<String> mapping]
 	:	'INITFILTER'
 		(  pname=ID { $propName = $pname.text; }
-	    	|  mappedProp=mappedProperty { $propUsage = $mappedProp.propUsage; $mapping = $mappedProp.mapping; }
+	    	|  mappedProp=mappedPropertyDraw { $propName = $mappedProp.name; $mapping = $mappedProp.mapping; }
 		)
 	;
 
