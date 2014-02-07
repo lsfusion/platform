@@ -1,11 +1,9 @@
 package lsfusion.server.integration;
 
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.Message;
@@ -22,8 +20,6 @@ import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.CalcPropertyImplement;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.*;
 
@@ -83,27 +79,16 @@ public class IntegrationService {
                 mAddedKeys.exclAdd(key, key.synchronize(session, importTable));
         ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys = mAddedKeys.immutable();
 
-        MAddSet<SinglePropertyTableUsage<ClassPropertyInterface>> usedPropTables = SetFact.mAddSet();
         DataChanges propertyChanges = DataChanges.EMPTY;
-        try {
-            for (ImportProperty<?> property : properties) {
-                DataChanges synchronize = property.synchronize(session, importTable, addedKeys, replaceNull, replaceEqual);
-                for(DataProperty change : synchronize.getProperties()) {
-                    SinglePropertyTableUsage<ClassPropertyInterface> materialize = synchronize.get(change).materialize(change, session); // materialize'им чтобы избавится от таблиц из хинтов, которые при change'е могут сброситься
-                    usedPropTables.add(materialize);
-                    propertyChanges.add(new DataChanges(change, SinglePropertyTableUsage.getChange(materialize)));
-                }
-            }
-            session.change(propertyChanges);
-        } finally {
-            for(SinglePropertyTableUsage<ClassPropertyInterface> usedPropTable : usedPropTables)
-                usedPropTable.drop(session.sql);
-            
-            for(SinglePropertyTableUsage<?> addedTable : addedKeys.valueIt())
-                addedTable.drop(session.sql);
-    
-            importTable.drop(session.sql);
-        }
+        for (ImportProperty<?> property : properties)
+            propertyChanges = propertyChanges.add(property.synchronize(session, importTable, addedKeys, replaceNull, replaceEqual));
+        
+        session.change(propertyChanges);
+
+        for(SinglePropertyTableUsage<?> addedTable : addedKeys.valueIt())
+            addedTable.drop(session.sql);
+
+        importTable.drop(session.sql);
     }
 
     private <P extends PropertyInterface> void deleteObjects(SingleKeyTableUsage<ImportField> importTable) throws SQLException, SQLHandledException {
