@@ -93,6 +93,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         if (!children.contains(compBefore)) {
             add(comp);
         } else {
+            //сначала remove, чтобы indexOf вернул правильный индекс
             remove(comp);
             add(children.indexOf(compBefore), comp);
         }
@@ -102,6 +103,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         if (!children.contains(compAfter)) {
             add(comp);
         } else {
+            //сначала remove, чтобы indexOf вернул правильный индекс
             remove(comp);
             add(children.indexOf(compAfter) + 1, comp);
         }
