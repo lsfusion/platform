@@ -54,6 +54,8 @@ public abstract class DataFilterValueView extends FilterValueView {
     }
 
     private void setValue(Object value) {
+        if(value instanceof String && ((String)value).isEmpty())
+            value = null;
         filterValue.setValue(value);
         valueTable.setValue(value);
     }
