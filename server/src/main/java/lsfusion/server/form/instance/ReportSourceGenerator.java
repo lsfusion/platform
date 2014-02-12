@@ -78,19 +78,19 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             Pair<Object, PropertyType>> parentTable, Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders, Result<ImMap<Pair<Object, PropertyType>, Type>> types) throws SQLException, SQLHandledException {
 
         QueryBuilder<ObjectInstance, Pair<Object, PropertyType>> newQuery;
-        if (groupId == null) {
+//        if (groupId == null) {
             newQuery = new QueryBuilder<ObjectInstance, Pair<Object, PropertyType>>(GroupObjectInstance.getObjects(groups.getSet()));
-        } else {
-            GroupObjectInstance ourGroup = null;
-            for (GroupObjectInstance group : groups) {
-                if (groupId.equals(group.getID())) {
-                    ourGroup = group;
-                    break;
-                }
-            }
-            assert ourGroup != null;
-            newQuery = new QueryBuilder<ObjectInstance, Pair<Object, PropertyType>>(ourGroup.objects);
-        }
+//        } else {
+//            GroupObjectInstance ourGroup = null;
+//            for (GroupObjectInstance group : groups) {
+//                if (groupId.equals(group.getID())) {
+//                    ourGroup = group;
+//                    break;
+//                }
+//            }
+//            assert ourGroup != null;
+//            newQuery = new QueryBuilder<ObjectInstance, Pair<Object, PropertyType>>(ourGroup.objects);
+//        }
         MExclMap<Pair<Object, PropertyType>, Type> mTypes = MapFact.mExclMap();
         MOrderExclMap<Pair<Object, PropertyType>, Boolean> mOrders = MapFact.mOrderExclMap();
 
@@ -118,13 +118,11 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     newQuery.addProperty(backgroundObject, group.propertyBackground.getExpr(newQuery.getMapExprs(), modifier));
                     mTypes.exclAdd(backgroundObject, group.propertyBackground.getType());
                 }
-
-                if (!gridGroupsId.contains(group.getID()))
-                    for (ObjectInstance object : group.objects) {
-                        newQuery.and(object.getExpr(newQuery.getMapExprs(), modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
-                    }
-
             }
+            if (!gridGroupsId.contains(group.getID()) || groupId != null && !groupId.equals(group.getID()))
+                for (ObjectInstance object : group.objects) {
+                    newQuery.and(object.getExpr(newQuery.getMapExprs(), modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
+                }
         }
 
         for(PropertyDrawInstance<?> property : filterProperties(groups.getSet())) {
