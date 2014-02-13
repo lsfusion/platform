@@ -250,10 +250,8 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                             break;
                     }
                 }
-            } catch (SQLException e) {
-                throw Throwables.propagate(e);
-            } catch (SQLHandledException e) {
-                throw Throwables.propagate(e);
+            } catch (Exception e) {
+                logger.error("Error while running scheduler task (in SchedulerTask.run()):", e);
             }
         }
 
@@ -287,13 +285,14 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     logger.error("Error while saving scheduler task result : " + finishResult);
                 return applyResult == null;
             } catch (Exception e) {
+                logger.error("Error while running scheduler task (in execteLAP()) :", e);
+
                 businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
                 businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
                 businessLogics.schedulerLM.resultScheduledTaskLog.change(String.valueOf(e).substring(0, 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
                 businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), afterFinishLogSession, currentScheduledTaskLogFinishObject);
                 afterFinishLogSession.apply(businessLogics);
-                
-                logger.error("Error while running scheduler task :", e);
+
                 return false;
             }
         }
