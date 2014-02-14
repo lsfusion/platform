@@ -118,12 +118,11 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     newQuery.addProperty(backgroundObject, group.propertyBackground.getExpr(newQuery.getMapExprs(), modifier));
                     mTypes.exclAdd(backgroundObject, group.propertyBackground.getType());
                 }
-
-                if (!gridGroupsId.contains(group.getID()))
+                if (!gridGroupsId.contains(group.getID())) {
                     for (ObjectInstance object : group.objects) {
                         newQuery.and(object.getExpr(newQuery.getMapExprs(), modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
                     }
-
+                }
             }
         }
 
@@ -217,7 +216,16 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                         }
                     }
 
-                    data.add(BaseUtils.mapList(keyList.toJavaList(), resultData.getKey(i)), propertyValues);
+                    List<ObjectInstance> objectsList = keyList.toJavaList(); 
+                    List<Object> keys = BaseUtils.mapList(objectsList, resultData.getKey(i));
+                    if (groupId != null) {
+                        for (int keyIndex = 0; keyIndex < objectsList.size(); ++keyIndex) {
+                            if (resultData.getKey(i).get(objectsList.get(keyIndex)) == null) {
+                                keys.set(keyIndex, objectsList.get(keyIndex).getObjectValue().getValue());
+                            }
+                        }
+                    }
+                    data.add(keys, propertyValues);
                 }
 
                 sources.put(sid, data);
