@@ -17,7 +17,7 @@ public class GLongType extends GIntegralType {
 
     @Override
     public Long parseString(String s) throws ParseException {
-        return s.isEmpty() ? null : parseToDouble(s).longValue();
+        return parseToDouble(s).longValue();
     }
 
     @Override

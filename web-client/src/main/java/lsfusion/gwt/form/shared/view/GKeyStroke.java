@@ -23,6 +23,8 @@ public class GKeyStroke implements Serializable {
     public static final int KEY_F11 = KEY_F1 + 10;
     public static final int KEY_F12 = KEY_F1 + 11;
 
+    public static final int KEY_MINUS = 45;
+    
     public static final int KEY_0 = 48;
     public static final int KEY_9 = 57;
 
@@ -151,8 +153,12 @@ public class GKeyStroke implements Serializable {
     }
 
     public static boolean isCommonNumberEditEvent(NativeEvent event) {
+        String eventType = event.getType();
         return isCommonEditKeyEvent(event) &&
-               (isDigitKeyEvent(event) || (isDeleteKeyEvent(event) && KEYDOWN.equals(event.getType())) || isBackspaceKeyEvent(event));
+               (isDigitKeyEvent(event) || 
+                       (KEYPRESS.equals(eventType) && event.getCharCode() == KEY_MINUS) ||
+                       (isDeleteKeyEvent(event) && KEYDOWN.equals(eventType)) || 
+                       isBackspaceKeyEvent(event));
     }
 
     private static boolean isDigitKeyEvent(NativeEvent event) {

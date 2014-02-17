@@ -17,7 +17,7 @@ public class GDoubleType extends GIntegralType {
 
     @Override
     public Object parseString(String s) throws ParseException {
-        return s.isEmpty() ? null : parseToDouble(s);
+        return parseToDouble(s);
     }
 
     @Override

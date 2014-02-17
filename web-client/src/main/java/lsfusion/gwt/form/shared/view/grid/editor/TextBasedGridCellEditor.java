@@ -123,7 +123,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     
     protected boolean isStringValid(String string) {
         try {
-            tryParseInputText(string);
+            tryParseInputText(string, false);
             return true;
         } catch (ParseException e) {
             return false;
@@ -197,7 +197,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     private void validateAndCommit(Element parent, boolean cancelIfInvalid) {
         String value = getCurrentText(parent);
         try {
-            editManager.commitEditing(tryParseInputText(value));
+            editManager.commitEditing(tryParseInputText(value, true));
         } catch (ParseException ignore) {
             //если выкинулся ParseException и фокус ещё в эдиторе, то не заканчиваем редактирование
             if (cancelIfInvalid) {
@@ -209,7 +209,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     private void commitAndChangeRow(Element parent, boolean moveDown) {
         try {
             String value = getCurrentText(parent);
-            editManager.commitEditing(tryParseInputText(value));
+            editManager.commitEditing(tryParseInputText(value, true));
             editManager.selectNextCellInColumn(moveDown);
         } catch (ParseException ignore) {
         }
@@ -223,5 +223,5 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         return getInputElement(parent).getValue();
     }
 
-    protected abstract Object tryParseInputText(String inputText) throws ParseException;
+    protected abstract Object tryParseInputText(String inputText, boolean onCommit) throws ParseException;
 }

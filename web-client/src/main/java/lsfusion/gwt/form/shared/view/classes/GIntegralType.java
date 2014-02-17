@@ -9,8 +9,6 @@ import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 import java.text.ParseException;
 
 public abstract class GIntegralType extends GDataType {
-    private final static char UNBREAKABLE_SPACE = '\u00a0';
-
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
         return new NumberGridCellRenderer(property);
@@ -22,12 +20,7 @@ public abstract class GIntegralType extends GDataType {
         try {
             return numberFormat.parse(s);
         } catch (NumberFormatException e) {
-            // пробуем ещё раз заменив пробелы на UNBREAKABLE_SPACE
-            try {
-                return numberFormat.parse(s.replace(' ', UNBREAKABLE_SPACE));
-            } catch (NumberFormatException e2) {
-                throw new ParseException("string " + s + "can not be converted to double", 0);
-            }
+            throw new ParseException("string " + s + "can not be converted to double", 0);
         }
     }
 

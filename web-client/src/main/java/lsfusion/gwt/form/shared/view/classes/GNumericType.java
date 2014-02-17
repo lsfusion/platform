@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.shared.view.classes;
 
+import com.google.gwt.i18n.client.LocaleInfo;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
@@ -26,7 +27,15 @@ public class GNumericType extends GDoubleType {
 
     @Override
     public Object parseString(String s) throws ParseException {
-        return s.isEmpty() ? null : BigDecimal.valueOf(parseToDouble(s));
+        Double toDouble = parseToDouble(s); // сперва проверим, конвертится ли строка в число вообще 
+
+        String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator(); // а затем посчитаем цифры
+        int separatorPosition = s.contains(decimalSeparator) ? s.indexOf(decimalSeparator) : s.length();
+        int allowedIntegralLength = length - precision + s.lastIndexOf('-');
+        if (separatorPosition > allowedIntegralLength) {
+            throw new ParseException("String " + s + "can not be converted to numeric[" + length + "," + precision + "]", 0);
+        }
+        return BigDecimal.valueOf(toDouble);
     }
 
     @Override
