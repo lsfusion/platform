@@ -30,9 +30,11 @@ END
 META defineHistorizable(property, propPostfix, caption, type, object, objectIdentity, group)
     data###property###object###propPostfix##Date caption = DATA type (###object, DATE) IN group;
 
-    date###property###object###propPostfix##Date (object, date) = GROUP MAX dateIn IF data###property###object###propPostfix##Date(object, dateIn) AND dateIn <= date BY object, date;
+    property###object###propPostfix##Date caption (object, date) = GROUP LAST  data###property###object###propPostfix##Date(object, dateIn)
+                                                                         BY    object, date
+                                                                         ORDER dateIn
+                                                                         WHERE data###property###object###propPostfix##Date(object, dateIn) AND dateIn <= (date AS DATE) IN group;
 
-    property###object###propPostfix##Date caption (object, date) = data###property###object###propPostfix##Date(object, date###property###object###propPostfix##Date(object, date)) IN group;
     over###property###object###propPostfix##Date caption = OVERRIDE property###object###propPostfix##Date(object, date), data###property###object###propPostfix##Date(object, date) IN group;
 
     property###object###propPostfix caption (object) = property###object###propPostfix##Date(object, currentDate()) IN group;
