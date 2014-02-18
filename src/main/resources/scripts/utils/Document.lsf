@@ -422,12 +422,12 @@ META defineDocumentDetailIndex (object, detailClass)
     index##detailClass 'Номер строки' (d) = OVERRIDE defaultIndex##detailClass(d), dataIndex##detailClass(d) IN recognize;  
 END
 
-META defineDocumentAbstractDetailIndex(object, detailClass)
+META defineDocumentAbstractDetailIndex(detailClass)
     index##detailClass 'Номер строки' (d) = ABSTRACT INTEGER (detailClass) IN base;
 END
 
 META defineDocumentInterfaceDetailIndex (object, detailClass)
-    @defineDocumentAbstractDetailIndex(object, detailClass);
+    @defineDocumentAbstractDetailIndex(detailClass);
     @defineDocumentDetailIndex(user###object, User##detailClass);
     index##detailClass(d) += indexUser##detailClass(d);
 END
@@ -552,7 +552,7 @@ META defineDocumentDetailDescription(object, detailClass)
     descriptionIndex##detailClass 'Название документа' (d) =
         [= FORMULA VARSTRING[200]  ' CAST($1 AS TEXT) || \', позиция \' || \'  \' || CAST($2 AS TEXT)'](
             description##detailClass(d),
-            index##detailClass(d)) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN recognize;
+            index##detailClass(d)) MINCHARWIDTH 30 PREFCHARWIDTH 50 IN base;
 END
 
 META defineDocumentDescription(object, detailClass, caption)
@@ -615,7 +615,7 @@ META defineDocumentAbstract (object)
     @defineDocumentTables(object);
 
     @defineDocumentAbstractRelation(object);
-    @defineDocumentDetailIndex(object);
+    @defineDocumentAbstractDetailIndex(###object##Detail);
 
     @defineDocumentAbstractTime(object);
     @defineDocumentAbstractHeaderNote(###object);
@@ -986,6 +986,7 @@ META defineDocumentAggregationDetail (primObject, aggrObject, aggrProperty)
     @defineAggregation(primObject##Detail, aggrObject##Detail, aggrProperty);
     aggrObject###aggrObject##Detail (detail) = aggrObject###primObject(primObject###primObject##Detail(primObject##Detail###aggrObject##Detail(detail)));
 
+    @defineDocumentAggregationDetailIndex(primObject, aggrObject);
     @defineDocumentAggregationDetailTime(primObject, aggrObject);
 END
 
@@ -993,6 +994,11 @@ META defineDocumentAggregation (primObject, aggrObject, aggrProperty)
     @defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty);
     @defineDocumentAggregationDetail(primObject, aggrObject, aggrProperty);
     @defineDocumentHeaderCount(aggrObject);
+END
+
+// Index
+META defineDocumentAggregationDetailIndex (primObject, aggrObject)
+    index###aggrObject##Detail 'Номер строки' (d) = index###primObject##Detail(primObject##Detail###aggrObject##Detail(d)) IN public;
 END
 
 // Time
