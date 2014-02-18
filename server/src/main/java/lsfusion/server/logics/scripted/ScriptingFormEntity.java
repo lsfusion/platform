@@ -209,7 +209,9 @@ public class ScriptingFormEntity {
     public void addScriptedPropertyDraws(List<ScriptingLogicsModule.PropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
 
-        for (int i = 0; i < properties.size(); i++) {
+        boolean reverse = commonOptions.getNeighbourPropertyDraw() != null && commonOptions.isRightNeighbour();
+        
+        for (int i = reverse ? properties.size() - 1 : 0; (reverse ? i >= 0 : i < properties.size()); i = reverse ? i - 1 : i + 1) {
             List<String> mapping = mappings.get(i);
             ScriptingLogicsModule.PropertyUsage pUsage = properties.get(i);
             String propertyName = pUsage.name;
