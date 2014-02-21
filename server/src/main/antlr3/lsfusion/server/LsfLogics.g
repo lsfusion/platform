@@ -1817,6 +1817,7 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	:	listPDB=listActionPropertyDefinitionBody[context, dynamic] { $property = $listPDB.property; }
 	|	requestInputPDB=requestInputActionPropertyDefinitionBody[context, dynamic] { $property = $requestInputPDB.property; }
 	|	execPDB=execActionPropertyDefinitionBody[context, dynamic] { $property = $execPDB.property; }	
+	|	tryPDB=tryActionPropertyDefinitionBody[context, dynamic] { $property = $tryPDB.property; }
 	|	ifPDB=ifActionPropertyDefinitionBody[context, dynamic] { $property = $ifPDB.property; }
 	|	casePDB=caseActionPropertyDefinitionBody[context, dynamic] { $property = $casePDB.property; }
 	|	multiPDB=multiActionPropertyDefinitionBody[context, dynamic] { $property = $multiPDB.property; }	
@@ -2180,6 +2181,16 @@ assignActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPWith
 		expr=propertyExpression[newContext, false] //no need to use dynamic context, because params should be either on global context or used in the left side
 		('WHERE'
 		whereExpr=propertyExpression[newContext, false] { condition = $whereExpr.property; })?
+	;
+
+tryActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedTryAProp($tryPDB.property, $finallyPDB.property);
+	}
+}
+	:	'TRY' tryPDB=actionPropertyDefinitionBody[context, dynamic] 
+		('FINALLY' finallyPDB=actionPropertyDefinitionBody[context, dynamic])?
 	;
 
 ifActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

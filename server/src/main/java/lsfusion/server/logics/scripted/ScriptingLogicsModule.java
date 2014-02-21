@@ -1542,6 +1542,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, allParams);
     }
 
+    public LPWithParams addScriptedTryAProp(LPWithParams tryAction, LPWithParams finallyAction) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedTryAProp(" + tryAction + ", " + finallyAction + ");");
+        List<LPWithParams> propParams = new ArrayList<LPWithParams>();
+        if(tryAction != null)
+            propParams.add(tryAction);
+        if (finallyAction != null)
+            propParams.add(finallyAction);
+        
+        List<Integer> allParams = mergeAllParams(propParams);
+        LP result = addTryAProp(null, genSID(), "", getParamsPlainList(propParams).toArray());
+        return new LPWithParams(result, allParams);
+    }
+
     public LPWithParams addScriptedCaseAProp(List<LPWithParams> whenProps, List<LPWithParams> thenActions, LPWithParams elseAction, boolean isExclusive) {
         scriptLogger.info("addScriptedCaseAProp(" + whenProps + ", " + thenActions + ", " + elseAction + ", " + isExclusive + ");");
         assert whenProps.size() > 0 && whenProps.size() == thenActions.size();
