@@ -60,8 +60,8 @@
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
             <param name="maxIndex" value="12"/>
-            <param name="activeFileName" value="logs/cashregister.log"/>
-            <param name="fileNamePattern" value="logs/cashregister-%i.log.zip"/>
+            <param name="activeFileName" value="${user.home}/.fusion/logs/cashregister.log"/>
+            <param name="fileNamePattern" value="${user.home}/.fusion/logs/cashregister-%i.log.zip"/>
         </rollingPolicy>
         <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
             <param name="maxFileSize" value="100485760"/>

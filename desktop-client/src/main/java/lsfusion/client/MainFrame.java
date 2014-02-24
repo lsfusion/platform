@@ -93,11 +93,12 @@ public abstract class MainFrame extends JFrame {
     }
 
     private void loadLayout() {
+        File fusionDir = new File(System.getProperty("user.home"), ".fusion");
         if (Main.logicsName != null) {
-            baseDir = new File(System.getProperty("user.home"), ".fusion\\" + Main.logicsName);
+            baseDir = new File(fusionDir, Main.logicsName);
         } else {
             //по умолчанию
-            baseDir = new File(System.getProperty("user.home"), ".fusion");
+            baseDir = fusionDir;
         }
 
         try {
