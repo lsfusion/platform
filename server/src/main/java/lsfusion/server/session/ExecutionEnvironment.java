@@ -65,7 +65,7 @@ public abstract class ExecutionEnvironment {
     }
 
     public boolean apply(ExecutionContext context) throws SQLException, SQLHandledException {
-        return apply(context.getBL(), context);
+        return apply(context.getBL(), context, context);
     }
 
     public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction) throws SQLException, SQLHandledException;
