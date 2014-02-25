@@ -1,11 +1,11 @@
 package lsfusion.client.navigator;
 
 import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.interop.form.layout.FlexConstraints;
 import lsfusion.interop.form.layout.FlexLayout;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -20,7 +20,7 @@ public class ToolBarNavigatorView extends NavigatorView {
     public ToolBarNavigatorView(ClientToolBarNavigatorWindow iWindow, INavigatorController controller) {
         super(iWindow, new JToolBar("Toolbar", iWindow.type), controller);
         window = iWindow;
-        
+
         toolBar = (JToolBar) getComponent();
         toolBar.setLayout(new FlexLayout(toolBar, iWindow.type == SwingConstants.VERTICAL, Alignment.LEADING));
         toolBar.setFloatable(false);
@@ -46,24 +46,8 @@ public class ToolBarNavigatorView extends NavigatorView {
     }
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int indent) {
-        JComponent button = addNavigationButton(element, indent);
-        if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorElement.class)) {
-            button.setForeground(Color.blue);
-            button.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        }
-        if ((element.window != null) && (!element.window.equals(window))) {
-            return;
-        }
-        for (ClientNavigatorElement childEl: element.children) {
-            if (newElements.contains(childEl)) {
-                addElement(childEl, newElements, indent + 1);
-            }
-        }
-    }
 
-    private JComponent addNavigationButton(ClientNavigatorElement element, final int indent) {
-        JButton button = new JButton(element.toString());
-        
+        JToggleButton button = new JToggleButton(element.toString());
         button.setToolTipText(element.toString());
         button.addMouseListener(new NavigatorMouseAdapter(element));
         button.setIcon(new IndentedIcon(element.image.getImage(), indent));
@@ -74,10 +58,22 @@ public class ToolBarNavigatorView extends NavigatorView {
 //        button.setAlignmentY(window.alignmentY);
 //        button.setAlignmentX(window.alignmentX);
         button.setFocusable(false);
+        button.getModel().setArmed(true);
 
-        toolBar.add(button, new FlexConstraints());
-        
-        return button;
+        if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorElement.class)) {
+            button.setForeground(Color.blue);
+            button.setSelected(true);
+        }
+
+        toolBar.add(button, new FlexConstraints(FlexAlignment.STRETCH, 0));
+
+        if (element.window == null || element.window.equals(window)) {
+            for (ClientNavigatorElement childEl : element.children) {
+                if (newElements.contains(childEl)) {
+                    addElement(childEl, newElements, indent + 1);
+                }
+            }
+        }
     }
 
     @Override
