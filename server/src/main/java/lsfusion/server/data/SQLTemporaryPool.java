@@ -74,12 +74,12 @@ public class SQLTemporaryPool {
         Integer actual = data.fill(table); // заполняем
         assert (actual!=null)==(count==null);
         if(Settings.get().isAutoAnalyzeTempStats())
-            session.analyzeSessionTable(table);
+            session.vacuumAnalyzeSessionTable(table);
         else {
             Object actualStatistics = getDBStatistics(actual);
             Object currentStat = stats.get(table);
             if(!actualStatistics.equals(currentStat)) {
-                session.analyzeSessionTable(table);
+                session.vacuumAnalyzeSessionTable(table);
                 stats.put(table, actualStatistics);
             }
         }

@@ -493,8 +493,8 @@ public class SQLSession extends MutableObject {
         executeDDL(syntax.getCreateSessionTable(name, createString), ExecuteEnvironment.NOREADONLY);
     }
 
-    public void analyzeSessionTable(String table) throws SQLException {
-        executeDDL("ANALYZE " + table, ExecuteEnvironment.NOREADONLY);
+    public void vacuumAnalyzeSessionTable(String table) throws SQLException {
+        executeDDL("VACUUM ANALYZE " + table, ExecuteEnvironment.NOREADONLY);
     }
 
     private int noReadOnly = 0;
