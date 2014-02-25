@@ -874,8 +874,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             for (ImMap<ObjectInstance, DataObject> columnKeys : toGroup.get(property)) {
                 i++;
                 ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
-                mKeyExprMap.revAdd(property.getsID() + i, new KeyExpr("expr"));
-                mExprMap.exclAdd(property.getsID() + i, property.getDrawInstance().getExpr(keys, getModifier()));
+                Integer propertyKey = property.getID() + i;
+                mKeyExprMap.revAdd(propertyKey, new KeyExpr("expr"));
+                mExprMap.exclAdd(propertyKey, property.getDrawInstance().getExpr(keys, getModifier()));
             }
         }
         ImRevMap<Object, KeyExpr> keyExprMap = mKeyExprMap.immutableRev();
@@ -916,7 +917,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 idIndex++;
                 ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
                 Expr expr = GroupExpr.create(exprMap, property.getDrawInstance().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), groupType, keyExprMap);
-                query.addProperty(property.getsID() + idIndex, expr);
+                query.addProperty(property.getID() + idIndex, expr);
                 if (onlyNotNull) {
                     query.and(expr.getWhere());
                 }
@@ -934,7 +935,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             for (PropertyDrawInstance propertyDraw : toGroup.keyIt()) {
                 for (int i = 1; i <= toGroup.get(propertyDraw).size(); i++) {
-                    groupList.add(one.get(propertyDraw.getsID() + i));
+                    groupList.add(one.get(propertyDraw.getID() + i));
                 }
             }
             int index = 1;
@@ -942,7 +943,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 Object propertyDraw = toSum.getKey(k);
                 if (propertyDraw instanceof PropertyDrawInstance) {
                     for (int i = 1, sizeI = toSum.getValue(k).size(); i <= sizeI; i++) {
-                        sumList.add(oneValue.get(((PropertyDrawInstance) propertyDraw).getsID() + index));
+                        sumList.add(oneValue.get(((PropertyDrawInstance) propertyDraw).getID() + index));
                         index++;
                     }
                 } else
@@ -951,7 +952,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             for (int k = 0, sizeK = toMax.size(); k < sizeK; k++) {
                 PropertyDrawInstance propertyDraw = toMax.getKey(k);
                 for (int i = 1, sizeI = toMax.getValue(k).size(); i <= sizeI; i++) {
-                    sumList.add(oneValue.get(propertyDraw.getsID() + index));
+                    sumList.add(oneValue.get(propertyDraw.getID() + index));
                     index++;
                 }
             }
