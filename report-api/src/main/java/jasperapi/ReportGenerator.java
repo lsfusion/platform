@@ -15,8 +15,10 @@ import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.Sides;
 import java.awt.*;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * User: DAle
@@ -28,7 +30,6 @@ public class ReportGenerator {
     private final ReportGenerationData generationData;
 
     private String rootID;
-    private TimeZone reportTimeZone;
 
     private Map<String, List<String>> hierarchy;
     private Map<String, JasperDesign> designs;
@@ -74,9 +75,8 @@ public class ReportGenerator {
         public Map<String, List<List<Object>>> compositeColumnValues;
     }
 
-    public ReportGenerator(ReportGenerationData generationData, TimeZone timeZone) {
+    public ReportGenerator(ReportGenerationData generationData) {
         this.generationData = generationData;
-        this.reportTimeZone = timeZone;
     }
 
     public JasperPrint createReport(boolean ignorePagination, Map<ByteArray, String> files) throws ClassNotFoundException, IOException, JRException {
@@ -150,7 +150,6 @@ public class ReportGenerator {
         params.put(parentID + ReportConstants.reportSuffix, JasperCompileManager.compileReport(designs.get(parentID)));
         params.put(parentID + ReportConstants.sourceSuffix, source);
         params.put(parentID + ReportConstants.paramsSuffix, localParams);
-        params.put(JRParameter.REPORT_TIME_ZONE, reportTimeZone);
         return source;
     }
 
@@ -371,9 +370,9 @@ public class ReportGenerator {
         return res;
     }
 
-    public static void exportToExcelAndOpen(ReportGenerationData generationData, TimeZone timeZone) {
+    public static void exportToExcelAndOpen(ReportGenerationData generationData) {
         try {
-            File tempFile = exportToExcel(generationData, timeZone);
+            File tempFile = exportToExcel(generationData);
 
             if (Desktop.isDesktopSupported()) {
                 Desktop.getDesktop().open(tempFile);
@@ -386,9 +385,9 @@ public class ReportGenerator {
         }
     }
 
-    public static void exportToPdfAndOpen(ReportGenerationData generationData, TimeZone timeZone) {
+    public static void exportToPdfAndOpen(ReportGenerationData generationData) {
         try {
-            File tempFile = exportToPdf(generationData, timeZone);
+            File tempFile = exportToPdf(generationData);
 
             if (Desktop.isDesktopSupported()) {
                 Desktop.getDesktop().open(tempFile);
@@ -401,18 +400,18 @@ public class ReportGenerator {
         }
     }
 
-    private static File exportToExcel(ReportGenerationData generationData, TimeZone timeZone) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, new JExcelApiExporter(), "xls", timeZone);
+    private static File exportToExcel(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
+        return exportToFile(generationData, new JExcelApiExporter(), "xls");
     }
     
-    private static File exportToPdf(ReportGenerationData generationData, TimeZone timeZone) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, new JRPdfExporter(), "pdf", timeZone);
+    private static File exportToPdf(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
+        return exportToFile(generationData, new JRPdfExporter(), "pdf");
     }
     
-    private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, TimeZone timeZone) throws IOException, JRException, ClassNotFoundException {
+    private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension) throws IOException, JRException, ClassNotFoundException {
         File tempFile = File.createTempFile("lsf", "." + extension);
 
-        ReportGenerator report = new ReportGenerator(generationData, timeZone);
+        ReportGenerator report = new ReportGenerator(generationData);
 
         JasperPrint print = report.createReport(true, null);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
@@ -424,9 +423,9 @@ public class ReportGenerator {
         return tempFile;    
     }
 
-    public static byte[] exportToExcelByteArray(ReportGenerationData generationData, TimeZone timeZone) {
+    public static byte[] exportToExcelByteArray(ReportGenerationData generationData) {
         try {
-            File tempFile = exportToExcel(generationData, timeZone);
+            File tempFile = exportToExcel(generationData);
             FileInputStream fis = new FileInputStream(tempFile);
             byte[] array = new byte[(int) tempFile.length()];
             fis.read(array);

@@ -20,7 +20,6 @@ import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,7 +35,10 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.text.DateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 import static lsfusion.base.DateConverter.createDateEditFormat;
 import static lsfusion.base.DateConverter.createDateTimeEditFormat;
@@ -66,7 +68,6 @@ public class Main {
     public static byte[] logicsLogo;
 
     public static int computerId;
-    public static TimeZone timeZone;
     public static DateFormat dateFormat;
     public static DateFormat dateEditFormat;
     public static DateFormat timeFormat;
@@ -203,10 +204,8 @@ public class Main {
     }
 
     private static void setupTimeZone() throws RemoteException {
-        timeZone = remoteLogics.getTimeZone();
 
         dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
-        dateFormat.setTimeZone(timeZone);
 
 //        timeFormat = new SimpleDateFormat("HH:mm:ss");
         timeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
@@ -217,12 +216,12 @@ public class Main {
         dateEditFormat = createDateEditFormat(dateFormat);
         dateTimeEditFormat = createDateTimeEditFormat(dateTimeFormat);
 
-        wideFormattableDate = craeteWideFormattableDate(timeZone);
-        wideFormattableDateTime = craeteWideFormattableDate(TimeZone.getDefault());
+        wideFormattableDate = createWideFormattableDate();
+        wideFormattableDateTime = createWideFormattableDate();
     }
 
-    private static Date craeteWideFormattableDate(TimeZone timeZone) {
-        GregorianCalendar gc2 = new GregorianCalendar(timeZone);
+    private static Date createWideFormattableDate() {
+        GregorianCalendar gc2 = new GregorianCalendar();
         //просто любая дата, для которой нужны обе цифры при форматтинге
         gc2.set(1991, Calendar.NOVEMBER, 21, 10, 55, 55);
         return gc2.getTime();
@@ -453,7 +452,6 @@ public class Main {
         }
 
         computerId = -1;
-        timeZone = null;
         baseClass = null;
         frame = null;
         remoteLoader = null;
@@ -486,7 +484,7 @@ public class Main {
             }
 
             public void openInExcel(ReportGenerationData generationData) {
-                ReportGenerator.exportToExcelAndOpen(generationData, timeZone);
+                ReportGenerator.exportToExcelAndOpen(generationData);
             }
 
             public boolean isFull() {

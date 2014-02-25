@@ -485,7 +485,9 @@ public class BaseUtils {
         }
 
         if (objectType == 6) {
-            return new java.sql.Date(inStream.readLong());
+            GregorianCalendar gc = new GregorianCalendar();
+            gc.set(inStream.readInt(), inStream.readInt(), inStream.readInt());
+            return new java.sql.Date(gc.getTimeInMillis());
         }
 
         if (objectType == 7) {
@@ -583,7 +585,11 @@ public class BaseUtils {
 
         if (object instanceof java.sql.Date) {
             outStream.writeByte(6);
-            outStream.writeLong(((java.sql.Date) object).getTime());
+            GregorianCalendar gc = new GregorianCalendar();
+            gc.setTime((java.sql.Date) object);
+            outStream.writeInt(gc.get(Calendar.YEAR));
+            outStream.writeInt(gc.get(Calendar.MONTH));
+            outStream.writeInt(gc.get(Calendar.DAY_OF_MONTH));
             return;
         }
 

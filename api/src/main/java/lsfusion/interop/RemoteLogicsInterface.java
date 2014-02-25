@@ -9,7 +9,6 @@ import lsfusion.interop.remote.UserInfo;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.TimeZone;
 
 public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
@@ -30,8 +29,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     ExternalScreen getExternalScreen(int screenID) throws RemoteException;
 
     ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException;
-
-    TimeZone getTimeZone() throws RemoteException;
 
     UserInfo getUserInfo(String username) throws RemoteException;
 

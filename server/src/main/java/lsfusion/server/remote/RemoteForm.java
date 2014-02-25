@@ -493,11 +493,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public Map<List<Object>, List<Object>> groupData(long requestIndex, long lastReceivedRequestIndex, final Map<Integer, List<byte[]>> groupMap, final Map<Integer, List<byte[]>> sumMap,
+    public byte[] groupData(long requestIndex, long lastReceivedRequestIndex, final Map<Integer, List<byte[]>> groupMap, final Map<Integer, List<byte[]>> sumMap,
                                                      final Map<Integer, List<byte[]>> maxMap, final boolean onlyNotNull) throws RemoteException {
-        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<Map<List<Object>, List<Object>>>() {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, new Callable<byte[]>() {
             @Override
-            public Map<List<Object>, List<Object>> call() throws Exception {
+            public byte[] call() throws Exception {
                 List<Map<Integer, List<byte[]>>> inMaps = new ArrayList<Map<Integer, List<byte[]>>>(BaseUtils.toList(groupMap, sumMap, maxMap));
                 List<ImMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>> outMaps = new ArrayList<ImMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>>();
                 for (Map<Integer, List<byte[]>> one : inMaps) {
@@ -519,9 +519,26 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 if (logger.isTraceEnabled()) {
                     logger.trace("groupData Action");
                 }
+
+                Map<List<Object>, List<Object>> groupped = form.groupData(BaseUtils.<ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(0)),
+                        outMaps.get(1), BaseUtils.<ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(2)), onlyNotNull);
+
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                DataOutputStream outStream = new DataOutputStream(out);
+                outStream.writeInt(groupped.size());
+                for (Map.Entry<List<Object>, List<Object>> entry : groupped.entrySet()) {
+                    outStream.writeInt(entry.getKey().size());
+                    for (Object key : entry.getKey()) {
+                        BaseUtils.serializeObject(outStream, key);
+                    }
+                    
+                    outStream.writeInt(entry.getValue().size());
+                    for (Object value : entry.getValue()) {
+                        BaseUtils.serializeObject(outStream, value);
+                    }
+                }
                 
-                return form.groupData(BaseUtils.<ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(0)),
-                                      outMaps.get(1), BaseUtils.<ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(2)), onlyNotNull);
+                return out.toByteArray();
             }
         });
     }

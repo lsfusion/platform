@@ -159,14 +159,15 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
     @Converter(from = Date.class)
     public GDateDTO convertDate(Date gDate, BusinessLogicsProvider blProvider) {
-        GregorianCalendar gc = new GregorianCalendar(blProvider.getTimeZone());
+        GregorianCalendar gc = new GregorianCalendar();
         gc.setTime(gDate);
         return new GDateDTO(gc.get(Calendar.DAY_OF_MONTH), gc.get(Calendar.MONTH), gc.get(Calendar.YEAR) - 1900);
     }
 
     @Converter(from = Time.class)
     public GTimeDTO convertTime(Time time, BusinessLogicsProvider blProvider) {
-        GregorianCalendar gc = new GregorianCalendar(blProvider.getTimeZone());
+        GregorianCalendar gc = new GregorianCalendar();
+        gc.clear();
         gc.setTime(time);
         return new GTimeDTO(gc.get(Calendar.HOUR_OF_DAY), gc.get(Calendar.MINUTE), gc.get(Calendar.SECOND));
     }

@@ -4,7 +4,10 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.EProvider;
+import lsfusion.base.ERunnable;
+import lsfusion.base.OrderedMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.client.EditReportInvoker;
@@ -1095,7 +1098,32 @@ public class ClientFormController implements AsyncListener {
         return rmiQueue.syncRequest(new RmiCheckNullFormRequest<Map<List<Object>,List<Object>>>("groupData") {
             @Override
             protected Map<List<Object>, List<Object>> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.groupData(requestIndex, lastReceivedRequestIndex, groupMap, sumMap, maxMap, onlyNotNull);
+                byte[] grouppedData = remoteForm.groupData(requestIndex, lastReceivedRequestIndex, groupMap, sumMap, maxMap, onlyNotNull);
+                
+                Map<List<Object>, List<Object>> result = new OrderedMap<List<Object>, List<Object>>();
+                DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(grouppedData));
+                try {
+                    int resultSize = inputStream.readInt();
+                    for (int i = 0; i < resultSize; i++) {
+                        List<Object> key = new ArrayList<Object>();
+                        int keySize = inputStream.readInt();
+                        for (int k = 0; k < keySize; k++) {
+                            key.add(BaseUtils.deserializeObject(inputStream));
+                        }
+                        
+                        List<Object> value = new ArrayList<Object>();
+                        int valueSize = inputStream.readInt();
+                        for (int v = 0; v < valueSize; v++) {
+                            value.add(BaseUtils.deserializeObject(inputStream));
+                        }
+                        
+                        result.put(key, value);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                return result;
             }
         });
     }

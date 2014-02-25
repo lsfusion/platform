@@ -54,14 +54,16 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GDateDTO.class)
     public java.sql.Date convertDate(GDateDTO dto, BusinessLogicsProvider blProvider) {
-        GregorianCalendar gc = new GregorianCalendar(blProvider.getTimeZone());
+        GregorianCalendar gc = new GregorianCalendar();
         gc.set(dto.year + 1900, dto.month, dto.day);
         return new java.sql.Date(gc.getTimeInMillis());
     }
 
     @Converter(from = GTimeDTO.class)
     public java.sql.Time convertTime(GTimeDTO dto, BusinessLogicsProvider blProvider) {
-        GregorianCalendar gc = new GregorianCalendar(blProvider.getTimeZone());
+        GregorianCalendar gc = new GregorianCalendar();
+        gc.clear(); // reset to zero epoch
+        
         gc.set(Calendar.HOUR_OF_DAY, dto.hour);
         gc.set(Calendar.MINUTE, dto.minute);
         gc.set(Calendar.SECOND, dto.second);

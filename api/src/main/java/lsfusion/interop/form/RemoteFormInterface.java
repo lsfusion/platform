@@ -90,7 +90,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     Object calculateSum(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKeys) throws RemoteException;
 
-    Map<List<Object>, List<Object>> groupData(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
+    byte[] groupData(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
                                               Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) throws RemoteException;
     
     List<FormGrouping> readGroupings(long requestIndex, long lastReceivedRequestIndex, String groupObjectSID) throws RemoteException;

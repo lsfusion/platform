@@ -1,8 +1,6 @@
 package lsfusion.server.logics.property;
 
-import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
-import lsfusion.base.SystemUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -360,7 +358,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         RemoteForm remoteForm = createReportForm(formEntity, MapFact.singleton(objectEntity, dataObject));
         try {
             ReportGenerationData generationData = remoteForm.reportManager.getReportData();
-            ReportGenerator report = new ReportGenerator(generationData, SystemUtils.getCurrentTimeZone());
+            ReportGenerator report = new ReportGenerator(generationData);
             JasperPrint print = report.createReport(false, new HashMap());
             File tempFile = File.createTempFile("lsfReport", ".pdf");
 

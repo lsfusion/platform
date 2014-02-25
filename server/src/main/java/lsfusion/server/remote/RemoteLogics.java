@@ -2,7 +2,6 @@ package lsfusion.server.remote;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Subsets;
-import lsfusion.base.SystemUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -163,10 +162,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     public String getName() throws RemoteException {
         return name;
-    }
-
-    public TimeZone getTimeZone() {
-        return SystemUtils.getCurrentTimeZone();
     }
 
     public Integer getComputer(String strHostName) {
