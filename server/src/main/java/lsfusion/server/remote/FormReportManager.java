@@ -1,24 +1,24 @@
 package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.data.SQLHandledException;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
-import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceList;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.view.report.ReportDesignGenerator;
 import lsfusion.server.logics.BusinessLogics;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.xml.JRXmlLoader;
+import net.sf.jasperreports.engine.xml.JRXmlWriter;
 
 import java.io.*;
 import java.sql.SQLException;
@@ -91,7 +91,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(groupReportHierarchy.getReportHierarchyMap());
         byte[] reportDesignsByteArray = getReportDesignsByteArray(toExcel, groupId, userPreferences);
         byte[] reportSourcesByteArray = getReportSourcesByteArray(
-                new ReportSourceGenerator<T>(form, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId)
+                new ReportSourceGenerator<T>(form, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
         );
 
         return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray);
