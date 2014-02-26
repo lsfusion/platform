@@ -13,12 +13,14 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
+import org.apache.log4j.MDC;
 
 import java.sql.SQLException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -32,6 +34,17 @@ public class ThreadLocalContext {
 
     public static void set(Context c) {
         context.set(c);
+        if (c != null) {
+            LogInfo logInfo = c.getLogInfo();
+            if (logInfo != null) {
+                if (logInfo.userName != null)
+                    MDC.put("client", logInfo.userName);
+                if (logInfo.hostnameComputer != null)
+                    MDC.put("computer", logInfo.hostnameComputer);
+                if (logInfo.remoteAddress != null)
+                    MDC.put("remoteAddress", logInfo.remoteAddress);
+            }
+        }
     }
 
     public static LogicsInstance getLogicsInstance() {

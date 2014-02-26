@@ -4,6 +4,9 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
+import lsfusion.server.form.navigator.LogInfo;
+import lsfusion.server.logics.*;
+import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.property.PullChangeProperty;
 import org.apache.log4j.Logger;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -14,10 +17,6 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 
@@ -60,6 +59,11 @@ public class LogicsInstanceContext extends AbstractContext {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public LogInfo getLogInfo() {
+        return new LogInfo("system", "system", "system");
     }
 
     @Override

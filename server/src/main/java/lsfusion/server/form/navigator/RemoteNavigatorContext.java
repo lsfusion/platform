@@ -35,6 +35,11 @@ public class RemoteNavigatorContext extends AbstractContext {
         return navigator.getLogMessage();
     }
 
+    @Override
+    public LogInfo getLogInfo() {
+        return navigator.getLogInfo();
+    }
+
     public void delayUserInteraction(ClientAction action) {
         navigator.delayUserInteraction(action);
     }

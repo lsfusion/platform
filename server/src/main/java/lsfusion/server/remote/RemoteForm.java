@@ -26,6 +26,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
+import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BusinessLogics;
@@ -947,6 +948,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     String getLogMessage() {
         return currentInvocation.getLogMessage();
+    }
+    
+    LogInfo getLogInfo() {
+        return new LogInfo("system", "system", "system");
     }
 
     void delayUserInteraction(ClientAction action) {

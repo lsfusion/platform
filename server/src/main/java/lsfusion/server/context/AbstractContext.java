@@ -5,7 +5,10 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ModalityType;
-import lsfusion.interop.action.*;
+import lsfusion.interop.action.ChooseClassClientAction;
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.FormClientAction;
+import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.form.UserInputResult;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
@@ -92,7 +95,7 @@ public abstract class AbstractContext implements Context {
     public String getLogMessage() {
         throw new UnsupportedOperationException("getLogMessage is not supported");
     }
-
+    
     @Override
     public void delayUserInteraction(ClientAction action) {
         throw new UnsupportedOperationException("delayUserInteraction is not supported");
