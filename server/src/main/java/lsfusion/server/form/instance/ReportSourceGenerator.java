@@ -249,11 +249,13 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
             if ((applyGroup == null || property.toDraw == applyGroup) && property.toDraw!=null && filterGroups.contains(property.toDraw)) {
                 boolean add = true;
                 
-                GroupObjectUserPreferences groupObjectPreferences = userPreferences.getUsedPreferences(property.toDraw.getSID());
-                if (groupObjectPreferences != null) {
-                    ColumnUserPreferences columnUP = groupObjectPreferences.getColumnUserPreferences().get(property.getsID());
-                    if (columnUP != null && columnUP.userHide != null && columnUP.userHide) {
-                        add = false;    
+                if (userPreferences != null) {
+                    GroupObjectUserPreferences groupObjectPreferences = userPreferences.getUsedPreferences(property.toDraw.getSID());
+                    if (groupObjectPreferences != null) {
+                        ColumnUserPreferences columnUP = groupObjectPreferences.getColumnUserPreferences().get(property.getsID());
+                        if (columnUP != null && columnUP.userHide != null && columnUP.userHide) {
+                            add = false;    
+                        }
                     }
                 }
                 if (add) {
