@@ -189,6 +189,10 @@ public class KeyStrokes {
         }
         return false;
     }
+    
+    public static boolean isMinusKeyEvent(EventObject event) {
+        return event instanceof KeyEvent && (isKeyEvent(event, KeyEvent.VK_MINUS) || isKeyEvent(event, 109));
+    }
 
     public static boolean isSuitableStartFilteringEvent(EventObject event) {
         if (event instanceof KeyEvent) {
@@ -220,6 +224,7 @@ public class KeyStrokes {
     public static boolean isSuitableNumberEditEvent(EventObject event) {
         return isSuitableEditKeyEvent(event) && (
                 isDigitKeyEvent(event) ||
+                isMinusKeyEvent(event) ||
                 isDeleteEvent(event) ||
                 isBackSpaceEvent(event)
         );

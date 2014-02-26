@@ -64,7 +64,7 @@ public class ClientNumericClass extends ClientDoubleClass {
 
     public NumberFormat getDefaultFormat() {
         NumberFormat format = super.getDefaultFormat();
-        format.setMaximumIntegerDigits(length - precision - ((precision > 0) ? 1 : 0));
+        format.setMaximumIntegerDigits(length - precision);
         format.setMaximumFractionDigits(precision);
         return format;
     }
