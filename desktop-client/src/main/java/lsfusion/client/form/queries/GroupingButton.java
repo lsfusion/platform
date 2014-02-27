@@ -36,13 +36,27 @@ public abstract class GroupingButton extends ToolbarGridButton {
 
                         @Override
                         public void updatePressed() {
+                            updateData(false);
+                        }
+
+                        @Override
+                        public void pivotPressed() {
+                            updateData(true);
+                            try {
+                                dialog.exportToExcelPivot();
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+
+                        private void updateData(boolean isPivot) {
                             Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
                             Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
                             boolean onlyNotNull = dialog.onlyNotNull();
 
                             List<Map<List<Object>, List<Object>>> result = new ArrayList<Map<List<Object>, List<Object>>>();
 
-                            for (Map<Integer, List<byte[]>> level : dialog.getSelectedGroupLevels()) {
+                            for (Map<Integer, List<byte[]>> level : dialog.getSelectedGroupLevels(isPivot)) {
                                 if (!level.isEmpty()) {
                                     Map<List<Object>, List<Object>> groupData = groupData(level, sumMap, maxMap, onlyNotNull);
                                     if (groupData != null) {
@@ -61,7 +75,7 @@ public abstract class GroupingButton extends ToolbarGridButton {
                 dialog.setVisible(true);    
             }
         });
-    }
+    }    
 
     public abstract List<FormGrouping> readGroupings();
     public abstract Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap, Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull);
