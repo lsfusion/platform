@@ -494,7 +494,7 @@ public class SQLSession extends MutableObject {
     }
 
     public void vacuumAnalyzeSessionTable(String table) throws SQLException {
-        executeDDL((isInTransaction()? "" :"") + "ANALYZE " + table, ExecuteEnvironment.NOREADONLY);
+        executeDDL((isInTransaction()? "" :"VACUUM ") + "ANALYZE " + table, ExecuteEnvironment.NOREADONLY);
     }
 
     private int noReadOnly = 0;
