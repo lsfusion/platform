@@ -12,6 +12,7 @@ import jxl.write.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
 import lsfusion.base.Pair;
+import lsfusion.base.SystemUtils;
 import lsfusion.client.descriptor.editor.base.TitledPanel;
 import lsfusion.client.form.ItemAdapter;
 import lsfusion.client.form.grid.GridTable;
@@ -134,7 +135,7 @@ public abstract class GroupingDialog extends JDialog {
         for (int i = 0; i < initialTableModel.getColumnCount(); i++) {
             String columnName = initialTableModel.getColumnName(i).trim(); 
             final JCheckBox checkBox = new JCheckBox(columnName);
-            final JCheckBox pivotCheckBox = new JCheckBox(/*columnName*/);
+            final JCheckBox pivotCheckBox = new JCheckBox();
 
             checkBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -180,7 +181,8 @@ public abstract class GroupingDialog extends JDialog {
             fieldPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
             fieldPanel.add(checkBox);
             fieldPanel.add(spinner);
-            fieldPanel.add(pivotCheckBox);
+            if(SystemUtils.IS_OS_WINDOWS)
+                fieldPanel.add(pivotCheckBox);
             fieldPanel.setPreferredSize(new Dimension(fieldPanel.getPreferredSize().width + spinner.getPreferredSize().width, checkBox.getPreferredSize().height + 3));
             allFieldsPanel.add(fieldPanel);
 
@@ -309,7 +311,8 @@ public abstract class GroupingDialog extends JDialog {
         JPanel checkNButtonPanel = new JPanel();
         checkNButtonPanel.setLayout(new BoxLayout(checkNButtonPanel, BoxLayout.X_AXIS));
         checkNButtonPanel.add(notNullCheck);
-        checkNButtonPanel.add(pivotButton);
+        if(SystemUtils.IS_OS_WINDOWS)
+            checkNButtonPanel.add(pivotButton);
         checkNButtonPanel.add(executeButton);
 
         JPanel bottomPanel = new JPanel();
