@@ -6,70 +6,74 @@
 
     <property file="utils.properties"/>
 
-    <property name="build.trunk" value="${build.dir}/trunk"/>
+    <property name="build.branch" value="${build.dir}/branch"/>
     <property name="build.tag" value="${build.dir}/tag"/>
 
-    <property name="svn.tag.label" value="platform-${version.release}"/>
-    <property name="svn.trunk" value="${svn.base}/trunk"/>
+    <property name="svn.tag.label" value="platform-${version.tag}"/>
     <property name="svn.tag" value="${svn.base}/tags/${svn.tag.label}"/>
 
     <target name="prepareNextRelease">
         <delete dir="${build.dir}"/>
-        <mkdir dir="${build.trunk}"/>
+        <mkdir dir="${build.branch}"/>
         <mkdir dir="${build.tag}"/>
 
-        <exec dir="${build.trunk}" executable="svn.exe" failonerror="true">
+        <exec dir="${build.branch}" executable="svn.exe" failonerror="true">
             <arg value="co"/>
-            <arg value="${svn.trunk}"/>
+            <arg value="${svn.branch}"/>
             <arg value="."/>
         </exec>
 
-        <replace file="${build.trunk}/web-api/src/main/resources/client.jnlp" token="${version.old}" value="${version.release}" encoding="UTF-8"/>
+        <replace file="${build.branch}/web-api/src/main/resources/client.jnlp" token="${version.branch.current}" value="${version.tag}" encoding="UTF-8"/>
 
-        <exec dir="${build.trunk}" executable="svn.exe" failonerror="true">
+        <exec dir="${build.branch}" executable="svn.exe" failonerror="true">
             <arg value="commit"/>
             <arg value="web-api/src/main/resources/client.jnlp"/>
             <arg value="-m"/>
             <arg value="prepare release"/>
         </exec>
 
-        <exec dir="${build.trunk}" executable="cmd" failonerror="true">
+        <exec dir="${build.branch}" executable="cmd" failonerror="true">
             <arg value="/c"/>
-            <arg value="mvn -B -Dusername=${svn.user} -Dpassword=${svn.pass} -Dtag=${svn.tag.label} -DreleaseVersion=${version.release} -DdevelopmentVersion=${version.new} release:prepare"/>
+            <arg value="mvn -B -Dusername=${svn.user} -Dpassword=${svn.pass} -Dtag=${svn.tag.label} -DreleaseVersion=${version.tag} -DdevelopmentVersion=${version.branch.new} release:prepare"/>
         </exec>
 
-        <replace file="${build.trunk}/web-api/src/main/resources/client.jnlp" token="${version.release}" value="${version.new}" encoding="UTF-8"/>
+        <replace file="${build.branch}/web-api/src/main/resources/client.jnlp" token="${version.tag}" value="${version.branch.new}" encoding="UTF-8"/>
 
-        <exec dir="${build.trunk}" executable="svn.exe" failonerror="true">
+        <exec dir="${build.branch}" executable="svn.exe" failonerror="true">
             <arg value="commit"/>
             <arg value="web-api/src/main/resources/client.jnlp"/>
             <arg value="-m"/>
             <arg value="prepare dev version"/>
         </exec>
 
-        <!-- Deploy tag -->
-        <exec dir="${build.tag}" executable="svn.exe" failonerror="true">
-            <arg value="co"/>
-            <arg value="${svn.tag}"/>
-            <arg value="."/>
-        </exec>
+        <if>
+            <isset property="deploy.tag" />
+            <then>
+                <!-- Deploy tag -->
+                <exec dir="${build.tag}" executable="svn.exe" failonerror="true">
+                    <arg value="co"/>
+                    <arg value="${svn.tag}"/>
+                    <arg value="."/>
+                </exec>
 
-        <exec dir="${build.tag}" executable="cmd" failonerror="true">
-            <arg value="/c"/>
-            <arg value="mvn clean ${deploy.goal}"/>
-        </exec>
-        <exec dir="${build.tag}/server" executable="cmd" failonerror="true">
-            <arg value="/c"/>
-            <arg value="mvn ${deploy.goal} -P assemble,pack"/>
-        </exec>
-        <exec dir="${build.tag}/desktop-client" executable="cmd" failonerror="true">
-            <arg value="/c"/>
-            <arg value="mvn ${deploy.goal} -P assemble,sign,pack"/>
-        </exec>
-        <exec dir="${build.tag}/web-client" executable="cmd" failonerror="true">
-            <arg value="/c"/>
-            <arg value="mvn ${deploy.goal} -P gwt,desktop,war"/>
-        </exec>
+                <exec dir="${build.tag}" executable="cmd" failonerror="true">
+                    <arg value="/c"/>
+                    <arg value="mvn clean ${deploy.goal}"/>
+                </exec>
+                <exec dir="${build.tag}/server" executable="cmd" failonerror="true">
+                    <arg value="/c"/>
+                    <arg value="mvn ${deploy.goal} -P assemble,pack"/>
+                </exec>
+                <exec dir="${build.tag}/desktop-client" executable="cmd" failonerror="true">
+                    <arg value="/c"/>
+                    <arg value="mvn ${deploy.goal} -P assemble,sign,pack"/>
+                </exec>
+                <exec dir="${build.tag}/web-client" executable="cmd" failonerror="true">
+                    <arg value="/c"/>
+                    <arg value="mvn ${deploy.goal} -P gwt,desktop,war"/>
+                </exec>
+            </then>
+        </if>
     </target>
 
     <target name="prepareBranchFromTag">
