@@ -1542,19 +1542,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, allParams);
     }
 
-    public LPWithParams addScriptedTryAProp(LPWithParams tryAction, LPWithParams finallyAction) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedTryAProp(" + tryAction + ", " + finallyAction + ");");
-        List<LPWithParams> propParams = new ArrayList<LPWithParams>();
-        if(tryAction != null)
-            propParams.add(tryAction);
-        if (finallyAction != null)
-            propParams.add(finallyAction);
-        
-        List<Integer> allParams = mergeAllParams(propParams);
-        LP result = addTryAProp(null, genSID(), "", getParamsPlainList(propParams).toArray());
-        return new LPWithParams(result, allParams);
-    }
-
     public LPWithParams addScriptedCaseAProp(List<LPWithParams> whenProps, List<LPWithParams> thenActions, LPWithParams elseAction, boolean isExclusive) {
         scriptLogger.info("addScriptedCaseAProp(" + whenProps + ", " + thenActions + ", " + elseAction + ", " + isExclusive + ");");
         assert whenProps.size() > 0 && whenProps.size() == thenActions.size();
@@ -1580,16 +1567,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP result = addMultiAProp(isExclusive, getParamsPlainList(actions).toArray());
         return new LPWithParams(result, allParams);
 
-    }
-
-    public LPWithParams addScriptedInApplyAProp(LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedInApplyAProp(" + action + ");");
-        List<LPWithParams> propParams = new ArrayList<LPWithParams>();
-        if(action != null)
-            propParams.add(action);
-        
-        LP result = addInApplyAProp(null, genSID(), "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null);
-        return new LPWithParams(result, mergeAllParams(propParams));
     }
 
     public LPWithParams addScriptedForAProp(List<TypedParameter> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending, List<LPWithParams> noInline, boolean forceInline) throws ScriptingErrorLog.SemanticErrorException {
@@ -1991,7 +1968,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedFAProp(String formName, List<String> objectNames, List<LPWithParams> mapping,
                                           String contextObjectName, LPWithParams contextProperty,
-                                          String initFilterPropertyName, List<String> initFilterPropertyMapping,
+                                          String initFilterPropertyName, PropertyUsage initFilterPropertyUsage, List<TypedParameter> initFilterPropertyMapping,
                                           ModalityType modalityType, FormSessionScope sessionScope,
                                           boolean checkOnOk, boolean showDrop, FormPrintType printType) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedFAProp(" + formName + ", " + objectNames + ", " + mapping + ", " + modalityType + ", " + sessionScope + ");");
@@ -2010,10 +1987,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         ObjectEntity contextObject = contextObjectName == null ? null : findObjectEntity(form, contextObjectName);
 
         PropertyDrawEntity initFilterProperty = null;
-        if (initFilterPropertyName != null) {
-            initFilterProperty = initFilterPropertyMapping == null
+        if (initFilterPropertyUsage != null || initFilterPropertyName != null) {
+            
+            initFilterProperty = initFilterPropertyName != null
                                  ? getPropertyDraw(this, form, initFilterPropertyName)
-                                 : getPropertyDraw(this, form, PropertyDrawEntity.createSID(initFilterPropertyName, initFilterPropertyMapping));
+                                 : getPropertyDraw(this, form, initFilterPropertyUsage, getParamNamesFromTypedParams(initFilterPropertyMapping));
         }
 
         LAP property = addFAProp(null, genSID(), "", form, objects, null, contextObject,

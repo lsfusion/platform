@@ -10,9 +10,6 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
-import lsfusion.interop.form.ColumnUserPreferences;
-import lsfusion.interop.form.FormUserPreferences;
-import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.query.Query;
@@ -44,7 +41,6 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     private Map<String, ReportData> sources = new HashMap<String, ReportData>();
     // ID группы при отчете для одной таблицы
     private final Integer groupId;
-    private FormUserPreferences userPreferences;
     // ID тех групп, которые идут в отчет таблицей значений.
     private final Set<Integer> gridGroupsId;
     private Map<Integer, GroupObjectInstance> idToInstance = new HashMap<Integer, GroupObjectInstance>();
@@ -61,13 +57,12 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     }
     
     public ReportSourceGenerator(FormInstance<T> form, GroupObjectHierarchy.ReportHierarchy hierarchy,
-                                 GroupObjectHierarchy.ReportHierarchy fullFormHierarchy, Set<Integer> gridGroupsId, Integer groupId, FormUserPreferences userPreferences) {
+                                 GroupObjectHierarchy.ReportHierarchy fullFormHierarchy, Set<Integer> gridGroupsId, Integer groupId) {
         this.hierarchy = hierarchy;
         this.fullFormHierarchy = fullFormHierarchy;
         this.form = form;
         this.gridGroupsId = gridGroupsId;
         this.groupId = groupId;
-        this.userPreferences = userPreferences;
 
         for (GroupObjectInstance group : form.getGroups()) {
             idToInstance.put(group.getID(), group);
@@ -123,11 +118,12 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     newQuery.addProperty(backgroundObject, group.propertyBackground.getExpr(newQuery.getMapExprs(), modifier));
                     mTypes.exclAdd(backgroundObject, group.propertyBackground.getType());
                 }
-                if (!gridGroupsId.contains(group.getID())) {
+
+                if (!gridGroupsId.contains(group.getID()))
                     for (ObjectInstance object : group.objects) {
                         newQuery.and(object.getExpr(newQuery.getMapExprs(), modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
                     }
-                }
+
             }
         }
 
@@ -221,16 +217,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                         }
                     }
 
-                    List<ObjectInstance> objectsList = keyList.toJavaList(); 
-                    List<Object> keys = BaseUtils.mapList(objectsList, resultData.getKey(i));
-                    if (groupId != null) {
-                        for (int keyIndex = 0; keyIndex < objectsList.size(); ++keyIndex) {
-                            if (resultData.getKey(i).get(objectsList.get(keyIndex)) == null) {
-                                keys.set(keyIndex, objectsList.get(keyIndex).getObjectValue().getValue());
-                            }
-                        }
-                    }
-                    data.add(keys, propertyValues);
+                    data.add(BaseUtils.mapList(keyList.toJavaList(), resultData.getKey(i)), propertyValues);
                 }
 
                 sources.put(sid, data);
@@ -247,20 +234,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         for (PropertyDrawInstance property : form.properties) {
             GroupObjectInstance applyGroup = property.propertyObject.getApplyObject();
             if ((applyGroup == null || property.toDraw == applyGroup) && property.toDraw!=null && filterGroups.contains(property.toDraw)) {
-                boolean add = true;
-                
-                if (userPreferences != null) {
-                    GroupObjectUserPreferences groupObjectPreferences = userPreferences.getUsedPreferences(property.toDraw.getSID());
-                    if (groupObjectPreferences != null) {
-                        ColumnUserPreferences columnUP = groupObjectPreferences.getColumnUserPreferences().get(property.getsID());
-                        if (columnUP != null && columnUP.userHide != null && columnUP.userHide) {
-                            add = false;    
-                        }
-                    }
-                }
-                if (add) {
-                    resultList.add(property);
-                }
+                resultList.add(property);
             }
         }
         return resultList;

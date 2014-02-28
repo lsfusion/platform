@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.*;
+import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -614,17 +615,6 @@ public abstract class LogicsModule {
         return addProperty(null, new LAP(new ListActionProperty(genSID(), "sys", isChecked, listInterfaces, listInterfaces.mapList(ListFact.toList(params)))));
     }
 
-    // ------------------- Try action ----------------- //
-
-    protected LAP addTryAProp(AbstractGroup group, String name, String caption, Object... params) {
-        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
-        ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
-        assert readImplements.size() >= 1 && readImplements.size() <= 2;
-
-        return addProperty(group, new LAP(new TryActionProperty(name, caption, listInterfaces, (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(0),
-                readImplements.size() == 2 ? (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(1) : null)));
-    }
-    
     // ------------------- If action ----------------- //
 
     protected LAP addIfAProp(AbstractGroup group, String caption, boolean not, Object... params) {
@@ -725,15 +715,6 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP(new JoinActionProperty(name, caption, listInterfaces, mapActionImplement(action, readImplements))));
     }
 
-    // ------------------- INAPPLY ----------------- //
-
-    protected LAP addInApplyAProp(AbstractGroup group, String name, String caption, LAP action) {
-        ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
-        ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
-
-        return addProperty(group, new LAP(new InApplyActionProperty(baseLM, actionImplement, name, caption, listInterfaces)));
-    }
-    
     // ------------------- NEWSESSION ----------------- //
 
     protected LAP addNewSessionAProp(AbstractGroup group, String name, String caption, LAP action, boolean doApply, boolean singleApply, ImSet<SessionDataProperty> local, ImSet<SessionDataProperty> sessionUsed) {
@@ -1116,7 +1097,7 @@ public abstract class LogicsModule {
 
     protected <T extends PropertyInterface> LCP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, ImOrderSet<T> innerInterfaces, ImList<CalcPropertyInterfaceImplement<T>> implement) {
         ImList<CalcPropertyInterfaceImplement<T>> listImplements = implement.subList(1, implement.size());
-        SumGroupProperty<T> property = new SumGroupProperty<T>(name, caption, innerInterfaces.getSet(), listImplements, implement.get(0));
+        SumGroupProperty<T> property = new SumGroupProperty<T>(name, caption, innerInterfaces.getSet(), listImplements.getCol(), implement.get(0));
 
         LCP lp = mapLGProp(group, persistent, property, listImplements);
         lp.listGroupInterfaces = innerInterfaces;

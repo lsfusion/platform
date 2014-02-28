@@ -31,12 +31,6 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         finalizeInit();
     }
 
-    public SumGroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImList<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property) {
-        super(sID, caption, innerInterfaces, groupInterfaces, property);
-
-        finalizeInit();
-    }
-    
     public SumGroupProperty(String sID, String caption, ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property) {
         super(sID, caption, interfaces, property);
 

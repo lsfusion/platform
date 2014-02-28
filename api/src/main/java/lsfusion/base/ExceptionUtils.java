@@ -18,15 +18,13 @@ public class ExceptionUtils {
     }
 
     public static String getStackTrace() {
-        return getStackTrace(new Exception());
-    }
-
-    public static String getStackTrace(Throwable e) {
+        Exception e = new Exception();
+        
         String s = "";
         StackTraceElement[] trace = e.getStackTrace();
-        for (StackTraceElement aTrace : trace)
+        for (StackTraceElement aTrace : trace) 
             s += "\tat " + aTrace + '\n';
-
+        
         return s;
     }
 

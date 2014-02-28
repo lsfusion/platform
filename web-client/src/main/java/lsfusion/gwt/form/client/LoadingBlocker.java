@@ -7,11 +7,11 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
+import net.customware.gwt.dispatch.shared.general.StringResult;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.EscapeUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.form.ServerMessageProvider;
-import net.customware.gwt.dispatch.shared.general.StringResult;
 
 public class LoadingBlocker {
     public static final int GLASS_SCREEN_SHOW_DELAY = 500;
@@ -45,24 +45,22 @@ public class LoadingBlocker {
             popup.center();
             timer.schedule(GLASS_SCREEN_SHOW_DELAY);
 
-            if (MainFrame.configurationAccessAllowed) {
-                Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
-                    @Override
-                    public boolean execute() {
-                        if (visible) {
-                            messageProvider.getServerActionMessage(new ErrorHandlingCallback<StringResult>() {
-                                @Override
-                                public void success(StringResult result) {
-                                    updateMessage(result.get());
-                                }
-                            });
-                            return true;
-                        } else {
-                            return false;
-                        }
+            Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
+                @Override
+                public boolean execute() {
+                    if (visible) {
+                        messageProvider.getServerActionMessage(new ErrorHandlingCallback<StringResult>() {
+                            @Override
+                            public void success(StringResult result) {
+                                updateMessage(result.get());
+                            }
+                        });
+                        return true;
+                    } else {
+                        return false;
                     }
-                }, MESSAGE_UPDATE_PERIOD);
-            }
+                }
+            }, MESSAGE_UPDATE_PERIOD);
 
             showWaitCursor();
             visible = true;
@@ -130,7 +128,7 @@ public class LoadingBlocker {
                 messageLabel.setText(EscapeUtils.unicodeEscape(message));
             }
 
-            boolean showMessage = message != null && !message.trim().isEmpty();
+            boolean showMessage = message != null && !"".equals(message.trim());
             if (windowResized()) {
                 latestWindowWidth = Window.getClientWidth();
                 latestWindowHeight = Window.getClientHeight();
@@ -138,11 +136,10 @@ public class LoadingBlocker {
                 int panelWidth = (int) (latestWindowWidth * 0.85);
                 int popupWidth = getOffsetWidth();
                 messagePanel.setWidth(panelWidth + "px");
-                Style messagePanelStyle = messagePanel.getElement().getStyle();
-                messagePanelStyle.setLeft(-panelWidth / 2 + popupWidth / 2, Style.Unit.PX);
+                messagePanel.getElement().getStyle().setLeft(- panelWidth / 2 + popupWidth / 2, Style.Unit.PX);
 
-                messagePanelStyle.setProperty("maxHeight", latestWindowHeight / 2 - 100, Style.Unit.PX);
-                messagePanelStyle.setBottom(-latestWindowHeight / 2 + 50, Style.Unit.PX);
+                messagePanel.getElement().getStyle().setProperty("maxHeight", latestWindowHeight / 2 - 100, Style.Unit.PX);
+                messagePanel.getElement().getStyle().setBottom( - latestWindowHeight / 2 + 50, Style.Unit.PX);
             }
             messagePanel.setVisible(showMessage);
         }

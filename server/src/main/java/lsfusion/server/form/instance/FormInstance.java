@@ -20,7 +20,6 @@ import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.server.Message;
 import lsfusion.server.ParamMessage;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
@@ -874,9 +873,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             for (ImMap<ObjectInstance, DataObject> columnKeys : toGroup.get(property)) {
                 i++;
                 ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
-                Integer propertyKey = property.getID() + i;
-                mKeyExprMap.revAdd(propertyKey, new KeyExpr("expr"));
-                mExprMap.exclAdd(propertyKey, property.getDrawInstance().getExpr(keys, getModifier()));
+                mKeyExprMap.revAdd(property.getsID() + i, new KeyExpr("expr"));
+                mExprMap.exclAdd(property.getsID() + i, property.getDrawInstance().getExpr(keys, getModifier()));
             }
         }
         ImRevMap<Object, KeyExpr> keyExprMap = mKeyExprMap.immutableRev();
@@ -917,7 +915,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 idIndex++;
                 ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
                 Expr expr = GroupExpr.create(exprMap, property.getDrawInstance().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), groupType, keyExprMap);
-                query.addProperty(property.getID() + idIndex, expr);
+                query.addProperty(property.getsID() + idIndex, expr);
                 if (onlyNotNull) {
                     query.and(expr.getWhere());
                 }
@@ -935,7 +933,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             for (PropertyDrawInstance propertyDraw : toGroup.keyIt()) {
                 for (int i = 1; i <= toGroup.get(propertyDraw).size(); i++) {
-                    groupList.add(one.get(propertyDraw.getID() + i));
+                    groupList.add(one.get(propertyDraw.getsID() + i));
                 }
             }
             int index = 1;
@@ -943,7 +941,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 Object propertyDraw = toSum.getKey(k);
                 if (propertyDraw instanceof PropertyDrawInstance) {
                     for (int i = 1, sizeI = toSum.getValue(k).size(); i <= sizeI; i++) {
-                        sumList.add(oneValue.get(((PropertyDrawInstance) propertyDraw).getID() + index));
+                        sumList.add(oneValue.get(((PropertyDrawInstance) propertyDraw).getsID() + index));
                         index++;
                     }
                 } else
@@ -952,7 +950,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             for (int k = 0, sizeK = toMax.size(); k < sizeK; k++) {
                 PropertyDrawInstance propertyDraw = toMax.getKey(k);
                 for (int i = 1, sizeI = toMax.getValue(k).size(); i <= sizeI; i++) {
-                    sumList.add(oneValue.get(propertyDraw.getID() + index));
+                    sumList.add(oneValue.get(propertyDraw.getsID() + index));
                     index++;
                 }
             }
@@ -1117,7 +1115,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     private boolean closed = false;
 
     public void close() throws SQLException {
-        ServerLoggers.assertLog(!closed, "ALREADY CLOSED");
         closed = true;
         session.unregisterForm(this);
         for (GroupObjectInstance group : getGroups()) {

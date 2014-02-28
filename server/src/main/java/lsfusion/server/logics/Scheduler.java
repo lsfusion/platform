@@ -1,7 +1,6 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -251,8 +250,10 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                             break;
                     }
                 }
-            } catch (Exception e) {
-                logger.error("Error while running scheduler task (in SchedulerTask.run()):", e);
+            } catch (SQLException e) {
+                throw Throwables.propagate(e);
+            } catch (SQLHandledException e) {
+                throw Throwables.propagate(e);
             }
         }
 
@@ -278,7 +279,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
                 businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
                 businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                businessLogics.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? "Выполнено успешно" : BaseUtils.truncate(applyResult, 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                businessLogics.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? "Выполнено успешно" : applyResult.substring(0, 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
                 businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), afterFinishLogSession, currentScheduledTaskLogFinishObject);
 
                 String finishResult = afterFinishLogSession.applyMessage(businessLogics);
@@ -286,14 +287,13 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     logger.error("Error while saving scheduler task result : " + finishResult);
                 return applyResult == null;
             } catch (Exception e) {
-                logger.error("Error while running scheduler task (in executeLAP()) :", e);
-
                 businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
                 businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                businessLogics.schedulerLM.resultScheduledTaskLog.change(BaseUtils.truncate(String.valueOf(e), 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                businessLogics.schedulerLM.resultScheduledTaskLog.change(String.valueOf(e).substring(0, 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
                 businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), afterFinishLogSession, currentScheduledTaskLogFinishObject);
                 afterFinishLogSession.apply(businessLogics);
-
+                
+                logger.error("Error while running scheduler task :", e);
                 return false;
             }
         }

@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -25,6 +26,7 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
     private final Lock writeLogicsLock = logicsLock.writeLock();
 
     private volatile T logics;
+    private volatile TimeZone timeZone;
 
     private String registryHost;
     private int registryPort;
@@ -75,6 +77,16 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
         });
     }
 
+    @Override
+    public TimeZone getTimeZone() {
+        return synchronizedGet(new Provider<TimeZone>() {
+            @Override
+            public TimeZone get() {
+                return timeZone;
+            }
+        });
+    }
+
     private <T> T synchronizedGet(Provider<T> getter) {
         readLogicsLock.lock();
 
@@ -104,6 +116,7 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
             RemoteLogicsLoaderInterface loader = RMIUtils.rmiLookup(registryHost, registryPort, exportName, "RemoteLogicsLoader");
 
             logics = (T) loader.getLogics();
+            timeZone = logics.getTimeZone();
         } catch (Exception e) {
             logger.error("Ошибка при получении объекта логики: ", e);
             throw new RuntimeException("Произошла ошибка при подлючении к серверу приложения.", e);
@@ -114,6 +127,7 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
         writeLogicsLock.lock();
         try {
             logics = null;
+            timeZone = null;
 
             for (InvalidateListener invalidateListener : invlidateListeners) {
                 invalidateListener.onInvalidate();

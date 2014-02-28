@@ -16,7 +16,7 @@ FORM schedulerStartTypes
 
 EXTEND DESIGN schedulerStartTypes {
     main {
-        PROPERTY(staticCaption(s)) {
+        PROPERTY(staticCaption) {
             caption = 'Отсчёт времени';
         }
     }

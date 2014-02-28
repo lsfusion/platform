@@ -207,10 +207,10 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         return result;
     }
 
-    public byte[] groupData(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
+    public Map<List<Object>, List<Object>> groupData(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
                                                      Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) throws RemoteException {
         logRemoteMethodStartCall("groupData");
-        byte[] result = target.groupData(requestIndex, lastReceivedRequestIndex, groupMap, sumMap, maxMap, onlyNotNull);
+        Map<List<Object>, List<Object>> result = target.groupData(requestIndex, lastReceivedRequestIndex, groupMap, sumMap, maxMap, onlyNotNull);
         logRemoteMethodEndCall("groupData", result);
         return result;
     }

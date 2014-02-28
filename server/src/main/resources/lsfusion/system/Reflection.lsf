@@ -152,7 +152,7 @@ CLASS DropColumn 'Удалённая колонка';
 TABLE dropColumn (DropColumn);
 
 sidDropColumn 'Имя колонки' = DATA VARSTRING[100] (DropColumn);
-dropColumnSID 'Удалённая колонка' (sid) = GROUP NAGGR dropColumn BY sidDropColumn (dropColumn) WHERE dropColumn IS DropColumn;
+dropColumnSID 'Удалённая колонка' (sid) = GROUP AGGR dropColumn BY sidDropColumn (dropColumn) WHERE dropColumn IS DropColumn;
 sidTableDropColumn 'Имя таблицы' = DATA VARSTRING[100] (DropColumn);
 timeDropColumn 'Время удаления' = DATA DATETIME (DropColumn);
 revisionDropColumn 'Версия' = DATA VARSTRING[10] (DropColumn);
@@ -161,10 +161,9 @@ CLASS GroupObject 'Группа объектов';
 TABLE groupObjectCustomUser (GroupObject, CustomUser);
 TABLE groupObject (GroupObject);
 
-sidGroupObject 'Код группы объектов' = DATA VARSTRING[100] (GroupObject) IN recognize;
+sidGroupObject 'Код группы объектов' = DATA VARSTRING[100] (GroupObject);
 navigatorElementGroupObject 'Элемент навигатора' = DATA NavigatorElement (GroupObject);
-sidNavigatorElementGroupObject (groupObject) = sidNavigatorElement (navigatorElementGroupObject(groupObject)) IN recognize;
-captionNavigatorElementGroupObject (groupObject) = captionNavigatorElement (navigatorElementGroupObject(groupObject)) IN recognize; 
+sidNavigatorElementGroupObject (groupObject) = sidNavigatorElement (navigatorElementGroupObject(groupObject));
 groupObjectSIDGroupObjectSIDNavigatorElementGroupObject  'Группа объектов' (sidNavigatorElement, sidGroupObject) = GROUP AGGR groupObject BY sidGroupObject (groupObject), sidNavigatorElementGroupObject (groupObject) WHERE groupObject IS GroupObject;
 
 CLASS FormGrouping 'Группировка';
@@ -220,7 +219,7 @@ EXTEND DESIGN physicalModel {
                 ADD tc.box {
                     caption = 'Колонки';
                 }
-                ADD PROPERTY(recalculateStats());
+                ADD PROPERTY(recalculateStats);
             }
 
             NEW dropColumnsContainer {
@@ -296,7 +295,7 @@ FORM properties 'Свойства'
     PROPERTIES(tps) READONLY captionPropertyGroup, SIDPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, parentPropertyGroup, numberPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup
     PROPERTIES(ps) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
-    ORDER BY numberProperty(p)
+    ORDER BY numberProperty
     ORDER BY numberPropertyGroup(tps)
 
     FILTERS

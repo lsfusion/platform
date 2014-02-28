@@ -173,18 +173,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return currentInvocation.getLogMessage();
     }
 
-    LogInfo getLogInfo() {
-        try {
-            DataSession session = createSession();
-            String userName = (String) businessLogics.authenticationLM.currentUserName.read(session);
-            String computerName = (String) businessLogics.authenticationLM.hostnameCurrentComputer.read(session);
-            session.close();
-            return new LogInfo(userName, computerName, remoteAddress);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     void delayUserInteraction(ClientAction action) {
         currentInvocation.delayUserInteraction(action);
     }

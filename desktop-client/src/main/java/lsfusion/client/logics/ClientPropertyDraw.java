@@ -488,10 +488,13 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             "<hr><b>" + getString("logics.property.edit.key") + ":</b> %1$s<br>";
 
     public String getTooltipText(String caption) {
+        boolean configurationAccessAllowed;
+        configurationAccessAllowed = Main.configurationAccessAllowed;
+
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
         String editKeyText = editKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, SwingUtils.getKeyStrokeCaption(editKey));
 
-        if (!Main.configurationAccessAllowed) {
+        if (!configurationAccessAllowed) {
             return String.format(TOOL_TIP_FORMAT, propCaption, editKeyText);
         } else {
             String sid = getSID();

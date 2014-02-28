@@ -493,8 +493,8 @@ public class SQLSession extends MutableObject {
         executeDDL(syntax.getCreateSessionTable(name, createString), ExecuteEnvironment.NOREADONLY);
     }
 
-    public void vacuumAnalyzeSessionTable(String table) throws SQLException {
-        executeDDL((isInTransaction()? "" :"VACUUM ") + "ANALYZE " + table, ExecuteEnvironment.NOREADONLY);
+    public void analyzeSessionTable(String table) throws SQLException {
+        executeDDL("ANALYZE " + table, ExecuteEnvironment.NOREADONLY);
     }
 
     private int noReadOnly = 0;
@@ -1479,7 +1479,10 @@ public class SQLSession extends MutableObject {
     
     public void checkSessionTable(SessionTable table) {
         WeakReference<Object> sessionTable = sessionTablesMap.get(table.name);
-        ServerLoggers.assertLog(sessionTable != null && sessionTable.get() != null, "USED RETURNED TABLE : " + table.name);
+        boolean tableUsed = sessionTable != null && sessionTable.get() != null;
+        if(!tableUsed)
+            ServerLoggers.assertLogger.info("USED RETURNED TABLE : " + table.name + '\n' + ExceptionUtils.getStackTrace());
+        assert tableUsed;
     }
 
     private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, ExConnection connection, SQLSyntax syntax, ExecuteEnvironment env, Result<ReturnStatement> returnStatement, boolean noPrepare) throws SQLException {

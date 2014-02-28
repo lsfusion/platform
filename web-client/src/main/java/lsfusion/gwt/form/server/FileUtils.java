@@ -2,12 +2,12 @@ package lsfusion.gwt.form.server;
 
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
+import net.sf.jasperreports.engine.JasperExportManager;
 import lsfusion.base.BaseUtils;
 import lsfusion.gwt.form.shared.view.ImageDescription;
 import lsfusion.gwt.form.shared.view.changes.dto.GFilesDTO;
 import lsfusion.interop.SerializableImageIconHolder;
 import lsfusion.interop.form.ReportGenerationData;
-import net.sf.jasperreports.engine.JasperExportManager;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -19,6 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 public class FileUtils {
     public static String APP_FOLDER_URL;
@@ -141,8 +143,9 @@ public class FileUtils {
 
     public static String exportReport(boolean toExcel, ReportGenerationData reportData) {
         try {
-            ReportGenerator generator = new ReportGenerator(reportData);
-            byte[] report = !toExcel ? JasperExportManager.exportReportToPdf(generator.createReport(false, null)) : ReportGenerator.exportToExcelByteArray(reportData);
+            TimeZone zone = Calendar.getInstance().getTimeZone();
+            ReportGenerator generator = new ReportGenerator(reportData, zone);
+            byte[] report = !toExcel ? JasperExportManager.exportReportToPdf(generator.createReport(false, null)) : ReportGenerator.exportToExcelByteArray(reportData, zone);
             String fileName = "lsfReport" + BaseUtils.randomString(15) + (toExcel ? ".xls" : ".pdf");
             File file = new File(APP_TEMP_FOLDER_URL, fileName);
             FileOutputStream fos = new FileOutputStream(file);

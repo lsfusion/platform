@@ -3,6 +3,7 @@ package lsfusion.client.dock;
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
 import lsfusion.client.EditReportInvoker;
+import lsfusion.client.Main;
 import lsfusion.client.ReportViewer;
 import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.JRException;
@@ -20,7 +21,7 @@ public class ClientReportDockable extends ClientDockable {
         super(reportSID, dockableManager);
 
         try {
-            JasperPrint print = new ReportGenerator(generationData).createReport(false, null);
+            JasperPrint print = new ReportGenerator(generationData, Main.timeZone).createReport(false, null);
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
             setContent(print.getName(), prepareViewer(new ReportViewer(print, editInvoker)));

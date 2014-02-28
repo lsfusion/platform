@@ -1,8 +1,5 @@
 package lsfusion.client.form.queries;
 
-import com.jacob.activeX.ActiveXComponent;
-import com.jacob.com.Dispatch;
-import com.jacob.com.Variant;
 import jxl.CellView;
 import jxl.Workbook;
 import jxl.biff.DisplayFormat;
@@ -12,7 +9,6 @@ import jxl.write.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
 import lsfusion.base.Pair;
-import lsfusion.base.SystemUtils;
 import lsfusion.client.descriptor.editor.base.TitledPanel;
 import lsfusion.client.form.ItemAdapter;
 import lsfusion.client.form.grid.GridTable;
@@ -60,7 +56,6 @@ public abstract class GroupingDialog extends JDialog {
 
     private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> groupChecks = new LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox>();
     private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JSpinner> groupSpinners = new LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JSpinner>();
-    private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> groupPivotChecks = new LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox>();
     private JCheckBox quantityCheck;
     private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> sumChecks = new LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox>();
     private Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> maxChecks = new LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox>();
@@ -135,7 +130,6 @@ public abstract class GroupingDialog extends JDialog {
         for (int i = 0; i < initialTableModel.getColumnCount(); i++) {
             String columnName = initialTableModel.getColumnName(i).trim(); 
             final JCheckBox checkBox = new JCheckBox(columnName);
-            final JCheckBox pivotCheckBox = new JCheckBox();
 
             checkBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -165,8 +159,7 @@ public abstract class GroupingDialog extends JDialog {
             Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey = initialTable.getColumnProperty(i);
 
             groupChecks.put(columnKey, checkBox);
-            groupPivotChecks.put(columnKey, pivotCheckBox);
-            
+
             JSpinner spinner = new JSpinner(new SpinnerNumberModel(1, 1, 99, 1));
             spinner.setMinimumSize(new Dimension(35, 19));
             spinner.setPreferredSize(new Dimension(35, 19));
@@ -181,8 +174,6 @@ public abstract class GroupingDialog extends JDialog {
             fieldPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
             fieldPanel.add(checkBox);
             fieldPanel.add(spinner);
-            if(SystemUtils.IS_OS_WINDOWS)
-                fieldPanel.add(pivotCheckBox);
             fieldPanel.setPreferredSize(new Dimension(fieldPanel.getPreferredSize().width + spinner.getPreferredSize().width, checkBox.getPreferredSize().height + 3));
             allFieldsPanel.add(fieldPanel);
 
@@ -221,13 +212,6 @@ public abstract class GroupingDialog extends JDialog {
         executeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updatePressed();
-            }
-        });
-
-        JButton pivotButton = new JButton(getString("form.queries.grouping.pivot"));
-        pivotButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                pivotPressed();
             }
         });
 
@@ -311,8 +295,6 @@ public abstract class GroupingDialog extends JDialog {
         JPanel checkNButtonPanel = new JPanel();
         checkNButtonPanel.setLayout(new BoxLayout(checkNButtonPanel, BoxLayout.X_AXIS));
         checkNButtonPanel.add(notNullCheck);
-        if(SystemUtils.IS_OS_WINDOWS)
-            checkNButtonPanel.add(pivotButton);
         checkNButtonPanel.add(executeButton);
 
         JPanel bottomPanel = new JPanel();
@@ -331,7 +313,7 @@ public abstract class GroupingDialog extends JDialog {
         excelExport.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    exportToExcel(false);
+                    exportToExcel();
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -360,7 +342,6 @@ public abstract class GroupingDialog extends JDialog {
 
     protected abstract void savePressed(FormGrouping grouping);
     public abstract void updatePressed();
-    public abstract void pivotPressed();
 
     private void verifySpinners() {
         int maxValue = getMaxSpinnerValue();
@@ -396,14 +377,14 @@ public abstract class GroupingDialog extends JDialog {
         return maxValue;
     }
 
-    public List<Map<Integer, List<byte[]>>> getSelectedGroupLevels(boolean pivot) {
+    public List<Map<Integer, List<byte[]>>> getSelectedGroupLevels() {
         List<Map<Integer, List<byte[]>>> selectedGroupProperties = new ArrayList<Map<Integer, List<byte[]>>>();
         List<Integer> level = new ArrayList<Integer>();
-        for (int k = 1; k <= (pivot ? 1: getMaxSpinnerValue()); k++) {
+        for (int k = 1; k <= getMaxSpinnerValue(); k++) {
             List<Integer> newLevel = new ArrayList<Integer>(level);
             int i = 0;
             for (JSpinner spinner : groupSpinners.values()) {
-                if (spinner.isVisible() && (((Integer) spinner.getValue() == k) || pivot)) {
+                if (spinner.isVisible() && (Integer) spinner.getValue() == k) {
                     newLevel.add(i);
                 }
                 i++;
@@ -445,36 +426,6 @@ public abstract class GroupingDialog extends JDialog {
         return selectedSumMap;
     }
 
-    public LinkedHashMap<Integer, Boolean> getSelectedPivotColumns() {
-        LinkedHashMap<Integer, Boolean> selectedPivotColumns = new LinkedHashMap<Integer, Boolean>();
-        int i = 1;
-        for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JSpinner> spinner : groupSpinners.entrySet()) {
-            if (spinner.getValue().isVisible()) {
-                selectedPivotColumns.put(i, groupPivotChecks.get(spinner.getKey()).isSelected());
-                i++;
-            }            
-        }
-        return selectedPivotColumns;
-    }
-
-    public int getSelectedPivotDataFieldsCount() {
-        int count = 0;
-        if(quantityCheck.isSelected()) {
-            count++;
-        }
-        for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> entry : sumChecks.entrySet()) {
-            if (entry.getValue().isSelected()) {
-                count++;
-            }
-        }                        
-        for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> entry : maxChecks.entrySet()) {
-            if (entry.getValue().isSelected()) {
-                count++;
-            }
-        }
-        return count;
-    }
-
     public Map<Integer, List<byte[]>> getSelectedMaxMap() {
         Map<Integer, List<byte[]>> selectedMaxMap = new OrderedMap<Integer, List<byte[]>>();
         for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> entry : maxChecks.entrySet()) {
@@ -501,9 +452,6 @@ public abstract class GroupingDialog extends JDialog {
         }
         for (JSpinner spinner : groupSpinners.values()) {
             spinner.setVisible(false);
-        }
-        for(JCheckBox pivotCheck : groupPivotChecks.values()) {
-            pivotCheck.setSelected(false);
         }
         quantityCheck.setSelected(false);
         for (JCheckBox box : sumChecks.values())
@@ -680,7 +628,7 @@ public abstract class GroupingDialog extends JDialog {
         }
     }
 
-    private File exportToExcel(boolean isPivot) throws IOException, WriteException {
+    private void exportToExcel() throws IOException, WriteException {
         File file = File.createTempFile("tableContents", ".xls");
         WritableWorkbook workbook = Workbook.createWorkbook(file);
         WritableSheet sheet = workbook.createSheet(getString("form.queries.grouping.sheet1"), 0);
@@ -704,87 +652,9 @@ public abstract class GroupingDialog extends JDialog {
         workbook.write();
         workbook.close();
 
-        if(!isPivot)
-            Runtime.getRuntime().exec("cmd.exe /c start " + file);
-        
-        return file;
-    }
-
-    public void exportToExcelPivot() {
-        try {
-            File file = exportToExcel(true);
-
-            Integer xlRowField = 1;
-            Integer xlColumnField = 2;
-            Integer xlFilterField = 3;
-            Integer xlDataField = 4;
-            
-            ActiveXComponent excelComponent = new ActiveXComponent("Excel.Application");
-
-            Dispatch workbooks = excelComponent.getProperty("Workbooks").toDispatch();
-            Dispatch workbook = Dispatch.call(workbooks, "Open", file.getAbsolutePath()).toDispatch();
-            
-            Dispatch sourceSheet = Dispatch.get(workbook, "ActiveSheet").toDispatch();
-            Dispatch sheets = Dispatch.get(workbook, "Worksheets").toDispatch();
-            Dispatch destinationSheet = Dispatch.get(sheets, "Add").toDispatch();
-            Dispatch.put(destinationSheet, "Name", "PivotTable");
-
-            String lastCell = getCellIndex(treeTable.getColumnCount(), treeTable.getVisibleRowCount());
-            Dispatch sourceDataNativePeer = Dispatch.invoke(sourceSheet, "Range", Dispatch.Get, new Object[]{"A1:" + lastCell}, new int[1]).toDispatch();
-            Dispatch destinationNativePeer = Dispatch.invoke(destinationSheet, "Range", Dispatch.Get, new Object[]{"A1"}, new int[1]).toDispatch();
-
-            Variant unspecified = Variant.VT_MISSING;
-            Dispatch pivotTableWizard = Dispatch.invoke(workbook, "PivotTableWizard", Dispatch.Get, new Object[]{new Variant(1),  //SourceType
-                    new Variant(sourceDataNativePeer), //SourceData
-                    new Variant(destinationNativePeer), //TableDestination
-                    new Variant("PivotTable"), //TableName
-                    new Variant(false), //RowGrand
-                    new Variant(false), //ColumnGrand
-                    new Variant(true), //SaveData
-                    new Variant(true), //HasAutoFormat
-                    unspecified, //AutoPage
-                    unspecified, //Reserved
-                    new Variant(false), //BackgroundQuery
-                    new Variant(false), //OptimizeCache
-                    new Variant(1), //PageFieldOrder
-                    unspecified, //PageFieldWrapCount
-                    unspecified, //ReadData
-                    unspecified //Connection
-            }, new int[1]).toDispatch();
-
-
-            LinkedHashMap<Integer, Boolean> pivotColumns = getSelectedPivotColumns();            
-            int pivotDataFieldsCount = getSelectedPivotDataFieldsCount();
-            
-            for (int i = pivotDataFieldsCount; i > 0; i--) {
-                Dispatch fieldDispatch = Dispatch.call(pivotTableWizard, "HiddenFields", new Variant(i + pivotColumns.size() + 1)).toDispatch();
-                Dispatch.put(fieldDispatch, "Orientation", new Variant(xlDataField));
-            }
-
-            for (int i = pivotColumns.size(); i > 0; i--) {
-                Dispatch fieldDispatch = Dispatch.call(pivotTableWizard, "HiddenFields", new Variant(i + 1)).toDispatch();
-                Dispatch.put(fieldDispatch, "Orientation", new Variant(pivotColumns.get(i) ? xlColumnField : xlRowField));
-            }
-
-            Dispatch.get(workbook, "Save");
-                                                     
-            excelComponent.setProperty("Visible", new Variant(true));
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Runtime.getRuntime().exec("cmd.exe /c start " + file);
     }
     
-    private String getCellIndex(int column, int row) {
-        String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String columnIndex = "";
-        while(column > 0) {
-            columnIndex += letters.charAt(column - 1);
-            column = column - 26;
-        }
-        return columnIndex + row;
-    }
-
     private WritableCellFormat createCellFormat(DisplayFormat displayFormat, boolean bold) throws WriteException {
         WritableCellFormat format;
         if (bold) {

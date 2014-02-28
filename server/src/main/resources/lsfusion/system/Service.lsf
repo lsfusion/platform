@@ -57,58 +57,58 @@ DESIGN admin FROM DEFAULT {
         columns = 3;
         NEW current {
             caption = 'Текущие значения';
-            ADD PROPERTY(currentDate());
+            ADD PROPERTY(currentDate);
         }
         NEW colors {
             caption = 'Цвета';
-            ADD PROPERTY(defaultBackgroundColor());
-            ADD PROPERTY(defaultForegroundColor());
+            ADD PROPERTY(defaultBackgroundColor);
+            ADD PROPERTY(defaultForegroundColor);
         }
         NEW report {
             caption = 'Отчеты';
-            ADD PROPERTY(reportCharWidth());
-            ADD PROPERTY(reportRowHeight());
-            ADD PROPERTY(reportNotToStretch());
+            ADD PROPERTY(reportCharWidth);
+            ADD PROPERTY(reportRowHeight);
+            ADD PROPERTY(reportNotToStretch);
         }
         NEW administration {
             caption = 'Запуск';
             
-            ADD PROPERTY(restartServerAction());
-            ADD PROPERTY(cancelRestartServerAction());
-            ADD PROPERTY(serviceDBAction());
+            ADD PROPERTY(restartServerAction);
+            ADD PROPERTY(cancelRestartServerAction);
+            ADD PROPERTY(serviceDBAction);
         }
         NEW recalculate {
             caption = 'Исправление целостности базы данных';
-            ADD PROPERTY(recalculateClassesAction());
-            ADD PROPERTY(recalculateAction());
-            ADD PROPERTY(recalculateFollowsAction());
+            ADD PROPERTY(recalculateClassesAction);
+            ADD PROPERTY(recalculateAction);
+            ADD PROPERTY(recalculateFollowsAction);
         }
         NEW check {
             caption = 'Проверка целостности базы данных';
-            ADD PROPERTY(checkClassesAction());
-            ADD PROPERTY(checkAggregationsAction());
+            ADD PROPERTY(checkClassesAction);
+            ADD PROPERTY(checkAggregationsAction);
         }
         NEW database {
             caption = 'База данных';
-            ADD PROPERTY(packAction());
-            ADD PROPERTY(analyzeDBAction());
-            ADD PROPERTY(vacuumDBAction());
-            ADD PROPERTY(toggleVolatileStats());
-            ADD PROPERTY(TILMode());
-            ADD PROPERTY(singleTransaction());
+            ADD PROPERTY(packAction);
+            ADD PROPERTY(analyzeDBAction);
+            ADD PROPERTY(vacuumDBAction);
+            ADD PROPERTY(toggleVolatileStats);
+            ADD PROPERTY(TILMode);
+            ADD PROPERTY(singleTransaction);
         }
         NEW virtualMachine {
             caption = 'Виртуальная машина';
-            ADD PROPERTY(runGarbageCollector());
-            ADD PROPERTY(getVMInfo());
-            ADD PROPERTY(dropLRU());
+            ADD PROPERTY(runGarbageCollector);
+            ADD PROPERTY(getVMInfo);
+            ADD PROPERTY(dropLRU);
         }
         NEW log {
             caption = 'Логирование';
-            ADD PROPERTY(toggleExplainAnalyzeMode());
-            ADD PROPERTY(toggleExplainMode());
-            ADD PROPERTY(toggleSQLLoggerDebugMode());
-            ADD PROPERTY(toggleRemoteLoggerDebugMode());
+            ADD PROPERTY(toggleExplainAnalyzeMode);
+            ADD PROPERTY(toggleExplainMode);
+            ADD PROPERTY(toggleSQLLoggerDebugMode);
+            ADD PROPERTY(toggleRemoteLoggerDebugMode);
         }
     }
     ADD functions.box;

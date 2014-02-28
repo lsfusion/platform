@@ -14,7 +14,6 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
-import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.DialogRequest;
@@ -62,10 +61,6 @@ public class WrapperContext extends AbstractContext implements Context {
 
     public String getLogMessage() {
         return wrappedContext.getLogMessage();
-    }
-
-    public LogInfo getLogInfo() {
-        return wrappedContext.getLogInfo();
     }
 
     public void delayUserInteraction(ClientAction action) {

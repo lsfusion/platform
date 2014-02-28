@@ -11,7 +11,6 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
-import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ObjectValue;
@@ -38,11 +37,6 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
 
     public String getLogMessage() {
         return form.getLogMessage();
-    }
-
-    @Override
-    public LogInfo getLogInfo() {
-        return form.getLogInfo();
     }
 
     public void delayUserInteraction(ClientAction action) {

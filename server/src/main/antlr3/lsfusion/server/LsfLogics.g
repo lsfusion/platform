@@ -585,7 +585,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 
 formPropertyDraw returns [PropertyDrawEntity property]
 	:	id=ID              	{ if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($id.text); }
-	|	prop=mappedPropertyDraw { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping); }
+	|	prop=formMappedProperty { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.propUsage, $prop.mapping); }
 	;
 
 formMappedPropertiesList returns [List<String> aliases, List<PropertyUsage> properties, List<List<String>> mapping, List<FormPropertyOptions> options]
@@ -651,12 +651,6 @@ formMappedProperty returns [PropertyUsage propUsage, List<String> mapping]
 		')'
 	;
 
-mappedPropertyDraw returns [String name, List<String> mapping]
-	:	pDrawName=ID { $name = $pDrawName.text; }
-		'('
-		list=idList { $mapping = $list.ids; }
-		')'
-	;
 
 formPropertyUList returns [List<String> aliases, List<PropertyUsage> properties, List<FormPropertyOptions> options]
 @init {
@@ -1817,12 +1811,10 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	:	listPDB=listActionPropertyDefinitionBody[context, dynamic] { $property = $listPDB.property; }
 	|	requestInputPDB=requestInputActionPropertyDefinitionBody[context, dynamic] { $property = $requestInputPDB.property; }
 	|	execPDB=execActionPropertyDefinitionBody[context, dynamic] { $property = $execPDB.property; }	
-	|	tryPDB=tryActionPropertyDefinitionBody[context, dynamic] { $property = $tryPDB.property; }
 	|	ifPDB=ifActionPropertyDefinitionBody[context, dynamic] { $property = $ifPDB.property; }
 	|	casePDB=caseActionPropertyDefinitionBody[context, dynamic] { $property = $casePDB.property; }
 	|	multiPDB=multiActionPropertyDefinitionBody[context, dynamic] { $property = $multiPDB.property; }	
 	|	termPDB=terminalFlowActionPropertyDefinitionBody { $property = $termPDB.property; }
-	|   inApplyPDB=inApplyActionPropertyDefinitionBody[context, dynamic] { $property = $inApplyPDB.property; }
 	
 	|	formPDB=formActionPropertyDefinitionBody[context, dynamic] { $property = $formPDB.property; }
 	|	msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
@@ -1857,17 +1849,18 @@ formActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	String contextObjectName = null;
 	LPWithParams contextProperty = null;
 	String initFilterPropertyName = null;
-	List<String> initFilterPropertyMapping = null;
+	PropertyUsage initFilterPropertyUsage = null;
+	List<TypedParameter> initFilterPropertyMapping = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, printType);
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyUsage, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, printType);
 	}
 }
 	:	'FORM' formName=compoundID 
 		('OBJECTS' list=formActionObjectList[context, dynamic] { objects = $list.objects; mapping = $list.exprs; })?
 		('CONTEXTFILTER' objName=ID '=' contextPropertyExpr=propertyExpression[context, dynamic] { contextObjectName = $objName.text; contextProperty = $contextPropertyExpr.property; })?
-		(initFilter = initFilterDefinition { initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; })?
+		(initFilter = initFilterDefinition { initFilterPropertyUsage = $initFilter.propUsage; initFilterPropertyMapping = $initFilter.mapping; initFilterPropertyName = $initFilter.propName; })?
 		(sessScope = formSessionScopeLiteral { sessionScope = $sessScope.val; })?
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('CHECK' { checkOnOk = true; })?
@@ -1875,10 +1868,10 @@ formActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 		(print = formPrintTypeLiteral { printType = $print.val; })?
 	;
 
-initFilterDefinition returns [String propName, List<String> mapping]
+initFilterDefinition returns [String propName = null, PropertyUsage propUsage, List<TypedParameter> mapping]
 	:	'INITFILTER'
 		(  pname=ID { $propName = $pname.text; }
-	    	|  mappedProp=mappedPropertyDraw { $propName = $mappedProp.name; $mapping = $mappedProp.mapping; }
+	    	|  mappedProp=mappedProperty { $propUsage = $mappedProp.propUsage; $mapping = $mappedProp.mapping; }
 		)
 	;
 
@@ -2184,16 +2177,6 @@ assignActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPWith
 		whereExpr=propertyExpression[newContext, false] { condition = $whereExpr.property; })?
 	;
 
-tryActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
-@after {
-	if (inPropParseState()) {
-		$property = self.addScriptedTryAProp($tryPDB.property, $finallyPDB.property);
-	}
-}
-	:	'TRY' tryPDB=actionPropertyDefinitionBody[context, dynamic] 
-		('FINALLY' finallyPDB=actionPropertyDefinitionBody[context, dynamic])?
-	;
-
 ifActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
@@ -2225,15 +2208,6 @@ caseActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 actionCaseBranchBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams whenProperty, LPWithParams thenAction]
 	:	'WHEN' whenExpr=propertyExpression[context, dynamic] { $whenProperty = $whenExpr.property; }
 		'THEN' thenAct=actionPropertyDefinitionBody[context, dynamic] { $thenAction = $thenAct.property; }
-	;
-
-inApplyActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
-@after {
-	if (inPropParseState()) {
-		$property = self.addScriptedInApplyAProp($inApplyPDB.property);
-	}
-}
-	:	'INAPPLY' inApplyPDB=actionPropertyDefinitionBody[context, dynamic] 
 	;
 
 multiActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property] 
@@ -2901,10 +2875,10 @@ propertySelector returns [PropertyDrawView propertyView = null]
 				$propertyView = $designStatement::design.getPropertyView($pname.text);
 			}
 		}
-	|	mappedProp=mappedPropertyDraw	
+	|	mappedProp=formMappedProperty
 		{
 			if (inPropParseState()) {
-				$propertyView = $designStatement::design.getPropertyView($mappedProp.name, $mappedProp.mapping);
+				$propertyView = $designStatement::design.getPropertyView($mappedProp.propUsage, $mappedProp.mapping);
 			}
 		}
 	;

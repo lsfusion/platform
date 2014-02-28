@@ -8,7 +8,6 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
-
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 import javax.print.attribute.HashPrintRequestAttributeSet;
@@ -43,7 +42,7 @@ public class ClientReportUtils {
         public void run() {
             try {
 
-                JasperPrint print = new ReportGenerator(generationData).createReport(false, null);
+                JasperPrint print = new ReportGenerator(generationData, Main.timeZone).createReport(false, null);
                 print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
                 PrintService defaultPrintService = PrintServiceLookup.lookupDefaultPrintService();

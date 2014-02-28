@@ -10,6 +10,7 @@ import lsfusion.interop.remote.UserInfo;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.TimeZone;
 
 public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends RemoteObjectProxy<T> implements RemoteLogicsInterface {
 
@@ -77,6 +78,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         ExternalScreenParameters result = target.getExternalScreenParameters(screenID, computerId);
         logRemoteMethodEndCall("getExternalScreenParameters", result);
         return result;
+    }
+
+    public TimeZone getTimeZone() throws RemoteException {
+        return target.getTimeZone();
     }
 
     public byte[] getPropertyObjectsByteArray(byte[] classes, boolean isCompulsory, boolean isAny) throws RemoteException {

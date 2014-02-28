@@ -548,8 +548,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this);
 
         if (propertyImplement.property.getSID() != null) {
-            String propertySID = policy.createPropertyDrawSID(propertyImplement);  
-            setPropertyDrawSID(newPropertyDraw, propertySID);
+            String propertySID = policy.createPropertyDrawSID(propertyImplement.property);  
+
+            setPropertyDrawGeneratedSID(newPropertyDraw, propertySID);
         }
 
         int ind = propertyDraws.size() - 1;
@@ -589,10 +590,19 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    public void setPropertyDrawSID(PropertyDrawEntity property, String sid) {
+    public void setPropertyDrawGeneratedSID(PropertyDrawEntity property, String baseSID) {
+        assert baseSID != null;
+
         property.setSID(null);
-//        assert getPropertyDraw(sid) == null; 
-        property.setSID(sid);
+
+        String sidToSet = baseSID;
+        int cnt = 0;
+
+        while (getPropertyDraw(sidToSet) != null) {
+            sidToSet = baseSID + (++cnt);
+        }
+
+        property.setSID(sidToSet);
     }
 
     public <P extends PropertyInterface> void removePropertyDraw(PropertyDrawEntity<P> property) {
@@ -675,10 +685,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
 
         return null;
-    }
-
-    public PropertyDrawEntity<?> getPropertyDraw(String name, List<String> mapping) {
-        return getPropertyDraw(PropertyDrawEntity.createSID(name, mapping));
     }
 
     public List<PropertyDrawEntity> getPropertyDrawList(LP...properties) {

@@ -2,24 +2,8 @@ package lsfusion.server.mail;
 
 import jasperapi.ReportGenerator;
 import jasperapi.ReportHTMLExporter;
-import lsfusion.base.ByteArray;
-import lsfusion.base.col.MapFact;
-import lsfusion.interop.action.MessageClientAction;
-import lsfusion.interop.form.ReportGenerationData;
-import lsfusion.server.ServerLoggers;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.NullValue;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
-import lsfusion.server.remote.RemoteForm;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
@@ -30,6 +14,23 @@ import net.sf.jasperreports.engine.export.JRRtfExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import org.apache.log4j.Logger;
+import lsfusion.base.ByteArray;
+import lsfusion.base.SystemUtils;
+import lsfusion.base.col.MapFact;
+import lsfusion.interop.action.MessageClientAction;
+import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.server.ServerLoggers;
+import lsfusion.server.classes.ValueClass;
+import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.logics.EmailLogicsModule;
+import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+import lsfusion.server.remote.RemoteForm;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -42,10 +43,10 @@ import java.util.List;
 import java.util.Map;
 
 import static javax.mail.Message.RecipientType.TO;
+import static org.apache.commons.lang.StringUtils.trimToNull;
 import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.base.BaseUtils.rtrim;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
-import static org.apache.commons.lang.StringUtils.trimToNull;
 
 /**
  * User: DAle
@@ -254,7 +255,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
         ReportGenerationData generationData = remoteForm.reportManager.getReportData();
 
-        ReportGenerator report = new ReportGenerator(generationData);
+        ReportGenerator report = new ReportGenerator(generationData, SystemUtils.getCurrentTimeZone());
         JasperPrint print = report.createReport(inlineForm, attachmentFiles);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
         try {

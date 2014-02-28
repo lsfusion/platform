@@ -1,6 +1,5 @@
 package lsfusion.server;
 
-import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.logging.FlushableRollingFileAppender;
 import org.apache.log4j.Logger;
@@ -44,11 +43,5 @@ public class ServerLoggers {
                         }
                     }
                 }, FORCE_FLUSH_DELAY, FORCE_FLUSH_DELAY, TimeUnit.SECONDS);
-    }
-    
-    public static void assertLog(boolean assertion, String message) {
-        if(!assertion)
-            assertLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
-        assert assertion;
     }
 }

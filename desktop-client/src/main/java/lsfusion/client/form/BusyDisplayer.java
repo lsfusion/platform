@@ -85,6 +85,7 @@ public class BusyDisplayer extends TimerTask {
         Graphics gr = window.getGraphics();
         if (gr != null && canvas != null) {
             Font loadingTextFont = new Font("Dialog", Font.BOLD, 15);
+            Font actionMessageFont = new Font("Dialog", Font.PLAIN, 10);
             String loadingText = ClientResourceBundle.getString("form.loading");
             int segmentHeight = 25;
             int segmentWidth = 10;
@@ -98,15 +99,13 @@ public class BusyDisplayer extends TimerTask {
             int loadingTextWidth = gr.getFontMetrics(loadingTextFont).stringWidth(loadingText);
             int loadingTextHeight = gr.getFontMetrics(loadingTextFont).getHeight();
 
-            if (Main.configurationAccessAllowed) {
-                long currentTime = System.currentTimeMillis();
-                if (currentTime - lastUpdateTime >= UPDATE_PERIOD) {
-                    try {
-                        currentMessage = serverMessageProvider.get();
-                    } catch (Throwable ignore) {
-                    }
-                    lastUpdateTime = currentTime;
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastUpdateTime >= UPDATE_PERIOD) {
+                try {
+                    currentMessage = serverMessageProvider.get();
+                } catch (Throwable ignore) {
                 }
+                lastUpdateTime = currentTime;
             }
 
             int barWidth = maxSegmentCount * segmentWidth + (maxSegmentCount - 1) * (segmentGap);
@@ -129,9 +128,7 @@ public class BusyDisplayer extends TimerTask {
             gr.fillRoundRect(rectX, rectY, rectWidth + 2, rectHeight + 2, 5, 5);
             gr.setColor(Color.WHITE);
             gr.fillRoundRect(rectX, rectY, rectWidth, rectHeight, 5, 5);
-            if (Main.configurationAccessAllowed) {
-                gr.fillRoundRect(messageRectX, messageRectY, messageRectWidth, messageRectHeight, 5, 5);
-            }
+            gr.fillRoundRect(messageRectX, messageRectY, messageRectWidth, messageRectHeight, 5, 5);
             gr.setColor(Color.BLACK);
             gr.drawRoundRect(rectX, rectY, rectWidth, rectHeight, 5, 5);
 
@@ -139,7 +136,6 @@ public class BusyDisplayer extends TimerTask {
             gr.drawString(loadingText, rectX + (rectWidth - loadingTextWidth) / 2, rectY + loadingTextHeight);
 
             if (currentMessage != null) {
-                Font actionMessageFont = new Font("Dialog", Font.PLAIN, 10);
                 gr.setFont(actionMessageFont);
                 String[] splittedActionMessage = currentMessage.split(" ");
                 String output = "";

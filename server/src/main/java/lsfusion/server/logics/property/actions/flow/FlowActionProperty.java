@@ -26,13 +26,7 @@ public abstract class FlowActionProperty extends ActionProperty<PropertyInterfac
     public abstract FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException;
 
     public static <P extends PropertyInterface, M extends  PropertyInterface> FlowResult execute(ExecutionContext<PropertyInterface> context, ActionPropertyMapImplement<P, M> implement, ImMap<M, ? extends ObjectValue> keys, ImRevMap<PropertyInterface, M> mapInterfaces) throws SQLException, SQLHandledException {
-        return implement.property.execute(
-                context.override(
-                        implement.mapping.join(keys),
-                        BaseUtils.<ImMap<P, CalcPropertyInterfaceImplement<PropertyInterface>>>immutableCast(
-                                MapFact.innerCrossValues(implement.mapping, mapInterfaces)
-                        )
-                )
-        );
+        return implement.property.execute(context.override(implement.mapping.join(keys),
+                BaseUtils.<ImMap<P, CalcPropertyInterfaceImplement<PropertyInterface>>>immutableCast(MapFact.innerCrossValues(implement.mapping, mapInterfaces))));
     }
 }
