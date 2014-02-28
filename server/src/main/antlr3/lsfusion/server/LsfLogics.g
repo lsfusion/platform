@@ -1822,6 +1822,7 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	casePDB=caseActionPropertyDefinitionBody[context, dynamic] { $property = $casePDB.property; }
 	|	multiPDB=multiActionPropertyDefinitionBody[context, dynamic] { $property = $multiPDB.property; }	
 	|	termPDB=terminalFlowActionPropertyDefinitionBody { $property = $termPDB.property; }
+	|   inApplyPDB=inApplyActionPropertyDefinitionBody[context, dynamic] { $property = $inApplyPDB.property; }
 	
 	|	formPDB=formActionPropertyDefinitionBody[context, dynamic] { $property = $formPDB.property; }
 	|	msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
@@ -2224,6 +2225,15 @@ caseActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 actionCaseBranchBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams whenProperty, LPWithParams thenAction]
 	:	'WHEN' whenExpr=propertyExpression[context, dynamic] { $whenProperty = $whenExpr.property; }
 		'THEN' thenAct=actionPropertyDefinitionBody[context, dynamic] { $thenAction = $thenAct.property; }
+	;
+
+inApplyActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedInApplyAProp($inApplyPDB.property);
+	}
+}
+	:	'INAPPLY' inApplyPDB=actionPropertyDefinitionBody[context, dynamic] 
 	;
 
 multiActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property] 

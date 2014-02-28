@@ -1582,6 +1582,16 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     }
 
+    public LPWithParams addScriptedInApplyAProp(LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedInApplyAProp(" + action + ");");
+        List<LPWithParams> propParams = new ArrayList<LPWithParams>();
+        if(action != null)
+            propParams.add(action);
+        
+        LP result = addInApplyAProp(null, genSID(), "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null);
+        return new LPWithParams(result, mergeAllParams(propParams));
+    }
+
     public LPWithParams addScriptedForAProp(List<TypedParameter> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending, List<LPWithParams> noInline, boolean forceInline) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedForAProp(" + oldContext + ", " + condition + ", " + orders + ", " + action + ", " + elseAction + ", " + recursive + ", " + descending + ");");
 
