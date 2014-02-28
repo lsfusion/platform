@@ -23,7 +23,7 @@ GROUP propertyPolicy 'Свойства политики безопасности
 
 canceled 'Canceled' = DATA SESSION BOOLEAN ();
 
-apply = ACTION INAPPLY {}
+apply = ACTION APPLY {};
 cancel = ACTION CUSTOM 'lsfusion.server.logics.property.actions.flow.CancelActionProperty';
 onStarted = ABSTRACT ACTION LIST ();
 

@@ -1822,7 +1822,7 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	casePDB=caseActionPropertyDefinitionBody[context, dynamic] { $property = $casePDB.property; }
 	|	multiPDB=multiActionPropertyDefinitionBody[context, dynamic] { $property = $multiPDB.property; }	
 	|	termPDB=terminalFlowActionPropertyDefinitionBody { $property = $termPDB.property; }
-	|   inApplyPDB=inApplyActionPropertyDefinitionBody[context, dynamic] { $property = $inApplyPDB.property; }
+	|   applyPDB=applyActionPropertyDefinitionBody[context, dynamic] { $property = $applyPDB.property; }
 	
 	|	formPDB=formActionPropertyDefinitionBody[context, dynamic] { $property = $formPDB.property; }
 	|	msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
@@ -2227,13 +2227,13 @@ actionCaseBranchBody[List<TypedParameter> context, boolean dynamic] returns [LPW
 		'THEN' thenAct=actionPropertyDefinitionBody[context, dynamic] { $thenAction = $thenAct.property; }
 	;
 
-inApplyActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+applyActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedInApplyAProp($inApplyPDB.property);
+		$property = self.addScriptedApplyAProp($applyPDB.property);
 	}
 }
-	:	'INAPPLY' inApplyPDB=actionPropertyDefinitionBody[context, dynamic] 
+	:	'APPLY' applyPDB=actionPropertyDefinitionBody[context, dynamic]
 	;
 
 multiActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property] 
@@ -2512,7 +2512,7 @@ baseEvent returns [Event event]
 		$event = self.createScriptedEvent(baseEvent, ids, puAfters);
 	}
 }
-	:	('APPLY' { baseEvent = SystemEvent.APPLY; } | 'SESSION'	{ baseEvent = SystemEvent.SESSION; })?
+	:	('GLOBAL' { baseEvent = SystemEvent.APPLY; } | 'SESSION'	{ baseEvent = SystemEvent.SESSION; })?
 		('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
 		('GOAFTER' (nePropList=nonEmptyPropertyUsageList { puAfters = $nePropList.propUsages; }) )?
 	;

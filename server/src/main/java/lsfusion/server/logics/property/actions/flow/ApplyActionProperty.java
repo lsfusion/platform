@@ -15,12 +15,12 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
 
-public class InApplyActionProperty extends KeepContextActionProperty {
+public class ApplyActionProperty extends KeepContextActionProperty {
     private final ActionPropertyMapImplement<?, PropertyInterface> action;
     private final CalcProperty canceled;
 
-    public <I extends PropertyInterface> InApplyActionProperty(BaseLogicsModule LM, ActionPropertyMapImplement<?, I> action,
-                                                               String sID, String caption, ImOrderSet<I> innerInterfaces) {
+    public <I extends PropertyInterface> ApplyActionProperty(BaseLogicsModule LM, ActionPropertyMapImplement<?, I> action,
+                                                             String sID, String caption, ImOrderSet<I> innerInterfaces) {
         super(sID, caption, innerInterfaces.size());
 
         this.action = (ActionPropertyMapImplement<?, PropertyInterface>) action;

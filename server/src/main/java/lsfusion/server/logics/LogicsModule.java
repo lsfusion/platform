@@ -725,13 +725,13 @@ public abstract class LogicsModule {
         return addProperty(group, new LAP(new JoinActionProperty(name, caption, listInterfaces, mapActionImplement(action, readImplements))));
     }
 
-    // ------------------- INAPPLY ----------------- //
+    // ------------------------ APPLY ----------------- //
 
-    protected LAP addInApplyAProp(AbstractGroup group, String name, String caption, LAP action) {
+    protected LAP addApplyAProp(AbstractGroup group, String name, String caption, LAP action) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
-        return addProperty(group, new LAP(new InApplyActionProperty(baseLM, actionImplement, name, caption, listInterfaces)));
+        return addProperty(group, new LAP(new ApplyActionProperty(baseLM, actionImplement, name, caption, listInterfaces)));
     }
     
     // ------------------- NEWSESSION ----------------- //
