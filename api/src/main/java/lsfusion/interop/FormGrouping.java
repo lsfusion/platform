@@ -21,12 +21,14 @@ public class FormGrouping implements Serializable {
         public Integer groupingOrder;
         public Boolean sum;
         public Boolean max;
+        public Boolean pivot;
 
-        public PropertyGrouping(String propertySID, Integer groupingOrder, Boolean sum, Boolean max) {
+        public PropertyGrouping(String propertySID, Integer groupingOrder, Boolean sum, Boolean max, Boolean pivot) {
             this.propertySID = propertySID;
             this.groupingOrder = groupingOrder;
             this.sum = sum;
             this.max = max;
+            this.pivot = pivot;
         }
     }
 }

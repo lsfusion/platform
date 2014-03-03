@@ -981,7 +981,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             query.addProperty("groupOrder", BL.reflectionLM.groupOrderFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
             query.addProperty("sum", BL.reflectionLM.sumFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
             query.addProperty("max", BL.reflectionLM.maxFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
-
+            query.addProperty("pivot", BL.reflectionLM.pivotFormGroupingPropertyDraw.getExpr(formGroupingExpr, propertyDrawExpr));
+            
             Expr goExpr = ((DataObject) groupObjectObjectValue).getExpr();
             query.and(BL.reflectionLM.groupObjectFormGrouping.getExpr(formGroupingExpr).compare(goExpr, Compare.EQUALS));
             query.and(BL.reflectionLM.groupObjectPropertyDraw.getExpr(propertyDrawExpr).compare(goExpr, Compare.EQUALS));
@@ -995,7 +996,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     grouping = new FormGrouping((String) values.get("groupingSID"), groupObjectSID, (Boolean) values.get("itemQuantity"), new ArrayList<FormGrouping.PropertyGrouping>());
                     groupings.put(groupingSID, grouping);
                 }
-                grouping.propertyGroupings.add(grouping.new PropertyGrouping((String) values.get("propertySID"), (Integer) values.get("groupOrder"), (Boolean) values.get("sum"), (Boolean) values.get("max")));
+                grouping.propertyGroupings.add(grouping.new PropertyGrouping((String) values.get("propertySID"), (Integer) values.get("groupOrder"), (Boolean) values.get("sum"), (Boolean) values.get("max"), (Boolean) values.get("pivot")));
             }
         }
         return new ArrayList<FormGrouping>(groupings.values());
@@ -1036,6 +1037,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 BL.reflectionLM.groupOrderFormGroupingPropertyDraw.change(propGrouping.groupingOrder, dataSession, groupingObject, propertyDrawObject);
                 BL.reflectionLM.sumFormGroupingPropertyDraw.change(propGrouping.sum, dataSession, groupingObject, propertyDrawObject);
                 BL.reflectionLM.maxFormGroupingPropertyDraw.change(propGrouping.max, dataSession, groupingObject, propertyDrawObject);
+                BL.reflectionLM.pivotFormGroupingPropertyDraw.change(propGrouping.pivot, dataSession, groupingObject, propertyDrawObject);
             } else {
                 throw new RuntimeException("Свойство " + propGrouping.propertySID + " (" + entity.getSID() + ") не найдено");
             }

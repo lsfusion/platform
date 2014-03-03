@@ -546,6 +546,9 @@ public abstract class GroupingDialog extends JDialog {
                             if (propGrouping.groupingOrder != null) {
                                 orders.add(new Pair<Integer, Pair<ClientPropertyDraw, ClientGroupObjectValue>>(propGrouping.groupingOrder, checkEntry.getKey()));        
                             }
+                            if (propGrouping.pivot != null && propGrouping.pivot) {
+                                groupPivotChecks.get(checkEntry.getKey()).setSelected(true);
+                            }
                             if (propGrouping.sum != null && propGrouping.sum) {
                                 sumChecks.get(checkEntry.getKey()).setSelected(true);    
                             }
@@ -969,9 +972,11 @@ public abstract class GroupingDialog extends JDialog {
             Boolean sum = (sumBox != null && sumBox.isSelected()) ? true : null;
             JCheckBox maxBox = maxChecks.get(entry.getKey());
             Boolean max = (maxBox != null && maxBox.isSelected()) ? true : null;
+            JCheckBox pivotBox = groupPivotChecks.get(entry.getKey());
+            Boolean pivot = (pivotBox != null && pivotBox.isSelected()) ? true : null;
             if (!isAlreadyInList(props, entry.getKey().first.getSID()) || order != null) { // хоть какая-то определённость для групп в колонках
                                                                                            // сохраняем порядок, если хоть одна выбрана
-                props.add(grouping.new PropertyGrouping(entry.getKey().first.getSID(), order, sum, max));
+                props.add(grouping.new PropertyGrouping(entry.getKey().first.getSID(), order, sum, max, pivot));
             }
         }
 

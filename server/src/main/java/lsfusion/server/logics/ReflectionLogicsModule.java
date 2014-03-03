@@ -96,8 +96,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP formGroupingNameFormGroupingGroupObject;
     public LCP groupOrderFormGroupingPropertyDraw;
     public LCP sumFormGroupingPropertyDraw;
-    public LCP maxFormGroupingPropertyDraw; 
-
+    public LCP maxFormGroupingPropertyDraw;
+    public LCP pivotFormGroupingPropertyDraw;
+    
     public LCP sidTable;
     public LCP tableSID;
     public LCP rowsTable;
@@ -251,7 +252,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         groupOrderFormGroupingPropertyDraw = getLCPByOldName("groupOrderFormGroupingPropertyDraw");
         sumFormGroupingPropertyDraw = getLCPByOldName("sumFormGroupingPropertyDraw");
         maxFormGroupingPropertyDraw = getLCPByOldName("maxFormGroupingPropertyDraw");
-
+        pivotFormGroupingPropertyDraw = getLCPByOldName("pivotFormGroupingPropertyDraw");
         // ------------------------------------------------- Физическая модель ------------------------------------ //
 
         // Таблицы
