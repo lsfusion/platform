@@ -553,9 +553,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         }
     }
 
-    public void updateColumnKeys(GPropertyDraw property, List<GGroupObjectValue> columnKeys) {
-        if (columnKeys != null) {
-            this.columnKeys.put(property, columnKeys);
+    public void updateColumnKeys(GPropertyDraw property, List<GGroupObjectValue> values) {
+        List<GGroupObjectValue> oldValues = columnKeys.get(property);
+        if (!nullEquals(values, oldValues)) {
+            columnKeys.put(property, values);
             columnsUpdated = true;
         }
     }

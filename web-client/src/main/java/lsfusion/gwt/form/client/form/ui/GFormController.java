@@ -402,18 +402,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         GFormChanges fc = GFormChanges.remap(form, changesDTO);
 
         //оптимизация, т.к. на большинстве форм нет групп в колонках
-        HashSet<GGroupObject> changedGroups = null;
         if (hasColumnGroupObjects) {
-            changedGroups = new HashSet<GGroupObject>();
             for (Map.Entry<GGroupObject, GClassViewType> entry : fc.classViews.entrySet()) {
                 GClassViewType classView = entry.getValue();
                 if (classView != GClassViewType.GRID) {
-                    changedGroups.add(entry.getKey());
                     currentGridObjects.remove(entry.getKey());
                 }
             }
             currentGridObjects.putAll(fc.gridObjects);
-            changedGroups.addAll(fc.gridObjects.keySet());
         }
 
         modifyFormChangesWithModifyObjectAsyncs(changesDTO.requestIndex, fc);
@@ -424,7 +420,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         // затем одним скопом обновляем данные во всех таблицах
         for (GGroupObjectController controller : controllers.values()) {
-            controller.processFormChanges(fc, currentGridObjects, changedGroups);
+            controller.processFormChanges(fc, currentGridObjects);
         }
 
         for (GTreeGroupController treeController : treeControllers.values()) {

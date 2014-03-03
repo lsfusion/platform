@@ -18,7 +18,6 @@ import lsfusion.gwt.form.shared.view.reader.*;
 import java.util.*;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
-import static lsfusion.gwt.base.shared.GwtSharedUtils.containsAny;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
     public GGroupObject groupObject;
@@ -157,7 +156,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
         sumButton.showPopup(sum, property);
     }
 
-    public void processFormChanges(GFormChanges fc, HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects, HashSet<GGroupObject> changedGroups) {
+    public void processFormChanges(GFormChanges fc, HashMap<GGroupObject, List<GGroupObjectValue>> currentGridObjects) {
         for (GPropertyDraw property : fc.dropProperties) {
             if (property.groupObject == groupObject) {
                 removeProperty(property);
@@ -175,8 +174,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
                 if (property.groupObject == groupObject && !fc.updateProperties.contains(property)) {
                     addProperty(property, fc.panelProperties.contains(property));
 
-                    if (property.columnGroupObjects != null &&
-                            (fc.classViews.containsKey(groupObject) || containsAny(changedGroups, property.columnGroupObjects))) {
+                    if (property.columnGroupObjects != null) {
                         LinkedHashMap<GGroupObject, List<GGroupObjectValue>> groupColumnKeys = new LinkedHashMap<GGroupObject, List<GGroupObjectValue>>();
                         for (GGroupObject columnGroupObject : property.columnGroupObjects) {
                             List<GGroupObjectValue> columnGroupKeys = currentGridObjects.get(columnGroupObject);
