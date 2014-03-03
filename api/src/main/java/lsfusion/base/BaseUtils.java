@@ -486,7 +486,8 @@ public class BaseUtils {
 
         if (objectType == 6) {
             GregorianCalendar gc = new GregorianCalendar();
-            gc.set(inStream.readInt(), inStream.readInt(), inStream.readInt());
+            gc.set(inStream.readInt(), inStream.readInt(), inStream.readInt(), 0, 0, 0);
+            gc.set(Calendar.MILLISECOND, 0);
             return new java.sql.Date(gc.getTimeInMillis());
         }
 
