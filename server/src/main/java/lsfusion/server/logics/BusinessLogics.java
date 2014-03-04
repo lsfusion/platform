@@ -496,8 +496,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             if (!isRedundantString(topModulesList)) {
                 overrideModulesList(topModulesList);
-                //добавляем topModules к списку доп. зависимостей
-                orderDependencies = isRedundantString(orderDependencies) ? topModulesList : orderDependencies + ";" + topModulesList;
             }
 
             logger.info("Initializing modules.");
