@@ -92,6 +92,8 @@ CLASS AttachmentEmail 'Вложение';
 TABLE attachmentEmail(AttachmentEmail);
 
 idAttachmentEmail = DATA VARSTRING[100] (AttachmentEmail);  
+importedAttachmentEmail 'Импортировано' = DATA BOOLEAN (AttachmentEmail);  
+notImportedAttachmentEmail (attachmentEmail) = NOT importedAttachmentEmail (attachmentEmail) AND attachmentEmail IS AttachmentEmail;
 emailAttachmentEmail = DATA Email (AttachmentEmail);
 attachmentEmailIdEmail (id, email) = GROUP AGGR attachment BY idAttachmentEmail (attachment), idEmail(emailAttachmentEmail(attachment)) WHERE attachment IS AttachmentEmail; 
 nameAttachmentEmail 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
@@ -128,7 +130,7 @@ FORM mail 'Почта'
                     
     OBJECTS ae=AttachmentEmail
     
-    PROPERTIES(ae) nameAttachmentEmail READONLY, openFileAttachmentEmail
+    PROPERTIES(ae) importedAttachmentEmail, nameAttachmentEmail READONLY, openFileAttachmentEmail
     FILTERS emailAttachmentEmail(ae)==e
     
     OBJECTS n=Notification

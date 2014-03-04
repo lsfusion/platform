@@ -206,7 +206,7 @@ public class EmailReceiver {
             String disp = bp.getDisposition();
             if (disp != null && (disp.equals(BodyPart.ATTACHMENT))) {
                 InputStream is = bp.getInputStream();
-                File f = File.createTempFile(bp.getFileName(), "");
+                File f = File.createTempFile("attachment", "");
                 FileOutputStream fos = new FileOutputStream(f);
                 byte[] buf = new byte[4096];
                 int bytesRead;
