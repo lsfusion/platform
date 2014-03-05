@@ -48,4 +48,6 @@ public interface ClientActionDispatcher {
     public void execute(AsyncGetRemoteChangesClientAction action);
 
     public void execute(LogOutClientAction action);
+    
+    public void execute(FocusClientAction action);
 }

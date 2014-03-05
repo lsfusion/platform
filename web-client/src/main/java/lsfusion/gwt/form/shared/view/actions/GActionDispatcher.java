@@ -34,4 +34,6 @@ public interface GActionDispatcher {
     public void execute(GOpenFileAction action);
 
     public void execute(GExportFileAction action);
+    
+    public void execute(GFocusAction action);
 }

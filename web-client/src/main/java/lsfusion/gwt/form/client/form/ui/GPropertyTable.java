@@ -203,7 +203,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
     }
 
     @Override
-    public void onEditFinished() {
+    public void takeFocusAfterEdit() {
         setFocus(true);
     }
 

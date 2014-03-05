@@ -194,6 +194,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public void execute(GFocusAction action) {
+    }
+
+    @Override
     public void execute(GOpenFileAction action) {
         downloadFile(action.filePath);
     }

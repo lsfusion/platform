@@ -54,6 +54,10 @@ public class PanelController {
     public boolean containsProperty(ClientPropertyDraw property) {
         return propertyControllers.containsKey(property);
     }
+    
+    public PropertyController getPropertyController(ClientPropertyDraw propertyDraw) {
+        return propertyControllers.get(propertyDraw);
+    }
 
     public void update() {
         for (PropertyController propController : propertyControllers.values()) {

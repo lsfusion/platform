@@ -411,4 +411,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     public void execute(LogOutClientAction action) {
         Main.restart();
     }
+
+    @Override
+    public void execute(FocusClientAction action) {
+        //do nothing by default
+    }
 }

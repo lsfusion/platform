@@ -402,15 +402,15 @@ public class ScriptingFormEntity {
         return getPropertyDraw(LM, form, sid);
     }
 
-    static public PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, String sid) throws ScriptingErrorLog.SemanticErrorException {
+    public static PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, String sid) throws ScriptingErrorLog.SemanticErrorException {
         return checkPropertyDraw(LM, form.getPropertyDraw(sid), sid);
     }
 
     public PropertyDrawEntity getPropertyDraw(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         return getPropertyDraw(LM, form, name, mapping);
     }
-    
-    static public PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+
+    public static PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         return checkPropertyDraw(LM, form.getPropertyDraw(name, mapping), name);    
     }
 
@@ -418,7 +418,7 @@ public class ScriptingFormEntity {
         return getPropertyDraw(LM, form, propUsage, mapping);
     }
 
-    static public PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.PropertyUsage pUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public static PropertyDrawEntity getPropertyDraw(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.PropertyUsage pUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         MappedProperty mappedProp = LM.getPropertyWithMapping(form, pUsage, mapping);
         PropertyDrawEntity property = form.getPropertyDraw(mappedProp.property, mappedProp.mapping);
 
@@ -428,7 +428,7 @@ public class ScriptingFormEntity {
         return property;
     }
 
-    static private PropertyDrawEntity checkPropertyDraw(ScriptingLogicsModule LM, PropertyDrawEntity property, String sid) throws ScriptingErrorLog.SemanticErrorException {
+    private static PropertyDrawEntity checkPropertyDraw(ScriptingLogicsModule LM, PropertyDrawEntity property, String sid) throws ScriptingErrorLog.SemanticErrorException {
         if (property == null) {
             LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), sid);
         }

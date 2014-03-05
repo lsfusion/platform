@@ -250,7 +250,7 @@ public class DataPanelRenderer implements PanelRenderer {
         }
 
         @Override
-        public void onEditFinished() {
+        public void takeFocusAfterEdit() {
             if (focusTargetAfterEdit != null) {
                 Element.as(focusTargetAfterEdit).focus();
                 focusTargetAfterEdit = null;

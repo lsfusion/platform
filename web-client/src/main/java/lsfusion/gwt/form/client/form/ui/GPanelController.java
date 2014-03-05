@@ -64,6 +64,10 @@ public class GPanelController {
         return propertyControllers.containsKey(property);
     }
 
+    public GPropertyController getPropertyController(GPropertyDraw property) {
+        return propertyControllers.get(property);
+    }
+
     public void updateRowBackgroundValue(Object color) {
         rowBackground = color;
     }

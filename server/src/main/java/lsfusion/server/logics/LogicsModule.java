@@ -1343,6 +1343,10 @@ public abstract class LogicsModule {
         return addProperty(null, new LAP(new MessageActionProperty(genSID(), "Message", title)));
     }
 
+    public LAP addFocusActionProp(int propertyId) {
+        return addProperty(null, new LAP(new FocusActionProperty(genSID(), propertyId)));
+    }
+
     // ------------------- CONFIRM ----------------- //
 
     protected LAP addConfirmAProp(String title, Object... params) {
@@ -1664,7 +1668,7 @@ public abstract class LogicsModule {
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getProperty(prop);
         return addProperty(null, new LCP<ClassPropertyInterface>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
     }
-
+    
     protected LAP addOSAProp(FormEntity form, ObjectEntity object, Object... params) {
         return addOSAProp(null, "", form, object, params);
     }

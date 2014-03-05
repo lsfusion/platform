@@ -118,4 +118,9 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     public void execute(GAsyncGetRemoteChangesAction action) {
         form.getRemoteChanges();
     }
+
+    @Override
+    public void execute(GFocusAction action) {
+        form.focusProperty(action.propertyId);
+    }
 }

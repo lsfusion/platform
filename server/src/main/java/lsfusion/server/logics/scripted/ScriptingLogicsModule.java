@@ -1362,31 +1362,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(asyncLAP, asyncProp.usedParams);
     }
 
-    public LPWithParams addScriptedObjectSeekProp(String name, LPWithParams seekProp) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedObjectSeekProp(" + name + "," + seekProp + ");");
-
-        int pointPos = name.lastIndexOf('.');
-        assert pointPos > 0;
-
-        String formName = name.substring(0, pointPos);
-        String objectName = name.substring(pointPos+1);
-
-        FormEntity form = findFormByCompoundName(formName);
-        if(form == null) {
-            errLog.emitNotFoundError(parser, "form", formName);
-        }
-
-        ObjectEntity object = form.getObject(objectName);
-        if (object != null) {
-            List<Object> resultParams = getParamsPlainList(singletonList(seekProp));
-            LAP lap = addOSAProp(form, object, resultParams.toArray());
-            return new LPWithParams(lap, seekProp.usedParams);
-        } else {
-            errLog.emitNotFoundError(parser, "оbject", objectName);
-            return null;
-        }
-    }
-
     public LPWithParams addScriptedEvalActionProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedEvalActionProp(" + property + ")");
         Type exprType = property.property.property.getType();
@@ -2103,6 +2078,28 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultProp;
     }
 
+    public LPWithParams addScriptedObjectSeekProp(String name, LPWithParams seekProp) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedObjectSeekProp(" + name + "," + seekProp + ");");
+
+        int pointPos = name.lastIndexOf('.');
+        assert pointPos > 0;
+
+        String formName = name.substring(0, pointPos);
+        String objectName = name.substring(pointPos+1);
+
+        FormEntity form = findFormByCompoundName(formName);
+
+        ObjectEntity object = form.getObject(objectName);
+        if (object != null) {
+            List<Object> resultParams = getParamsPlainList(singletonList(seekProp));
+            LAP lap = addOSAProp(form, object, resultParams.toArray());
+            return new LPWithParams(lap, seekProp.usedParams);
+        } else {
+            errLog.emitNotFoundError(parser, "оbject", objectName);
+            return null;
+        }
+    }
+
     public LCP addScriptedGroupObjectProp(String name, GroupObjectProp prop, List<AndClassSet> outClasses) throws ScriptingErrorLog.SemanticErrorException {
         int pointPos = name.lastIndexOf('.');
         assert pointPos > 0;
@@ -2112,9 +2109,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         LCP resultProp = null;
 
         FormEntity form = findFormByCompoundName(formName);
-        if(form == null) {
-            errLog.emitNotFoundError(parser, "form", formName);
-        }
 
         GroupObjectEntity groupObject = form.getGroupObject(objectName);
         if (groupObject != null) {
@@ -2126,6 +2120,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitNotFoundError(parser, "group оbject", objectName);
         }
         return resultProp;
+    }
+
+    public LPWithParams addScriptedFocusActionProp(PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
+        return new LPWithParams(addFocusActionProp(property.getID()), new ArrayList<Integer>());
     }
 
     public LCP addScriptedTypeProp(String className, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {

@@ -853,6 +853,13 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         }
     }
 
+    public void focusProperty(int propertyDrawId) {
+        GPropertyDraw propertyDraw = form.getProperty(propertyDrawId);
+        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
+            controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
+        }
+    }
+
     public void countRecords(final GGroupObject groupObject) {
         dispatcher.execute(new CountRecords(groupObject.ID), new ErrorHandlingCallback<NumberResult>() {
             @Override

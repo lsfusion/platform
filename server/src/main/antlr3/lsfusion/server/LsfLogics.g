@@ -16,11 +16,7 @@ grammar LsfLogics;
 	import lsfusion.server.form.instance.FormSessionScope;
 	import lsfusion.server.data.Union;
 	import lsfusion.server.data.expr.query.PartitionType;
-	import lsfusion.server.form.entity.GroupObjectEntity;
-	import lsfusion.server.form.entity.PropertyObjectEntity;
-	import lsfusion.server.form.entity.PropertyDrawEntity;
-	import lsfusion.server.form.entity.ActionPropertyObjectEntity;
-	import lsfusion.server.form.entity.CalcPropertyObjectEntity;
+	import lsfusion.server.form.entity.*;
 	import lsfusion.server.form.navigator.NavigatorElement;
 	import lsfusion.server.form.view.ComponentView;
 	import lsfusion.server.form.view.GroupObjectView;
@@ -649,6 +645,21 @@ formMappedProperty returns [PropertyUsage propUsage, List<String> mapping]
 		'('
 			objects=idList { $mapping = $objects.ids; }
 		')'
+	;
+
+formPropertySelector[FormEntity form] returns [PropertyDrawEntity propertyDraw = null]
+	:	pname=ID
+		{
+		    if (inPropParseState()) {
+                $propertyDraw = form == null ? null : ScriptingFormEntity.getPropertyDraw(self, form, $pname.text);
+            }
+		}
+	|	mappedProp=mappedPropertyDraw	
+		{
+		    if (inPropParseState()) {
+                $propertyDraw = ScriptingFormEntity.getPropertyDraw(self, form, $mappedProp.name, $mappedProp.mapping);
+            }
+		}
 	;
 
 mappedPropertyDraw returns [String name, List<String> mapping]
@@ -1833,6 +1844,7 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	filePDB=fileActionPropertyDefinitionBody[context, dynamic] { $property = $filePDB.property; }
 	|	evalPDB=evalActionPropertyDefinitionBody[context, dynamic] { $property = $evalPDB.property; }
 	|	drillDownPDB=drillDownActionPropertyDefinitionBody[context, dynamic] { $property = $drillDownPDB.property; }
+	|	focusPDB=focusActionPropertyDefinitionBody[context, dynamic] { $property = $focusPDB.property; }
 	;
 	
 contextIndependentActionPDB returns [LPWithParams property, List<AndClassSet> signature]
@@ -2088,6 +2100,25 @@ drillDownActionPropertyDefinitionBody[List<TypedParameter> context, boolean dyna
 	}
 }
 	:	'DRILLDOWN' expr=propertyExpression[context, dynamic]
+	;	
+
+focusActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+    FormEntity form = null;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedFocusActionProp($prop.propertyDraw);
+	}
+}
+	:	'FOCUS'
+	    (namespacePart=ID '.')? formPart=ID '.'
+	    {   
+	        if (inPropParseState()) {
+	            form = self.findFormByCompoundName(($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text);
+            }
+	    }
+	    prop=formPropertySelector[form]
 	;	
 
 requestInputActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2895,36 +2926,30 @@ componentSelector returns [ComponentView component]
 
 
 propertySelector returns [PropertyDrawView propertyView = null]
-	:	pname=ID
-		{
-			if (inPropParseState()) {
-				$propertyView = $designStatement::design.getPropertyView($pname.text);
-			}
-		}
-	|	mappedProp=mappedPropertyDraw	
-		{
-			if (inPropParseState()) {
-				$propertyView = $designStatement::design.getPropertyView($mappedProp.name, $mappedProp.mapping);
-			}
-		}
-	;
+    :   pu=formPropertySelector[$designStatement::design == null ? null : $designStatement::design.getView().entity]
+        {
+            if (inPropParseState()) {
+                $propertyView = $designStatement::design.getPropertyView($pu.propertyDraw);
+            }
+        }
+    ;
 
 setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object value]
 	:	ID '=' componentPropertyValue ';'  { setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value); }
 	;
 
 componentPropertyValue returns [Object value]
-	:	c=colorLiteral { $value = $c.val; }
-	|	s=stringLiteral { $value = $s.val; }
-	|	i=intLiteral { $value = $i.val; }
-	|	l=longLiteral { $value = $l.val; }
-	|	d=doubleLiteral { $value = $d.val; }
-	|	dim=dimensionLiteral { $value = $dim.val; }
-	|	b=booleanLiteral { $value = $b.val; }
-	|	intB=boundsIntLiteral { $value = $intB.val; }
-	|	doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
-	|   	contType=containerTypeLiteral { $value = $contType.val; }
-	|   	alignment=flexAlignmentLiteral { $value = $alignment.val; }
+	:   c=colorLiteral { $value = $c.val; }
+	|   s=stringLiteral { $value = $s.val; }
+	|   i=intLiteral { $value = $i.val; }
+	|   l=longLiteral { $value = $l.val; }
+	|   d=doubleLiteral { $value = $d.val; }
+	|   dim=dimensionLiteral { $value = $dim.val; }
+	|   b=booleanLiteral { $value = $b.val; }
+	|   intB=boundsIntLiteral { $value = $intB.val; }
+	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
+	|   contType=containerTypeLiteral { $value = $contType.val; }
+	|   alignment=flexAlignmentLiteral { $value = $alignment.val; }
 	;
 
 

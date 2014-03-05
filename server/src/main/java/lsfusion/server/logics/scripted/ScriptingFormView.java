@@ -8,8 +8,7 @@ import lsfusion.server.logics.scripted.proxy.ViewProxyUtil;
 import java.util.List;
 
 public class ScriptingFormView {
-
-    private FormView view;
+    private final FormView view;
     private final ScriptingLogicsModule LM;
     private final ScriptingErrorLog errLog;
     private final ScriptParser parser;
@@ -140,11 +139,15 @@ public class ScriptingFormView {
         return view.get(drawEntity);
     }
 
+    public PropertyDrawView getPropertyView(PropertyDrawEntity propertyDraw) {
+        return view.get(propertyDraw);
+    }
+
     public PropertyDrawView getPropertyView(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         PropertyDrawEntity drawEntity = ScriptingFormEntity.getPropertyDraw(LM, view.entity, PropertyDrawEntity.createSID(name, mapping));
         return view.get(drawEntity);
     }
-    
+
     public PropertyDrawView getPropertyView(ScriptingLogicsModule.PropertyUsage pUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         PropertyDrawEntity drawEntity = ScriptingFormEntity.getPropertyDraw(LM, view.entity, pUsage, mapping);
         return view.get(drawEntity);

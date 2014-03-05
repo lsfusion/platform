@@ -506,4 +506,14 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     public void selectProperty(GPropertyDraw propertyDraw) {
         grid.selectProperty(propertyDraw);
     }
+
+    public void focusProperty(GPropertyDraw propertyDraw) {
+        GPanelController.GPropertyController propertyController = panel.getPropertyController(propertyDraw);
+        if (propertyController != null) {
+            propertyController.focusFirstWidget();
+        } else {
+            grid.selectProperty(propertyDraw);
+            grid.getTable().setFocus(true);
+        }
+    }
 }

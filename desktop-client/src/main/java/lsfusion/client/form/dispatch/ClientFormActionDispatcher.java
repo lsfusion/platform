@@ -96,6 +96,11 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         }
     }
 
+    @Override
+    public void execute(FocusClientAction action) {
+        getFormController().focusProperty(action.propertyId);
+    }
+
     public void execute(EditNotPerformedClientAction action) {
     }
 

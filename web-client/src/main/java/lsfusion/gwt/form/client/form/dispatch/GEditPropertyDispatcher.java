@@ -8,6 +8,7 @@ import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.GEditBindingMap;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.GUserInputResult;
+import lsfusion.gwt.form.shared.view.actions.GFocusAction;
 import lsfusion.gwt.form.shared.view.actions.GRequestUserInputAction;
 import lsfusion.gwt.form.shared.view.actions.GUpdateEditValueAction;
 import lsfusion.gwt.form.shared.view.changes.GGroupObjectValue;
@@ -23,6 +24,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     private GGroupObjectValue editColumnKey;
 
     private boolean valueRequested;
+    private boolean transferFocusAfterEdit;
 
 
     public GEditPropertyDispatcher(GFormController form, GEditPropertyHandler editHandler) {
@@ -36,6 +38,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         readType = null;
         editColumnKey = null;
         oldValue = null;
+        transferFocusAfterEdit = true;
 
         final boolean asyncModifyObject = form.isAsyncModifyObject(editProperty);
         if (GEditBindingMap.CHANGE.equals(actionSID) && (asyncModifyObject || editProperty.changeType != null)) {
@@ -46,7 +49,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
                         if (chosenOption == DialogBoxHelper.OptionType.YES) {
                             executeSimpleChangeProperty(asyncModifyObject, editProperty, columnKey, currentValue);
                         } else {
-                            editHandler.onEditFinished();
+                            transferFocusAfterEdit();
                         }
                     }
                 });
@@ -64,10 +67,16 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
         }
     }
 
+    private void transferFocusAfterEdit() {
+        if (transferFocusAfterEdit) {
+            editHandler.takeFocusAfterEdit();
+        }
+    }
+
     private void executeSimpleChangeProperty(boolean asyncModifyObject, GPropertyDraw editProperty, GGroupObjectValue columnKey, Object currentValue) {
         if (asyncModifyObject) {
             form.modifyObject(editProperty, columnKey);
-            editHandler.onEditFinished();
+            transferFocusAfterEdit();
         } else {
 //          т.е. property.changeType != null
             editColumnKey = columnKey;
@@ -91,7 +100,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     @Override
     protected void postDispatchResponse(ServerResponseResult response) {
         super.postDispatchResponse(response);
-        editHandler.onEditFinished();
+        transferFocusAfterEdit();
     }
 
     private void requestValue(GType type) {
@@ -123,7 +132,7 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
                     editHandler.updateEditValue(inputResult.getValue());
                 }
                 form.changeProperty(simpleChangeProperty, editColumnKey, inputResult.getValue(), oldValue);
-                editHandler.onEditFinished();
+                transferFocusAfterEdit();
             }
             return;
         }
@@ -144,5 +153,11 @@ public class GEditPropertyDispatcher extends GFormActionDispatcher {
     @Override
     public void execute(GUpdateEditValueAction action) {
         editHandler.updateEditValue(action.value);
+    }
+
+    @Override
+    public void execute(GFocusAction action) {
+        transferFocusAfterEdit = false;
+        super.execute(action);
     }
 }

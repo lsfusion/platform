@@ -8,6 +8,7 @@ import lsfusion.client.form.grid.GridController;
 import lsfusion.client.form.grid.GridUserPreferences;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.panel.PanelController;
+import lsfusion.client.form.panel.PropertyController;
 import lsfusion.client.form.queries.FilterController;
 import lsfusion.client.form.showtype.ShowTypeController;
 import lsfusion.client.logics.*;
@@ -442,6 +443,16 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public void selectProperty(ClientPropertyDraw propertyDraw) {
         grid.selectProperty(propertyDraw);
+    }
+
+    public void focusProperty(ClientPropertyDraw propertyDraw) {
+        PropertyController propertyController = panel.getPropertyController(propertyDraw);
+        if (propertyController != null) {
+            propertyController.requestFocusInWindow();
+        } else {
+            grid.selectProperty(propertyDraw);
+            grid.requestFocusInWindow();
+        }
     }
 
     public void updateSelectionInfo(int quantity, String sum, String avg) {

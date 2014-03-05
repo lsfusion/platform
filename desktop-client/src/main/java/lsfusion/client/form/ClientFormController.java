@@ -396,6 +396,13 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
+    public void focusProperty(int propertyDrawId) {
+        ClientPropertyDraw propertyDraw = form.getProperty(propertyDrawId);
+        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
+            controllers.get(propertyDraw.groupObject).focusProperty(propertyDraw);
+        }
+    }
+
     public GroupObjectLogicsSupplier getGroupObjectLogicsSupplier(ClientGroupObject group) {
         GroupObjectController groupObjectController = controllers.get(group);
         if (groupObjectController != null) {

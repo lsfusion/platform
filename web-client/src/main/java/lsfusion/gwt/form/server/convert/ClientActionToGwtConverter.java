@@ -100,6 +100,11 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GMessageAction(action.message, action.caption);
     }
 
+    @Converter(from = FocusClientAction.class)
+    public GFocusAction convertAction(FocusClientAction action) {
+        return new GFocusAction(action.propertyId);
+    }
+
     @Converter(from = ProcessFormChangesClientAction.class)
     public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form, FormDispatchServlet servlet) throws IOException {
         ClientFormChanges changes = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(action.formChanges)), form.clientForm);
