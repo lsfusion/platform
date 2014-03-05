@@ -1,7 +1,8 @@
 package lsfusion.server.form.navigator;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.AbstractWindowType;
 import lsfusion.server.auth.SecurityPolicy;
@@ -14,10 +15,10 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
+
+import static lsfusion.base.col.MapFact.mergeOrderMapsExcl;
+import static lsfusion.base.col.MapFact.singletonOrder;
 
 public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObject {
     private ImageIcon image;
@@ -53,45 +54,57 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         return parent;
     }
 
+    public List<NavigatorElement<T>> getChildren() {
+        return new ArrayList<NavigatorElement<T>>(children);
+    }
+
     /**
      * Возвращает потомков без повторений
-     * @param recursive возвращать ли рекурсивныых потомков
      */
-    public Collection<NavigatorElement<T>> getChildren(boolean recursive) {
-
-        if (!recursive) return new ArrayList<NavigatorElement<T>>(children);
-
+    public Set<NavigatorElement<T>> getChildrenRecursive() {
         //используем Set, чтобы не было повторений
-        Collection<NavigatorElement<T>> result = new LinkedHashSet<NavigatorElement<T>>();
-        fillChildren(null, result);
+        Set<NavigatorElement<T>> result = new LinkedHashSet<NavigatorElement<T>>();
+        fillChildrenRecursive(result);
         return result;
     }
 
-    /**
-     * Возвращает потомков с повторениями
-     * @param recursive возвращать ли рекурсивныых потомков
-     */
-    public List<NavigatorElement<T>> getChildrenNonUnique(SecurityPolicy securityPolicy) {
-        //используем List, тем самым разрешая повторения
-        List<NavigatorElement<T>> result = new ArrayList<NavigatorElement<T>>();
-        fillChildren(securityPolicy, result);
-        return result;
-    }
-
-    private void fillChildren(SecurityPolicy securityPolicy, Collection<NavigatorElement<T>> result) {
-        if (securityPolicy != null && !securityPolicy.navigator.checkPermission(this)) {
-            return;
-        }
-
+    private void fillChildrenRecursive(Collection<NavigatorElement<T>> result) {
         result.add(this);
-
         for (NavigatorElement<T> child : children) {
-            child.fillChildren(securityPolicy, result);
+            child.fillChildrenRecursive(result);
         }
+    }
+    
+    public ImOrderMap<NavigatorElement<T>, List<String>> getChildrenMap(SecurityPolicy securityPolicy) {
+        if (securityPolicy != null && !securityPolicy.navigator.checkPermission(this)) {
+            return MapFact.EMPTYORDER();
+        }
+
+        if (isLeafElement()) {
+            //leaf element
+            return singletonOrder(this, Collections.<String>emptyList());
+        }
+
+
+        List<String> childrenSids = new ArrayList<String>();
+        List<ImOrderMap<NavigatorElement<T>, List<String>>> childrenMaps = new ArrayList<ImOrderMap<NavigatorElement<T>, List<String>>>();
+        for (NavigatorElement<T> child : children) {
+            ImOrderMap<NavigatorElement<T>, List<String>> childMap = child.getChildrenMap(securityPolicy);
+            if (child.isLeafElement() || !childMap.isEmpty()) {
+                childrenMaps.add(childMap);
+                childrenSids.add(child.getSID());
+            }
+        }
+
+        if (!childrenSids.isEmpty()) {
+            childrenMaps.add(0, singletonOrder(this, childrenSids));
+            return mergeOrderMapsExcl(childrenMaps);
+        }
+
+        return MapFact.EMPTYORDER();
     }
 
     public NavigatorElement<T> getNavigatorElement(String elementSID) {
-
         if (sID.equals(elementSID)) return this;
 
         for (NavigatorElement<T> child : children) {
@@ -104,12 +117,6 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
 
     public boolean isAncestorOf(NavigatorElement element) {
         return element != null && (equals(element) || isAncestorOf(element.parent));
-    }
-
-    public void replace(NavigatorElement<T> from, NavigatorElement<T> to) {
-        BaseUtils.replaceListElements(children, from, to);
-        to.parent = this;
-        from.parent = null;
     }
 
     public void addFirst(NavigatorElement child) {
@@ -173,6 +180,10 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
 
         IOUtils.writeImageIcon(outStream, getImage());
         outStream.writeUTF(getImage().getDescription());
+    }
+    
+    public boolean isLeafElement() {
+        return this.getClass() != NavigatorElement.class;
     }
 
     public byte getTypeID() {

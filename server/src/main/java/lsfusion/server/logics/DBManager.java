@@ -340,7 +340,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     protected Set<String> getElementsWithParent(NavigatorElement element) {
         Set<String> parentInfo = new HashSet<String>();
-        List<NavigatorElement> children = (List<NavigatorElement>) element.getChildren(false);
+        List<NavigatorElement> children = (List<NavigatorElement>) element.getChildren();
         parentInfo.add(element.getSID());
         for (NavigatorElement child : children) {
             parentInfo.add(child.getSID());
@@ -351,7 +351,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     protected List<List<Object>> getRelations(NavigatorElement element, Set<String> elementsWithParent) {
         List<List<Object>> parentInfo = new ArrayList<List<Object>>();
-        List<NavigatorElement> children = (List<NavigatorElement>) element.getChildren(false);
+        List<NavigatorElement> children = (List<NavigatorElement>) element.getChildren();
         int counter = 1;
         for (NavigatorElement child : children) {
             parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID(), counter++));
@@ -367,7 +367,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     protected List<List<Object>> getRelations(NavigatorElement element) {
         List<List<Object>> parentInfo = new ArrayList<List<Object>>();
-        List<NavigatorElement> children = (List<NavigatorElement>) element.getChildren(false);
+        List<NavigatorElement> children = (List<NavigatorElement>) element.getChildren();
         int counter = 1;
         for (NavigatorElement child : children) {
             parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID(), counter++));

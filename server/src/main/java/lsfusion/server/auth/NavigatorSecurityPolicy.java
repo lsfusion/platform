@@ -17,7 +17,7 @@ public class NavigatorSecurityPolicy extends AbstractSecurityPolicy<NavigatorEle
     public void deny(NavigatorElement element) {
         if (element != null) {
             super.deny(element);
-            super.deny(element.getChildren(true));
+            super.deny(element.getChildrenRecursive());
         }
     }
 

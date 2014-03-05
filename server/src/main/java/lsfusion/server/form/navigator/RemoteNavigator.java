@@ -6,6 +6,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.RemoteFormInterface;
@@ -372,14 +373,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return formEntity;
     }
 
-    private void setFormEntity(String formSID, FormEntity<T> formEntity) {
-        FormEntity<T> prevEntity = (FormEntity) businessLogics.LM.root.getNavigatorElement(formSID);
-        if (prevEntity == null)
-            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.form.with.id.not.found"));
-
-        prevEntity.getParent().replace(prevEntity, formEntity);
-    }
-
     public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean interactive) {
         RemoteForm form = (RemoteForm) createForm(getFormEntity(formSID), isModal, interactive);
         if(initialObjects != null) {
@@ -523,31 +516,24 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     @Override
     public byte[] getNavigatorTree() throws RemoteException {
-
-        List<NavigatorElement<T>> elements = businessLogics.LM.root.getChildrenNonUnique(securityPolicy);
+        
+        ImOrderMap<NavigatorElement<T>, List<String>> elements = businessLogics.LM.root.getChildrenMap(securityPolicy);
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            dataStream.writeInt(elements.size());
-            for (NavigatorElement element : elements) {
+            int elementsCount = elements.size();
+            
+            dataStream.writeInt(elementsCount);
+            for (NavigatorElement element : elements.keyIt()) {
                 element.serialize(dataStream);
             }
-
-            for (NavigatorElement<T> element : elements) {
-                int childrenCount = 0;
-                for (NavigatorElement<T> child : element.getChildren(false)) {
-                    if (elements.contains(child)) {
-                        childrenCount++;
-                    }
-                }
-
-                dataStream.writeInt(childrenCount);
-                for (NavigatorElement<T> child : element.getChildren(false)) {
-                    if (elements.contains(child)) {
-                        dataStream.writeUTF(child.getSID());
-                    }
+            
+            for (List<String> children : elements.valueIt()) {
+                dataStream.writeInt(children.size());
+                for (String child : children) {
+                    dataStream.writeUTF(child);
                 }
             }
         } catch (IOException e) {

@@ -168,6 +168,13 @@ public class MapFact {
         return mResult.immutable();
     }
 
+    public static <K, V> ImOrderMap<K, V> mergeOrderMapsExcl(Iterable<ImOrderMap<K, V>> maps) {
+        MOrderExclMap<K, V> mResult = MapFact.mOrderExclMap();
+        for (ImOrderMap<K, V> orderMap : maps)
+            mResult.exclAddAll(orderMap);
+        return mResult.immutableOrder();
+    }
+
     public static <V> ImRevMap<V, V> mergeMaps(ImRevMap<V, V>[] maps) {
         MRevMap<V, V> result = MapFact.mRevMap();
         for (ImRevMap<V, V> map : maps)
