@@ -110,13 +110,17 @@ public class RmiQueue {
                     throw new RuntimeException("RmiQueue is abandoned");
                 }
                 if (!direct) {
-                    flushCompletedRequestsNow();
+                    flushCompletedRequestsNow(false);
                 }
             }
 
             return rmiFuture.get();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
+        } catch (Throwable t) {
+            if (t instanceof ExecutionException) {
+                t = t.getCause();
+            }
+
+            throw Throwables.propagate(t);
         } finally {
             syncsDepth--;
             busyDisplayer.stop();
@@ -165,19 +169,21 @@ public class RmiQueue {
 
         //не обрабатываем результат, пока не закончится редактирование и не вызовется this.editingStopped()
         if (!tableManager.isEditing()) {
-            flushCompletedRequestsNow();
+            flushCompletedRequestsNow(true);
         }
     }
 
-    private void flushCompletedRequestsNow() {
+    private void flushCompletedRequestsNow(boolean recordThrowable) {
         while (!rmiFutures.isEmpty() && rmiFutures.element().isDone()) {
             try {
                 execNextFutureCallback();
             } catch (Throwable t) {
-                if (t instanceof ServerException || t instanceof ExecutionException) {
-                    t = t.getCause();
+                if (recordThrowable) {
+                    if (t instanceof ServerException || t instanceof ExecutionException) {
+                        t = t.getCause();
+                    }
+                    ClientExceptionManager.handle(t);
                 }
-                ClientExceptionManager.handle(t);
             }
         }
     }
