@@ -90,7 +90,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         List<ImOrderMap<NavigatorElement<T>, List<String>>> childrenMaps = new ArrayList<ImOrderMap<NavigatorElement<T>, List<String>>>();
         for (NavigatorElement<T> child : children) {
             ImOrderMap<NavigatorElement<T>, List<String>> childMap = child.getChildrenMap(securityPolicy);
-            if (child.isLeafElement() || !childMap.isEmpty()) {
+            if (!childMap.isEmpty()) {
                 childrenMaps.add(childMap);
                 childrenSids.add(child.getSID());
             }
