@@ -1,24 +1,12 @@
 package lsfusion.server.logics;
 
+import lsfusion.base.SystemUtils;
 import lsfusion.interop.remote.RMIUtils;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import javax.management.MBeanServer;
-import javax.management.remote.JMXConnectorServer;
-import javax.management.remote.JMXConnectorServerFactory;
-import javax.management.remote.JMXServiceURL;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.UnknownHostException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.util.HashMap;
 
 public class BusinessLogicsBootstrap {
     private static final Logger logger = ServerLoggers.systemLogger;
@@ -83,12 +71,9 @@ public class BusinessLogicsBootstrap {
         if (!stopped) {
             logger.info("Server is stopping...");
 
-            boolean forceExit = false;
             try {
                 logicsInstance.stop();
             } catch (Throwable ignored) {
-                //не можем завершиться gracefully - форсируем выход
-                forceExit = true;
             }
 
             stopped = true;
@@ -99,9 +84,17 @@ public class BusinessLogicsBootstrap {
 
             logger.info("Server has stopped...");
 
-            if (forceExit) {
-                System.exit(0);
-            }
+            // форсируем выход в отдельном потоке
+            final Thread closer = new Thread("Closing thread...") {
+                @Override
+                public void run() {
+                    //убиваемся, если через 5 секунд ещё не вышли
+                    SystemUtils.sleep(5000);
+                    System.exit(0);
+                }
+            };
+            closer.setDaemon(true);
+            closer.start();
         }
    }
 
