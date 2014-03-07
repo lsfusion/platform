@@ -372,7 +372,7 @@ public class SystemUtils {
 
     public static String getLibraryPath(String libName, String path, Class<?> cls) throws IOException {
 
-        String libExtension = IS_OS_WINDOWS ? "*.dll" : ".so";
+        String libExtension = IS_OS_WINDOWS ? ".dll" : ".so";
         String libPath = (IS_OS_WINDOWS ? "win" : "ux") + (is64Arch() ? "64" : "32");
 
         return getResourcePath(libName + libExtension, path + libPath + '/', cls, false, false); // будем считать, что в library зашифрована вер
