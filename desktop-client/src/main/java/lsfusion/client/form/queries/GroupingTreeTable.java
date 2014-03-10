@@ -4,10 +4,7 @@ import lsfusion.base.OrderedMap;
 import lsfusion.client.Main;
 import lsfusion.client.form.renderer.ImagePropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.client.logics.classes.ClientDateClass;
-import lsfusion.client.logics.classes.ClientDateTimeClass;
-import lsfusion.client.logics.classes.ClientImageClass;
-import lsfusion.client.logics.classes.ClientLogicalClass;
+import lsfusion.client.logics.classes.*;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.*;
 
@@ -20,6 +17,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.List;
 
@@ -48,6 +46,13 @@ public class GroupingTreeTable extends JXTreeTable {
                 super.setValue(value != null ? value.toString() : null);
             }
         });
+
+        setDefaultRenderer(Timestamp.class, new DefaultTableCellRenderer() {
+            @Override
+            protected void setValue(Object value) {
+                super.setValue(value != null ? Main.dateTimeFormat.format(value) : null);
+            }
+        });
         
         setDefaultRenderer(Image.class, new ImageCellRenderer());
         
@@ -74,7 +79,7 @@ public class GroupingTreeTable extends JXTreeTable {
                             java.util.List<Map<java.util.List<Object>, java.util.List<Object>>> values) {
         treeTableModel = new GroupingTreeTableModel(keyColumnsQuantity, columnProperties, columnNames, values);
         setTreeTableModel(treeTableModel);
-
+        setDefaultOrder(columnProperties);                                
         int treeColumnWidth =  55 + 19 * (values.size() - 1); //ширина колонки с деревом
         TableColumn treeColumn = getColumnModel().getColumn(0);
         treeColumn.setMinWidth(treeColumnWidth);  
@@ -97,6 +102,17 @@ public class GroupingTreeTable extends JXTreeTable {
             setRowHeight(48);
         } else {
             setRowHeight(DEFAULT_ROW_HEIGHT);
+        }
+    }
+    
+    private void setDefaultOrder(java.util.List<ClientPropertyDraw> columnProperties) {
+        for (int i = 0; i < columnProperties.size(); i++) {
+            ClientPropertyDraw columnProperty = columnProperties.get(i);
+            if (columnProperty != null) {
+                if (columnProperty.baseType instanceof ClientDateClass || columnProperty.baseType instanceof ClientDateTimeClass) {
+                    treeTableModel.changeOrder(i + 1);
+                }
+            }
         }
     }
     
@@ -234,12 +250,10 @@ public class GroupingTreeTable extends JXTreeTable {
                         } else {
                             ClientPropertyDraw columnProperty = columnProperties.get(row.indexOf(value));
                             if (columnProperty != null) {
-                                if (columnProperty.baseType instanceof ClientDateClass) {
-                                    convertedValue = value == null ? null : Main.dateFormat.format(value);
-                                } else if (columnProperty.baseType instanceof ClientDateTimeClass) {
-                                    convertedValue = value == null ? null : Main.dateTimeFormat.format(value);
-                                } else if (columnProperty.baseType instanceof ClientLogicalClass) {
+                                if (columnProperty.baseType instanceof ClientLogicalClass) {
                                     convertedValue = value != null && (Boolean) value;
+                                } else {
+                                    convertedValue = value;
                                 }
                             }
                         }

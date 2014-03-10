@@ -399,11 +399,11 @@ public abstract class GroupingDialog extends JDialog {
     public List<Map<Integer, List<byte[]>>> getSelectedGroupLevels(boolean pivot) {
         List<Map<Integer, List<byte[]>>> selectedGroupProperties = new ArrayList<Map<Integer, List<byte[]>>>();
         List<Integer> level = new ArrayList<Integer>();
-        for (int k = 1; k <= (pivot ? 1: getMaxSpinnerValue()); k++) {
+        for (int k = 1; k <= (getMaxSpinnerValue()); k++) {
             List<Integer> newLevel = new ArrayList<Integer>(level);
             int i = 0;
             for (JSpinner spinner : groupSpinners.values()) {
-                if (spinner.isVisible() && (((Integer) spinner.getValue() == k) || pivot)) {
+                if (spinner.isVisible() && (((Integer) spinner.getValue() == k))) {
                     newLevel.add(i);
                 }
                 i++;
@@ -422,7 +422,7 @@ public abstract class GroupingDialog extends JDialog {
             }
             selectedGroupProperties.add(groupLevel);
         }
-        return selectedGroupProperties;
+        return pivot ? Arrays.asList(selectedGroupProperties.get(selectedGroupProperties.size()-1)) : selectedGroupProperties;
     }
 
     public Map<Integer, List<byte[]>> getSelectedSumMap() {
