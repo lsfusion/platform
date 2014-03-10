@@ -109,7 +109,8 @@ public class GroupingTreeTable extends JXTreeTable {
         for (int i = 0; i < columnProperties.size(); i++) {
             ClientPropertyDraw columnProperty = columnProperties.get(i);
             if (columnProperty != null) {
-                if (columnProperty.baseType instanceof ClientDateClass || columnProperty.baseType instanceof ClientDateTimeClass) {
+                if (columnProperty.baseType instanceof ClientDateClass || columnProperty.baseType instanceof ClientTimeClass
+                    || columnProperty.baseType instanceof ClientDateTimeClass || columnProperty.baseType instanceof ClientIntegralClass) {
                     treeTableModel.changeOrder(i + 1);
                 }
             }
@@ -172,9 +173,8 @@ public class GroupingTreeTable extends JXTreeTable {
         Map<SortableTreeTableNode, java.util.List<Object>> values = new OrderedMap<SortableTreeTableNode, java.util.List<Object>>();
         int keyColumnsQuantity = 0;
 
-        public boolean isSortAscending = true;
-        public int sortedCol = 0;
-
+        public LinkedHashMap<Integer, Boolean> sortedColumns = new LinkedHashMap<Integer, Boolean>(); //column - ascending
+        
         public GroupingTreeTableModel(int keyColumnsQuantity, List<ClientPropertyDraw> columnProperties, List<String> columnNames, List<Map<List<Object>, List<Object>>> values) {
             super();
             this.keyColumnsQuantity = keyColumnsQuantity;
@@ -309,8 +309,8 @@ public class GroupingTreeTable extends JXTreeTable {
                 name = getString("form.queries.grouping.tree");
             } else {
                 name = "<html>" + columnNames.get(index - 1);
-                if (index == sortedCol) {
-                    name += isSortAscending ? " ↑" : " ↓";
+                if (sortedColumns.containsKey(index)) {
+                    name += sortedColumns.get(index) ? " ↑" : " ↓";
                 }
                 name += "</html>";
             }
@@ -328,11 +328,10 @@ public class GroupingTreeTable extends JXTreeTable {
         }
         
         public void changeOrder(int columnIndex) {
-            if (sortedCol == columnIndex)
-                isSortAscending = !isSortAscending;
+            if (sortedColumns.containsKey(columnIndex))
+                sortedColumns.put(columnIndex, !sortedColumns.get(columnIndex));
             else {
-                isSortAscending = true;
-                sortedCol = columnIndex;
+                sortedColumns.put(columnIndex, true);
             }
             if (columnIndex < 1)
                 return;
@@ -360,28 +359,31 @@ public class GroupingTreeTable extends JXTreeTable {
 
         class NodeComparator implements Comparator<TreeTableNode> {
             public int compare(TreeTableNode o1, TreeTableNode o2) {
-                int result;
-                Object value1 = GroupingTreeTableModel.this.getValueAt(o1, sortedCol);
-                Object value2 = GroupingTreeTableModel.this.getValueAt(o2, sortedCol);
-                
-                if (value1 == null) {
-                    result = value2 == null ? 0 : -1;
-                } else {
-                    if (value2 == null) {
-                        result = 1;
+                int result = 0;
+                for (Map.Entry<Integer, Boolean> entry : sortedColumns.entrySet()) {
+                    Object value1 = GroupingTreeTableModel.this.getValueAt(o1, entry.getKey());
+                    Object value2 = GroupingTreeTableModel.this.getValueAt(o2, entry.getKey());
+                    if (value1 == null) {
+                        result = value2 == null ? 0 : -1;
                     } else {
-                        if (value1 instanceof Comparable) {
-                            result = value2 instanceof Comparable ? ((Comparable) value1).compareTo(value2) : 1;    
+                        if (value2 == null) {
+                            result = 1;
                         } else {
-                            result = value2 instanceof Comparable ? -1 : 0;
+                            if (value1 instanceof Comparable) {
+                                result = value2 instanceof Comparable ? ((Comparable) value1).compareTo(value2) : 1;
+                            } else {
+                                result = value2 instanceof Comparable ? -1 : 0;
+                            }
                         }
                     }
+                    result = entry.getValue() ? result : -result;
+                    if (result != 0)
+                        break;
                 }
-
-                return isSortAscending ? result : -result;
+                return result;
             }
         }
-    }
+    } 
     
     public class SortableTreeTableNode extends DefaultMutableTreeTableNode {
         public SortableTreeTableNode(String root, boolean b) {
