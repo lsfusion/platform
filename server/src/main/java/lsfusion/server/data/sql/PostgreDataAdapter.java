@@ -313,6 +313,11 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
+    public boolean hasJDBCTimeoutMultiThreadProblem() {
+        return true;
+    }
+
+    @Override
     public boolean isTransactionCanceled(SQLException e) {
         return e.getSQLState().equals("25P02");
     }

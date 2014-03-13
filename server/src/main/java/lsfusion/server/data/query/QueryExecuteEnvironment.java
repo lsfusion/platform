@@ -6,17 +6,30 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 // Mutable !!! нужен Thread Safe
-public interface QueryExecuteEnvironment {
+public abstract class QueryExecuteEnvironment {
 
-    boolean beforeStatement(Statement statement, SQLSession session, int transactTimeout) throws SQLException;
+    public abstract QueryExecuteInfo getInfo(SQLSession session, int transactTimeout);
+    
+    public void beforeConnection(SQLSession session, QueryExecuteInfo info) throws SQLException {
+        if(info.timeout > 0) // из-за бага в драйвере postgresql
+            session.lockNeedPrivate();
+    }
+    
+    public void afterConnection(SQLSession session, QueryExecuteInfo info) throws SQLException {
+        if(info.timeout > 0)
+            session.lockTryCommon();
+    }    
+    
+    public void beforeStatement(Statement statement, SQLSession session, QueryExecuteInfo info) throws SQLException {
+        if(info.timeout > 0)
+            statement.setQueryTimeout(info.timeout);
+    }
     
     public final static QueryExecuteEnvironment DEFAULT = new QueryExecuteEnvironment() {
-        public boolean beforeStatement(Statement statement, SQLSession session, int transactTimeout) throws SQLException {
-            if(session.isInTransaction() && transactTimeout > 0 && !session.isNoHandled() && !session.isNoTransactTimeout()) {
-                statement.setQueryTimeout(transactTimeout);
-                return true;
-            }
-            return false;
+        public QueryExecuteInfo getInfo(SQLSession session, int transactTimeout) {
+            if(session.isInTransaction() && transactTimeout > 0 && !session.isNoHandled() && !session.isNoTransactTimeout())
+                return new QueryExecuteInfo(transactTimeout, true);
+            return QueryExecuteInfo.EMPTY;
         }
     };  
 }

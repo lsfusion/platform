@@ -8,7 +8,7 @@ import lsfusion.server.data.SQLTimeoutException;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class AdjustVolatileExecuteEnvironment implements QueryExecuteEnvironment {
+public class AdjustVolatileExecuteEnvironment extends QueryExecuteEnvironment {
 
     private boolean volatileStats;
     private boolean fixVolatile;
@@ -71,16 +71,13 @@ public class AdjustVolatileExecuteEnvironment implements QueryExecuteEnvironment
         }
     }
 
-    public boolean beforeStatement(Statement statement, SQLSession session, int transactTimeout) throws SQLException {
-        assert !session.isNoHandled();
-
+    public QueryExecuteInfo getInfo(SQLSession session, int transactTimeout) {
         int setTimeout = timeout;
         boolean result = false;
         if(session.isInTransaction() && !session.isNoTransactTimeout() && transactTimeout > 0 && timeout >= transactTimeout) {
             setTimeout = transactTimeout;
             result = volatileStats;
-        }            
-        statement.setQueryTimeout(setTimeout);
-        return result;
+        }
+        return new QueryExecuteInfo(setTimeout, result);
     }
 }

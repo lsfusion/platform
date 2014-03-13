@@ -33,7 +33,6 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import org.supercsv.cellprocessor.ParseInt;
 
 import java.lang.ref.WeakReference;
 import java.sql.*;
@@ -96,6 +95,7 @@ public class SQLSession extends MutableObject {
 
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
     private ReentrantLock temporaryTablesLock = new ReentrantLock(true);
+    private ReentrantReadWriteLock timeoutLock = new ReentrantReadWriteLock(true);
 
     public SQLSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
@@ -115,6 +115,18 @@ public class SQLSession extends MutableObject {
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
         }
+    }
+    
+    public void lockNeedPrivate() throws SQLException {
+        temporaryTablesLock.lock();
+        
+        needPrivate();
+    }
+
+    public void lockTryCommon() throws SQLException {
+        tryCommon();
+        
+        temporaryTablesLock.unlock();
     }
 
     private int inTransaction = 0; // счетчик для по сути распределенных транзакций
@@ -157,13 +169,21 @@ public class SQLSession extends MutableObject {
         lock.readLock().unlock();
     }
 
+    private void lockWrite() {
+        lock.writeLock().lock();
+    }
+
+    private void unlockWrite() {
+        lock.writeLock().unlock();
+    }
+    
     public void unlockTemporary() {
         temporaryTablesLock.unlock();
     }
 
     private Integer prevIsolation;
     public void startTransaction(int isolationLevel) throws SQLException, SQLHandledException {
-        lock.writeLock().lock();
+        lockWrite();
         try {
             if(Settings.get().isApplyVolatileStats())
                 pushVolatileStats(null);
@@ -200,7 +220,7 @@ public class SQLSession extends MutableObject {
         } finally {
             try { tryCommon(); } catch (Throwable t) {}
 
-            lock.writeLock().unlock();
+            unlockWrite();
         }
     }
 
@@ -771,12 +791,43 @@ public class SQLSession extends MutableObject {
         throw e;
     }
 
+    
+    private QueryExecuteInfo lockQueryExec(QueryExecuteEnvironment queryExecEnv, int transactTimeout) {
+        lockRead();
+        
+        QueryExecuteInfo info;
+        try {
+            info = queryExecEnv.getInfo(this, transactTimeout);
+        } catch (Throwable e) {
+            unlockRead();
+            throw Throwables.propagate(e);
+        }
+        if(syntax.hasJDBCTimeoutMultiThreadProblem()) {
+            if(info.needTimeoutLock())
+                timeoutLock.writeLock().lock();
+            else
+                timeoutLock.readLock().lock();
+        }
+        return info;
+    }
+    
+    private void unlockQueryExec(QueryExecuteInfo info) {        
+        if(syntax.hasJDBCTimeoutMultiThreadProblem()) {
+            if(info.needTimeoutLock())
+                timeoutLock.writeLock().unlock();
+            else
+                timeoutLock.readLock().unlock();
+        }
+        unlockRead();
+    }
+    
     @Message("message.sql.execute")
     public int executeDML(@ParamMessage String command, ImMap<String, ParseInterface> paramObjects, ExecuteEnvironment env, QueryExecuteEnvironment queryExecEnv, int transactTimeout) throws SQLException, SQLHandledException { // public для аспекта
-        lockRead();
+        QueryExecuteInfo execInfo = lockQueryExec(queryExecEnv, transactTimeout);
+        queryExecEnv.beforeConnection(this, execInfo);
+
         ExConnection connection = getConnection();
 
-        boolean isTransactTimeout = false;
         int result = 0;
         long runTime = 0;
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
@@ -785,7 +836,7 @@ public class SQLSession extends MutableObject {
             statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
 
             env.before(this, connection, command);
-            isTransactTimeout = queryExecEnv.beforeStatement(statement, this, transactTimeout);
+            queryExecEnv.beforeStatement(statement, this, execInfo);
 
             if(explainAnalyzeMode) {
                 PreparedStatement explainStatement = statement;
@@ -809,15 +860,18 @@ public class SQLSession extends MutableObject {
                 runTime = System.currentTimeMillis() - started;
             }
         } catch (SQLException e) {
-            throw propagate(e, statement, isTransactTimeout);
+            throw propagate(e, statement, execInfo.isTransactTimeout);
         } finally {
-            env.after(this, connection, command);
+            try { env.after(this, connection, command); } catch (Throwable t) {}
 
-            if(statement!=null)
-                returnStatement.result.proceed(statement, runTime);
+            try { if(statement!=null)
+                returnStatement.result.proceed(statement, runTime); } catch (Throwable t) {}
 
-            returnConnection(connection);
-            unlockRead();
+            try { returnConnection(connection); } catch (Throwable t) {}
+            
+            try { queryExecEnv.afterConnection(this, execInfo); } catch (Throwable t) {}
+            
+            unlockQueryExec(execInfo);
         }
 
         return result;
@@ -873,7 +927,8 @@ public class SQLSession extends MutableObject {
     
     @Message("message.sql.execute")
     public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(@ParamMessage String select, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, QueryExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders) throws SQLException, SQLHandledException {
-        lockRead();
+        QueryExecuteInfo execInfo = lockQueryExec(queryExecEnv, transactTimeout);
+        queryExecEnv.beforeConnection(this, execInfo);
 
         ExConnection connection = getConnection();
 
@@ -894,7 +949,6 @@ public class SQLSession extends MutableObject {
 
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
         long runTime = 0;
-        boolean isTransactTimeout = false;
         PreparedStatement statement = null;
 
         try {
@@ -905,7 +959,7 @@ public class SQLSession extends MutableObject {
                     
             MOrderExclMap<ImMap<K,Object>,ImMap<V,Object>> mExecResult = MapFact.mOrderExclMap();
             env.before(this, connection, select);
-            isTransactTimeout = queryExecEnv.beforeStatement(statement, this, transactTimeout);
+            queryExecEnv.beforeStatement(statement, this, execInfo);
 
             long started = System.currentTimeMillis();
             final ResultSet result = statement.executeQuery();
@@ -926,7 +980,7 @@ public class SQLSession extends MutableObject {
 
             return mExecResult.immutableOrder();
         } catch (SQLException e) {
-            throw propagate(e, statement, isTransactTimeout);
+            throw propagate(e, statement, execInfo.isTransactTimeout);
         } finally { // suppress'м все exception'ы, чтобы вернулся исходный
             try { env.after(this, connection, select); } catch (Throwable t) {}
 
@@ -934,7 +988,9 @@ public class SQLSession extends MutableObject {
 
             try { returnConnection(connection); } catch (Throwable t) {}
 
-            unlockRead();
+            try { queryExecEnv.afterConnection(this, execInfo); } catch (Throwable t) {}
+
+            unlockQueryExec(execInfo);
         }
     }
 
@@ -1310,7 +1366,7 @@ public class SQLSession extends MutableObject {
     }
 
     public void close() throws SQLException {
-        lock.writeLock().lock();
+        lockWrite();
         temporaryTablesLock.lock();
 
         try {
@@ -1324,7 +1380,7 @@ public class SQLSession extends MutableObject {
             }
         } finally {
             temporaryTablesLock.unlock();
-            lock.writeLock().unlock();
+            unlockWrite();
         }
     }
     

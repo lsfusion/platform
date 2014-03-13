@@ -122,4 +122,5 @@ public interface SQLSyntax {
 
     boolean isConnectionClosed(SQLException e);
 
+    boolean hasJDBCTimeoutMultiThreadProblem();
 }
