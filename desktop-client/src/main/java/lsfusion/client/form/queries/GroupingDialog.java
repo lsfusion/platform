@@ -135,7 +135,7 @@ public abstract class GroupingDialog extends JDialog {
         for (int i = 0; i < initialTableModel.getColumnCount(); i++) {
             String columnName = initialTableModel.getColumnName(i).trim(); 
             final JCheckBox checkBox = new JCheckBox(columnName);
-            final JCheckBox pivotCheckBox = new JCheckBox();
+            final JCheckBox pivotCheckBox = new JCheckBox(getString("form.queries.grouping.to.column"));
 
             checkBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -396,10 +396,10 @@ public abstract class GroupingDialog extends JDialog {
         return maxValue;
     }
 
-    public List<Map<Integer, List<byte[]>>> getSelectedGroupLevels(boolean pivot) {
+    public List<Map<Integer, List<byte[]>>> getSelectedGroupLevels() {
         List<Map<Integer, List<byte[]>>> selectedGroupProperties = new ArrayList<Map<Integer, List<byte[]>>>();
         List<Integer> level = new ArrayList<Integer>();
-        for (int k = 1; k <= (getMaxSpinnerValue()); k++) {
+        for (int k = 1; k <= getMaxSpinnerValue(); k++) {
             List<Integer> newLevel = new ArrayList<Integer>(level);
             int i = 0;
             for (JSpinner spinner : groupSpinners.values()) {
@@ -422,7 +422,7 @@ public abstract class GroupingDialog extends JDialog {
             }
             selectedGroupProperties.add(groupLevel);
         }
-        return pivot ? Arrays.asList(selectedGroupProperties.get(selectedGroupProperties.size()-1)) : selectedGroupProperties;
+        return selectedGroupProperties;
     }
 
     public Map<Integer, List<byte[]>> getSelectedSumMap() {
@@ -732,7 +732,7 @@ public abstract class GroupingDialog extends JDialog {
             Dispatch destinationSheet = Dispatch.get(sheets, "Add").toDispatch();
             Dispatch.put(destinationSheet, "Name", "PivotTable");
 
-            String lastCell = getCellIndex(treeTable.getColumnCount(), treeTable.getVisibleRowCount());
+            String lastCell = getCellIndex(treeTable.getColumnCount(), treeTable.getRowCount()==0 ? 2 : (treeTable.getRowCount()) + 1);
             Dispatch sourceDataNativePeer = Dispatch.invoke(sourceSheet, "Range", Dispatch.Get, new Object[]{"A1:" + lastCell}, new int[1]).toDispatch();
             Dispatch destinationNativePeer = Dispatch.invoke(destinationSheet, "Range", Dispatch.Get, new Object[]{"A1"}, new int[1]).toDispatch();
 
