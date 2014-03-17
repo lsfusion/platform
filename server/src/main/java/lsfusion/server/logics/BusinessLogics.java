@@ -466,6 +466,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         for (String moduleName : startModulesList.split(",\\s*")) {
             LogicsModule startModule = nameToModule.get(moduleName);
+            if(startModule == null)
+                logger.error(String.format("Module %s not found.", moduleName));
             assert startModule != null;
             queue.add(startModule);
             was.add(startModule);
