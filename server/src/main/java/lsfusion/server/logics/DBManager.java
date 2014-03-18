@@ -6,6 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMap;
 import lsfusion.base.col.implementations.abs.ASet;
+import lsfusion.base.col.implementations.simple.EmptyOrderMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
@@ -21,8 +22,10 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
+import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.type.ConcatenateType;
@@ -909,7 +912,22 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
             newDBStructure.write(outDB);
 
-            String droppedTables = "";           
+            // проверка, не удалятся ли старые таблицы
+            String droppedTables = "";
+            if (denyDropTables) {
+                for (Table table : oldDBStructure.tables.keySet()) {                    
+                    if (newDBStructure.getTable(table.name) == null) {
+                        ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
+                        Expr expr = GroupExpr.create(MapFact.<KeyField, KeyExpr>EMPTY(), new ValueExpr(new DataObject(1)), table.join(mapKeys).getWhere(), GroupType.SUM, MapFact.<KeyField, Expr>EMPTY());
+                        ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> resultMap = new Query<Object, String>(MapFact.<Object, KeyExpr>EMPTYREV(), expr, "value").execute(createSession());
+                        if (!(resultMap instanceof EmptyOrderMap))
+                            droppedTables += table.name + ", ";
+                    }
+                }
+                if (!droppedTables.isEmpty())
+                    throw new RuntimeException("Dropped tables: " + droppedTables.substring(0, droppedTables.length() - 2));
+            }
+      
             for (Map.Entry<Table, Map<List<String>, Boolean>> oldTableIndices : oldDBStructure.tables.entrySet()) {
                 Table oldTable = oldTableIndices.getKey();
                 Table newTable = newDBStructure.getTable(oldTableIndices.getKey().name);
@@ -927,17 +945,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                             drop = true;
                         }
                     }
-                    if (drop) {
-                        systemLogger.info("Table " + oldTable.name + " has been dropped");
-                        droppedTables += oldTable.name + ", ";
-                        if(!denyDropTables)                            
-                            sql.dropIndex(oldTable.name, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
+                    if (drop) {                                       
+                        sql.dropIndex(oldTable.name, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
                     }
                 }
             }
-
-            if(denyDropTables && !droppedTables.isEmpty())
-                throw new RuntimeException("Dropped tables: " + droppedTables.substring(0, droppedTables.length() - 2));
 
             systemLogger.info("Applying migration script");
             alterateDBStructure(oldDBStructure, sql);
@@ -1104,6 +1116,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             for (Table table : oldDBStructure.tables.keySet()) {
                 if (newDBStructure.getTable(table.name) == null) {
                     sql.dropTable(table.name);
+                    systemLogger.info("Table " + table.name + " has been dropped");
                 }
             }
 
