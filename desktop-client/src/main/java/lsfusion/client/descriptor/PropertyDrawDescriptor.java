@@ -48,6 +48,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     private boolean shouldBeLast;
     private ClassViewType forceViewType;
 
+    private String columnsName;
     private List<GroupObjectDescriptor> columnGroupObjects = new ArrayList<GroupObjectDescriptor>();
 
     public void setPropertyObject(PropertyObjectDescriptor propertyObject) { // usage через reflection
@@ -215,6 +216,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, propertyObject);
         pool.serializeObject(outStream, toDraw);
+        pool.writeString(outStream, columnsName);
         pool.serializeCollection(outStream, columnGroupObjects);
         pool.serializeObject(outStream, propertyCaption);
         pool.serializeObject(outStream, propertyShowIf);
@@ -237,6 +239,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         propertyObject = pool.deserializeObject(inStream);
         toDraw = pool.deserializeObject(inStream);
+        columnsName = pool.readString(inStream);
         columnGroupObjects = pool.deserializeList(inStream);
         propertyCaption = pool.deserializeObject(inStream);
         propertyShowIf = pool.deserializeObject(inStream);

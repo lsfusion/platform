@@ -1,5 +1,8 @@
 package lsfusion.client.form.grid;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientObjectType;
@@ -7,6 +10,7 @@ import lsfusion.client.logics.classes.ClientObjectType;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -76,22 +80,71 @@ public class GridTableModel extends AbstractTableModel {
                               Map<ClientPropertyDraw, List<ClientGroupObjectValue>> mapColumnKeys,
                               Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnCaptions,
                               Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> columnShowIfs) {
+
+        //разбиваем на группы свойств, которые будут идти чередуясь для каждого ключа из групп в колонках ("шахматка")
+        Table<String, List<ClientGroupObject>, Integer> columnGroupsIndices = HashBasedTable.create();
+        List<List<ClientPropertyDraw>> columnGroups = new ArrayList<List<ClientPropertyDraw>>();
+        List<List<ClientGroupObjectValue>> columnGroupsColumnKeys = new ArrayList<List<ClientGroupObjectValue>>();
+        
+        for (ClientPropertyDraw property : columnProperties) {
+            if (property.columnsName != null && property.columnGroupObjects != null) {
+                List<ClientPropertyDraw> columnGroup;
+
+                Integer groupInd = columnGroupsIndices.get(property.columnsName, property.columnGroupObjects);
+                if (groupInd != null) {
+                    // уже было свойство с такими же именем и группами в колонках
+                    columnGroup = columnGroups.get(groupInd);
+                } else {
+                    // новая группа свойств
+                    columnGroup = new ArrayList<ClientPropertyDraw>();
+
+                    List<ClientGroupObjectValue> propColumnKeys = mapColumnKeys.get(property);
+                    if (propColumnKeys == null) {
+                        propColumnKeys = ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
+                    }
+                    
+                    columnGroupsColumnKeys.add(propColumnKeys);
+                    columnGroupsIndices.put(property.columnsName, property.columnGroupObjects, columnGroups.size());
+                    columnGroups.add(columnGroup);
+                }
+                columnGroup.add(property);
+            } else {
+                List<ClientGroupObjectValue> propColumnKeys = mapColumnKeys.get(property);
+                if (propColumnKeys == null) {
+                    propColumnKeys = ClientGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
+                }
+                columnGroupsColumnKeys.add(propColumnKeys);
+                columnGroups.add(Collections.singletonList(property));
+            }
+        }
+
         List<ClientPropertyDraw> columnPropsList = new ArrayList<ClientPropertyDraw>();
         List<ClientGroupObjectValue> columnKeysList = new ArrayList<ClientGroupObjectValue>();
-
-        for (ClientPropertyDraw property : columnProperties) {
-            if (mapColumnKeys.containsKey(property)) {
-                Map<ClientGroupObjectValue, Object> columnShowIf = columnShowIfs.get(property);
-                for (ClientGroupObjectValue key : mapColumnKeys.get(property)) {
-                    //не показываем колонку, если propertyCaption равно null
-                    if ((columnShowIf == null || columnShowIf.get(key) != null)) {
-                        columnKeysList.add(key);
-                        columnPropsList.add(property);
+        for (int i = 0; i < columnGroups.size(); i++) {
+            List<ClientPropertyDraw> columnGroup = columnGroups.get(i);
+            List<ClientGroupObjectValue> columnKeys = columnGroupsColumnKeys.get(i);
+            
+            if (columnGroup.size() == 1) {
+                for (ClientPropertyDraw property : columnGroup) {
+                    //showIfs.get() вынесен из двойного цикла
+                    Map<ClientGroupObjectValue, Object> columnShowIf = columnShowIfs.get(property);
+                    for (ClientGroupObjectValue columnKey : columnKeys) {
+                        if (columnShowIf == null || columnShowIf.get(columnKey) != null) {
+                            columnPropsList.add(property);
+                            columnKeysList.add(columnKey);
+                        }
                     }
                 }
             } else {
-                columnPropsList.add(property);
-                columnKeysList.add(ClientGroupObjectValue.EMPTY);
+                for (ClientGroupObjectValue columnKey : columnKeys) {
+                    for (ClientPropertyDraw property : columnGroup) {
+                        Map<ClientGroupObjectValue, Object> columnShowIf = columnShowIfs.get(property);
+                        if (columnShowIf == null || columnShowIf.get(columnKey) != null) {
+                            columnPropsList.add(property);
+                            columnKeysList.add(columnKey);
+                        }
+                    }
+                }
             }
         }
 

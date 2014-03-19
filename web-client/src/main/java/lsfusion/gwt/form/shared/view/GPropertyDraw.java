@@ -32,6 +32,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public String creationPath;
 
     public GGroupObject groupObject;
+    public String columnsName;
     public ArrayList<GGroupObject> columnGroupObjects;
 
     public GType baseType;

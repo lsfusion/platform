@@ -30,7 +30,7 @@ import java.util.*;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Math.min;
 import static java.util.Collections.singleton;
-import static lsfusion.gwt.base.shared.GwtSharedUtils.nullEquals;
+import static lsfusion.gwt.base.shared.GwtSharedUtils.*;
 
 public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private ArrayList<GPropertyDraw> columnProperties = new ArrayList<GPropertyDraw>();
@@ -213,24 +213,75 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
     private void updatedColumnsImpl() {
         if (columnsUpdated) {
+            List<GPropertyDraw> orderedVisibleProperties = getOrderedVisibleProperties(properties);
+
+            //разбиваем на группы свойств, которые будут идти чередуясь для каждого ключа из групп в колонках ("шахматка")
+            NativeHashMap<String, NativeHashMap<List<GGroupObject>, Integer>> columnGroupsIndices = new NativeHashMap<String, NativeHashMap<List<GGroupObject>, Integer>>();
+            List<List<GPropertyDraw>> columnGroups = new ArrayList<List<GPropertyDraw>>();
+            List<List<GGroupObjectValue>> columnGroupsColumnKeys = new ArrayList<List<GGroupObjectValue>>();
+
+            for (GPropertyDraw property : orderedVisibleProperties) {
+                if (property.columnsName != null && property.columnGroupObjects != null) {
+                    List<GPropertyDraw> columnGroup;
+
+                    Integer groupInd = getFromDoubleMap(columnGroupsIndices, property.columnsName, property.columnGroupObjects);
+                    if (groupInd != null) {
+                        // уже было свойство с такими же именем и группами в колонках
+                        columnGroup = columnGroups.get(groupInd);
+                    } else {
+                        // новая группа свойств
+                        columnGroup = new ArrayList<GPropertyDraw>();
+
+                        List<GGroupObjectValue> propColumnKeys = columnKeys.get(property);
+                        if (propColumnKeys == null) {
+                            propColumnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
+                        }
+
+                        columnGroupsColumnKeys.add(propColumnKeys);
+                        putToDoubleNativeMap(columnGroupsIndices, property.columnsName, property.columnGroupObjects, columnGroups.size());
+                        columnGroups.add(columnGroup);
+                    }
+                    columnGroup.add(property);
+                } else {
+                    List<GGroupObjectValue> propColumnKeys = columnKeys.get(property);
+                    if (propColumnKeys == null) {
+                        propColumnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
+                    }
+                    columnGroupsColumnKeys.add(propColumnKeys);
+                    columnGroups.add(Collections.singletonList(property));
+                }
+            }
+
             columnProperties.clear();
             columnKeysList.clear();
 
-            List<GPropertyDraw> orderedVisibleProperties = getOrderedVisibleProperties(properties); 
-            
-            for (GPropertyDraw property : orderedVisibleProperties) {
-                List<GGroupObjectValue> propertyColumnKeys = columnKeys.get(property);
-                if (propertyColumnKeys == null) {
-                    propertyColumnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
-                }
-
-                Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
-                for (GGroupObjectValue columnKey : propertyColumnKeys) {
-                    if ((propShowIfs == null || propShowIfs.get(columnKey) != null)) {
-                        columnProperties.add(property);
-                        columnKeysList.add(columnKey);
+            for (int i = 0; i < columnGroups.size(); i++) {
+                List<GPropertyDraw> columnGroup = columnGroups.get(i);
+                List<GGroupObjectValue> columnKeys = columnGroupsColumnKeys.get(i);
+                
+                if (columnGroup.size() == 1) {
+                    for (GPropertyDraw property : columnGroup) {
+                        //showIfs.get() вынесен из двойного цикла
+                        Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
+                        for (GGroupObjectValue columnKey : columnKeys) {
+                            if ((propShowIfs == null || propShowIfs.get(columnKey) != null)) {
+                                columnProperties.add(property);
+                                columnKeysList.add(columnKey);
+                            }
+                        }
+                    }
+                } else {
+                    for (GGroupObjectValue columnKey : columnKeys) {
+                        for (GPropertyDraw property : columnGroup) {
+                            Map<GGroupObjectValue, Object> propShowIfs = showIfs.get(property);
+                            if ((propShowIfs == null || propShowIfs.get(columnKey) != null)) {
+                                columnProperties.add(property);
+                                columnKeysList.add(columnKey);
+                            }
+                        }
                     }
                 }
+
             }
 
             int rowHeight = 0;

@@ -371,17 +371,19 @@ public class GridTable extends ClientPropertyTable {
         List<ClientPropertyDraw> result = new ArrayList<ClientPropertyDraw>();
 
         for (ClientPropertyDraw property : propertiesList) {
-            if (hasUserPreferences()) {
+            boolean add = !property.hide;
+            if (add && hasUserPreferences()) {
                 Boolean userHide = getUserHide(property);
                 if (userHide == null || !userHide) {
                     if (getUserOrder(property) == null) {
                         setUserHide(property, true);
                         setUserOrder(property, Short.MAX_VALUE + propertiesList.indexOf(property));
-                    } else {
-                        result.add(property);
+                        add = false;
                     }
                 }
-            } else if (!property.hide) {
+            }
+
+            if (add) {
                 result.add(property);
             }
         }

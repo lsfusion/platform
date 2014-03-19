@@ -268,6 +268,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.groupObject = convertOrCast(clientPropertyDraw.groupObject);
         if (!clientPropertyDraw.columnGroupObjects.isEmpty()) {
+            propertyDraw.columnsName = clientPropertyDraw.columnsName;
             propertyDraw.columnGroupObjects = new ArrayList<GGroupObject>();
             for (ClientGroupObject clientColumnGroup : clientPropertyDraw.columnGroupObjects) {
                 GGroupObject columnGroup = convertOrCast(clientColumnGroup);

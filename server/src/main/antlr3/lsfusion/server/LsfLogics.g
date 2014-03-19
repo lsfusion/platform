@@ -559,7 +559,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HINTTABLE' { $options.setHintTable(true); }
 		|	'TOOLBAR' { $options.setDrawToToolbar(true); }
 		|	'OPTIMISTICASYNC' { $options.setOptimisticAsync(true); }
-		|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
+		|	'COLUMNS' (columnsName=stringLiteral)? '(' ids=nonEmptyIdList ')' { $options.setColumns($columnsName.text, getGroupObjectsList($ids.ids)); }
 		|	'SHOWIF' propObj=formCalcPropertyObject { $options.setShowIf($propObj.property); }
 		|	'READONLYIF' propObj=formCalcPropertyObject { $options.setReadOnlyIf($propObj.property); }
 		|	'BACKGROUND' propObj=formCalcPropertyObject { $options.setBackground($propObj.property); }

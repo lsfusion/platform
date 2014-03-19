@@ -21,7 +21,7 @@ public class FormPropertyOptions {
     private Boolean hintTable;
     private Boolean drawToToolbar;
     private Boolean optimisticAsync;
-    private List<GroupObjectEntity> columns;
+    private Columns columns;
     private CalcPropertyObjectEntity showIf;
     private CalcPropertyObjectEntity readOnlyIf;
     private CalcPropertyObjectEntity background;
@@ -46,12 +46,16 @@ public class FormPropertyOptions {
         this.editType = editType;
     }
 
-    public List<GroupObjectEntity> getColumns() {
+    public Columns getColumns() {
         return columns;
     }
 
-    public void setColumns(List<GroupObjectEntity> columns) {
+    public void setColumns(Columns columns) {
         this.columns = columns;
+    }
+
+    public void setColumns(String columnsName, List<GroupObjectEntity> columns) {
+        this.columns = new Columns(columnsName, columns);
     }
 
     public CalcPropertyObjectEntity getShowIf() {
@@ -257,5 +261,15 @@ public class FormPropertyOptions {
         merged.setNeighbourType(nvl(overrides.isRightNeighbour(), isRightNeighbour));
         merged.setQuickFilterPropertyDraw(nvl(overrides.getQuickFilterPropertyDraw(), quickFilterPropertyDraw));
         return merged;
+    }
+    
+    public static class Columns {
+        public final String columnsName;
+        public final List<GroupObjectEntity> columns;
+
+        public Columns(String columnsName, List<GroupObjectEntity> columns) {
+            this.columnsName = columnsName;
+            this.columns = columns;
+        }
     }
 }

@@ -230,6 +230,7 @@ public class PropertyDrawView extends ComponentView {
         pool.serializeObject(outStream, pool.context.view.getGroupObject(
                 SerializationType.VISUAL_SETUP.equals(serializationType) ? entity.toDraw : entity.getToDraw(pool.context.view.entity)));
 
+        pool.writeString(outStream, entity.columnsName);
         ImOrderSet<GroupObjectEntity> columnGroupObjects = entity.getColumnGroupObjects();
         outStream.writeInt(columnGroupObjects.size());
         for (GroupObjectEntity groupEntity : columnGroupObjects) {

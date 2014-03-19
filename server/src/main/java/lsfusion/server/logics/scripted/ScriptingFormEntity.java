@@ -291,8 +291,9 @@ public class ScriptingFormEntity {
             property.setEditType(options.getEditType());
         }
 
-        if (options.getColumns() != null) {
-            property.setColumnGroupObjects(SetFact.fromJavaOrderSet(options.getColumns()));
+        FormPropertyOptions.Columns columns = options.getColumns();
+        if (columns != null) {
+            property.setColumnGroupObjects(columns.columnsName, SetFact.fromJavaOrderSet(columns.columns));
         }
 
         property.propertyCaption = options.getHeader();

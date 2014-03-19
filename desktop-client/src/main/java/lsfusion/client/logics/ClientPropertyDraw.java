@@ -96,6 +96,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String toolTip;
 
     public ClientGroupObject groupObject;
+    public String columnsName;
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<ClientGroupObject>();
 
     public boolean autoHide;
@@ -377,6 +378,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         groupObject = pool.deserializeObject(inStream);
 
+        columnsName = pool.readString(inStream);
         columnGroupObjects = pool.deserializeList(inStream);
 
         checkEquals = inStream.readBoolean();

@@ -63,6 +63,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String eventID = null;
 
     // предполагается что propertyObject ссылается на все (хотя и не обязательно)
+    public String columnsName;
     public Object columnGroupObjects = SetFact.mOrderExclSet();
     private boolean finalizedColumnGroupObjects;
 
@@ -255,8 +256,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         return (ImOrderSet<GroupObjectEntity>)columnGroupObjects;
     }
-    public void setColumnGroupObjects(ImOrderSet<GroupObjectEntity> columnGroupObjects) {
+    public void setColumnGroupObjects(String columnsName, ImOrderSet<GroupObjectEntity> columnGroupObjects) {
         assert !finalizedColumnGroupObjects;
+        this.columnsName = columnsName;
         finalizedColumnGroupObjects = true;
         this.columnGroupObjects = columnGroupObjects;
     }
@@ -314,6 +316,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.serializeObject(outStream, propertyObject);
         pool.serializeObject(outStream, toDraw);
+        pool.writeString(outStream, columnsName);
         pool.serializeCollection(outStream, getColumnGroupObjects().toJavaList());
 
         //не сериализуем эти property*, если они были созданы без привязки к BL, через DerivedProperty.*
@@ -356,7 +359,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         propertyObject = pool.deserializeObject(inStream);
         toDraw = pool.deserializeObject(inStream);
-        setColumnGroupObjects(SetFact.fromJavaOrderSet(pool.<GroupObjectEntity>deserializeList(inStream)));
+        setColumnGroupObjects(pool.readString(inStream), SetFact.fromJavaOrderSet(pool.<GroupObjectEntity>deserializeList(inStream)));
         propertyCaption = pool.deserializeObject(inStream);
         propertyShowIf = pool.deserializeObject(inStream);
         propertyReadOnly = pool.deserializeObject(inStream);
