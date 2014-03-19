@@ -34,6 +34,18 @@ onStarted() += ACTION {
     refreshRepeatableReadTILMode();
 } 
 
+setReupdateMode 'Включить REUPDATE' = ACTION CUSTOM 'lsfusion.server.logics.service.SetReupdateModeActionProperty' (BOOLEAN);
+reupdateMode 'Включен REUPDATE' = DATA BOOLEAN ();
+refreshReupdateMode 'Обновить REUPDATE в VM'() = ACTION {
+    setReupdateMode(reupdateMode());
+}
+WHEN CHANGED(reupdateMode()) DO {
+    refreshReupdateMode();
+}
+onStarted() += ACTION {
+    refreshReupdateMode();
+} 
+
 restartServerAction 'Остановить сервер' = ACTION CUSTOM 'lsfusion.server.logics.service.RestartActionProperty';
 runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'lsfusion.server.logics.service.GarbageCollectorActionProperty';
 cancelRestartServerAction 'Отменить остановку сервера' = ACTION CUSTOM 'lsfusion.server.logics.service.CancelRestartActionProperty';
@@ -48,7 +60,7 @@ FORM admin 'Администрирование'
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, 
                  vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, dropLRU, toggleExplainAnalyzeMode, 
                  toggleExplainMode, toggleVolatileStats,
-                 toggleSQLLoggerDebugMode, toggleRemoteLoggerDebugMode, TILMode, singleTransaction
+                 toggleSQLLoggerDebugMode, toggleRemoteLoggerDebugMode, TILMode, reupdateMode, singleTransaction
 ;
 
 DESIGN admin FROM DEFAULT {
@@ -95,6 +107,7 @@ DESIGN admin FROM DEFAULT {
             ADD PROPERTY(vacuumDBAction());
             ADD PROPERTY(toggleVolatileStats());
             ADD PROPERTY(TILMode());
+            ADD PROPERTY(reupdateMode());
             ADD PROPERTY(singleTransaction());
         }
         NEW virtualMachine {

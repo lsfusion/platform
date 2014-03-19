@@ -2259,12 +2259,17 @@ actionCaseBranchBody[List<TypedParameter> context, boolean dynamic] returns [LPW
 	;
 
 applyActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	boolean single = false;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedApplyAProp($applyPDB.property);
+		$property = self.addScriptedApplyAProp($applyPDB.property, single);
 	}
 }
-	:	'APPLY' applyPDB=actionPropertyDefinitionBody[context, dynamic]
+	:	'APPLY' 
+        ('SINGLE' { single = true; })?
+        applyPDB=actionPropertyDefinitionBody[context, dynamic]
 	;
 
 multiActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property] 

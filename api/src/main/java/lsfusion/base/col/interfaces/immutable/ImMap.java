@@ -36,6 +36,7 @@ public interface ImMap<K, V> {
     V getObject(Object key);
     boolean containsKey(K key);
     boolean containsValue(V value);
+    public boolean containsNull();
 
     boolean identity();
 

@@ -24,6 +24,7 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.DBManager;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChanges;
 
@@ -84,7 +85,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
             query.addProperty("dbvalue", dbExpr);
         query.addProperty("calcvalue", calculateExpr);
         query.and(dbExpr.getWhere().or(calculateExpr.getWhere()));
-        query.and(dbExpr.compare(calculateExpr, Compare.EQUALS).not());
+        if(!DBManager.RECALC_REUPDATE)
+            query.and(dbExpr.equalsFull(calculateExpr).not());
         return query.getQuery();
     }
 

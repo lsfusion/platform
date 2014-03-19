@@ -727,11 +727,13 @@ public abstract class LogicsModule {
 
     // ------------------------ APPLY ----------------- //
 
-    protected LAP addApplyAProp(AbstractGroup group, String name, String caption, LAP action) {
+    protected LAP addApplyAProp(AbstractGroup group, String name, String caption, LAP action, boolean singleApply) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
-        return addProperty(group, new LAP(new ApplyActionProperty(baseLM, actionImplement, name, caption, listInterfaces)));
+        ApplyActionProperty applyAction = new ApplyActionProperty(baseLM, actionImplement, name, caption, listInterfaces);
+        actionImplement.property.singleApply = singleApply;
+        return addProperty(group, new LAP(applyAction));
     }
     
     // ------------------- NEWSESSION ----------------- //

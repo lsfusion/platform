@@ -68,7 +68,11 @@ public abstract class ExecutionEnvironment {
         return apply(context.getBL(), context, context);
     }
 
-    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction) throws SQLException, SQLHandledException;
+    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction) throws SQLException, SQLHandledException {
+        return apply(BL, update, interaction, null);
+    }
+
+    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException;
 
     public abstract void cancel() throws SQLException, SQLHandledException;
 

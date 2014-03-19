@@ -3,6 +3,7 @@ package lsfusion.server.data;
 import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.data.query.AdjustState;
 import lsfusion.server.data.query.AdjustVolatileExecuteEnvironment;
 import lsfusion.server.data.query.ExecuteEnvironment;
 import lsfusion.server.data.query.QueryExecuteEnvironment;
@@ -59,7 +60,7 @@ public class SQLAspect {
     private Object executeRepeatableStatement(ProceedingJoinPoint thisJoinPoint, SQLSession session, AdjustVolatileExecuteEnvironment env, ProceedDefaultEnv proceedDefault) throws Throwable {
         
         Object result = null;
-        Object state = env.before(session);
+        AdjustState state = env.before(session);
         if(state == null) // за null'им параметр
             return proceedDefault.proceed();
         

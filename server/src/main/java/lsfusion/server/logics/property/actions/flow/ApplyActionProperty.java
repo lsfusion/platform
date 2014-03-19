@@ -2,10 +2,7 @@ package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
@@ -23,7 +20,7 @@ public class ApplyActionProperty extends KeepContextActionProperty {
                                                              String sID, String caption, ImOrderSet<I> innerInterfaces) {
         super(sID, caption, innerInterfaces.size());
 
-        this.action = (ActionPropertyMapImplement<?, PropertyInterface>) action;
+        this.action = action.map(getMapInterfaces(innerInterfaces).reverse());
         this.canceled = LM.getLCPByOldName("canceled").property;
         
         finalizeInit();
@@ -59,14 +56,11 @@ public class ApplyActionProperty extends KeepContextActionProperty {
     @Override
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
 
-        FlowResult result = action.execute(context);
-        if (context.apply())
-            return result;
-        else {
+        if (!context.apply(action == null ? null : action.getValueImplement(context.getKeys())))
             if(canceled != null)
                 canceled.change(context, true);
-            return FlowResult.THROWS;
-        }
+
+        return FlowResult.FINISH;
     }
 
     public ImSet<ActionProperty> getDependActions() {

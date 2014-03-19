@@ -1459,6 +1459,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public static int SESSION_TIL = -1;
     public static int ID_TIL = Connection.TRANSACTION_REPEATABLE_READ;
 
+    public static boolean RECALC_REUPDATE = false;
+    public static boolean PROPERTY_REUPDATE = false;
+
     public void dropColumn(String tableName, String columnName) throws SQLException, SQLHandledException {
         SQLSession sql = getThreadLocalSql();
         sql.startTransaction(DBManager.START_TIL);

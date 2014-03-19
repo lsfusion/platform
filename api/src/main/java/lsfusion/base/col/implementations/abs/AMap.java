@@ -98,6 +98,13 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         return false;
     }
 
+    public boolean containsNull() {
+        for(int i=0,size=size();i<size;i++)
+            if(getValue(i) == null)
+                return true;
+        return false;
+    }
+
     public ImMap<V, ImSet<K>> groupValues() {
         MExclMap<V, MExclSet<K>> mResult = MapFact.mExclMapMax(size());
         for (int i=0,size=size();i<size;i++) {

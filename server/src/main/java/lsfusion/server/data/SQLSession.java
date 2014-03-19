@@ -182,6 +182,15 @@ public class SQLSession extends MutableObject {
     }
 
     private Integer prevIsolation;
+    private long transStartTime;
+    public int getSecondsFromTransactStart() {
+        if(isInTransaction())
+            return (int) ((System.currentTimeMillis() - transStartTime)/1000);
+        else
+            return 0;
+    }
+
+
     public void startTransaction(int isolationLevel) throws SQLException, SQLHandledException {
         lockWrite();
         try {
@@ -189,6 +198,8 @@ public class SQLSession extends MutableObject {
                 pushVolatileStats(null);
     
             if(inTransaction++ == 0) {
+                transStartTime = System.currentTimeMillis();
+
                 needPrivate();
                 if(isolationLevel > 0) {
                     prevIsolation = privateConnection.sql.getTransactionIsolation();

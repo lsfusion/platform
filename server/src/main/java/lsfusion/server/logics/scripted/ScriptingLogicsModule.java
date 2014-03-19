@@ -1557,13 +1557,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     }
 
-    public LPWithParams addScriptedApplyAProp(LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedApplyAProp(LPWithParams action, boolean singleApply) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedApplyAProp(" + action + ");");
         List<LPWithParams> propParams = new ArrayList<LPWithParams>();
         if(action != null)
             propParams.add(action);
         
-        LP result = addApplyAProp(null, genSID(), "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null);
+        LP result = addApplyAProp(null, genSID(), "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null, singleApply);
         return new LPWithParams(result, mergeAllParams(propParams));
     }
 

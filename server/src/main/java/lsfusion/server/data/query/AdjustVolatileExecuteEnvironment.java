@@ -1,12 +1,12 @@
 package lsfusion.server.data.query;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.server.Settings;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.SQLTimeoutException;
 
 import java.sql.SQLException;
-import java.sql.Statement;
 
 public class AdjustVolatileExecuteEnvironment extends QueryExecuteEnvironment {
 
@@ -14,67 +14,60 @@ public class AdjustVolatileExecuteEnvironment extends QueryExecuteEnvironment {
     private boolean fixVolatile;
     private int timeout = Settings.get().getTimeoutStart();
 
-    private static class State {
-        public final int prevTimeout;
-
-        private State(int prevTimeout) {
-            this.prevTimeout = prevTimeout;
-        }
+    private static int getTransAdjust(SQLSession sqlSession) {
+        return sqlSession.getSecondsFromTransactStart();
     }
-
-
-    public synchronized Object before(SQLSession sqlSession) throws SQLException {
+            
+    public synchronized AdjustState before(SQLSession sqlSession) throws SQLException {
         if(sqlSession.isVolatileStats() || sqlSession.isNoHandled())
             return null;
         
-        if(volatileStats) {
+        if(volatileStats)
             sqlSession.pushVolatileStats(null);
-            return new State(timeout);
-        }
 
-        return timeout;
+        return new AdjustState(timeout, volatileStats, getTransAdjust(sqlSession));
     }
 
-    public void after(Object queryExecState, SQLSession sqlSession) throws SQLException {
-        if(queryExecState instanceof State)
+    public void after(AdjustState queryExecState, SQLSession sqlSession) throws SQLException {
+        if(queryExecState.volatileStats)
             sqlSession.popVolatileStats(null);
     }
 
-    public void succeeded(Object state) {
-        if(state instanceof State) {
+    public void succeeded(AdjustState state) {
+        if(state.volatileStats && timeout > state.transAdjust) { // только если больше чем transAdjust, потому как без volatileStats с большой вероятностью выполнялось для меньшего timeout'а
             fixVolatile = true; // помечаем запрос как опасный, и всегда будем использовать volatile stats
         }
     }
 
-    public synchronized void failed(Object state, SQLHandledException e) {
+    public synchronized void failed(AdjustState state, SQLHandledException e) {
         
-        if(!(e instanceof SQLTimeoutException))
+        if(!(e instanceof SQLTimeoutException && !((SQLTimeoutException)e).isTransactTimeout))
             return;
         
         // discard'м если состояние на конец отличается от состояния на начало
-        if(volatileStats) {
-            if(!(state instanceof State && ((State)state).prevTimeout==timeout))
-                return;
-        } else {
-            if(!(state instanceof Integer && timeout == ((Integer) state)))
-                return;
-        }
+        if(!(volatileStats == state.volatileStats && timeout == state.prevTimeout))
+            return;
 
         int degree = Settings.get().getTimeoutDegree();
         if(fixVolatile) {
             volatileStats = true; // на всякий случай, так как suceeded не synchronized 
-            timeout *= degree;
+            timeout = 0; // timeout не нужен
         } else {
-            if(volatileStats)
+            if(timeout < state.transAdjust)
+                timeout = state.transAdjust;
+            else if(volatileStats)
                 timeout *= degree;
             volatileStats = !volatileStats;
         }
     }
 
-    public QueryExecuteInfo getInfo(SQLSession session, int transactTimeout) {
+    public synchronized QueryExecuteInfo getInfo(SQLSession session, int transactTimeout) {
         int setTimeout = timeout;
+        if(setTimeout > 0)
+            setTimeout = BaseUtils.max(setTimeout, getTransAdjust(session));
+        
         boolean result = false;
-        if(session.isInTransaction() && !session.isNoTransactTimeout() && transactTimeout > 0 && timeout >= transactTimeout) {
+        if(session.isInTransaction() && !session.isNoTransactTimeout() && transactTimeout > 0 && (setTimeout >= transactTimeout || setTimeout == 0)) {
             setTimeout = transactTimeout;
             result = volatileStats;
         }

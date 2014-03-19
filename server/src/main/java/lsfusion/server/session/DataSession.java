@@ -46,6 +46,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
+import org.apache.poi.util.SystemOutLogger;
 
 import javax.swing.*;
 import java.sql.SQLException;
@@ -1017,14 +1018,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 
-    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction) throws SQLException, SQLHandledException {
-        return apply(BL, null, update, interaction);
+    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
+        return apply(BL, null, update, interaction, applyAction);
     }
 
     public boolean check(BusinessLogics BL, FormInstance form, UserInteraction interaction) throws SQLException, SQLHandledException {
         setApplyFilter(ApplyFilter.ONLYCHECK);
 
-        boolean result = apply(BL, form, null, interaction);
+        boolean result = apply(BL, form, null, interaction, null);
 
         setApplyFilter(ApplyFilter.NO);
         return result;
@@ -1234,9 +1235,27 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private <K,V> void savePropertyChanges(Table implementTable, ImMap<V, CalcProperty> props, ImRevMap<K, KeyField> mapKeys, SessionTableUsage<K, V> changeTable, boolean onlyNotNull) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> modifyQuery = new QueryBuilder<KeyField, PropertyField>(implementTable);
         Join<V> join = changeTable.join(mapKeys.join(modifyQuery.getMapExprs()));
-        for (int i=0,size=props.size();i<size;i++)
-            modifyQuery.addProperty(props.getValue(i).field, join.getExpr(props.getKey(i)));
+        
+        Where reupdateWhere = null;
+        Join<PropertyField> dbJoin = null;
+        if(!DBManager.PROPERTY_REUPDATE && props.size() < Settings.get().getDisablePropertyReupdateCount()) {
+            reupdateWhere = Where.TRUE;
+            dbJoin = implementTable.join(modifyQuery.getMapExprs());
+        }
+                    
+        for (int i=0,size=props.size();i<size;i++) {
+            PropertyField field = props.getValue(i).field;
+            Expr newExpr = join.getExpr(props.getKey(i));
+            modifyQuery.addProperty(field, newExpr);
+
+            if(reupdateWhere != null)
+                reupdateWhere = reupdateWhere.and(newExpr.equalsFull(dbJoin.getExpr(field)));
+        }
         modifyQuery.and(join.getWhere());
+        
+        if(reupdateWhere != null)
+            modifyQuery.and(reupdateWhere.not());
+        
         sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env));
     }
 
@@ -1272,8 +1291,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         recursiveUsed.addAll(sessionUsed.toJavaSet());
     }
 
-    public boolean apply(final BusinessLogics<?> BL, FormInstance form, UpdateCurrentClasses update, UserInteraction interaction) throws SQLException, SQLHandledException {
-        if(!hasChanges())
+    public boolean apply(final BusinessLogics<?> BL, FormInstance form, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
+        if(!hasChanges() && applyAction == null)
             return true;
 
         // до чтения persistent свойств в сессию
@@ -1306,15 +1325,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         dataModifier.clearHints(sql);
 
-        return transactApply(BL, update, interaction, 0);
+        return transactApply(BL, update, interaction, 0, applyAction);
     }
 
-    private boolean transactApply(BusinessLogics<?> BL, UpdateCurrentClasses update, UserInteraction interaction, int autoAttemptCount) throws SQLException, SQLHandledException {
+    private boolean transactApply(BusinessLogics<?> BL, UpdateCurrentClasses update, UserInteraction interaction, int autoAttemptCount, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
         startTransaction(update, BL);
 
         try {
-            return recursiveApply(SetFact.<ActionPropertyValueImplement>EMPTYORDER(), BL, update);
+            return recursiveApply(applyAction == null ? SetFact.<ActionPropertyValueImplement>EMPTYORDER() : SetFact.singletonOrder(applyAction), BL, update);
         } catch (Throwable t) { // assert'им что последняя SQL комманда, работа с транзакцией
             try {
                 rollbackApply();
@@ -1341,7 +1360,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                         sql.pushNoTransactTimeout();
                         
                     try {
-                        return transactApply(BL, update, interaction, 0);
+                        return transactApply(BL, update, interaction, 0, applyAction);
                     } finally {
                         if(noTimeout)
                             sql.popNoTransactTimeout();
@@ -1402,6 +1421,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         ImOrderSet<Object> execActions = SetFact.addOrderExcl(actions, BL.getAppliedProperties(this));
         for (Object property : execActions) {
+//            ServerLoggers.systemLogger.info(execActions.indexOf(property) + " of " + execActions.size() + " " + property);
             if(property instanceof ActionPropertyValueImplement) {
                 startPendingSingles(((ActionPropertyValueImplement) property).property);
                 ((ActionPropertyValueImplement)property).execute(this);

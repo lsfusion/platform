@@ -2,10 +2,7 @@ package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -24,11 +21,13 @@ public class TryActionProperty extends KeepContextActionProperty {
 
 
     public <I extends PropertyInterface> TryActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, 
-                                                           ActionPropertyMapImplement<?, PropertyInterface> tryAction,
-                                                           ActionPropertyMapImplement<?, PropertyInterface> finallyAction) {
+                                                           ActionPropertyMapImplement<?, I> tryAction,
+                                                           ActionPropertyMapImplement<?, I> finallyAction) {
         super(sID, caption, innerInterfaces.size());
-        this.tryAction = tryAction;
-        this.finallyAction = finallyAction;
+
+        final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
+        this.tryAction = tryAction.map(mapInterfaces);
+        this.finallyAction = finallyAction.map(mapInterfaces);
 
         finalizeInit();
     }

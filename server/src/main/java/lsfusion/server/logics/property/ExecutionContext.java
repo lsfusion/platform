@@ -223,12 +223,12 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         return checkApply(getBL());
     }
 
-    public boolean apply(BusinessLogics BL) throws SQLException, SQLHandledException {
-        return getEnv().apply(BL, this, this);
+    public boolean apply() throws SQLException, SQLHandledException {
+        return apply(null);
     }
 
-    public boolean apply() throws SQLException, SQLHandledException {
-        return apply(getBL());
+    public boolean apply(ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
+        return getEnv().apply(getBL(), this, this, applyAction);
     }
 
     public void cancel() throws SQLException, SQLHandledException {

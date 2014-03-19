@@ -955,4 +955,14 @@ public class Settings {
     public void setAlwaysDropSessionTableAfter(boolean alwaysDropSessionTableAfter) {
         this.alwaysDropSessionTableAfter = alwaysDropSessionTableAfter;
     }
+
+    private int disablePropertyReupdateCount = 10; // при записи свойств в базу после какого количества свойств включать REUPDATE (чтобы исключить избыточную проверку так как с большой вероятностью поля все равно придется обновить) 
+
+    public int getDisablePropertyReupdateCount() {
+        return disablePropertyReupdateCount;
+    }
+
+    public void setDisablePropertyReupdateCount(int disablePropertyReupdateCount) {
+        this.disablePropertyReupdateCount = disablePropertyReupdateCount;
+    }
 }

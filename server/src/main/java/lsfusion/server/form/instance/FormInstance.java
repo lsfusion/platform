@@ -1059,17 +1059,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return session.check(BL, this, interaction);
     }
 
-    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction) throws SQLException, SQLHandledException {
+    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
         if (entity.isSynchronizedApply)
             synchronized (entity) {
-                return syncApply(update, interaction);
+                return syncApply(update, interaction, applyAction);
             }
         else
-            return syncApply(update, interaction);
+            return syncApply(update, interaction, applyAction);
     }
 
-    private boolean syncApply(UpdateCurrentClasses update, UserInteraction interaction) throws SQLException, SQLHandledException {
-        boolean succeeded = session.apply(BL, this, update, interaction);
+    private boolean syncApply(UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
+        boolean succeeded = session.apply(BL, this, update, interaction, applyAction);
 
         if (!succeeded)
             return false;

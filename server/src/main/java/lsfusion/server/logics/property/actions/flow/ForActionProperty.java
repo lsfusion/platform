@@ -108,7 +108,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         public void update(DataSession session) throws SQLException, SQLHandledException {
             MOrderExclSet<ImMap<I, DataObject>> mRows = SetFact.mOrderExclSet(rows.size() - i);
             for(int j=i;j<rows.size();j++)
-                mRows.exclAdd(session.updateCurrentClasses(rows.get(i)));
+                mRows.exclAdd(session.updateCurrentClasses(rows.get(j)));
             i=0;
             rows = mRows.immutableOrder();
         }
