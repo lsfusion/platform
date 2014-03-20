@@ -7,14 +7,12 @@ import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyFormEntity;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -55,11 +53,19 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
                 data.get(j).add(String.valueOf(formRows.get(j).keys.get(object)));
         }
 
-        for(PropertyDrawInstance property : formInstance.getCalcProperties()) {
-            titleRow.add(property.toString());
-
-            for(int j=0;j<formRows.size();j++)
-                data.get(j).add(BaseUtils.toCaption(formRows.get(j).values.get(property)));
+        for (PropertyDrawInstance property : formInstance.getCalcProperties()) {
+            boolean emptyColumn = true;
+            for (int j = 0; j < formRows.size(); j++) {
+                if (!BaseUtils.toCaption(formRows.get(j).values.get(property)).isEmpty()) {
+                    emptyColumn = false;
+                    break;
+                }
+            }
+            if (!emptyColumn) {
+                titleRow.add(property.toString());
+                for (int j = 0; j < formRows.size(); j++)
+                    data.get(j).add(BaseUtils.toCaption(formRows.get(j).values.get(property)));
+            }
         }
 /*        for (FormRow formRow : formRows) {
             ImMap<ImSet<ObjectInstance>, ImSet<PropertyDrawInstance>> groupRows = formRow.values.keys().group(new BaseUtils.Group<ImSet<ObjectInstance>, PropertyDrawInstance>() {

@@ -1596,6 +1596,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> resultSelect = query.execute(this, mQueryOrders.immutableOrder(), orderTop);
 
+        Set<Integer> notEmptyValues = new HashSet<Integer>();
+        LinkedHashMap<ImMap<ObjectInstance, Object>, ImMap<PropertyDrawInstance, Object>> result = new LinkedHashMap<ImMap<ObjectInstance, Object>, ImMap<PropertyDrawInstance, Object>>();
         MOrderExclMap<ImMap<ObjectInstance, Object>, ImMap<PropertyDrawInstance, Object>> mResult = MapFact.mOrderExclMap(resultSelect.size());
         for (int i = 0, size = resultSelect.size(); i < size; i++) {
             ImMap<ObjectInstance, Object> resultKey = resultSelect.getKey(i);
@@ -1608,7 +1610,21 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         mGroupValue.exclAdd(object, resultKey.get(object));
                     else
                         mGroupValue.exclAdd(object, object.getObjectValue().getValue());
-            mResult.exclAdd(mGroupValue.immutable(), resultValue.filterIncl(propertyDraws));
+            ImMap<PropertyDrawInstance, Object> values = resultValue.filterIncl(propertyDraws);
+            for(int j = 0; j < values.size(); j++) {
+                if(values.getValue(j) != null)
+                    notEmptyValues.add(j);
+            }
+            result.put(mGroupValue.immutable(), resultValue.filterIncl(propertyDraws));
+        }
+        for(Entry<ImMap<ObjectInstance, Object>, ImMap<PropertyDrawInstance, Object>> entry : result.entrySet()) {
+            ImMap<PropertyDrawInstance, Object> sourceValues = entry.getValue();
+            ImMap<PropertyDrawInstance, Object> targetValues = MapFact.EMPTY();
+            for(int j = 0; j < sourceValues.size(); j++) {
+                if(notEmptyValues.contains(j))
+                    targetValues = targetValues.addExcl(sourceValues.getKey(j), sourceValues.getValue(j));
+            }
+            mResult.exclAdd(entry.getKey(), targetValues);    
         }
 
         return new FormData(mResult.immutableOrder());
