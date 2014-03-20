@@ -86,7 +86,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         query.addProperty("calcvalue", calculateExpr);
         query.and(dbExpr.getWhere().or(calculateExpr.getWhere()));
         if(!DBManager.RECALC_REUPDATE)
-            query.and(dbExpr.equalsFull(calculateExpr).not());
+            query.and(dbExpr.compare(calculateExpr, Compare.EQUALS).not().and(dbExpr.getWhere().or(calculateExpr.getWhere())));
         return query.getQuery();
     }
 

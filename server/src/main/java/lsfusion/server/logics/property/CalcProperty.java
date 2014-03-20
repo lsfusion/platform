@@ -35,10 +35,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
@@ -940,7 +937,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             QueryBuilder<T, String> fullQuery = new QueryBuilder<T, String>(query.getMapKeys());
             Expr newExpr = query.getExpr("value");
             fullQuery.addProperty("value", newExpr);
-            fullQuery.addProperty("changed", query.getExpr("changed").and(newExpr.getWhere().or(getExpr(fullQuery.getMapExprs()).getWhere())));
+            
+            Expr dbExpr = getExpr(fullQuery.getMapExprs());
+            Where fullWhere = newExpr.getWhere().or(dbExpr.getWhere());
+            if(!DBManager.PROPERTY_REUPDATE)
+                fullWhere = fullWhere.and(newExpr.compare(dbExpr, Compare.EQUALS).not());            
+
+            fullQuery.addProperty("changed", query.getExpr("changed").and(fullWhere));
             return fullQuery.getQuery();
         }
 

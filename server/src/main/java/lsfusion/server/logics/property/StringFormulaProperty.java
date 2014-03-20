@@ -13,7 +13,8 @@ import lsfusion.server.session.PropertyChanges;
 
 public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaProperty.Interface> {
 
-    final String formula;
+    private final String formula;
+    private final boolean hasNotNull; 
 
     public static class Interface extends PropertyInterface {
 
@@ -40,9 +41,10 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         throw new RuntimeException("not found");
     }
 
-    public StringFormulaProperty(String sID, DataClass valueClass, String formula, int paramCount) {
+    public StringFormulaProperty(String sID, DataClass valueClass, String formula, int paramCount, boolean hasNotNull) {
         super(sID,formula,getInterfaces(paramCount),valueClass);
         this.formula = formula;
+        this.hasNotNull = hasNotNull;
 
         finalizeInit();
     }
@@ -57,6 +59,6 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
                 return joinImplement.get(value);
             }});
 
-        return FormulaExpr.createCustomFormula(formula, value, params);
+        return FormulaExpr.createCustomFormula(formula, value, params, hasNotNull);
     }
 }

@@ -1781,16 +1781,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addDCCProp(index - 1), Arrays.asList(ccProp));
     }
 
-    public LCP addScriptedSFProp(String typeName, String formulaText) throws ScriptingErrorLog.SemanticErrorException {
+    public LCP addScriptedSFProp(String typeName, String formulaText, boolean hasNotNull) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedSFProp(" + typeName + ", " + formulaText + ");");
         Set<Integer> params = findFormulaParameters(formulaText);
         checkFormulaParameters(params);
         if (typeName != null) {
             ValueClass cls = findClassByCompoundName(typeName);
             checkFormulaClass(cls);
-            return addSFProp(transformFormulaText(formulaText), (DataClass) cls, params.size());
+            return addSFProp(transformFormulaText(formulaText), (DataClass) cls, params.size(), hasNotNull);
         } else {
-            return addSFProp(transformFormulaText(formulaText), params.size());
+            return addSFProp(transformFormulaText(formulaText), params.size(), hasNotNull);
         }
     }
 

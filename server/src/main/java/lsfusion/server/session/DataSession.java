@@ -1236,25 +1236,25 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         QueryBuilder<KeyField, PropertyField> modifyQuery = new QueryBuilder<KeyField, PropertyField>(implementTable);
         Join<V> join = changeTable.join(mapKeys.join(modifyQuery.getMapExprs()));
         
-        Where reupdateWhere = null;
+/*        Where reupdateWhere = null;
         Join<PropertyField> dbJoin = null;
         if(!DBManager.PROPERTY_REUPDATE && props.size() < Settings.get().getDisablePropertyReupdateCount()) {
             reupdateWhere = Where.TRUE;
             dbJoin = implementTable.join(modifyQuery.getMapExprs());
-        }
+        }*/
                     
         for (int i=0,size=props.size();i<size;i++) {
             PropertyField field = props.getValue(i).field;
             Expr newExpr = join.getExpr(props.getKey(i));
             modifyQuery.addProperty(field, newExpr);
 
-            if(reupdateWhere != null)
-                reupdateWhere = reupdateWhere.and(newExpr.equalsFull(dbJoin.getExpr(field)));
+//            if(reupdateWhere != null)
+//                reupdateWhere = reupdateWhere.and(newExpr.equalsFull(dbJoin.getExpr(field)));
         }
         modifyQuery.and(join.getWhere());
         
-        if(reupdateWhere != null)
-            modifyQuery.and(reupdateWhere.not());
+//        if(reupdateWhere != null)
+//            modifyQuery.and(reupdateWhere.not());
         
         sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env));
     }

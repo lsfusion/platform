@@ -376,7 +376,7 @@ public class DerivedProperty {
         final ImRevMap<T, JoinProperty.Interface> joinMap = interfaces.mapRevValues(JoinProperty.genInterface);
         ImRevMap<JoinProperty.Interface, T> revJoinMap = joinMap.reverse();
 
-        final StringFormulaProperty implement = new StringFormulaProperty(genID(),valueClass,formula,params.size());
+        final StringFormulaProperty implement = new StringFormulaProperty(genID(),valueClass,formula,params.size(), false);
         ImMap<StringFormulaProperty.Interface,CalcPropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = 
                 ((ImList<CalcPropertyInterfaceImplement<T>>)params).mapListKeyValues(new GetIndex<StringFormulaProperty.Interface>() {
                     public StringFormulaProperty.Interface getMapValue(int i) {

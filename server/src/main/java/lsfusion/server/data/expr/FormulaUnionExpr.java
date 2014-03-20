@@ -2,6 +2,7 @@ package lsfusion.server.data.expr;
 
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -44,8 +45,8 @@ public class FormulaUnionExpr extends UnionExpr {
         return (DataClass) formula.getType(new SelfListExprType(exprs));
     }
 
-    protected ImSet<Expr> getParams() {
-        return exprs.toOrderSet().getSet();
+    protected ImCol<Expr> getParams() {
+        return exprs.getCol();
     }
 
     protected VariableSingleClassExpr translate(MapTranslate translator) {

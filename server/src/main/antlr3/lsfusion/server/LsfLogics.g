@@ -1469,14 +1469,16 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 formulaPropertyDefinition returns [LP property, List<AndClassSet> signature]
 @init {
 	String className = null;
+	boolean hasNotNull = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedSFProp(className, $formulaText.val);
+		$property = self.addScriptedSFProp(className, $formulaText.val, hasNotNull);
 		$signature = Collections.<AndClassSet>nCopies($property.listInterfaces.size(), null);
 	}
 }
-	:	'FORMULA' 
+	:	'FORMULA'
+	    ('NULL' { hasNotNull = true; })?
 		(clsName=classId { className = $clsName.sid; })? 
 		formulaText=stringLiteral
 	;

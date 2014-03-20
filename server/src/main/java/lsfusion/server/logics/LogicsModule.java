@@ -790,15 +790,27 @@ public abstract class LogicsModule {
     }
 
     protected LCP addSFProp(String formula, int paramCount) {
-        return addSFProp(formula, (DataClass) null, paramCount);
+        return addSFProp(formula, paramCount, false);
+    }
+
+    protected LCP addSFProp(String formula, int paramCount, boolean hasNotNull) {
+        return addSFProp(formula, (DataClass) null, paramCount, hasNotNull);
     }
 
     protected LCP addSFProp(String formula, DataClass value, int paramCount) {
-        return addSFProp(genSID(), formula, value, paramCount);
+        return addSFProp( formula, value, paramCount, false);
+    }
+
+    protected LCP addSFProp(String formula, DataClass value, int paramCount, boolean hasNotNull) {
+        return addSFProp(genSID(), formula, value, paramCount, hasNotNull);
     }
 
     protected LCP addSFProp(String name, String formula, DataClass value, int paramCount) {
-        return addProperty(null, new LCP<StringFormulaProperty.Interface>(new StringFormulaProperty(name, value, formula, paramCount)));
+        return addSFProp(name, formula, value, paramCount, false);
+    }
+    
+    protected LCP addSFProp(String name, String formula, DataClass value, int paramCount, boolean hasNotNull) {
+        return addProperty(null, new LCP<StringFormulaProperty.Interface>(new StringFormulaProperty(name, value, formula, paramCount, hasNotNull)));
     }
 
     // ------------------- Операции сравнения ----------------- //
