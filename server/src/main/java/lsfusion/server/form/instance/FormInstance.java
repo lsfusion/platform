@@ -756,7 +756,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return;
         }
 
-        if (editAction != null && securityPolicy.property.change.checkPermission(editAction.property)) {
+        if (editAction != null && securityPolicy.property.change.checkPermission(editAction.property) && securityPolicy.property.change.checkPermission(property.getPropertyObjectInstance().property)) {
             if (editActionSID.equals(CHANGE) || editActionSID.equals(GROUP_CHANGE)) { //ask confirm logics...
                 PropertyDrawEntity propertyDraw = property.getEntity();
                 if (!pushConfirm && propertyDraw.askConfirm) {
