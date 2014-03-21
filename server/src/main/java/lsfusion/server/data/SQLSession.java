@@ -1507,7 +1507,7 @@ public class SQLSession extends MutableObject {
             this.notSafeTypes = notSafeTypes;
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return notSafeTypes.equals(((ParseStatement) o).notSafeTypes) && params.equals(((ParseStatement) o).params) && safeStrings.equals(((ParseStatement) o).safeStrings) && statement.equals(((ParseStatement) o).statement);
         }
 

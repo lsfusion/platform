@@ -131,7 +131,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         return !(objectNode.unknown && !unknown) && inSet(objectNode.set, up, set) && objectNode.up.inSet(up, set);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return unknown == ((OrObjectClassSet)o).unknown && up.equals(((OrObjectClassSet)o).up) && set.equals(((OrObjectClassSet)o).set);
     }
 

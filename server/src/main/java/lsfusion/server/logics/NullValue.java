@@ -49,7 +49,7 @@ public class NullValue extends ObjectValue<NullValue> {
             return greater.or(orderWhere);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return true;
     }
 

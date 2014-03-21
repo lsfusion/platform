@@ -164,7 +164,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             this.statProps = statProps;
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return classes.equals(((Struct) o).classes) && keys.equals(((Struct) o).keys) && properties.equals(((Struct) o).properties) && propertyClasses.equals(((Struct) o).propertyClasses) && statKeys.equals(((Struct)o).statKeys) && statProps.equals(((Struct)o).statProps);
         }
 
@@ -183,7 +183,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return struct;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return name.equals(((SessionTable) o).name) && getValueClass().equals(((SessionTable) o).getValueClass());
     }
 

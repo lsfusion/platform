@@ -165,7 +165,7 @@ public class CaseExpr extends Expr {
         }
     }
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return cases.equals(((CaseExpr)obj).cases);
     }
 

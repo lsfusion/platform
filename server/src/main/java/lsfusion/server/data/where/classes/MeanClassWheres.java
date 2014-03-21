@@ -87,7 +87,7 @@ public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanC
         public MeanClassWheres getThis() {
             return MeanClassWheres.this;
         }
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return getThis().equals(((OuterContext)o).getThis());
         }
     }

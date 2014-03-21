@@ -63,7 +63,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
             throw new RuntimeException("should not be");
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return thisObj.equals(thisObj);
         }
 

@@ -2,7 +2,6 @@ package lsfusion.server.caches;
 
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
-import lsfusion.base.col.lru.LRUWSSVSMap;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -55,7 +54,7 @@ public class CacheAspect {
             return method +"(" + Arrays.asList(args) + ')';
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return method.equals(((Invocation)o).method) && Arrays.equals(args,((Invocation)o).args);
         }
 
@@ -308,89 +307,5 @@ public class CacheAspect {
         System.arraycopy(args, 1, switchArgs, 1, args.length - 1);
 
         return lazyTwinExecute(args[0], thisJoinPoint, switchArgs);
-    }
-
-    public static class TwinsCall {
-        Object twin1;
-        Object twin2;
-
-        TwinsCall(Object twin1, Object twin2) {
-            this.twin1 = twin1;
-            this.twin2 = twin2;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return this == o || o instanceof TwinsCall &&
-                                ((twin1 == ((TwinsCall) o).twin1 && twin2 == ((TwinsCall) o).twin2) ||
-                                 (twin2 == ((TwinsCall) o).twin1 && twin1 == ((TwinsCall) o).twin2));
-        }
-
-        @Override
-        public int hashCode() {
-            return System.identityHashCode(twin1) + System.identityHashCode(twin2);
-        }
-    }
-
-    static class Twins {
-        WeakIdentityHashSet<Object> objects;
-        Set<Twins> diff;
-
-        Twins(Object object) {
-            objects = new WeakIdentityHashSet<Object>(object);
-            diff = SetFact.mAddRemoveSet();
-        }
-    }
-
-    static class TwinsMap extends WeakIdentityHashMap<Object, Twins> {
-
-        Twins getTwins(Object object) {
-            Twins twins = get(object);
-            if (twins == null) {
-                twins = new Twins(object);
-                put(object, twins);
-            }
-            return twins;
-        }
-
-        public boolean call(ProceedingJoinPoint thisJoinPoint, Object object1, Object object2) throws Throwable {
-            Twins twins1 = getTwins(object1);
-            Twins twins2 = getTwins(object2);
-
-            if (twins1.equals(twins2))
-                return true;
-
-            if (twins1.diff.contains(twins2))
-                return false;
-
-            if ((Boolean) thisJoinPoint.proceed()) {
-                // "перекидываем" все компоненты в первую
-                for (Object object : twins2.objects)
-                    put(object, twins1);
-                // сливаем компоненты, сами objects и diff
-                twins1.objects.addAll(twins2.objects);
-                // сливаем diff'ы
-                twins1.diff.addAll(twins2.diff);
-                for (Twins eqd : twins2.diff) { // заменяем equal2 на equal1
-                    eqd.diff.remove(twins2);
-                    eqd.diff.add(twins1);
-                }
-                return true;
-            } else {
-//                assert false;
-                
-                twins1.diff.add(twins2);
-                twins2.diff.add(twins1);
-                return false;
-            }
-        }
-    }
-
-    public static TwinsMap cacheTwins = new TwinsMap();
-
-    @Around("execution(boolean lsfusion.base.TwinImmutableObject.twins(lsfusion.base.TwinImmutableObject)) && target(object) && args(twin)")
-    // с call'ом есть баги
-    public Object callTwins(ProceedingJoinPoint thisJoinPoint, GroupExpr object, AbstractSourceJoin twin) throws Throwable {
-        return cacheTwins.call(thisJoinPoint, object, twin);
     }
 }

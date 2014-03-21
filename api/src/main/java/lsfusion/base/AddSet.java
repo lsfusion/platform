@@ -104,7 +104,7 @@ public abstract class AddSet<T,This extends AddSet<T,This>> extends TwinImmutabl
         return createThis(results);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return BaseUtils.equalArraySets(wheres,(((AddSet) o).wheres));
     }
 

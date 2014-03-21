@@ -323,7 +323,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             return ClassExprWhere.this;
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return getThis().equals(((OuterContext)o).getThis());
         }
     }

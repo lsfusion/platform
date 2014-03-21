@@ -27,8 +27,8 @@ public class GroupStatWhere<K> extends GroupWhere {
     }
 
     @Override
-    public boolean twins(TwinImmutableObject o) {
-        return super.twins(o) && stats.equals(((GroupStatWhere) o).stats);
+    public boolean calcTwins(TwinImmutableObject o) {
+        return super.calcTwins(o) && stats.equals(((GroupStatWhere) o).stats);
     }
 
     @Override

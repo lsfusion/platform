@@ -43,7 +43,7 @@ public abstract class AggrExpr<K extends Expr,G extends AggrType, I extends Aggr
             this.type = type;
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return exprs.equals(((Query)o).exprs) && orders.equals(((Query)o).orders)  && ordersNotNull == ((Query)o).ordersNotNull && type.equals(((Query) o).type);
         }
 

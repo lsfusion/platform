@@ -52,7 +52,7 @@ public class StatKeysJoin<K extends BaseExpr> extends AbstractOuterContext<StatK
         return stat;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return stat.equals(((StatKeysJoin<K>) o).stat);
     }
 

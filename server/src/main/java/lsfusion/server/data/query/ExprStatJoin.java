@@ -60,7 +60,7 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
         return new ExprStatJoin(baseExpr.translateOuter(translator), stat, valueJoins.translate(translator.mapValues()));
     }
 
-    public boolean twins(TwinImmutableObject o) {
-        return super.twins(o) && stat.equals(((ExprStatJoin)o).stat) && valueJoins.equals(((ExprStatJoin)o).valueJoins);
+    public boolean calcTwins(TwinImmutableObject o) {
+        return super.calcTwins(o) && stat.equals(((ExprStatJoin)o).stat) && valueJoins.equals(((ExprStatJoin)o).valueJoins);
     }
 }

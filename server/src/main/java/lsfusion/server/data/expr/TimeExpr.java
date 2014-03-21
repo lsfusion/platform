@@ -25,7 +25,7 @@ public class TimeExpr extends StaticExpr<DataClass> {
         return this;
     }
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return time.equals(((TimeExpr)obj).time);
     }
 

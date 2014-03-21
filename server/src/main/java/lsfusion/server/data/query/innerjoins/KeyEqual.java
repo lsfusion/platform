@@ -74,7 +74,7 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
         return equalsWhere;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return keyExprs.equals(((KeyEqual) o).keyExprs);
     }
 

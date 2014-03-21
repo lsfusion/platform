@@ -19,7 +19,7 @@ public class Link extends TwinImmutableObject {
         return from + " " + type + " " + to;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return from.equals(((Link) o).from) && to.equals(((Link) o).to) && type == ((Link) o).type;
     }
 

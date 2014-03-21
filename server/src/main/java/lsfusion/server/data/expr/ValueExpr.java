@@ -66,7 +66,7 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
     public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return object.equals(((ValueExpr)o).object) && objectClass.equals(((ValueExpr)o).objectClass);
     }
 

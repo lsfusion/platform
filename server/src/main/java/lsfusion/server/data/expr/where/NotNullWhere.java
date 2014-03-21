@@ -1,11 +1,8 @@
 package lsfusion.server.data.expr.where;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImCol;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.caches.OuterContext;
@@ -15,7 +12,6 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NotNullExpr;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.DataWhere;
@@ -82,7 +78,7 @@ public abstract class NotNullWhere extends DataWhere {
         return NotNullExpr.getFollows(getExpr().getExprFollows(false, NotNullExpr.FOLLOW, true));
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return getExpr().equals(((NotNullWhere) o).getExpr());
     }
 }

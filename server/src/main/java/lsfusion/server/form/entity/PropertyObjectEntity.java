@@ -34,7 +34,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         return property.toString();
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return property.equals(((PropertyObjectEntity) o).property) && mapping.equals(((PropertyObjectEntity) o).mapping);
     }
 

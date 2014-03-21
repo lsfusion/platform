@@ -104,7 +104,7 @@ public class ConcatenateExpr extends VariableClassExpr {
         return create(translator.translate(exprs));
     }
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return exprs.equals(((ConcatenateExpr)obj).exprs);
     }
 

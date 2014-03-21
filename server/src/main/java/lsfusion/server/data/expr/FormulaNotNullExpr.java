@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.ConcreteClass;
-import lsfusion.server.data.expr.formula.CustomFormulaImpl;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.FormulaExprInterface;
 import lsfusion.server.data.expr.formula.FormulaJoinImpl;
@@ -89,7 +88,7 @@ public class FormulaNotNullExpr extends StaticClassNotNullExpr implements Formul
         return FormulaExpr.isComplex(this);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return exprs.equals(((FormulaNotNullExpr) o).exprs) && formula.equals(((FormulaNotNullExpr) o).formula);
     }
 

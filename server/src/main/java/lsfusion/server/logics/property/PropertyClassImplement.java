@@ -19,7 +19,7 @@ public abstract class PropertyClassImplement<P extends PropertyInterface, T exte
         this.mapping = interfaces.mapSet(classes);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return property.equals(((PropertyClassImplement) o).property) && mapping.equals(((PropertyClassImplement) o).mapping);
     }
 

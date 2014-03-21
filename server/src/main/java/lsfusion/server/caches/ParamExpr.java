@@ -46,7 +46,7 @@ public abstract class ParamExpr extends VariableSingleClassExpr implements Inner
         return hashContext.keys.hash(this);
     }
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return false;
     }
 

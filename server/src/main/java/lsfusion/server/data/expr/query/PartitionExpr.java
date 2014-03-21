@@ -50,8 +50,8 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         }
 
         @Override
-        public boolean twins(TwinImmutableObject o) {
-            return super.twins(o) && partitions.equals(((Query) o).partitions);
+        public boolean calcTwins(TwinImmutableObject o) {
+            return super.calcTwins(o) && partitions.equals(((Query) o).partitions);
         }
 
         protected int hash(HashContext hashContext) {

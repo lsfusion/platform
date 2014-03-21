@@ -228,7 +228,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     }
 
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return BaseUtils.equalArraySets(wheres, ((AndWhere) o).wheres);
     }
 

@@ -19,7 +19,7 @@ public abstract class PropertyObjectInstance<P extends PropertyInterface, T exte
     public T property;
     public ImMap<P, PropertyObjectInterfaceInstance> mapping;
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return property.equals(((PropertyObjectInstance) o).property) && mapping.equals(((PropertyObjectInstance) o).mapping);
     }
 

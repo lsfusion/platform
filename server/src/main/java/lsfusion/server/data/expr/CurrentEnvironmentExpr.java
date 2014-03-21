@@ -48,7 +48,7 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
         return this;
     }
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return paramString.equals(((CurrentEnvironmentExpr) obj).paramString);
     }
 

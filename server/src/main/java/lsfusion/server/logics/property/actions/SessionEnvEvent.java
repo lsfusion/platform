@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.FunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
@@ -59,7 +58,7 @@ public class SessionEnvEvent extends TwinImmutableObject {
         return false;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return BaseUtils.nullHashEquals(forms, ((SessionEnvEvent)o).forms);
     }
 

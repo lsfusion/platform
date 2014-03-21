@@ -150,7 +150,7 @@ public class MeanClassWhere extends AbstractOuterContext<MeanClassWhere> impleme
         return mEqualContext.immutable();
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return classWhere.equals(((MeanClassWhere) o).classWhere) && classNotWhere.equals(((MeanClassWhere) o).classNotWhere) && equals.equals(((MeanClassWhere) o).equals) && greaters.equals(((MeanClassWhere) o).greaters);
     }
 

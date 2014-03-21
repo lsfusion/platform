@@ -2,8 +2,6 @@ package lsfusion.server.data.expr.query;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.AbstractOuterContext;
@@ -35,7 +33,7 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query, GroupJoin, Group
             this.joins = joins; 
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return stats.equals(((Query) o).stats) && where.equals(((Query) o).where) && keyTypes.equals(((Query) o).keyTypes) && joins.equals(((Query) o).joins);
         }
 

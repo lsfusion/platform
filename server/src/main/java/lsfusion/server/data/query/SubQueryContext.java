@@ -33,7 +33,7 @@ public class SubQueryContext extends TwinImmutableObject {
         return new SubQueryContext(alias, recursion + 1);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return alias == ((SubQueryContext)o).alias && recursion == ((SubQueryContext)o).recursion;
     }
 

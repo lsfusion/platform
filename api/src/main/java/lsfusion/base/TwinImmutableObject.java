@@ -1,12 +1,27 @@
 package lsfusion.base;
 
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.ImCol;
-import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.base.col.lru.LRUWWVSMap;
 
 public abstract class TwinImmutableObject<T extends TwinImmutableObject> extends ImmutableObject {
 
-    public abstract boolean twins(TwinImmutableObject o);
+    protected abstract boolean calcTwins(TwinImmutableObject o);
+    
+    private static LRUWWVSMap<TwinImmutableObject, TwinImmutableObject, Boolean> cacheTwins = new LRUWWVSMap<TwinImmutableObject, TwinImmutableObject, Boolean>(LRUUtil.G1);    
+    protected boolean twins(TwinImmutableObject o) {
+        TwinImmutableObject c1 = this;
+        TwinImmutableObject c2 = o; 
+        if(System.identityHashCode(c1) > System.identityHashCode(c2)) {
+            c1 = o; c2 = this;        
+        }        
+        Boolean result = cacheTwins.get(c1, c2);
+        if(result == null) {
+            result = calcTwins(o);
+            cacheTwins.put(c1, c2, result);
+        }
+        return result;
+    }
 
     @Override
     public boolean equals(Object obj) {

@@ -759,7 +759,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return result;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return BaseUtils.equalArraySets(wheres, ((OrWhere) o).wheres);
     }
 

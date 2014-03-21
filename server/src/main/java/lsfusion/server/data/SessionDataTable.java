@@ -91,7 +91,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
                 mapValues.translateValues(keyValues), mapValues.translateValues(propertyValues));
     }
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return keys.equals(((SessionDataTable) obj).keys) && table.equals(((SessionDataTable) obj).table) && keyValues.equals(((SessionDataTable) obj).keyValues);
     }
 

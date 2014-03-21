@@ -32,7 +32,7 @@ public class MapTranslator extends AbstractMapTranslator {
         return values.translate(expr);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return keys.equals(((MapTranslator)o).keys) && values.equals(((MapTranslator)o).values);
     }
 

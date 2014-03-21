@@ -5,7 +5,6 @@ import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
-import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.Expr;
@@ -53,7 +52,7 @@ public class StatKeys<K> extends TwinImmutableObject {
         return new StatKeys<K>(statKeys.rows, DistinctKeys.translateOuter(statKeys.distinct, translator));
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return rows.equals(((StatKeys)o).rows) && distinct.equals(((StatKeys)o).distinct);
     }
 

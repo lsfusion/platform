@@ -6,7 +6,7 @@ import java.lang.ref.ReferenceQueue;
 
 import static lsfusion.base.col.lru.LRUUtil.hash;
 
-public class LRUWVWSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWVWSMap.AEntry<K, W, V>, LRUWVWSMap.ASegment> {
+public class LRUWVWSMap<K, W, V> extends ALRUKWMap<MPair<K, W>, LRUWVWSMap.AEntry<K, W, V>, LRUWVWSMap.ASegment> {
 
     public LRUWVWSMap(LRUUtil.Strategy expireStrategy) {
         super(expireStrategy);
@@ -58,7 +58,7 @@ public class LRUWVWSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWVWSMap.AEntry
         return hash(System.identityHashCode(key));
     }
 
-    class ASegment extends ALRUKWMap<Pair<K, W>, AEntry<K, W, V>, ASegment>.ASegment {
+    class ASegment extends ALRUKWMap<MPair<K, W>, AEntry<K, W, V>, ASegment>.ASegment {
 
         protected ASegment(int initialCapacity, float loadFactor) {
             super(initialCapacity, loadFactor);
@@ -71,13 +71,13 @@ public class LRUWVWSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWVWSMap.AEntry
 
         @Override
         protected AEntry<K, W, V> createTail() {
-            return new AEntry<K, W, V>(new Pair<K, W>(null, null), refQueue, null, -1, null, 0);
+            return new AEntry<K, W, V>(new MPair<K, W>(null, null), refQueue, null, -1, null, 0);
         }
 
         public final Value<W, V> get(K key, int hash) {
             final AEntry<K, W, V>[] t = table;
             for (AEntry<K, W, V> e = t[indexFor(hash, t.length)]; e != null; e = e.next) {
-                Pair<K, W> pair = e.get();
+                MPair<K, W> pair = e.get();
                 if (pair != null && pair.first == key) {
                     recordAccess(e);
                     updateLRU();
@@ -93,8 +93,11 @@ public class LRUWVWSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWVWSMap.AEntry
             try {
                 int i = indexFor(hash, table.length);
                 for (AEntry<K, W, V> e = table[i]; e != null; e = e.next) {
-                    Pair<K, W> pair = e.get();
+                    MPair<K, W> pair = e.get();
                     if (pair != null && pair.first == key) {
+                        assert pair.second == wValue; // раньше работало почему то без нижней строки
+                        assert false; // вообще по идее не должно быть так как pair.second и value не synchronized получаются (так как в get'е идет e а не копия)
+                        pair.second = wValue;
                         V oldValue = e.value;
                         e.value = value;
                         recordAccess(e);
@@ -113,23 +116,23 @@ public class LRUWVWSMap<K, W, V> extends ALRUKWMap<Pair<K, W>, LRUWVWSMap.AEntry
 
     }
 
-    static class AEntry<K, W, V> extends ALRUKWMap.AEntry<Pair<K, W>, AEntry<K, W, V>> implements Value<W, V> {
+    static class AEntry<K, W, V> extends ALRUKWMap.AEntry<MPair<K, W>, AEntry<K, W, V>> implements Value<W, V> {
 
         V value;
 
-        AEntry(Pair<K, W> weak, ReferenceQueue<Pair<K, W>> refQueue, AEntry<K, W, V> n, int hash, V value, int t) {
+        AEntry(MPair<K, W> weak, ReferenceQueue<MPair<K, W>> refQueue, AEntry<K, W, V> n, int hash, V value, int t) {
             super(weak, refQueue, n, hash, t);
 
             this.value = value;
         }
 
-        AEntry(K key, W weak, ReferenceQueue<Pair<K, W>> refQueue, AEntry<K, W, V> n, int hash, V value, int t) {
-            this(new Pair<K, W>(key, weak), refQueue, n, hash, value, t);
+        AEntry(K key, W weak, ReferenceQueue<MPair<K, W>> refQueue, AEntry<K, W, V> n, int hash, V value, int t) {
+            this(new MPair<K, W>(key, weak), refQueue, n, hash, value, t);
         }
 
         @Override
         public W getLRUKey() {
-            Pair<K, W> value = get();
+            MPair<K, W> value = get();
             if(value != null)
                 return value.second;
             return null; 

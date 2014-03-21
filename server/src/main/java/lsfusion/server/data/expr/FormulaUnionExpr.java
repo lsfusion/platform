@@ -4,7 +4,6 @@ import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.DataClass;
@@ -68,7 +67,7 @@ public class FormulaUnionExpr extends UnionExpr {
         return 31*formula.hashCode() * 31 + hashOuter(exprs, hashContext);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return formula.equals(((FormulaUnionExpr)o).formula) && exprs.equals(((FormulaUnionExpr)o).exprs);
     }
 

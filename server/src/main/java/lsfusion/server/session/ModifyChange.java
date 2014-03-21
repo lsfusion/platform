@@ -41,7 +41,7 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
     }
 
     @Override
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return change.equals(((ModifyChange)o).change) && isFinal == ((ModifyChange)o).isFinal && preread.equals(((ModifyChange)o).preread);
     }
 

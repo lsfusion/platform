@@ -71,7 +71,7 @@ public class QueryTranslator extends TwinImmutableObject {
             return transExpr;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return keys.equals(((QueryTranslator)o).keys);
     }
 

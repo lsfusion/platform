@@ -105,7 +105,7 @@ public class StructChanges extends TwinImmutableObject {
         return mResult.immutable();
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return changes.equals(((StructChanges)o).changes);
     }
 

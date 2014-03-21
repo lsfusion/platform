@@ -36,7 +36,7 @@ public class CalcPropertyImplement<P extends PropertyInterface, T> extends TwinI
         return new CalcPropertyImplement<P, L>(property, join(mapImplement));
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return property.equals(((CalcPropertyImplement) o).property) && mapping.equals(((CalcPropertyImplement) o).mapping);
     }
 

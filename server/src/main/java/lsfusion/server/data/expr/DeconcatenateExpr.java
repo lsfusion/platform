@@ -85,7 +85,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return create(expr.translateQuery(translator),part,baseClass);
     }
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return expr.equals(((DeconcatenateExpr)obj).expr) && part == ((DeconcatenateExpr)obj).part && baseClass.equals(((DeconcatenateExpr)obj).baseClass);  
     }
 

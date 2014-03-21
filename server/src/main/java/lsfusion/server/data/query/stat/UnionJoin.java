@@ -117,7 +117,7 @@ public class UnionJoin extends CalculateJoin<Integer> {
         return depends.result;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return exprs.equals(((UnionJoin)o).exprs);
     }
 

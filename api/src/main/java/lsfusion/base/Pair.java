@@ -1,10 +1,9 @@
 package lsfusion.base;
 
-// !! может быть Mutable
 public class Pair<Class1, Class2> {
 
-    public Class1 first;
-    public Class2 second;
+    public final Class1 first;
+    public final Class2 second;
 
     public Pair(Class1 first, Class2 second) {
         this.first = first;

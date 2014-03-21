@@ -76,7 +76,7 @@ public abstract class Field extends TwinImmutableObject {
 
     abstract byte getType();
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return name.equals(((Field)o).name) && type.equals(((Field)o).type);
     }
 

@@ -39,8 +39,8 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
     }
 
     @Override
-    public boolean twins(TwinImmutableObject obj) {
-        return super.twins(obj) && BaseUtils.nullEquals(isStartWith, ((LikeWhere)obj).isStartWith);
+    public boolean calcTwins(TwinImmutableObject obj) {
+        return super.calcTwins(obj) && BaseUtils.nullEquals(isStartWith, ((LikeWhere)obj).isStartWith);
     }
 
     protected String getCompareSource(CompileSource compile) {

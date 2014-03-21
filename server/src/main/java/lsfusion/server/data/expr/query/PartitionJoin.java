@@ -27,7 +27,7 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
             this.partitions = partitions;
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return partitions.equals(((Query) o).partitions) && where.equals(((Query) o).where);
         }
 

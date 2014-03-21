@@ -85,7 +85,7 @@ public class NullExpr extends Expr {
         return this;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return true;
     }
 

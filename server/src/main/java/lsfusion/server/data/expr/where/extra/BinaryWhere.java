@@ -104,7 +104,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         return getOperandWhere().getClassWhere();
     }
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return operator1.equals(((BinaryWhere)obj).operator1) && operator2.equals(((BinaryWhere)obj).operator2);
     }
 

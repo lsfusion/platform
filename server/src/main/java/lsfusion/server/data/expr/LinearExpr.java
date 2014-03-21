@@ -67,7 +67,7 @@ public class LinearExpr extends UnionExpr {
         return super.equals(obj);
     }*/
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return map.equals(((LinearExpr)obj).map);
     }
 

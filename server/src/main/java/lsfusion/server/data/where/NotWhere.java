@@ -43,7 +43,7 @@ public class NotWhere extends ObjectWhere {
 
     final static String PREFIX = "NOT ";
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return where.equals(((NotWhere)o).where);
     }
 

@@ -21,7 +21,7 @@ public abstract class AbstractInnerHashContext extends AbstractHashContext<HashV
         return getComponents(hashValues).hash;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         throw new UnsupportedOperationException();
     }
 

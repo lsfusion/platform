@@ -88,7 +88,7 @@ public class PrereadRows<P extends PropertyInterface> extends AbstractValuesCont
         return hash;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return readParams.equals(((PrereadRows<P>)o).readParams) && readValues.equals(((PrereadRows<P>)o).readValues);
     }
 

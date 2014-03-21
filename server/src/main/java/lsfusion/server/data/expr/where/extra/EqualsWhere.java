@@ -2,18 +2,13 @@ package lsfusion.server.data.expr.where.extra;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.data.where.classes.MeanClassWhere;
 
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
@@ -39,7 +34,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     }
 
     @Override
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return (BaseUtils.hashEquals(operator1,((EqualsWhere)o).operator1) && BaseUtils.hashEquals(operator2,((EqualsWhere)o).operator2) ||
                (BaseUtils.hashEquals(operator1,((EqualsWhere)o).operator2) && BaseUtils.hashEquals(operator2,((EqualsWhere)o).operator1)));
     }

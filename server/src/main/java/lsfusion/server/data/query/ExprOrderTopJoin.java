@@ -54,8 +54,8 @@ public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
         return new ExprOrderTopJoin(baseExpr.translateOuter(translator), compare, compareExpr, not);
     }
 
-    public boolean twins(TwinImmutableObject o) {
-        return super.twins(o) && compare.equals(((ExprOrderTopJoin)o).compare) && compareExpr.equals(((ExprOrderTopJoin)o).compareExpr) && not==((ExprOrderTopJoin)o).not;
+    public boolean calcTwins(TwinImmutableObject o) {
+        return super.calcTwins(o) && compare.equals(((ExprOrderTopJoin)o).compare) && compareExpr.equals(((ExprOrderTopJoin)o).compareExpr) && not==((ExprOrderTopJoin)o).not;
     }
 
     @Override

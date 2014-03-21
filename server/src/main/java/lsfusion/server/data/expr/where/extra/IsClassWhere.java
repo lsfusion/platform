@@ -163,7 +163,7 @@ public class IsClassWhere extends DataWhere {
         return (expr.hashOuter(hashContext) ^ classes.hashCode()*31) + (inconsistent ? 1 : 0);
     }
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return expr.equals(((IsClassWhere)obj).expr) && classes.equals(((IsClassWhere)obj).classes) && inconsistent == (((IsClassWhere)obj).inconsistent);
     }
 

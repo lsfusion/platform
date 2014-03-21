@@ -61,7 +61,7 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
         return new StatKeys<Integer>(SetFact.toExclSet(0, 1), expr1.getTypeStat(keyStat, false).min(expr2.getTypeStat(keyStat, false)));
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return expr1.equals(((ExprEqualsJoin)o).expr1) && expr2.equals(((ExprEqualsJoin)o).expr2);
     }
 }

@@ -47,7 +47,7 @@ public class PackClassWhere extends DataWhere {
         return System.identityHashCode(this);
     }
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return false;
     }
 

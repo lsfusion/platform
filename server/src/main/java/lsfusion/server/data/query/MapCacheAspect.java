@@ -214,7 +214,7 @@ public class MapCacheAspect {
             return new DataChangesResult<P>(changes.translateValues(translate), where==null?null:where.translateOuter(translate.mapKeys()));
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return changes.equals(((DataChangesResult<P>)o).changes) && BaseUtils.nullEquals(where,((DataChangesResult<P>)o).where);
         }
 
@@ -281,7 +281,7 @@ public class MapCacheAspect {
         }
 
         @Override
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return changed == ((QueryInterfaceImplement<K>)o).changed && calcType.equals(((QueryInterfaceImplement<K>)o).calcType) && usedChanges.equals(((QueryInterfaceImplement<K>)o).usedChanges) && values.equals(((QueryInterfaceImplement<K>)o).values);
         }
 
@@ -420,7 +420,7 @@ public class MapCacheAspect {
             return new ExprResult(expr.translateOuter(translate.mapKeys()), where == null ? null : where.translateOuter(translate.mapKeys()));
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return expr.equals(((ExprResult)o).expr) && BaseUtils.nullEquals(where, ((ExprResult)o).where);
         }
 
@@ -544,7 +544,7 @@ public class MapCacheAspect {
             this.properties = properties;
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return BaseUtils.hashEquals(properties,((ReadSaveInterfaceImplement)o).properties) && BaseUtils.hashEquals(usedChanges,((ReadSaveInterfaceImplement)o).usedChanges);
         }
 

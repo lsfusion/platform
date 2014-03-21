@@ -196,7 +196,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         }.hashValues(hashContext.values);
     }
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return getInner().equals(((QueryExpr)obj).getInner());
     }
 

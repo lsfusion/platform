@@ -209,7 +209,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return compile.getSource(this);
     }
 
-    public boolean twins(TwinImmutableObject obj) {
+    public boolean calcTwins(TwinImmutableObject obj) {
         return expr.equals(((IsClassExpr)obj).expr) && classTables.equals(((IsClassExpr)obj).classTables) && type.equals(((IsClassExpr)obj).type);
     }
 

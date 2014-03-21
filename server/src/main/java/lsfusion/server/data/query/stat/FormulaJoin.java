@@ -16,7 +16,7 @@ public class FormulaJoin<K> extends CalculateJoin<K> {
         return params;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return params.equals(((FormulaJoin)o).params);
     }
 

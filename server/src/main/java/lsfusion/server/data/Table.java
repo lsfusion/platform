@@ -377,7 +377,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return (outputTable ? ServerResourceBundle.getString("data.table")+" : " + name + ", ":"") + ServerResourceBundle.getString("data.field") +" : " + field.toString() + " - " + commonParent.get(field) + ", "+ServerResourceBundle.getString("data.keys")+" : " + commonParent.remove(field);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return name.equals(((Table)o).name) && classes.equals(((Table)o).classes) && propertyClasses.equals(((Table) o).propertyClasses);
     }
 
@@ -493,7 +493,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return Table.this.properties;
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return Table.this.equals(((Join) o).getTable()) && joins.equals(((Join) o).joins);
         }
 
@@ -617,7 +617,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return classes.mapClasses(joins).and(getJoinsWhere().getClassWhere());
             }
 
-            public boolean twins(TwinImmutableObject o) {
+            public boolean calcTwins(TwinImmutableObject o) {
                 return Join.this.equals(((IsIn) o).getJoin());
             }
 
@@ -670,7 +670,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return new NotNull();
             }
 
-            public boolean twins(TwinImmutableObject o) {
+            public boolean calcTwins(TwinImmutableObject o) {
                 return Join.this.equals(((Expr) o).getInnerJoin()) && property.equals(((Expr) o).property);
             }
 

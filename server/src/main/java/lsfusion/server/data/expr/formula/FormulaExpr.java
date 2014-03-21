@@ -147,7 +147,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
         return isComplex(this);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return exprs.equals(((FormulaExpr) o).exprs) && formula.equals(((FormulaExpr) o).formula);
     }
 

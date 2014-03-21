@@ -12,7 +12,6 @@ import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironment> implements TypeEnvironment {
@@ -96,7 +95,7 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         return this;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         throw new RuntimeException("not supported yet");
     }
 

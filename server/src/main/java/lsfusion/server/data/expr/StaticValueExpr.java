@@ -48,7 +48,7 @@ public class StaticValueExpr extends StaticExpr<StaticClass> implements ParseVal
         return object.hashCode() * 31 + objectClass.hashCode() + 6;
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return object.equals(((StaticValueExpr)o).object) && objectClass.equals(((StaticValueExpr)o).objectClass) && sID==((StaticValueExpr)o).sID;
     }
 

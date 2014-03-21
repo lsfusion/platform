@@ -26,7 +26,7 @@ public class ActionPropertyImplement<P extends PropertyInterface, T> extends Twi
         return new ActionPropertyImplement<P, L>(property, mapping.join(mapImplement));
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return property.equals(((ActionPropertyImplement) o).property) && mapping.equals(((ActionPropertyImplement) o).mapping);
     }
 

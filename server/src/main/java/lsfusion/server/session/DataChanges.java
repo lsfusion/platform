@@ -92,7 +92,7 @@ public class DataChanges extends AbstractValuesContext<DataChanges> {
         return new DataChanges(this, mapValues);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return changes.equals(((DataChanges)o).changes);
     }
 

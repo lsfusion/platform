@@ -1719,7 +1719,7 @@ public class BaseUtils {
             this(valueClass, 0);
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return hash == ((HashClass) o).hash && valueClass.equals(((HashClass) o).valueClass);
         }
 

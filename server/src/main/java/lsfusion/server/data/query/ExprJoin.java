@@ -34,7 +34,7 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
         return baseExpr.hashOuter(hashContext);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return baseExpr.equals(((ExprJoin) o).baseExpr);
     }
 

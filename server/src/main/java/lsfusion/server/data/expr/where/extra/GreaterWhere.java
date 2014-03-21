@@ -33,8 +33,8 @@ public class GreaterWhere<T> extends CompareWhere<GreaterWhere<T>> {
     }
 
     @Override
-    public boolean twins(TwinImmutableObject obj) {
-        return super.twins(obj) && orEquals == ((GreaterWhere)obj).orEquals;
+    public boolean calcTwins(TwinImmutableObject obj) {
+        return super.calcTwins(obj) && orEquals == ((GreaterWhere)obj).orEquals;
     }
 
     protected GreaterWhere createThis(BaseExpr operator1, BaseExpr operator2) {

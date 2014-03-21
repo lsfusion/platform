@@ -157,7 +157,7 @@ public class IfExpr extends Expr {
         return trueExpr.getTypeStat(fullWhere.and(ifWhere), forJoin);
     }
 
-    public boolean twins(TwinImmutableObject o) { // порядок высот / общий
+    public boolean calcTwins(TwinImmutableObject o) { // порядок высот / общий
         return ifWhere.equals(((IfExpr)o).ifWhere) && trueExpr.equals(((IfExpr)o).trueExpr) && falseExpr.equals(((IfExpr) o).falseExpr);
     }
 

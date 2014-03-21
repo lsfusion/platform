@@ -147,7 +147,7 @@ public abstract class AbstractInnerContext<I extends InnerContext<I>> extends Ab
         });
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return mapInner((I) o,false)!=null;
     }
 

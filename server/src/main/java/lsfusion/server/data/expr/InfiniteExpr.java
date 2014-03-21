@@ -35,7 +35,7 @@ public class InfiniteExpr extends StaticExpr<DataClass> {
         return objectClass.getString(objectClass.getInfiniteValue(false), compile.syntax);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return objectClass.equals(((InfiniteExpr)o).objectClass);
     }
 }

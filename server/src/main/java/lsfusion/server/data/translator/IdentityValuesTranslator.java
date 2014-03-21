@@ -54,7 +54,7 @@ public class IdentityValuesTranslator extends MapValuesTranslator {
         return ValueExpr.noStaticContains(this.values, values);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return values.equals(((IdentityValuesTranslator)o).values);
     }
 

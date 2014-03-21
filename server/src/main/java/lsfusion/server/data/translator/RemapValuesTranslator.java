@@ -55,7 +55,7 @@ public class RemapValuesTranslator extends MapValuesTranslator {
         return ValueExpr.noStaticContains(mapValues.keys(), values);
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return mapValues.equals(((RemapValuesTranslator) o).mapValues);
     }
 

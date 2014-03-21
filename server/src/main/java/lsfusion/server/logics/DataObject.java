@@ -187,7 +187,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public void fillObjects(Set<ObjectEntity> objects) {
     }
 
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return getExpr().equals(((DataObject) o).getExpr());
     }
 

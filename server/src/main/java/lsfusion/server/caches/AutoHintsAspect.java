@@ -36,9 +36,7 @@ import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.session.SessionModifier;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
-import java.text.ParseException;
 
 import static lsfusion.base.BaseUtils.max;
 
@@ -317,7 +315,7 @@ public class AutoHintsAspect {
             return new PrereadHint(property, translator.mapKeys().translate(values));
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return values.equals(((PrereadHint) o).values) && property.equals(((PrereadHint) o).property);
         }
 
@@ -351,7 +349,7 @@ public class AutoHintsAspect {
             return 31 * property.hashCode() + (lowstat ? 1 : 0);
         }
 
-        public boolean twins(TwinImmutableObject o) {
+        public boolean calcTwins(TwinImmutableObject o) {
             return lowstat == ((IncrementHint) o).lowstat && property.equals(((IncrementHint) o).property);
         }
 

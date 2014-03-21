@@ -45,7 +45,7 @@ public abstract class GroupWhere<T extends GroupWhere<T>> extends TwinImmutableO
     }
 
     @Override
-    public boolean twins(TwinImmutableObject o) {
+    public boolean calcTwins(TwinImmutableObject o) {
         return keyEqual.equals(((GroupWhere)o).keyEqual) && where.equals(((GroupWhere)o).where);
     }
 

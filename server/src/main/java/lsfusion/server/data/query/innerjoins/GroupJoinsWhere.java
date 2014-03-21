@@ -46,8 +46,8 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
     }
 
     @Override
-    public boolean twins(TwinImmutableObject o) {
-        return super.twins(o) && joins.equals(((GroupJoinsWhere) o).joins) && upWheres.equals(((GroupJoinsWhere) o).upWheres);
+    public boolean calcTwins(TwinImmutableObject o) {
+        return super.calcTwins(o) && joins.equals(((GroupJoinsWhere) o).joins) && upWheres.equals(((GroupJoinsWhere) o).upWheres);
     }
 
     @Override
