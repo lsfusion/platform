@@ -96,7 +96,7 @@ public class LRUWVWSMap<K, W, V> extends ALRUKWMap<MPair<K, W>, LRUWVWSMap.AEntr
                     MPair<K, W> pair = e.get();
                     if (pair != null && pair.first == key) {
                         assert pair.second == wValue; // раньше работало почему то без нижней строки
-                        assert false; // вообще по идее не должно быть так как pair.second и value не synchronized получаются (так как в get'е идет e а не копия)
+//                        assert false; // вообще по идее не должно быть так как pair.second и value не synchronized получаются (так как в get'е идет e а не копия)
                         pair.second = wValue;
                         V oldValue = e.value;
                         e.value = value;
