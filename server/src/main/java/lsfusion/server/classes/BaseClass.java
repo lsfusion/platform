@@ -107,7 +107,7 @@ public class BaseClass extends AbstractCustomClass {
         Map<DataObject, String> modifiedSIDs = new HashMap<DataObject, String>();
         Map<DataObject, String> modifiedNames = objectClass.fillIDs(session, staticCaption, staticName, usedSIds, usedIds, sidChanges, modifiedSIDs);
 
-        Set<CustomClass> allClasses = getChilds().toJavaSet();
+        Set<CustomClass> allClasses = getAllChildren().toJavaSet();
         allClasses.remove(objectClass);
 
         // пробежим по всем классам и заполним их ID

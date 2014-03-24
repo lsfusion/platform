@@ -498,6 +498,19 @@ public class MapFact {
         return new HMap<K, V>(addValue);
     }
 
+    public static <K, V> MAddMap<K, V> mAddOverrideMap(ImMap<? extends K, ? extends V> map) {
+        return mAddMap(map, MapFact.<K, V>override());
+    }
+
+    public static <K, V> MAddMap<K, V> mAddMap(ImMap<? extends K, ? extends V> map, AddValue<K, V> addValue) {
+        if(map instanceof HMap)
+            return new HMap<K, V>((HMap<? extends K,? extends V>) map, addValue);
+
+        HMap<K, V> mMap = new HMap<K, V>(addValue);
+        mMap.exclAddAll(map);
+        return mMap;
+    }
+
     public static <K, V> MAddExclMap<K, V> mAddExclMap() {
         return new HMap<K, V>(MapFact.<K, V>exclusive());
     }

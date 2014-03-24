@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ObjectClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
@@ -287,10 +288,10 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             return;
         }
 
-        commonClassSet1(true); // check
-        if(diffClass!=null) ((CustomClass)diffClass).commonClassSet2(false,mRemoveClasses,true);
+        MAddMap<CustomClass, Check> checks = commonClassSet1(true); // check
+        if(diffClass!=null) ((CustomClass)diffClass).commonClassSet2(false,mRemoveClasses,true,checks);
 
-        commonClassSet3(null,mAddClasses,true);
+        commonClassSet3(null,mAddClasses,true,checks);
     }
 
     public ImSet<CalcProperty> getChangeProps(ConcreteObjectClass cls) {

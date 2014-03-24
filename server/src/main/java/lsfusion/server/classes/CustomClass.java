@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
@@ -78,7 +79,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     private boolean checkParentChildsCaches(CustomClass parent) {
-        assert parent.childs == null;
+        assert parent.allChildren == null;
         for(CustomClass recParent : parent.parents)
             checkParentChildsCaches(recParent);
         return true;
@@ -107,7 +108,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public boolean isChild(CustomClass parentClass) {
-        return parentClass.getChilds().contains(this);
+        return parentClass.getAllChildren().contains(this);
     }
 
     public boolean isCompatibleParent(ValueClass remoteClass) {
@@ -135,11 +136,11 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public ImSet<CustomClass> commonParents(CustomClass toCommon) {
-        commonClassSet1(true);
-        toCommon.commonClassSet2(false,null,true);
+        MAddMap<CustomClass, Check> checks = commonClassSet1(true);
+        toCommon.commonClassSet2(false,null,true,checks);
 
         MSet<CustomClass> result = SetFact.mSet();
-        commonClassSet3(result,null,true);
+        commonClassSet3(result,null,true,checks);
         return result.immutable();
     }
 
@@ -152,11 +153,11 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         result = cacheChilds.get(this, toCommon);
         if(result!=null) return result;
 
-        commonClassSet1(false);
-        toCommon.commonClassSet2(false,null,false);
+        MAddMap<CustomClass, Check> checks = commonClassSet1(false);
+        toCommon.commonClassSet2(false,null,false,checks);
 
         MSet<CustomClass> mResult = SetFact.mSet();
-        commonClassSet3(mResult,null,false);
+        commonClassSet3(mResult,null,false,checks);
         result = mResult.immutable();
 
         cacheChilds.put(this, toCommon, result);
@@ -179,15 +180,26 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             child.fillChilds(classSet);
     }
 
-    private ImSet<CustomClass> childs = null;
+    private ImSet<CustomClass> allChildren = null;
     @ManualLazy
-    public ImSet<CustomClass> getChilds() {
-        if(childs==null) {
+    public ImSet<CustomClass> getAllChildren() {
+        if(allChildren ==null) {
             MSet<CustomClass> mChilds = SetFact.mSet();
             fillChilds(mChilds);
-            childs = mChilds.immutable();
+            allChildren = mChilds.immutable();
         }
-        return childs;
+        return allChildren;
+    }
+
+    private ImSet<CustomClass> allParents = null;
+    @ManualLazy
+    public ImSet<CustomClass> getAllParents() {
+        if(allParents==null) {
+            MSet<CustomClass> mParents = SetFact.mSet();
+            fillParents(mParents);
+            allParents = mParents.immutable();
+        }
+        return allParents;
     }
 
     // заполняет список классов
@@ -211,49 +223,49 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return mResult.immutable();
     }
 
-    int check = 0;
-    // 1-й шаг расставляем пометки 1
-    protected void commonClassSet1(boolean up) {
-        if(check ==1) return;
-        check = 1;
-        for(CustomClass child : (up? parents : children))
-            child.commonClassSet1(up);
+    protected enum Check {
+        FIRST, CLOSEST, COMMON 
+    }
+    
+    // 1-й шаг расставляем пометки 1 
+    protected MAddMap<CustomClass, Check> commonClassSet1(boolean up) {
+        return MapFact.mAddOverrideMap((up ? getAllParents() : getAllChildren()).toMap(Check.FIRST));         
     }
 
     // 2-й шаг пометки
-    // 2 - верхний общий класс
-    // 3 - просто общий класс
-    protected void commonClassSet2(boolean set, MSet<CustomClass> free,boolean up) {
+    // 2 - самый верхний \ нижний общий класс
+    // 3 - остальные общие классы
+    protected void commonClassSet2(boolean set, MSet<CustomClass> free,boolean up, MAddMap<CustomClass, Check> checks) {
+        Check check = checks.get(this); 
         if(!set) {
-            if(check >0) {
-                if(check !=1) return;
-                check = 2;
+            if(check!=null) {
+                if(check != Check.FIRST) return;
+                checks.add(this, Check.CLOSEST);
                 set = true;
             } else
                 if(free!=null) free.add(this);
         } else {
-            if(check ==3 || check ==2) {
-                check = 3;
+            if(check==Check.COMMON)
                 return;
-            }
-
-            check = 3;
+            
+            checks.add(this, Check.COMMON);
+            if(check==Check.CLOSEST)
+                return;
         }
 
         for(CustomClass child : (up? parents : children))
-            child.commonClassSet2(set,free,up);
+            child.commonClassSet2(set,free,up,checks);
     }
 
     // 3-й шаг выводит в Set, и сбрасывает пометки
-    protected void commonClassSet3(MSet<CustomClass> common,MSet<CustomClass> free,boolean up) {
-        if(check ==0) return;
-        if(common!=null && check ==2) common.add(this);
-        if(free!=null && check ==1) free.add(this);
-
-        check = 0;
+    protected void commonClassSet3(MSet<CustomClass> common,MSet<CustomClass> free,boolean up, MAddMap<CustomClass, Check> checks) {
+        Check check = checks.get(this);
+        if(check==null) return;
+        if(common!=null && check==Check.CLOSEST) common.add(this);
+        if(free!=null && check==Check.FIRST) free.add(this);
 
         for(CustomClass child : (up? parents : children))
-            child.commonClassSet3(common,free,up);
+            child.commonClassSet3(common,free,up,checks);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -441,7 +453,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public ImSet<CalcProperty> getChildProps() {
-        ImSet<CustomClass> childs = getChilds();
+        ImSet<CustomClass> childs = getAllChildren();
         MExclSet<CalcProperty> mResult = SetFact.mExclSet();
         for(CustomClass customClass : childs) {
             customClass.fillChangedProps(mResult, IncrementType.SET);
@@ -452,19 +464,15 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     public ImSet<CalcProperty> getChildDropProps(final ConcreteObjectClass toClass) {
         MExclSet<CalcProperty> mResult = SetFact.mExclSet();
-        for(CustomClass child : getChilds())
+        for(CustomClass child : getAllChildren())
             if(!(toClass instanceof CustomClass && ((CustomClass) toClass).isChild(child)))
                 child.fillChangedProps(mResult, IncrementType.DROP);
         return mResult.immutable();
     }
 
     public ImSet<CalcProperty> getParentSetProps() {
-        MSet<CustomClass> mParents = SetFact.mSet();
-        fillParents(mParents);
-        ImSet<CustomClass> parents = mParents.immutable();
-
         MExclSet<CalcProperty> mResult = SetFact.mExclSet();
-        for(CustomClass parent : parents)
+        for(CustomClass parent : getAllParents())
             parent.fillChangedProps(mResult, IncrementType.SET);
         return mResult.immutable();
     }
