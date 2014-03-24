@@ -156,10 +156,28 @@ public class StringClass extends DataClass {
         return length;
     }
 
+    @Override
     public String getSID() {
-        return "StringClass_" + (caseInsensitive ? "insensitive_" : "") + (blankPadded?"bp_":"") + length;
+        if (length == ExtInt.UNLIMITED) {
+            return "TEXT";
+        }
+        String sid = caseInsensitive ? "ISTRING" : "STRING";
+        if (!blankPadded) {
+            sid = "VAR" + sid;
+        }
+        return sid + "_" + length;
     }
 
+    @Override
+    public String getUserSID() {
+        String userSID = getSID();
+        if (length == ExtInt.UNLIMITED) {
+            return userSID;
+        } else {
+            return userSID.replaceFirst("_", "[") + "]";
+        }
+    }
+    
     @Override
     public Stat getTypeStat() {
         if(length.isUnlimited())

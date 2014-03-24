@@ -123,7 +123,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST, NAGGR}
 
-    private Map<String, DataClass> primitiveTypeAliases = BaseUtils.buildMap(
+    static private Map<String, DataClass> primitiveTypeAliases = BaseUtils.buildMap(
             asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME", "YEAR", "WORDFILE", "IMAGEFILE", "PDFFILE", "CUSTOMFILE", "EXCELFILE", "COLOR"),
             Arrays.<DataClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance,
                     DateTimeClass.instance, StringClass.text, TimeClass.instance, YearClass.instance, WordClass.get(false, false), ImageClass.get(false, false), PDFClass.get(false, false),
@@ -214,7 +214,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return b.toString();
     }
 
-    private DataClass getPredefinedClass(String name) {
+    static public DataClass getPredefinedClass(String name) {
         if (primitiveTypeAliases.containsKey(name)) {
             return primitiveTypeAliases.get(name);
         } else if (name.startsWith("STRING[")) {

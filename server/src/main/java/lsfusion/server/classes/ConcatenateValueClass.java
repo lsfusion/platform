@@ -46,12 +46,16 @@ public class ConcatenateValueClass implements ValueClass {
     }
 
     public String getSID() {
-        String sID = "";
+        String sID = "CONCAT";
         for(ValueClass valueClass : valueClasses)
-            sID = (sID.length()==0?"":sID+"_")  + valueClass.getSID();
+            sID = sID + "_" + valueClass.getSID();
         return sID;
     }
 
+    public String getUserSID() {
+        return getSID();
+    }
+    
     public String getCaption() {
         throw new RuntimeException("not supported");
     }

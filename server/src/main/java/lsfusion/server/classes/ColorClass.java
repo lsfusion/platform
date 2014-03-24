@@ -77,7 +77,7 @@ public class ColorClass extends DataClass {
 
     @Override
     public String getSID() {
-        return "ColorClass";
+        return "COLOR";
     }
 
     @Override

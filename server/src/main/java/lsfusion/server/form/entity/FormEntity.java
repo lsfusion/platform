@@ -90,7 +90,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public boolean isSynchronizedApply = false;
 
-    private SIDPolicy policy;
+    private PropertySIDPolicy policy;
     
     @SuppressWarnings("UnusedDeclaration")
     public FormEntity() {

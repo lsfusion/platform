@@ -116,7 +116,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     public String getSID() {
-        return "DateTimeClass";
+        return "DATETIME";
     }
 
     @Override
