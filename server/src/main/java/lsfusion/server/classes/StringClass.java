@@ -159,7 +159,7 @@ public class StringClass extends DataClass {
     @Override
     public String getSID() {
         if (length == ExtInt.UNLIMITED) {
-            return "TEXT";
+            return caseInsensitive ? "ITEXT" : "TEXT";
         }
         String sid = caseInsensitive ? "ISTRING" : "STRING";
         if (!blankPadded) {
