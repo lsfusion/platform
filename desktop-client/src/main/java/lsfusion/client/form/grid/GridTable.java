@@ -380,6 +380,8 @@ public class GridTable extends ClientPropertyTable {
                         setUserOrder(property, Short.MAX_VALUE + propertiesList.indexOf(property));
                         add = false;
                     }
+                } else {
+                    add = false;
                 }
             }
 
