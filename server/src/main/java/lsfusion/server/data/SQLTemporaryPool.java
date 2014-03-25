@@ -54,8 +54,9 @@ public class SQLTemporaryPool {
             }
 
         // если нет, "создаем" таблицу
-        String table = getTableName(counter++);
+        String table = getTableName(counter);
         session.createTemporaryTable(table, keys, properties);
+        counter++;
         assert !used.containsKey(table);
         used.put(table, new WeakReference<Object>(owner));
         matchTables.add(table);
