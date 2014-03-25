@@ -313,7 +313,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             DataSession session = ThreadLocalContext.getDbManager().createSession();
 
             try {
-                List<Pair<DataObject, String>> openForms = new ArrayList<Pair<DataObject, String>>(recentlyOpenForms);
+                List<Pair<DataObject, String>> openForms;
+                synchronized (recentlyOpenForms) {
+                    openForms = new ArrayList<Pair<DataObject, String>>(recentlyOpenForms);
+                }
                 recentlyOpenForms.clear();
 
                 for (Pair<DataObject, String> entry : openForms) {
@@ -626,7 +629,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     @Override
     public void unexportNow() {
         //form.unexport изменяет createdForms, поэтому работает с копией, чтобы не было ConcurrentModificationException
-        Set<RemoteForm> formsCopy = new HashSet<RemoteForm>(createdForms.keySet());
+        Set<RemoteForm> formsCopy;
+        synchronized (createdForms) {
+            formsCopy = new HashSet<RemoteForm>(createdForms.keySet());
+        }
         for (RemoteForm form : formsCopy) {
             if (form != null) {
                 form.unexportNow();
