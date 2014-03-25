@@ -14,7 +14,7 @@ public class CustomStaticFormatFileClass extends StaticFormatFileClass {
     private String[] filterExtensions;
 
     protected String getFileSID() {
-        return "CUSTOMFILE";
+        return "CustomStaticFormatFileClass";
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {

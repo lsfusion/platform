@@ -9,7 +9,7 @@ import java.util.Collection;
 public class ImageClass extends StaticFormatFileClass {
 
     protected String getFileSID() {
-        return "IMAGEFILE";
+        return "ImageClass";
     }
 
     private static Collection<ImageClass> instances = new ArrayList<ImageClass>();

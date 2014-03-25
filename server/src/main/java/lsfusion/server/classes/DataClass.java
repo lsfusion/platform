@@ -247,9 +247,4 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     public ValueClassSet getValueClassSet() {
         return this;
     }
-    
-    @Override
-    public String getUserSID() {
-        return getSID();
-    }
 }

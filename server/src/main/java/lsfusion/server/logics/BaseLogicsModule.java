@@ -140,17 +140,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     // счетчик идентификаторов
     static private IDGenerator idGenerator = new DefaultIDGenerator();
 
-    private PropertySIDPolicy propertySidPolicy;
+    private SIDPolicy sidPolicy;
     
     // не надо делать логику паблик, чтобы не было возможности тянуть её прямо из BaseLogicsModule,
     // т.к. она должна быть доступна в точке, в которой вызывается baseLM.BL
     private final T BL;
 
-    public BaseLogicsModule(T BL, PropertySIDPolicy propertySidPolicy) throws IOException {
+    public BaseLogicsModule(T BL, SIDPolicy sidPolicy) throws IOException {
         super(BaseLogicsModule.class.getResourceAsStream("/lsfusion/system/System.lsf"), "/lsfusion/system/System.lsf", null, BL);
         setBaseLogicsModule(this);
         this.BL = BL;
-        this.propertySidPolicy = propertySidPolicy; 
+        this.sidPolicy = sidPolicy; 
     }
 
     @IdentityLazy
@@ -198,8 +198,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return formClose = getLAPByOldName("formClose");
     }
 
-    public PropertySIDPolicy getSIDPolicy() {
-        return propertySidPolicy;
+    public SIDPolicy getSIDPolicy() {
+        return sidPolicy;
     }
     
     public LP getLP(String sID) {

@@ -13,10 +13,8 @@ import java.util.List;
  * Time: 9:27
  */
 
-public interface PropertySIDPolicy {
+public interface SIDPolicy {
     String createSID(String namespaceName, String name, List<ValueClass> signature, String oldName);
-    
-    String transformCanonicalNameToSID(String canonicalName);
     
     String createPropertyDrawSID(PropertyObjectEntity<?, ?> property);
 }

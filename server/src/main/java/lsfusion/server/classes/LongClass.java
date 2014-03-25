@@ -82,7 +82,7 @@ public class LongClass extends IntegralClass<Long> {
     }
 
     public String getSID() {
-        return "LONG";
+        return "LongClass";
     }
 
     @Override

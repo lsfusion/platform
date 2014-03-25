@@ -9,7 +9,7 @@ import java.util.Collection;
 public class WordClass extends StaticFormatFileClass {
 
     protected String getFileSID() {
-        return "WORDFILE";
+        return "WordClass";
     }
 
     private static Collection<WordClass> instances = new ArrayList<WordClass>();

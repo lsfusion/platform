@@ -9,7 +9,7 @@ import java.util.Collection;
 public class PDFClass extends StaticFormatFileClass {
 
     protected String getFileSID() {
-        return "PDFFILE";
+        return "PDFClass";
     }
 
     private static Collection<PDFClass> instances = new ArrayList<PDFClass>();

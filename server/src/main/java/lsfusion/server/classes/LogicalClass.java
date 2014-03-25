@@ -118,7 +118,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public String getSID() {
-        return "BOOLEAN";
+        return "LogicalClass";
     }
 
     @Override

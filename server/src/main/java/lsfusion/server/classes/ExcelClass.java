@@ -12,7 +12,7 @@ import java.util.Collection;
 public class ExcelClass extends StaticFormatFileClass {
 
     protected String getFileSID() {
-        return "EXCELFILE";
+        return "ExcelClass";
     }
 
     private static Collection<ExcelClass> instances = new ArrayList<ExcelClass>();

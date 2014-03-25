@@ -84,7 +84,7 @@ public class TimeClass extends DataClass<Time> {
     }
 
     public String getSID() {
-        return "TIME";
+        return "TimeClass";
     }
 
     public Object getDefaultValue() {

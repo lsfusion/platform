@@ -116,7 +116,7 @@ public class DateClass extends DataClass<Date> {
     }
 
     public String getSID() {
-        return "DATE";
+        return "DateClass";
     }
 
     @Override

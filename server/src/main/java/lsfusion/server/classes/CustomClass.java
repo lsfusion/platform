@@ -59,10 +59,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public String getSID() {
         return sID;
     }
-    
-    public String getUserSID() {
-        return getSID().replaceFirst("_", ".");
-    }
 
     public String caption;
     public CustomClass(String sID, String caption, CustomClass... parents) {
