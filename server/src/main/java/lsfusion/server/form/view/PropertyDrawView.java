@@ -291,7 +291,7 @@ public class PropertyDrawView extends ComponentView {
             String actionSID = contextMenuBindings.getKey(i);
             String caption = contextMenuBindings.getValue(i);
             ActionPropertyObjectEntity<?> editAction = entity.getEditAction(actionSID, context.entity);
-            if (context.securityPolicy.property.view.checkPermission(editAction.property)) {
+            if (editAction != null && context.securityPolicy.property.view.checkPermission(editAction.property)) {
                 contextMenuItems.put(actionSID, caption);
             }
         }
