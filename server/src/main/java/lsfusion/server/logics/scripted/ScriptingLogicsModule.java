@@ -123,7 +123,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST, NAGGR}
 
-    private Map<String, DataClass> primitiveTypeAliases = BaseUtils.buildMap(
+    static private Map<String, DataClass> primitiveTypeAliases = BaseUtils.buildMap(
             asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME", "YEAR", "WORDFILE", "IMAGEFILE", "PDFFILE", "CUSTOMFILE", "EXCELFILE", "COLOR"),
             Arrays.<DataClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance,
                     DateTimeClass.instance, StringClass.text, TimeClass.instance, YearClass.instance, WordClass.get(false, false), ImageClass.get(false, false), PDFClass.get(false, false),
@@ -218,7 +218,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return b.toString();
     }
 
-    private DataClass getPredefinedClass(String name) {
+    static public DataClass getPredefinedClass(String name) {
         if (primitiveTypeAliases.containsKey(name)) {
             return primitiveTypeAliases.get(name);
         } else if (name.startsWith("STRING[")) {
@@ -853,6 +853,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         addModuleLP(lp);
     }
 
+    // Для local свойств будем устанавливать сгенерированные автоматически sid для того, чтобы они были уникальными
+    private <T extends LP> void changeLocalPropertyName(T lp, String name) {
+        removeModuleLP(lp);
+        String oldSID = lp.property.getSID();
+        setPropertySID(lp, name, lp.property.getOldName(), false);
+        lp.property.setSID("local" + oldSID);
+        lp.property.freezeSID();
+        addModuleLP(lp);
+    }
+    
     private List<AndClassSet> getParamClasses(PropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {
         if (usage.classNames == null) {
             return null;
@@ -1303,7 +1313,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkDuplicateProperty(name, paramClasses);
 
         LCP res = addScriptedDProp(returnClassName, paramClassNames, true, false);
-        changePropertyName(res, name);
+        changeLocalPropertyName(res, name);
         List<AndClassSet> outParams = createClassSetsFromClassNames(paramClassNames);
         propClasses.put(res, outParams);
         currentLocalProperties.add(res);
