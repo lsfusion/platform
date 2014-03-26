@@ -44,6 +44,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.mail.NotificationActionProperty;
@@ -52,6 +53,7 @@ import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SessionCreator;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.InitializingBean;
@@ -59,6 +61,8 @@ import org.springframework.util.Assert;
 
 import java.io.*;
 import java.rmi.RemoteException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -176,9 +180,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             boolean disableVolatileStats = Settings.get().isDisableExplicitVolatileStats();
             
             systemLogger.info("Synchronizing DB.");
-            synchronizeDB();           
-
-            if (!SystemProperties.isDebug) {
+            boolean sourceHashChanged = synchronizeDB();
+            
+            if (!SystemProperties.isDebug && sourceHashChanged) {
                 systemLogger.info("Synchronizing forms");
                 synchronizeForms(disableVolatileStats);
                 systemLogger.info("Synchronizing groups of properties");
@@ -879,7 +883,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private void synchronizeDB() throws SQLException, IOException, SQLHandledException {
+    private boolean synchronizeDB() throws SQLException, IOException, SQLHandledException {
         SQLSession sql = getThreadLocalSql();
 
         // инициализируем таблицы
@@ -894,7 +898,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         DBStructure oldDBStructure = new DBStructure(inputDB, sql);
 
         checkModules(oldDBStructure);
-        
+
+        String hashModules = calculateHashModules();
+        boolean sourceHashChanged = checkHashModulesChanged(oldDBStructure.hashModules, hashModules);
+
         runAlterationScript();
 
         Map<String, String> columnsToDrop = new HashMap<String, String>();
@@ -910,7 +917,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             DBVersion newDBVersion = getCurrentDBVersion(oldDBStructure.dbVersion);
             DBStructure newDBStructure = new DBStructure(newDBVersion);
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
-            newDBStructure.write(outDB);
+            newDBStructure.write(outDB, hashModules);
 
             // проверка, не удалятся ли старые таблицы
             String droppedTables = "";
@@ -1176,6 +1183,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         session.close();
 
         initSystemUser();
+        
+        return sourceHashChanged;
     }
 
     private void fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
@@ -1260,16 +1269,33 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
     }
 
-    private void checkModules(DBStructure dbStucture) {
+    private void checkModules(DBStructure dbStructure) {
         String droppedModules = "";
-        for (String moduleName : dbStucture.modulesList)
+        for (String moduleName : dbStructure.modulesList)
             if (businessLogics.getModule(moduleName) == null) {
                 systemLogger.info("Module " + moduleName + " has been dropped");
                 droppedModules += moduleName + ", ";
             }
         if (denyDropModules && !droppedModules.isEmpty())
             throw new RuntimeException("Dropped modules: " + droppedModules.substring(0, droppedModules.length() - 2));
-    }  
+    }
+
+    private String calculateHashModules() {
+        try {
+            String modulesString = "";
+            for (LogicsModule module : businessLogics.getLogicModules())
+                modulesString += new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(((ScriptingLogicsModule) module).getCode().getBytes())));
+
+            return new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(modulesString.getBytes())));
+        } catch (NoSuchAlgorithmException e) {
+            return null;
+        }
+    }
+
+    private boolean checkHashModulesChanged(String oldHash, String newHash) {
+        return (oldHash == null || newHash == null) || !oldHash.equals(newHash);
+    }
+
 
     private void runAlterationScript() {
         if (ignoreMigration) {
@@ -1615,12 +1641,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         public int version;
         public DBVersion dbVersion;
         public List<String> modulesList = new ArrayList<String>();
+        public String hashModules;
         public Map<Table, Map<List<String>, Boolean>> tables = new HashMap<Table, Map<List<String>, Boolean>>();
         public List<DBStoredProperty> storedProperties = new ArrayList<DBStoredProperty>();
         public Set<DBConcreteClass> concreteClasses = new HashSet<DBConcreteClass>();
 
         public DBStructure(DBVersion dbVersion) {
-            version = 10;
+            version = 11;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {
@@ -1682,6 +1709,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         for (int i = 0; i < modulesCount; i++)
                             modulesList.add(inputDB.readUTF());
                     }
+                }
+                if(version > 10) {
+                    hashModules = inputDB.readUTF();
                 }
 
                 for (int i = inputDB.readInt(); i > 0; i--) {
@@ -1750,7 +1780,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
         }
 
-        public void write(DataOutputStream outDB) throws IOException {
+        public void write(DataOutputStream outDB, String hashModules) throws IOException {
             outDB.write('v' + version);  //для поддержки обратной совместимости
             if (version > 2) {
                 outDB.writeUTF(dbVersion.toString());
@@ -1761,6 +1791,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             for (LogicsModule logicsModule : businessLogics.getLogicModules())
                 outDB.writeUTF(logicsModule.getName());
 
+            //записываем хэш всех модулей
+            outDB.writeUTF(hashModules);
+            
             outDB.writeInt(tables.size());
             for (Map.Entry<Table, Map<List<String>, Boolean>> tableIndices : tables.entrySet()) {
                 tableIndices.getKey().serialize(outDB);

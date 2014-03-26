@@ -185,6 +185,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     public String getPath() {
         return path;
     }
+
+    public String getCode() {
+        return code;
+    }
     
     protected LogicsModule findModule(String name) throws ScriptingErrorLog.SemanticErrorException {
         LogicsModule module = BL.getModule(name);
