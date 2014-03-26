@@ -51,4 +51,9 @@ public class ServerLoggers {
             assertLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
         assert assertion;
     }
+
+    public static void sqlSuppLog(Throwable t) {
+        sqlLogger.info("SUPPRESSED : " + t.toString() + '\n' + ExceptionUtils.getStackTrace(t));
+    }
+
 }

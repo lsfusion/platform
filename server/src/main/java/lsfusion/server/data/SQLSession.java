@@ -51,6 +51,25 @@ public class SQLSession extends MutableObject {
     private static final Logger logger = ServerLoggers.sqlLogger;
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
 
+    private static interface SQLRunnable {
+        void run() throws SQLException;
+    }
+    private void runSuppressed(SQLRunnable run, Result<Throwable> firstException) {
+        try {
+            run.run();
+        } catch (Throwable t) {
+            if(firstException.result != null)
+                firstException.set(t);
+            else
+                ServerLoggers.sqlSuppLog(t);
+        }
+    }
+
+    private void finishExceptions(Result<Throwable> firstException) throws SQLException {
+        if(firstException.result != null)
+            throw ExceptionUtils.propagate(firstException.result, SQLException.class);
+    }
+
     public SQLSyntax syntax;
     
     public <F extends Field> GetValue<String, F> getDeclare(final TypeEnvironment typeEnv) {
@@ -213,52 +232,74 @@ public class SQLSession extends MutableObject {
     }
 
     private void endTransaction() throws SQLException {
-        assert isInTransaction();
-        try {
-            if(--inTransaction == 0) {
-                setACID(privateConnection.sql, false);
-                if(prevIsolation != null) {
-                    privateConnection.sql.setTransactionIsolation(prevIsolation);
-                    prevIsolation = null;
-                }
-            }
-    
-            transactionCounter = null;
-            transactionTables.clear();
-    
-            if(Settings.get().isApplyVolatileStats())
-                popVolatileStats(null);
-        } finally {
-            try { tryCommon(); } catch (Throwable t) {}
+        Result<Throwable> firstException = new Result<Throwable>();
 
-            unlockWrite();
-        }
+        assert isInTransaction();
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                if(--inTransaction == 0) {
+                    setACID(privateConnection.sql, false);
+                    if(prevIsolation != null) {
+                        privateConnection.sql.setTransactionIsolation(prevIsolation);
+                        prevIsolation = null;
+                    }
+                }
+
+                transactionCounter = null;
+                transactionTables.clear();
+
+                if(Settings.get().isApplyVolatileStats())
+                    popVolatileStats(null);
+            }}, firstException);
+
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                tryCommon();
+            }}, firstException);
+
+        unlockWrite();
+
+        finishExceptions(firstException);
     }
 
     public void rollbackTransaction() throws SQLException {
+        Result<Throwable> firstException = new Result<Throwable>();
+
         if(inTransaction == 1) { // транзакция заканчивается
-            if(transactionCounter!=null) {
-                // в зависимости от политики или локальный пул (для сессии) или глобальный пул
-                int transTablesCount = privateConnection.temporary.getCounter() - transactionCounter;
-                assert transactionTables.size() == transTablesCount;
-                for(int i=0;i<transTablesCount;i++) {
-    //                dropTemporaryTableFromDB(transactionTable);
-                    
-                    String transactionTable = SQLTemporaryPool.getTableName(i+transactionCounter);
-                    
-                    assert transactionTables.contains(transactionTable);                        
-                    sessionTablesMap.remove(transactionTable);
-                    privateConnection.temporary.removeTable(transactionTable);
-                }
-                privateConnection.temporary.setCounter(transactionCounter);
-            } else
-                assert transactionTables.size() == 0;
-            if(!(problemInTransaction == Problem.CLOSED)) 
-                try { privateConnection.sql.rollback(); } catch (Throwable t) {}            
-            problemInTransaction = null; 
+            runSuppressed(new SQLRunnable() {
+                public void run() throws SQLException {
+                    if(transactionCounter!=null) {
+                        // в зависимости от политики или локальный пул (для сессии) или глобальный пул
+                        int transTablesCount = privateConnection.temporary.getCounter() - transactionCounter;
+                        assert transactionTables.size() == transTablesCount;
+                        for(int i=0;i<transTablesCount;i++) {
+                            //                dropTemporaryTableFromDB(transactionTable);
+
+                            String transactionTable = SQLTemporaryPool.getTableName(i+transactionCounter);
+
+                            ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES");
+                            sessionTablesMap.remove(transactionTable);
+                            privateConnection.temporary.removeTable(transactionTable);
+                        }
+                        privateConnection.temporary.setCounter(transactionCounter);
+                    } else
+                        ServerLoggers.assertLog(transactionTables.size() == 0, "CONSEQUENT TRANSACTION TABLES");
+                }}, firstException);
+
+            if(!(problemInTransaction == Problem.CLOSED))
+                runSuppressed(new SQLRunnable() {
+                    public void run() throws SQLException {
+                        privateConnection.sql.rollback();
+                    }}, firstException);
+            problemInTransaction = null;
         }
 
-        try { endTransaction(); } catch (Throwable t) {}
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                endTransaction();
+            }}, firstException);
+
+        finishExceptions(firstException);
     }
 
     public void checkSessionTableMap(SessionTable table, Object owner) {
@@ -478,15 +519,23 @@ public class SQLSession extends MutableObject {
         }
     }
     
-    public void returnTemporaryTable(String table, Object owner) throws SQLException {
+    public void returnTemporaryTable(final String table, final Object owner) throws SQLException {
+        Result<Throwable> firstException = new Result<Throwable>();        
 
-        assert sessionTablesMap.containsKey(table);
-        WeakReference<Object> removed = sessionTablesMap.remove(table);
-        assert removed.get()==owner;
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                assert sessionTablesMap.containsKey(table);
+                WeakReference<Object> removed = sessionTablesMap.remove(table);
+                assert removed.get()==owner;
+            }}, firstException);
 
 //            dropTemporaryTableFromDB(table.name);
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                tryCommon();
+            }}, firstException);
 
-        try { tryCommon(); } catch (Throwable t) {}
+        finishExceptions(firstException);
     }
     
     public void rollReturnTemporaryTable(SessionTable table, Object owner) throws SQLException {
@@ -576,7 +625,7 @@ public class SQLSession extends MutableObject {
                 lockRead();
                 temporaryTablesLock.lock();
                 try {
-                    try { tryCommon(); } catch (Throwable t) {}
+                    tryCommon();
                 } finally {
                     temporaryTablesLock.unlock();
                     unlockRead();
@@ -647,6 +696,8 @@ public class SQLSession extends MutableObject {
         ExConnection connection = getConnection();
 
         Statement statement = createSingleStatement(connection.sql);
+        
+        Result<Throwable> firstException = new Result<Throwable>();
         try {
             env.before(this, connection, DDL);
 
@@ -654,15 +705,12 @@ public class SQLSession extends MutableObject {
 
         } catch (SQLException e) {
             logger.error(statement.toString());
-            throw e;
-        } finally {
-            env.after(this, connection, DDL);
-
-            statement.close();
-
-            returnConnection(connection);
-            unlockRead();
-        }
+            firstException.set(e);
+        } 
+        
+        afterStatementExecute(firstException, DDL, env, connection, statement);
+        
+        finishExceptions(firstException);
     }
 
     private int executeDML(SQLExecute execute) throws SQLException, SQLHandledException {
@@ -767,15 +815,14 @@ public class SQLSession extends MutableObject {
     }
     private Problem problemInTransaction = null;
 
-    private SQLException propagate(SQLException e, PreparedStatement statement, boolean isTransactTimeout) throws SQLException, SQLHandledException {
-        return propagate(e, statement != null ? statement.toString() : "PREPARING STATEMENT", isTransactTimeout);
-    }
-
     private SQLException propagate(SQLException e, String message) throws SQLException, SQLHandledException {
         return propagate(e, message, false);
     }
     
     private SQLException propagate(SQLException e, String message, boolean isTransactTimeout) throws SQLException, SQLHandledException {
+        if(message == null)
+            message = "PREPARING STATEMENT";
+            
         boolean inTransaction = isInTransaction();
         if(inTransaction)
             problemInTransaction = Problem.EXCEPTION;
@@ -843,6 +890,9 @@ public class SQLSession extends MutableObject {
         long runTime = 0;
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
         PreparedStatement statement = null;
+        
+        Result<Throwable> firstException = new Result<Throwable>();
+        String errorString = null;
         try {
             statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
 
@@ -870,22 +920,65 @@ public class SQLSession extends MutableObject {
                 result = statement.executeUpdate();
                 runTime = System.currentTimeMillis() - started;
             }
-        } catch (SQLException e) {
-            throw propagate(e, statement, execInfo.isTransactTimeout);
-        } finally {
-            try { env.after(this, connection, command); } catch (Throwable t) {}
-
-            try { if(statement!=null)
-                returnStatement.result.proceed(statement, runTime); } catch (Throwable t) {}
-
-            try { returnConnection(connection); } catch (Throwable t) {}
-            
-            try { queryExecEnv.afterConnection(this, execInfo); } catch (Throwable t) {}
-            
-            unlockQueryExec(execInfo);
+        } catch (Throwable t) { // по хорошему тоже надо через runSuppressed, но будут проблемы с final'ами
+            firstException.set(t);
+            if(statement != null)
+                errorString = statement.toString();
         }
 
+        afterExStatementExecute(firstException, command, env, queryExecEnv, execInfo, connection, runTime, returnStatement, statement);
+
+        try {
+            finishExceptions(firstException);
+        } catch (SQLException e) {
+            throw propagate(e, errorString, execInfo.isTransactTimeout);
+        }
+        
         return result;
+    }
+
+    private void afterExStatementExecute(Result<Throwable> firstException, final String command, final ExecuteEnvironment env, final QueryExecuteEnvironment queryExecEnv, final QueryExecuteInfo execInfo, final ExConnection connection, final long runTime, final Result<ReturnStatement> returnStatement, final PreparedStatement statement) {
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                env.after(SQLSession.this, connection, command);
+            }}, firstException);
+
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                if(statement!=null)
+                    returnStatement.result.proceed(statement, runTime);
+            }}, firstException);
+
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                returnConnection(connection);
+            }}, firstException);
+
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                queryExecEnv.afterConnection(SQLSession.this, execInfo);
+            }}, firstException);
+
+        unlockQueryExec(execInfo);
+    }
+
+    private void afterStatementExecute(Result<Throwable> firstException, final String command, final ExecuteEnvironment env, final ExConnection connection, final Statement statement) throws SQLException {
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                env.after(SQLSession.this, connection, command);
+            }}, firstException);
+
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                statement.close();
+            }}, firstException);
+
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                returnConnection(connection);
+            }}, firstException);
+
+        unlockRead();
     }
 
     @Message("message.sql.execute")
@@ -961,14 +1054,17 @@ public class SQLSession extends MutableObject {
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
         long runTime = 0;
         PreparedStatement statement = null;
+        MOrderExclMap<ImMap<K,Object>,ImMap<V,Object>> mExecResult = null;
 
+        String errorString = null;
+        Result<Throwable> firstException = new Result<Throwable>();
         try {
             statement = getStatement(select, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
             
             if(outStatement)
                 System.out.println(statement.toString());                    
                     
-            MOrderExclMap<ImMap<K,Object>,ImMap<V,Object>> mExecResult = MapFact.mOrderExclMap();
+            mExecResult = MapFact.mOrderExclMap();
             env.before(this, connection, select);
             queryExecEnv.beforeStatement(statement, this, execInfo);
 
@@ -988,21 +1084,21 @@ public class SQLSession extends MutableObject {
             } finally {
                 result.close();
             }
-
-            return mExecResult.immutableOrder();
-        } catch (SQLException e) {
-            throw propagate(e, statement, execInfo.isTransactTimeout);
-        } finally { // suppress'м все exception'ы, чтобы вернулся исходный
-            try { env.after(this, connection, select); } catch (Throwable t) {}
-
-            try { returnStatement.result.proceed(statement, runTime); } catch (Throwable t) {}
-
-            try { returnConnection(connection); } catch (Throwable t) {}
-
-            try { queryExecEnv.afterConnection(this, execInfo); } catch (Throwable t) {}
-
-            unlockQueryExec(execInfo);
+        } catch (Throwable t) { // по хорошему тоже надо через runSuppressed, но будут проблемы с final'ами
+            firstException.set(t);
+            if(statement != null)
+                errorString = statement.toString();
         }
+        
+        afterExStatementExecute(null, select, env, queryExecEnv, execInfo, connection, runTime, returnStatement, statement);
+
+        try {
+            finishExceptions(firstException);
+        } catch (SQLException e) {
+            throw propagate(e, errorString, execInfo.isTransactTimeout);
+        }
+        
+        return mExecResult.immutableOrder();
     }
 
     public void insertBatchRecords(String table, ImOrderSet<KeyField> keys, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) throws SQLException {
@@ -1030,6 +1126,7 @@ public class SQLSession extends MutableObject {
         String command = "INSERT INTO " + syntax.getSessionTableName(table) + " (" + insertString + ") VALUES (" + valueString + ")";
         PreparedStatement statement = connection.sql.prepareStatement(command);
 
+        Result<Throwable> firstException = new Result<Throwable>();
         try {
             for(int i=0,size=rows.size();i<size;i++) {
                 ParamNum paramNum = new ParamNum();
@@ -1051,17 +1148,12 @@ public class SQLSession extends MutableObject {
 
         } catch (SQLException e) {
             logger.error(statement.toString());
-            throw e;
-        } finally {
-            env.after(this, connection, command);
-
-            statement.close();
-
-            returnConnection(connection);
-
-            unlockRead();
-
+            firstException.set(e);
         }
+        
+        afterStatementExecute(firstException, command, env, connection, statement);
+        
+        finishExceptions(firstException);
     }
 
     private void insertParamRecord(Table table, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields) throws SQLException {
