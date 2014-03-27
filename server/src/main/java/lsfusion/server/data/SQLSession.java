@@ -701,12 +701,14 @@ public class SQLSession extends MutableObject {
         try {
             env.before(this, connection, DDL);
 
+            lockTimeout();
+
             statement.execute(DDL);
 
         } catch (SQLException e) {
             logger.error(statement.toString());
             firstException.set(e);
-        } 
+        }
         
         afterStatementExecute(firstException, DDL, env, connection, statement);
         
@@ -860,22 +862,36 @@ public class SQLSession extends MutableObject {
             unlockRead();
             throw Throwables.propagate(e);
         }
+        lockTimeout(info.needTimeoutLock());
+        return info;
+    }
+    private void lockTimeout(boolean needTimeout) {
         if(syntax.hasJDBCTimeoutMultiThreadProblem()) {
-            if(info.needTimeoutLock())
+            if(needTimeout)
                 timeoutLock.writeLock().lock();
             else
                 timeoutLock.readLock().lock();
         }
-        return info;
     }
-    
-    private void unlockQueryExec(QueryExecuteInfo info) {        
+    private void unlockTimeout(boolean needTimeout) {
         if(syntax.hasJDBCTimeoutMultiThreadProblem()) {
-            if(info.needTimeoutLock())
+            if(needTimeout)
                 timeoutLock.writeLock().unlock();
             else
                 timeoutLock.readLock().unlock();
         }
+    }
+    // когда в принципе используются statement'ы, чтобы им случайно не повесился timeout
+    private void lockTimeout() {
+        lockTimeout(false);
+    }
+    private void unlockTimeout() {
+        unlockTimeout(false);
+    }
+
+    private void unlockQueryExec(QueryExecuteInfo info) {
+        unlockTimeout(info.needTimeoutLock());
+
         unlockRead();
     }
     
@@ -963,14 +979,16 @@ public class SQLSession extends MutableObject {
     }
 
     private void afterStatementExecute(Result<Throwable> firstException, final String command, final ExecuteEnvironment env, final ExConnection connection, final Statement statement) throws SQLException {
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                env.after(SQLSession.this, connection, command);
-            }}, firstException);
+        unlockTimeout();
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
                 statement.close();
+            }}, firstException);
+
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                env.after(SQLSession.this, connection, command);
             }}, firstException);
 
         runSuppressed(new SQLRunnable() {
@@ -989,11 +1007,15 @@ public class SQLSession extends MutableObject {
         int result = 0;
         Statement statement = createSingleStatement(connection.sql);
         try {
+            lockTimeout();
+
             result = statement.executeUpdate(command);
         } catch (SQLException e) {
             logger.error(statement.toString());
             throw e;
         } finally {
+            unlockTimeout();
+
             statement.close();
 
             returnConnection(connection);
@@ -1144,6 +1166,8 @@ public class SQLSession extends MutableObject {
 
             env.before(this, connection, command);
 
+            lockTimeout();
+            
             statement.executeBatch();
 
         } catch (SQLException e) {
@@ -1373,6 +1397,8 @@ public class SQLSession extends MutableObject {
 
         Statement statement = createSingleStatement(connection.sql);
         try {
+            lockTimeout();
+                        
             ResultSet result = statement.executeQuery(select);
             try {
                 boolean next = result.next();
@@ -1410,12 +1436,13 @@ public class SQLSession extends MutableObject {
             logger.error(statement.toString());
             throw e;
         } finally {
+            unlockTimeout();
+
             statement.close();
 
             returnConnection(connection);
 
             unlockRead();
-
         }
     }
 
