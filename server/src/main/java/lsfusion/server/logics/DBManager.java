@@ -1016,7 +1016,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                                 moved = true;
                             } else { // надо проверить что тип не изменился
                                 Type oldType = oldTable.findProperty(oldProperty.sID).type;
-                                if (oldDBStructure.version < 8 && newProperty.property.field.type instanceof ConcatenateType) { // вряд ли сможем конвертить пересоздадим
+                                if (oldDBStructure.version < 12 && newProperty.property.field.type instanceof ConcatenateType) { // вряд ли сможем конвертить пересоздадим
                                     sql.dropColumn(newProperty.tableName, newProperty.property.field.name);
                                     sql.addColumn(newProperty.tableName, newProperty.property.field);
                                     recalculateProperties.add((AggregateProperty) newProperty.property);
@@ -1392,22 +1392,57 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         sidChanges.get(dbVersion).add(new SIDChange(oldSID, newSID));
     }
 
-    public void addPropertySIDChange(String version, String oldSID, String newSID) {
+    private String createSignatureStr(List<String> classNames) {
+        StringBuilder signature = new StringBuilder();
+        signature.append("[");
+        for (int i = 0; i < classNames.size(); i++) {
+            if (i > 0) {
+                signature.append(",");
+            }
+            signature.append(classNames.get(i));
+        }
+        signature.append("]");
+        return signature.toString();
+    }
+    
+    public void addPropertySIDChange(String version, String oldName, List<String> oldClasses, String newName, List<String> newClasses) {
+        String oldSignature = createSignatureStr(oldClasses);
+        String newSignature = ""; 
+        if (newClasses != null) {
+            newSignature = createSignatureStr(newClasses);
+        } 
+        String oldSID = LM.getSIDPolicy().transformCanonicalNameToSID(oldName + oldSignature);
+        String newSID = LM.getSIDPolicy().transformCanonicalNameToSID(newName + newSignature);
         addSIDChange(propertySIDChanges, version, oldSID, newSID);
+    }   
+    
+    public void addPropertySIDChange(String version, String oldSID, String newSID) {
+        addSIDChange(propertySIDChanges, version, transformUSID(oldSID), transformUSID(newSID));
     }
 
     public void addClassSIDChange(String version, String oldSID, String newSID) {
-        addSIDChange(classSIDChanges, version, oldSID, newSID);
+        addSIDChange(classSIDChanges, version, transformUSID(oldSID), transformUSID(newSID));
     }
 
     public void addTableSIDChange(String version, String oldSID, String newSID) {
-        addSIDChange(tableSIDChanges, version, oldSID, newSID);
+        addSIDChange(tableSIDChanges, version, transformUSID(oldSID), transformUSID(newSID));
     }
 
     public void addObjectSIDChange(String version, String oldSID, String newSID) {
-        addSIDChange(objectSIDChanges, version, oldSID, newSID);
+        addSIDChange(objectSIDChanges, version, transformObjectUSID(oldSID), transformObjectUSID(newSID));
     }
-
+    
+    private String transformUSID(String userSID) {
+        return userSID.replaceFirst("\\.", "_");                            
+    }
+    
+    private String transformObjectUSID(String userSID) {
+        if (userSID.indexOf(".") != userSID.lastIndexOf(".")) {
+            return transformUSID(userSID);
+        }
+        return userSID;
+    }
+    
     private Map<String, String> getChangesAfter(DBVersion versionAfter, TreeMap<DBVersion, List<SIDChange>> allChanges) {
         Map<String, String> resultChanges = new OrderedMap<String, String>();
 
@@ -1647,7 +1682,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         public Set<DBConcreteClass> concreteClasses = new HashSet<DBConcreteClass>();
 
         public DBStructure(DBVersion dbVersion) {
-            version = 11;
+            version = 12;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {

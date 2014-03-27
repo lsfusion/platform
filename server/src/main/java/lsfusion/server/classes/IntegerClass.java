@@ -79,7 +79,7 @@ public class IntegerClass extends IntegralClass<Integer> {
     }
 
     public String getSID() {
-        return "IntegerClass";
+        return "INTEGER";
     }
 
     @Override

@@ -74,7 +74,7 @@ public class DoubleClass extends IntegralClass<Double> {
     }
 
     public String getSID() {
-        return "DoubleClass";
+        return "DOUBLE";
     }
 
     @Override

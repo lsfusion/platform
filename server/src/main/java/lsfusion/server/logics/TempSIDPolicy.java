@@ -2,15 +2,9 @@ package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectEntity;
-import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
-import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.PropertyInterface;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,7 +13,7 @@ import java.util.Map;
  * Time: 9:06
  */
 
-public class TempSIDPolicy implements SIDPolicy {
+public class TempSIDPolicy implements PropertySIDPolicy {
     @Override
     public String createSID(String namespaceName, String name, List<ValueClass> signature, String oldName) {
         String actualName = oldName == null ? name : oldName;
@@ -28,6 +22,16 @@ public class TempSIDPolicy implements SIDPolicy {
         } else {
             return namespaceName + "_" + actualName;
         }
+    }
+
+    @Override
+    public String transformCanonicalNameToSID(String canonicalName) {
+        String sid = canonicalName.replace(".", "_");
+        int bracePos = sid.indexOf("(");
+        if (bracePos >= 0) {
+            sid = sid.substring(0, bracePos);
+        }
+        return sid;
     }
 
     @Override

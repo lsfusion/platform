@@ -1,12 +1,10 @@
 package lsfusion.server.logics;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.PropertyObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 
 import java.util.ArrayList;
@@ -18,7 +16,7 @@ import java.util.List;
  * Time: 10:58
  */
 
-public class OldSIDPolicy implements SIDPolicy {
+public class OldSIDPolicy implements PropertySIDPolicy {
     @Override
     public String createSID(String namespaceName, String name, List<ValueClass> signature, String oldName) {
         if (namespaceName == null) {
@@ -26,6 +24,16 @@ public class OldSIDPolicy implements SIDPolicy {
         } else {
             return namespaceName + "_" + name;
         }
+    }
+
+    @Override
+    public String transformCanonicalNameToSID(String canonicalName) {
+        String sid = canonicalName.replace(".", "_");
+        int bracePos = sid.indexOf("(");
+        if (bracePos >= 0) {
+            sid = sid.substring(0, bracePos);
+        }
+        return sid;
     }
 
     public static String createPropertyDrawSID(String name, PropertyObjectEntity<?, ?> property) {

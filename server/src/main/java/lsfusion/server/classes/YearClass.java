@@ -38,6 +38,6 @@ public class YearClass extends IntegerClass {
     }
 
     public String getSID() {
-        return "YearClass";
+        return "YEAR";
     }
 }

@@ -120,8 +120,15 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         }
     }
 
+    @Override
     public String getSID() {
-        return "NumericClass_" + length + "_" + precision + "";
+        return "NUMERIC" + "_" + length + "_" + precision;
+    }
+    
+    @Override
+    public String getUserSID() {
+        String userSID = getSID();
+        return userSID.replaceFirst("_", "[").replaceFirst("_", ",") + "]";
     }
 
     @Override

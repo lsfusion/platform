@@ -57,7 +57,7 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
 
     @IdentityLazy
     public ImMap<String, Integer> getIndexedPropChildren() { // оптимизация
-        MExclMap<String, Integer> mResult = MapFact.mExclMap(children.size());
+        MExclMap<String, Integer> mResult = MapFact.mExclMap();
         int count = 0;
         for(AbstractNode child : children) {
             count++;
