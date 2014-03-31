@@ -182,17 +182,26 @@ public class SQLSession extends MutableObject {
 
     private void lockRead(OperationOwner owner) {
         lock.readLock().lock();
+        
+        if(writeOwner != null) // идет транзакция
+            ServerLoggers.assertLog(owner == writeOwner, "OTHER DATASESSION IN THE MIDDLE OF TRANSACTION");
     }
 
     private void unlockRead() {
         lock.readLock().unlock();
     }
+    
+    private OperationOwner writeOwner; 
 
     private void lockWrite(OperationOwner owner) {
         lock.writeLock().lock();
+        
+        writeOwner = owner;
     }
 
     private void unlockWrite() {
+        writeOwner = null;
+        
         lock.writeLock().unlock();
     }
     
