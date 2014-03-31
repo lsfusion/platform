@@ -1131,7 +1131,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             packTables(sql, mPackTables.immutable(), false); // упакуем таблицы
 
             systemLogger.info("Updating stats");
-            updateStats();  // пересчитаем статистику
+            updateStats(sql);  // пересчитаем статистику
 
             // создадим индексы в базе
             systemLogger.info("Adding indices");
@@ -1538,20 +1538,20 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private void updateStats() throws SQLException, SQLHandledException {
-        updateStats(true); // чтобы сами таблицы статистики получили статистику
+    private void updateStats(SQLSession sql) throws SQLException, SQLHandledException {
+        updateStats(sql, true); // чтобы сами таблицы статистики получили статистику
         if (!SystemProperties.doNotCalculateStats)
-            updateStats(false);
+            updateStats(sql, false);
     }
 
-    private <T> ImMap<String, T> readStatsFromDB(DataSession session, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException, SQLHandledException {
+    private <T> ImMap<String, T> readStatsFromDB(SQLSession sql, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException, SQLHandledException {
         QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.toSet("key"));
-        Expr sidToObject = sIDProp.getExpr(session.getModifier(), query.getMapExprs().singleValue());
+        Expr sidToObject = sIDProp.getExpr(query.getMapExprs().singleValue());
         query.and(sidToObject.getWhere());
-        query.addProperty("property", statsProp.getExpr(session.getModifier(), sidToObject));
+        query.addProperty("property", statsProp.getExpr(sidToObject));
         if(notNullProp!=null)
-            query.addProperty("notNull", notNullProp.getExpr(session.getModifier(), sidToObject));
-        return query.execute(session).getMap().mapKeyValues(new GetValue<String, ImMap<String, Object>>() {
+            query.addProperty("notNull", notNullProp.getExpr(sidToObject));
+        return query.execute(sql, OperationOwner.unknown).getMap().mapKeyValues(new GetValue<String, ImMap<String, Object>>() {
                                                                 public String getMapValue(ImMap<String, Object> key) {
                                                                     return ((String) key.singleValue()).trim();
                                                                 }}, new GetValue<T, ImMap<String, Object>>() {
@@ -1563,9 +1563,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                                                                 }});
     }
 
-    public void updateStats(boolean statDefault) throws SQLException, SQLHandledException {
-        DataSession session = createSession();
-
+    public void updateStats(SQLSession sql, boolean statDefault) throws SQLException, SQLHandledException {
         ImMap<String, Integer> tableStats;
         ImMap<String, Integer> keyStats;
         ImMap<String, Pair<Integer, Integer>> propStats;
@@ -1574,9 +1572,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             keyStats = MapFact.EMPTY();
             propStats = MapFact.EMPTY();
         } else {
-            tableStats = readStatsFromDB(session, reflectionLM.tableSID, reflectionLM.rowsTable, null);
-            keyStats = readStatsFromDB(session, reflectionLM.tableKeySID, reflectionLM.quantityTableKey, null);
-            propStats = readStatsFromDB(session, reflectionLM.tableColumnSID, reflectionLM.quantityTableColumn, reflectionLM.notNullQuantityTableColumn);
+            tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null);
+            keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.quantityTableKey, null);
+            propStats = readStatsFromDB(sql, reflectionLM.tableColumnSID, reflectionLM.quantityTableColumn, reflectionLM.notNullQuantityTableColumn);
         }
 
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
