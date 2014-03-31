@@ -110,7 +110,7 @@ public class Settings {
 
     private int limitWhereJoinsCount = 20;
 
-    private int limitWhereJoinsComplexity = 200;
+    private int limitWhereJoinsComplexity = 400;
 
     // очень опасная эвристика - может в определенных случаях "потерять ключ", то есть образуется And в котором не хватает KeyExpr'а
     private int limitClassWhereCount = 40;
