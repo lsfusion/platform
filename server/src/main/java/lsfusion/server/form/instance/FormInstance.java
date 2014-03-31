@@ -26,10 +26,7 @@ import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.LogTime;
-import lsfusion.server.data.Modify;
-import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -598,13 +595,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void expandGroupObject(GroupObjectInstance group, ImMap<ObjectInstance, DataObject> value) throws SQLException, SQLHandledException {
         if (group.expandTable == null)
             group.expandTable = group.createKeyTable();
-        group.expandTable.modifyRecord(session.sql, value, Modify.MODIFY);
+        group.expandTable.modifyRecord(session.sql, value, Modify.MODIFY, session.getOwner());
         group.updated |= UPDATED_EXPANDS;
     }
 
     public void collapseGroupObject(GroupObjectInstance group, ImMap<ObjectInstance, DataObject> value) throws SQLException, SQLHandledException {
         if (group.expandTable != null) {
-            group.expandTable.modifyRecord(session.sql, value, Modify.DELETE);
+            group.expandTable.modifyRecord(session.sql, value, Modify.DELETE, session.getOwner());
             group.updated |= UPDATED_EXPANDS;
         }
     }
@@ -1123,10 +1120,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         closed = true;
         session.unregisterForm(this);
         for (GroupObjectInstance group : getGroups()) {
+            OperationOwner owner = session.getOwner();
             if (group.keyTable != null)
-                group.keyTable.drop(session.sql);
+                group.keyTable.drop(session.sql, owner);
             if (group.expandTable != null)
-                group.expandTable.drop(session.sql);
+                group.expandTable.drop(session.sql, owner);
         }
     }
 

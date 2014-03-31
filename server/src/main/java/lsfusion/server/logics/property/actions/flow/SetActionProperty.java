@@ -12,6 +12,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.session.DataSession;
 import lsfusion.server.session.NoPropertyTableUsage;
 import lsfusion.server.session.PropertyChange;
 
@@ -59,9 +60,10 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
 
     @Override
     protected FlowResult executeExtend(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends ObjectValue> innerValues, ImMap<I, Expr> innerExprs) throws SQLException, SQLHandledException {
+        DataSession session = context.getSession();
         if((where == null || where.property instanceof ValueProperty) && writeTo.property instanceof SessionDataProperty && !writeTo.mapping.valuesSet().intersect(mapInterfaces.valuesSet())
                 && !(writeFrom instanceof CalcPropertyMapImplement && CalcProperty.depends(((CalcPropertyMapImplement)writeFrom).property, writeTo.property))) // оптимизация, в дальнейшем надо будет непосредственно в aspectChangeProperty сделать в случае SessionDataProperty ставить "удалить" изменения на null
-            context.getSession().dropChanges((SessionDataProperty)writeTo.property);
+            session.dropChanges((SessionDataProperty) writeTo.property);
 
         // если не хватает ключей надо or добавить, так чтобы кэширование работало
         ImSet<I> extInterfaces = innerInterfaces.remove(mapInterfaces.valuesSet());
@@ -74,7 +76,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
 
             NoPropertyTableUsage<I> mapTable = null;
             if(writeFrom.mapIsComplex() && PropertyChange.needMaterializeWhere(exprWhere)) { // оптимизация с materialize'ингом
-                mapTable = PropertyChange.<I>materializeWhere(context.getSession(), innerKeys, exprWhere);
+                mapTable = PropertyChange.<I>materializeWhere(session, innerKeys, exprWhere);
                 exprWhere = mapTable.join(innerKeys).getWhere();
             }
 
@@ -89,7 +91,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
             }
 
             if(mapTable!=null)
-                mapTable.drop(context.getSession().sql);
+                mapTable.drop(session.sql, session.getOwner());
         }
 
         return FlowResult.FINISH;

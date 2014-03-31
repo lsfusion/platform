@@ -5,7 +5,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.server.classes.AbstractCustomClass;
@@ -27,10 +26,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ExtendContextActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.session.Modifier;
-import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.PropertySet;
-import lsfusion.server.session.SinglePropertyTableUsage;
+import lsfusion.server.session.*;
 
 import java.sql.SQLException;
 
@@ -115,13 +111,14 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
 
     protected void executeRead(ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, Expr> innerExprs, ConcreteCustomClass readClass) throws SQLException, SQLHandledException {
         SinglePropertyTableUsage<I> addedTable = null;
+        DataSession session = context.getSession();
         try {
             PropertyChange<I> resultChange;
             if(where==null) // оптимизация, один объект добавляем
                 resultChange = new PropertyChange<I>(context.addObject(readClass));
             else {
                 if(result!=null)
-                    context.getSession().dropChanges((DataProperty) result.property);
+                    session.dropChanges((DataProperty) result.property);
     
                 final Modifier modifier = context.getModifier();
                 Where exprWhere = where.mapExpr(innerExprs, modifier).getWhere();
@@ -143,7 +140,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
                 result.change(context.getEnv(), resultChange);
         } finally {
             if(addedTable!=null)
-                addedTable.drop(context.getSession().sql);
+                addedTable.drop(session.sql, session.getOwner());
         }
     }
 

@@ -10,6 +10,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -146,9 +147,9 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     @Override
-    public void clearHints(SQLSession session) throws SQLException {
-        super.clearHints(session);
-        modifier.clearHints(session);
+    public void clearHints(SQLSession session, OperationOwner owner) throws SQLException {
+        super.clearHints(session, owner);
+        modifier.clearHints(session, owner);
     }
 
     @Override
@@ -181,8 +182,8 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     @Override
-    public void clean(SQLSession sql) throws SQLException {
-        super.clean(sql);
+    public void clean(SQLSession sql, OperationOwner owner) throws SQLException {
+        super.clean(sql, owner);
         override.unregisterView(this);
         modifier.unregisterView(this);
     }
@@ -231,6 +232,10 @@ public class OverrideSessionModifier extends SessionModifier {
 
     public SQLSession getSQL() {
         return modifier.getSQL();
+    }
+
+    public OperationOwner getOpOwner() {
+        return modifier.getOpOwner();
     }
 
     public BaseClass getBaseClass() {

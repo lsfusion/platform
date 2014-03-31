@@ -1,6 +1,7 @@
 package lsfusion.server.session;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -45,16 +46,16 @@ public class IncrementTableProps extends IncrementProps {
         eventChange(property, true);
     }
 
-    public <P extends PropertyInterface> void remove(CalcProperty<P> property, SQLSession sql) throws SQLException {
+    public <P extends PropertyInterface> void remove(CalcProperty<P> property, SQLSession sql, OperationOwner owner) throws SQLException {
         assert tableProps.contains(property);
-        tableProps.remove(property, sql);
+        tableProps.remove(property, sql, owner);
 
         eventChange(property, true);
     }
 
-    public void clear(SQLSession session) throws SQLException {
+    public void clear(SQLSession session, OperationOwner owner) throws SQLException {
         eventChanges(tableProps.getProperties());
 
-        tableProps.clear(session);
+        tableProps.clear(session, owner);
     }
 }

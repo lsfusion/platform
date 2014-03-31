@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.Message;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.IntegerClass;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -18,7 +19,6 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.CalcPropertyImplement;
@@ -70,7 +70,8 @@ public class IntegrationService {
                 public ObjectValue getMapValue(ImportField value) {
                     return ObjectValue.getValue(row.getValue(value), value.getFieldClass());
                 }}));
-        importTable.writeRows(session.sql, mRows.immutable());
+        OperationOwner owner = session.getOwner();
+        importTable.writeRows(session.sql, mRows.immutable(), owner);
 
         if (deletes != null) {
             deleteObjects(importTable);
@@ -97,12 +98,12 @@ public class IntegrationService {
             session.change(propertyChanges);
         } finally {
             for(SinglePropertyTableUsage<ClassPropertyInterface> usedPropTable : usedPropTables)
-                usedPropTable.drop(session.sql);
+                usedPropTable.drop(session.sql, owner);
             
             for(SinglePropertyTableUsage<?> addedTable : addedKeys.valueIt())
-                addedTable.drop(session.sql);
+                addedTable.drop(session.sql, owner);
     
-            importTable.drop(session.sql);
+            importTable.drop(session.sql, owner);
         }
     }
 

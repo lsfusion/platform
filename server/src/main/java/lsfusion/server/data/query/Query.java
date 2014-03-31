@@ -16,10 +16,7 @@ import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.OrderClass;
-import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.Value;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
@@ -35,6 +32,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
+import org.apache.xmlbeans.impl.common.XPath;
 
 import java.sql.SQLException;
 
@@ -336,12 +334,12 @@ public class Query<K,V> extends IQuery<K,V> {
         return result.immutableValueOrder();
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session) throws SQLException, SQLHandledException {
-        return execute(session, QueryEnvironment.empty);
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, OperationOwner owner) throws SQLException, SQLHandledException {
+        return execute(session, DataSession.emptyEnv(owner));
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
-        return execute(session, orders, 0, QueryEnvironment.empty);
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, OperationOwner owner, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
+        return execute(session, orders, 0, DataSession.emptyEnv(owner));
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session) throws SQLException, SQLHandledException {
@@ -363,6 +361,10 @@ public class Query<K,V> extends IQuery<K,V> {
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
         return execute(session, MapFact.<V, Boolean>EMPTYORDER(), 0, env);
+    }
+
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(ExecutionContext context, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
+        return execute(context.getSession(), orders, selectTop);
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
@@ -418,8 +420,8 @@ public class Query<K,V> extends IQuery<K,V> {
         return executeSQL(session, orders, selectTop, env);
     }
 
-    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-        return executeClasses(session, QueryEnvironment.empty, baseClass);
+    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {
+        return executeClasses(session, DataSession.emptyEnv(owner), baseClass);
     }
 
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(DataSession session) throws SQLException, SQLHandledException {
@@ -525,7 +527,7 @@ public class Query<K,V> extends IQuery<K,V> {
         session.outStatement = true;
         ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> result;
         try {
-            result = executeClasses(session, baseClass);
+            result = executeClasses(session, baseClass, OperationOwner.debug);
         } finally {
             session.outStatement = false;
         }

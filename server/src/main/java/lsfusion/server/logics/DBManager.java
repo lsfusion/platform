@@ -773,7 +773,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         query.addProperty("emailToCC", emailLM.emailToCCNotification.getExpr(session.getModifier(), key));
         query.addProperty("emailToBC", emailLM.emailToBCNotification.getExpr(session.getModifier(), key));
         query.and(isNotification.getExpr(key).getWhere());
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session.sql);
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
 
         for (int i=0,size=result.size();i<size;i++) {
             DataObject notificationObject = new DataObject(result.getKey(i).getValue(0), emailLM.notification);
@@ -785,7 +785,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             query2.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(session.getModifier(), propertyExpr2));
             query2.and(emailLM.inNotificationProperty.getExpr(session.getModifier(), notificationExpr2, propertyExpr2).getWhere());
             query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
-            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result2 = query2.execute(session.sql);
+            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result2 = query2.execute(session);
             List<LCP> listInNotificationProperty = new ArrayList();
             for (int j=0,size2=result2.size();j<size2;j++) {
                 listInNotificationProperty.add(businessLogics.getLCP(result2.getValue(i).get("SIDProperty").toString().trim()));
@@ -891,7 +891,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         // "старое" состояние базы
         DataInputStream inputDB = null;
-        byte[] struct = (byte[]) sql.readRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), StructTable.instance.struct);
+        byte[] struct = (byte[]) sql.readRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), StructTable.instance.struct, OperationOwner.unknown);
         if (struct != null)
             inputDB = new DataInputStream(new ByteArrayInputStream(struct));
 
@@ -908,7 +908,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         try {
             sql.pushNoHandled();
-            sql.startTransaction(DBManager.START_TIL);
+            sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
 
             // новое состояние базы
             ByteArrayOutputStream outDBStruct = new ByteArrayOutputStream();
@@ -1090,7 +1090,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 copyObjects.and(moveWhere);
 
                 systemLogger.info(getString("logics.info.objects.are.transferred.from.tables.to.table", classProp.tableName, mCopyFromTables.immutable().toString()));
-                sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery()));
+                sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown));
             }
             ImMap<String, ImSet<Integer>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.<String, Integer>addMergeSet());
             for (int i = 0, size = toClean.size(); i < size; i++) { // удалим оставшиеся классы
@@ -1108,7 +1108,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 dropClassObjects.and(moveWhere);
 
                 systemLogger.info(getString("logics.info.objects.are.removed.from.table", classProp.tableName));
-                sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery()));
+                sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery(), OperationOwner.unknown));
             }
 
             MSet<ImplementTable> mPackTables = SetFact.mSet();
@@ -1149,10 +1149,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             newDBStructure.writeConcreteClasses(outDB);
 
             try {
-                sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)), true);
+                sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)), true, OperationOwner.unknown);
             } catch (Exception e) {
                 ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject((Object) new byte[0], ByteArrayClass.instance));
-                sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), propFields, true);
+                sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, OperationOwner.unknown);
             }
 
             systemLogger.info("Updating class stats");
@@ -1233,13 +1233,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     
     public static void run(SQLSession session, boolean runInTransaction, RunService run) throws SQLException, SQLHandledException {
         if(runInTransaction) {
-            session.startTransaction(RECALC_TIL);
+            session.startTransaction(RECALC_TIL, OperationOwner.unknown);
             try {
                 run.run(session);
                 session.commitTransaction();
             } catch (Throwable t) {
                 session.rollbackTransaction();
-                if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session)) { // update conflict или deadlock или timeout - пробуем еще раз
+                if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session, OperationOwner.unknown)) { // update conflict или deadlock или timeout - пробуем еще раз
                     run(session, runInTransaction, run);
                     return;
                 }
@@ -1508,7 +1508,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             run(session, isolatedTransaction, new RunService() {
                 @Override
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    sql.packTable(table);
+                    sql.packTable(table, OperationOwner.unknown);
                 }});
             logger.debug("Done");
         }
@@ -1525,12 +1525,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public void dropColumn(String tableName, String columnName) throws SQLException, SQLHandledException {
         SQLSession sql = getThreadLocalSql();
-        sql.startTransaction(DBManager.START_TIL);
+        sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
         try {
             sql.dropColumn(tableName, columnName);
             ImplementTable table = LM.tableFactory.getImplementTablesMap().get(tableName); // надо упаковать таблицу, если удалили колонку
             if (table != null)
-                sql.packTable(table);
+                sql.packTable(table, OperationOwner.unknown);
             sql.commitTransaction();
         } catch(SQLException e) {
             sql.rollbackTransaction();
@@ -1806,7 +1806,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     allClassesQuery.and(sidExpr.getWhere()); // вот тут придется напрямую из таблицы читать id'ки для классов, потому как isClass использовать очевидно нельзя
                     allClassesQuery.and(objectTable.join(MapFact.singleton(objectKey, key)).getExpr(classField).compare(new ValueExpr(Integer.MAX_VALUE - 5, LM.baseClass.objectClass), Compare.EQUALS));
                     allClassesQuery.addProperty("sid", sidExpr);
-                    ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> qResult = allClassesQuery.execute(sql, QueryEnvironment.empty);
+                    ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> qResult = allClassesQuery.execute(sql, OperationOwner.unknown);
 
                     for (int i = 0, size = qResult.size(); i < size; i++)
                         concreteClasses.add(new DBConcreteClass(

@@ -7,10 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.BaseClass;
-import lsfusion.server.data.Modify;
-import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Join;
@@ -34,8 +31,8 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         });
     }
 
-    public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyFields, ObjectValue propertyValue, Modify type) throws SQLException, SQLHandledException {
-        return modifyRecord(session, keyFields, MapFact.singleton("value", propertyValue), type);
+    public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyFields, ObjectValue propertyValue, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
+        return modifyRecord(session, keyFields, MapFact.singleton("value", propertyValue), type, owner);
     }
 
     public ModifyResult modifyRows(SQLSession session, ImRevMap<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException, SQLHandledException {
@@ -56,8 +53,8 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         table = table.fixKeyClasses(classes.remap(mapKeys.reverse()));
     }
 
-    public void updateAdded(SQLSession sql, BaseClass baseClass, Pair<Integer,Integer>[] shifts) throws SQLException, SQLHandledException {
-        updateAdded(sql, baseClass, "value", shifts);
+    public void updateAdded(SQLSession sql, BaseClass baseClass, Pair<Integer,Integer>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException {
+        updateAdded(sql, baseClass, "value", shifts, owner);
     }
 
     public void updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException {

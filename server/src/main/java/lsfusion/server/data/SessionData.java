@@ -43,12 +43,12 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
     public abstract Join<PropertyField> join(final ImMap<KeyField, ? extends Expr> joinImplement);
 
-    public abstract void drop(SQLSession session, Object owner) throws SQLException;
-    public abstract void rollDrop(SQLSession session, Object owner) throws SQLException;
+    public abstract void drop(SQLSession session, Object owner, OperationOwner opOwner) throws SQLException;
+    public abstract void rollDrop(SQLSession session, Object owner, OperationOwner opOwner) throws SQLException;
 
     public abstract boolean used(InnerContext query);
 
-    public abstract SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, Result<Boolean> changed) throws SQLException, SQLHandledException;
+    public abstract SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, OperationOwner opOwner, Result<Boolean> changed) throws SQLException, SQLHandledException;
 
 
     public abstract void out(SQLSession session) throws SQLException, SQLHandledException;
@@ -128,38 +128,40 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             query = pullQuery.result;
         }
 
+        OperationOwner opOwner = env.getOpOwner();
+
         final IQuery<KeyField, PropertyField> insertQuery = query;
         SessionTable table = session.createTemporaryTable(keys.filterOrderIncl(query.getMapKeys().keys()), query.getProperties(), null, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException, SQLHandledException {
                 return session.insertSessionSelect(name, insertQuery, env);
             }
-        }, getQueryClasses(query), owner);
+        }, getQueryClasses(query), owner, opOwner);
 
         // нужно прочитать то что записано
         if(table.count > SessionRows.MAX_ROWS) {
             if(!Settings.get().isDisableReadSingleValues()) { // чтение singleValues
                 Result<ImMap<KeyField, Object>> actualKeyValues = new Result<ImMap<KeyField, Object>>();
                 Result<ImMap<PropertyField, Object>> actualPropValues = new Result<ImMap<PropertyField, Object>>();
-                session.readSingleValues(table, actualKeyValues, actualPropValues);
-                keyValues.set(baseClass.getDataObjects(session, actualKeyValues.result, table.classes.getCommonClasses(actualKeyValues.result.keys())).addExcl(keyValues.result));
+                session.readSingleValues(table, actualKeyValues, actualPropValues, opOwner);
+                keyValues.set(baseClass.getDataObjects(session, actualKeyValues.result, table.classes.getCommonClasses(actualKeyValues.result.keys()), opOwner).addExcl(keyValues.result));
                 final ImMap<PropertyField,ClassWhere<Field>> fPropertyClasses = table.propertyClasses;
                 propValues.set(baseClass.getObjectValues(session, actualPropValues.result, actualPropValues.result.mapKeyValues(new GetValue<AndClassSet, PropertyField>() {
                     public AndClassSet getMapValue(PropertyField value) {
                         return fPropertyClasses.get(value).getCommonClass(value);
-                    }})).addExcl(propValues.result));
-                table = table.removeFields(session, actualKeyValues.result.keys(), actualPropValues.result.keys(), owner);
+                    }}), opOwner).addExcl(propValues.result));
+                table = table.removeFields(session, actualKeyValues.result.keys(), actualPropValues.result.keys(), owner, opOwner);
             }
 
             return new SessionDataTable(table, keys, keyValues.result, propValues.result);
         } else {
-            ImOrderMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> readRows = (table.count == 0 ? MapFact.<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>>EMPTYORDER() : table.read(session, baseClass));
+            ImOrderMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> readRows = (table.count == 0 ? MapFact.<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>>EMPTYORDER() : table.read(session, baseClass, opOwner));
 
-            table.drop(session, owner); // выкидываем таблицу
+            table.drop(session, owner, opOwner); // выкидываем таблицу
 
             // надо бы batch update сделать, то есть зная уже сколько запискй
             SessionRows sessionRows = new SessionRows(keys, properties);
             for (int i=0,size=readRows.size();i<size;i++)
-                sessionRows = (SessionRows) sessionRows.modifyRecord(session, readRows.getKey(i).addExcl(keyValues.result), readRows.getValue(i).addExcl(propValues.result), Modify.ADD, owner, new Result<Boolean>());
+                sessionRows = (SessionRows) sessionRows.modifyRecord(session, readRows.getKey(i).addExcl(keyValues.result), readRows.getValue(i).addExcl(propValues.result), Modify.ADD, owner, opOwner, new Result<Boolean>());
             return sessionRows;
         }
     }
@@ -176,23 +178,24 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
     public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException, SQLHandledException {
         boolean dropBefore = !Settings.get().isAlwaysDropSessionTableAfter() && !used(query);
+        OperationOwner opOwner = env.getOpOwner();
         if(dropBefore)
-            drop(session, owner);
+            drop(session, owner, opOwner);
 
         SessionData result;
         try {
             result = write(session, getOrderKeys(), getProperties(), query, baseClass, env, owner);
         } catch (SQLHandledException e) {
-            rollDrop(session, owner);
+            rollDrop(session, owner, opOwner);
             throw e;
         }
 
         if(!dropBefore)
-            drop(session, owner);
+            drop(session, owner, opOwner);
         return result;
     }
 
-    public SessionData modifyRows(final SQLSession session, final IQuery<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, QueryEnvironment env, final Object owner, final Result<Boolean> changed) throws SQLException, SQLHandledException {
+    public SessionData modifyRows(final SQLSession session, final IQuery<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, final QueryEnvironment env, final Object owner, final Result<Boolean> changed) throws SQLException, SQLHandledException {
         if(!Settings.get().isDisableReadSingleValues()) {
             SessionData singleResult = readSingleValues(session, baseClass, env, query, new Result<IQuery<KeyField, PropertyField>>(), new Result<ImMap<KeyField, DataObject>>(),
                     new Result<ImMap<PropertyField, ObjectValue>>(), new ResultSingleValues<SessionData>() {
@@ -201,7 +204,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                 }
 
                 public SessionData singleRow(ImMap<KeyField, DataObject> keyValues, ImMap<PropertyField, ObjectValue> propValues) throws SQLException, SQLHandledException {
-                    return modifyRecord(session, keyValues, propValues, type, owner, changed);
+                    return modifyRecord(session, keyValues, propValues, type, owner, env.getOpOwner(), changed);
                 }
             });
             if(singleResult!=null)
@@ -229,14 +232,14 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             changed.set(true);
         return result;
     }
-    public abstract SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Integer, Integer>[] shifts) throws SQLException, SQLHandledException;
+    public abstract SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Integer, Integer>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException;
 
     // "обновляет" ключи в таблице
-    public SessionData rewrite(SQLSession session, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> writeRows, Object owner) throws SQLException, SQLHandledException {
-        drop(session, owner);
+    public SessionData rewrite(SQLSession session, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> writeRows, Object owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
+        drop(session, owner, opOwner);
 
         if(writeRows.size()> SessionRows.MAX_ROWS)
-            return new SessionDataTable(session, getOrderKeys(), getProperties(), writeRows, owner);
+            return new SessionDataTable(session, getOrderKeys(), getProperties(), writeRows, owner, opOwner);
         else
             return new SessionRows(getOrderKeys(), getProperties(), writeRows);
     }

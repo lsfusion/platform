@@ -203,13 +203,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if(classWhere.isTrue())
             return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(changeTable, createChangeTable());
 
+        OperationOwner owner = env.getOpOwner();
         try {
             SinglePropertyTableUsage<T> fit = readChangeTable(sql, change.and(classWhere), baseClass, env);
             SinglePropertyTableUsage<T> notFit;
             try {
                 notFit = readChangeTable(sql, change.and(classWhere.not()), baseClass, env);
             } catch (Throwable e) {
-                fit.drop(sql);
+                fit.drop(sql, owner);
                 throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
             }
             assert DataSession.fitClasses(this, fit);
@@ -220,7 +221,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             // assert DataSession.notFitClasses(this, notFit);
             return new Pair<SinglePropertyTableUsage<T>, SinglePropertyTableUsage<T>>(fit,notFit);
         } finally {
-            changeTable.drop(sql);
+            changeTable.drop(sql, owner);
         }
     }
 

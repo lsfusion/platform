@@ -273,7 +273,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         qu.and(userExpr.compare(userObject, Compare.EQUALS));
         qu.addProperty("transactTimeoutUser", securityLM.transactTimeoutUser.getExpr(session.getModifier(), userExpr));
 
-        ImCol<ImMap<String, Object>> timeoutValues = qu.execute(session.sql).values();
+        ImCol<ImMap<String, Object>> timeoutValues = qu.execute(session).values();
         for (ImMap<String, Object> valueMap : timeoutValues) {
             Integer timeout = (Integer)valueMap.get("transactTimeoutUser");
             if (timeout != null) {
@@ -389,7 +389,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             qf.addProperty("permit", permitFormExpr);
             qf.addProperty("forbid", forbidFormExpr);
 
-            ImCol<ImMap<String, Object>> formValues = qf.execute(session.sql).values();
+            ImCol<ImMap<String, Object>> formValues = qf.execute(session).values();
             for (ImMap<String, Object> valueMap : formValues) {
                 NavigatorElement element = LM.root.getNavigatorElement(((String) valueMap.get("sid")).trim());
                 if (valueMap.get("forbid") != null)
@@ -409,7 +409,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             qp.addProperty("permitChange", securityLM.permitChangeProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId")));
             qp.addProperty("forbidChange", securityLM.forbidChangeProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId")));
 
-            ImCol<ImMap<String, Object>> propertyValues = qp.execute(session.sql).values();
+            ImCol<ImMap<String, Object>> propertyValues = qp.execute(session).values();
             ImRevMap<String, Property> sidProperties = getSIDProperties();
             for (ImMap<String, Object> valueMap : propertyValues) {
 //                Property prop = businessLogics.getProperty(((String) valueMap.get("sid")).trim());
@@ -447,7 +447,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             qu.addProperty("permitChangeAllProperty", securityLM.permitChangeAllPropertyUser.getExpr(session.getModifier(), userExpr));
             qu.addProperty("forbidChangeAllProperty", securityLM.forbidChangeAllPropertyRole.getExpr(session.getModifier(), userExpr));
 
-            ImCol<ImMap<String, Object>> userPermissionValues = qu.execute(session.sql).values();
+            ImCol<ImMap<String, Object>> userPermissionValues = qu.execute(session).values();
             for (ImMap<String, Object> valueMap : userPermissionValues) {
                 if (valueMap.get("forbidAllForms") != null)
                     policy.navigator.defaultPermission = false;
@@ -479,7 +479,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             qf.addProperty("permit", permitUserFormExpr);
             qf.addProperty("forbid", forbidUserFormExpr);
 
-            ImCol<ImMap<String, Object>> formValues = qf.execute(session.sql).values();
+            ImCol<ImMap<String, Object>> formValues = qf.execute(session).values();
             for (ImMap<String, Object> valueMap : formValues) {
                 NavigatorElement element = LM.root.getNavigatorElement(((String) valueMap.get("sid")).trim());
                 if (valueMap.get("forbid") != null)
@@ -500,7 +500,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             qp.addProperty("permitChange", securityLM.permitChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyId")));
             qp.addProperty("forbidChange", securityLM.forbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyId")));
 
-            ImCol<ImMap<String, Object>> propValues = qp.execute(session.sql).values();
+            ImCol<ImMap<String, Object>> propValues = qp.execute(session).values();
             ImRevMap<String, Property> sidProperties = getSIDProperties();
             for (ImMap<String, Object> valueMap : propValues) {
                 Property prop = sidProperties.get(((String) valueMap.get("sid")).trim());
@@ -552,7 +552,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             q.addProperty("number", securityLM.defaultNumberUserNavigatorElement.getExpr(session.getModifier(), q.getMapExprs().get("userId"), q.getMapExprs().get("formId")));
 
 
-            ImCol<ImMap<String, Object>> values = q.execute(session.sql).values();
+            ImCol<ImMap<String, Object>> values = q.execute(session).values();
             ArrayList<String> result = new ArrayList<String>();
             Map<String, String> sortedValues = new TreeMap<String, String>();
             for (ImMap<String, Object> valueMap : values) {
@@ -614,7 +614,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
                 q.addProperty("roleName", securityLM.sidUserRole.getExpr(session.getModifier(), roleExpr));
 
-                ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session.sql);
+                ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session);
 
                 List<String> roles = new ArrayList<String>();
                 for (ImMap<String, Object> value : values.valueIt()) {

@@ -1,5 +1,6 @@
 package lsfusion.server.data.query;
 
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLSession;
 
 import java.sql.SQLException;
@@ -15,9 +16,9 @@ public abstract class QueryExecuteEnvironment {
             session.lockNeedPrivate();
     }
     
-    public void afterConnection(SQLSession session, QueryExecuteInfo info) throws SQLException {
+    public void afterConnection(SQLSession session, OperationOwner owner, QueryExecuteInfo info) throws SQLException {
         if(info.timeout > 0)
-            session.lockTryCommon();
+            session.lockTryCommon(owner);
     }    
     
     public void beforeStatement(Statement statement, SQLSession session, QueryExecuteInfo info) throws SQLException {

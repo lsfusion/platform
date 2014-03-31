@@ -15,10 +15,7 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.SystemClass;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.data.PropertyField;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.StructTable;
+import lsfusion.server.data.*;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
@@ -107,18 +104,18 @@ public class TableFactory {
     public void fillDB(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
 
         try {
-            sql.startTransaction(DBManager.START_TIL);
+            sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
 
             sql.ensureTable(IDTable.instance);
             sql.ensureTable(StructTable.instance);
 
             ImMap<Integer, Integer> counters = IDTable.getCounters();
             for (int i = 0, size = counters.size(); i < size; i++)
-                sql.ensureRecord(IDTable.instance, MapFact.singleton(IDTable.instance.key, new DataObject(counters.getKey(i), SystemClass.instance)), MapFact.singleton(IDTable.instance.value, (ObjectValue) new DataObject(counters.getValue(i), SystemClass.instance)));
+                sql.ensureRecord(IDTable.instance, MapFact.singleton(IDTable.instance.key, new DataObject(counters.getKey(i), SystemClass.instance)), MapFact.singleton(IDTable.instance.value, (ObjectValue) new DataObject(counters.getValue(i), SystemClass.instance)), OperationOwner.unknown);
 
             // создадим dumb
             sql.ensureTable(DumbTable.instance);
-            sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1, SystemClass.instance)), MapFact.<PropertyField, ObjectValue>EMPTY());
+            sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1, SystemClass.instance)), MapFact.<PropertyField, ObjectValue>EMPTY(), OperationOwner.unknown);
 
             sql.ensureTable(EmptyTable.instance);
 

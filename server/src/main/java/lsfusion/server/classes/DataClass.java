@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.formula.FormulaClass;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import lsfusion.base.ExtInt;
@@ -183,7 +184,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return new DataObjectInstance(entity, this);
     }
 
-    public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) {
+    public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass, OperationOwner owner) {
         return this;
     }
 

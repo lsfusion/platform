@@ -105,7 +105,7 @@ public class SessionRows extends SessionData<SessionRows> {
         return keys.equals(((SessionRows)obj).keys) && properties.equals(((SessionRows)obj).properties) && rows.equals(((SessionRows)obj).rows);
     }
 
-    public SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, Result<Boolean> changed) throws SQLException, SQLHandledException {
+    public SessionData modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, OperationOwner opOwner, Result<Boolean> changed) throws SQLException, SQLHandledException {
 
         if(type==Modify.DELETE)
             return new SessionRows(keys, properties, rows.remove(keyFields));
@@ -128,14 +128,14 @@ public class SessionRows extends SessionData<SessionRows> {
         }
 
         if(orRows.size()>MAX_ROWS) // если превысили количество рядов "переходим" в таблицу
-            return new SessionDataTable(session, keys, properties, orRows, owner);
+            return new SessionDataTable(session, keys, properties, orRows, owner, opOwner);
         else
             return new SessionRows(keys, properties, orRows);
     }
 
-    public void drop(SQLSession session, Object owner) {
+    public void drop(SQLSession session, Object owner, OperationOwner opOwner) {
     }
-    public void rollDrop(SQLSession session, Object owner) throws SQLException {
+    public void rollDrop(SQLSession session, Object owner, OperationOwner opOwner) throws SQLException {
     }
 
     @Override
@@ -223,7 +223,7 @@ public class SessionRows extends SessionData<SessionRows> {
     }
 
     @Override
-    public SessionData updateAdded(SQLSession session, BaseClass baseClass, final PropertyField property, final Pair<Integer, Integer>[] shifts) {
+    public SessionData updateAdded(SQLSession session, BaseClass baseClass, final PropertyField property, final Pair<Integer, Integer>[] shifts, OperationOwner owner) {
         ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> updatedRows = rows.mapValues(new GetValue<ImMap<PropertyField, ObjectValue>, ImMap<PropertyField, ObjectValue>>() {
             public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<PropertyField, ObjectValue> value) {
                 return updateAdded(value, property, shifts);

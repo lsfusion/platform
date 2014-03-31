@@ -1,5 +1,6 @@
 package lsfusion.server.data.type;
 
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import lsfusion.base.ExtInt;
@@ -86,7 +87,7 @@ public class ObjectType extends AbstractType<Integer> {
         return true;
     }
 
-    public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass) throws SQLException, SQLHandledException {
+    public ConcreteClass getDataClass(Object value, SQLSession session, AndClassSet classSet, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {
         ObjectValueClassSet objectClassSet = (ObjectValueClassSet)classSet.getValueClassSet(); // unknown не интересуют
         if(objectClassSet.isEmpty())
             return baseClass.unknown;
@@ -100,7 +101,7 @@ public class ObjectType extends AbstractType<Integer> {
         }
         query.addProperty("classid", mCases.getFinal());
 
-        return baseClass.findConcreteClassID((Integer)query.execute(session).singleValue().get("classid")); // тут можно было бы искать только среди ObjectValueClassSet сделать
+        return baseClass.findConcreteClassID((Integer)query.execute(session, owner).singleValue().get("classid")); // тут можно было бы искать только среди ObjectValueClassSet сделать
     }
 
     public void prepareClassesQuery(Expr expr, Where where, MSet<Expr> exprs, BaseClass baseClass) {

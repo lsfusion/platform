@@ -7,8 +7,8 @@ public class SQLClosedException extends SQLHandledException {
     public SQLClosedException() {
     }
 
-    public boolean repeatApply(SQLSession sql) throws SQLException {
-        return sql.tryRestore();
+    public boolean repeatApply(SQLSession sql, OperationOwner owner) throws SQLException {
+        return sql.tryRestore(owner);
     }
 
     public String toString() {

@@ -19,6 +19,7 @@ import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
@@ -653,7 +654,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             closed = true;
             navigatorManager.navigatorClosed(this);
             try {
-                sql.close();
+                sql.close(OperationOwner.unknown);
             } catch (SQLException e) {
                 Throwables.propagate(e);
             } finally {

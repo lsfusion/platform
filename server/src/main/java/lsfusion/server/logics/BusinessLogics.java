@@ -25,6 +25,7 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.ScannerDaemonTask;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
@@ -171,7 +172,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public ConcreteClass getDataClass(Object object, Type type) {
         try {
             DataSession session = getDbManager().createSession();
-            ConcreteClass result = type.getDataClass(object, session.sql, LM.baseClass.getUpSet(), LM.baseClass);
+            ConcreteClass result = type.getDataClass(object, session.sql, LM.baseClass.getUpSet(), LM.baseClass, OperationOwner.unknown);
             session.close();
 
             return result;
@@ -650,22 +651,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         //временное решение
         
         try {
+            SQLSession sql = getDbManager().getThreadLocalSql();            
             
             systemLogger.info("Setting user logging for properties");
-            setUserLoggableProperties();
+            setUserLoggableProperties(sql);
 
             systemLogger.info("Setting user not null constraints for properties");
-            setNotNullProperties();
+            setNotNullProperties(sql);
             
             systemLogger.info("Setting user notifications for property changes");
-            setupPropertyNotifications();
+            setupPropertyNotifications(sql);
             
         } catch (Exception ignored) {
         }
 
     }
 
-    private void setUserLoggableProperties() throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
+    private void setUserLoggableProperties(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
         
         LCP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
         ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
@@ -673,14 +675,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
         query.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(key));
         query.and(reflectionLM.userLoggableProperty.getExpr(key).getWhere());
-        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(ThreadLocalContext.getDbManager().createSQL());
+        ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
             LM.makeUserLoggable(systemEventsLM, getLCP(values.get("SIDProperty").toString().trim()));
         }
     }
 
-    private void setNotNullProperties() throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
+    private void setNotNullProperties(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
         
         LCP isProperty = LM.is(reflectionLM.property);
         ImRevMap<Object, KeyExpr> keys = isProperty.getMapKeys();
@@ -688,7 +690,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
         query.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(key));
         query.and(reflectionLM.isSetNotNullProperty.getExpr(key).getWhere());
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(ThreadLocalContext.getDbManager().createSQL());
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
             LCP<?> prop = getLCP(values.get("SIDProperty").toString().trim());
@@ -697,7 +699,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private void setupPropertyNotifications() throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
+    private void setupPropertyNotifications(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
 
         LCP isNotification = LM.is(emailLM.notification);
         ImRevMap<Object, KeyExpr> keys = isNotification.getMapKeys();
@@ -711,7 +713,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         query.addProperty("emailToCC", emailLM.emailToCCNotification.getExpr(key));
         query.addProperty("emailToBC", emailLM.emailToBCNotification.getExpr(key));
         query.and(isNotification.getExpr(key).getWhere());
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(ThreadLocalContext.getDbManager().createSQL());
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
         for (int i=0,size=result.size();i<size;i++) {
             DataObject notificationObject = new DataObject(result.getKey(i).getValue(0), emailLM.notification);
@@ -723,7 +725,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             query2.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(propertyExpr2));
             query2.and(emailLM.inNotificationProperty.getExpr(notificationExpr2, propertyExpr2).getWhere());
             query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
-            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result2 = query2.execute(ThreadLocalContext.getDbManager().createSQL());
+            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result2 = query2.execute(sql, OperationOwner.unknown);
             List<LCP> listInNotificationProperty = new ArrayList();
             for (int j=0,size2=result2.size();j<size2;j++) {
                 listInNotificationProperty.add(getLCP(result2.getValue(i).get("SIDProperty").toString().trim()));

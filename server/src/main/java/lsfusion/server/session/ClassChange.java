@@ -5,10 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ConcreteObjectClass;
-import lsfusion.server.data.Modify;
-import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -54,9 +51,9 @@ public class ClassChange extends ImmutableObject {
         this.propValue = null;
     }
 
-    public ModifyResult modifyRows(SingleKeyPropertyUsage table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
+    public ModifyResult modifyRows(SingleKeyPropertyUsage table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv, OperationOwner owner) throws SQLException, SQLHandledException {
         if(keyValue !=null)
-            return table.modifyRecord(session, keyValue, propValue, type);
+            return table.modifyRecord(session, keyValue, propValue, type, owner);
         else
             return table.modifyRows(session, getQuery(), baseClass, type, queryEnv);
     }

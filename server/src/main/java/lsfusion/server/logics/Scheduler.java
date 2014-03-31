@@ -175,7 +175,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
         Object afterFinish = ((ConcreteCustomClass) businessLogics.schedulerLM.findClassByCompoundName("SchedulerStartType")).getDataObject("afterFinish").object;
 
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> scheduledTaskResult = scheduledTaskQuery.execute(session.sql);
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> scheduledTaskResult = scheduledTaskQuery.execute(session);
         for (int i = 0, size = scheduledTaskResult.size(); i < size; i++) {
             ImMap<Object, Object> key = scheduledTaskResult.getKey(i);
             ImMap<Object, Object> value = scheduledTaskResult.getValue(i);
@@ -195,7 +195,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             scheduledTaskDetailQuery.and(businessLogics.schedulerLM.scheduledTaskScheduledTaskDetail.getExpr(scheduledTaskDetailExpr).compare(currentScheduledTaskObject, Compare.EQUALS));
 
             TreeMap<Integer, LAP> propertySIDMap = new TreeMap<Integer, LAP>();
-            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session.sql);
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session);
             int defaultOrder = propertyResult.size() + 100;
             for (ImMap<Object, Object> propertyValues : propertyResult.valueIt()) {
                 String sidProperty = (String) propertyValues.get("SIDPropertyScheduledTaskDetail");

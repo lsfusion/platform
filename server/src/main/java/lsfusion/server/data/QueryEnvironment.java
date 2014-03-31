@@ -6,31 +6,12 @@ public interface QueryEnvironment {
 
     ParseInterface getSQLUser();
     
+    OperationOwner getOpOwner();
+    
     int getTransactTimeout();
 
     ParseInterface getIsFullClient();
     ParseInterface getSQLComputer();
     ParseInterface getIsServerRestarting();
 
-    public final static QueryEnvironment empty = new QueryEnvironment() {
-        public ParseInterface getSQLUser() {
-            return ParseInterface.empty;
-        }
-
-        public ParseInterface getIsFullClient() {
-            return ParseInterface.empty;
-        }
-
-        public ParseInterface getSQLComputer() {
-            return ParseInterface.empty;
-        }
-
-        public ParseInterface getIsServerRestarting() {
-            return ParseInterface.empty;
-        }
-        
-        public int getTransactTimeout() {
-            return 0;
-        }
-    };
 }

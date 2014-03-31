@@ -13,6 +13,7 @@ import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.ModifyQuery;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
@@ -45,13 +46,13 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     @ThisMessage
     @Message("logics.info.checking.aggregated.property")
     public String checkAggregation(SQLSession session) throws SQLException, SQLHandledException {
-        session.pushVolatileStats(null);
+        session.pushVolatileStats(null, OperationOwner.unknown);
         
         try {
     
             String message = "";
     
-            ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = getRecalculateQuery(true).execute(session);
+            ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = getRecalculateQuery(true).execute(session, OperationOwner.unknown);
             if(checkResult.size() > 0) {
                 message += "---- Checking Aggregations : " + this + "-----" + '\n';
                 for(int i=0,size=checkResult.size();i<size;i++)
@@ -60,7 +61,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
             return message;
         } finally {
-            session.popVolatileStats(null);
+            session.popVolatileStats(null, OperationOwner.unknown);
         }
     }
 
@@ -95,12 +96,12 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     @Message("logics.info.recalculation.of.aggregated.property")
     @ThisMessage
     public void recalculateAggregation(SQLSession session) throws SQLException, SQLHandledException {
-        session.pushVolatileStats(null);
+        session.pushVolatileStats(null, OperationOwner.unknown);
         try {
             session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false).map(
-                    mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue"))));
+                    mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), OperationOwner.unknown));
         } finally {
-            session.popVolatileStats(null);
+            session.popVolatileStats(null, OperationOwner.unknown);
         }
     }
 

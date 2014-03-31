@@ -95,7 +95,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return keys.equals(((SessionDataTable) obj).keys) && table.equals(((SessionDataTable) obj).table) && keyValues.equals(((SessionDataTable) obj).keyValues);
     }
 
-    public SessionDataTable modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, Result<Boolean> changed) throws SQLException, SQLHandledException {
+    public SessionDataTable modifyRecord(SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, Object owner, OperationOwner opOwner, Result<Boolean> changed) throws SQLException, SQLHandledException {
 
         ImMap<KeyField, DataObject> fixedKeyValues;
         ImMap<PropertyField, ObjectValue> fixedPropValues;
@@ -110,9 +110,9 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         } else {
             fixedKeyValues = keyFields.addEquals(keyValues);
             fixedPropValues = propFields.addEquals(propertyValues);
-            fixedTable = table.addFields(session, keys.removeOrder(fixedKeyValues.keys()), keyValues.remove(fixedKeyValues.keys()), propertyValues.remove(fixedPropValues.keys()), owner);
+            fixedTable = table.addFields(session, keys.removeOrder(fixedKeyValues.keys()), keyValues.remove(fixedKeyValues.keys()), propertyValues.remove(fixedPropValues.keys()), owner, opOwner);
         }
-        return new SessionDataTable(fixedTable.modifyRecord(session, keyFields.remove(fixedKeyValues.keys()), propFields.remove(fixedPropValues.keys()), type, owner, changed),
+        return new SessionDataTable(fixedTable.modifyRecord(session, keyFields.remove(fixedKeyValues.keys()), propFields.remove(fixedPropValues.keys()), type, owner, opOwner, changed),
                 keys, fixedKeyValues, fixedPropValues);
     }
 
@@ -124,17 +124,17 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     }
 
     @Override
-    public SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Integer,Integer>[] shifts) throws SQLException, SQLHandledException {
+    public SessionData updateAdded(SQLSession session, BaseClass baseClass, PropertyField property, Pair<Integer, Integer>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException {
         if(propertyValues.containsKey(property))
             return new SessionDataTable(table, keys, keyValues, SessionRows.updateAdded(propertyValues, property, shifts));
         else {
-            table.updateAdded(session, baseClass, property, shifts);
+            table.updateAdded(session, baseClass, property, shifts, owner);
             return this;
         }
     }
 
     // для оптимизации групповых добавлений (batch processing'а)
-    public SessionDataTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, Object owner) throws SQLException, SQLHandledException {
+    public SessionDataTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, Object owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
 
         this.keys = keys;
         // сначала пробежим по всем проверим с какими field'ами создавать таблицы и заодно propertyClasses узнаем, после этого batch'ем запишем
@@ -157,14 +157,14 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
             }});
         this.keyValues = keyValues;
         this.propertyValues = propertyValues;
-        table = SessionTable.create(session, keys.removeOrder(removeKeys), properties.remove(removeProperties), tableRows, owner);
+        table = SessionTable.create(session, keys.removeOrder(removeKeys), properties.remove(removeProperties), tableRows, owner, opOwner);
     }
 
-    public void drop(SQLSession session, Object owner) throws SQLException {
-        table.drop(session, owner);
+    public void drop(SQLSession session, Object owner, OperationOwner opOwner) throws SQLException {
+        table.drop(session, owner, opOwner);
     }
-    public void rollDrop(SQLSession session, Object owner) throws SQLException {
-        table.rollDrop(session, owner);
+    public void rollDrop(SQLSession session, Object owner, OperationOwner opOwner) throws SQLException {
+        table.rollDrop(session, owner, opOwner);
     }
 
     public boolean used(InnerContext query) {

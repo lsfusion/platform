@@ -6,10 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.BaseClass;
-import lsfusion.server.data.Modify;
-import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Join;
@@ -32,8 +29,8 @@ public class SingleKeyPropertyUsage extends SinglePropertyTableUsage<String> {
         }, propertyType);
     }
 
-    public ModifyResult modifyRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, Modify type) throws SQLException, SQLHandledException {
-        return modifyRecord(session, MapFact.singleton("key", keyObject), MapFact.singleton("value", propertyObject), type);
+    public ModifyResult modifyRecord(SQLSession session, DataObject keyObject, ObjectValue propertyObject, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
+        return modifyRecord(session, MapFact.singleton("key", keyObject), MapFact.singleton("value", propertyObject), type, owner);
     }
     
     public void writeRows(SQLSession session, KeyExpr key, Expr expr, Where where, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {

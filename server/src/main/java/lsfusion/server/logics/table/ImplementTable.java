@@ -79,7 +79,7 @@ public class ImplementTable extends GlobalTable {
         Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);
         moveColumn.addProperty(field, moveExpr);
         moveColumn.and(moveExpr.getWhere());
-        sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery()));
+        sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery(), OperationOwner.unknown));
     }
 
     public void addField(PropertyField field,ClassWhere<Field> classes) { // кривовато конечно, но пока другого варианта нет

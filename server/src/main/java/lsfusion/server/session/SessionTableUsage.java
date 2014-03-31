@@ -95,16 +95,16 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         return ModifyResult.NO;
     }
 
-    public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyObjects, ImMap<V, ObjectValue> propertyObjects, Modify type) throws SQLException, SQLHandledException {
+    public ModifyResult modifyRecord(SQLSession session, ImMap<K, DataObject> keyObjects, ImMap<V, ObjectValue> propertyObjects, Modify type, OperationOwner owner) throws SQLException, SQLHandledException {
         Result<Boolean> changed = new Result<Boolean>();
-        return aspectModify(table.modifyRecord(session, mapKeys.join(keyObjects), mapProps.join(propertyObjects), type, this, changed), changed.result);
+        return aspectModify(table.modifyRecord(session, mapKeys.join(keyObjects), mapProps.join(propertyObjects), type, this, owner, changed), changed.result);
     }
 
-    public void writeKeys(SQLSession session,ImSet<ImMap<K,DataObject>> writeRows) throws SQLException, SQLHandledException {
-        writeRows(session, writeRows.toMap(MapFact.<V, ObjectValue>EMPTY()));
+    public void writeKeys(SQLSession session,ImSet<ImMap<K,DataObject>> writeRows, OperationOwner owner) throws SQLException, SQLHandledException {
+        writeRows(session, writeRows.toMap(MapFact.<V, ObjectValue>EMPTY()), owner);
     }
 
-    public void writeRows(SQLSession session,ImMap<ImMap<K,DataObject>,ImMap<V,ObjectValue>> writeRows) throws SQLException, SQLHandledException {
+    public void writeRows(SQLSession session,ImMap<ImMap<K,DataObject>,ImMap<V,ObjectValue>> writeRows, OperationOwner opOwner) throws SQLException, SQLHandledException {
         ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> mapWriteRows = writeRows.mapKeyValues(new GetValue<ImMap<KeyField, DataObject>, ImMap<K, DataObject>>() {
             public ImMap<KeyField, DataObject> getMapValue(ImMap<K, DataObject> value) {
                 return mapKeys.join(value);
@@ -112,7 +112,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
             public ImMap<PropertyField, ObjectValue> getMapValue(ImMap<V, ObjectValue> value) {
                 return mapProps.join(value);
             }});
-        table = table.rewrite(session, mapWriteRows, this);
+        table = table.rewrite(session, mapWriteRows, this, opOwner);
     }
 
     public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
@@ -125,8 +125,8 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         return aspectModify(table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps), baseClass, type, env, this, changed), changed.result);
     }
     // оптимизационная штука
-    public void updateAdded(SQLSession session, BaseClass baseClass, V property, Pair<Integer,Integer>[] shifts) throws SQLException, SQLHandledException {
-        table = table.updateAdded(session, baseClass, getField(property), shifts);
+    public void updateAdded(SQLSession session, BaseClass baseClass, V property, Pair<Integer,Integer>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException {
+        table = table.updateAdded(session, baseClass, getField(property), shifts, owner);
     }
 
     private PropertyField getField(V property) {
@@ -137,8 +137,8 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         table = table.deleteProperty(session, getField(property), object);
     }*/
 
-    public void drop(SQLSession session) throws SQLException {
-        table.drop(session, this);
+    public void drop(SQLSession session, OperationOwner owner) throws SQLException {
+        table.drop(session, this, owner);
         table = null;
     }
 
@@ -185,10 +185,10 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     public SessionData saveData() {
         return table;
     }
-    public void rollData(SQLSession sql, SessionData table) throws SQLException {
+    public void rollData(SQLSession sql, SessionData table, OperationOwner owner) throws SQLException {
         assert this.table == null;
         this.table = table;
-        this.table.rollDrop(sql, this);
+        this.table.rollDrop(sql, this, owner);
     }
     
     public static <T> ImMap<T, SessionData> saveData(Map<T, ? extends SessionTableUsage> map) {

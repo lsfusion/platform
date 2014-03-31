@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -21,6 +22,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.PropertyChange;
+import org.apache.xmlbeans.impl.common.XPath;
 
 import java.sql.SQLException;
 
@@ -90,11 +92,11 @@ public class QueryBuilder<K, V> {
         return new Query<K, V>(mapKeys, mProperties.immutable(), where);
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session) throws SQLException, SQLHandledException {
-        return getQuery().execute(session);
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, OperationOwner owner) throws SQLException, SQLHandledException {
+        return getQuery().execute(session, owner);
     }
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
-        return getQuery().execute(session, orders);
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, OperationOwner owner, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
+        return getQuery().execute(session, owner, orders);
     }
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session) throws SQLException, SQLHandledException {
         return getQuery().execute(session);
@@ -114,6 +116,9 @@ public class QueryBuilder<K, V> {
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
         return getQuery().execute(session, orders, 0);
     }
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(ExecutionContext context, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
+        return getQuery().execute(context, orders, 0);
+    }
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session, ImOrderMap<V, Boolean> orders, int selectTop) throws SQLException, SQLHandledException {
         return getQuery().execute(session, orders, selectTop);
     }
@@ -123,8 +128,8 @@ public class QueryBuilder<K, V> {
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException, SQLHandledException {
         return getQuery().execute(session, orders, selectTop, env);
     }
-    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-        return getQuery().executeClasses(session, baseClass);
+    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {
+        return getQuery().executeClasses(session, baseClass, owner);
     }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(DataSession session) throws SQLException, SQLHandledException {
         return getQuery().executeClasses(session);

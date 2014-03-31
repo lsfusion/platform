@@ -46,7 +46,6 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
-import org.apache.poi.util.SystemOutLogger;
 
 import javax.swing.*;
 import java.sql.SQLException;
@@ -95,6 +94,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         public SQLSession getSQL() {
             return sql;
+        }
+
+        public OperationOwner getOpOwner() {
+            return DataSession.this.getOwner();
         }
 
         public BaseClass getBaseClass() {
@@ -172,12 +175,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 DataProperty prop = data.getKey(i);
 
                 SinglePropertyTableUsage<ClassPropertyInterface> table = DataSession.this.data.get(prop);
+                OperationOwner owner = getOwner();
                 if(table==null) {
                     table = prop.createChangeTable();
-                    table.drop(sql);
+                    table.drop(sql, owner);
                 }
 
-                table.rollData(sql, data.getValue(i));
+                table.rollData(sql, data.getValue(i), owner);
                 rollData.put(prop, table);
             }
             DataSession.this.data = rollData;
@@ -185,11 +189,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         private void rollNews() throws SQLException {
             if(news!=null) {
+                OperationOwner owner = getOwner();
                 if(DataSession.this.news==null) {
                     DataSession.this.news = new SingleKeyPropertyUsage(ObjectType.instance, ObjectType.instance);
-                    DataSession.this.news.drop(sql);
+                    DataSession.this.news.drop(sql, owner);
                 }
-                DataSession.this.news.rollData(sql, news);
+                DataSession.this.news.rollData(sql, news, owner);
             } else
                 DataSession.this.news = null;
         }
@@ -220,7 +225,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private void startTransaction(UpdateCurrentClasses update, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
         assert !isInTransaction;
-        sql.startTransaction(DBManager.SESSION_TIL);
+        sql.startTransaction(DBManager.SESSION_TIL, getOwner());
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
             onlyDataModifier = new OverrideSessionModifier(new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
@@ -229,7 +234,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private void cleanOnlyDataModifier() throws SQLException {
         if(onlyDataModifier != null) {
             assert applyFilter == ApplyFilter.ONLY_DATA;
-            onlyDataModifier.clean(sql);
+            onlyDataModifier.clean(sql, getOwner());
             onlyDataModifier = null;
         }
     }
@@ -247,7 +252,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 applyTransaction.rollback();
         } finally {
             endTransaction();
-            sql.rollbackTransaction();
+            sql.rollbackTransaction(getOwner());
         }
 //        checkSessionTableMap();
     }
@@ -276,7 +281,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private void commitTransaction() throws SQLException {
         endTransaction();
-        sql.commitTransaction();
+        sql.commitTransaction(getOwner());
     }
 
     private ImSet<CalcProperty<ClassPropertyInterface>> getClassChanges(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses) {
@@ -506,7 +511,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         assert dataModifier.getHintProps().isEmpty(); // hint'ы все должны также уйти
 
         if(cancel) {
-            sessionEventChangedOld.clear(sql);
+            sessionEventChangedOld.clear(sql, getOwner());
         } else
             assert sessionEventChangedOld.isEmpty();
         sessionEventNotChangedOld.clear();
@@ -550,19 +555,20 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(table.isEmpty()) // оптимизация, не зачем генерить id и все такое
             return table;
 
+        OperationOwner owner = getOwner();
         try {
             // берем количество рядов - резервируем ID'ки
             Pair<Integer, Integer>[] startFrom = IDTable.instance.generateIDs(table.getCount(), idSession, IDTable.OBJECT);
     
             // update'им на эту разницу ключи, чтобы сгенерить объекты
-            table.updateAdded(sql, baseClass, toZeroBased(startFrom)); // так как не zero-based отнимаем 1
+            table.updateAdded(sql, baseClass, toZeroBased(startFrom), owner); // так как не zero-based отнимаем 1
     
             // вообще избыточно, если compile'ить отдельно в for() + changeClass, который сам сгруппирует, но тогда currentClass будет unknown в свойстве что вообщем то не возможно
             KeyExpr keyExpr = new KeyExpr("keyExpr");
             changeClass(new ClassChange(keyExpr, GroupExpr.create(MapFact.singleton("key", table.join(query.mapKeys).getExpr("value")),
                     Where.TRUE, MapFact.singleton("key", keyExpr)).getWhere(), cls));
         } catch(Throwable t) {
-            table.drop(sql);
+            table.drop(sql, owner);
             throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
         }
             
@@ -679,7 +685,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             updateSourceChanges = aspectChangeClass(addClasses, removeClasses, changedOldClasses, changedNewClasses, change);
         } finally {
             if(changeTable!=null)
-                changeTable.drop(sql);
+                changeTable.drop(sql, getOwner());
         }
 
         if(updateSourceChanges != null) {
@@ -735,7 +741,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             changed = aspectChangeProperty(property, change);
         } finally {
             if(changeTable!=null)
-                changeTable.drop(sql);
+                changeTable.drop(sql, getOwner());
         }
 
         if(changed.dataChanged()) {
@@ -815,7 +821,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             // закидываем старые изменения
             for(CalcProperty changedOld : sessionEventChangedOld.getProperties()) // assert что только old'ы
                 sessionEventNotChangedOld.add(changedOld, ((OldProperty<PropertyInterface>)changedOld).property.getIncrementChange(env.getModifier()));
-            sessionEventChangedOld.clear(sql);
+            sessionEventChangedOld.clear(sql, getOwner());
         }
     }
 
@@ -836,7 +842,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         try {
             action.execute(this);
         } finally {
-            resolveModifier.clean(sql);
+            resolveModifier.clean(sql, getOwner());
             resolveModifier = null;
         }
     }
@@ -865,7 +871,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 }});
             Expr sumExpr = IsClassExpr.create(key, group, IsClassType.SUMCONSISTENT);
 //            Expr aggExpr = IsClassExpr.create(key, group, IsClassType.AGGCONSISTENT);
-            table.writeRows(sql, new Query<String,String>(MapFact.singletonRev("key", key), MapFact.singleton("sum", sumExpr), sumExpr.getWhere()), baseClass, QueryEnvironment.empty); //, "agg", aggExpr
+            table.writeRows(sql, new Query<String,String>(MapFact.singletonRev("key", key), MapFact.singleton("sum", sumExpr), sumExpr.getWhere()), baseClass, DataSession.emptyEnv(OperationOwner.unknown)); //, "agg", aggExpr
 
             Join<String> tableJoin = table.join(key);
             mSum.add(tableJoin.getExpr("sum"), 1);
@@ -875,10 +881,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         // FormulaUnionExpr.create(new StringAggConcatenateFormulaImpl(","), mAgg.immutableList()) , "value",
-        String incorrect = new Query<String,String>(MapFact.singletonRev("key", key), mSum.getExpr().compare(ValueExpr.COUNT, Compare.GREATER)).readSelect(sql, QueryEnvironment.empty);
+        String incorrect = new Query<String,String>(MapFact.singletonRev("key", key), mSum.getExpr().compare(ValueExpr.COUNT, Compare.GREATER)).readSelect(sql);
 
         for(SingleKeyTableUsage<String> usedTable : usedTables.it())
-            usedTable.drop(sql);
+            usedTable.drop(sql, OperationOwner.unknown);
 
         if(!incorrect.isEmpty())
             return "---- Checking Classes Exclusiveness -----" + '\n' + incorrect;
@@ -891,7 +897,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         Where where = getIncorrectWhere(property, baseClass, mapKeys);
         Query<ClassPropertyInterface, String> query = new Query<ClassPropertyInterface, String>(mapKeys, where);
 
-        String incorrect = query.readSelect(sql, QueryEnvironment.empty);
+        String incorrect = query.readSelect(sql);
         if(!incorrect.isEmpty())
             return "---- Checking Classes for DataProperty : " + property + "-----" + '\n' + incorrect;
         return "";
@@ -968,11 +974,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public DataObject getDataObject(ValueClass valueClass, Object value) throws SQLException, SQLHandledException {
-        return baseClass.getDataObject(sql, value, valueClass.getUpSet());
+        return baseClass.getDataObject(sql, value, valueClass.getUpSet(), getOwner());
     }
 
     public ObjectValue getObjectValue(ValueClass valueClass, Object value) throws SQLException, SQLHandledException {
-        return baseClass.getObjectValue(sql, value, valueClass.getUpSet());
+        return baseClass.getObjectValue(sql, value, valueClass.getUpSet(), getOwner());
     }
 
     // узнает список изменений произошедших без него
@@ -1073,6 +1079,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return sql;
         }
 
+        public OperationOwner getOpOwner() {
+            return DataSession.this.getOwner();
+        }
+
         public BaseClass getBaseClass() {
             return baseClass;
         }
@@ -1089,7 +1099,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             try {
                 applySingleStored(property, split.first, BL);
             } catch (Throwable e) {
-                split.second.drop(sql);
+                split.second.drop(sql, getOwner());
                 throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
             }
             return split.second;
@@ -1153,8 +1163,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
             savePropertyChanges(property, change);
         } finally {
-            change.drop(sql);
-            modifier.clean(sql); // hint'ы и ссылки почистить
+            OperationOwner owner = getOwner();
+            change.drop(sql, owner);
+            modifier.clean(sql, owner); // hint'ы и ссылки почистить
         }
     }
 
@@ -1205,7 +1216,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 try {
                     savePropertyChanges(property, prevTable); // записываем старые изменения
                 } finally {
-                    prevTable.drop(sql);
+                    prevTable.drop(sql, getOwner());
                     pendingSingle.setValue(newTable); // сохраняем новые изменения
                 }
             }
@@ -1323,7 +1334,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         executeSessionEvents(form);
 
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
-        dataModifier.clearHints(sql);
+        dataModifier.clearHints(sql, getOwner());
 
         return transactApply(BL, update, interaction, 0, applyAction);
     }
@@ -1338,7 +1349,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             try {
                 rollbackApply();
                 
-                if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(sql)) { // update conflict или deadlock или timeout - пробуем еще раз
+                if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(sql, getOwner())) { // update conflict или deadlock или timeout - пробуем еще раз
                     boolean noTimeout = false;
                     if(t instanceof SQLTimeoutException && ((SQLTimeoutException)t).isTransactTimeout) {
                         if(interaction == null) {
@@ -1382,7 +1393,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
     public void unregisterForm(FormInstance<?> form) throws SQLException {
         for(SessionModifier modifier : form.modifiers.values())
-            modifier.clean(sql);
+            modifier.clean(sql, getOwner());
 
         activeForms.remove(form);
         incrementChanges.remove(form);
@@ -1448,17 +1459,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             // записываем в базу, то что туда еще не сохранено, приходится сохранять группами, так могут не подходить по классам
             packRemoveClasses(BL); // нужно делать до, так как классы должны быть актуальными, иначе спакует свои же изменения
             ImMap<ImplementTable, ImSet<CalcProperty>> groupTables = groupPropertiesByTables();
+            OperationOwner owner = getOwner();
             for (int i=0,size=groupTables.size();i<size;i++) {
                 ImplementTable table = groupTables.getKey(i);
                 SessionTableUsage<KeyField, CalcProperty> saveTable = readSave(table, groupTables.getValue(i));
                 try {
                     savePropertyChanges(table, saveTable);
                 } finally {
-                    saveTable.drop(sql);
+                    saveTable.drop(sql, owner);
                 }
             }
     
-            apply.clear(sql); // все сохраненные хинты обнуляем
+            apply.clear(sql, owner); // все сохраненные хинты обнуляем
             restart(false, SetFact.fromJavaSet(recursiveUsed)); // оставляем usedSessiona
         } finally {
             sql.inconsistent = false;
@@ -1531,10 +1543,49 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public QueryEnvironment getQueryEnv() {
         return env;
     }
+    
+    public OperationOwner getOwner() {
+        return owner;
+    }
+
+    public static QueryEnvironment emptyEnv(final OperationOwner owner) {
+        return new QueryEnvironment() {
+            public ParseInterface getSQLUser() {
+                return ParseInterface.empty;
+            }
+
+            public ParseInterface getIsFullClient() {
+                return ParseInterface.empty;
+            }
+
+            public ParseInterface getSQLComputer() {
+                return ParseInterface.empty;
+            }
+
+            public ParseInterface getIsServerRestarting() {
+                return ParseInterface.empty;
+            }
+
+            public int getTransactTimeout() {
+                return 0;
+            }
+
+            public OperationOwner getOpOwner() {
+                return owner;
+            }
+        };
+    }
+
+    private final OperationOwner owner = new OperationOwner() {
+    };
 
     public final QueryEnvironment env = new QueryEnvironment() {
         public ParseInterface getSQLUser() {
             return new TypeObject(user.getCurrentUser().object, ObjectType.instance);
+        }
+
+        public OperationOwner getOpOwner() {
+            return DataSession.this.getOwner();
         }
 
         public ParseInterface getIsFullClient() {
@@ -1598,7 +1649,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 changeTable = change.materialize(sql, baseClass, env);
                 change = changeTable.getChange();
             }
-            ModifyResult tableChanged = change.modifyRows(news, sql, baseClass, Modify.MODIFY, env);
+            ModifyResult tableChanged = change.modifyRows(news, sql, baseClass, Modify.MODIFY, env, getOwner());
             if(!tableChanged.dataChanged()) {
                 if(news.isEmpty())
                     news = null;
@@ -1654,7 +1705,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return sourceNotChanged ? CustomClass.getProperties(changedAddFull, changeRemoveFull, changedUsedOld, changedUsedNew) : FullFunctionSet.<CalcProperty<ClassPropertyInterface>>instance();
         } finally {
             if(changeTable!=null)
-                changeTable.drop(sql);
+                changeTable.drop(sql, getOwner());
         }
     }
 
@@ -1687,7 +1738,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private void aspectDropChanges(final DataProperty property) throws SQLException {
         SinglePropertyTableUsage<ClassPropertyInterface> dataChange = data.remove(property);
         if(dataChange!=null)
-            dataChange.drop(sql);
+            dataChange.drop(sql, getOwner());
     }
 
     private ModifyResult aspectChangeProperty(final DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
@@ -1698,17 +1749,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             dataChange = property.createChangeTable();
             data.put(property, dataChange);
         }
-        ModifyResult result = change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, getQueryEnv());
+        ModifyResult result = change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, getQueryEnv(), getOwner());
         if(!result.dataChanged() && dataChange.isEmpty())
             data.remove(property);
         return result;
     }
 
     public void dropTables(ImSet<SessionDataProperty> keep) throws SQLException {
+        OperationOwner owner = getOwner();
         for(SinglePropertyTableUsage<ClassPropertyInterface> dataTable : BaseUtils.filterNotKeys(data, keep).values())
-            dataTable.drop(sql);
+            dataTable.drop(sql, owner);
         if(news !=null)
-            news.drop(sql);
+            news.drop(sql, owner);
 
         dataModifier.eventDataChanges(getChangedProps());
     }
@@ -1740,9 +1792,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private void rollbackApply() throws SQLException {
         try {
+            OperationOwner owner = getOwner();
             if(neededProps!=null) {
                 for(SinglePropertyTableUsage table : pendingSingleTables.values())
-                    table.drop(sql);
+                    table.drop(sql, owner);
                 pendingSingleTables.clear();
                 neededProps = null;
                 assert !flush;
@@ -1752,8 +1805,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             recursiveActions.clear();
     
             // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
-            apply.clear(sql);
-            dataModifier.clearHints(sql); // drop'ем hint'ы (можно и без sql но пока не важно)
+            apply.clear(sql, owner);
+            dataModifier.clearHints(sql, owner); // drop'ем hint'ы (можно и без sql но пока не важно)
         } finally {
             rollbackTransaction();
         }
@@ -1762,6 +1815,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private <P extends PropertyInterface> void updateApplyStart(OldProperty<P> property, SinglePropertyTableUsage<P> tableUsage) throws SQLException, SQLHandledException { // изврат конечно
         assert isInTransaction();
 
+        OperationOwner owner = getOwner();
         try {
             SinglePropertyTableUsage<P> prevTable = apply.getTable(property);
             if(prevTable==null) {
@@ -1774,9 +1828,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 apply.eventChange(property, tableChanges.sourceChanged());
             else
                 if(prevTable.isEmpty())
-                    apply.remove(property, sql);
+                    apply.remove(property, sql, owner);
         } finally {
-            tableUsage.drop(sql);
+            tableUsage.drop(sql, owner);
         }
     }
 
@@ -1801,6 +1855,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         IncrementChangeProps increment = new IncrementChangeProps();
         MAddSet<SessionTableUsage<KeyField, CalcProperty>> splitTables = SetFact.mAddSet();
 
+        OperationOwner owner = getOwner();
         try {
             final int split = (int) Math.sqrt(properties.size());
             final ImOrderSet<CalcProperty> propertyOrder = properties.sort(propCompare).toOrderExclSet(); // для детерменированности
@@ -1818,11 +1873,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             try {
                 return readSave(table, properties, modifier);
             } finally {
-                modifier.clean(sql);
+                modifier.clean(sql, owner);
             }
         } finally {
             for(SessionTableUsage<KeyField, CalcProperty> splitTable : splitTables)
-                splitTable.drop(sql);
+                splitTable.drop(sql, owner);
         }
     }
 
@@ -1851,10 +1906,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public void pushVolatileStats() throws SQLException {
-        sql.pushVolatileStats(null);
+        sql.pushVolatileStats(null, getOwner());
     }
 
     public void popVolatileStats() throws SQLException {
-        sql.popVolatileStats(null);
+        sql.popVolatileStats(null, getOwner());
     }
 }

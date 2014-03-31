@@ -15,6 +15,7 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ObjectClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.UpClassSet;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -271,7 +272,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
 
     public ClassDataProperty dataProperty;
     public Integer readData(Integer data, SQLSession sql) throws SQLException, SQLHandledException {
-        return (Integer) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), Property.defaultModifier, QueryEnvironment.empty);
+        return (Integer) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
     }
 
     public ImRevMap<ClassField, ObjectValueClassSet> getTables() {

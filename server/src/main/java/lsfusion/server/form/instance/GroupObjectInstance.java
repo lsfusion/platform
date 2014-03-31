@@ -811,7 +811,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 }
 
                 // параллельно будем обновлять ключи чтобы JoinSelect'ить
-                keyTable.writeKeys(sql, keys.keys());
+                keyTable.writeKeys(sql, keys.keys(), env.getOpOwner());
                 result.gridObjects.exclAdd(this, keys.keyOrderSet());
 
                 CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);

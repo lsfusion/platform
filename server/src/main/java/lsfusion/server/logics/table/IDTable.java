@@ -107,19 +107,19 @@ public class IDTable extends GlobalTable {
     public int reserveIDs(int count, SQLSession dataSession, int idType) throws SQLException {
         int freeID = 0;
         try {
-            dataSession.startTransaction(DBManager.ID_TIL);
+            dataSession.startTransaction(DBManager.ID_TIL, OperationOwner.unknown);
 
-            freeID = (Integer) getGenerateQuery(idType).execute(dataSession).singleValue().get(value) + 1; // замещаем
+            freeID = (Integer) getGenerateQuery(idType).execute(dataSession, OperationOwner.unknown).singleValue().get(value) + 1; // замещаем
 
             QueryBuilder<KeyField, PropertyField> updateQuery = new QueryBuilder<KeyField, PropertyField>(this, MapFact.singleton(key, new DataObject(idType, SystemClass.instance)));
             updateQuery.addProperty(value, new ValueExpr(freeID + count - 1, SystemClass.instance));
-            dataSession.updateRecords(new ModifyQuery(this, updateQuery.getQuery()));
+            dataSession.updateRecords(new ModifyQuery(this, updateQuery.getQuery(), OperationOwner.unknown));
 
             dataSession.commitTransaction();
         } catch (Throwable e) {
             dataSession.rollbackTransaction();
 
-            if(e instanceof SQLHandledException && ((SQLHandledException)e).repeatApply(dataSession)) // update conflict или deadlock или timeout - пробуем еще раз
+            if(e instanceof SQLHandledException && ((SQLHandledException)e).repeatApply(dataSession, OperationOwner.unknown)) // update conflict или deadlock или timeout - пробуем еще раз
                 return reserveIDs(count, dataSession, idType);
             
             throw ExceptionUtils.propagate(e, SQLException.class);

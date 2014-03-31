@@ -12,6 +12,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -68,7 +69,7 @@ public abstract class SessionModifier implements Modifier {
                 for(CalcProperty<?> incrementProperty : getIncrementProps()) {
                     if(CalcProperty.depends(incrementProperty, property)) {
                         if(increment.contains(incrementProperty))
-                            increment.remove(incrementProperty, getSQL());
+                            increment.remove(incrementProperty, getSQL(), getOpOwner());
                         preread.remove(incrementProperty);
                         eventChange(incrementProperty, false, true); // так как изначально итерация идет или по increment или по preread, сработает в любом случае
                     }
@@ -139,9 +140,9 @@ public abstract class SessionModifier implements Modifier {
         return increment.getProperties().merge(getPrereadProps());
     }
 
-    public void clearHints(SQLSession session) throws SQLException {
+    public void clearHints(SQLSession session, OperationOwner owner) throws SQLException {
         eventSourceChanges(getIncrementProps());
-        increment.clear(session);
+        increment.clear(session, owner);
         preread.clear();
         eventDataChanges(noUpdate.immutableCopy());
         noUpdate = SetFact.mAddSet();
@@ -155,6 +156,8 @@ public abstract class SessionModifier implements Modifier {
     public abstract SQLSession getSQL();
     public abstract BaseClass getBaseClass();
     public abstract QueryEnvironment getQueryEnv();
+    
+    public abstract OperationOwner getOpOwner();
 
     public boolean allowHintIncrement(CalcProperty property) {
         if (increment.contains(property))
@@ -352,8 +355,8 @@ public abstract class SessionModifier implements Modifier {
         return result;
     }
 
-    public void clean(SQLSession sql) throws SQLException {
-        increment.clear(sql);
+    public void clean(SQLSession sql, OperationOwner opOwner) throws SQLException {
+        increment.clear(sql, opOwner);
         preread.clear();
         assert views.isEmpty();
     }

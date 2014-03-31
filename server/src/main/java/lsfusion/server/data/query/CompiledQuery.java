@@ -1424,7 +1424,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
-        return session.executeSelect(select, env, getQueryParams(queryEnv), queryExecEnv, queryEnv.getTransactTimeout(), keyNames, keyReaders, propertyNames, propertyReaders);
+        return session.executeSelect(select, queryEnv.getOpOwner(), env, getQueryParams(queryEnv), queryExecEnv, queryEnv.getTransactTimeout(), keyNames, keyReaders, propertyNames, propertyReaders);
     }
 
     public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {

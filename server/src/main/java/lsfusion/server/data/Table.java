@@ -213,12 +213,12 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         initBaseClasses(baseClass);
     }
 
-    public ImOrderMap<ImMap<KeyField,DataObject>,ImMap<PropertyField,ObjectValue>> read(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
+    public ImOrderMap<ImMap<KeyField,DataObject>,ImMap<PropertyField,ObjectValue>> read(SQLSession session, BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
         lsfusion.server.data.query.Join<PropertyField> tableJoin = join(query.getMapExprs());
         query.addProperties(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
-        return query.executeClasses(session, baseClass);
+        return query.executeClasses(session, baseClass, owner);
     }
 
     private static <T extends Field> ImSet<T> splitData(ImSet<T> fields, Result<ImMap<T, DataClass>> dataClasses) {
@@ -237,7 +237,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return mObjectFields.immutable();
     }
 
-    public ImMap<ImMap<KeyField,ConcreteClass>,ImMap<PropertyField,ConcreteClass>> readClasses(SQLSession session, final BaseClass baseClass) throws SQLException, SQLHandledException {
+    public ImMap<ImMap<KeyField,ConcreteClass>,ImMap<PropertyField,ConcreteClass>> readClasses(SQLSession session, final BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {
         final Result<ImMap<KeyField, DataClass>> dataKeys = new Result<ImMap<KeyField, DataClass>>();
         final Result<ImMap<PropertyField, DataClass>> dataProps = new Result<ImMap<PropertyField, DataClass>>();
         final ImSet<KeyField> objectKeys = splitData(keys.getSet(), dataKeys);
@@ -272,7 +272,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             }
         })).mapValues(classExpr);
 
-        ImSet<ImMap<Field, ConcreteClass>> readClasses = new Query<Field, Object>(classKeys, GroupExpr.create(group, tableJoin.getWhere(), classKeys).getWhere()).execute(session).keyOrderSet().getSet().mapSetValues(new GetValue<ImMap<Field, ConcreteClass>, ImMap<Field, Object>>() {
+        ImSet<ImMap<Field, ConcreteClass>> readClasses = new Query<Field, Object>(classKeys, GroupExpr.create(group, tableJoin.getWhere(), classKeys).getWhere()).execute(session, owner).keyOrderSet().getSet().mapSetValues(new GetValue<ImMap<Field, ConcreteClass>, ImMap<Field, Object>>() {
             public ImMap<Field, ConcreteClass> getMapValue(ImMap<Field, Object> value) {
                 return value.filterFnValues(new SFunctionSet<Object>() {
                     public boolean contains(Object element) {

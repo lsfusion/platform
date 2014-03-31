@@ -237,7 +237,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
                 iterateChildReports(hierarchy.getChildNodes(node), groups, reportTable);
             } finally {
-                reportTable.drop(form.session.sql);
+                reportTable.drop(form.session.sql, form.session.getOwner());
             }
         }
     }

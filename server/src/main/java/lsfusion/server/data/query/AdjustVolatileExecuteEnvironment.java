@@ -2,6 +2,7 @@ package lsfusion.server.data.query;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.server.Settings;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.SQLTimeoutException;
@@ -18,19 +19,19 @@ public class AdjustVolatileExecuteEnvironment extends QueryExecuteEnvironment {
         return sqlSession.getSecondsFromTransactStart();
     }
             
-    public synchronized AdjustState before(SQLSession sqlSession) throws SQLException {
+    public synchronized AdjustState before(SQLSession sqlSession, OperationOwner opOwner) throws SQLException {
         if(sqlSession.isVolatileStats() || sqlSession.isNoHandled())
             return null;
         
         if(volatileStats)
-            sqlSession.pushVolatileStats(null);
+            sqlSession.pushVolatileStats(null, opOwner);
 
         return new AdjustState(timeout, volatileStats, getTransAdjust(sqlSession));
     }
 
-    public void after(AdjustState queryExecState, SQLSession sqlSession) throws SQLException {
+    public void after(AdjustState queryExecState, SQLSession sqlSession, OperationOwner opOwner) throws SQLException {
         if(queryExecState.volatileStats)
-            sqlSession.popVolatileStats(null);
+            sqlSession.popVolatileStats(null, opOwner);
     }
 
     public void succeeded(AdjustState state) {

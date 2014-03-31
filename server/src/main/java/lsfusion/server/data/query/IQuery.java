@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Message;
 import lsfusion.server.caches.AbstractInnerContext;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -21,6 +22,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
@@ -86,14 +88,14 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     }
 
     public void outSelect(SQLSession session) throws SQLException, SQLHandledException {
-        outSelect(session, QueryEnvironment.empty);
+        outSelect(session, DataSession.emptyEnv(OperationOwner.debug));
     }
     public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
         compile(session.syntax).outSelect(session, env);
     }
 
     public String readSelect(SQLSession session) throws SQLException, SQLHandledException {
-        return readSelect(session,  QueryEnvironment.empty);
+        return readSelect(session,  DataSession.emptyEnv(OperationOwner.debug));
     }
     public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
         return compile(session.syntax).readSelect(session, env);

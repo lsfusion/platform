@@ -14,14 +14,19 @@ import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.session.DataSession;
 
 public class ModifyQuery {
     public final Table table;
     private final IQuery<KeyField, PropertyField> change;
     private final QueryEnvironment env;
+    
+    public OperationOwner getOwner() {
+        return env.getOpOwner();
+    }
 
-    public ModifyQuery(Table table, IQuery<KeyField, PropertyField> change) {
-        this(table, change, QueryEnvironment.empty);
+    public ModifyQuery(Table table, IQuery<KeyField, PropertyField> change, OperationOwner owner) {
+        this(table, change, DataSession.emptyEnv(owner));
     }
 
     public ModifyQuery(Table table, IQuery<KeyField, PropertyField> change, QueryEnvironment env) {
@@ -102,7 +107,7 @@ public class ModifyQuery {
                 throw new RuntimeException();
         }
 
-        return new SQLExecute(update,changeCompile.getQueryParams(env), changeCompile.env, changeCompile.queryExecEnv, env.getTransactTimeout());
+        return new SQLExecute(update,changeCompile.getQueryParams(env), changeCompile.env, changeCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner());
     }
 
     public SQLExecute getDelete(final SQLSyntax syntax) {
@@ -117,7 +122,7 @@ public class ModifyQuery {
 
         String delete = "DELETE FROM " + table.getName(syntax) + " USING (" + deleteCompile.select + ") " + deleteAlias + " WHERE " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
 
-        return new SQLExecute(delete, deleteCompile.getQueryParams(env), deleteCompile.env, deleteCompile.queryExecEnv, env.getTransactTimeout());
+        return new SQLExecute(delete, deleteCompile.getQueryParams(env), deleteCompile.env, deleteCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner());
     }
 
     public SQLExecute getInsertLeftKeys(SQLSyntax syntax, boolean updateProps, boolean insertOnlyNotNull) {
@@ -176,7 +181,7 @@ public class ModifyQuery {
         ExecuteEnvironment execEnv = new ExecuteEnvironment();
         execEnv.add(changeCompile.env);
 
-        return new SQLExecute("INSERT INTO " + name + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax, execEnv),changeCompile.getQueryParams(env), execEnv, changeCompile.queryExecEnv, env.getTransactTimeout());
+        return new SQLExecute("INSERT INTO " + name + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax, execEnv),changeCompile.getQueryParams(env), execEnv, changeCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner());
     }
 
     public SQLExecute getInsertSelect(SQLSyntax syntax) {

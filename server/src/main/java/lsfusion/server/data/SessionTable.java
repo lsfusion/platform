@@ -68,14 +68,14 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
     // создает таблицу batch'ем
-    public static SessionTable create(final SQLSession session, final ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, Object owner) throws SQLException, SQLHandledException {
+    public static SessionTable create(final SQLSession session, final ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, Object owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
         // прочитаем классы
         return session.createTemporaryTable(keys, properties, rows.size(), new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
-                session.insertBatchRecords(name, keys, rows);
+                session.insertBatchRecords(name, keys, rows, opOwner);
                 return null;
             }
-        }, SessionRows.getClasses(properties, rows), owner);
+        }, SessionRows.getClasses(properties, rows), owner, opOwner);
     }
 
     public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses) {
@@ -268,23 +268,23 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(keysClassWhere, propertiesClassWheres);
     }
 
-    public SessionTable modifyRecord(final SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, final Object owner, Result<Boolean> changed) throws SQLException, SQLHandledException {
+    public SessionTable modifyRecord(final SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, final Object owner, OperationOwner opOwner, Result<Boolean> changed) throws SQLException, SQLHandledException {
 
         if(type==Modify.DELETE) { // статистику пока не учитываем
-            int proceeded = deleteRecords(session, keyFields);
+            int proceeded = deleteRecords(session, keyFields, opOwner);
             if(proceeded == 0)
                 return this;
             changed.set(true);
             return new SessionTable(name, keys, properties, count - proceeded, classes, propertyClasses).
-                    updateStatistics(session, count, owner).checkClasses(session, null);
+                    updateStatistics(session, count, owner, opOwner).checkClasses(session, null);
         }
-        if (type == Modify.LEFT && session.isRecord(this, keyFields))
+        if (type == Modify.LEFT && session.isRecord(this, keyFields, opOwner))
             return this;
 
         boolean update = (type==Modify.UPDATE || type==Modify.MODIFY);
 
         if(update) {
-            if(session.updateRecordsCount(this, keyFields, propFields)==0) { // запись не найдена
+            if(session.updateRecordsCount(this, keyFields, propFields, opOwner)==0) { // запись не найдена
                 if(type==Modify.UPDATE)
                     return this;
                 else
@@ -292,18 +292,20 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             }
         }
         if(!update)
-            session.insertRecord(this, keyFields, propFields);
+            session.insertRecord(this, keyFields, propFields, opOwner);
 
         changed.set(true);
         return new SessionTable(name, keys, properties, count + (update?0:1),
                         orFieldsClassWheres(classes, propertyClasses, keyFields, propFields)).
-                            updateStatistics(session, count, owner).checkClasses(session, null);
+                            updateStatistics(session, count, owner, opOwner).checkClasses(session, null);
     }
 
     public SessionTable modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, Modify type, QueryEnvironment env, Object owner, Result<Boolean> changed) throws SQLException, SQLHandledException {
 
         if(query.isEmpty()) // оптимизация
             return this;
+
+        OperationOwner opOwner = env.getOpOwner();
 
         ModifyQuery modify = new ModifyQuery(this, query, env);
         int inserted, proceeded;
@@ -331,7 +333,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     return this;
 
                 return new SessionTable(name, keys, properties, count - proceeded, classes, propertyClasses).
-                        updateStatistics(session, count, owner).checkClasses(session, null);
+                        updateStatistics(session, count, owner, opOwner).checkClasses(session, null);
             default:
                 throw new RuntimeException("should not be");
         }
@@ -341,9 +343,9 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         changed.set(true);
         return new SessionTable(name, keys, properties, count + inserted,
                         orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
-                            updateStatistics(session, count, owner).checkClasses(session, null);
+                            updateStatistics(session, count, owner, opOwner).checkClasses(session, null);
     }
-    public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Integer, Integer>[] shifts) throws SQLException, SQLHandledException {
+    public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Integer, Integer>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
         lsfusion.server.data.query.Join<PropertyField> join = join(query.getMapExprs());
 
@@ -370,7 +372,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
         query.addProperty(field, FormulaExpr.createCustomFormula("prm1+" + formula, baseClass.unknown, mParams.immutable()));
         query.and(join.getWhere());
-        session.updateRecords(new ModifyQuery(this, query.getQuery()));
+        session.updateRecords(new ModifyQuery(this, query.getQuery(), owner));
     }
 
     public SessionTable updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException {
@@ -407,7 +409,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return new SessionTable(name, keys, properties, count, updatedClasses, updatedPropertyClasses).checkClasses(session.sql, null);
     }
 
-    public SessionTable updateStatistics(final SQLSession session, int prevCount, final Object owner) throws SQLException, SQLHandledException {
+    public SessionTable updateStatistics(final SQLSession session, int prevCount, final Object owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
         if(!SQLTemporaryPool.getDBStatistics(count).equals(SQLTemporaryPool.getDBStatistics(prevCount))) {
             return session.createTemporaryTable(keys, properties, count, new FillTemporaryTable() {
                 public Integer fill(String name) throws SQLException, SQLHandledException {
@@ -415,21 +417,21 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     lsfusion.server.data.query.Join<PropertyField> prevJoin = join(moveData.getMapExprs());
                     moveData.and(prevJoin.getWhere());
                     moveData.addProperties(prevJoin.getExprs());
-                    session.insertSessionSelect(name, moveData.getQuery(), QueryEnvironment.empty);
-                    session.returnTemporaryTable(SessionTable.this, owner);
+                    session.insertSessionSelect(name, moveData.getQuery(), DataSession.emptyEnv(opOwner));
+                    session.returnTemporaryTable(SessionTable.this, owner, opOwner);
                     return null;
                 }
-            },new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(classes, propertyClasses), owner);
+            },new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(classes, propertyClasses), owner, opOwner);
         }
         return this;
     }
 
-    public int deleteRecords(SQLSession session, ImMap<KeyField, DataObject> keys) throws SQLException {
-        return session.deleteKeyRecords(this, DataObject.getMapDataValues(keys));
+    public int deleteRecords(SQLSession session, ImMap<KeyField, DataObject> keys, OperationOwner owner) throws SQLException {
+        return session.deleteKeyRecords(this, DataObject.getMapDataValues(keys), owner);
     }
 
 
-    public SessionTable addFields(final SQLSession session, final ImOrderSet<KeyField> keys, final ImMap<KeyField, DataObject> addKeys, final ImMap<PropertyField, ObjectValue> addProps, final Object owner) throws SQLException, SQLHandledException {
+    public SessionTable addFields(final SQLSession session, final ImOrderSet<KeyField> keys, final ImMap<KeyField, DataObject> addKeys, final ImMap<PropertyField, ObjectValue> addProps, final Object owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
         if(addKeys.isEmpty() && addProps.isEmpty())
             return this;
 
@@ -442,14 +444,14 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                 moveData.and(prevJoin.getWhere());
                 moveData.addProperties(prevJoin.getExprs());
                 moveData.addProperties(DataObject.getMapExprs(addProps));
-                session.insertSessionSelect(name, moveData.getQuery(), QueryEnvironment.empty);
-                session.returnTemporaryTable(SessionTable.this, owner);
+                session.insertSessionSelect(name, moveData.getQuery(), DataSession.emptyEnv(opOwner));
+                session.returnTemporaryTable(SessionTable.this, owner, opOwner);
                 return null;
             }
-        }, andFieldsClassWheres(classes, propertyClasses, addKeys, addProps), owner);
+        }, andFieldsClassWheres(classes, propertyClasses, addKeys, addProps), owner, opOwner);
     }
 
-    public SessionTable removeFields(final SQLSession session, ImSet<KeyField> removeKeys, ImSet<PropertyField> removeProps, final Object owner) throws SQLException, SQLHandledException {
+    public SessionTable removeFields(final SQLSession session, ImSet<KeyField> removeKeys, ImSet<PropertyField> removeProps, final Object owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
         if(removeKeys.isEmpty() && removeProps.isEmpty())
             return this;
 
@@ -474,11 +476,11 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     for (PropertyField prop : remainProps)
                         moveData.addProperty(prop, GroupExpr.create(groupKeys, prevJoin.getExpr(prop), GroupType.ANY, moveData.getMapExprs()));
                 }
-                session.insertSessionSelect(name, moveData.getQuery(), QueryEnvironment.empty);
-                session.returnTemporaryTable(SessionTable.this, owner);
+                session.insertSessionSelect(name, moveData.getQuery(), DataSession.emptyEnv(opOwner));
+                session.returnTemporaryTable(SessionTable.this, owner, opOwner);
                 return null;
             }
-        }, removeFieldsClassWheres(classes, propertyClasses, removeKeys, removeProps), owner);
+        }, removeFieldsClassWheres(classes, propertyClasses, removeKeys, removeProps), owner, opOwner);
     }
 
     private BaseUtils.HashComponents<Value> components = null;
@@ -489,11 +491,11 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return components;
     }
 
-    public void drop(SQLSession session, Object owner) throws SQLException {
-        session.returnTemporaryTable(this, owner);
+    public void drop(SQLSession session, Object owner, OperationOwner opOwner) throws SQLException {
+        session.returnTemporaryTable(this, owner, opOwner);
     }
-    public void rollDrop(SQLSession session, Object owner) throws SQLException {
-        session.rollReturnTemporaryTable(this, owner);
+    public void rollDrop(SQLSession session, Object owner, OperationOwner opOwner) throws SQLException {
+        session.rollReturnTemporaryTable(this, owner, opOwner);
     }
 
     // см. usage
@@ -515,11 +517,11 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             baseClass = ThreadLocalContext.getBusinessLogics().LM.baseClass;
 
         final Pair<ClassWhere<KeyField>,ImMap<PropertyField,ClassWhere<Field>>> readClasses;
-        ImMap<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> readData = readClasses(session, baseClass); // теоретически может очень долго работать, когда много колонок, из-за большого количества case'ов по которым надо группировать
+        ImMap<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> readData = readClasses(session, baseClass, OperationOwner.debug); // теоретически может очень долго работать, когда много колонок, из-за большого количества case'ов по которым надо группировать
         if(readData!=null)
             readClasses = SessionRows.getClasses(readData,  properties);
         else
-            readClasses = SessionRows.getClasses(properties, read(session, baseClass).getMap());
+            readClasses = SessionRows.getClasses(properties, read(session, baseClass, OperationOwner.debug).getMap());
 
         // похоже все же не имеет смысла пока
 /*        if(!classes.means(readClasses.first, true))
@@ -551,12 +553,12 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     public void saveToDBForDebug(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
         SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL();
         
-        dbSql.startTransaction(DBManager.DEBUG_TIL);
+        dbSql.startTransaction(DBManager.DEBUG_TIL, OperationOwner.unknown);
         dbSql.ensureTable(this);
-        dbSql.insertBatchRecords(name, keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass).getMap());
+        dbSql.insertBatchRecords(name, keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass, OperationOwner.debug).getMap(), OperationOwner.unknown);
         dbSql.commitTransaction();
         
-        dbSql.close();
+        dbSql.close(OperationOwner.unknown);
     }
     
     public static void saveToDBForDebug(ImSet<? extends Value> values, SQLSession sql) throws SQLException, IllegalAccessException, ClassNotFoundException, InstantiationException, SQLHandledException {

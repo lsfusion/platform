@@ -33,7 +33,7 @@ public class SQLTemporaryPool {
         return tables.isEmpty();
     }
 
-    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Map<String, WeakReference<Object>> used, Result<Boolean> isNew, Object owner) throws SQLException {
+    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Map<String, WeakReference<Object>> used, Result<Boolean> isNew, Object owner, OperationOwner opOwner) throws SQLException {
         FieldStruct fieldStruct = new FieldStruct(keys, properties, count);
 
         Set<String> matchTables = tables.get(fieldStruct);
@@ -55,7 +55,7 @@ public class SQLTemporaryPool {
 
         // если нет, "создаем" таблицу
         String table = getTableName(counter);
-        session.createTemporaryTable(table, keys, properties);
+        session.createTemporaryTable(table, keys, properties, opOwner);
         counter++;
         assert !used.containsKey(table);
         used.put(table, new WeakReference<Object>(owner));
@@ -70,17 +70,17 @@ public class SQLTemporaryPool {
         return "t_" + count;
     }
 
-    public void fillData(SQLSession session, FillTemporaryTable data, Integer count, Result<Integer> resultActual, String table) throws SQLException, SQLHandledException {
+    public void fillData(SQLSession session, FillTemporaryTable data, Integer count, Result<Integer> resultActual, String table, OperationOwner owner) throws SQLException, SQLHandledException {
 
         Integer actual = data.fill(table); // заполняем
         assert (actual!=null)==(count==null);
         if(Settings.get().isAutoAnalyzeTempStats())
-            session.vacuumAnalyzeSessionTable(table);
+            session.vacuumAnalyzeSessionTable(table, owner);
         else {
             Object actualStatistics = getDBStatistics(actual);
             Object currentStat = stats.get(table);
             if(!actualStatistics.equals(currentStat)) {
-                session.vacuumAnalyzeSessionTable(table);
+                session.vacuumAnalyzeSessionTable(table, owner);
                 stats.put(table, actualStatistics);
             }
         }

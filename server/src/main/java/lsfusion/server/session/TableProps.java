@@ -3,6 +3,7 @@ package lsfusion.server.session;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -40,13 +41,13 @@ public class TableProps {
         tables.put(property, (SinglePropertyTableUsage<PropertyInterface>) changeTable);
     }
 
-    public <P extends PropertyInterface> void remove(CalcProperty<P> property, SQLSession sql) throws SQLException {
-        tables.remove(property).drop(sql);
+    public <P extends PropertyInterface> void remove(CalcProperty<P> property, SQLSession sql, OperationOwner owner) throws SQLException {
+        tables.remove(property).drop(sql, owner);
     }
 
-    public void clear(SQLSession session) throws SQLException {
+    public void clear(SQLSession session, OperationOwner owner) throws SQLException {
         for (Map.Entry<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> addTable : tables.entrySet())
-            addTable.getValue().drop(session);
+            addTable.getValue().drop(session, owner);
         tables.clear();
     }
 }
