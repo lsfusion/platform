@@ -940,7 +940,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             
             Expr dbExpr = getExpr(fullQuery.getMapExprs());
             Where fullWhere = newExpr.getWhere().or(dbExpr.getWhere());
-            if(!DBManager.PROPERTY_REUPDATE)
+            if(!DBManager.PROPERTY_REUPDATE && isStored())
                 fullWhere = fullWhere.and(newExpr.compare(dbExpr, Compare.EQUALS).not());            
 
             fullQuery.addProperty("changed", query.getExpr("changed").and(fullWhere));
