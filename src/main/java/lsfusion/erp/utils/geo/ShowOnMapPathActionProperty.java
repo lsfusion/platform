@@ -41,7 +41,7 @@ public class ShowOnMapPathActionProperty extends ScriptingActionProperty {
             query.addProperty("descriptionPathPOI", LM.getLCPByOldName("descriptionPathPOI").getExpr(context.getModifier(), keys.singleValue()));
             query.and(isPOI.property.getExpr(keys).getWhere());
             query.and(LM.getLCPByOldName("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()).getWhere());
-            ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(context.getSession().sql, MapFact.singletonOrder((Object) "numberPathPOI", false));
+            ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(context, MapFact.singletonOrder((Object) "numberPathPOI", false));
             String uri = "http://maps.google.com/?";
             int index = 1;
             for (ImMap<Object, Object> values : result.valueIt()) {

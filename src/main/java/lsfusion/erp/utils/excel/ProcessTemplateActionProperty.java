@@ -59,7 +59,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
                     templateEntryQuery.and(getLCP("templateTemplateEntry").getExpr(context.getModifier(), templateEntryQuery.getMapExprs().get("TemplateEntry")).compare(templateObject.getExpr(), Compare.EQUALS));
 
-                    ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> templateEntryResult = templateEntryQuery.execute(context.getSession().sql);
+                    ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> templateEntryResult = templateEntryQuery.execute(context);
 
                     for (ImMap<Object, Object> templateEntry : templateEntryResult.values()) {
 
