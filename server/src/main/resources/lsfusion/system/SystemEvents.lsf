@@ -121,7 +121,7 @@ EXTEND DESIGN connections{
 FORM  exceptions 'Журнал ошибок'
 
     OBJECTS e=Exception
-    PROPERTIES(e) READONLY messageException, clientClientException, loginClientException, typeException, dateException
+    PROPERTIES(e) READONLY messageException, clientClientException FORCE GRID, loginClientException FORCE GRID, typeException, dateException
     PROPERTIES(e) READONLY erTraceException FORCE PANEL
 ;
 
