@@ -175,14 +175,16 @@ public class EmailReceiver {
             String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
             String idEmail = String.valueOf(dateTimeSentEmail.getTime()) + fromAddressEmail;
             String subjectEmail = message.getSubject();
-            MultipartBody messageEmail = getMultipartBody((Multipart) message.getContent());
+            MultipartBody messageEmail = message.getContent() instanceof Multipart ? getMultipartBody((Multipart) message.getContent()) : new MultipartBody((String) message.getContent(), null);
             byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
             dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
                     fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
             int counter = 1;
-            for (Map.Entry<String, byte[]> entry : messageEmail.attachments.entrySet()) {
-                dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
-                counter++;
+            if (messageEmail.attachments != null) {
+                for (Map.Entry<String, byte[]> entry : messageEmail.attachments.entrySet()) {
+                    dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
+                    counter++;
+                }
             }
         }
 
