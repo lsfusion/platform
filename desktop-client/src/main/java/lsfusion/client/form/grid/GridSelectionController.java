@@ -68,9 +68,11 @@ public class GridSelectionController {
             int removeIndex = visibleProperties.indexOf(propertyColumn);
             if (propertyColumn.equals(firstColumn)) {
                 int newIndex = indexOf(firstColumn) > indexOf(lastColumn) ? removeIndex - 1 : removeIndex + 1;
+                newIndex = Math.max(Math.min(newIndex, visibleProperties.size() - 1), 0);
                 firstColumn = visibleProperties.get(newIndex);
             } else if (propertyColumn.equals(lastColumn)) {
                 int newIndex = indexOf(lastColumn) > indexOf(firstColumn) ? removeIndex - 1 : removeIndex + 1;
+                newIndex = Math.max(Math.min(newIndex, visibleProperties.size() - 1), 0);
                 lastColumn = visibleProperties.get(newIndex);
             }
         }
