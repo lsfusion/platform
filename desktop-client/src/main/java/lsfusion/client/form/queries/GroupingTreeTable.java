@@ -110,7 +110,7 @@ public class GroupingTreeTable extends JXTreeTable {
             ClientPropertyDraw columnProperty = columnProperties.get(i);
             if (columnProperty != null) {
                 if (columnProperty.baseType instanceof ClientDateClass || columnProperty.baseType instanceof ClientTimeClass
-                    || columnProperty.baseType instanceof ClientDateTimeClass || columnProperty.baseType instanceof ClientIntegralClass) {
+                    || columnProperty.baseType instanceof ClientDateTimeClass) {
                     treeTableModel.changeOrder(i + 1);
                 }
             }
