@@ -12,8 +12,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 
-import java.lang.reflect.InvocationTargetException;
-
 @Aspect
 public class SQLAspect {
     
@@ -46,7 +44,7 @@ public class SQLAspect {
             else 
                 result = thisJoinPoint.proceed();
         } catch (SQLClosedException e) {
-            if(session.lockIsInTransaction(owner) || !session.tryRestore(owner))
+            if(session.lockIsInTransaction(owner) || !session.tryRestore(owner, e.connection))
                 throw e;
         }
 

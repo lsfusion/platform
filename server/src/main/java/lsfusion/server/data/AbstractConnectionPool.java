@@ -38,15 +38,16 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
             assert common==connection;
     }
 
-    public boolean restoreCommon() throws SQLException {
+    public boolean restoreCommon(Connection connection) throws SQLException {
         assert !Settings.get().isCommonUnique(); 
         synchronized(lock) {
-            if(common.sql.isClosed()) { // мог восстановиться кем-то другим
+            if(common.sql == connection) { // мог восстановиться кем-то другим
                 common.sql = newConnection();
                 assert common.temporary.isEmpty();
                 ServerLoggers.sqlHandLogger.info("RESTORED COMMON " + common.sql.isClosed());
                 return !common.sql.isClosed();
-            }
+            } else
+                ServerLoggers.sqlHandLogger.info("SOMEBODY RESTORED COMMON");
         }
 
         return true;
