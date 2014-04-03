@@ -1115,8 +1115,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private boolean closed = false;
 
+    @AssertSynchronized
     public void close() throws SQLException {
         ServerLoggers.assertLog(!closed, "ALREADY CLOSED");
+        if(closed)
+            return;
         closed = true;
         session.unregisterForm(this);
         for (GroupObjectInstance group : getGroups()) {
@@ -1326,6 +1329,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     @Message("message.form.end.apply")
     @LogTime
+    @AssertSynchronized
     public FormChanges endApply() throws SQLException, SQLHandledException {
 
         assert interactive;
@@ -1334,6 +1338,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         if (closed)
             return result.immutable();
+
+        CustomClassListener classListener = getClassListener();
+        ServerLoggers.assertLog(classListener==null || !classListener.isClosed(), "NAVIGATOR CLOSED");
 
         QueryEnvironment queryEnv = getQueryEnv();
 

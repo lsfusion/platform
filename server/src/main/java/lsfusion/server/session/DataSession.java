@@ -457,7 +457,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return sessionEventOldDepends;
     }
 
-    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, TimeoutController timeout, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents) throws SQLException {
+    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, TimeoutController timeout, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents, OperationOwner upOwner) throws SQLException {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 
@@ -472,10 +472,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.sessionEvents = sessionEvents;
 
         this.idSession = idSession;
+        
+        if(upOwner == null)
+            upOwner = new OperationOwner() {}; 
+        this.owner = upOwner;
     }
 
     public DataSession createSession() throws SQLException {
-        return new DataSession(sql, user, computer, timeout, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents);
+        return new DataSession(sql, user, computer, timeout, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
     }
 
     public void restart(boolean cancel, ImSet<SessionDataProperty> keep) throws SQLException {
@@ -1576,8 +1580,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         };
     }
 
-    private final OperationOwner owner = new OperationOwner() {
-    };
+    private final OperationOwner owner;
 
     public final QueryEnvironment env = new QueryEnvironment() {
         public ParseInterface getSQLUser() {

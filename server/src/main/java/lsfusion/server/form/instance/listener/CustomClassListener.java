@@ -7,4 +7,6 @@ public interface CustomClassListener {
 
     Integer getObject(CustomClass cls);
     void objectChanged(ConcreteCustomClass cls, int objectID);
+    
+    boolean isClosed(); // потом надо будет переделать на отдельный интерфейс 
 }

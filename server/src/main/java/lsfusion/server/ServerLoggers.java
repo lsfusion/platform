@@ -53,7 +53,7 @@ public class ServerLoggers {
     }
 
     public static void sqlSuppLog(Throwable t) {
-        sqlLogger.info("SUPPRESSED : " + t.toString() + '\n' + ExceptionUtils.getStackTrace(t));
+        sqlLogger.error("SUPPRESSED : " + t.toString() + '\n' + ExceptionUtils.getStackTrace(t));
     }
 
 }

@@ -6,6 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.data.expr.query.Stat;
 
@@ -45,7 +46,10 @@ public class SQLTemporaryPool {
         for(String matchTable : matchTables) // ищем нужную таблицу
             if(!used.containsKey(matchTable)) { // если не используется
 //                session.truncate(matchTable); // удаляем старые данные
-                assert session.getCount(matchTable) == 0; 
+                if(session.getCount(matchTable, opOwner) != 0) {
+                    ServerLoggers.assertLog(false, "TEMPORARY TABLE NOT EMPTY");
+                    session.truncate(matchTable, opOwner);
+                }
                 assert !used.containsKey(matchTable);
                 used.put(matchTable, new WeakReference<Object>(owner));
                 session.unlockTemporary();

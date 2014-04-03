@@ -295,7 +295,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
     
     private DataSession createSession() throws SQLException {
-        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakTimeoutController(this));
+        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakTimeoutController(this), null);
         sessions.add(session);
         return session;
     }
@@ -661,6 +661,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 unexportLater();
             }
         }
+    }
+
+    public boolean isClosed() {
+        return closed;
     }
 
     protected void finalize() throws Throwable {

@@ -227,6 +227,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     public DataSession createSession() throws SQLException {
+        return createSession(null);
+    }
+    
+    public DataSession createSession(OperationOwner upOwner) throws SQLException {
         return createSession(getThreadLocalSql(),
                              new UserController() {
                                  public void changeCurrentUser(DataObject user) {
@@ -250,11 +254,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     public int getTransactionTimeout() {
                         return 0;
                     }
-                }
+                },
+                upOwner
         );
     }
 
-    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController, TimeoutController timeoutController) throws SQLException {
+    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController, TimeoutController timeoutController, OperationOwner owner) throws SQLException {
         //todo: неплохо бы избавиться от зависимости на restartManager, а то она неестественна
         return new DataSession(sql, userController, computerController,
                 timeoutController, new IsServerRestartingController() {
@@ -262,7 +267,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                                        return restartManager.isPendingRestart();
                                    }
                                },
-                               LM.baseClass, businessLogics.systemEventsLM.session, businessLogics.systemEventsLM.currentSession, getIDSql(), businessLogics.getSessionEvents());
+                               LM.baseClass, businessLogics.systemEventsLM.session, businessLogics.systemEventsLM.currentSession, getIDSql(), businessLogics.getSessionEvents(), owner);
     }
 
 
@@ -1188,7 +1193,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     private void fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
-        DataSession session = createSession();
+        DataSession session = createSession(OperationOwner.unknown); // по сути вложенная транзакция
 
         LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
 

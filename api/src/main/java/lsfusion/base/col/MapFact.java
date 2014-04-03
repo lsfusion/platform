@@ -321,7 +321,7 @@ public class MapFact {
     
     private final static AddValue<Object, Object> exclusive = new SimpleAddValue<Object, Object>() {
         public Object addValue(Object key, Object prevValue, Object newValue) {
-            throw new UnsupportedOperationException(); // при duplicate keys в executeSelect, см. exception в executeDML
+            throw new UnsupportedOperationException("KEY : " + BaseUtils.nullToString(key) + ", PREVVALUE : " + BaseUtils.nullToString(prevValue) + ", NEWVALUE : " + BaseUtils.nullToString(newValue)); // при duplicate keys в executeSelect, см. exception в executeDML
         }
 
         public boolean reversed() {

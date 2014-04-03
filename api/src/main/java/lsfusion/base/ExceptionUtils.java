@@ -22,11 +22,13 @@ public class ExceptionUtils {
     }
 
     public static String getStackTrace(Throwable e) {
+        return getStackTrace(e.getStackTrace());
+    }
+    
+    public static String getStackTrace(StackTraceElement[] trace) {
         String s = "";
-        StackTraceElement[] trace = e.getStackTrace();
         for (StackTraceElement aTrace : trace)
             s += "\tat " + aTrace + '\n';
-
         return s;
     }
 

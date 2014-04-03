@@ -1,5 +1,7 @@
 package lsfusion.server.data;
 
+import lsfusion.server.ServerLoggers;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -13,6 +15,7 @@ public class ExConnection {
     }
     
     public void close() throws SQLException {
+        ServerLoggers.sqlLogger.info("CONNECTION CLOSE " + sql);
         sql.close();
     }
 }

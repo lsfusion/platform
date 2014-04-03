@@ -52,13 +52,13 @@ public class SQLSession extends MutableObject {
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
 
     private static interface SQLRunnable {
-        void run() throws SQLException;
+        void run() throws SQLException, SQLHandledException;
     }
     private void runSuppressed(SQLRunnable run, Result<Throwable> firstException) {
         try {
             run.run();
         } catch (Throwable t) {
-            if(firstException.result != null)
+            if(firstException.result == null)
                 firstException.set(t);
             else
                 ServerLoggers.sqlSuppLog(t);
@@ -183,8 +183,8 @@ public class SQLSession extends MutableObject {
     private void lockRead(OperationOwner owner) {
         lock.readLock().lock();
         
-//        if(writeOwner != null) // идет транзакция
-//            ServerLoggers.assertLog(owner == writeOwner, "OTHER DATASESSION IN THE MIDDLE OF TRANSACTION");
+        if(writeOwner != null) // идет транзакция
+            ServerLoggers.assertLog(owner == writeOwner, "OTHER DATASESSION IN THE MIDDLE OF TRANSACTION IN THIS THREAD");
     }
 
     private void unlockRead() {
@@ -494,6 +494,7 @@ public class SQLSession extends MutableObject {
             try {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
             } catch (Throwable t) {
+                try { ServerLoggers.assertLog(getCount(table, opOwner) == 0, "TEMPORARY TABLE AFTER FILL NOT EMPTY"); } catch (Throwable i) { ServerLoggers.sqlSuppLog(i); }
                 returnTemporaryTable(table, owner, opOwner); // вернем таблицу, если не смогли ее заполнить
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
             } finally {
@@ -521,22 +522,34 @@ public class SQLSession extends MutableObject {
         }
     }
 
-    public void returnTemporaryTable(SessionTable table, Object owner, OperationOwner opOwner) throws SQLException {
+    public void returnTemporaryTable(final SessionTable table, Object owner, final OperationOwner opOwner) throws SQLException {
         lockRead(opOwner);
         temporaryTablesLock.lock();
 
         try {
-            truncate(table.name, opOwner);
-            returnTemporaryTable(table.name, owner, opOwner);
+            Result<Throwable> firstException = new Result<Throwable>();
+            runSuppressed(new SQLRunnable() {
+                public void run() throws SQLException {
+                    truncate(table.getName(syntax), opOwner);
+                }}, firstException);
+            if(firstException.result != null) {
+                runSuppressed(new SQLRunnable() {
+                    public void run() throws SQLException {
+                        privateConnection.temporary.removeTable(table.name);
+                    }}, firstException);
+            }
+            returnTemporaryTable(table.name, owner, opOwner, firstException);
         } finally {
             temporaryTablesLock.unlock();
             unlockRead();
         }
     }
-    
-    public void returnTemporaryTable(final String table, final Object owner, final OperationOwner opOwner) throws SQLException {
-        Result<Throwable> firstException = new Result<Throwable>();        
 
+    public void returnTemporaryTable(final String table, final Object owner, final OperationOwner opOwner) throws SQLException {
+        returnTemporaryTable(table, owner, opOwner, new Result<Throwable>());
+    }
+    
+    public void returnTemporaryTable(final String table, final Object owner, final OperationOwner opOwner, Result<Throwable> firstException) throws SQLException {
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
                 assert sessionTablesMap.containsKey(table);
@@ -589,7 +602,7 @@ public class SQLSession extends MutableObject {
     }
 
     public void vacuumAnalyzeSessionTable(String table, OperationOwner owner) throws SQLException {
-        executeDDL((isInTransaction()? "" :"VACUUM ") + "ANALYZE " + table, ExecuteEnvironment.NOREADONLY);
+        executeDDL((isInTransaction()? "" :"VACUUM ") + "ANALYZE " + table, ExecuteEnvironment.NOREADONLY, owner);
     }
 
     private int noReadOnly = 0;
@@ -627,7 +640,7 @@ public class SQLSession extends MutableObject {
                     unlockRead();
                 }
 
-                executeDDL("SET enable_nestloop=off");
+                executeDDL("SET enable_nestloop=off", owner);
             }
     }
 
@@ -635,7 +648,7 @@ public class SQLSession extends MutableObject {
         if (syntax.noDynamicSampling())
             if (volatileStats.decrementAndGet() == 0) {
                 if(problemInTransaction == null)
-                    executeDDL("SET enable_nestloop=on");
+                    executeDDL("SET enable_nestloop=on", opOwner);
 
                 lockRead(opOwner);
                 temporaryTablesLock.lock();
@@ -705,6 +718,10 @@ public class SQLSession extends MutableObject {
         executeDDL(DDL, ExecuteEnvironment.EMPTY);
     }
 
+    private void executeDDL(String DDL, OperationOwner owner) throws SQLException {
+        executeDDL(DDL, ExecuteEnvironment.EMPTY, owner);
+    }
+
     private void executeDDL(String DDL, ExecuteEnvironment env) throws SQLException {
         executeDDL(DDL, env, OperationOwner.unknown);
     }
@@ -714,18 +731,20 @@ public class SQLSession extends MutableObject {
 
         ExConnection connection = getConnection();
 
-        Statement statement = createSingleStatement(connection.sql);
-        
+        Statement statement = null;
+
         Result<Throwable> firstException = new Result<Throwable>();
         try {
             env.before(this, connection, DDL, owner);
 
             lockTimeout();
 
+            statement = createSingleStatement(connection.sql);
+
             statement.execute(DDL);
 
         } catch (SQLException e) {
-            logger.error(statement.toString());
+            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString());
             firstException.set(e);
         }
         
@@ -857,7 +876,7 @@ public class SQLSession extends MutableObject {
             handled = new SQLTimeoutException(isTransactTimeout);
         
         if(syntax.isConnectionClosed(e)) {
-            handled = new SQLClosedException();
+            handled = new SQLClosedException(toString());
             problemInTransaction = Problem.CLOSED;
         }
 
@@ -881,7 +900,6 @@ public class SQLSession extends MutableObject {
             unlockRead();
             throw Throwables.propagate(e);
         }
-        lockTimeout(info.needTimeoutLock());
         return info;
     }
     private void lockTimeout(boolean needTimeout) {
@@ -909,8 +927,6 @@ public class SQLSession extends MutableObject {
     }
 
     private void unlockQueryExec(QueryExecuteInfo info) {
-        unlockTimeout(info.needTimeoutLock());
-
         unlockRead();
     }
     
@@ -929,9 +945,11 @@ public class SQLSession extends MutableObject {
         Result<Throwable> firstException = new Result<Throwable>();
         String errorString = null;
         try {
-            statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
-
             env.before(this, connection, command, owner);
+
+            lockTimeout(execInfo.needTimeoutLock());
+
+            statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
             queryExecEnv.beforeStatement(statement, this, execInfo);
 
             if(explainAnalyzeMode) {
@@ -973,6 +991,8 @@ public class SQLSession extends MutableObject {
     }
 
     private void afterExStatementExecute(Result<Throwable> firstException, final String command, final OperationOwner owner, final ExecuteEnvironment env, final QueryExecuteEnvironment queryExecEnv, final QueryExecuteInfo execInfo, final ExConnection connection, final long runTime, final Result<ReturnStatement> returnStatement, final PreparedStatement statement) {
+        unlockTimeout(execInfo.needTimeoutLock());
+        
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
                 env.after(SQLSession.this, connection, command, owner);
@@ -998,12 +1018,12 @@ public class SQLSession extends MutableObject {
     }
 
     private void afterStatementExecute(Result<Throwable> firstException, final String command, final ExecuteEnvironment env, final ExConnection connection, final Statement statement, final OperationOwner owner) throws SQLException {
-        unlockTimeout();
-
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
                 statement.close();
             }}, firstException);
+
+        unlockTimeout();
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
@@ -1024,18 +1044,19 @@ public class SQLSession extends MutableObject {
         ExConnection connection = getConnection();
 
         int result = 0;
+        lockTimeout();
+
         Statement statement = createSingleStatement(connection.sql);
         try {
-            lockTimeout();
 
             result = statement.executeUpdate(command);
         } catch (SQLException e) {
             logger.error(statement.toString());
             throw e;
         } finally {
-            unlockTimeout();
-
             statement.close();
+
+            unlockTimeout();
 
             returnConnection(connection);
             unlockRead();
@@ -1100,13 +1121,15 @@ public class SQLSession extends MutableObject {
         String errorString = null;
         Result<Throwable> firstException = new Result<Throwable>();
         try {
-            statement = getStatement(select, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
-            
-            if(outStatement)
-                System.out.println(statement.toString());                    
-                    
-            mExecResult = MapFact.mOrderExclMap();
             env.before(this, connection, select, owner);
+
+            lockTimeout(execInfo.needTimeoutLock());
+            statement = getStatement(select, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
+
+            if(outStatement)
+                System.out.println(statement.toString());
+            mExecResult = MapFact.mOrderExclMap();
+
             queryExecEnv.beforeStatement(statement, this, execInfo);
 
             long started = System.currentTimeMillis();
@@ -1165,10 +1188,16 @@ public class SQLSession extends MutableObject {
         }
 
         String command = "INSERT INTO " + syntax.getSessionTableName(table) + " (" + insertString + ") VALUES (" + valueString + ")";
-        PreparedStatement statement = connection.sql.prepareStatement(command);
+        PreparedStatement statement = null;
 
         Result<Throwable> firstException = new Result<Throwable>();
         try {
+            env.before(this, connection, command, opOwner);
+
+            lockTimeout();
+
+            statement = connection.sql.prepareStatement(command);
+            
             for(int i=0,size=rows.size();i<size;i++) {
                 ParamNum paramNum = new ParamNum();
                 for(KeyField key : keys)
@@ -1183,14 +1212,10 @@ public class SQLSession extends MutableObject {
                 statement.addBatch();
             }
 
-            env.before(this, connection, command, opOwner);
-
-            lockTimeout();
-            
             statement.executeBatch();
 
         } catch (SQLException e) {
-            logger.error(statement.toString());
+            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString());
             firstException.set(e);
         }
         
@@ -1343,10 +1368,10 @@ public class SQLSession extends MutableObject {
         }
     }
 
-    public int getCount(String table) throws SQLException {
+    public int getCount(String table, OperationOwner opOwner) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         try {
-            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + syntax.getSessionTableName(table), OperationOwner.unknown, ExecuteEnvironment.EMPTY, MapFact.<String, ParseInterface>EMPTY(), QueryExecuteEnvironment.DEFAULT, 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance), MapFact.<Object, String>EMPTYREV(), MapFact.<Object, Reader>EMPTY()).singleKey().singleValue();
+            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + syntax.getSessionTableName(table), opOwner, ExecuteEnvironment.EMPTY, MapFact.<String, ParseInterface>EMPTY(), QueryExecuteEnvironment.DEFAULT, 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance), MapFact.<Object, String>EMPTYREV(), MapFact.<Object, Reader>EMPTY()).singleKey().singleValue();
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -1414,10 +1439,10 @@ public class SQLSession extends MutableObject {
 
         ExConnection connection = getConnection();
 
+        lockTimeout();
+
         Statement statement = createSingleStatement(connection.sql);
         try {
-            lockTimeout();
-                        
             ResultSet result = statement.executeQuery(select);
             try {
                 boolean next = result.next();
@@ -1455,9 +1480,9 @@ public class SQLSession extends MutableObject {
             logger.error(statement.toString());
             throw e;
         } finally {
-            unlockTimeout();
-
             statement.close();
+
+            unlockTimeout();
 
             returnConnection(connection);
 
@@ -1479,9 +1504,24 @@ public class SQLSession extends MutableObject {
     public int insertSelect(ModifyQuery modify) throws SQLException, SQLHandledException {
         return executeDML(modify.getInsertSelect(syntax));
     }
-    public int insertSessionSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env) throws SQLException, SQLHandledException {
 //        query.outSelect(this, env);
-        return executeDML(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, syntax));
+        try {
+            return executeDML(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, syntax));
+        } catch(Throwable t) {
+            Result<Throwable> firstException = new Result<Throwable>();
+            firstException.set(t);
+            
+            if(!isInTransaction())
+                runSuppressed(new SQLRunnable() {
+                    public void run() throws SQLException, SQLHandledException {
+                        query.outSelect(SQLSession.this, env);
+                    }
+                }, firstException);
+            
+            finishExceptions(firstException);
+            throw new UnsupportedOperationException();
+        }
     }
 
     public int insertLeftSelect(ModifyQuery modify, boolean updateProps, boolean insertOnlyNotNull) throws SQLException, SQLHandledException {
