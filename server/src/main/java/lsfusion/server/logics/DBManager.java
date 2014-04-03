@@ -1288,8 +1288,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private String calculateHashModules() {
         try {
             String modulesString = "";
-            for (LogicsModule module : businessLogics.getLogicModules())
-                modulesString += new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(((ScriptingLogicsModule) module).getCode().getBytes())));
+            for (LogicsModule module : businessLogics.getLogicModules()) {
+                if (module instanceof ScriptingLogicsModule)
+                    modulesString += new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(((ScriptingLogicsModule) module).getCode().getBytes())));
+            }
 
             return new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(modulesString.getBytes())));
         } catch (NoSuchAlgorithmException e) {
