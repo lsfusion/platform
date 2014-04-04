@@ -34,6 +34,7 @@ public class SQLTemporaryPool {
         return tables.isEmpty();
     }
 
+    @AssertSynchronized
     public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Map<String, WeakReference<Object>> used, Result<Boolean> isNew, Object owner, OperationOwner opOwner) throws SQLException {
         FieldStruct fieldStruct = new FieldStruct(keys, properties, count);
 

@@ -70,6 +70,11 @@ public class SQLSession extends MutableObject {
             throw ExceptionUtils.propagate(firstException.result, SQLException.class);
     }
 
+    private void finishHandledExceptions(Result<Throwable> firstException) throws SQLException, SQLHandledException {
+        if(firstException.result != null)
+            throw ExceptionUtils.propagate(firstException.result, SQLException.class, SQLHandledException.class);
+    }
+
     public SQLSyntax syntax;
     
     public <F extends Field> GetValue<String, F> getDeclare(final TypeEnvironment typeEnv) {
@@ -981,7 +986,7 @@ public class SQLSession extends MutableObject {
         afterExStatementExecute(firstException, command, owner, env, queryExecEnv, execInfo, connection, runTime, returnStatement, statement);
 
         try {
-            finishExceptions(firstException);
+            finishHandledExceptions(firstException);
         } catch (SQLException e) {
             throw propagate(e, errorString, execInfo.isTransactTimeout, connection);
         }
@@ -1156,7 +1161,7 @@ public class SQLSession extends MutableObject {
         afterExStatementExecute(null, select, owner, env, queryExecEnv, execInfo, connection, runTime, returnStatement, statement);
 
         try {
-            finishExceptions(firstException);
+            finishHandledExceptions(firstException);
         } catch (SQLException e) {
             throw propagate(e, errorString, execInfo.isTransactTimeout, connection);
         }
@@ -1518,7 +1523,7 @@ public class SQLSession extends MutableObject {
                     }
                 }, firstException);
             
-            finishExceptions(firstException);
+            finishHandledExceptions(firstException);
             throw new UnsupportedOperationException();
         }
     }
