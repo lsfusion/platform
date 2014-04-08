@@ -1,9 +1,8 @@
 package lsfusion.erp.utils.i18n;
 
 import lsfusion.server.classes.StringClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.*;
+import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -11,8 +10,13 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 
-import java.io.*;
-import java.net.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.regex.Matcher;
@@ -24,7 +28,7 @@ public class TranslateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface languageToInterface;
 
     public TranslateActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{StringClass.text, LM.getClassByName("Language"), LM.getClassByName("Language")});
+        super(LM, StringClass.text, LM.getClassByName("Language"), LM.getClassByName("Language"));
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         translationInterface = i.next();
@@ -44,8 +48,8 @@ public class TranslateActionProperty extends ScriptingActionProperty {
 
             if (languageFromObject != null && languageToObject != null && translationEntry != null) {
 
-                String languageFrom = (String) LM.findLCPByCompoundOldName("localeLanguage").read(session, languageFromObject);
-                String languageTo = (String) LM.findLCPByCompoundOldName("localeLanguage").read(session, languageToObject);
+                String languageFrom = (String) getLCP("localeLanguage").read(session, languageFromObject);
+                String languageTo = (String) getLCP("localeLanguage").read(session, languageToObject);
 
                 String url = "http://translate.google.com/translate_a/t?client=x&text=" + URLEncoder.encode(((String) translationEntry.object).trim(), "UTF-8") + "&sl=" + languageFrom.trim() + "&tl=" + languageTo.trim();
                 URLConnection conn = new URL(url).openConnection();
@@ -72,10 +76,10 @@ public class TranslateActionProperty extends ScriptingActionProperty {
                 getLCP("translationResult").change(result, session);
             }
 
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-        } catch (MalformedURLException e) {
-        } catch (FileNotFoundException e) {
-        } catch (IOException e) {
+        } catch (ScriptingErrorLog.SemanticErrorException ignored) {
+        } catch (MalformedURLException ignored) {
+        } catch (FileNotFoundException ignored) {
+        } catch (IOException ignored) {
         }
 
     }

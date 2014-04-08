@@ -58,10 +58,10 @@ nameLanguageFromDictionary 'С языка'(dictionary) = nameLanguage(languageFr
 languageToDictionary = DATA Language (Dictionary);
 nameLanguageToDictionary 'На язык'(dictionary) = nameLanguage(languageToDictionary(dictionary));
 
-// ------------------------------------ Перевод через Google Translate -------------------------------- //
+translationInput 'Текст для перевода' = DATA SESSION TEXT ();
+translationResult 'Переведённый текст' = DATA SESSION TEXT ();
 
-translationOriginal 'Текст для перевода' = DATA SESSION TEXT ();
-translationResult 'Переведённый текст' = DATA SESSION TEXT ();      //STRING[50]
+// ------------------------------------ Перевод через Google Translate -------------------------------- //
 
 languageFromTranslation = DATA Language ();
 nameLanguageFromTranslation 'С языка'() = nameLanguage(languageFromTranslation());
@@ -79,20 +79,17 @@ translateTermDictionaryEntry 'Перевести' = ACTION (dictionaryEntry) {
 }
 
 translateText 'Перевести' = ACTION () {
-    EXEC translate (translationOriginal(), languageFromTranslation(), languageToTranslation());
+    EXEC translate (translationInput(), languageFromTranslation(), languageToTranslation());
 }
 
 // ------------------------------------ Перевод через словарь -------------------------------- //
 
-translationOriginalString 'Фраза' = DATA SESSION VARSTRING[50] ();
-translationResultString 'Перевод' = DATA SESSION VARSTRING[50] ();
-
 translateDictionary  = ACTION CUSTOM 'lsfusion.erp.utils.i18n.TranslateDictionaryActionProperty';
 
-WHEN SESSION CHANGED (translationOriginalString()) AND dictionary IS Dictionary DO EXEC translateDictionary(dictionary, translationOriginalString());
+WHEN SESSION CHANGED (translationInput()) AND dictionary IS Dictionary DO EXEC translateDictionary(dictionary, translationInput());
 
 FORM translation 'Перевод'
-    PROPERTIES() translationOriginal, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,
+    PROPERTIES() translationInput, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,
                  translateText
 ;
 
@@ -106,7 +103,7 @@ EXTEND DESIGN translation {
     NEW translation {
         fill = 1;
         type = CONTAINERH;
-        ADD PROPERTY(translationOriginal()) {
+        ADD PROPERTY(translationInput()) {
             fill = 1;
             panelLabelAbove = TRUE;
         }
@@ -144,7 +141,7 @@ FORM dictionary 'Словарь'
 
     EDIT Dictionary OBJECT d
 
-    PROPERTIES() translationOriginalString, translationResultString
+    PROPERTIES() translationInput, translationResult
 ;
 
 DESIGN dictionary FROM DEFAULT {
@@ -154,13 +151,13 @@ DESIGN dictionary FROM DEFAULT {
         ADD e.box;
         NEW test {
             type = CONTAINERH;
-            ADD PROPERTY(translationOriginalString()) {
+            ADD PROPERTY(translationInput()) {
                 fill = 1;
                 caption = 'Фраза для перевода';
                 panelLabelAbove = TRUE;
                 font = 'bold 24';
             }
-            ADD PROPERTY(translationResultString()){
+            ADD PROPERTY(translationResult()){
                 fill = 1;
                 caption = 'Перевод';
                 panelLabelAbove = TRUE;
