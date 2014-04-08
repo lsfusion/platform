@@ -17,6 +17,7 @@ import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import net.atlanticbb.tantlinger.shef.HTMLEditorPane;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -27,6 +28,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -50,7 +52,9 @@ public class Main {
     private final static Logger logger = Logger.getLogger(Main.class);
 
     public static final String LSFUSION_TITLE = "lsFusion";
-    private static final String DEFAULT_SPLASH_PATH = "/images/lsfusion.jpg";
+    public static final String DEFAULT_SPLASH_PATH = "/images/lsfusion.jpg";
+
+    public static final File fusionDir = new File(System.getProperty("user.home"), ".fusion");
 
     public static final RMITimeoutSocketFactory rmiSocketFactory = RMITimeoutSocketFactory.getInstance();
 
@@ -271,6 +275,10 @@ public class Main {
 //        FocusOwnerTracer.installFocusTracer();
 
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
+        
+        // при первом использовании rich-editora во время редактирования, его создание тормозит...
+        // возможно, где-то внутри кэшируются какие-то lazy-ресурсы... Чтобы это не напрягало на форме, создаём компонент вхолостую здесь
+        new HTMLEditorPane();
     }
 
     public static ClientObjectClass getBaseClass() {

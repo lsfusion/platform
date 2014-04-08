@@ -20,6 +20,10 @@ button::-moz-focus-inner {
     white-space: nowrap;
 }
 
+.gwt-ToggleButton {
+    white-space: nowrap;
+}
+
 input[type=checkbox] {
     vertical-align: middle;
     position: relative;

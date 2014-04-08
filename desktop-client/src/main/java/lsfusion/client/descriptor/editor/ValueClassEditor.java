@@ -100,7 +100,7 @@ public class ValueClassEditor extends JPanel {
                     fieldLength.setText(Integer.toString(((ClientStringClass) clientClass).length.getValue()));
                     fieldLength.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            ClientStringClass stringClass = new ClientStringClass(stringTypClass.blankPadded, stringTypClass.caseInsensitive, new ExtInt(Integer.parseInt(fieldLength.getText())));
+                            ClientStringClass stringClass = new ClientStringClass(stringTypClass.blankPadded, stringTypClass.caseInsensitive, stringTypClass.rich, new ExtInt(Integer.parseInt(fieldLength.getText())));
                             ReflectionUtils.invokeCheckSetter(object, property, stringClass
                             );
                         }

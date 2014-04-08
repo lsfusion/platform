@@ -11,7 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
 
-public class ColorClass extends DataClass {
+public class ColorClass extends DataClass<Color> {
 
     public final static ColorClass instance = new ColorClass();
 
@@ -67,7 +67,7 @@ public class ColorClass extends DataClass {
     }
 
     @Override
-    public Object parseString(String s) throws ParseException {
+    public Color parseString(String s) throws ParseException {
         try {
             return Color.decode("#" + s.substring(s.length() - 6, s.length()));
         } catch (Exception e) {

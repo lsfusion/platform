@@ -19,14 +19,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import static java.lang.Math.max;
+import static lsfusion.base.BaseUtils.cmp;
 
 public class StringClass extends DataClass {
 
     private final static Collection<StringClass> strings = new ArrayList<StringClass>();
 
     public final static StringClass text = getv(ExtInt.UNLIMITED);
+    public final static StringClass richText = get(false, false, true, ExtInt.UNLIMITED);
     public final boolean blankPadded;
     public final boolean caseInsensitive;
+    public final boolean rich;
     public final ExtInt length;
 
     public Format getReportFormat() {
@@ -70,18 +73,20 @@ public class StringClass extends DataClass {
         super.serialize(outStream);
         outStream.writeBoolean(blankPadded);
         outStream.writeBoolean(caseInsensitive);
+        outStream.writeBoolean(rich);
         length.serialize(outStream);
     }
 
-    protected StringClass(boolean blankPadded, ExtInt length, boolean caseInsensitive) {
-        this(caseInsensitive ? ServerResourceBundle.getString("classes.insensitive.string") : ServerResourceBundle.getString("classes.string") + (blankPadded ? " (bp)" : ""), blankPadded, length, caseInsensitive);
+    protected StringClass(boolean blankPadded, ExtInt length, boolean caseInsensitive, boolean rich) {
+        this(caseInsensitive ? ServerResourceBundle.getString("classes.insensitive.string") : ServerResourceBundle.getString("classes.string") + (blankPadded ? " (bp)" : "") + (blankPadded ? " (rich)" : ""), blankPadded, length, caseInsensitive, rich);
     }
 
-    protected StringClass(String caption, boolean blankPadded, ExtInt length, boolean caseInsensitive) {
+    protected StringClass(String caption, boolean blankPadded, ExtInt length, boolean caseInsensitive, boolean rich) {
         super(caption);
         this.blankPadded = blankPadded;
         this.length = length;
         this.caseInsensitive = caseInsensitive;
+        this.rich = rich;
 
 //        assert !blankPadded || !this.length.isUnlimited();
     }
@@ -104,7 +109,10 @@ public class StringClass extends DataClass {
         if (!(compClass instanceof StringClass)) return null;
 
         StringClass stringClass = (StringClass) compClass;
-        return get(BaseUtils.cmp(blankPadded, stringClass.blankPadded, or), BaseUtils.cmp(caseInsensitive, stringClass.caseInsensitive, or), length.cmp(stringClass.length, or));
+        return get(cmp(blankPadded, stringClass.blankPadded, or),
+                   cmp(caseInsensitive, stringClass.caseInsensitive, or),
+                   cmp(rich, stringClass.rich, or),
+                   length.cmp(stringClass.length, or));
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
@@ -158,7 +166,9 @@ public class StringClass extends DataClass {
 
     @Override
     public String getSID() {
-        String sid = (length == ExtInt.UNLIMITED ? "TEXT" : "STRING");
+        String sid = (length == ExtInt.UNLIMITED
+                      ? (rich ? "RICHTEXT" : "TEXT")
+                      : "STRING");
         sid = (!blankPadded ? "VAR" : "") + (caseInsensitive ? "I" : "") + sid;
         if (length != ExtInt.UNLIMITED) {
             sid = sid + "_" + length;
@@ -190,11 +200,11 @@ public class StringClass extends DataClass {
     public StringClass extend(int times) {
         if(length.isUnlimited())
             return this;
-        return get(blankPadded, caseInsensitive, new ExtInt(length.getValue() * times));
+        return get(blankPadded, caseInsensitive, rich, new ExtInt(length.getValue() * times));
     }
 
     public String toString() {
-        return (caseInsensitive ? ServerResourceBundle.getString("classes.insensitive.string") : ServerResourceBundle.getString("classes.string")) + (blankPadded ? " (bp)" : "") + " " + length;
+        return (caseInsensitive ? ServerResourceBundle.getString("classes.insensitive.string") : ServerResourceBundle.getString("classes.string")) + (blankPadded ? " (bp)" : "") + (rich ? " (rich)" : "") + " " + length;
     }
 
     public static StringClass[] getArray(int... lengths) {
@@ -238,7 +248,11 @@ public class StringClass extends DataClass {
     }
 
     public static StringClass get(boolean blankPadded, boolean caseInsensitive, final ExtInt length) {
-        return getCached(strings, length, blankPadded, caseInsensitive);
+        return get(blankPadded, caseInsensitive, false, length);
+    }
+    
+    public static StringClass get(boolean blankPadded, boolean caseInsensitive, boolean rich, final ExtInt length) {
+        return getCached(strings, length, blankPadded, caseInsensitive, rich);
     }
 
     public static StringClass get(boolean caseInsensitive, final int length) {
@@ -257,17 +271,19 @@ public class StringClass extends DataClass {
         return get(false, caseInsensitive, length);
     }
 
-    private static StringClass getCached(Collection<StringClass> cached, ExtInt length, boolean blankPadded, boolean caseInsensitive) {
+    private static StringClass getCached(Collection<StringClass> cached, ExtInt length, boolean blankPadded, boolean caseInsensitive, boolean rich) {
         for (StringClass string : cached) {
-            if (string.length.equals(length) && string.blankPadded == blankPadded && string.caseInsensitive == caseInsensitive) {
+            if (string.length.equals(length) && string.blankPadded == blankPadded && string.caseInsensitive == caseInsensitive && string.rich == rich) {
                 return string;
             }
         }
 
-        StringClass string = new StringClass(blankPadded, length, caseInsensitive);
+        StringClass string = new StringClass(blankPadded, length, caseInsensitive, rich);
 
         cached.add(string);
+        
         DataClass.storeClass(string);
+        
         return string;
     }
 

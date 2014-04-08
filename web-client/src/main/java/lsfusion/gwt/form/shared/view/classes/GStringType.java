@@ -8,6 +8,7 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.GCompare;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.editor.rich.RichTextGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.StringGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.TextGridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
@@ -20,6 +21,7 @@ public class GStringType extends GDataType {
 
     public boolean blankPadded;
     public boolean caseInsensitive;
+    public boolean rich;
     protected GExtInt length = new GExtInt(50);
 
     @Override
@@ -40,7 +42,7 @@ public class GStringType extends GDataType {
     @Override
     public int getMinimumPixelWidth(int minimumCharWidth, GFont font) {
         int minCharWidth = getMinimumCharWidth(minimumCharWidth);
-        return minCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null? null : font) + 8;
+        return minCharWidth * GFontMetrics.getZeroSymbolWidth(font == null || font.size == null ? null : font) + 8;
     }
 
     @Override
@@ -55,16 +57,17 @@ public class GStringType extends GDataType {
     public GStringType() {}
 
     public GStringType(int length) {
-        this(new GExtInt(length), false, true);
+        this(new GExtInt(length), false, true, false);
     }
 
-    public GStringType(GExtInt length, boolean caseInsensitive, boolean blankPadded) {
+    public GStringType(GExtInt length, boolean caseInsensitive, boolean blankPadded, boolean rich) {
 
         this.blankPadded = blankPadded;
         this.caseInsensitive = caseInsensitive;
+        this.rich = rich;
         this.length = length;
 
-        if(length.isUnlimited()) {
+        if (length.isUnlimited()) {
             minimumMask = "999 999";
             preferredMask = "9 999 999";
         } else {
@@ -76,22 +79,25 @@ public class GStringType extends GDataType {
 
     @Override
     public int getMinimumPixelHeight(GFont font) {
-        if(length.isUnlimited())
+        if (length.isUnlimited()) {
             return super.getMinimumPixelHeight(font) * 4;
+        }
         return super.getMinimumPixelHeight(font);
     }
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        if(length.isUnlimited())
-            return new TextGridCellRenderer(property);
+        if (length.isUnlimited()) {
+            return new TextGridCellRenderer(property, rich);
+        }
         return new StringGridCellRenderer(property, !blankPadded);
     }
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        if(length.isUnlimited())
-            return new TextGridCellEditor(editManager, editProperty);
+        if (length.isUnlimited()) {
+            return rich ? new RichTextGridCellEditor(editManager, editProperty) : new TextGridCellEditor(editManager, editProperty);
+        }
         return new StringGridCellEditor(editManager, editProperty, !blankPadded, length.getValue());
     }
 
@@ -116,6 +122,6 @@ public class GStringType extends GDataType {
 
     @Override
     public String toString() {
-        return "Строка" + (caseInsensitive ? " без регистра" : "") + (blankPadded ? " с паддингом" : "") + "(" + length + ")";
+        return "Строка" + (caseInsensitive ? " без регистра" : "") + (blankPadded ? " с паддингом" : "") + (rich ? " rich" : "") + "(" + length + ")";
     }
 }

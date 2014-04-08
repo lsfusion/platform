@@ -73,6 +73,14 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     public void add(Widget child) {
         add(child, GFlexAlignment.LEADING, 0);
     }
+    
+    public void addCentered(Widget child) {
+        add(child, GFlexAlignment.CENTER, 0);
+    }
+
+    public void addStretched(Widget child) {
+        add(child, GFlexAlignment.STRETCH, 0);
+    }
 
     public void add(Widget child, int beforeIndex) {
         add(child, beforeIndex, GFlexAlignment.LEADING, 0);
@@ -98,8 +106,16 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         addFill(widget, getWidgetCount());
     }
 
+    public void addFill(Widget widget, String flexBasis) {
+        addFill(widget, getWidgetCount(), flexBasis);
+    }
+
     public void addFill(Widget widget, int beforeIndex) {
-        add(widget, beforeIndex, GFlexAlignment.STRETCH, 1, "auto");
+        addFill(widget, beforeIndex, "auto");
+    }
+
+    public void addFill(Widget widget, int beforeIndex, String flexBasis) {
+        add(widget, beforeIndex, GFlexAlignment.STRETCH, 1, flexBasis);
     }
 
     public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, String flexBasis) {

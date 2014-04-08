@@ -26,6 +26,10 @@
     cursor: default;
 }
 
+.dataGridCell p {
+    margin: 0;
+}
+
 .dataGridCellInnerDiv {
     position: absolute;
     left: 0;

@@ -19,11 +19,15 @@ public class StringTypeConversion implements TypeConversion {
                     (type1 instanceof StringClass && ((StringClass) type1).caseInsensitive) ||
                             (type2 instanceof StringClass && ((StringClass) type2).caseInsensitive);
 
+            boolean rich =
+                    (type1 instanceof StringClass && ((StringClass) type1).rich) ||
+                            (type2 instanceof StringClass && ((StringClass) type2).rich);
+
             boolean blankPadded =
                     (type1 instanceof StringClass && ((StringClass) type1).blankPadded) &&
                             (type2 instanceof StringClass && ((StringClass) type2).blankPadded);
 
-            return get(blankPadded, caseInsensitive, length1.sum(length2));
+            return get(blankPadded, caseInsensitive, rich, length1.sum(length2));
         }
         return null;
     }

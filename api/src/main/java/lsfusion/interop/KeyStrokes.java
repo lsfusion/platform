@@ -18,6 +18,9 @@ public class KeyStrokes {
     public static KeyStroke getAltEnter() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
     }
+    public static KeyStroke getCtrlEnter() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
+    }
 
     public static KeyStroke getEscape() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);

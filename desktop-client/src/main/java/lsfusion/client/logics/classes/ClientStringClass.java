@@ -7,6 +7,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
+import lsfusion.client.form.editor.rich.RichTextPropertyEditor;
 import lsfusion.client.form.editor.StringPropertyEditor;
 import lsfusion.client.form.editor.TextPropertyEditor;
 import lsfusion.client.form.renderer.StringPropertyRenderer;
@@ -29,6 +30,7 @@ public class ClientStringClass extends ClientDataClass {
 
     public final boolean blankPadded;
     public final boolean caseInsensitive;
+    public final boolean rich;
     public final ExtInt length;
 
     public Format getDefaultFormat() {
@@ -62,10 +64,11 @@ public class ClientStringClass extends ClientDataClass {
 
     protected String sID;
 
-    public ClientStringClass(boolean blankPadded, boolean caseInsensitive, ExtInt length) {
+    public ClientStringClass(boolean blankPadded, boolean caseInsensitive, boolean rich, ExtInt length) {
 
         this.blankPadded = blankPadded;
         this.caseInsensitive = caseInsensitive;
+        this.rich = rich;
         this.length = length;
 
         sID = "StringClass_" + (caseInsensitive ? "insensitive_" : "") + (blankPadded ? "bp_" : "") + length;
@@ -81,17 +84,21 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     public static ClientTypeClass getTypeClass(boolean blankPadded, boolean caseInsensitive) {
+        return getTypeClass(blankPadded, caseInsensitive, false);
+    }
+    
+    public static ClientTypeClass getTypeClass(boolean blankPadded, boolean caseInsensitive, boolean rich) {
         Pair<Boolean, Boolean> type = new Pair<Boolean, Boolean>(blankPadded, caseInsensitive);
         ClientTypeClass typeClass = types.get(type);
         if(typeClass == null) {
-            typeClass = new ClientStringTypeClass(blankPadded, caseInsensitive);
+            typeClass = new ClientStringTypeClass(blankPadded, caseInsensitive, rich);
             types.put(type, typeClass);
         }
         return typeClass;
     }
 
     public ClientTypeClass getTypeClass() {
-        return getTypeClass(blankPadded, caseInsensitive);
+        return getTypeClass(blankPadded, caseInsensitive, rich);
     }
 
     @Override
@@ -100,6 +107,7 @@ public class ClientStringClass extends ClientDataClass {
 
         outStream.writeBoolean(blankPadded);
         outStream.writeBoolean(caseInsensitive);
+        outStream.writeBoolean(rich);
         length.serialize(outStream);
     }
 
@@ -113,8 +121,9 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        if(length.isUnlimited())
-            return new TextPropertyRenderer(property);
+        if(length.isUnlimited()) {
+            return new TextPropertyRenderer(property, rich);
+        }
         return new StringPropertyRenderer(property);
     }
 
@@ -127,14 +136,16 @@ public class ClientStringClass extends ClientDataClass {
 
     @Override
     public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) {
-        if(length.isUnlimited())
-            return new TextPropertyEditor(ownerComponent, value, property.design);
+        if(length.isUnlimited()) {
+            return rich ? new RichTextPropertyEditor(ownerComponent, value, property.design) : new TextPropertyEditor(ownerComponent, value, property.design);
+        }
         return super.getChangeEditorComponent(ownerComponent, form, property, value);
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        if(length.isUnlimited())
-            return new TextPropertyEditor(value, property.design);
+        if(length.isUnlimited()) {
+            return rich ? new RichTextPropertyEditor(value, property.design) : new TextPropertyEditor(value, property.design);
+        }
         return new StringPropertyEditor(property, value, length.getValue(), !blankPadded, true);
     }
 
@@ -152,7 +163,7 @@ public class ClientStringClass extends ClientDataClass {
 
     @Override
     public String getCode() {
-        return "StringClass.get(" + blankPadded + "," + caseInsensitive + "," + length + ")";
+        return "StringClass.get(" + blankPadded + "," + caseInsensitive+ "," + rich + "," + length + ")";
     }
 
     @Override
@@ -184,10 +195,12 @@ public class ClientStringClass extends ClientDataClass {
     public static class ClientStringTypeClass implements ClientTypeClass {
         public final boolean blankPadded;
         public final boolean caseInsensitive;
+        public final boolean rich;
 
-        protected ClientStringTypeClass(boolean blankPadded, boolean caseInsensitive) {
+        protected ClientStringTypeClass(boolean blankPadded, boolean caseInsensitive, boolean rich) {
             this.blankPadded = blankPadded;
             this.caseInsensitive = caseInsensitive;
+            this.rich = rich;
         }
 
         public byte getTypeId() {
@@ -199,7 +212,7 @@ public class ClientStringClass extends ClientDataClass {
         }
 
         public ClientStringClass getDefaultType() {
-            return new ClientStringClass(blankPadded, caseInsensitive, new ExtInt(50));
+            return new ClientStringClass(blankPadded, caseInsensitive, false, new ExtInt(50));
         }
 
         @Override
@@ -210,7 +223,7 @@ public class ClientStringClass extends ClientDataClass {
             } else {
                 result = ClientResourceBundle.getString("logics.classes.string");
             }
-            return result + (blankPadded ? " (bp)" : "");
+            return result + (blankPadded ? " (bp)" : "") + (rich ? " (rich)" : "");
         }
     }
 }

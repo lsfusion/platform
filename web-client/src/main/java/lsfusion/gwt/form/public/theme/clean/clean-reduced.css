@@ -601,64 +601,100 @@ select {
 }
 
 .gwt-RichTextArea {
+    border: 1px solid #BBBBBB;
 }
-.hasRichTextToolbar {
-    border: 0px;
-}
+
 .gwt-RichTextToolbar {
-    background: #e3e8f3 url(images/hborder.png) repeat-x 0px -2003px;
-    border-bottom: 1px solid #BBBBBB;
-    padding: 3px;
-    margin: 0px;
+    background: #eee;
+    border: 1px solid #BBBBBB;
+    margin: 0;
+    padding: 0 3px;
 }
+
+.gwt-RichTextToolbar img {
+    display: block;
+}
+
+.gwt-RichTextToolbar .gwt-PushButton {
+    border: 1px solid #ddd;
+    background: #FFFFFF;
+}
+
+.gwt-RichTextToolbar .gwt-ListBox {
+    border: 1px solid #ddd;
+}
+
 .gwt-RichTextToolbar .gwt-PushButton-up {
-    padding: 0px 1px 0px 0px;
-    margin-right: 4px;
-    margin-bottom: 4px;
-    border-width: 1px;
+    /*padding: 0px 1px 0px 0px;*/
+    padding: 2px 4px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    /*border-width: 1px;*/
 }
 .gwt-RichTextToolbar .gwt-PushButton-up-hovering {
-    margin-right: 4px;
-    margin-bottom: 4px;
-    padding: 0px 1px 0px 0px;
-    border-width: 1px;
+    /*padding: 0px 1px 0px 0px;*/
+    padding: 2px 4px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    /*border-width: 1px;*/
+    background: #E1EDF7;
 }
 .gwt-RichTextToolbar .gwt-PushButton-down {
-    margin-right: 4px;
-    margin-bottom: 4px;
-    padding: 0px 0px 0px 1px;
-    border-width: 1px;
+    /*padding: 0px 0px 0px 1px;*/
+    padding: 2px 4px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    /*border-width: 1px;*/
+    background: #92BCE0;
 }
 .gwt-RichTextToolbar .gwt-PushButton-down-hovering {
-    margin-right: 4px;
-    margin-bottom: 4px;
-    padding: 0px 0px 0px 1px;
-    border-width: 1px;
+    /*padding: 0px 0px 0px 1px;*/
+    padding: 2px 4px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    /*border-width: 1px;*/
+    background: #92BCE0;
 }
+
+.gwt-RichTextToolbar .gwt-ToggleButton {
+    border: 1px solid #ddd;
+    background: #FFFFFF;
+}
+
 .gwt-RichTextToolbar .gwt-ToggleButton-up {
-    margin-right: 4px;
-    margin-bottom: 4px;
-    padding: 0px 1px 0px 0px;
-    border:1px solid #bbb;
-    border-bottom: 1px solid #a0a0a0;
+    /*padding: 0px 1px 0px 0px;*/
+    padding: 2px 4px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    /*border: 1px solid #bbb;*/
+    /*border-bottom: 1px solid #a0a0a0;*/
 }
+
 .gwt-RichTextToolbar .gwt-ToggleButton-up-hovering {
-    margin-right: 4px;
-    margin-bottom: 4px;
-    padding: 0px 1px 0px 0px;
+    /*padding: 0px 1px 0px 0px;*/
+    padding: 2px 4px;
+    margin-right: 0px;
+    margin-bottom: 0px;
     border-width: 1px;
+    background: #E1EDF7;
 }
+
 .gwt-RichTextToolbar .gwt-ToggleButton-down {
-    margin-right: 4px;
-    margin-bottom: 4px;
-    padding: 0px 0px 0px 1px;
-    border-width: 1px;
+    /*padding: 0px 0px 0px 1px;*/
+    padding: 2px 4px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    /*border-width: 1px;*/
+    background: #92BCE0;
 }
+
 .gwt-RichTextToolbar .gwt-ToggleButton-down-hovering {
-    margin-right: 4px;
-    margin-bottom: 4px;
-    padding: 0px 0px 0px 1px;
-    border-width: 1px;
+    /*padding: 0px 0px 0px 1px;*/
+    padding: 2px 4px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    /*border-width: 1px;*/
+    background: #92BCE0;
 }
 
 .gwt-StackPanel {

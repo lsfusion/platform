@@ -2,13 +2,14 @@ package lsfusion.gwt.form.shared.view.grid.renderer;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
+
+import static lsfusion.gwt.base.client.EscapeUtils.unicodeEscape;
+import static lsfusion.gwt.base.shared.GwtSharedUtils.isRedundantString;
 
 public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRenderer {
     protected final String EMPTY_VALUE = "Не определено";
@@ -71,11 +72,11 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
     protected void updateElement(DivElement div, Object value) {
         String text = value == null ? null : renderToString((T) value);
 
-        if (GwtSharedUtils.isRedundantString(text)) {
+        if (isRedundantString(text)) {
             div.setTitle("");
             setInnerText(div, null);
         } else {
-            String stringValue = EscapeUtils.unicodeEscape(text);
+            String stringValue = unicodeEscape(text);
             setInnerText(div, stringValue);
             div.setTitle(property.echoSymbols ? "" : stringValue);
         }
@@ -89,7 +90,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
             div.setInnerText(innerText);
             div.removeClassName("nullValueString");
         }
-    };
+    }
 
     protected abstract String renderToString(T value);
 }

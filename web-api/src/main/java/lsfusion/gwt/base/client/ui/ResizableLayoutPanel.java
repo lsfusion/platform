@@ -5,6 +5,17 @@ import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.GwtClientUtils;
 
 public class ResizableLayoutPanel extends ResizeLayoutPanel implements RequiresResize, ProvidesResize, HasPreferredSize {
+    
+    public ResizableLayoutPanel() {
+        this(null);
+    }
+    
+    public ResizableLayoutPanel(Widget widget) {
+        if (widget != null) {
+            setWidget(widget);
+        }
+    }
+
     @Override
     public void onResize() {
         if (!visible) {

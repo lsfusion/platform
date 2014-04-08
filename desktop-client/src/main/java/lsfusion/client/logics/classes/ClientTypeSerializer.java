@@ -44,7 +44,9 @@ public class ClientTypeSerializer {
         return deserializeClientClass(inStream, false);
     }
 
-    //по сути этот метод дублирует логику lsfusion.server.data.type.TypeSerializer.deserializeDataClass() для последней версии ДБ
+    /**
+     * по сути этот метод дублирует логику {@link lsfusion.server.data.type.TypeSerializer#deserializeDataClass(java.io.DataInputStream, int)} для последней версии ДБ
+     */
     public static ClientClass deserializeClientClass(DataInputStream inStream, boolean nulls) throws IOException {
 
         if (nulls && inStream.readByte() == 0) return null;
@@ -58,7 +60,7 @@ public class ClientTypeSerializer {
         if (type == Data.NUMERIC) return new ClientNumericClass(inStream.readInt(), inStream.readInt());
         if (type == Data.LOGICAL) return ClientLogicalClass.instance;
         if (type == Data.DATE) return ClientDateClass.instance;
-        if (type == Data.STRING) return new ClientStringClass(inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
+        if (type == Data.STRING) return new ClientStringClass(inStream.readBoolean(), inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
         if (type == Data.YEAR) return ClientIntegerClass.instance;
         if (type == Data.DATETIME) return ClientDateTimeClass.instance;
         if (type == Data.TIME) return ClientTimeClass.instance;

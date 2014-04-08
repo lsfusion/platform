@@ -123,12 +123,24 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST, NAGGR}
 
-    static private Map<String, DataClass> primitiveTypeAliases = BaseUtils.buildMap(
-            asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN", "DATETIME", "TEXT", "TIME", "YEAR", "WORDFILE", "IMAGEFILE", "PDFFILE", "CUSTOMFILE", "EXCELFILE", "COLOR"),
-            Arrays.<DataClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance,
-                    DateTimeClass.instance, StringClass.text, TimeClass.instance, YearClass.instance, WordClass.get(false, false), ImageClass.get(false, false), PDFClass.get(false, false),
-                    DynamicFormatFileClass.get(false, false), ExcelClass.get(false, false), ColorClass.instance)
-    );
+    private static Map<String, DataClass> primitiveTypeAliases = new HashMap<String, DataClass>() {{
+        put("INTEGER", IntegerClass.instance);
+        put("DOUBLE", DoubleClass.instance);
+        put("LONG", LongClass.instance);
+        put("DATE", DateClass.instance);
+        put("BOOLEAN", LogicalClass.instance);
+        put("DATETIME", DateTimeClass.instance );
+        put("TEXT", StringClass.text);
+        put("RICHTEXT", StringClass.richText);
+        put("TIME", TimeClass.instance);
+        put("YEAR", YearClass.instance);
+        put("WORDFILE", WordClass.get(false, false));
+        put("IMAGEFILE", ImageClass.get(false, false));
+        put("PDFFILE", PDFClass.get(false, false));
+        put("CUSTOMFILE", DynamicFormatFileClass.get(false, false));
+        put("EXCELFILE", ExcelClass.get(false, false));
+        put("COLOR", ColorClass.instance);
+    }};
 
     private ScriptingLogicsModule(BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
         setBaseLogicsModule(baseModule);

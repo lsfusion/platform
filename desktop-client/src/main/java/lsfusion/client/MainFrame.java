@@ -16,6 +16,7 @@ import java.io.*;
 import java.util.Scanner;
 
 import static lsfusion.client.ClientResourceBundle.getString;
+import static lsfusion.client.Main.fusionDir;
 
 public abstract class MainFrame extends JFrame {
 
@@ -93,7 +94,6 @@ public abstract class MainFrame extends JFrame {
     }
 
     private void loadLayout() {
-        File fusionDir = new File(System.getProperty("user.home"), ".fusion");
         if (Main.logicsName != null) {
             baseDir = new File(fusionDir, Main.logicsName);
         } else {

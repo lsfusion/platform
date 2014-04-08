@@ -49,6 +49,7 @@
         <edireader.version>4.7.3</edireader.version>
         <jna.version>3.2.3</jna.version>
         <stax.version>1.2.0</stax.version>
+        <shef.version>0.5</shef.version>
         
         <spring.version>3.0.5.RELEASE</spring.version>
         <cglib.version>2.2.2</cglib.version>
@@ -732,6 +733,11 @@
                 <groupId>stax</groupId>
                 <artifactId>stax</artifactId>
                 <version>${stax.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.atlanticbb</groupId>
+                <artifactId>shef</artifactId>
+                <version>${shef.version}</version>
             </dependency>
 
             <!-- Spring libraries -->

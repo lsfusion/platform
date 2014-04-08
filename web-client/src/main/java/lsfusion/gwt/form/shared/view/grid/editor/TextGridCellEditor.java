@@ -10,8 +10,7 @@ import lsfusion.gwt.form.shared.view.grid.EditManager;
 
 public class TextGridCellEditor extends TextBasedGridCellEditor {
     public TextGridCellEditor(EditManager editManager, GPropertyDraw property) {
-        super(editManager, property);
-        inputElementTagName = "textarea";
+        super(editManager, property, "textarea");
     }
 
     @Override

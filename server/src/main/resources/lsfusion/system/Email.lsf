@@ -63,7 +63,7 @@ fromAddressEmail 'От' = DATA VARSTRING[100] (Email);
 toAddressEmail 'Кому' = DATA VARSTRING[100] (Email);
 dateTimeSentEmail 'Дата отправки' = DATA DATETIME (Email);
 dateTimeReceivedEmail 'Дата получения' = DATA DATETIME (Email);
-messageEmail 'Сообщение' = DATA TEXT (Email);
+messageEmail 'Сообщение' = DATA RICHTEXT (Email);
 emlFileEmail 'Файл EML' = DATA CUSTOMFILE (Email);
 openEMLFileEmail 'Открыть файл EML' (email) = ACTION OPENFILE emlFileEmail (email);
 
@@ -163,7 +163,6 @@ EXTEND DESIGN mail {
                             caption = 'Сообщение';
                             type = CONTAINERV;        
                             ADD PROPERTY(messageEmail(e)) {
-                                contentType = 'text/html';
                                 fill = 1;
                                 preferredSize = ( -1, 200);
                                 panelLabelAbove = TRUE;

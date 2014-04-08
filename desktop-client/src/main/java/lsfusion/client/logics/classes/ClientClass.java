@@ -24,6 +24,7 @@ abstract public class ClientClass implements Serializable {
             ClientStringClass.getTypeClass(true, false),
             ClientStringClass.getTypeClass(false, true),
             ClientStringClass.getTypeClass(true, true),
+            ClientStringClass.getTypeClass(false, false, true),
             ClientObjectClass.type,
             ClientNumericClass.type,
             ClientDateClass.instance,

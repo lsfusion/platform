@@ -3,17 +3,22 @@ package lsfusion.interop.form.layout;
 import java.io.Serializable;
 
 public class FlexConstraints implements Cloneable, Serializable {
+    public static FlexConstraints fill = new FlexConstraints(FlexAlignment.STRETCH, 1);
+    public static FlexConstraints stretch_self = new FlexConstraints(FlexAlignment.STRETCH, 0);
+    public static FlexConstraints leading_self = new FlexConstraints(FlexAlignment.LEADING, 0);
+    public static FlexConstraints center_self = new FlexConstraints(FlexAlignment.CENTER, 0);
+    public static FlexConstraints trailing_self = new FlexConstraints(FlexAlignment.TRAILING, 0);
 
-    private double flex;
-    private FlexAlignment alignment;
+    private final double flex;
+    private final FlexAlignment alignment;
 
     public FlexConstraints() {
         this(FlexAlignment.LEADING, 0);
     }
 
     public FlexConstraints(FlexAlignment alignment, double flex) {
-        setFlex(flex);
-        setAlignment(alignment);
+        this.alignment = alignment;
+        this.flex = flex;
     }
 
     public Object clone() {
@@ -28,15 +33,7 @@ public class FlexConstraints implements Cloneable, Serializable {
         return flex;
     }
 
-    public void setFlex(double flex) {
-        this.flex = flex;
-    }
-
     public FlexAlignment getAlignment() {
         return alignment;
-    }
-
-    public void setAlignment(FlexAlignment alignment) {
-        this.alignment = alignment;
     }
 }

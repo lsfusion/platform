@@ -41,6 +41,10 @@
     overflow: hidden;
 }
 
+.dataGridCell p {
+    margin: 0;
+}
+
 .dataGridFirstCell {}
 
 .dataGridLastCell {

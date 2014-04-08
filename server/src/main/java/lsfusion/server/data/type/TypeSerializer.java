@@ -58,6 +58,9 @@ public class TypeSerializer {
         return ConcatenateType.get(types);
     }
 
+    /**
+     * номер последней версии определён в {@link lsfusion.server.logics.DBManager.DBStructure#DBStructure(lsfusion.server.logics.DBManager.DBVersion)}
+     */
     public static DataClass deserializeDataClass(DataInputStream inStream, int version) throws IOException {
         byte type = inStream.readByte();
 
@@ -92,7 +95,13 @@ public class TypeSerializer {
                 }
             }
         } else {
-            if (type == Data.STRING) return StringClass.get(inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
+            if (type == Data.STRING) {
+                if (version < 13) {
+                    return StringClass.get(inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
+                } else {
+                    return StringClass.get(inStream.readBoolean(), inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
+                }
+            }
         }
 
         if(version>=2) { // обратная совместимость
@@ -137,7 +146,7 @@ public class TypeSerializer {
         if (type == Data.NUMERIC) return NumericClass.get(inStream.readInt(), inStream.readInt());
         if (type == Data.LOGICAL) return LogicalClass.instance;
         if (type == Data.DATE) return DateClass.instance;
-        if (type == Data.STRING) return StringClass.get(inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
+        if (type == Data.STRING) return StringClass.get(inStream.readBoolean(), inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
         if (type == Data.YEAR) return YearClass.instance;
         if (type == Data.OBJECT) return context.LM.baseClass.findClassID(inStream.readInt());
         if (type == Data.ACTION) return ActionClass.instance;

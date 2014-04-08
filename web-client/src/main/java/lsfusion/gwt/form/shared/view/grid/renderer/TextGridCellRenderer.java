@@ -2,15 +2,21 @@ package lsfusion.gwt.form.shared.view.grid.renderer;
 
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Style;
+import lsfusion.gwt.base.client.EscapeUtils;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
 import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
+import static lsfusion.gwt.base.shared.GwtSharedUtils.isRedundantString;
+
 public class TextGridCellRenderer extends TextBasedGridCellRenderer {
-    public TextGridCellRenderer(GPropertyDraw property) {
+    private final boolean rich;
+
+    public TextGridCellRenderer(GPropertyDraw property, boolean rich) {
         super(property);
+        this.rich = rich;
     }
 
     @Override
@@ -20,9 +26,10 @@ public class TextGridCellRenderer extends TextBasedGridCellRenderer {
         divStyle.setPaddingLeft(4, Style.Unit.PX);
 
         divStyle.setProperty("lineHeight", "normal");
-
-        divStyle.setProperty("wordWrap", "break-word");
-        divStyle.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
+        if (!rich) {
+            divStyle.setProperty("wordWrap", "break-word");
+            divStyle.setWhiteSpace(Style.WhiteSpace.PRE_WRAP);
+        }
 
         GFont font = property.font;
         if (font == null && table instanceof GGridPropertyTable) {
@@ -33,6 +40,16 @@ public class TextGridCellRenderer extends TextBasedGridCellRenderer {
         }
 
         updateElement(cellElement, value);
+    }
+
+    @Override
+    protected void updateElement(DivElement div, Object value) {
+        if (!rich || isRedundantString((String) value)) {
+            super.updateElement(div, value);
+        } else {
+            div.removeClassName("nullValueString");
+            div.setInnerHTML(EscapeUtils.sanitizeHtml((String) value));
+        }
     }
 
     @Override

@@ -1,35 +1,33 @@
 package lsfusion.client.form.renderer;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.client.form.PropertyRenderer;
+import lsfusion.client.form.editor.rich.RichEditorKit;
+import lsfusion.client.form.editor.rich.RichEditorPane;
 import lsfusion.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.*;
-import java.text.Format;
 
 
 public class TextPropertyRenderer extends JEditorPane implements PropertyRenderer {
 
-    String contentType;
-    
-    Format format;
+    private final boolean rich;
 
-    private Color defaultBackground = Color.WHITE;
+    private Color defaultBackground;
 
-    public TextPropertyRenderer(ClientPropertyDraw property) {
-        super();
+    public TextPropertyRenderer(ClientPropertyDraw property, boolean rich) {
+        this.rich = rich;
 
-        contentType = property.contentType;
-        
-        format = property.getFormat();
         setOpaque(true);
         setFont(new Font("Tahoma", Font.PLAIN, 10));
+        setEditable(false);
+        setEditorKitForContentType("text/html", new RichEditorKit());
 
         if (property.design != null) {
             property.design.designCell(this);
         }
         defaultBackground = getBackground();
-        setEditable(false);
     }
 
     void setSelected(boolean isSelected, boolean hasFocus) {
@@ -37,8 +35,7 @@ public class TextPropertyRenderer extends JEditorPane implements PropertyRendere
             if (hasFocus) {
                 setBorder(BorderFactory.createCompoundBorder(FOCUSED_CELL_BORDER, BorderFactory.createEmptyBorder(1, 2, 0, 1)));
                 setBackground(FOCUSED_CELL_BACKGROUND);
-            }
-            else {
+            } else {
                 setBorder(BorderFactory.createCompoundBorder(SELECTED_ROW_BORDER, BorderFactory.createEmptyBorder(1, 3, 0, 2)));
                 setBackground(SELECTED_ROW_BACKGROUND);
             }
@@ -53,15 +50,19 @@ public class TextPropertyRenderer extends JEditorPane implements PropertyRendere
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        if (value != null) {
-            setText(value.toString());
-            if(contentType!=null)
-            setContentType(contentType);
-            setForeground(UIManager.getColor("TextField.foreground"));
-        }
-        else {
+        if (BaseUtils.isRedundantString(value)) {
+            setContentType("text");
             setText(EMPTY_STRING);
             setForeground(UIManager.getColor("TextField.inactiveForeground"));
+        } else {
+            if (rich) {
+                setContentType("text/html");
+                RichEditorPane.setText(this, value.toString());
+            } else {
+                setContentType("text");
+                setText(value.toString());
+            }
+            setForeground(UIManager.getColor("TextField.foreground"));
         }
         setSelected(isSelected, hasFocus);
     }

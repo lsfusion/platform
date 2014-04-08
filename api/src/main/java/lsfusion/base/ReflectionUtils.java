@@ -143,12 +143,43 @@ public class ReflectionUtils {
             throw Throwables.propagate(e);
         }
     }
-    
+
+    public static <T> T invokeMethod(Method method, Object object, Object... parameters) {
+        try {
+            return (T) method.invoke(object, parameters);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static Method getPrivateMethod(Class clazz, String methodName, Class<?>... parameterTypes) {
+        try {
+            Method method = clazz.getDeclaredMethod(methodName, parameterTypes);
+            method.setAccessible(true);
+            return method;
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    public static <T> T invokePrivateMethod(Class clazz, Object object, String methodName, Class<?>[] parameterTypes, Object... parameters) {
+        return invokeMethod(getPrivateMethod(clazz, methodName, parameterTypes), object, parameters);
+    }
+
     public static Object invokeTransp(Method method, Object object, Object... args) throws Throwable {
         try {
             return method.invoke(object, args);
         } catch (InvocationTargetException e) {
             throw e.getTargetException();
+        }
+    }
+
+    public static <T> T createByPrivateConstructor(Class<T> clazz, Class<?>[] parameterTypes, Object... parameters) {
+        try {
+            Constructor<T> ctor = clazz.getDeclaredConstructor(parameterTypes);
+            ctor.setAccessible(true);
+            return ctor.newInstance(parameters);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
     }
 

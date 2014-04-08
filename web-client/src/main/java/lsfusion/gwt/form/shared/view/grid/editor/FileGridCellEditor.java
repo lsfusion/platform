@@ -42,7 +42,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
     }
 
     @Override
-    protected Widget createComponent() {
+    protected Widget createComponent(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {
         final VerticalPanel progressBarPanel = new VerticalPanel();
         progressBarPanel.setWidth("100%");
         final LinkedHashMap<String, FileUploadStatusPanel> fileStatusPanels = new LinkedHashMap<String, FileUploadStatusPanel>();

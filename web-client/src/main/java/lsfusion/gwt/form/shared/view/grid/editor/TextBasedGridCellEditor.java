@@ -23,24 +23,33 @@ import static com.google.gwt.dom.client.BrowserEvents.*;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 
 public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
-    protected String inputElementTagName = "input";
-    protected GPropertyDraw property;
+    private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
+
+    protected final GPropertyDraw property;
+    protected final EditManager editManager;
+    protected final Style.TextAlign textAlign;
+    protected final String inputElementTagName;
+
+    protected String currentText = "";
 
     public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property) {
-        this(editManager, property, null);
+        this(editManager, property, (Style.TextAlign)null);
     }
 
     public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property, Style.TextAlign textAlign) {
+        this(editManager, property, textAlign, "input");
+    }
+
+    public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property, String inputElementTagName) {
+        this(editManager, property, null, inputElementTagName);
+    }
+
+    public TextBasedGridCellEditor(EditManager editManager, GPropertyDraw property, Style.TextAlign textAlign, String inputElementTagName) {
+        this.inputElementTagName = inputElementTagName;
         this.textAlign = textAlign == Style.TextAlign.LEFT ? null : textAlign;
         this.editManager = editManager;
         this.property = property;
     }
-
-    protected EditManager editManager;
-    protected Style.TextAlign textAlign;
-    protected String currentText = "";
-
-    private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
 
     @Override
     public void startEditing(EditEvent editEvent, Cell.Context context, Element parent, Object oldValue) {

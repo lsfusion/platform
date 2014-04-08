@@ -3,6 +3,8 @@
 <module>
     <inherits name='com.google.gwt.user.User'/>
     <inherits name="lsfusion.gwt.settings.BasicSettings"/>
+    
+    <stylesheet src="ui/WindowBox.css" />
 
     <!-- GIN configuration -->
     <inherits name="com.google.gwt.inject.Inject"/>

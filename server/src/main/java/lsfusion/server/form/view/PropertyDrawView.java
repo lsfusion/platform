@@ -43,7 +43,6 @@ public class PropertyDrawView extends ComponentView {
     public String regexpMessage;
     public Long maxValue;
     public boolean echoSymbols;
-    public String contentType;
 
     private int minimumCharWidth;
     private int maximumCharWidth;
@@ -169,7 +168,6 @@ public class PropertyDrawView extends ComponentView {
         pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
-        pool.writeString(outStream, contentType);
         outStream.writeInt(getMinimumCharWidth());
         outStream.writeInt(getMaximumCharWidth());
         outStream.writeInt(getPreferredCharWidth());
@@ -307,7 +305,6 @@ public class PropertyDrawView extends ComponentView {
         regexpMessage = pool.readString(inStream);
         maxValue = pool.readLong(inStream);
         echoSymbols = inStream.readBoolean();
-        contentType = pool.readString(inStream);
         setMinimumCharWidth(inStream.readInt());
         setMaximumCharWidth(inStream.readInt());
         setPreferredCharWidth(inStream.readInt());
