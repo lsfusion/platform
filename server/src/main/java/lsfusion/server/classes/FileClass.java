@@ -66,7 +66,7 @@ public abstract class FileClass extends DataClass<byte[]> {
 
     @Override
     public ExtInt getCharLength() {
-        throw new RuntimeException("not supported");
+        return ExtInt.UNLIMITED;
     }
 
     public byte[] parseString(String s) throws ParseException {

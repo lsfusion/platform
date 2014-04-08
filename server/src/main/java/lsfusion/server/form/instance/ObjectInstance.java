@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -48,7 +49,10 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public abstract ObjectValue getObjectValue();
     public DataObject getDataObject() {
-        return (DataObject)getObjectValue();
+        ObjectValue objectValue = getObjectValue();
+        if(!(objectValue instanceof DataObject))
+            ServerLoggers.assertLog(false, "OBJECT  " + toString() + " IS NULL");
+        return (DataObject) objectValue;
     }
 
     public static <K> ImMap<ObjectInstance, Expr> getObjectValueExprs(ImSet<ObjectInstance> objects) {

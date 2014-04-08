@@ -69,7 +69,7 @@ public class SystemClass extends DataClass<Integer> {
     }
 
     public ExtInt getCharLength() {
-        throw new RuntimeException("not supported yet");
+        return ExtInt.UNLIMITED;
     }
 
     public Integer parseString(String s) throws ParseException {

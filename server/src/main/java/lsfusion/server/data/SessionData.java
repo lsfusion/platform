@@ -7,6 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractValuesContext;
 import lsfusion.server.caches.InnerContext;
@@ -128,11 +129,12 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
             query = pullQuery.result;
         }
 
-        OperationOwner opOwner = env.getOpOwner();
+        final OperationOwner opOwner = env.getOpOwner();
 
         final IQuery<KeyField, PropertyField> insertQuery = query;
         SessionTable table = session.createTemporaryTable(keys.filterOrderIncl(query.getMapKeys().keys()), query.getProperties(), null, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException, SQLHandledException {
+                ServerLoggers.assertLog(session.getCount(name, opOwner)==0, "TEMPORARY TABLE SHOULD BE EMPTY");
                 return session.insertSessionSelect(name, insertQuery, env);
             }
         }, getQueryClasses(query), owner, opOwner);

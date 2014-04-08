@@ -67,7 +67,7 @@ public class SQLAspect {
             
             env.succeeded(state);
         } catch (SQLHandledException e) {
-            if(e instanceof SQLClosedException)
+            if(e instanceof SQLClosedException || e instanceof SQLTooLargeQueryException)
                 throw e;
             env.failed(state, e);
             if(session.lockIsInTransaction(owner)) // транзакция все равно прервана

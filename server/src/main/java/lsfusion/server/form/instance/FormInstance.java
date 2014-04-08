@@ -1339,8 +1339,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         if (closed)
             return result.immutable();
 
-        CustomClassListener classListener = getClassListener();
-        ServerLoggers.assertLog(classListener==null || !classListener.isClosed(), "NAVIGATOR CLOSED");
+        checkNavigatorClosed();
 
         QueryEnvironment queryEnv = getQueryEnv();
 
@@ -1377,6 +1376,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 //        result.out(this);
 
         return result.immutable();
+    }
+
+    private void checkNavigatorClosed() {
+        CustomClassListener classListener = getClassListener();
+        ServerLoggers.assertLog(classListener == null || !classListener.isClosed(), "NAVIGATOR CLOSED");
     }
 
     private ImMap<ShowIfReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> readShowIfs(Map<PropertyDrawInstance, Boolean> newIsShown, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowColumnGrids, ChangedData changedProps) throws SQLException, SQLHandledException {
@@ -1566,6 +1570,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     // считывает все данные с формы
     public FormData getFormData(ImSet<PropertyDrawInstance> propertyDraws, ImSet<GroupObjectInstance> classGroups, int orderTop) throws SQLException, SQLHandledException {
+
+        checkNavigatorClosed();
 
         applyFilters();
         applyOrders();

@@ -498,8 +498,8 @@ public class SQLSession extends MutableObject {
             try {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
             } catch (Throwable t) {
-                try { ServerLoggers.assertLog(getCount(table, opOwner) == 0, "TEMPORARY TABLE AFTER FILL NOT EMPTY"); } catch (Throwable i) { ServerLoggers.sqlSuppLog(i); }
-                returnTemporaryTable(table, owner, opOwner); // вернем таблицу, если не смогли ее заполнить
+                returnTemporaryTable(table, owner, opOwner, t instanceof SQLTimeoutException); // вернем таблицу, если не смогли ее заполнить
+                try { ServerLoggers.assertLog(problemInTransaction != null || getCount(table, opOwner) == 0, "TEMPORARY TABLE AFTER FILL NOT EMPTY"); } catch (Throwable i) { ServerLoggers.sqlSuppLog(i); }
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
             } finally {
                 if(isNew.result && isInTransaction()) { // пометим как transaction
@@ -531,29 +531,28 @@ public class SQLSession extends MutableObject {
         temporaryTablesLock.lock();
 
         try {
-            Result<Throwable> firstException = new Result<Throwable>();
-            runSuppressed(new SQLRunnable() {
-                public void run() throws SQLException {
-                    truncate(table.getName(syntax), opOwner);
-                }}, firstException);
-            if(firstException.result != null) {
-                runSuppressed(new SQLRunnable() {
-                    public void run() throws SQLException {
-                        privateConnection.temporary.removeTable(table.name);
-                    }}, firstException);
-            }
-            returnTemporaryTable(table.name, owner, opOwner, firstException);
+            returnTemporaryTable(table.name, owner, opOwner, true);
         } finally {
             temporaryTablesLock.unlock();
             unlockRead();
         }
     }
 
-    public void returnTemporaryTable(final String table, final Object owner, final OperationOwner opOwner) throws SQLException {
-        returnTemporaryTable(table, owner, opOwner, new Result<Throwable>());
-    }
-    
-    public void returnTemporaryTable(final String table, final Object owner, final OperationOwner opOwner, Result<Throwable> firstException) throws SQLException {
+    public void returnTemporaryTable(final String table, final Object owner, final OperationOwner opOwner, boolean truncate) throws SQLException {
+        Result<Throwable> firstException = new Result<Throwable>();
+        if(truncate) {
+            runSuppressed(new SQLRunnable() {
+                public void run() throws SQLException {
+                    truncate(syntax.getSessionTableName(table), opOwner);
+                }}, firstException);
+            if(firstException.result != null) {
+                runSuppressed(new SQLRunnable() {
+                    public void run() throws SQLException {
+                        privateConnection.temporary.removeTable(table);
+                    }}, firstException);
+            }
+        }
+
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
                 assert sessionTablesMap.containsKey(table);
@@ -1095,6 +1094,10 @@ public class SQLSession extends MutableObject {
 
     public boolean outStatement = false;
     
+    private static long getMemoryLimit() {
+        return Runtime.getRuntime().maxMemory() / Settings.get().getQueryRowCountOptDivider(); // 0.05
+    }
+    
     @Message("message.sql.execute")
     public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(@ParamMessage String select, OperationOwner owner, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, QueryExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders) throws SQLException, SQLHandledException {
         QueryExecuteInfo execInfo = lockQueryExec(queryExecEnv, transactTimeout, owner);
@@ -1139,8 +1142,26 @@ public class SQLSession extends MutableObject {
             long started = System.currentTimeMillis();
             final ResultSet result = statement.executeQuery();
             runTime = System.currentTimeMillis() - started;
+
+            long pessLimit = Settings.get().getQueryRowCountPessLimit();// пессимистичная оценка, чтобы отсекать совсем маленькие 
+            long adjLimit = 0;
+            long rowCount = 0;
+                                    
             try {
                 while(result.next()) {
+                    if(rowCount++ > pessLimit) {
+                        if(adjLimit == 0) {
+                            int rowSize = 0;
+                            for(Reader reader : keyReaders.valueIt())
+                                rowSize += reader.getCharLength().getAprValue();
+                            for(Reader reader : propertyReaders.valueIt())
+                                rowSize += reader.getCharLength().getAprValue();
+                            adjLimit = BaseUtils.max(getMemoryLimit() / rowSize, pessLimit);
+                        }
+                        if(rowCount > adjLimit)
+                            throw new SQLTooLargeQueryException();
+                    }
+                        
                     ImValueMap<K, Object> rowKeys = keyNames.mapItValues(); // потому как exception есть
                     for(int i=0,size=keyNames.size();i<size;i++)
                         rowKeys.mapValue(i, keyReaders.get(keyNames.getKey(i)).read(result, syntax, keyNames.getValue(i)));

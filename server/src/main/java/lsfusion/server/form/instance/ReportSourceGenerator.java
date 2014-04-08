@@ -335,7 +335,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 mQueryOrders.add(order, groupOrders.getValue(i));
             }
 
-            if (group.curClassView != ClassViewType.GRID) {
+            if (group.curClassView != ClassViewType.GRID || (groupId != null && !(groupId.equals(group.getID()) || property.getColumnGroupObjects().contains(group)))) {
                 for (ObjectInstance object : group.objects) {
                     query.and(object.getExpr(query.getMapExprs(), modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
                 }
@@ -361,7 +361,9 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return groups;
     }
 
-    // получает все группы, от которых зависит (не только непосредственно) свойство
+    // получает все группы, от которых зависит свойство
+    // включаются и дополнительные объекты, которые не используются (в частности fullFormHierarchy), но нужны чтобы найти ВСЕ разновидности групп в колонки
+    // это конечно "избыточно", но пока так 
     private ImOrderSet<GroupObjectInstance> getNeededGroupsForColumnProp(PropertyDrawInstance<?> property) {
         Set<GroupObjectInstance> initialGroups = getPropertyDependencies(property);
         MSet<GroupObjectInstance> groups = SetFact.mSet();

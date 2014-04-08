@@ -602,7 +602,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     public synchronized void close() throws RemoteException {
-        assert !closed;
+        ServerLoggers.assertLog(!closed, "NAVIGATOR ALREADY CLOSED");
         shutdown();
     }
 
@@ -641,6 +641,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
 
         super.unexportNow();
+
+        try {
+            sql.close(OperationOwner.unknown);
+        } catch (Throwable t) {
+            ServerLoggers.sqlSuppLog(t);
+        }
     }
 
     private synchronized void systemShutdown() {
@@ -652,11 +658,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     private synchronized void shutdown() {
         if(!closed) {
             closed = true;
-            navigatorManager.navigatorClosed(this);
             try {
-                sql.close(OperationOwner.unknown);
-            } catch (SQLException e) {
-                Throwables.propagate(e);
+                navigatorManager.navigatorClosed(this);
             } finally {
                 unexportLater();
             }

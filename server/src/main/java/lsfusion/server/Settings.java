@@ -916,7 +916,7 @@ public class Settings {
         this.queryLengthTimeout = queryLengthTimeout;
     }
     
-    private int timeoutDegree = 10; // cтепень с которой растить timeout
+    private int timeoutDegree = 5; // cтепень с которой растить timeout
 
     public int getTimeoutDegree() {
         return timeoutDegree;
@@ -964,5 +964,25 @@ public class Settings {
 
     public void setDisablePropertyReupdateCount(int disablePropertyReupdateCount) {
         this.disablePropertyReupdateCount = disablePropertyReupdateCount;
+    }
+
+    private int queryRowCountPessLimit = 1000; // пессимистичная оценка, чтобы отсекать совсем маленькие запросы
+
+    public int getQueryRowCountPessLimit() {
+        return queryRowCountPessLimit;
+    }
+
+    public void setQueryRowCountPessLimit(int queryRowCountPessLimit) {
+        this.queryRowCountPessLimit = queryRowCountPessLimit;
+    }
+
+    private int queryRowCountOptDivider = 100; // когда предполагаемый объем потребления памяти, превысит заданную часть, кидать exception
+
+    public int getQueryRowCountOptDivider() {
+        return queryRowCountOptDivider;
+    }
+
+    public void setQueryRowCountOptDivider(int queryRowCountOptDivider) {
+        this.queryRowCountOptDivider = queryRowCountOptDivider;
     }
 }
