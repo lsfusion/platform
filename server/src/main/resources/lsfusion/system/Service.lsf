@@ -53,6 +53,15 @@ dropLRU 'Очистить LRU' = ACTION CUSTOM 'lsfusion.server.logics.service.D
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
 
+nameReflectionSetting 'Имя настройки' = DATA SESSION VARSTRING[100] ();
+valueReflectionSetting 'Значение настройки' = DATA SESSION VARSTRING[100] ();
+
+readValueReflectionSetting = ACTION CUSTOM 'lsfusion.server.logics.service.ReadValueReflectionSettingActionProperty';
+saveValueReflectionSetting = ACTION CUSTOM 'lsfusion.server.logics.service.SaveValueReflectionSettingActionProperty';
+
+WHEN SESSION CHANGED(nameReflectionSetting()) DO readValueReflectionSetting(); 
+WHEN SESSION CHANGED(valueReflectionSetting()) DO saveValueReflectionSetting(); 
+
 FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
@@ -60,7 +69,8 @@ FORM admin 'Администрирование'
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, 
                  vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, dropLRU, toggleExplainAnalyzeMode, 
                  toggleExplainMode, toggleVolatileStats,
-                 toggleSQLLoggerDebugMode, toggleRemoteLoggerDebugMode, TILMode, reupdateMode, singleTransaction
+                 toggleSQLLoggerDebugMode, toggleRemoteLoggerDebugMode, TILMode, reupdateMode, singleTransaction,
+                 nameReflectionSetting, valueReflectionSetting SHOWIF nameReflectionSetting()
 ;
 
 DESIGN admin FROM DEFAULT {
@@ -123,6 +133,11 @@ DESIGN admin FROM DEFAULT {
             ADD PROPERTY(toggleSQLLoggerDebugMode());
             ADD PROPERTY(toggleRemoteLoggerDebugMode());
         }
+        NEW settings {
+            caption = 'Настройка свойств';
+            ADD PROPERTY(nameReflectionSetting());
+            ADD PROPERTY(valueReflectionSetting());
+        }        
     }
     ADD functions.box;
 }
