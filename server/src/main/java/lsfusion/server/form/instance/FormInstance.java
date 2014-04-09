@@ -858,28 +858,32 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return result.getValue(0).get("sum");
     }
 
+    private static String getSID(PropertyDrawInstance property, int index) {
+        return property.getID() + "_" + index;
+    }
+
     public Map<List<Object>, List<Object>> groupData(ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>> toGroup,
                                                      ImMap<Object, ImList<ImMap<ObjectInstance, DataObject>>> toSum,
                                                      ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>> toMax, boolean onlyNotNull) throws SQLException, SQLHandledException {
         GroupObjectInstance groupObject = toGroup.getKey(0).toDraw;
         ImRevMap<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
 
-        MRevMap<Object, KeyExpr> mKeyExprMap = MapFact.mRevMap();
-        MExclMap<Object, Expr> mExprMap = MapFact.mExclMap();
+        MRevMap<String, KeyExpr> mKeyExprMap = MapFact.mRevMap();
+        MExclMap<String, Expr> mExprMap = MapFact.mExclMap();
         for (PropertyDrawInstance property : toGroup.keyIt()) {
             int i = 0;
             for (ImMap<ObjectInstance, DataObject> columnKeys : toGroup.get(property)) {
                 i++;
                 ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
-                Integer propertyKey = property.getID() + i;
+                String propertyKey = getSID(property, i);
                 mKeyExprMap.revAdd(propertyKey, new KeyExpr("expr"));
                 mExprMap.exclAdd(propertyKey, property.getDrawInstance().getExpr(keys, getModifier()));
             }
         }
-        ImRevMap<Object, KeyExpr> keyExprMap = mKeyExprMap.immutableRev();
-        ImMap<Object, Expr> exprMap = mExprMap.immutable();
+        ImRevMap<String, KeyExpr> keyExprMap = mKeyExprMap.immutableRev();
+        ImMap<String, Expr> exprMap = mExprMap.immutable();
 
-        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keyExprMap);
+        QueryBuilder<String, String> query = new QueryBuilder<String, String>(keyExprMap);
         Expr exprQuant = GroupExpr.create(exprMap, new ValueExpr(1, IntegerClass.instance), groupObject.getWhere(mapKeys, getModifier()), GroupType.SUM, keyExprMap);
         query.and(exprQuant.getWhere());
 
@@ -914,7 +918,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 idIndex++;
                 ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
                 Expr expr = GroupExpr.create(exprMap, property.getDrawInstance().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), groupType, keyExprMap);
-                query.addProperty(property.getID() + idIndex, expr);
+                query.addProperty(getSID(property, idIndex), expr);
                 if (onlyNotNull) {
                     query.and(expr.getWhere());
                 }
@@ -922,17 +926,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(this);
+        ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = query.execute(this);
         for (int j = 0, size = result.size(); j < size; j++) {
-            ImMap<Object, Object> one = result.getKey(j);
-            ImMap<Object, Object> oneValue = result.getValue(j);
+            ImMap<String, Object> one = result.getKey(j);
+            ImMap<String, Object> oneValue = result.getValue(j);
 
             List<Object> groupList = new ArrayList<Object>();
             List<Object> sumList = new ArrayList<Object>();
 
             for (PropertyDrawInstance propertyDraw : toGroup.keyIt()) {
                 for (int i = 1; i <= toGroup.get(propertyDraw).size(); i++) {
-                    groupList.add(one.get(propertyDraw.getID() + i));
+                    groupList.add(one.get(getSID(propertyDraw,i)));
                 }
             }
             int index = 1;
@@ -940,7 +944,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 Object propertyDraw = toSum.getKey(k);
                 if (propertyDraw instanceof PropertyDrawInstance) {
                     for (int i = 1, sizeI = toSum.getValue(k).size(); i <= sizeI; i++) {
-                        sumList.add(oneValue.get(((PropertyDrawInstance) propertyDraw).getID() + index));
+                        sumList.add(oneValue.get(getSID(((PropertyDrawInstance) propertyDraw), index)));
                         index++;
                     }
                 } else
@@ -949,7 +953,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             for (int k = 0, sizeK = toMax.size(); k < sizeK; k++) {
                 PropertyDrawInstance propertyDraw = toMax.getKey(k);
                 for (int i = 1, sizeI = toMax.getValue(k).size(); i <= sizeI; i++) {
-                    sumList.add(oneValue.get(propertyDraw.getID() + index));
+                    sumList.add(oneValue.get(getSID(propertyDraw, index)));
                     index++;
                 }
             }
