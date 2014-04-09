@@ -1531,8 +1531,17 @@ public class SQLSession extends MutableObject {
     }
     public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env) throws SQLException, SQLHandledException {
 //        query.outSelect(this, env);
+        SQLExecute insertSelect = ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, syntax);
         try {
-            return executeDML(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, syntax));
+            if(insertSelect.command.contains("FROM base_0 t0 JOIN ZReport_sumNegativeMarkupGeneralLedger t1")) {
+                query.outSelect(this, env);
+            }
+        } catch (Throwable t) {
+            ServerLoggers.sqlSuppLog(t);
+        }            
+            
+        try {
+            return executeDML(insertSelect);
         } catch(Throwable t) {
             Result<Throwable> firstException = new Result<Throwable>();
             firstException.set(t);
