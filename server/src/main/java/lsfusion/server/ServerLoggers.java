@@ -55,5 +55,9 @@ public class ServerLoggers {
     public static void sqlSuppLog(Throwable t) {
         sqlLogger.error("SUPPRESSED : " + t.toString() + '\n' + ExceptionUtils.getStackTrace(t));
     }
+    
+    public static void handledLog(String message) {
+        sqlHandLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
+    }
 
 }

@@ -44,10 +44,10 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
             if(common.sql == connection) { // мог восстановиться кем-то другим
                 common.sql = newConnection();
                 assert common.temporary.isEmpty();
-                ServerLoggers.sqlHandLogger.info("RESTORED COMMON " + common.sql.isClosed());
+                ServerLoggers.handledLog("RESTORED COMMON " + common.sql.isClosed());
                 return !common.sql.isClosed();
             } else
-                ServerLoggers.sqlHandLogger.info("SOMEBODY RESTORED COMMON");
+                ServerLoggers.handledLog("SOMEBODY RESTORED COMMON " + common.sql + " CONNECTION " + connection + " " + common.sql.isClosed() + " " + connection.isClosed());
         }
 
         return true;

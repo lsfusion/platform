@@ -879,7 +879,7 @@ public class SQLSession extends MutableObject {
             handled = new SQLTimeoutException(isTransactTimeout);
         
         if(syntax.isConnectionClosed(e)) {
-            handled = new SQLClosedException(connection.sql);
+            handled = new SQLClosedException(connection.sql, e);
             problemInTransaction = Problem.CLOSED;
         }
 
