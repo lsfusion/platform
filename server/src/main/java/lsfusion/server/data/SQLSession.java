@@ -1146,12 +1146,12 @@ public class SQLSession extends MutableObject {
             long pessLimit = Settings.get().getQueryRowCountPessLimit();// пессимистичная оценка, чтобы отсекать совсем маленькие 
             long adjLimit = 0;
             long rowCount = 0;
+            int rowSize = 0;
                                     
             try {
                 while(result.next()) {
                     if(rowCount++ > pessLimit) {
                         if(adjLimit == 0) {
-                            int rowSize = 0;
                             for(Reader reader : keyReaders.valueIt())
                                 rowSize += reader.getCharLength().getAprValue();
                             for(Reader reader : propertyReaders.valueIt())
@@ -1159,7 +1159,7 @@ public class SQLSession extends MutableObject {
                             adjLimit = BaseUtils.max(getMemoryLimit() / rowSize, pessLimit);
                         }
                         if(rowCount > adjLimit)
-                            throw new SQLTooLargeQueryException();
+                            throw new SQLTooLargeQueryException(rowCount, rowSize);
                     }
                         
                     ImValueMap<K, Object> rowKeys = keyNames.mapItValues(); // потому как exception есть
