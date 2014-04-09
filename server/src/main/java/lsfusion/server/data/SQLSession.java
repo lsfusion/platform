@@ -1533,7 +1533,7 @@ public class SQLSession extends MutableObject {
 //        query.outSelect(this, env);
         SQLExecute insertSelect = ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, syntax);
         try {
-            if(insertSelect.command.contains("FROM base_0 t0 JOIN ZReport_sumNegativeMarkupGeneralLedger t1")) {
+            if(Settings.get().isEnableHacks() && insertSelect.command.contains("FROM base_0 t0 JOIN ZReport_sumNegativeMarkupGeneralLedger t1")) {
                 query.outSelect(this, env);
             }
         } catch (Throwable t) {

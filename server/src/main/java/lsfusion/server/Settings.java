@@ -985,4 +985,14 @@ public class Settings {
     public void setQueryRowCountOptDivider(int queryRowCountOptDivider) {
         this.queryRowCountOptDivider = queryRowCountOptDivider;
     }
+    
+    private boolean enableHacks = true;
+
+    public boolean isEnableHacks() {
+        return enableHacks;
+    }
+
+    public void setEnableHacks(boolean enableHacks) {
+        this.enableHacks = enableHacks;
+    }
 }
