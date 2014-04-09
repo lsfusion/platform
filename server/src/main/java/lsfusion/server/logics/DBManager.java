@@ -1160,8 +1160,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, OperationOwner.unknown);
             }
 
-            systemLogger.info("Updating class stats");
+            if (oldDBStructure.version < 14) {
+                systemLogger.info("Recalculate class stats");
+                DataSession session = createSession(OperationOwner.unknown);
+                businessLogics.recalculateClassStat(session);
+                session.apply(businessLogics);
+            }
 
+            systemLogger.info("Updating class stats");
             updateClassStat(sql);
 
             systemLogger.info("Recalculating aggregations");
@@ -1202,8 +1208,32 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         session.close();
     }
 
-    private void updateClassStat(SQLSession session) throws SQLException, SQLHandledException {
-        LM.baseClass.updateClassStat(session);
+    private void updateClassStat(SQLSession session) throws SQLException, SQLHandledException {        
+
+        Map<Integer, Integer> customObjectClassMap = new HashMap<Integer, Integer>();
+
+        KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
+        ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object)"innerInvoice", customObjectClassExpr);
+
+        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
+        query.addProperty("statCustomObjectClass", LM.statCustomObjectClass.getExpr(customObjectClassExpr));
+        query.and(LM.statCustomObjectClass.getExpr(customObjectClassExpr).getWhere());
+
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session, OperationOwner.unknown);
+
+        for (int i=0,size=result.size();i<size;i++) {
+            Integer statCustomObjectClass = (Integer) result.getValue(i).get("statCustomObjectClass");
+            Integer id = (Integer) result.getKey(i).getValue(0);
+            if(id != null && statCustomObjectClass != null)
+                customObjectClassMap.put(id, statCustomObjectClass);
+        }
+
+        for(CustomClass customClass : LM.baseClass.getAllClasses()) {
+            if(customClass instanceof ConcreteCustomClass) {
+                Integer stat = customObjectClassMap.get(customClass.ID);
+                ((ConcreteCustomClass) customClass).stat = stat == null ? 1 : stat;
+            }
+        }
     }
 
     public String checkAggregations(SQLSession session) throws SQLException, SQLHandledException {
@@ -1687,7 +1717,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         public Set<DBConcreteClass> concreteClasses = new HashSet<DBConcreteClass>();
 
         public DBStructure(DBVersion dbVersion) {
-            version = 13;
+            version = 14;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {

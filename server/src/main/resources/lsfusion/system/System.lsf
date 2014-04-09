@@ -12,6 +12,8 @@ CLASS NATIVE Object;
 CLASS NATIVE CustomObjectClass;
 objectClass = NATIVE CustomObjectClass (Object); 
 
+statCustomObjectClass 'Статистика' = DATA INTEGER (CustomObjectClass);
+
 GROUP root 'Корневая группа';
 GROUP public 'Пользовательские свойства' : root;
 GROUP private 'Внутренние свойства' : root;

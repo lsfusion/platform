@@ -1,16 +1,8 @@
 package lsfusion.server.classes;
 
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.Table;
-import lsfusion.server.data.expr.*;
-import lsfusion.server.logics.table.ImplementTable;
-import org.apache.log4j.Logger;
 import lsfusion.base.Pair;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
@@ -19,10 +11,14 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.expr.query.GroupExpr;
-import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.Table;
+import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.IsClassExpr;
+import lsfusion.server.data.expr.IsClassType;
+import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
@@ -31,7 +27,9 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassField;
 import lsfusion.server.logics.property.ObjectClassProperty;
 import lsfusion.server.logics.property.actions.ChangeClassValueActionProperty;
+import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
+import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -141,27 +139,6 @@ public class BaseClass extends AbstractCustomClass {
         for (Map.Entry<DataObject, String> modifiedName : modifiedNames.entrySet()) {
             systemLogger.info("renaming class with id " + modifiedName.getKey() + " to " + modifiedName.getValue());
             staticCaption.change(modifiedName.getValue(), session, modifiedName.getKey());
-        }
-    }
-
-    public void updateClassStat(SQLSession session) throws SQLException, SQLHandledException {
-        for(ObjectValueClassSet tableClasses : getUpTables().valueIt()) {
-            QueryBuilder<Integer, Integer> classes = new QueryBuilder<Integer, Integer>(SetFact.singleton(0));
-
-            KeyExpr countKeyExpr = new KeyExpr("count");
-            Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(this)),
-                    new ValueExpr(1, IntegerClass.instance), countKeyExpr.isClass(tableClasses), GroupType.SUM, classes.getMapExprs());
-
-            classes.addProperty(0, countExpr);
-            classes.and(countExpr.getWhere());//classes.getMapExprs().get(0).isClass(objectClass));
-
-            ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session, OperationOwner.unknown);
-            ImSet<ConcreteCustomClass> concreteChilds = tableClasses.getSetConcreteChildren();
-            for(int i=0,size=concreteChilds.size();i<size;i++) {
-                ConcreteCustomClass customClass = concreteChilds.get(i);
-                ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, (Object) customClass.ID));
-                customClass.stat = classStat==null ? 1 : (Integer)classStat.singleValue();
-            }
         }
     }
 

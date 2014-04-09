@@ -117,6 +117,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP objectClassName;
     public LCP staticName;
     public LCP staticCaption;
+    public LCP statCustomObjectClass; 
 
     private LCP addedObject;
     private LCP confirmed;
@@ -330,6 +331,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         ((CalcProperty)staticCaption.property).aggProp = true;
 
         objectClassName = getLCPByOldName("objectClassName");
+        statCustomObjectClass = getLCPByOldName("statCustomObjectClass");
         
         // Настройка отчетов
         reportRowHeight = getLCPByOldName("reportRowHeight");

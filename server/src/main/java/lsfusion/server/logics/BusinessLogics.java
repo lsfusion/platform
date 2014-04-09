@@ -28,7 +28,11 @@ import lsfusion.server.daemons.ScannerDaemonTask;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.query.GroupExpr;
+import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.FormEntity;
@@ -1218,6 +1222,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void recalculateStats(DataSession session) throws SQLException, SQLHandledException {
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
             dataTable.calculateStat(this.reflectionLM, session);
+        }
+        recalculateClassStat(session);
+    }
+
+    public void recalculateClassStat(DataSession session) throws SQLException, SQLHandledException {
+        for(ObjectValueClassSet tableClasses : LM.baseClass.getUpTables().valueIt()) {
+            QueryBuilder<Integer, Integer> classes = new QueryBuilder<Integer, Integer>(SetFact.singleton(0));
+
+            KeyExpr countKeyExpr = new KeyExpr("count");
+            Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(LM.baseClass)),
+                    new ValueExpr(1, IntegerClass.instance), countKeyExpr.isClass(tableClasses), GroupType.SUM, classes.getMapExprs());
+
+            classes.addProperty(0, countExpr);
+            classes.and(countExpr.getWhere());
+
+            ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
+            ImSet<ConcreteCustomClass> concreteChilds = tableClasses.getSetConcreteChildren();
+            for(int i=0,size=concreteChilds.size();i<size;i++) {
+                ConcreteCustomClass customClass = concreteChilds.get(i);
+                ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, (Object) customClass.ID));
+                LM.statCustomObjectClass.change(classStat==null ? 1 : (Integer)classStat.singleValue(), session, customClass.getClassObject());
+            }
         }
     }
 
