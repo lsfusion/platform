@@ -643,6 +643,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         super.unexportNow();
 
         try {
+            ThreadLocalContext.set(context);
             sql.close(OperationOwner.unknown);
         } catch (Throwable t) {
             ServerLoggers.sqlSuppLog(t);
