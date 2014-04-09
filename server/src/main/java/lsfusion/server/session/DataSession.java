@@ -200,8 +200,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         private void rollback() throws SQLException {
-            assert sessionEventChangedOld.isEmpty(); // в транзакции никаких сессионных event'ов быть не может
-            assert applyModifier.getHintProps().isEmpty(); // равно как и хинт'ов
+            ServerLoggers.assertLog(sessionEventChangedOld.isEmpty(), "SESSION EVENTS NOT EMPTY"); // в транзакции никаких сессионных event'ов быть не может
+            ServerLoggers.assertLog(applyModifier.getHintProps().isEmpty(), "APPLY HINTS NOT EMPTY"); // равно как и хинт'ов
 
             dropTables(SetFact.<SessionDataProperty>EMPTY()); // старые вернем, таблицу удалятся (но если нужны будут, rollback откатит эти изменения)
 
