@@ -994,8 +994,6 @@ public class SQLSession extends MutableObject {
     }
 
     private void afterExStatementExecute(Result<Throwable> firstException, final String command, final OperationOwner owner, final ExecuteEnvironment env, final QueryExecuteEnvironment queryExecEnv, final QueryExecuteInfo execInfo, final ExConnection connection, final long runTime, final Result<ReturnStatement> returnStatement, final PreparedStatement statement) {
-        unlockTimeout(execInfo.needTimeoutLock());
-        
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
                 env.after(SQLSession.this, connection, command, owner);
@@ -1006,6 +1004,8 @@ public class SQLSession extends MutableObject {
                 if(statement!=null)
                     returnStatement.result.proceed(statement, runTime);
             }}, firstException);
+
+        unlockTimeout(execInfo.needTimeoutLock());
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
