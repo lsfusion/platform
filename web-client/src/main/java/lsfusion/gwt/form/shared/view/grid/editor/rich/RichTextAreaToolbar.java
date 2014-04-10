@@ -214,61 +214,61 @@ public class RichTextAreaToolbar extends Composite {
 
 
     public interface Images extends ClientBundle {
-        @Source("images\\redo.png")
+        @Source("images/redo.png")
         ImageResource redo();
 
-        @Source("images\\undo.png")
+        @Source("images/undo.png")
         ImageResource undo();
 
-        @Source("images\\bold.png")
+        @Source("images/bold.png")
         ImageResource bold();
 
-        @Source("images\\italic.png")
+        @Source("images/italic.png")
         ImageResource italic();
 
-        @Source("images\\underline.png")
+        @Source("images/underline.png")
         ImageResource underline();
 
-        @Source("images\\strike.png")
+        @Source("images/strike.png")
         ImageResource strike();
 
-        @Source("images\\subscript.png")
+        @Source("images/subscript.png")
         ImageResource subscript();
 
-        @Source("images\\superscript.png")
+        @Source("images/superscript.png")
         ImageResource superscript();
 
-        @Source("images\\removeFormat.png")
+        @Source("images/removeFormat.png")
         ImageResource removeFormat();
 
-        @Source("images\\alignLeft.png")
+        @Source("images/alignLeft.png")
         ImageResource alignLeft();
 
-        @Source("images\\alignCenter.png")
+        @Source("images/alignCenter.png")
         ImageResource alignCenter();
 
-        @Source("images\\alignRight.png")
+        @Source("images/alignRight.png")
         ImageResource alignRight();
 
-        @Source("images\\alignJustify.png")
+        @Source("images/alignJustify.png")
         ImageResource alignJustify();
 
-        @Source("images\\orderedList.png")
+        @Source("images/orderedList.png")
         ImageResource orderedList();
 
-        @Source("images\\unorderedList.png")
+        @Source("images/unorderedList.png")
         ImageResource unorderedList();
 
-        @Source("images\\createLink.png")
+        @Source("images/createLink.png")
         ImageResource createLink();
 
-        @Source("images\\removeLink.png")
+        @Source("images/removeLink.png")
         ImageResource removeLink();
 
-        @Source("images\\hr.png")
+        @Source("images/hr.png")
         ImageResource hr();
 
-        @Source("images\\image.png")
+        @Source("images/image.png")
         ImageResource image();
     }
 
