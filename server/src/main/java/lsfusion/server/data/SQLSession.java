@@ -1544,6 +1544,8 @@ public class SQLSession extends MutableObject {
                 query.outSelect(this, env);
             }
         } catch (Throwable t) {
+            if(isInTransaction() && t instanceof SQLHandledException)
+                throw (SQLHandledException)t;
             ServerLoggers.sqlSuppLog(t);
         }            
             
