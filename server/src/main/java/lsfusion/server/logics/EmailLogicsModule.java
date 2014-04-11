@@ -37,9 +37,10 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LCP nameEncryptedConnectionTypeAccount;
     public LCP smtpHostAccount;
     public LCP smtpPortAccount;
-    public LCP pop3HostAccount;
+    public LCP receiveHostAccount;
     public LCP nameAccount;
     public LCP passwordAccount;
+    public LCP nameReceiveAccountTypeAccount;
     public LCP deleteMessagesAccount;
     public LCP blindCarbonCopyAccount;
     public LCP fromAddressAccount;
@@ -80,10 +81,11 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
         smtpHostAccount = getLCPByOldName("smtpHostAccount");
         smtpPortAccount = getLCPByOldName("smtpPortAccount");
-        pop3HostAccount = getLCPByOldName("pop3HostAccount");
+        receiveHostAccount = getLCPByOldName("receiveHostAccount");
 
         nameAccount = getLCPByOldName("nameAccount");
         passwordAccount = getLCPByOldName("passwordAccount");
+        nameReceiveAccountTypeAccount = getLCPByOldName("nameReceiveAccountTypeAccount");
         deleteMessagesAccount = getLCPByOldName("deleteMessagesAccount");
         blindCarbonCopyAccount = getLCPByOldName("blindCarbonCopyAccount");
 

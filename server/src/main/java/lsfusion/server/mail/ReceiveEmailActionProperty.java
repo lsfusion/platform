@@ -48,13 +48,15 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
                 return;
             }
 
-            String pop3HostAccount = (String) emailLM.pop3HostAccount.read(context, accountObject);
+            String receiveHostAccount = (String) emailLM.receiveHostAccount.read(context, accountObject);
             String nameAccount = (String) emailLM.nameAccount.read(context, accountObject);
             String passwordAccount = (String) emailLM.passwordAccount.read(context, accountObject);
+            String nameReceiveAccountTypeAccount = (String) emailLM.nameReceiveAccountTypeAccount.read(context, accountObject);
+            boolean isPop3Account = nameReceiveAccountTypeAccount == null || nullTrim(nameReceiveAccountTypeAccount).equals("POP3");
             boolean deleteMessagesAccount = emailLM.deleteMessagesAccount.read(context, accountObject) != null;
 
-            receiveEmail(context, (DataObject) accountObject, pop3HostAccount, nameAccount, passwordAccount,
-                    deleteMessagesAccount);
+            receiveEmail(context, (DataObject) accountObject, receiveHostAccount, nameAccount, passwordAccount,
+                    isPop3Account, deleteMessagesAccount);
 
         } catch (Exception e) {
             logError(context, getString("mail.failed.to.receive.mail") + " : " + e.toString());
@@ -62,15 +64,16 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void receiveEmail(ExecutionContext context, DataObject accountObject, String pop3HostAccount,
-                              String nameAccount, String passwordAccount, boolean deleteMessagesAccount) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
-        if (pop3HostAccount == null) {
+    private void receiveEmail(ExecutionContext context, DataObject accountObject, String receiveHostAccount,
+                              String nameAccount, String passwordAccount, boolean isPop3, boolean deleteMessagesAccount) 
+            throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+        if (receiveHostAccount == null) {
             logError(context, getString("mail.pop3.host.not.specified.letters.will.not.be.received"));
             return;
         }
 
-        EmailReceiver receiver = new EmailReceiver(emailLM, accountObject, nullTrim(pop3HostAccount),
-                nullTrim(nameAccount), nullTrim(passwordAccount), deleteMessagesAccount);
+        EmailReceiver receiver = new EmailReceiver(emailLM, accountObject, nullTrim(receiveHostAccount),
+                nullTrim(nameAccount), nullTrim(passwordAccount), isPop3, deleteMessagesAccount);
 
         receiver.receiveEmail(context);
     }

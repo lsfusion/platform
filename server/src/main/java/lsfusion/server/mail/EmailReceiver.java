@@ -1,7 +1,6 @@
 package lsfusion.server.mail;
 
 
-import com.sun.mail.pop3.POP3Store;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.ServerLoggers;
@@ -31,15 +30,17 @@ public class EmailReceiver {
     DataObject accountObject;
     String nameAccount;
     String passwordAccount;
+    boolean isPOP3;
     boolean deleteMessagesAccount;
 
-    public EmailReceiver(EmailLogicsModule emailLM, DataObject accountObject, String pop3HostAccount,
-                         String nameAccount, String passwordAccount, boolean deleteMessagesAccount) {
-        mailProps.setProperty("mail.pop3.host", pop3HostAccount);
+    public EmailReceiver(EmailLogicsModule emailLM, DataObject accountObject, String hostAccount, 
+                         String nameAccount, String passwordAccount, boolean isPOP3, boolean deleteMessagesAccount) {
+            mailProps.setProperty(isPOP3 ? "mail.pop3.host" : "mail.imap.host", hostAccount);
         this.LM = emailLM;
         this.accountObject = accountObject;
         this.nameAccount = nameAccount;
         this.passwordAccount = passwordAccount;
+        this.isPOP3 = isPOP3;
         this.deleteMessagesAccount = deleteMessagesAccount;
     }
 
@@ -158,7 +159,7 @@ public class EmailReceiver {
         List<List<Object>> dataAttachments = new ArrayList<List<Object>>();
         Session emailSession = Session.getDefaultInstance(mailProps);
 
-        POP3Store emailStore = (POP3Store) emailSession.getStore("pop3");
+        Store emailStore = emailSession.getStore(isPOP3 ? "pop3" : "imap");
         emailStore.connect(nameAccount, passwordAccount);
 
         Folder emailFolder = emailStore.getFolder("INBOX");
