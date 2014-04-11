@@ -37,10 +37,7 @@ import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.window.*;
-import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.ScriptParsingException;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -80,6 +77,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.logics.PropertyUtils.*;
+import static lsfusion.server.logics.NamespaceElementFinder.FoundItem;
 import static lsfusion.server.logics.scripted.AlignmentUtils.*;
 import static lsfusion.server.logics.scripted.ScriptingFormEntity.getPropertyDraw;
 
@@ -3092,42 +3090,26 @@ public class ScriptingLogicsModule extends LogicsModule {
     public class CompoundNameResolver<T, P> {
         private ModuleFinder<T, P> finder;
 
-        public class FoundItem {
-            public T value;
-            public LogicsModule module;
-            
-            public FoundItem(T value, LogicsModule module) {
-                this.value = value;
-                this.module = module;
-            }
-        }
-        
         public CompoundNameResolver(ModuleFinder<T, P> finder) {
             this.finder = finder;
         }
 
-        protected List<FoundItem> findInNamespace(String namespaceName, String name, P param) throws ScriptingErrorLog.SemanticErrorException {
-            List<FoundItem> result = new ArrayList<FoundItem>();
-            for (LogicsModule module : namespaceToModules.get(namespaceName)) {
-                List<T> moduleResult = finder.resolveInModule(module, name, param);
-                for (T element : moduleResult) {
-                    result.add(new FoundItem(element, module));
-                }
-            }
-            return finalizeNamespaceResult(result, name, param);
+        protected List<FoundItem<T>> findInNamespace(String namespaceName, String name, P param) throws ScriptingErrorLog.SemanticErrorException {
+            NamespaceElementFinder<T, P> nsFinder = new NamespaceElementFinder<T, P>(finder, namespaceToModules.get(namespaceName));
+            return finalizeNamespaceResult(nsFinder.findInNamespace(namespaceName, name, param), name, param);
         }
 
-        protected List<FoundItem> finalizeNamespaceResult(List<FoundItem> result, String name, P param) throws ScriptingErrorLog.SemanticErrorException {
-            FoundItem finalRes = finalizeResult(result, name, param);
-            return finalRes.value == null ? new ArrayList<FoundItem>() : Collections.singletonList(finalRes); 
+        protected List<FoundItem<T>> finalizeNamespaceResult(List<FoundItem<T>> result, String name, P param) throws ScriptingErrorLog.SemanticErrorException {
+            FoundItem<T> finalRes = finalizeResult(result, name, param);
+            return finalRes.value == null ? new ArrayList<FoundItem<T>>() : Collections.singletonList(finalRes); 
         } 
         
         // реализация по умолчанию, предполагающая, что не может быть более одного подходящего объекта
-        protected FoundItem finalizeResult(List<FoundItem> result, String name, P param) throws ScriptingErrorLog.SemanticErrorException {
-            if (result.isEmpty()) return new FoundItem(null, null);
+        protected FoundItem<T> finalizeResult(List<FoundItem<T>> result, String name, P param) throws ScriptingErrorLog.SemanticErrorException {
+            if (result.isEmpty()) return new FoundItem<T>(null, null);
             if (result.size() > 1) {
                 List<LogicsModule> resModules = new ArrayList<LogicsModule>();
-                for (FoundItem item : result) {
+                for (FoundItem<T> item : result) {
                     resModules.add(item.module);
                 }
                 errLog.emitAmbiguousNameError(parser, resModules, name);    
@@ -3137,20 +3119,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         private T findInRequiredModules(String name, P param, List<String> namespaces) throws ScriptingErrorLog.SemanticErrorException {
             for (String namespaceName : namespaces) {
-                List<FoundItem> result = findInNamespace(namespaceName, name, param);
+                List<FoundItem<T>> result = findInNamespace(namespaceName, name, param);
                 if (!result.isEmpty()) {
                     return finalizeResult(result, name, param).value;
                 }
             }
 
             Set<String> checkedNamespaces = new HashSet<String>(namespaces);
-            List<FoundItem> resultList = new ArrayList<FoundItem>();
+            List<FoundItem<T>> resultList = new ArrayList<FoundItem<T>>();
             for (Map.Entry<String, List<LogicsModule>> e : namespaceToModules.entrySet()) {
                 if (!checkedNamespaces.contains(e.getKey())) {
                     for (LogicsModule module : e.getValue()) {
                         List<T> moduleResult = finder.resolveInModule(module, name, param);
                         for (T obj : moduleResult) {
-                            resultList.add(new FoundItem(obj, module));
+                            resultList.add(new FoundItem<T>(obj, module));
                         }
                     }
                 }
@@ -3168,7 +3150,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (dotPosition > 0) {
                 String namespaceName = name.substring(0, dotPosition);
                 checkNamespace(namespaceName);
-                List<FoundItem> foundItems = findInNamespace(namespaceName, name.substring(dotPosition + 1), param);
+                List<FoundItem<T>> foundItems = findInNamespace(namespaceName, name.substring(dotPosition + 1), param);
                 return finalizeResult(foundItems, name, param).value;
             } else {
                 List<String> namespaces = new ArrayList<String>();
@@ -3186,9 +3168,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         @Override
-        protected List<FoundItem> finalizeNamespaceResult(List<FoundItem> result, String name, List<AndClassSet> param) throws ScriptingErrorLog.SemanticErrorException {
-            List<FoundItem> nsResult = new ArrayList<FoundItem>();
-            for (FoundItem item : result) {
+        protected List<FoundItem<LP<?, ?>>> finalizeNamespaceResult(List<FoundItem<LP<?, ?>>> result, String name, List<AndClassSet> param) throws ScriptingErrorLog.SemanticErrorException {
+            List<FoundItem<LP<?, ?>>> nsResult = new ArrayList<FoundItem<LP<?, ?>>>();
+            for (FoundItem<LP<?, ?>> item : result) {
                 if (match(item.module.getParamClasses(item.value), param, false)) {
                     nsResult.add(item);    
                 }
@@ -3201,13 +3183,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
 
         @Override
-        protected FoundItem finalizeResult(List<FoundItem> result, String name, List<AndClassSet> param) throws ScriptingErrorLog.SemanticErrorException {
+        protected FoundItem<LP<?, ?>> finalizeResult(List<FoundItem<LP<?, ?>>> result, String name, List<AndClassSet> param) throws ScriptingErrorLog.SemanticErrorException {
             List<LogicsModule> errorModules = new ArrayList<LogicsModule>();
-            FoundItem finalItem = new FoundItem(null, null);
+            FoundItem<LP<?, ?>> finalItem = new FoundItem<LP<?, ?>>(null, null);
 
-            List<FoundItem> directResults = new ArrayList<FoundItem>();
-            List<FoundItem> indirectResults = new ArrayList<FoundItem>();
-            for (FoundItem item : result) {
+            List<FoundItem<LP<?, ?>>> directResults = new ArrayList<FoundItem<LP<?, ?>>>();
+            List<FoundItem<LP<?, ?>>> indirectResults = new ArrayList<FoundItem<LP<?, ?>>>();
+            for (FoundItem<LP<?, ?>> item : result) {
                 if (match(item.module.getParamClasses(item.value), param, false)) {
                     directResults.add(item);
                 } else {
@@ -3216,26 +3198,18 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             
             if (!directResults.isEmpty()) {
-                int cnt = directResults.size();
-                for (int i = 0; i < cnt; i++) {
-                    LP<?, ?> iProp = result.get(i).value;
-                    List<AndClassSet> iParams = result.get(i).module.propClasses.get(iProp);
-                    boolean foundMoreSpecialized = false; 
-                    for (int j = 0; j < cnt; j++) {
-                        LP<?, ?> jProp = result.get(j).value;
-                        if (i != j && match(iParams, result.get(j).module.propClasses.get(jProp), false)) {
-                            foundMoreSpecialized = true;
-                            break;
-                        }
+                List<FoundItem<LP<?, ?>>> filteredDirectResults = NamespacePropertyFinder.filterFoundProperties(directResults);
+                if (filteredDirectResults.size() > 1) {
+                    for (FoundItem<LP<?, ?>> item : filteredDirectResults) {
+                        errorModules.add(item.module);
                     }
-                    if (!foundMoreSpecialized) {
-                        errorModules.add(result.get(i).module);
-                        finalItem = result.get(i);
-                    }
+                } else if (filteredDirectResults.size() == 1) {
+                    finalItem = filteredDirectResults.get(0);
                 }
+                
             } else {
                 if (indirectResults.size() > 1) {
-                    for (FoundItem item : indirectResults) {
+                    for (FoundItem<LP<?, ?>> item : indirectResults) {
                         errorModules.add(item.module);
                     }
                 } else if (indirectResults.size() == 1) {
