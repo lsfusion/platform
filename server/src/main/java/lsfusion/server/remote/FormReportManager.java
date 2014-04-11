@@ -3,6 +3,7 @@ package lsfusion.server.remote;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceList;
+import lsfusion.base.Result;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.ReportGenerationData;
@@ -58,7 +59,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
                 }
             }
             try {
-                ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel);
+                ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel, null);
                 Map<String, JasperDesign> designs = generator.generate();
                 String reportName;
                 for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
@@ -89,10 +90,11 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         GroupObjectHierarchy.ReportHierarchy fullReportHierarchy = getReportHierarchy(null);
 
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(groupReportHierarchy.getReportHierarchyMap());
-        byte[] reportDesignsByteArray = getReportDesignsByteArray(toExcel, groupId, userPreferences);
+        Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects = new Result<Map<String, LinkedHashSet<List<Object>>>>();
         byte[] reportSourcesByteArray = getReportSourcesByteArray(
                 new ReportSourceGenerator<T>(form, groupReportHierarchy, fullReportHierarchy, getGridGroups(groupId), groupId, userPreferences)
-        );
+        , columnGroupObjects);
+        byte[] reportDesignsByteArray = getReportDesignsByteArray(toExcel, groupId, userPreferences, columnGroupObjects.result);
 
         return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray);
     }
@@ -127,11 +129,11 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         }
     }
 
-    private byte[] getReportDesignsByteArray(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) {
+    private byte[] getReportDesignsByteArray(boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             ObjectOutputStream objOut = new ObjectOutputStream(outStream);
-            Map<String, JasperDesign> res = getReportDesigns(toExcel, groupId, userPreferences);
+            Map<String, JasperDesign> res = getReportDesigns(toExcel, groupId, userPreferences, columnGroupObjects);
             objOut.writeObject(res);
             return outStream.toByteArray();
         } catch (IOException e) {
@@ -180,7 +182,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         }
     }
 
-    private Map<String, JasperDesign> getReportDesigns(boolean toExcel, Integer groupId, FormUserPreferences userPreferences) {
+    private Map<String, JasperDesign> getReportDesigns(boolean toExcel, Integer groupId, FormUserPreferences userPreferences, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) {
         String sid = getDefaultReportSID(toExcel, groupId);
         Map<String, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, groupId);
         if (customDesigns != null) {
@@ -194,7 +196,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             }
         }
         try {
-            ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel);
+            ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel, columnGroupObjects);
             Map<String, JasperDesign> designs = generator.generate();
             for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
                 String id = entry.getKey();
@@ -257,10 +259,11 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         }
     }
 
-    private byte[] getReportSourcesByteArray(ReportSourceGenerator<T> sourceGenerator) {
+    private byte[] getReportSourcesByteArray(ReportSourceGenerator<T> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects) {
         try {
             Map<String, ReportData> sources = sourceGenerator.generate();
             ReportSourceGenerator.ColumnGroupCaptionsData columnGroupCaptions = sourceGenerator.getColumnGroupCaptions();
+            columnGroupObjects.set(columnGroupCaptions.columnData);
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
 

@@ -4,10 +4,12 @@ import java.sql.SQLException;
 
 public class SQLTooLargeQueryException extends SQLHandledException {
 
+    private final long rowCount;
     private final long limit;
     private final long rowSize;
 
-    public SQLTooLargeQueryException(long limit, long rowSize) {
+    public SQLTooLargeQueryException(long rowCount, long limit, long rowSize) {
+        this.rowCount = rowCount;
         this.limit = limit;
         this.rowSize = rowSize;
     }
@@ -17,6 +19,6 @@ public class SQLTooLargeQueryException extends SQLHandledException {
     }
 
     public String toString() {
-        return "TOO LARGE QUERY LIMIT :" + limit + ", ROWSIZE :" + rowSize;
+        return "TOO LARGE QUERY ROWS " + rowCount + ", LIMIT :" + limit + ", ROWSIZE :" + rowSize;
     }
 }

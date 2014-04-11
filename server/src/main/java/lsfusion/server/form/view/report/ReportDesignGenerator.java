@@ -48,6 +48,8 @@ public class ReportDesignGenerator {
     private FormUserPreferences userPreferences;
     private boolean toExcel;
 
+    private Map<String, LinkedHashSet<List<Object>>> columnGroupObjects;
+            
     private static final int defaultPageWidth = 842;  //
     private static final int defaultPageHeight = 595; // эти константы есть в JasperReports Ultimate Guide
 
@@ -63,12 +65,14 @@ public class ReportDesignGenerator {
     
     private Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
 
-    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId, FormUserPreferences userPreferences, boolean toExcel) {
+    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId, FormUserPreferences userPreferences, boolean toExcel, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) {
         this.formView = formView;
         this.hierarchy = hierarchy;
         this.hiddenGroupsId = hiddenGroupsId;
         this.userPreferences = userPreferences;
         this.toExcel = toExcel;
+        
+        this.columnGroupObjects = columnGroupObjects;
 
         pageWidth = calculatePageWidth(toExcel);
         pageUsableWidth = pageWidth - defaultPageMargin * 2;
@@ -177,7 +181,12 @@ public class ReportDesignGenerator {
             boolean hidden = prop.second != null && prop.second.userHide != null && prop.second.userHide;
             
             if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup) && !hidden) {
-                ReportDrawField reportField = prop.first.getReportDrawField(charWidth);
+                int scale = 1;
+                LinkedHashSet<List<Object>> objects;
+                if(columnGroupObjects != null && (objects = columnGroupObjects.get(prop.first.getSID())) != null) // на не null на всякий случай проверка
+                    scale = objects.size();
+                
+                ReportDrawField reportField = prop.first.getReportDrawField(charWidth, scale);
                 if (reportField != null && (backgroundProp == null || backgroundProp.property != prop.first.entity.propertyObject.property)) {
                     Integer widthUser = prop.second == null ? null : prop.second.userWidth;
                     if (widthUser != null) {

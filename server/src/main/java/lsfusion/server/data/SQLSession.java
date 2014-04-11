@@ -89,13 +89,16 @@ public class SQLSession extends MutableObject {
 
     public ExConnection getConnection() throws SQLException {
         temporaryTablesLock.lock();
+        ExConnection resultConnection;
         if (privateConnection != null) {
-            ExConnection resultConnection = privateConnection;
+            resultConnection = privateConnection;
             temporaryTablesLock.unlock();
-            return resultConnection;
         } else {
-            return connectionPool.getCommon(this);
+            resultConnection = connectionPool.getCommon(this);
         }
+        
+        resultConnection.updateLogLevel(syntax);
+        return resultConnection;
     }
 
     private void returnConnection(ExConnection connection) throws SQLException {
@@ -1158,8 +1161,12 @@ public class SQLSession extends MutableObject {
                                 rowSize += reader.getCharLength().getAprValue();
                             adjLimit = BaseUtils.max(getMemoryLimit() / rowSize, pessLimit);
                         }
-                        if(rowCount > adjLimit)
-                            throw new SQLTooLargeQueryException(rowCount, rowSize);
+                        if(rowCount > adjLimit) {
+                            while(result.next()) {
+                                rowCount++;
+                            }
+                            throw new SQLTooLargeQueryException(rowCount, adjLimit, rowSize);
+                        }
                     }
                         
                     ImValueMap<K, Object> rowKeys = keyNames.mapItValues(); // потому как exception есть
@@ -1597,6 +1604,7 @@ public class SQLSession extends MutableObject {
                 try {
                     removeUnusedTemporaryTables(true, owner);
                 } finally {
+                    ServerLoggers.assertLog(sessionTablesMap.isEmpty(), "AT CLOSE USED TABLES SHOULD NOT EXIST");
                     connectionPool.returnPrivate(this, privateConnection);
                     privateConnection = null;
                 }

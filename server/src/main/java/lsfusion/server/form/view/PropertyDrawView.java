@@ -107,17 +107,18 @@ public class PropertyDrawView extends ComponentView {
                 : getDefaultCaption();
     }
 
-    public ReportDrawField getReportDrawField(int charWidth) {
+    public ReportDrawField getReportDrawField(int charWidth, int scale) {
 
         ReportDrawField reportField = new ReportDrawField(getSID(), getCaption(), charWidth);
 
         Type type = getType();
 
-        reportField.minimumWidth = type.getMinimumWidth();
-        reportField.setPreferredWidth(type.getPreferredWidth());
+        reportField.scale = scale;
+        reportField.minimumWidth = type.getMinimumWidth() * scale;
+        reportField.setPreferredWidth(type.getPreferredWidth() * scale);
 
         if (getPreferredCharWidth() != 0) {
-            reportField.fixedCharWidth = getPreferredCharWidth();
+            reportField.fixedCharWidth = getPreferredCharWidth() * scale;
         }
 
         Format format = type.getReportFormat();

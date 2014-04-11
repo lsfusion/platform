@@ -24,6 +24,8 @@ public class ServerLoggers {
 
     public static final Logger assertLogger = Logger.getLogger("AssertLogger");
 
+    public static final Logger jdbcLogger = Logger.getLogger("JDBCLogger");
+
     public static final Logger scriptLogger = Logger.getLogger("ScriptLogger");
 
     public static final Logger pausablesInvocationLogger = Logger.getLogger("PausableInvocationsLogger");

@@ -29,6 +29,8 @@ public interface SQLSyntax {
     // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается
     boolean isNullSafe();
     boolean isGreatest();
+    
+    void setLogLevel(Connection connection, int level);
 
     boolean useFJ();
 

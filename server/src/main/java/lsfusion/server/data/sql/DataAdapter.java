@@ -259,6 +259,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return true;
     }
 
+    public void setLogLevel(Connection connection, int level) {
+        throw new UnsupportedOperationException();
+    }
+
     public boolean orderTopTrouble() {
         throw new RuntimeException("unknown");
     }

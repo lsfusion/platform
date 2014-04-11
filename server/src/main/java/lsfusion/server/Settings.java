@@ -995,4 +995,14 @@ public class Settings {
     public void setEnableHacks(boolean enableHacks) {
         this.enableHacks = enableHacks;
     }
+    
+    private int logLevelJDBC = 0;
+
+    public int getLogLevelJDBC() {
+        return logLevelJDBC;
+    }
+
+    public void setLogLevelJDBC(int logLevelJDBC) {
+        this.logLevelJDBC = logLevelJDBC;
+    }
 }

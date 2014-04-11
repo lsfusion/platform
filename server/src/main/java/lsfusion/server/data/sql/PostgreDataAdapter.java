@@ -3,16 +3,21 @@ package lsfusion.server.data.sql;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.ServerLoggers;
+import lsfusion.server.data.Log4jWriter;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.commons.exec.*;
+import org.postgresql.Driver;
+import org.postgresql.core.BaseConnection;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -326,5 +331,14 @@ public class PostgreDataAdapter extends DataAdapter {
     public boolean isConnectionClosed(SQLException e) {
         String sqlState = e.getSQLState();
         return sqlState.equals("08003") || sqlState.equals("08006");
+    }
+
+    @Override
+    public void setLogLevel(Connection connection, int level) {
+        if (level != 0 && DriverManager.getLogWriter() == null)
+        {
+            DriverManager.setLogWriter(new PrintWriter(new Log4jWriter(ServerLoggers.jdbcLogger), false));
+        }
+        ((BaseConnection)connection).getLogger().setLogLevel(level);
     }
 }

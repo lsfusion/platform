@@ -14,6 +14,8 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public Integer fixedCharWidth;
     public byte alignment;
 
+    public int scale;
+
     public String pattern;
 
     public boolean hasColumnGroupObjects;
@@ -50,7 +52,7 @@ public class ReportDrawField implements AbstractRowLayoutElement {
         } else {
             width = preferredWidth;
         }
-        return Math.max(getMinimumWidth(), Math.min(200, width));
+        return Math.max(getMinimumWidth(), Math.min(200 * scale, width));
     }
 
     public void setPreferredWidth(int width) {
