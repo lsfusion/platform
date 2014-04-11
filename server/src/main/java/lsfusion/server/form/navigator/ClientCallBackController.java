@@ -9,11 +9,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientCallBackController extends RemoteObject implements ClientCallBackInterface {
-    private List<CallbackMessage> messages = new ArrayList<CallbackMessage>();
+    public interface UsageTracker {
+        void used();
+    }
+
+    private final List<CallbackMessage> messages = new ArrayList<CallbackMessage>();
+    private final UsageTracker usageTracker;
     private Boolean deniedRestart = null;
 
-    public ClientCallBackController(int port) throws RemoteException {
+    public ClientCallBackController(int port, UsageTracker usageTracker) throws RemoteException {
         super(port, true);
+        this.usageTracker = usageTracker;
     }
 
     public synchronized void disconnect() {
@@ -43,6 +49,9 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
     }
 
     public synchronized List<CallbackMessage> pullMessages() {
+        if (usageTracker != null) {
+            usageTracker.used();
+        }
         ArrayList result = new ArrayList(messages);
         messages.clear();
         return result.isEmpty() ? null : result;

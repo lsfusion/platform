@@ -120,7 +120,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(context, "navigator-daemon"));
 
-        this.client = new ClientCallBackController(port);
+        this.client = new ClientCallBackController(port, new ClientCallBackController.UsageTracker() {
+            @Override
+            public void used() {
+                updateLastUsedTime();
+            }
+        });
         this.classCache = new ClassCache();
 
         this.securityPolicy = currentUser.getSecurityPolicy();
