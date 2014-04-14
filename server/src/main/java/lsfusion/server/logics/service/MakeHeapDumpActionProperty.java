@@ -26,9 +26,9 @@ public class MakeHeapDumpActionProperty extends ScriptingActionProperty {
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try { 
-            File heapFile = new File("heap-" + new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(Calendar.getInstance().getTime()) + ".bin");
+            File heapFile = new File("heap-" + new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(Calendar.getInstance().getTime()) + ".hprof");
             int pid = getProcessID();
-            Runtime.getRuntime().exec(String.format("cmd.exe /c jmap -dump:file=%s %s", heapFile.getAbsolutePath(), pid));
+            Runtime.getRuntime().exec(String.format("jmap -dump:file=%s %s", heapFile.getAbsolutePath(), pid));
             while(!heapFile.exists())
                 Thread.sleep(1000);
             context.delayUserInteraction(new ExportFileClientAction(heapFile.getName(), IOUtils.getFileBytes(heapFile)));
