@@ -69,7 +69,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         classes = packTables(Where.TRUE, expr, classes, type);
 
         if(classes.size()> inlineThreshold || classes.size()==1)
-            return new IsClassExpr(expr, classes, type);
+            return getExpr(type, new IsClassExpr(expr, classes, type));
         else
             return getTableExpr(expr, classes, inlineThreshold, type);
     }
@@ -99,16 +99,11 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
 //        IsClassWhere[] classWheres = new IsClassWhere[group.size()];
         for(int i=0,size=group.size();i<size;i++) {
             Expr classExpr = create(expr, group.get(i), type);
-            if(type==IsClassType.AGGCONSISTENT)
-                classExpr = FormulaExpr.create(new CastFormulaImpl(StringClass.getv(false, ExtInt.UNLIMITED)), ListFact.singleton(classExpr));
-
-            Where where = classExpr.getWhere();
-
-            if(type==IsClassType.SUMCONSISTENT)
-                classExpr = ValueExpr.COUNT.and(where);  
 
             if(classTables.size()==1) // оптимизация и разрыв рекурсии
                 return classExpr;
+
+            Where where = classExpr.getWhere();
 
             switch (type) {
                 case SUMCONSISTENT:
@@ -138,6 +133,15 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
 //        result.setWhere(AbstractWhere.toWhere(classWheres));
 
         return result;
+    }
+
+    private static Expr getExpr(IsClassType type, Expr classExpr) {
+        if(type==IsClassType.AGGCONSISTENT)
+            classExpr = FormulaExpr.create(new CastFormulaImpl(StringClass.getv(false, ExtInt.UNLIMITED)), ListFact.singleton(classExpr));
+
+        if(type==IsClassType.SUMCONSISTENT)
+            classExpr = ValueExpr.COUNT.and(classExpr.getWhere());
+        return classExpr;
     }
 
     /*    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
