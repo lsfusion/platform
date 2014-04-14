@@ -210,6 +210,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
+    private SQLSession getSystemSql() throws SQLException {
+        return getIDSql();
+    }
+
     public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         return new SQLSession(adapter);
     }
@@ -227,29 +231,37 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     public DataSession createSession() throws SQLException {
-        return createSession(null);
+        return createSession((OperationOwner)null);
     }
     
     public DataSession createSession(OperationOwner upOwner) throws SQLException {
-        return createSession(getThreadLocalSql(),
-                             new UserController() {
-                                 public void changeCurrentUser(DataObject user) {
-                                     throw new RuntimeException("not supported");
-                                 }
+        return createSession(getThreadLocalSql(), upOwner);
+    }
 
-                                 public DataObject getCurrentUser() {
-                                     return new DataObject(systemUserObject, businessLogics.authenticationLM.systemUser);
-                                 }
-                             },
-                             new ComputerController() {
-                                 public DataObject getCurrentComputer() {
-                                     return new DataObject(systemComputer, businessLogics.authenticationLM.computer);
-                                 }
+    public DataSession createSession(SQLSession sql) throws SQLException {
+        return createSession(sql, null);
+    }
 
-                                 public boolean isFullClient() {
-                                     return false;
-                                 }
-                             },
+    public DataSession createSession(SQLSession sql, OperationOwner upOwner) throws SQLException {
+        return createSession(sql,
+                new UserController() {
+                    public void changeCurrentUser(DataObject user) {
+                        throw new RuntimeException("not supported");
+                    }
+
+                    public DataObject getCurrentUser() {
+                        return new DataObject(systemUserObject, businessLogics.authenticationLM.systemUser);
+                    }
+                },
+                new ComputerController() {
+                    public DataObject getCurrentComputer() {
+                        return new DataObject(systemComputer, businessLogics.authenticationLM.computer);
+                    }
+
+                    public boolean isFullClient() {
+                        return false;
+                    }
+                },
                 new TimeoutController() {
                     public int getTransactionTimeout() {
                         return 0;
@@ -857,7 +869,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public Integer getComputer(String strHostName) {
         try {
-            DataSession session = createSession();
+            DataSession session = createSession(getSystemSql());
 
             QueryBuilder<String, Object> q = new QueryBuilder<String, Object>(SetFact.singleton("key"));
             q.and(

@@ -14,11 +14,13 @@ import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.WrapperContext;
+import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.context.Context;
 import lsfusion.server.context.ContextAwareThread;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.lifecycle.LifecycleAdapter;
@@ -63,6 +65,15 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
     public void setLogicsInstance(LogicsInstance logicsInstance) {
         instanceContext = logicsInstance.getContext();
+    }
+
+    @IdentityStrongLazy
+    private SQLSession getLogSql() throws SQLException { // нужен отдельный так как сессия будет использоваться внутри другой транзакции (delayUserInteraction)
+        try {
+            return dbManager.createSQL();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -261,7 +272,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             
             DataSession beforeStartLogSession = dbManager.createSession();
             DataObject currentScheduledTaskLogStartObject = beforeStartLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
-            afterFinishLogSession = dbManager.createSession();
+            afterFinishLogSession = dbManager.createSession(getLogSql());
             currentScheduledTaskLogFinishObject = afterFinishLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
 
             try {
