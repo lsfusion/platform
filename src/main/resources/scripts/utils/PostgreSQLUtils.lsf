@@ -1,0 +1,44 @@
+MODULE PostgreSQLUtils;
+
+REQUIRE System;
+
+getActiveTasksPostgreSQLAction 'Обновить список процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveTasksPostgreSQLActionProperty' TOOLBAR;  
+cancelActiveTaskPostgreSQLAction 'Снять процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelActiveTaskPostgreSQLActionProperty';  
+
+previousCountActiveTask =  DATA SESSION INTEGER();
+idActiveTask 'ID процесса' = DATA SESSION INTEGER (INTEGER);
+queryActiveTask 'Запрос' = DATA SESSION TEXT (INTEGER);
+userActiveTask 'Пользователь' = DATA SESSION VARSTRING[100] (INTEGER);
+addressUserActiveTask 'Адрес пользователя' = DATA SESSION VARSTRING[100] (INTEGER);
+dateTimeActiveTask 'Время запуска' = DATA SESSION DATETIME (INTEGER);
+
+FORM activeTasksPostgreSQL 'Активные процессы' 
+    OBJECTS i = INTEGER
+    PROPERTIES(i) READONLY idActiveTask, queryActiveTask, userActiveTask, addressUserActiveTask, dateTimeActiveTask
+    PROPERTIES(i) cancelActiveTaskPostgreSQLAction
+    PROPERTIES() getActiveTasksPostgreSQLAction TOOLBAR TODRAW i
+    FILTERS idActiveTask(i)
+;
+
+getActiveBlocksPostgreSQLAction 'Обновить список блокировок' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveBlocksPostgreSQLActionProperty' TOOLBAR;  
+
+previousCountActiveBlock =  DATA SESSION INTEGER();
+processIdActiveBlock 'ID процесса блокировки' = DATA SESSION INTEGER (INTEGER);
+typeLockedObjectActiveBlock 'Тип заблокированного объекта' = DATA SESSION VARSTRING[100] (INTEGER);
+idLockedObjectActiveBlock 'ID заблокированного объекта' = DATA SESSION VARSTRING[100] (INTEGER);
+modeActiveBlock 'Уровень блокировки' = DATA SESSION VARSTRING[100] (INTEGER);
+grantedActiveBlock 'Granted' = DATA SESSION BOOLEAN (INTEGER);
+
+FORM activeBlocksPostgreSQL 'Активные блокировки' 
+    OBJECTS i = INTEGER
+    PROPERTIES(i) READONLY processIdActiveBlock, typeLockedObjectActiveBlock, idLockedObjectActiveBlock, modeActiveBlock, grantedActiveBlock
+    PROPERTIES() getActiveBlocksPostgreSQLAction TOOLBAR TODRAW i
+    FILTERS processIdActiveBlock(i)
+;
+
+NAVIGATOR {
+    systemEvents {
+        ADD activeTasksPostgreSQL;
+        ADD activeBlocksPostgreSQL;
+    }
+}
