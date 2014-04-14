@@ -1390,10 +1390,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private IdentityHashMap<FormInstance, Object> activeForms = new IdentityHashMap<FormInstance, Object>();
-    public void registerForm(FormInstance form) throws SQLException {
+    public void registerForm(FormInstance form) throws SQLException, SQLHandledException {
         activeForms.put(form, true);
 
         dropFormCaches();
+
+        updateSessionEvents(getChangedProps());
     }
     public void unregisterForm(FormInstance<?> form) throws SQLException {
         for(SessionModifier modifier : form.modifiers.values())
