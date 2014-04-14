@@ -102,13 +102,17 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
             if(type==IsClassType.AGGCONSISTENT)
                 classExpr = FormulaExpr.create(new CastFormulaImpl(StringClass.getv(false, ExtInt.UNLIMITED)), ListFact.singleton(classExpr));
 
+            Where where = classExpr.getWhere();
+
+            if(type==IsClassType.SUMCONSISTENT)
+                classExpr = ValueExpr.COUNT.and(where);  
+
             if(classTables.size()==1) // оптимизация и разрыв рекурсии
                 return classExpr;
-            Where where = classExpr.getWhere();
 
             switch (type) {
                 case SUMCONSISTENT:
-                    mLinear.add(ValueExpr.COUNT.and(where), 1);
+                    mLinear.add(classExpr, 1);
                     break;
                 case AGGCONSISTENT:
                     mAgg.add(classExpr);
