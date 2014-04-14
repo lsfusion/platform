@@ -167,6 +167,11 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         // пока не highlight'им
     }
 
+    @Override
+    public void setLabelWidth(int width) {
+        //ignore
+    }
+
     public void setToolTip(String caption) {
         String toolTip = !BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : caption;
         if (Main.configurationAccessAllowed) {

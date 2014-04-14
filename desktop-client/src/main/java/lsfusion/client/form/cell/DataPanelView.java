@@ -13,7 +13,6 @@ import lsfusion.interop.event.ValueEvent;
 import lsfusion.interop.event.ValueEventListener;
 import lsfusion.interop.form.layout.CachableLayout;
 import lsfusion.interop.form.layout.FlexAlignment;
-import lsfusion.interop.form.layout.HasLabels;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,7 +20,7 @@ import java.awt.*;
 import static java.lang.Math.max;
 import static lsfusion.base.BaseUtils.nullEquals;
 
-public class DataPanelView extends JPanel implements PanelView, HasLabels {
+public class DataPanelView extends JPanel implements PanelView {
     private final JLabel label;
 
     private final DataPanelViewTable table;
@@ -201,19 +200,7 @@ public class DataPanelView extends JPanel implements PanelView, HasLabels {
     }
 
     @Override
-    public boolean hasLabels() {
-        //todo: пока убираем выравнивание заголовков
-//        return true;
-        return false;
-    }
-
-    @Override
-    public int getLabelsPreferredWidth() {
-        return property.panelLabelAbove ? 0 : label.getPreferredSize().width;
-    }
-
-    @Override
-    public void setLabelsWidth(int width) {
+    public void setLabelWidth(int width) {
         labelWidth = width;
     }
 

@@ -26,19 +26,45 @@
     <source path='client'/>
     <source path='shared'/>
 
-    <!-- Default tables-based GFormLayout implementation. -->
-    <replace-with class="lsfusion.gwt.form.client.form.ui.layout.table.TableFormLayoutImpl">
-        <when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>
-    </replace-with>
+    <define-property name="is.user.agent.ie11" values="true,false" />
+    <property-provider name="is.user.agent.ie11">
+        <![CDATA[
+          {
+            var ua = window.navigator.userAgent.toLowerCase();
+            var an = window.navigator.appName.toLowerCase();
+            if ((an == 'netscape') && ua.indexOf('trident') != -1 && ua.indexOf('gecko') != -1) {
+              return 'true';
+            } else {
+              return 'false';
+            }
+          }
+        ]]>
+    </property-provider>
 
-    <!-- Standard GFormLayout implementation using flex css syntax. -->
+    <define-property name="useFlex" values="true,false" />
+    <set-property name="useFlex" value="true" />
+
+    <set-property name="useFlex" value="false">
+        <any>
+            <when-property-is name="user.agent" value="gecko1_8" />
+            <when-property-is name="user.agent" value="safari" />
+        </any>
+        <!-- ignore ie11 for now -->
+        <!--<none>-->
+            <!--&lt;!&ndash; ie11 is using gecko1_8 permutation, but we need to use flex impl for ie &ndash;&gt;-->
+            <!--<when-property-is name="is.user.agent.ie11" value="true" />-->
+        <!--</none>-->
+    </set-property>
+
+    <!-- GFormLayout implementation using flex css syntax. -->
     <replace-with class="lsfusion.gwt.form.client.form.ui.layout.flex.FlexFormLayoutImpl">
         <when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>
-        <any>
-            <!--<when-property-is name="user.agent" value="gecko1_8"/>-->
-            <!--<when-property-is name="user.agent" value="safari"/>-->
-            <when-property-is name="user.agent" value="opera"/>
-            <when-property-is name="user.agent" value="ie10"/>
-        </any>
+        <when-property-is name="useFlex" value="true"/>
+    </replace-with>
+
+    <!-- Tables-based GFormLayout implementation. -->
+    <replace-with class="lsfusion.gwt.form.client.form.ui.layout.table.TableFormLayoutImpl">
+        <when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>
+        <when-property-is name="useFlex" value="false"/>
     </replace-with>
 </module>

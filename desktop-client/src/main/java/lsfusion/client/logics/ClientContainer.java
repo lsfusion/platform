@@ -31,6 +31,8 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
 
     public int columns = 4;
 
+    public int columnLabelsWidth = 0;
+
     public List<ClientComponent> children = new ArrayList<ClientComponent>();
 
     public ClientContainer() {
@@ -60,6 +62,7 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         pool.writeObject(outStream, childrenAlignment);
 
         outStream.writeInt(columns);
+        outStream.writeInt(columnLabelsWidth);
     }
 
     @Override
@@ -76,6 +79,7 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         childrenAlignment = pool.readObject(inStream);
 
         columns = inStream.readInt();
+        columnLabelsWidth = inStream.readInt();
     }
 
     @Override

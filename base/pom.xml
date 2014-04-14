@@ -58,23 +58,22 @@
         <servlet.api.version>2.5</servlet.api.version>
         <jcaptcha.version>1.0</jcaptcha.version>
         <validation.api.version>1.0.0.GA</validation.api.version>
+        <json.version>20090211</json.version>
         <jstl.version>1.2</jstl.version>
         <commons.fileupload.version>1.2.2</commons.fileupload.version>
         <cachefilter.version>2.0</cachefilter.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
-        <gwt.version>2.5.0-patched-6</gwt.version>
+        <gwt.version>2.6.0-patched-1</gwt.version>
 
-        <gwt.plugin.version>2.5.0</gwt.plugin.version>
+        <gwt.plugin.version>2.6.0</gwt.plugin.version>
         <smartgwt.version>3.0p</smartgwt.version>
-        <gwt.log.version>3.1.8</gwt.log.version>
-        <gin.version>1.5.0</gin.version>
+        <gwt.log.version>3.3.0</gwt.log.version>
+        <gwt.dnd.version>3.3.0</gwt.dnd.version>
+        <gin.version>2.1.2</gin.version>
         <gwt.dispatch.version>1.2.0</gwt.dispatch.version>
-        <gwt.platform.version>0.7</gwt.platform.version>
-        <gwt.uload.version>0.6.3-compat</gwt.uload.version>
-        <gwt.mosaic.version>0.4.0-rc4</gwt.mosaic.version>
-        <gwt.dnd.version>3.1.2</gwt.dnd.version>
+        <gwt.platform.version>1.2.1</gwt.platform.version>
         <color.picker.version>2.1-patched</color.picker.version>
         <moxieapps.gwt.uploader.version>1.1.0</moxieapps.gwt.uploader.version>
         <gwt.selection.version>1.1</gwt.selection.version>
@@ -430,6 +429,11 @@
                         <dependency>
                             <groupId>com.google.gwt</groupId>
                             <artifactId>gwt-user</artifactId>
+                            <version>${gwt.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>com.google.gwt</groupId>
+                            <artifactId>gwt-codeserver</artifactId>
                             <version>${gwt.version}</version>
                         </dependency>
                         <dependency>
@@ -828,6 +832,11 @@
                 <classifier>sources</classifier>
             </dependency>
             <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>${json.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>jstl</groupId>
                 <artifactId>jstl</artifactId>
                 <version>${jstl.version}</version>
@@ -872,11 +881,6 @@
                 <version>${smartgwt.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.google.code.gwt-log</groupId>
-                <artifactId>gwt-log</artifactId>
-                <version>${gwt.log.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.google.gwt.inject</groupId>
                 <artifactId>gin</artifactId>
                 <version>${gin.version}</version>
@@ -907,31 +911,6 @@
                 <version>${gwt.platform.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.googlecode.gwtupload</groupId>
-                <artifactId>gwtupload</artifactId>
-                <version>${gwt.uload.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.googlecode.gwtmosaic</groupId>
-                <artifactId>gwt-mosaic</artifactId>
-                <version>${gwt.mosaic.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.googlecode.gwtmosaic</groupId>
-                <artifactId>gwt-dnd</artifactId>
-                <version>${gwt.mosaic.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.googlecode.gwtmosaic</groupId>
-                <artifactId>gwtx</artifactId>
-                <version>${gwt.mosaic.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.googlecode.gwtmosaic</groupId>
-                <artifactId>gwt-beans-binding</artifactId>
-                <version>${gwt.mosaic.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>net.auroris</groupId>
                 <artifactId>colorpicker</artifactId>
                 <version>${color.picker.version}</version>
@@ -940,6 +919,11 @@
                 <groupId>com.allen-sauer.gwt.dnd</groupId>
                 <artifactId>gwt-dnd</artifactId>
                 <version>${gwt.dnd.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.allen-sauer.gwt.log</groupId>
+                <artifactId>gwt-log</artifactId>
+                <version>${gwt.log.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.moxieapps.gwt.uploader</groupId>

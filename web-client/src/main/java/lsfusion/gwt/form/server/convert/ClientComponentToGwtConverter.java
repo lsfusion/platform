@@ -137,6 +137,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         container.type = convertContainerType(clientContainer.getType());
         container.childrenAlignment = convertAlignment(clientContainer.childrenAlignment);
         container.columns = clientContainer.columns;
+        container.columnLabelsWidth = clientContainer.columnLabelsWidth;
 
         // если stack-container не растягивается по основной оси, то не надо растягивать и его потомков => child.flex = 0;
         // вообще говоря это не должно быть нужно, но иначе не работает в IE

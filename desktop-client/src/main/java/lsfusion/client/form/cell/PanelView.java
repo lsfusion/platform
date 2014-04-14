@@ -15,4 +15,6 @@ public interface PanelView {
 
     Icon getIcon();
     void setIcon(Icon icon);
+    
+    void setLabelWidth(int width);
 }

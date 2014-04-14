@@ -5,7 +5,6 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
 import lsfusion.gwt.form.client.form.ui.GFormController;
-import lsfusion.gwt.form.client.form.ui.GPanelController;
 import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
 import lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl;
 import lsfusion.gwt.form.shared.view.GContainer;
@@ -44,10 +43,5 @@ public class TableFormLayoutImpl extends GFormLayoutImpl {
         gridView.setCellHeight(panel, "100%");
 
         return gridView;
-    }
-
-    @Override
-    public GPanelController.RenderersPanel createRenderersPanel() {
-        return new RenderersPanel();
     }
 }

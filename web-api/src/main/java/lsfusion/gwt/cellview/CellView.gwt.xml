@@ -24,13 +24,9 @@
 
    <source path="client"/>
 
-  <!-- Standard CellBasedWidgetImpl implementation. -->
+    <!-- Standard CellBasedWidgetImpl implementation. -->
   <replace-with class="lsfusion.gwt.cellview.client.CellBasedWidgetImplStandard">
     <when-type-is class="lsfusion.gwt.cellview.client.CellBasedWidgetImpl"/>
-    <any>
-      <when-property-is name="user.agent" value="opera"/>
-      <when-property-is name="user.agent" value="gecko1_8"/>
-    </any>
   </replace-with>
 
   <!-- IE-specific CellBasedWidgetImpl implementation. -->

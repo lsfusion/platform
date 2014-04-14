@@ -3,6 +3,7 @@ package lsfusion.client.form.panel;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.form.layout.ClientFormLayout;
+import lsfusion.client.form.layout.HasLabel;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.form.layout.*;
@@ -197,38 +198,17 @@ public class PropertyController {
         }
     }
 
-    private class ViewsPanel extends JPanel implements HasLabels {
+    private class ViewsPanel extends JPanel implements HasLabel {
         private ViewsPanel() {
             super(null);
             setLayout(new FlexLayout(this, false, Alignment.LEADING));
         }
 
         @Override
-        public boolean hasLabels() {
+        public void setLabelWidth(int width) {
             if (views != null && views.size() == 1) {
-                JComponent view = views.values().iterator().next().getComponent();
-                return view instanceof HasLabels && ((HasLabels) view).hasLabels();
-            }
-            return false;
-        }
-
-        @Override
-        public int getLabelsPreferredWidth() {
-            assert views != null && views.size() == 1;
-
-            JComponent view = views.values().iterator().next().getComponent();
-            assert view instanceof HasLabels && ((HasLabels) view).hasLabels();
-
-            return ((HasLabels) view).getLabelsPreferredWidth();
-        }
-
-        @Override
-        public void setLabelsWidth(int width) {
-            if (views != null && views.size() == 1) {
-                JComponent view = views.values().iterator().next().getComponent();
-                if (view instanceof HasLabels) {
-                    ((HasLabels) view).setLabelsWidth(width);
-                }
+                PanelView view = views.values().iterator().next();
+                view.setLabelWidth(width);
             }
         }
     }

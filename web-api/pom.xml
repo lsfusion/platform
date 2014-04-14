@@ -49,9 +49,13 @@
             <artifactId>validation-api</artifactId>
             <classifier>sources</classifier>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+        </dependency>
 
         <dependency>
-            <groupId>com.google.code.gwt-log</groupId>
+            <groupId>com.allen-sauer.gwt.log</groupId>
             <artifactId>gwt-log</artifactId>
         </dependency>
         <dependency>

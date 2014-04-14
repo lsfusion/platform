@@ -16,11 +16,6 @@
     <!-- Standard FlexPanelImpl implementation. -->
     <replace-with class="lsfusion.gwt.base.client.ui.FlexPanelImplStandard">
         <when-type-is class="lsfusion.gwt.base.client.ui.FlexPanelImpl"/>
-        <any>
-            <when-property-is name="user.agent" value="opera"/>
-            <when-property-is name="user.agent" value="gecko1_8"/>
-            <when-property-is name="user.agent" value="safari"/>
-        </any>
     </replace-with>
 
     <!-- IE-10 FlexPanelImpl implementation. -->
@@ -32,11 +27,10 @@
     </replace-with>
 
     <!-- Webkit FlexPanelImpl implementation. -->
-    <!-- it's not really used right now -->
     <replace-with class="lsfusion.gwt.base.client.ui.FlexPanelImplWebkit">
         <when-type-is class="lsfusion.gwt.base.client.ui.FlexPanelImpl"/>
         <any>
-            <when-property-is name="user.agent" value="opera12"/>
+            <when-property-is name="user.agent" value="opera"/>
         </any>
     </replace-with>
 </module>

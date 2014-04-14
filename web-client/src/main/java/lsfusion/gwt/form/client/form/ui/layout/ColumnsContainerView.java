@@ -110,6 +110,23 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
     }
 
     @Override
+    public void updateLayout() {
+        if (container.columnLabelsWidth > 0) {
+            for (int i = 0; i < columnsCount; ++i) {
+                ResizableComplexPanel column = columns[i];
+                int childCount = column.getWidgetCount();
+                for (int j = 0; j < childCount; j += 2) {
+                    ProxyPanel childProxy = (ProxyPanel)column.getWidget(j);
+                    Widget childWidget = childProxy.getWidget();
+                    if (childWidget.isVisible() && childWidget instanceof HasLabel) {
+                        ((HasLabel) childWidget).setLabelWidth(container.columnLabelsWidth);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
     public Widget getView() {
         return view;
     }

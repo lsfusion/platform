@@ -79,7 +79,7 @@ class DataGridImpl {
         return template;
     }
 
-    private final com.google.gwt.user.client.Element tmpElem = Document.get().createDivElement().cast();
+    private final Element tmpElem = Document.get().createDivElement().cast();
 
     /**
      * Convert the rowHtml into Elements wrapped by the specified table section.

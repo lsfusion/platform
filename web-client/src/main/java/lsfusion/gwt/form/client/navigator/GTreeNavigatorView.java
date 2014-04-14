@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.client.navigator;
 
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
@@ -105,7 +106,7 @@ public class GTreeNavigatorView extends GNavigatorView {
         public GNavigatorElement element;
 
         public TreeNavigatorItem(final GNavigatorElement element) {
-            super(element.caption);
+            super(SafeHtmlUtils.fromString(element.caption));
             this.element = element;
             setUserObject(element);
         }

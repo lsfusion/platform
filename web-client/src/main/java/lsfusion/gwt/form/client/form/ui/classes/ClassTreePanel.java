@@ -4,6 +4,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.form.shared.view.classes.GObjectClass;
 
+import static com.google.gwt.safehtml.shared.SafeHtmlUtils.fromString;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 
 public abstract class ClassTreePanel extends Composite {
@@ -45,7 +46,9 @@ public abstract class ClassTreePanel extends Composite {
     }
 
     private void addClassNode(TreeItem parentNode, GObjectClass objectClass) {
-        final TreeItem classNode = parentNode == null ? tree.addItem(objectClass.caption) : parentNode.addItem(objectClass.caption);
+        final TreeItem classNode = parentNode == null
+                                   ? tree.addItem(fromString(objectClass.caption))
+                                   : parentNode.addItem(fromString(objectClass.caption));
         classNode.setUserObject(objectClass);
 
         for (GObjectClass childClass : objectClass.children) {

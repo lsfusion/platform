@@ -222,8 +222,9 @@ public class ActionPanelRenderer implements PanelRenderer, GEditPropertyHandler 
         button.setFocus(true);
     }
 
-    public ImageButton getButton() {
-        return button;
+    @Override
+    public void setLabelWidth(int width) {
+        //ignore
     }
 
     @Override

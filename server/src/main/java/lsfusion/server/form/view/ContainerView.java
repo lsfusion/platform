@@ -23,7 +23,9 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     public Alignment childrenAlignment = Alignment.LEADING;
 
     public int columns = 4;
-
+    
+    public int columnLabelsWidth = 0;
+    
     public ContainerView() {
     }
 
@@ -149,6 +151,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         pool.writeObject(outStream, childrenAlignment);
 
         outStream.writeInt(columns);
+        outStream.writeInt(columnLabelsWidth);
     }
 
     @Override
@@ -165,5 +168,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         childrenAlignment = pool.readObject(inStream);
 
         columns = inStream.readInt();
+        columnLabelsWidth = inStream.readInt();
     }
 }

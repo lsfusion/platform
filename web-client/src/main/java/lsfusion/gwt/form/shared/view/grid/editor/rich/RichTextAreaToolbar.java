@@ -2,13 +2,13 @@ package lsfusion.gwt.form.shared.view.grid.editor.rich;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptException;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.InitializeEvent;
 import com.google.gwt.event.logical.shared.InitializeHandler;
 import com.google.gwt.i18n.client.Constants;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.RichTextAreaImpl;
@@ -204,11 +204,11 @@ public class RichTextAreaToolbar extends Composite {
         }
     }
 
-    native void execCommandAssumingFocus(Element elem, String cmd, Object param) /*-{
+    native void execCommandAssumingFocus(Element element, String cmd, Object param) /*-{
         elem.contentWindow.document.execCommand(cmd, false, param);
     }-*/;
 
-    native boolean queryCommandStateAssumingFocus(Element elem, String cmd) /*-{
+    native boolean queryCommandStateAssumingFocus(Element element, String cmd) /*-{
         return !!elem.contentWindow.document.queryCommandEnabled(cmd);
     }-*/;
 

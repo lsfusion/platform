@@ -29,8 +29,9 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
         columnsChildren = new List[columnsCount];
         for (int i = 0; i < columnsCount; ++i) {
             JPanel column = new JPanel();
+//            column.setLayout(new FlexLayout(column, true, Alignment.LEADING));
             column.setLayout(new ColumnsLayout(column, 1));
-            panel.add(column, new FlexConstraints());
+            panel.add(column, FlexConstraints.leading_self);
 
             columns[i] = column;
             columnsChildren[i] = new ArrayList<ClientComponent>();
@@ -82,8 +83,22 @@ public class ColumnsClientContainerView extends AbstractClientContainerView {
         int colIndex = childIndex % columnsCount;
         columnsChildren[colIndex].remove(child);
         columns[colIndex].remove(view);
+    }
 
-//        panel.remove(view);
+    @Override
+    public void updateLayout() {
+        if (container.columnLabelsWidth > 0) {
+            for (int i = 0; i < columnsCount; ++i) {
+                JPanel column = columns[i];
+                int childCount = column.getComponentCount();
+                for (int j = 0; j < childCount; ++j) {
+                    Component childView = column.getComponent(j);
+                    if (childView.isVisible() && childView instanceof HasLabel) {
+                        ((HasLabel) childView).setLabelWidth(container.columnLabelsWidth);
+                    }
+                }
+            }
+        }
     }
 
     @Override

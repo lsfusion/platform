@@ -29,12 +29,14 @@ import static lsfusion.gwt.form.client.HotkeyManager.Binding;
 public class DataPanelRenderer implements PanelRenderer {
     public final GPropertyDraw property;
 
-    public final FlexPanel panel;
-    public final ResizableComplexPanel gridPanel;
+    private final FlexPanel panel;
+    private final ResizableComplexPanel gridPanel;
     private final SimplePanel focusPanel;
 
-    public final Label label;
-    public final GSinglePropertyTable valueTable;
+    private final Label label;
+    private int currentLabelWidth = -1;
+    
+    private final GSinglePropertyTable valueTable;
 
     private String caption;
     private String tooltip;
@@ -201,6 +203,14 @@ public class DataPanelRenderer implements PanelRenderer {
     @Override
     public void focus() {
         valueTable.setFocus(true);
+    }
+
+    @Override
+    public void setLabelWidth(int width) {
+        if (currentLabelWidth != width) {
+            label.setWidth(width + "px");
+            currentLabelWidth = width;
+        }
     }
 
     private class Panel extends FlexPanel {

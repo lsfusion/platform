@@ -68,8 +68,7 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
    * @param eventBits the event bits to sink
    * @param event the event to fire, or null not to fire an event
    */
-  private static void dispatchCellEvent(Widget widget,
-      com.google.gwt.user.client.Element target, int eventBits, Event event) {
+  private static void dispatchCellEvent(Widget widget, Element target, int eventBits, Event event) {
     // Make sure that the target is still a child of the widget. We defer the
     // firing of some events, so its possible that the DOM structure has
     // changed before we fire the event.
@@ -87,14 +86,6 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
       target.dispatchEvent(event);
     }
   }
-
-  /**
-   * Dispatch an event through the normal GWT mechanism.
-   */
-  private static native void dispatchEvent(Event evt, Element elem,
-      EventListener listener) /*-{
-    @com.google.gwt.user.client.DOM::dispatchEvent(Lcom/google/gwt/user/client/Event;Lcom/google/gwt/user/client/Element;Lcom/google/gwt/user/client/EventListener;)(evt, elem, listener);
-  }-*/;
 
   /**
    * Get the value of an element that has a value or checked state.
@@ -133,13 +124,13 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
     if (!Element.is(eventTarget)) {
       return;
     }
-    final com.google.gwt.user.client.Element target = eventTarget.cast();
+    final Element target = eventTarget.cast();
 
     // Get the event listener.
-    com.google.gwt.user.client.Element curElem = target;
+    Element curElem = target;
     EventListener listener = DOM.getEventListener(curElem);
     while (curElem != null && listener == null) {
-      curElem = curElem.getParentElement().cast();
+      curElem = curElem.getParentElement();
       listener = (curElem == null) ? null : DOM.getEventListener(curElem);
     }
 
@@ -177,7 +168,7 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
       Event blurEvent = Document.get().createFocusEvent().cast();
       dispatchCellEvent(widget, target, Event.ONBLUR, null);
     } else if (BrowserEvents.LOAD.equals(type) || BrowserEvents.ERROR.equals(type)) {
-      dispatchEvent(event, widget.getElement(), listener);
+      DOM.dispatchEvent(event, widget.getElement(), listener);
     }
   }
 
@@ -212,7 +203,7 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
       focusedInputValue = newValue;
 
       // Fire a synthetic event to the input element.
-      com.google.gwt.user.client.Element target = focusedInput.cast();
+      Element target = focusedInput.cast();
       Event changeEvent = Document.get().createChangeEvent().cast();
       dispatchCellEvent(widget, target, Event.ONCHANGE, changeEvent);
     }
@@ -257,7 +248,7 @@ class CellBasedWidgetImplTrident extends CellBasedWidgetImpl {
     if (BrowserEvents.FOCUS.equals(type) || BrowserEvents.BLUR.equals(type) || BrowserEvents.CHANGE.equals(type)) {
       EventTarget eventTarget = event.getEventTarget();
       if (Element.is(eventTarget)) {
-        com.google.gwt.user.client.Element target = eventTarget.cast();
+        Element target = eventTarget.cast();
         if (target != widget.getElement()) {
           DOM.setEventListener(target, null);
         }
