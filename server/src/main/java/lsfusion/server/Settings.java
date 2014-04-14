@@ -976,7 +976,7 @@ public class Settings {
         this.queryRowCountPessLimit = queryRowCountPessLimit;
     }
 
-    private int queryRowCountOptDivider = 100; // когда предполагаемый объем потребления памяти, превысит заданную часть, кидать exception
+    private int queryRowCountOptDivider = 10; // когда предполагаемый объем потребления памяти, превысит заданную часть, кидать exception
 
     public int getQueryRowCountOptDivider() {
         return queryRowCountOptDivider;
