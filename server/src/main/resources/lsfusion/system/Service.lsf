@@ -50,6 +50,7 @@ restartServerAction 'Остановить сервер' = ACTION CUSTOM 'lsfusio
 runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'lsfusion.server.logics.service.GarbageCollectorActionProperty';
 cancelRestartServerAction 'Отменить остановку сервера' = ACTION CUSTOM 'lsfusion.server.logics.service.CancelRestartActionProperty';
 dropLRU 'Очистить LRU' = ACTION CUSTOM 'lsfusion.server.logics.service.DropLRUActionProperty';
+makeHeapDump 'Сделать Heap Dump' = ACTION CUSTOM 'lsfusion.server.logics.service.MakeHeapDumpActionProperty';
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
 
@@ -67,8 +68,8 @@ FORM admin 'Администрирование'
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
                  restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, checkClassesAction, 
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, 
-                 vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, dropLRU, toggleExplainAnalyzeMode, 
-                 toggleExplainMode, toggleVolatileStats,
+                 vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, dropLRU, makeHeapDump, 
+                 toggleExplainAnalyzeMode, toggleExplainMode, toggleVolatileStats,
                  toggleSQLLoggerDebugMode, toggleRemoteLoggerDebugMode, TILMode, reupdateMode, singleTransaction,
                  nameReflectionSetting, valueReflectionSetting SHOWIF nameReflectionSetting()
 ;
@@ -125,6 +126,7 @@ DESIGN admin FROM DEFAULT {
             ADD PROPERTY(runGarbageCollector());
             ADD PROPERTY(getVMInfo());
             ADD PROPERTY(dropLRU());
+            ADD PROPERTY(makeHeapDump());
         }
         NEW log {
             caption = 'Логирование';
