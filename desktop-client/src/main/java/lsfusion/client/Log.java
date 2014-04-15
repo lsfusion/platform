@@ -4,13 +4,17 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.client.rmi.ConnectionLostManager;
 
 import javax.swing.*;
-import java.util.List;
+import javax.swing.border.LineBorder;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultCaret;
 import java.awt.*;
+import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.List;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -192,19 +196,35 @@ public final class Log {
             dataArray[i] = dataRow.toArray();
             i++;
         }
-        JTable table = new JTable(dataArray, columnNames) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        JTable table = new JTable(dataArray, columnNames);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         table.setPreferredScrollableViewportSize(
                 new Dimension(
                         table.getPreferredScrollableViewportSize().width,
                         dataArray.length * table.getRowHeight()
                 ));
-        table.setFocusable(false);
+
+        Caret caret = new DefaultCaret()
+        {
+            public void focusGained(FocusEvent e)
+            {
+                setVisible(true);
+                setSelectionVisible(true);
+            }
+        };
+        caret.setBlinkRate( UIManager.getInt("TextField.caretBlinkRate") );
+
+        JTextField textField = new JTextField();
+        textField.setEditable(false);
+        textField.setCaret(caret);
+        textField.setBorder(new LineBorder(Color.BLACK));
+
+        DefaultCellEditor dce = new DefaultCellEditor(textField);
+        for(int j = 0; j < table.getColumnModel().getColumnCount(); j++) {
+            table.getColumnModel().getColumn(j).setCellEditor(dce); 
+        }
+       
+        table.setFocusable(true);
         return table;
     }
 
