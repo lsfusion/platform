@@ -664,6 +664,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     private synchronized void shutdown() {
         if(!closed) {
             closed = true;
+            ServerLoggers.exinfoLog("NAVIGATOR CLOSE " + this + " " + sql);
             try {
                 navigatorManager.navigatorClosed(this);
             } finally {

@@ -189,9 +189,15 @@ public class SQLSession extends MutableObject {
     }
 
     private void lockRead(OperationOwner owner) {
+        checkClosed();
+
         lock.readLock().lock();
         
         owner.checkThreadSafeAccess(writeOwner);
+    }
+
+    private void checkClosed() {
+        ServerLoggers.assertLog(!closed, "SQL SESSION IS ALREADY CLOSED");
     }
 
     private void unlockRead() {
@@ -201,6 +207,8 @@ public class SQLSession extends MutableObject {
     private OperationOwner writeOwner; 
 
     private void lockWrite(OperationOwner owner) {
+        checkClosed();
+
         lock.writeLock().lock();
         
         writeOwner = owner;
@@ -1597,6 +1605,7 @@ public class SQLSession extends MutableObject {
         return result;
     }
 
+    private boolean closed = false;
     public void close(OperationOwner owner) throws SQLException {
         lockWrite(owner);
         temporaryTablesLock.lock();
@@ -1611,6 +1620,7 @@ public class SQLSession extends MutableObject {
                     privateConnection = null;
                 }
             }
+            closed = true;
         } finally {
             temporaryTablesLock.unlock();
             unlockWrite();

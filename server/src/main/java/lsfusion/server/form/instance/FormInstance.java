@@ -1384,7 +1384,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private void checkNavigatorClosed() {
         CustomClassListener classListener = getClassListener();
-        ServerLoggers.assertLog(classListener == null || !classListener.isClosed(), "NAVIGATOR CLOSED");
+        ServerLoggers.assertLog(classListener == null || !classListener.isClosed(), "NAVIGATOR CLOSED " + BaseUtils.nullToString(classListener));
     }
 
     private ImMap<ShowIfReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> readShowIfs(Map<PropertyDrawInstance, Boolean> newIsShown, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowColumnGrids, ChangedData changedProps) throws SQLException, SQLHandledException {

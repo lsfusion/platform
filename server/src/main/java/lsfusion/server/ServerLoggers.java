@@ -24,6 +24,8 @@ public class ServerLoggers {
 
     public static final Logger assertLogger = Logger.getLogger("AssertLogger");
 
+    public static final Logger exInfoLogger = Logger.getLogger("ExInfoLogger");
+
     public static final Logger jdbcLogger = Logger.getLogger("JDBCLogger");
 
     public static final Logger scriptLogger = Logger.getLogger("ScriptLogger");
@@ -60,6 +62,10 @@ public class ServerLoggers {
     
     public static void handledLog(String message) {
         sqlHandLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
+    }
+
+    public static void exinfoLog(String message) {
+        exInfoLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
     }
 
 }
