@@ -1,5 +1,6 @@
 package lsfusion.server.data.expr.formula;
 
+import lsfusion.server.Settings;
 import lsfusion.server.data.type.Type;
 
 public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImpl implements FormulaUnionImpl {
@@ -27,10 +28,15 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
         for (int i = 1; i < exprCount; i++) {
             String exprSource = getExprSource(source, type, i);
 
-            result = "CASE WHEN " + result + " IS NOT NULL" +
-                    " THEN " + result + " || (CASE WHEN " + exprSource + " IS NOT NULL THEN '" + separator + "' || " + exprSource + " ELSE '' END)" +
-                    " ELSE " + exprSource + " END";
+            if(Settings.get().isUseSafeStringAgg()) {
+                result = "CASE WHEN " + result + " IS NOT NULL" +
+                        " THEN " + result + " || (CASE WHEN " + exprSource + " IS NOT NULL THEN '" + separator + "' || " + exprSource + " ELSE '' END)" +
+                        " ELSE " + exprSource + " END";
+            } else {
+                result = "STRINGC(" + result + "," + exprSource + ",'" + separator + "')";
+            }
         }
         return "(" + result + ")";
+//        return result;
     }
 }

@@ -25,6 +25,7 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.ScannerDaemonTask;
+import lsfusion.server.data.ModifyQuery;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -33,8 +34,11 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.LogFormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
@@ -56,6 +60,7 @@ import lsfusion.server.mail.NotificationActionProperty;
 import lsfusion.server.session.ApplyFilter;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
+import lsfusion.server.session.SingleKeyTableUsage;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -71,6 +76,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
+import static lsfusion.base.BaseUtils.remove;
 import static lsfusion.base.BaseUtils.systemLogger;
 import static lsfusion.server.logics.LogicsModule.*;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -1269,7 +1275,63 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return message;
     }
 
+    public void recalculateExclusiveness(final SQLSession session, boolean isolatedTransactions) throws SQLException, SQLHandledException {
+        DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
+            public void run(final SQLSession sql) throws SQLException, SQLHandledException {
+                DataSession.runExclusiveness(new DataSession.RunExclusiveness() {
+                    public void run(Query<String, String> query) throws SQLException, SQLHandledException {
+                        SingleKeyTableUsage<String> table = new SingleKeyTableUsage<String>(ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), new Type.Getter<String>() {
+                            public Type getType(String key) {
+                                return key.equals("sum") ? ValueExpr.COUNTCLASS : StringClass.getv(false, ExtInt.UNLIMITED);
+                            }});
+
+                        table.writeRows(sql, query, LM.baseClass, DataSession.emptyEnv(OperationOwner.unknown));
+                        
+                        MExclMap<ConcreteCustomClass, MExclSet<String>> mRemoveClasses = MapFact.mExclMap();
+                        for(Object distinct : table.readDistinct("agg", sql, OperationOwner.unknown)) { // разновидности agg читаем
+                            String classes = (String)distinct;
+                            ConcreteCustomClass keepClass = null;
+                            for(String singleClass : classes.split(",")) {
+                                ConcreteCustomClass customClass = LM.baseClass.findConcreteClassID(Integer.parseInt(singleClass));
+                                if(customClass != null) {
+                                    if(keepClass == null)
+                                        keepClass = customClass;
+                                    else {
+                                        ConcreteCustomClass removeClass;
+                                        if(keepClass.isChild(customClass)) {
+                                            removeClass = keepClass;
+                                            keepClass = customClass;
+                                        } else
+                                            removeClass = customClass;
+                                        
+                                        MExclSet<String> mRemoveStrings = mRemoveClasses.get(removeClass);
+                                        if(mRemoveStrings == null) {
+                                            mRemoveStrings = SetFact.mExclSet();
+                                            mRemoveClasses.exclAdd(removeClass, mRemoveStrings);
+                                        }
+                                        mRemoveStrings.exclAdd(classes);
+                                    }
+                                }
+                            }
+                        }
+                        ImMap<ConcreteCustomClass, ImSet<String>> removeClasses = MapFact.immutable(mRemoveClasses);
+
+                        for(int i=0,size=removeClasses.size();i<size;i++) {
+                            KeyExpr key = new KeyExpr("key");
+                            Expr aggExpr = table.join(key).getExpr("agg");
+                            Where where = Where.FALSE;
+                            for(String removeString : removeClasses.getValue(i))
+                                where = where.or(aggExpr.compare(new DataObject(removeString, StringClass.text), Compare.EQUALS));
+                            removeClasses.getKey(i).dataProperty.dropInconsistentClasses(session, LM.baseClass, key, where, OperationOwner.unknown);
+                        }                            
+                    }
+                }, sql, LM.baseClass);
+            }});
+    }
+
     public void recalculateClasses(SQLSession session, boolean isolatedTransactions) throws SQLException, SQLHandledException {
+        recalculateExclusiveness(session, isolatedTransactions);
+
         for (final Property property : getPropertyList())
             if (property instanceof StoredDataProperty) {
                 DBManager.run(session, isolatedTransactions, new DBManager.RunService() {

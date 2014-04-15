@@ -177,6 +177,11 @@ $$
     SELECT CASE WHEN $1 IS NULL OR $1 < $2 THEN $2 ELSE $1 END;
 $$ LANGUAGE 'sql' IMMUTABLE;
 
+CREATE OR REPLACE FUNCTION STRINGC(varchar, varchar, varchar) RETURNS varchar AS
+$$
+        SELECT CASE WHEN $1 IS NOT NULL THEN $1 || (CASE WHEN $2 IS NOT NULL THEN $3 || $2 ELSE '' END) ELSE $2 END
+$$ LANGUAGE 'sql' IMMUTABLE;
+
 CREATE OR REPLACE FUNCTION first_agg ( anyelement, anyelement )
 RETURNS anyelement LANGUAGE sql IMMUTABLE AS $$
         SELECT $1;

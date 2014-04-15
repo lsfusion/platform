@@ -1005,4 +1005,14 @@ public class Settings {
     public void setLogLevelJDBC(int logLevelJDBC) {
         this.logLevelJDBC = logLevelJDBC;
     }
+    
+    private boolean useSafeStringAgg = false; // temporary
+
+    public boolean isUseSafeStringAgg() {
+        return useSafeStringAgg;
+    }
+
+    public void setUseSafeStringAgg(boolean useSafeStringAgg) {
+        this.useSafeStringAgg = useSafeStringAgg;
+    }
 }

@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -11,6 +12,9 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.query.GroupExpr;
+import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -164,6 +168,16 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         query.addProperties(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
         return query.execute(session, orders, 0, env);
+    }
+
+    public ImSet<Object> readDistinct(V prop, SQLSession session, OperationOwner owner) throws SQLException, SQLHandledException {
+        ImRevMap<K, KeyExpr> mapKeys = getMapKeys();
+        KeyExpr key = new KeyExpr("key");
+        Expr groupExpr = GroupExpr.create(MapFact.singleton("key", join(mapKeys).getExpr(prop)), ValueExpr.TRUE, GroupType.ANY, MapFact.<String, Expr>singleton("key", key));
+        return new Query<String, Object>(MapFact.singletonRev("key", key), groupExpr.getWhere()).execute(session, owner).keyOrderSet().getSet().mapSetValues(new GetValue<Object, ImMap<String, Object>>() {
+            public Object getMapValue(ImMap<String, Object> value) {
+                return value.singleValue();
+            }});
     }
 
     public <B> ClassWhere<B> getClassWhere(V property, ImRevMap<K, ? extends B> remapKeys, B mapProp) {

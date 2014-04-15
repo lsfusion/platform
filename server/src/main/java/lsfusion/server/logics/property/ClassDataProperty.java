@@ -3,13 +3,20 @@ package lsfusion.server.logics.property;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.data.Table;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.Query;
+import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.session.PropertyChanges;
+import org.apache.xpath.operations.Operation;
+
+import java.sql.SQLException;
 
 // первично свойство, соответствующее полю хранящему значение класса
 // строго системное свойство, в логике предполагается использование ObjectClassProperty
@@ -42,6 +49,11 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
 
     public Table.Join.Expr getInconsistentExpr(Expr expr) {
         return getInconsistentExpr(MapFact.singleton(interfaces.single(), expr), set.getBaseClass());
+    }
+    
+    public void dropInconsistentClasses(SQLSession session, BaseClass baseClass, KeyExpr key, Where where, OperationOwner owner) throws SQLException, SQLHandledException {
+        Table table = baseClass.getInconsistentTable(mapTable.table);
+        session.modifyRecords(new ModifyQuery(table, new Query<KeyField, PropertyField>(MapFact.singletonRev(table.keys.single(), key), MapFact.singleton(field, Expr.NULL), where), owner));
     }
 
     public Table.Join.Expr getStoredExpr(Expr expr) {

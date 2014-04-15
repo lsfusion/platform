@@ -7,6 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MFilterSet;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
@@ -27,6 +28,7 @@ import lsfusion.server.classes.sets.UpClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.*;
+import lsfusion.server.data.expr.formula.StringAggConcatenateFormulaImpl;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
@@ -50,6 +52,7 @@ import lsfusion.server.logics.table.ImplementTable;
 import javax.swing.*;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import static lsfusion.base.BaseUtils.filterKeys;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -851,7 +854,25 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    public static String checkClasses(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+    public static String checkClasses(final SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+
+        final Result<String> incorrect = new Result<String>();
+        runExclusiveness(new RunExclusiveness() {
+            public void run(Query<String, String> query) throws SQLException, SQLHandledException {
+                incorrect.set(query.readSelect(sql));
+            }
+        }, sql, baseClass);
+
+        if(!incorrect.result.isEmpty())
+            return "---- Checking Classes Exclusiveness -----" + '\n' + incorrect.result;
+        return "";
+    }
+    
+    public static interface RunExclusiveness {
+        void run(Query<String, String> query) throws SQLException, SQLHandledException;
+    }
+
+    public static void runExclusiveness(RunExclusiveness run, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
 
         // тут можно было бы использовать нижнюю конструкцию, но с учетом того что не все базы поддерживают FULL JOIN, на UNION'ах и их LEFT JOIN'ах с проталкиванием, запросы получаются мегабайтные и СУБД не справляется
 //        KeyExpr key = new KeyExpr("key");
@@ -863,36 +884,35 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         final ImOrderSet<ClassField> tables = baseClass.getUpTables().keys().toOrderSet();
 
         final MLinearOperandMap mSum = new MLinearOperandMap();
-//        final MList<Expr> mAgg = ListFact.mList();
+        final MList<Expr> mAgg = ListFact.mList();
         final MAddCol<SingleKeyTableUsage<String>> usedTables = ListFact.mAddCol();
         for(ImSet<ClassField> group : tables.getSet().group(new BaseUtils.Group<Integer, ClassField>() {
             public Integer group(ClassField key) {
                 return tables.indexOf(key) % threshold;
             }}).values()) {
-            SingleKeyTableUsage<String> table = new SingleKeyTableUsage<String>(ObjectType.instance, SetFact.toOrderExclSet("sum"), new Type.Getter<String>() {
-                public Type getType(String key) { // "agg"
+            SingleKeyTableUsage<String> table = new SingleKeyTableUsage<String>(ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), new Type.Getter<String>() {
+                public Type getType(String key) {
                     return key.equals("sum") ? ValueExpr.COUNTCLASS : StringClass.getv(false, ExtInt.UNLIMITED);
                 }});
             Expr sumExpr = IsClassExpr.create(key, group, IsClassType.SUMCONSISTENT);
-//            Expr aggExpr = IsClassExpr.create(key, group, IsClassType.AGGCONSISTENT);
-            table.writeRows(sql, new Query<String,String>(MapFact.singletonRev("key", key), MapFact.singleton("sum", sumExpr), sumExpr.getWhere()), baseClass, DataSession.emptyEnv(OperationOwner.unknown)); //, "agg", aggExpr
+            Expr aggExpr = IsClassExpr.create(key, group, IsClassType.AGGCONSISTENT);
+            table.writeRows(sql, new Query<String,String>(MapFact.singletonRev("key", key), MapFact.toMap("sum", sumExpr, "agg", aggExpr), sumExpr.getWhere()), baseClass, DataSession.emptyEnv(OperationOwner.unknown));
 
             Join<String> tableJoin = table.join(key);
             mSum.add(tableJoin.getExpr("sum"), 1);
-//            mAgg.add(tableJoin.getExpr("agg"));
+            mAgg.add(tableJoin.getExpr("agg"));
 
             usedTables.add(table);
         }
 
         // FormulaUnionExpr.create(new StringAggConcatenateFormulaImpl(","), mAgg.immutableList()) , "value",
-        String incorrect = new Query<String,String>(MapFact.singletonRev("key", key), mSum.getExpr().compare(ValueExpr.COUNT, Compare.GREATER)).readSelect(sql);
+        Expr sumExpr = mSum.getExpr();
+        Expr aggExpr = FormulaUnionExpr.create(new StringAggConcatenateFormulaImpl(","), mAgg.immutableList());
+        run.run(new Query<String,String>(MapFact.singletonRev("key", key), sumExpr.compare(ValueExpr.COUNT, Compare.GREATER), MapFact.<String, DataObject>EMPTY(),
+                MapFact.toMap("sum", sumExpr, "agg", aggExpr)));
 
         for(SingleKeyTableUsage<String> usedTable : usedTables.it())
             usedTable.drop(sql, OperationOwner.unknown);
-
-        if(!incorrect.isEmpty())
-            return "---- Checking Classes Exclusiveness -----" + '\n' + incorrect;
-        return "";
     }
 
     @Message("logics.checking.data.classes")
