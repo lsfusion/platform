@@ -23,20 +23,28 @@ import java.util.Date;
 import java.util.EventObject;
 
 public class DatePropertyEditor extends JDateChooser implements PropertyEditor, ClientPropertyTableEditorComponent {
-    private final SimpleDateFormat format;
+    protected final SimpleDateFormat format;
 
     public DatePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
         super(null, null, format.toPattern(), new DatePropertyEditorComponent(format));
         this.format = format;
 
         if (value != null) {
-            setDate(DateConverter.sqlToDate((java.sql.Date) value));
+            setDate(valueToDate(value));
             ((JFormattedTextField) dateEditor).selectAll();
         }
-
+        
         if (design != null) {
             design.designCell(this);
         }
+    }
+
+    public Date valueToDate(Object value) {
+        return DateConverter.sqlToDate((java.sql.Date) value);
+    }
+    
+    public Object dateToValue(Date date) {
+        return DateConverter.safeDateToSql(getDate());
     }
 
     @Override
@@ -60,8 +68,6 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
     public void setNextFocusableComponent(Component comp) {
         super.setNextFocusableComponent(comp);
         ((JComponent) dateEditor).setNextFocusableComponent(comp);
-//        jcalendar.setNextFocusableComponent(dateEditor.getUiComponent());
-
 
         // вот эту хрень приходится добавлять по той причине, что иначе так как popup вообще говоря не child таблицы,
         // то при нажатии на что угодно - она тут же делает stopEditing...
@@ -104,7 +110,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
     }
 
     public Object getCellEditorValue() {
-        return DateConverter.safeDateToSql(getDate());
+        return dateToValue(getDate());
     }
 
     @Override
@@ -123,8 +129,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        int x = calendarButton.getWidth()
-                - (int) popup.getPreferredSize().getWidth();
+        int x = calendarButton.getWidth() - (int) popup.getPreferredSize().getWidth();
         int y = calendarButton.getY() + calendarButton.getHeight();
 
         Calendar calendar = format.getCalendar();
@@ -135,7 +140,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
         dateSelected = false;
     }
 
-    private static class DatePropertyEditorComponent extends JTextFieldDateEditor {
+    protected static class DatePropertyEditorComponent extends JTextFieldDateEditor {
         public DatePropertyEditorComponent(SimpleDateFormat format) {
             super(format.toPattern(), null, ' ');
             this.dateFormatter = format;
@@ -155,11 +160,69 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
             return processKeyBinding(ks, ke, condition, pressed);
         }
 
+        @Override
+        public String createMaskFromDatePattern(String datePattern) {
+            String symbols = "GyMdkHmsSEDFwWhKzZ";
+            String mask = "";
+            for (int i = 0; i < datePattern.length(); i++) {
+                char ch = datePattern.charAt(i);
+                if (ch == 'a') {
+                    mask += 'U';
+                } else if (symbols.indexOf(ch) != -1) {
+                    mask += '#';
+                } else {
+                    mask += ch;
+                }
+            }
+            return mask;
+        }
+
         public Date getDate() {
+            String dateText = getText();
             try {
-                return dateFormatter.parse(getText());
+                return dateFormatter.parse(dateText);
             } catch (ParseException e) {
-                return null;
+                //чтобы была возможность не вводить всё значение времени
+                //ищем в паттерне символы, которые парсятся в значения time-полей и заменяем их на 1, если они отсутствуют
+
+                if (dateText.isEmpty() || maskPattern.length() != datePattern.length()) {
+                    return null;
+                }
+
+                int textLength = dateText.length();
+
+                assert textLength == maskPattern.length();
+
+                StringBuilder dateBuilder = new StringBuilder(dateText);
+
+                String timeSymbols = "HhKksm";
+
+                for (int i = 1; i < textLength - 1; ++i) {
+                    char patternCh = datePattern.charAt(i);
+                    //благодаря преобразованию через createDateTimeEditFormat, мы точно знаем, что символы в паттерне повторятся
+                    if (patternCh == 'S') {
+                        ifMatchThenReplace(dateText, dateBuilder, "   ", "000", i);
+                        i += 2;
+                    } else if (patternCh == 'a') {
+                        ifMatchThenReplace(dateText, dateBuilder, "  ", "PM", i);
+                        i ++;
+                    } else if (timeSymbols.indexOf(patternCh) != -1) {
+                        ifMatchThenReplace(dateText, dateBuilder, "  ", "00", i);
+                        i ++;
+                    }
+                }
+
+                try {
+                    return dateFormatter.parse(dateBuilder.toString());
+                } catch (ParseException pe) {
+                    return null;
+                }
+            }
+        }
+
+        private void ifMatchThenReplace(String src, StringBuilder dest, String match, String replace, int offset) {
+            if (src.regionMatches(offset, match, 0, match.length())) {
+                dest.replace(offset, offset + match.length(), replace);
             }
         }
     }

@@ -1,5 +1,6 @@
 package lsfusion.client.logics.classes;
 
+import lsfusion.base.DateConverter;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
@@ -9,31 +10,26 @@ import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Data;
 
 import java.sql.Time;
+import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static lsfusion.client.Main.timeFormat;
-import static lsfusion.client.Main.wideFormattableDateTime;
+import static lsfusion.client.Main.*;
 import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 
 public class ClientTimeClass extends ClientDataClass implements ClientTypeClass {
 
     public final static ClientTimeClass instance = new ClientTimeClass();
 
-    private final String sID = "TimeClass";
+    private final static String sID = "TimeClass";
 
     public String getPreferredMask() {
-        try {
-            return formatString(wideFormattableDateTime) + "BT";
-        } catch (ParseException pe) {
-            throw new IllegalStateException("shouldn't happen", pe);
-        }
+        return timeEditFormat.format(wideFormattableDateTime) + "BT";
     }
 
     protected PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {
-        return new TimePropertyEditor(value, (SimpleDateFormat) property.getFormat(), property.design);
+        return new TimePropertyEditor(value, DateConverter.createTimeEditFormat((DateFormat) property.getFormat()), property.design);
     }
 
     public String getSID() {
@@ -56,7 +52,7 @@ public class ClientTimeClass extends ClientDataClass implements ClientTypeClass 
         }
     }
 
-    public String formatString(Object obj) throws ParseException {
+    public String formatString(Object obj) {
         if (obj != null) {
             return timeFormat.format(obj);
         }

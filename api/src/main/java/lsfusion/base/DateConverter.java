@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -18,14 +19,14 @@ public class DateConverter {
         else
             return new java.sql.Date(date.getYear(), date.getMonth(), date.getDate());
     }
+    
     public static java.sql.Date safeDateToSql(Date date) {
         if (date == null) return null;
         
         if (date instanceof java.sql.Date)
             return (java.sql.Date) date;
         else {
-            java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-            return sqlDate;
+            return new java.sql.Date(date.getTime());
         }
     }
 
@@ -40,15 +41,34 @@ public class DateConverter {
         return date;
     }
 
+    public static Date stampToDate(Timestamp stamp) {
+        return new Date(stamp.getTime());
+    }
+
+    public static Date timeToDate(Time time) {
+        return new Date(time.getTime());
+    }
+
+    public static java.sql.Time dateToTime(Date date) {
+        if (date == null) return null;
+
+        return new Time(date.getTime());
+    }
+
     public static java.sql.Timestamp dateToStamp(Date date) {
         if (date == null) return null;
 
         return new Timestamp(date.getTime());
     }
 
-    public static Date stampToDate(Timestamp date) {
-        return new Date(date.getTime());
+    public static SimpleDateFormat createTimeEditFormat(DateFormat dateFormat) {
+        if (!(dateFormat instanceof SimpleDateFormat)) {
+            //используем паттерн по умолчанию
+            return new SimpleDateFormat("HH:mm:ss");
+        }
+        return createDateEditFormat((SimpleDateFormat)dateFormat);
     }
+
 
     public static SimpleDateFormat createDateEditFormat(DateFormat dateFormat) {
         if (!(dateFormat instanceof SimpleDateFormat)) {

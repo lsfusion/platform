@@ -44,6 +44,7 @@ import java.util.GregorianCalendar;
 
 import static lsfusion.base.DateConverter.createDateEditFormat;
 import static lsfusion.base.DateConverter.createDateTimeEditFormat;
+import static lsfusion.base.DateConverter.createTimeEditFormat;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
 import static lsfusion.interop.remote.RMIUtils.initRMI;
@@ -75,6 +76,7 @@ public class Main {
     public static DateFormat dateFormat;
     public static DateFormat dateEditFormat;
     public static DateFormat timeFormat;
+    public static DateFormat timeEditFormat;
     public static DateFormat dateTimeFormat;
     public static DateFormat dateTimeEditFormat;
     public static Date wideFormattableDate;
@@ -217,6 +219,7 @@ public class Main {
 //        dateTimeFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
         dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
 
+        timeEditFormat = createTimeEditFormat(timeFormat);
         dateEditFormat = createDateEditFormat(dateFormat);
         dateTimeEditFormat = createDateTimeEditFormat(dateTimeFormat);
 
