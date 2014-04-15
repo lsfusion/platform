@@ -836,8 +836,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private ImMap<ObjectInstance, Expr> overrideColumnKeys(ImRevMap<ObjectInstance, KeyExpr> mapKeys, ImMap<ObjectInstance, DataObject> columnKeys) {
-        return MapFact.override(mapKeys, columnKeys.mapKeyValues(new GetValue<Expr, ObjectInstance>() { // замещение с добавлением
-            public Expr getMapValue(ObjectInstance value) {
+        return MapFact.override(mapKeys, columnKeys.mapValues(new GetValue<Expr, DataObject>() { // замещение с добавлением
+            public Expr getMapValue(DataObject value) {
                 return value.getExpr();
             }
         }));
