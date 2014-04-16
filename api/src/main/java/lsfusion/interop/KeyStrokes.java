@@ -212,7 +212,7 @@ public class KeyStrokes {
     }
 
     public static boolean isSuitableEditKeyEvent(EventObject event) {
-        if ((event instanceof KeyEvent)) {
+        if (event instanceof KeyEvent) {
             KeyEvent keyEvent = (KeyEvent) event;
             //будем считать, что если нажата кнопка ALT или CTRL, то явно пользователь не хочет вводить текст
             return !keyEvent.isActionKey() &&

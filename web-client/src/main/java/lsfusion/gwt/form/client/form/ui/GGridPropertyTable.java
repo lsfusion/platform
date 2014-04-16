@@ -95,10 +95,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
             if ((editEventFilter != null && !editEventFilter.accept(event) && !form.isEditing()) || !isEditable(getCurrentCellContext())) {
                 stopPropagation(event);
-                GPropertyDraw filterProperty = currentProperty != null && currentProperty.quickFilterProperty != null
-                                                    ? currentProperty.quickFilterProperty
-                                                    : null;
-                quickFilter(new NativeEditEvent(event), filterProperty);
+                if (useQuickSearchInsteadOfQuickFilter()) {
+                    quickSearch(event);
+                } else {
+                    GPropertyDraw filterProperty = currentProperty != null && currentProperty.quickFilterProperty != null
+                                                   ? currentProperty.quickFilterProperty
+                                                   : null;
+                    quickFilter(new NativeEditEvent(event), filterProperty);
+                }
             }
         } else if (BrowserEvents.KEYDOWN.equals(event.getType()) && KeyCodes.KEY_ESCAPE == event.getKeyCode()) {
             GAbstractGroupObjectController goController = getGroupController();
@@ -174,6 +178,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public Boolean getSortDirection(Header header) {
         return sortableHeaderManager.getSortDirection(getHeaderIndex(header));
+    }
+    
+    protected boolean useQuickSearchInsteadOfQuickFilter() {
+        return false;
+    }
+
+    protected void quickSearch(Event event) {
+        //do nothing by default
     }
 
     public abstract GGroupObjectValue getCurrentKey();

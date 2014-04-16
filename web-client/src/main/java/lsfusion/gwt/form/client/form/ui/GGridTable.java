@@ -1,11 +1,13 @@
 package lsfusion.gwt.form.client.form.ui;
 
 import com.allen_sauer.gwt.log.client.Log;
+import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.jsni.Function;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
@@ -29,10 +31,13 @@ import java.util.*;
 
 import static java.lang.Boolean.TRUE;
 import static java.lang.Math.min;
+import static java.lang.String.valueOf;
 import static java.util.Collections.singleton;
 import static lsfusion.gwt.base.shared.GwtSharedUtils.*;
 
 public class GGridTable extends GGridPropertyTable<GridDataRecord> {
+    private static final double QUICK_SEARCH_MAX_DELAY = 2000;
+
     private ArrayList<GPropertyDraw> columnProperties = new ArrayList<GPropertyDraw>();
     private ArrayList<GGroupObjectValue> columnKeysList = new ArrayList<GGroupObjectValue>();
 
@@ -71,6 +76,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private int nextColumnID = 0;
 
     private int pageSize = 50;
+
+    private String lastQuickSearchPrefix = "";
+
+    private double lastQuickSearchTime = 0;
 
     public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController, GGridUserPreferences[] iuserPreferences) {
         super(iform, null);
@@ -741,6 +750,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         Column column = getColumn(context.getColumn());
         return column.getValue(context.getRowValue());
     }
+    
+    public Object getValueAt(int row, int col) {
+        Column column = getColumn(col);
+        return column.getValue(getRowValue(row));
+    }
 
     @Override
     public void pasteData(final List<List<String>> table) {
@@ -798,8 +812,45 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     }
 
     @Override
+    protected boolean useQuickSearchInsteadOfQuickFilter() {
+        return groupObject.grid.quickSearch;
+    }
+
+    @Override
     public void quickFilter(EditEvent event, GPropertyDraw filterProperty) {
         groupObjectController.quickEditFilter(event, filterProperty);
+    }
+
+    @Override
+    protected void quickSearch(Event editEvent) {
+        if (getRowCount() > 0 && getColumnCount() > 0) {
+            
+
+            char ch = (char) editEvent.getCharCode();
+
+            double currentTime = Duration.currentTimeMillis();
+            lastQuickSearchPrefix = (lastQuickSearchTime + QUICK_SEARCH_MAX_DELAY < currentTime) ? valueOf(ch) : (lastQuickSearchPrefix + ch);
+
+            int searchColumn = 0;
+            if (!sortableHeaderManager.getOrderDirections().isEmpty()) {
+                for (int i = 0; i < getColumnCount(); ++i) {
+                    if (sortableHeaderManager.getSortDirection(i) != null) {
+                        searchColumn = i;
+                        break;
+                    }
+                }
+            }
+
+            for (int i = 0; i < getRowCount(); ++i) {
+                Object value = getValueAt(i, searchColumn);
+                if (value != null && value.toString().regionMatches(true, 0, lastQuickSearchPrefix, 0, lastQuickSearchPrefix.length())) {
+                    setKeyboardSelectedRow(i);
+                    break;
+                }
+            }
+
+            lastQuickSearchTime = currentTime;
+        }
     }
 
     public void selectProperty(GPropertyDraw propertyDraw) {
