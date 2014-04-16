@@ -12,10 +12,7 @@ import lsfusion.server.Message;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.data.ModifyQuery;
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NotNullKeyExpr;
@@ -99,7 +96,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         session.pushVolatileStats(null, OperationOwner.unknown);
         try {
             session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false).map(
-                    mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), OperationOwner.unknown));
+                    mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), OperationOwner.unknown, TableOwner.global));
         } finally {
             session.popVolatileStats(null, OperationOwner.unknown);
         }

@@ -1291,7 +1291,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //        if(reupdateWhere != null)
 //            modifyQuery.and(reupdateWhere.not());
         
-        sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env));
+        sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery.getQuery(), env, TableOwner.global));
     }
 
     // хранит агрегированные изменения для уменьшения сложности (в транзакции очищает ветки от single applied)
@@ -1544,7 +1544,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 }
             }
             query.and(table.join(query.getMapExprs()).getWhere().and(removeWhere));
-            sql.deleteRecords(new ModifyQuery(table, query.getQuery(), getQueryEnv()));
+            sql.deleteRecords(new ModifyQuery(table, query.getQuery(), getQueryEnv(), TableOwner.global));
         }
     }
 

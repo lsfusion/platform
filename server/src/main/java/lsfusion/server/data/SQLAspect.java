@@ -18,11 +18,11 @@ public class SQLAspect {
     private static interface ProceedDefaultEnv {
         Object proceed() throws Throwable;
     } 
-    @Around("execution(* lsfusion.server.data.SQLSession.executeDML(java.lang.String, lsfusion.server.data.OperationOwner, lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.data.query.ExecuteEnvironment, lsfusion.server.data.query.QueryExecuteEnvironment, int)) && target(sql) && args(queryString, owner, paramObjects, env, queryExecEnv, transactTimeout)")
-    public Object executeDML(final ProceedingJoinPoint thisJoinPoint, final SQLSession sql, final String queryString, final OperationOwner owner, final ImMap paramObjects, final ExecuteEnvironment env, QueryExecuteEnvironment queryExecEnv, final int transactTimeout) throws Throwable {
+    @Around("execution(* lsfusion.server.data.SQLSession.executeDML(java.lang.String, lsfusion.server.data.OperationOwner, lsfusion.server.data.TableOwner, lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.data.query.ExecuteEnvironment, lsfusion.server.data.query.QueryExecuteEnvironment, int)) && target(sql) && args(queryString, owner, tableOwner, paramObjects, env, queryExecEnv, transactTimeout)")
+    public Object executeDML(final ProceedingJoinPoint thisJoinPoint, final SQLSession sql, final String queryString, final OperationOwner owner, final TableOwner tableOwner, final ImMap paramObjects, final ExecuteEnvironment env, QueryExecuteEnvironment queryExecEnv, final int transactTimeout) throws Throwable {
         return executeRepeatableStatement(thisJoinPoint, sql, owner, queryExecEnv, new ProceedDefaultEnv() {
             public Object proceed() throws Throwable {
-                return thisJoinPoint.proceed(new Object[] {sql, queryString, owner, paramObjects, env, QueryExecuteEnvironment.DEFAULT, transactTimeout});
+                return thisJoinPoint.proceed(new Object[] {sql, queryString, owner, tableOwner, paramObjects, env, QueryExecuteEnvironment.DEFAULT, transactTimeout});
             }});
     }
 

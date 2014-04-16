@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -27,7 +26,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 import java.sql.SQLException;
 import java.util.Map;
 
-public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
+public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
     public SessionData<?> table;
     protected ImRevMap<KeyField, K> mapKeys;
@@ -130,7 +129,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     }
     // оптимизационная штука
     public void updateAdded(SQLSession session, BaseClass baseClass, V property, Pair<Integer,Integer>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException {
-        table = table.updateAdded(session, baseClass, getField(property), shifts, owner);
+        table = table.updateAdded(session, baseClass, getField(property), shifts, owner, this);
     }
 
     private PropertyField getField(V property) {

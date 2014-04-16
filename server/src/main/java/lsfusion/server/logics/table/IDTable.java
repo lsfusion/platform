@@ -113,7 +113,7 @@ public class IDTable extends GlobalTable {
 
             QueryBuilder<KeyField, PropertyField> updateQuery = new QueryBuilder<KeyField, PropertyField>(this, MapFact.singleton(key, new DataObject(idType, SystemClass.instance)));
             updateQuery.addProperty(value, new ValueExpr(freeID + count - 1, SystemClass.instance));
-            dataSession.updateRecords(new ModifyQuery(this, updateQuery.getQuery(), OperationOwner.unknown));
+            dataSession.updateRecords(new ModifyQuery(this, updateQuery.getQuery(), OperationOwner.unknown, TableOwner.global));
 
             dataSession.commitTransaction();
         } catch (Throwable e) {

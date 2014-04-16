@@ -518,7 +518,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 copyObjects.and(moveWhere);
 
                 systemLogger.info(getString("logics.info.objects.are.transferred.from.tables.to.table", classProp.tableName, mCopyFromTables.immutable().toString()));
-                sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown));
+                sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
             }
             ImMap<String, ImSet<Integer>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.<String, Integer>addMergeSet());
             for (int i = 0, size = toClean.size(); i < size; i++) { // удалим оставшиеся классы
@@ -536,7 +536,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 dropClassObjects.and(moveWhere);
 
                 systemLogger.info(getString("logics.info.objects.are.removed.from.table", classProp.tableName));
-                sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery(), OperationOwner.unknown));
+                sql.updateRecords(new ModifyQuery(table, dropClassObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
             }
 
             MSet<ImplementTable> mPackTables = SetFact.mSet();
@@ -577,10 +577,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             newDBStructure.writeConcreteClasses(outDB);
 
             try {
-                sql.insertRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(structTable.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)), true, OperationOwner.unknown);
+                sql.insertRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
             } catch (Exception e) {
                 ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(structTable.struct, (ObjectValue) new DataObject((Object) new byte[0], ByteArrayClass.instance));
-                sql.insertRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, OperationOwner.unknown);
+                sql.insertRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, TableOwner.global, OperationOwner.unknown);
             }
 
             if (oldDBStructure.version < 14) {
@@ -970,7 +970,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             run(session, isolatedTransaction, new RunService() {
                 @Override
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    sql.packTable(table, OperationOwner.unknown);
+                    sql.packTable(table, OperationOwner.unknown, TableOwner.global);
                 }});
             logger.debug("Done");
         }
@@ -992,7 +992,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             sql.dropColumn(tableName, columnName);
             ImplementTable table = LM.tableFactory.getImplementTablesMap().get(tableName); // надо упаковать таблицу, если удалили колонку
             if (table != null)
-                sql.packTable(table, OperationOwner.unknown);
+                sql.packTable(table, OperationOwner.unknown, TableOwner.global);
             sql.commitTransaction();
         } catch(SQLException e) {
             sql.rollbackTransaction();

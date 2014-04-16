@@ -77,7 +77,7 @@ public class ImplementTable extends GlobalTable {
         Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);
         moveColumn.addProperty(field, moveExpr);
         moveColumn.and(moveExpr.getWhere());
-        sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery(), OperationOwner.unknown));
+        sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery(), OperationOwner.unknown, TableOwner.global));
     }
 
     @NFLazy
@@ -167,13 +167,12 @@ public class ImplementTable extends GlobalTable {
             Integer relation = item.compare(mapFields,new Result<ImRevMap<KeyField, KeyField>>());
             if(relation==COMPARE_DOWN) { // снизу в дереве, добавляем ее как промежуточную
                 if(!parents.containsNF(item, Version.CURRENT)) {
-                    checkSiblings(item, parents, this);
-                    
+                    assert checkSiblings(item, parents, this);                    
                     parents.add(item, version);
                 }
                 if(toAdd) {
                     wasRemove = true;
-                    tables.remove(item, version);
+                    tables.remove(item, Version.CURRENT); // последняя версия нужна, так как в противном случае удаление может пойти до добавления 
                 }
             } else { // сверху в дереве или никак не связаны, передаем дальше
                 if((relation == COMPARE_UP || relation == COMPARE_EQUAL) && !checks.contains(item)) { // для детерменированности эту проверку придется убрать relation!=COMPARE_EQUAL
@@ -181,8 +180,6 @@ public class ImplementTable extends GlobalTable {
                     include(item.parents, version, relation==COMPARE_UP,checks, item);
                 }
                 if(relation==COMPARE_UP) {
-                    if(wasRemove)
-                        wasRemove = wasRemove;
                     assert !wasRemove; // так как не может быть одновременно down и up
                     toAdd = false;
                 }
@@ -191,17 +188,18 @@ public class ImplementTable extends GlobalTable {
 
         // если снизу добавляем Childs
         if(toAdd) {
-            checkSiblings(this, tables, debugItem);
+            assert checkSiblings(this, tables, debugItem);
             tables.add(this, version);
         }
     }
 
-    private void checkSiblings(ImplementTable item, NFOrderSet<ImplementTable> tables, ImplementTable debugItem) {
+    private boolean checkSiblings(ImplementTable item, NFOrderSet<ImplementTable> tables, ImplementTable debugItem) {
         for(ImplementTable siblingTable : tables.getNFList(Version.CURRENT)) {
             int compare = siblingTable.compare(item.mapFields, new Result<ImRevMap<KeyField, KeyField>>());
             if(compare==COMPARE_UP || compare == COMPARE_DOWN)
-                compare = compare;
+                return false;
         }
+        return true;
     }
 
     public <T> MapKeysTable<T> getMapTable(ImMap<T, ValueClass> findItem, boolean included) {

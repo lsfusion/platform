@@ -27,7 +27,7 @@ public class SQLSessionLoggerAspect {
         return executeMethodAndLogTime(thisJoinPoint, select);
     }
 
-    @Around("execution(* lsfusion.server.data.SQLSession.insertBatchRecords(java.lang.String, lsfusion.base.col.interfaces.immutable.ImOrderSet, lsfusion.base.col.interfaces.immutable.ImMap)) && args(table, keys, rows)")
+    @Around("execution(* lsfusion.server.data.SQLSession.insertBatchRecords(java.lang.String, lsfusion.base.col.interfaces.immutable.ImOrderSet, lsfusion.base.col.interfaces.immutable.ImMap, ..)) && args(table, keys, rows, ..)")
     public Object executeInsertBatch(ProceedingJoinPoint thisJoinPoint, String table, ImOrderSet keys, ImMap rows) throws Throwable {
         return executeMethodAndLogTime(thisJoinPoint, "INSERT BATCH INTO " + table + " ROWS " + rows.size());
     }

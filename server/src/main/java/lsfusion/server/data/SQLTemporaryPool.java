@@ -35,7 +35,7 @@ public class SQLTemporaryPool {
     }
 
     @AssertSynchronized
-    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Map<String, WeakReference<Object>> used, Result<Boolean> isNew, Object owner, OperationOwner opOwner) throws SQLException {
+    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Map<String, WeakReference<TableOwner>> used, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException {
         FieldStruct fieldStruct = new FieldStruct(keys, properties, count);
 
         Set<String> matchTables = tables.get(fieldStruct);
@@ -49,10 +49,10 @@ public class SQLTemporaryPool {
 //                session.truncate(matchTable); // удаляем старые данные
                 if(session.getCount(matchTable, opOwner) != 0) {
                     ServerLoggers.assertLog(false, "TEMPORARY TABLE NOT EMPTY");
-                    session.truncate(matchTable, opOwner);
+                    session.truncate(matchTable, opOwner, TableOwner.none);
                 }
                 assert !used.containsKey(matchTable);
-                used.put(matchTable, new WeakReference<Object>(owner));
+                used.put(matchTable, new WeakReference<TableOwner>(owner));
                 session.unlockTemporary();
                 isNew.set(false);
                 return matchTable;
@@ -63,7 +63,7 @@ public class SQLTemporaryPool {
         session.createTemporaryTable(table, keys, properties, opOwner);
         counter++;
         assert !used.containsKey(table);
-        used.put(table, new WeakReference<Object>(owner));
+        used.put(table, new WeakReference<TableOwner>(owner));
         matchTables.add(table);
         session.unlockTemporary();
         isNew.set(true);

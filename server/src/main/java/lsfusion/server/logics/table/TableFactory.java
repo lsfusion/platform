@@ -133,11 +133,11 @@ public class TableFactory {
 
             ImMap<Integer, Integer> counters = IDTable.getCounters();
             for (int i = 0, size = counters.size(); i < size; i++)
-                sql.ensureRecord(IDTable.instance, MapFact.singleton(IDTable.instance.key, new DataObject(counters.getKey(i), SystemClass.instance)), MapFact.singleton(IDTable.instance.value, (ObjectValue) new DataObject(counters.getValue(i), SystemClass.instance)), OperationOwner.unknown);
+                sql.ensureRecord(IDTable.instance, MapFact.singleton(IDTable.instance.key, new DataObject(counters.getKey(i), SystemClass.instance)), MapFact.singleton(IDTable.instance.value, (ObjectValue) new DataObject(counters.getValue(i), SystemClass.instance)), TableOwner.global, OperationOwner.unknown);
 
             // создадим dumb
             sql.ensureTable(DumbTable.instance);
-            sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1, SystemClass.instance)), MapFact.<PropertyField, ObjectValue>EMPTY(), OperationOwner.unknown);
+            sql.ensureRecord(DumbTable.instance, MapFact.singleton(DumbTable.instance.key, new DataObject(1, SystemClass.instance)), MapFact.<PropertyField, ObjectValue>EMPTY(), TableOwner.global, OperationOwner.unknown);
 
             sql.ensureTable(EmptyTable.instance);
 

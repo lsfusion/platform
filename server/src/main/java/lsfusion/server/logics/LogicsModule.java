@@ -38,6 +38,7 @@ import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.mutables.LastVersion;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
@@ -333,6 +334,7 @@ public abstract class LogicsModule {
     public Integer order;
     private final Version version = new Version() {
         public boolean canSee(Version version) {
+            assert !(version instanceof LastVersion);
             return visible.contains(version);
         }
 

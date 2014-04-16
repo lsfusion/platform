@@ -46,6 +46,6 @@ public class StoredDataProperty extends DataProperty {
         ImRevMap<KeyField, KeyExpr> mapKeys = mapTable.table.getMapKeys();
         Where where = DataSession.getIncorrectWhere(this, baseClass, mapTable.mapKeys.join(mapKeys));
         Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(mapKeys, Expr.NULL, field, where);
-        sql.updateRecords(new ModifyQuery(mapTable.table, query, OperationOwner.unknown));
+        sql.updateRecords(new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global));
     }
 }

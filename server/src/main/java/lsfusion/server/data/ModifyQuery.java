@@ -20,19 +20,21 @@ public class ModifyQuery {
     public final Table table;
     private final IQuery<KeyField, PropertyField> change;
     private final QueryEnvironment env;
+    public final TableOwner owner;
     
     public OperationOwner getOwner() {
         return env.getOpOwner();
     }
 
-    public ModifyQuery(Table table, IQuery<KeyField, PropertyField> change, OperationOwner owner) {
-        this(table, change, DataSession.emptyEnv(owner));
+    public ModifyQuery(Table table, IQuery<KeyField, PropertyField> change, OperationOwner owner, TableOwner tableOwner) {
+        this(table, change, DataSession.emptyEnv(owner), tableOwner);
     }
 
-    public ModifyQuery(Table table, IQuery<KeyField, PropertyField> change, QueryEnvironment env) {
+    public ModifyQuery(Table table, IQuery<KeyField, PropertyField> change, QueryEnvironment env, TableOwner owner) {
         this.table = table;
         this.change = change;
         this.env = env;
+        this.owner = owner;
     }
 
     public SQLExecute getUpdate(final SQLSyntax syntax) {
@@ -107,7 +109,7 @@ public class ModifyQuery {
                 throw new RuntimeException();
         }
 
-        return new SQLExecute(update,changeCompile.getQueryParams(env), changeCompile.env, changeCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner());
+        return new SQLExecute(update,changeCompile.getQueryParams(env), changeCompile.env, changeCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
     }
 
     public SQLExecute getDelete(final SQLSyntax syntax) {
@@ -122,11 +124,11 @@ public class ModifyQuery {
 
         String delete = "DELETE FROM " + table.getName(syntax) + " USING (" + deleteCompile.select + ") " + deleteAlias + " WHERE " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
 
-        return new SQLExecute(delete, deleteCompile.getQueryParams(env), deleteCompile.env, deleteCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner());
+        return new SQLExecute(delete, deleteCompile.getQueryParams(env), deleteCompile.env, deleteCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
     }
 
     public SQLExecute getInsertLeftKeys(SQLSyntax syntax, boolean updateProps, boolean insertOnlyNotNull) {
-        return (new ModifyQuery(table, getInsertLeftQuery(updateProps, insertOnlyNotNull), env)).getInsertSelect(syntax);
+        return (new ModifyQuery(table, getInsertLeftQuery(updateProps, insertOnlyNotNull), env, owner)).getInsertSelect(syntax);
     }
 
     public Query<KeyField, PropertyField> getInsertLeftQuery(boolean updateProps, boolean insertOnlyNotNull) {
@@ -173,7 +175,7 @@ public class ModifyQuery {
         return changeCompile.select;
     }
 
-    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, SQLSyntax syntax) {
+    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax) {
         CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(syntax);
 
         String insertString = SetFact.addOrderExcl(changeCompile.keyOrder, changeCompile.propertyOrder).toString(Field.<Field>nameGetter(syntax), ",");
@@ -181,11 +183,11 @@ public class ModifyQuery {
         ExecuteEnvironment execEnv = new ExecuteEnvironment();
         execEnv.add(changeCompile.env);
 
-        return new SQLExecute("INSERT INTO " + name + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax, execEnv),changeCompile.getQueryParams(env), execEnv, changeCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner());
+        return new SQLExecute("INSERT INTO " + name + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax, execEnv),changeCompile.getQueryParams(env), execEnv, changeCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
     }
 
     public SQLExecute getInsertSelect(SQLSyntax syntax) {
-        return getInsertSelect(table.getName(syntax), change, env, syntax);
+        return getInsertSelect(table.getName(syntax), change, env, owner, syntax);
     }
 
     public boolean isEmpty() {
