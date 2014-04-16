@@ -673,6 +673,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
+    @Override
+    public String toString() {
+        return "RemoteNavigator[clientAddress: " + remoteAddress + "]";
+    }
+
     public boolean isClosed() {
         return closed;
     }
