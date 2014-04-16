@@ -44,7 +44,7 @@ public class SQLAspect {
             else 
                 result = thisJoinPoint.proceed();
         } catch (SQLClosedException e) {
-            if(session.lockIsInTransaction(owner) || !session.tryRestore(owner, e.connection))
+            if(session.lockIsInTransaction(owner) || !session.tryRestore(owner, e.connection, e.isPrivate))
                 throw e;
         }
 

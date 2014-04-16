@@ -1,6 +1,7 @@
 package lsfusion.server.form.instance;
 
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.SQLHandledException;
@@ -65,6 +66,9 @@ public class CustomObjectInstance extends ObjectInstance {
 
     public void changeValue(SessionChanges session, ObjectValue changeValue) throws SQLException, SQLHandledException {
         if(changeValue.equals(value)) return;
+
+        if(changeValue instanceof NullValue)
+            ServerLoggers.exinfoLog("DROPPED OBJECT TO NULL : " + this);
 
         value = changeValue;
 

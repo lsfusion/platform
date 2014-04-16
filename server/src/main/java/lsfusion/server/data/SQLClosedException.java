@@ -6,18 +6,20 @@ import java.sql.SQLException;
 public class SQLClosedException extends SQLHandledException {
 
     public transient final Connection connection;
-    public transient final SQLException wrapped;     
+    public transient final SQLException wrapped;
+    public final boolean isPrivate;
     
-    public SQLClosedException(Connection connection, SQLException wrapped) {
+    public SQLClosedException(Connection connection, SQLException wrapped, boolean isPrivate) {
         this.connection = connection;
         this.wrapped = wrapped;
+        this.isPrivate = isPrivate;
     }
 
     public boolean repeatApply(SQLSession sql, OperationOwner owner) throws SQLException {
-        return sql.tryRestore(owner, connection);
+        return sql.tryRestore(owner, connection, isPrivate);
     }
 
     public String toString() {
-        return "CONNECTION_CLOSED " + connection + " " + wrapped;
+        return "CONNECTION_CLOSED " + connection + " " + wrapped + " " + isPrivate;
     }
 }

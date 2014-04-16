@@ -903,7 +903,7 @@ public class SQLSession extends MutableObject {
             handled = new SQLTimeoutException(isTransactTimeout);
         
         if(syntax.isConnectionClosed(e)) {
-            handled = new SQLClosedException(connection.sql, e);
+            handled = new SQLClosedException(connection.sql, e, privateConnection != null);
             problemInTransaction = Problem.CLOSED;
         }
 
@@ -1679,11 +1679,11 @@ public class SQLSession extends MutableObject {
         }
     }
     
-    public boolean tryRestore(OperationOwner opOwner, Connection connection) {
+    public boolean tryRestore(OperationOwner opOwner, Connection connection, boolean isPrivate) {
         lockRead(opOwner);
         temporaryTablesLock.lock();
         try {
-            if(privateConnection != null || Settings.get().isCommonUnique()) // вторая штука перестраховка, но такая опция все равно не используется
+            if(isPrivate || Settings.get().isCommonUnique()) // вторая штука перестраховка, но такая опция все равно не используется
                 return false;
             // повалился common
             assert sessionTablesMap.isEmpty();
