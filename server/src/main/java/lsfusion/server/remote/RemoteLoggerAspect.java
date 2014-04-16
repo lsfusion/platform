@@ -25,7 +25,7 @@ public class RemoteLoggerAspect {
         if (logger.isDebugEnabled()) {
             logger.debug(logCall(thisJoinPoint, runTime));
         } else {
-            if(runTime > Settings.get().getRemoteLogTime())
+            if(runTime > 3000)
                 logger.info(logCall(thisJoinPoint, runTime));
         }
 
