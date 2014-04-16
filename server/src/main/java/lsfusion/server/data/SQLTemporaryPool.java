@@ -35,7 +35,7 @@ public class SQLTemporaryPool {
     }
 
     @AssertSynchronized
-    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Map<String, WeakReference<TableOwner>> used, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException {
+    public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Map<String, WeakReference<TableOwner>> used, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException { //, Map<String, String> usedStacks
         FieldStruct fieldStruct = new FieldStruct(keys, properties, count);
 
         Set<String> matchTables = tables.get(fieldStruct);
@@ -53,6 +53,7 @@ public class SQLTemporaryPool {
                 }
                 assert !used.containsKey(matchTable);
                 used.put(matchTable, new WeakReference<TableOwner>(owner));
+//                SQLSession.addUsed(matchTable, owner, used, usedStacks);
                 session.unlockTemporary();
                 isNew.set(false);
                 return matchTable;
@@ -64,6 +65,7 @@ public class SQLTemporaryPool {
         counter++;
         assert !used.containsKey(table);
         used.put(table, new WeakReference<TableOwner>(owner));
+//        SQLSession.addUsed(table, owner, used, usedStacks);
         matchTables.add(table);
         session.unlockTemporary();
         isNew.set(true);

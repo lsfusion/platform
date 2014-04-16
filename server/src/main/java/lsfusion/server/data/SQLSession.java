@@ -195,8 +195,13 @@ public class SQLSession extends MutableObject {
         owner.checkThreadSafeAccess(writeOwner);
     }
 
+    @Override
+    public String toString() {
+        return "SQL@"+System.identityHashCode(this);
+    }
+
     private void checkClosed() {
-        ServerLoggers.assertLog(!closed, "SQL SESSION IS ALREADY CLOSED");
+        ServerLoggers.assertLog(!closed, "SQL SESSION IS ALREADY CLOSED " + this);
     }
 
     private void unlockRead() {
@@ -304,7 +309,12 @@ public class SQLSession extends MutableObject {
                             String transactionTable = SQLTemporaryPool.getTableName(i+transactionCounter);
 
                             ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES");
+//                            returnUsed(transactionTable, sessionTablesMap);
                             sessionTablesMap.remove(transactionTable);
+//                            
+//                            if(Settings.get().isEnableHacks())
+//                                sessionTablesStackReturned.put(transactionTable, ExceptionUtils.getStackTrace());
+//                            
                             privateConnection.temporary.removeTable(transactionTable);
                         }
                         privateConnection.temporary.setCounter(transactionCounter);
@@ -496,6 +506,18 @@ public class SQLSession extends MutableObject {
     }
 
     private final Map<String, WeakReference<TableOwner>> sessionTablesMap = MapFact.mAddRemoveMap();
+//    
+//    public static void addUsed(String table, TableOwner owner, Map<String, WeakReference<TableOwner>> sessionTablesMap, Map<String, String> sessionTablesStackGot) {
+//        fdfd
+//    }
+//
+//    public static void returnUsed(String table, Map<String, WeakReference<TableOwner>> sessionTablesMap, Map<String, String> sessionTablesStackGot) {
+//        fdfd
+//    }
+//
+//    private final Map<String, String> sessionTablesStackGot = MapFact.mAddRemoveMap();
+//    private final Map<String, String> sessionTablesStackReturned = MapFact.mAddRemoveMap();
+//    
     private int sessionCounter = 0;
 
     public SessionTable createTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> queryClasses, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
@@ -518,7 +540,7 @@ public class SQLSession extends MutableObject {
 
             Result<Boolean> isNew = new Result<Boolean>();
             // в зависимости от политики или локальный пул (для сессии) или глобальный пул
-            table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, isNew, owner, opOwner);
+            table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, isNew, owner, opOwner); //, sessionTablesStackGot
             try {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
             } catch (Throwable t) {
@@ -1667,11 +1689,12 @@ public class SQLSession extends MutableObject {
                 try {
                     removeUnusedTemporaryTables(true, owner);
                 } finally {
-                    ServerLoggers.assertLog(sessionTablesMap.isEmpty(), "AT CLOSE USED TABLES SHOULD NOT EXIST");
+                    ServerLoggers.assertLog(sessionTablesMap.isEmpty(), "AT CLOSE USED TABLES SHOULD NOT EXIST " + this);
                     connectionPool.returnPrivate(this, privateConnection);
                     privateConnection = null;
                 }
             }
+            ServerLoggers.exinfoLog("SQL SESSION CLOSE " + this);
             closed = true;
         } finally {
             temporaryTablesLock.unlock();
