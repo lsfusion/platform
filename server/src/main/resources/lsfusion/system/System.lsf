@@ -10,7 +10,8 @@ CLASS FormResult 'Результат вызова формы' {
 
 CLASS NATIVE Object;
 CLASS NATIVE CustomObjectClass;
-objectClass = NATIVE CustomObjectClass (Object); 
+objectClass = NATIVE CustomObjectClass (Object);
+random = NATIVE DOUBLE ();
 
 statCustomObjectClass 'Статистика' = DATA INTEGER (CustomObjectClass);
 

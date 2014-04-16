@@ -15,6 +15,10 @@ import java.io.IOException;
 public abstract class Field extends TwinImmutableObject {
     public String name;
     public Type type;
+    
+    public String getName(SQLSyntax syntax) {
+        return syntax.getFieldName(name);
+    }
 
     private final static Type.Getter<Field> typeGetter = new Type.Getter<Field>() {
         public Type getType(Field key) {
@@ -24,15 +28,12 @@ public abstract class Field extends TwinImmutableObject {
     public static <F extends Field> Type.Getter<F> typeGetter() {
         return (Type.Getter<F>) typeGetter;
     }
-    
-    private final static GetValue<String, Field> nameGetter = new GetValue<String, Field>() {
-        public String getMapValue(Field value) {
-            return value.name;
-        }
-    };
 
-    public static <F extends Field> GetValue<String, F> nameGetter() {
-        return (GetValue<String, F>) nameGetter;
+    public static <F extends Field> GetValue<String, F> nameGetter(final SQLSyntax syntax) {
+        return (GetValue<String, F>) new GetValue<String, Field>() {
+            public String getMapValue(Field value) {
+                return value.getName(syntax);
+            }};
     }
 
     protected Field(String name,Type type) {
@@ -48,7 +49,7 @@ public abstract class Field extends TwinImmutableObject {
     }
     
     public String getDeclare(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return name + " " + type.getDB(syntax, typeEnv);
+        return getName(syntax) + " " + type.getDB(syntax, typeEnv);
     }
 
     public String toString() {

@@ -172,14 +172,13 @@ public class SQLSession extends MutableObject {
         return isInTransaction;
     }
 
-    public static void setACID(Connection connection, boolean ACID) throws SQLException {
+    public static void setACID(Connection connection, boolean ACID, SQLSyntax syntax) throws SQLException {
         connection.setAutoCommit(!ACID);
         connection.setReadOnly(!ACID);
 
         Statement statement = createSingleStatement(connection);
         try {
-            statement.execute("SET SESSION synchronous_commit TO " + (ACID ? "DEFAULT" : "OFF"));
-            statement.execute("SET SESSION commit_delay TO " + (ACID ? "DEFAULT" : "100000"));
+            syntax.setACID(statement, ACID);
         } catch (SQLException e) {
             logger.error(statement.toString());
             throw e;
@@ -248,7 +247,7 @@ public class SQLSession extends MutableObject {
                     prevIsolation = privateConnection.sql.getTransactionIsolation();
                     privateConnection.sql.setTransactionIsolation(isolationLevel);
                 }
-                setACID(privateConnection.sql, true);
+                setACID(privateConnection.sql, true, syntax);
             }
         } catch (SQLException e) {
             throw propagate(e, "START TRANSACTION", privateConnection);
@@ -262,7 +261,7 @@ public class SQLSession extends MutableObject {
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
                 if(--inTransaction == 0) {
-                    setACID(privateConnection.sql, false);
+                    setACID(privateConnection.sql, false, syntax);
                     if(prevIsolation != null) {
                         privateConnection.sql.setTransactionIsolation(prevIsolation);
                         prevIsolation = null;
@@ -298,7 +297,7 @@ public class SQLSession extends MutableObject {
                     if(transactionCounter!=null) {
                         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
                         int transTablesCount = privateConnection.temporary.getCounter() - transactionCounter;
-                        assert transactionTables.size() == transTablesCount;
+                        ServerLoggers.assertLog(transactionTables.size() == transTablesCount, "CONSEQUENT TRANSACTION TABLES");
                         for(int i=0;i<transTablesCount;i++) {
                             //                dropTemporaryTableFromDB(transactionTable);
 
@@ -347,12 +346,24 @@ public class SQLSession extends MutableObject {
         ExConnection connection = getConnection();
 
         try {
+//            DatabaseMetaData meta = connection.sql.getMetaData();
+//            ResultSet res = meta.getTables(null, null, null,
+//                    new String[] {"TABLE"});
+//            while (res.next()) {
+//                System.out.println(
+//                        "   "+res.getString("TABLE_CAT")
+//                                + ", "+res.getString("TABLE_SCHEM")
+//                                + ", "+res.getString("TABLE_NAME")
+//                                + ", "+res.getString("TABLE_TYPE")
+//                                + ", "+res.getString("REMARKS"));
+//            }
             DatabaseMetaData metaData = connection.sql.getMetaData();
-            ResultSet tables = metaData.getTables(null, null, table.name, new String[]{"TABLE"});
+            ResultSet tables = metaData.getTables(null, null, syntax.getMetaName(table.name), new String[]{"TABLE"});
             if (!tables.next()) {
-                createTable(table.name, table.keys);
+                String tableName = table.getName(syntax);
+                createTable(tableName, table.keys);
                 for (PropertyField property : table.properties)
-                    addColumn(table.name, property);
+                    addColumn(tableName, property);
             }
         } finally {
             returnConnection(connection);
@@ -362,17 +373,17 @@ public class SQLSession extends MutableObject {
     }
 
     public void addExtraIndices(String table, ImOrderSet<KeyField> keys) throws SQLException {
-        ImOrderSet<String> keyStrings = keys.mapOrderSetValues(Field.<KeyField>nameGetter());
+        ImOrderSet<String> keyStrings = keys.mapOrderSetValues(Field.<KeyField>nameGetter(syntax));
         for(int i=1;i<keys.size();i++)
             addIndex(table, keyStrings.subOrder(i, keys.size()).toOrderMap(true));
     }
 
     private String getConstraintName(String table) {
-        return "PK_" + table;
+        return syntax.getConstraintName("PK_" + table);
     }
 
     private String getConstraintDeclare(String table, ImOrderSet<KeyField> keys) {
-        String keyString = keys.toString(Field.<KeyField>nameGetter(), ",");
+        String keyString = keys.toString(Field.<KeyField>nameGetter(syntax), ",");
         return "CONSTRAINT " + getConstraintName(table) + " PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
     }
 
@@ -397,14 +408,14 @@ public class SQLSession extends MutableObject {
         executeDDL("DROP TABLE " + table);
     }
 
-    static String getIndexName(String table, ImOrderMap<String, Boolean> fields) {
-        return table + "_" + fields.keys().toString("_") + "_idx";
+    static String getIndexName(String table, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
+        return syntax.getIndexName(table + "_" + fields.keys().toString("_") + "_idx");
     }
 
     private ImOrderMap<String, Boolean> getOrderFields(ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) {
         ImOrderMap<String, Boolean> result = fields.toOrderMap(false);
         if(order)
-            result = result.addOrderExcl(keyFields.mapOrderSetValues(Field.<KeyField>nameGetter()).toOrderMap(true));
+            result = result.addOrderExcl(keyFields.mapOrderSetValues(Field.<KeyField>nameGetter(syntax)).toOrderMap(true));
         return result;
     }
     
@@ -418,7 +429,7 @@ public class SQLSession extends MutableObject {
                 return key + " ASC" + (value?"":" NULLS FIRST");
             }}, ",");
 
-        executeDDL("CREATE INDEX " + getIndexName(table, fields) + " ON " + table + " (" + columns + ")");
+        executeDDL("CREATE INDEX " + getIndexName(table, fields, syntax) + " ON " + table + " (" + columns + ")");
     }
 
     public void dropIndex(String table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) throws SQLException {
@@ -426,7 +437,7 @@ public class SQLSession extends MutableObject {
     }
     
     public void dropIndex(String table, ImOrderMap<String, Boolean> fields) throws SQLException {
-        executeDDL("DROP INDEX " + getIndexName(table, fields));
+        executeDDL("DROP INDEX " + getIndexName(table, fields, syntax));
     }
 
 /*    public void addKeyColumns(String table, Map<KeyField, Object> fields, List<KeyField> keys) throws SQLException {
@@ -470,14 +481,14 @@ public class SQLSession extends MutableObject {
 
     public void modifyColumn(String table, Field field, Type oldType) throws SQLException {
         ExecuteEnvironment env = new ExecuteEnvironment();
-        executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.name + " TYPE " +
-                field.type.getDB(syntax, env) + " " + syntax.typeConvertSuffix(oldType, field.type, field.name, env), env);
+        executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.getName(syntax) + " TYPE " +
+                field.type.getDB(syntax, env) + " " + syntax.typeConvertSuffix(oldType, field.type, field.getName(syntax), env), env);
     }
 
     public void packTable(Table table, OperationOwner owner) throws SQLException {
         String dropWhere = table.properties.toString(new GetValue<String, PropertyField>() {
             public String getMapValue(PropertyField value) {
-                return value.name + " IS NULL";
+                return value.getName(syntax) + " IS NULL";
             }}, " AND ");
         executeDML("DELETE FROM " + table.getName(syntax) + (dropWhere.length() == 0 ? "" : " WHERE " + dropWhere), owner);
     }
@@ -1215,7 +1226,7 @@ public class SQLSession extends MutableObject {
 
         final ExecuteEnvironment env = new ExecuteEnvironment();
 
-        String insertString = fields.toString(Field.nameGetter(), ",");
+        String insertString = fields.toString(Field.nameGetter(syntax), ",");
         String valueString = fields.toString(new GetValue<String, Field>() {
             public String getMapValue(Field value) {
                 return value.type.writeDeconc(syntax, env);
@@ -1274,7 +1285,7 @@ public class SQLSession extends MutableObject {
         // пробежим по KeyFields'ам
         for (int i=0,size=keyFields.size();i<size;i++) {
             KeyField key = keyFields.getKey(i);
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + key.name;
+            insertString = (insertString.length() == 0 ? "" : insertString + ',') + key.getName(syntax);
             DataObject keyValue = keyFields.getValue(i);
             if (keyValue.isString(syntax))
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyValue.getString(syntax);
@@ -1287,7 +1298,7 @@ public class SQLSession extends MutableObject {
 
         for (int i=0,size=propFields.size();i<size;i++) {
             PropertyField property = propFields.getKey(i);
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + property.name;
+            insertString = (insertString.length() == 0 ? "" : insertString + ',') + property.getName(syntax);
             ObjectValue fieldValue = propFields.getValue(i);
             if (fieldValue.isString(syntax))
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + fieldValue.getString(syntax);
@@ -1335,13 +1346,13 @@ public class SQLSession extends MutableObject {
 
         // пробежим по KeyFields'ам
         for (int i=0,size=keyFields.size();i<size;i++) { // нужно сохранить общий порядок, поэтому без toString
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + keyFields.getKey(i).name;
+            insertString = (insertString.length() == 0 ? "" : insertString + ',') + keyFields.getKey(i).getName(syntax);
             valueString = (valueString.length() == 0 ? "" : valueString + ',') + keyFields.getValue(i).getString(syntax);
         }
 
         // пробежим по Fields'ам
         for (int i=0,size=propFields.size();i<size;i++) { // нужно сохранить общий порядок, поэтому без toString
-            insertString = (insertString.length() == 0 ? "" : insertString + ',') + propFields.getKey(i).name;
+            insertString = (insertString.length() == 0 ? "" : insertString + ',') + propFields.getKey(i).getName(syntax);
             valueString = (valueString.length() == 0 ? "" : valueString + ',') + propFields.getValue(i).getString(syntax);
         }
 
@@ -1420,7 +1431,7 @@ public class SQLSession extends MutableObject {
     public <X> int deleteKeyRecords(Table table, ImMap<KeyField, X> keys, OperationOwner owner) throws SQLException {
         String deleteWhere = keys.toString(new GetKeyValue<String, KeyField, X>() {
             public String getMapValue(KeyField key, X value) {
-                return key.name + "=" + value;
+                return key.getName(syntax) + "=" + value;
             }}, " AND ");
 
         return executeDML("DELETE FROM " + table.getName(syntax) + (deleteWhere.length() == 0 ? "" : " WHERE " + deleteWhere), owner);
@@ -1453,8 +1464,9 @@ public class SQLSession extends MutableObject {
         mReadKeys.exclAdd(getCnt(""), syntax.getCount("*"));
         if(tableKeys.size() > 1)
             for(KeyField field : tableKeys) {
-                mReadKeys.exclAdd(getCntDist(field.name), syntax.getCountDistinct(field.name));
-                field.type.readDeconc("ANYVALUE(" + field.name + ")", field.name, mReadKeys, syntax, env);
+                String filedName = field.getName(syntax);
+                mReadKeys.exclAdd(getCntDist(filedName), syntax.getCountDistinct(filedName));
+                field.type.readDeconc("ANYVALUE(" + filedName + ")", filedName, mReadKeys, syntax, env);
             }
         else 
             if(table.properties.isEmpty()) {
@@ -1466,13 +1478,14 @@ public class SQLSession extends MutableObject {
 
         MExclMap<String, String> mReadProps = MapFact.mExclMap();
         for(PropertyField field : table.properties) {
-            mReadProps.exclAdd(getCntDist(field.name), syntax.getCountDistinct(field.name));
-            mReadProps.exclAdd(getCnt(field.name), syntax.getCount(field.name));
-            field.type.readDeconc("ANYVALUE(" + field.name + ")", field.name, mReadProps, syntax, env);
+            String fieldName = field.getName(syntax);
+            mReadProps.exclAdd(getCntDist(fieldName), syntax.getCountDistinct(fieldName));
+            mReadProps.exclAdd(getCnt(fieldName), syntax.getCount(fieldName));
+            field.type.readDeconc("ANYVALUE(" + fieldName + ")", fieldName, mReadProps, syntax, env);
         }
         ImMap<String, String> readProps = mReadProps.immutable();
 
-        String select = "SELECT " + SQLSession.stringExpr(readKeys, readProps) + " FROM " + syntax.getSessionTableName(table.name);
+        String select = "SELECT " + SQLSession.stringExpr(readKeys, readProps) + " FROM " + syntax.getSessionTableName(table.getName(syntax));
 
 
         lockRead(opOwner);
@@ -1493,9 +1506,10 @@ public class SQLSession extends MutableObject {
                     ImFilterValueMap<KeyField, Object> mKeyValues = tableKeys.mapFilterValues();
                     for(int i=0,size=tableKeys.size();i<size;i++) {
                         KeyField tableKey = tableKeys.get(i);
-                        Integer cnt = readInt(result.getObject(getCntDist(tableKey.name)));
+                        String fieldName = tableKey.getName(syntax);
+                        Integer cnt = readInt(result.getObject(getCntDist(fieldName)));
                         if(cnt == 1)
-                            mKeyValues.mapValue(i, tableKey.type.read(result, syntax, tableKey.name));
+                            mKeyValues.mapValue(i, tableKey.type.read(result, syntax, fieldName));
                     }
                     keyValues.set(mKeyValues.immutableValue());
                 } else
@@ -1504,11 +1518,12 @@ public class SQLSession extends MutableObject {
                 ImFilterValueMap<PropertyField, Object> mvPropValues = table.properties.mapFilterValues();
                 for(int i=0,size=table.properties.size();i<size;i++) {
                     PropertyField tableProperty = table.properties.get(i);
-                    Integer cntDistinct = readInt(result.getObject(getCntDist(tableProperty.name)));
+                    String fieldName = tableProperty.getName(syntax);
+                    Integer cntDistinct = readInt(result.getObject(getCntDist(fieldName)));
                     if(cntDistinct==0)
                         mvPropValues.mapValue(i, null);
-                    if(cntDistinct==1 && totalCnt==readInt(result.getObject(getCnt(tableProperty.name))))
-                        mvPropValues.mapValue(i, tableProperty.type.read(result, syntax, tableProperty.name));
+                    if(cntDistinct==1 && totalCnt==readInt(result.getObject(getCnt(fieldName))))
+                        mvPropValues.mapValue(i, tableProperty.type.read(result, syntax, fieldName));
                 }
                 propValues.set(mvPropValues.immutableValue());
 

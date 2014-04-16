@@ -39,15 +39,12 @@ public class FormulaNotNullExpr extends StaticClassNotNullExpr implements Formul
         return exprs;
     }
 
-    public boolean hasFNotNull() {
-        return true;
-    }
-
     protected ImCol<Expr> getParams() {
         return BaseUtils.immutableCast(exprs.getCol());
     }
 
     public FormulaNotNullExpr(ImList<BaseExpr> exprs, FormulaJoinImpl formula) {
+        assert formula.hasNotNull();
         this.exprs = exprs;
         this.formula = formula;
     }

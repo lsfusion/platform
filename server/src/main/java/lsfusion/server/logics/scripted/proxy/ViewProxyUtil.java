@@ -50,10 +50,13 @@ public class ViewProxyUtil {
             return null;
         }
 
-        ViewProxy proxy = viewProxies.get(target);
-        if (proxy == null) {
-            proxy = ViewProxyFactory.getInstance().createViewProxy(target);
-            viewProxies.put(target, proxy);
+        ViewProxy proxy;
+        synchronized (viewProxies) {
+            proxy = viewProxies.get(target);
+            if (proxy == null) {
+                proxy = ViewProxyFactory.getInstance().createViewProxy(target);
+                viewProxies.put(target, proxy);
+            }
         }
 
         return proxy;

@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.CalcPropertyClassImplement;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyClassImplement;
@@ -20,29 +21,32 @@ import java.util.List;
 public abstract class PropertySet extends AbstractNode {
     protected abstract Class<?> getPropertyClass();
 
-    @Override
     public boolean hasChild(Property prop) {
         return getPropertyClass().isInstance(prop);
     }
 
+    public boolean hasNFChild(Property prop, Version version) {
+        return hasChild(prop);
+    }
+
     @Override
-    public ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface) {
+    public ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface, Version version) {
         MList<PropertyClassImplement> mResultList = ListFact.mList();
         for (ImSet<ValueClassWrapper> classes : classLists) {
             if (isInInterface(classes)) {
-                mResultList.addAll(getProperties(classes));
+                mResultList.addAll(getProperties(classes, version));
             }
         }
         return mResultList.immutableList();
     }
 
-    public ImList<Property> getProperties(ValueClass... classes) {
+    public ImList<Property> getProperties(Version version, ValueClass... classes) {
         MExclSet<ValueClassWrapper> mClassList = SetFact.mExclSet(classes.length); // массивы
         for (ValueClass cls : classes) {
             mClassList.exclAdd(new ValueClassWrapper(cls));
         }
 
-        ImList<PropertyClassImplement> clsImplements = getProperties(SetFact.singleton(mClassList.immutable()), true);
+        ImList<PropertyClassImplement> clsImplements = getProperties(SetFact.singleton(mClassList.immutable()), true, version);
         return clsImplements.mapListValues(new GetValue<Property, PropertyClassImplement>() {
             public Property getMapValue(PropertyClassImplement value) {
                 return value.property;
@@ -54,11 +58,11 @@ public abstract class PropertySet extends AbstractNode {
         return groupsList;
     }
 
-    protected abstract ImList<CalcPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classes);
+    protected abstract ImList<CalcPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classes, Version version);
 
     protected abstract boolean isInInterface(ImSet<ValueClassWrapper> classes);
 
-    protected void setParent(AbstractNode node) {
-        node.parent = parent;
+    protected void setParent(AbstractNode node, Version version) {
+        node.parent.set(parent.getNF(version), version);
     }
 }

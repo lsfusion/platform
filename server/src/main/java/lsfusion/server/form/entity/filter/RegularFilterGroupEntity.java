@@ -4,6 +4,7 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
 
@@ -60,4 +61,16 @@ public class RegularFilterGroupEntity extends IdentityObject implements ServerId
 
         return form.getApplyObject(groupObjects);
     }
+
+    public GroupObjectEntity getNFToDraw(FormEntity form, Version version) {
+        Set<ObjectEntity> groupObjects = new HashSet<ObjectEntity>();
+
+        // ищем самый нижний GroupObjectInstance, к которому применяется фильтр
+        for (RegularFilterEntity regFilter : filters) {
+            groupObjects.addAll(regFilter.filter.getObjects());
+        }
+
+        return form.getNFApplyObject(groupObjects, version);
+    }
+
 }

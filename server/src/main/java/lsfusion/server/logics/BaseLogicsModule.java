@@ -16,6 +16,7 @@ import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.data.Time;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.form.entity.ClassFormEntity;
 import lsfusion.server.form.entity.FormEntity;
@@ -28,6 +29,12 @@ import lsfusion.server.form.window.ToolBarNavigatorWindow;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.NFLazy;
+import lsfusion.server.logics.mutables.SIDHandler;
+import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.mutables.impl.NFSimpleOrderSetImpl;
+import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
 import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
@@ -114,6 +121,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LAP<?> cancel;
 
     public LCP objectClass;
+    public LCP random;
     public LCP objectClassName;
     public LCP staticName;
     public LCP staticCaption;
@@ -134,9 +142,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public SelectionPropertySet selection;
     public ObjectValuePropertySet objectValue;
 
+    public AbstractGroup privateGroup;
+
     public TableFactory tableFactory;
 
-    public List<LP> lproperties = new ArrayList<LP>();
+    public NFOrderSet<LP> lproperties = NFFact.simpleOrderSet();
+    public Iterable<LP> getLPropertiesIt() {
+        return lproperties.getIt();
+    }
 
     // счетчик идентификаторов
     static private IDGenerator idGenerator = new DefaultIDGenerator();
@@ -151,7 +164,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         super(BaseLogicsModule.class.getResourceAsStream("/lsfusion/system/System.lsf"), "/lsfusion/system/System.lsf", null, BL);
         setBaseLogicsModule(this);
         this.BL = BL;
-        this.propertySidPolicy = propertySidPolicy; 
+        this.propertySidPolicy = propertySidPolicy;
+        namedModuleProperties = NFFact.simpleMap(namedModuleProperties);
     }
 
     @IdentityLazy
@@ -207,7 +221,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         objectValue.getProperty(sID);
         selection.getProperty(sID);
 
-        for (LP lp : lproperties) {
+        for (LP lp : getLPropertiesIt()) {
             if (lp.property.getSID().equals(sID)) {
                 return lp;
             }
@@ -228,6 +242,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public void initGroups() throws RecognitionException {
         super.initGroups();
 
+        Version version = getVersion();
+
         rootGroup = getGroupByName("root");
         rootGroup.createContainer = false;
 
@@ -235,6 +251,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         publicGroup.createContainer = false;
 
         privateGroup = getGroupByName("private");
+        privateGroup.changeChildrenToSimple(version); 
         privateGroup.createContainer = false;
 
         baseGroup = getGroupByName("base");
@@ -247,6 +264,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         drillDownGroup.createContainer = false;
 
         propertyPolicyGroup = getGroupByName("propertyPolicy");
+        propertyPolicyGroup.changeChildrenToSimple(version);
         propertyPolicyGroup.createContainer = false;
     }
 
@@ -259,8 +277,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @Override
     public void initProperties() throws RecognitionException {
+        Version version = getVersion();
 
         objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
+        random = addRMProp("random", "Random");
 
         super.initProperties();
 
@@ -277,10 +297,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         // Множества свойств
         selection = new SelectionPropertySet();
-        publicGroup.add(selection);
+        publicGroup.add(selection, version);
 
         objectValue = new ObjectValuePropertySet();
-        publicGroup.add(objectValue);
+        publicGroup.add(objectValue, version);
 
         // логические св-ва
         and1 = addAFProp("and1", false);
@@ -305,7 +325,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         // Константы
         vtrue = addCProp(LogicalClass.instance, true);
         vzero = addCProp(DoubleClass.instance, 0);
-        vnull = addProperty(privateGroup, new LCP<PropertyInterface>(NullValueProperty.instance));
+        vnull = addProperty((AbstractGroup) null, new LCP<PropertyInterface>(NullValueProperty.instance));
 
         // через JOIN (не операторы)
         
@@ -364,13 +384,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return idGenerator.idShift();
     }
 
-    <T extends LP<?, ?>> void registerProperty(T lp) {
-        lproperties.add(lp);     // todo [dale]: нужно?
+    <T extends LP<?, ?>> void registerProperty(T lp, Version version) {
+        lproperties.add(lp, version);     // todo [dale]: нужно?
         lp.property.ID = idGenerator.idShift();
     }
 
     public abstract class MapClassesPropertySet<K, V extends CalcProperty> extends PropertySet {
-        protected LinkedHashMap<K, V> properties = new LinkedHashMap<K, V>();
+        protected final LinkedHashMap<K, V> properties = new LinkedHashMap<K, V>();
 
         @Override
         public ImOrderSet<Property> getProperties() {
@@ -378,10 +398,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         }
 
         @Override
-        protected ImList<CalcPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classes) {
+        protected ImList<CalcPropertyClassImplement> getProperties(ImSet<ValueClassWrapper> classes, Version version) {
             ImOrderSet<ValueClassWrapper> orderClasses = classes.toOrderSet();
             ValueClass[] valueClasses = getClasses(orderClasses);
-            V property = getProperty(valueClasses);
+            V property = getProperty(valueClasses, version);
 
             ImOrderSet<?> interfaces = getPropertyInterfaces(property, valueClasses);
             return ListFact.singleton(new CalcPropertyClassImplement(property, orderClasses, interfaces));
@@ -395,10 +415,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             return valueClasses;
         }
 
-        protected V getProperty(ValueClass[] classes) {
+        @NFLazy
+        protected V getProperty(ValueClass[] classes, Version version) {
             K key = createKey(classes);
             if (!properties.containsKey(key)) {
-                V property = createProperty(classes);
+                V property = createProperty(classes, version);
                 properties.put(key, property);
                 return property;
             } else {
@@ -408,7 +429,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         protected abstract ImOrderSet<?> getPropertyInterfaces(V property, ValueClass[] valueClasses);
 
-        protected abstract V createProperty(ValueClass[] classes);
+        protected abstract V createProperty(ValueClass[] classes, Version version);
 
         protected abstract K createKey(ValueClass[] classes);
     }
@@ -435,7 +456,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
                     valueClasses[i] = findValueClass(sids[i]);
                     assert valueClasses[i] != null;
                 }
-                return getProperty(valueClasses);
+                return getProperty(valueClasses, getVersion());
             }
             return null;
         }
@@ -475,7 +496,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             return sid;
         }
 
-        protected SelectionProperty createProperty(ValueClass[] classes) {
+        protected SelectionProperty createProperty(ValueClass[] classes, Version version) {
             ValueClass[] classArray = new ValueClass[classes.length];
             String sid = getSID(classes);
             for (int i = 0; i < classes.length; i++) {
@@ -484,16 +505,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
             SelectionProperty property = new SelectionProperty(sid, classArray, baseLM);
             LCP lp = new LCP<ClassPropertyInterface>(property);
-            registerProperty(lp);
+            registerProperty(lp, version);
             selectionLP.exclAdd(sid, lp);
-            setParent(property);
+            setParent(property, version);
             return property;
         }
 
         public LP getLP(ValueClass[] classes) {
             String sid = getSID(classes);
             if (!selectionLP.containsKey(sid)) {
-                createProperty(classes);
+                createProperty(classes, getVersion());
             }
 
             return selectionLP.get(sid);
@@ -522,7 +543,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             if (sid.startsWith(prefix)) {
                 ValueClass valueClass = findValueClass(sid.substring(prefix.length()));
                 assert valueClass != null;
-                return getProperty(new ValueClass[]{valueClass});
+                return getProperty(new ValueClass[]{valueClass}, getVersion());
             }
             return null;
         }
@@ -539,7 +560,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         }
 
         @Override
-        protected ObjectValueProperty createProperty(ValueClass[] classes) {
+        protected ObjectValueProperty createProperty(ValueClass[] classes, Version version) {
             assert classes.length == 1;
 
             ValueClass valueClass = classes[0].getBaseClass();
@@ -547,16 +568,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             String sid = prefix + valueClass.getSID();
             ObjectValueProperty property = new ObjectValueProperty(sid, valueClass);
             LCP prop = new LCP<ClassPropertyInterface>(property);
-            registerProperty(prop);
+            registerProperty(prop, version);
             sidToLP.put(sid, prop);
-            setParent(property);
+            setParent(property, version);
             return property;
         }
 
         public LCP getLP(ValueClass cls) {
             String sid = prefix + cls.getBaseClass().getSID();
             if (!sidToLP.containsKey(sid)) {
-                createProperty(new ValueClass[]{cls});
+                createProperty(new ValueClass[]{cls}, getVersion());
             }
             return (LCP) sidToLP.get(sid);
         }
@@ -621,7 +642,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     public void initClassForms() {
         objectForm = baseClass.getBaseClassForm(this);
-        objects.add(objectForm);
+        objects.add(objectForm, getVersion());
     }
 
     @Override
@@ -629,7 +650,18 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return null;
     }
 
-    protected Map<String, CustomClass> sidToClass = new HashMap<String, CustomClass>();
+    private final SIDHandler<CustomClass> classSIDHandler = new SIDHandler<CustomClass>() {
+        protected String getSID(CustomClass customClass) {
+            return customClass.getSID();
+        }};
+
+    public void storeSIDClass(CustomClass customClass) {
+        classSIDHandler.store(customClass);
+    }
+    protected CustomClass findCustomClass(String sid) {
+        return classSIDHandler.find(sid);
+    }
+
 
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
@@ -637,18 +669,44 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
 
-    int idCounter = 0;
-    Set<String> idSet = new HashSet<String>();
+    private static class IDHandler {
+        int idCounter = 0;
+        Set<String> idSet = new HashSet<String>();
 
-    boolean isGeneratedSID(String sid) {
-        return idSet.contains(sid) || sid.startsWith(DerivedProperty.ID_PREFIX_GEN);
+        @NFLazy
+        public boolean isGeneratedSID(String sid) {
+            return idSet.contains(sid) || sid.startsWith(DerivedProperty.ID_PREFIX_GEN);
+        }
+
+        @NFLazy
+        public void changeSID(boolean generated, String oldSID, String newSID) {
+            if (idSet.contains(oldSID)) {
+                idSet.remove(oldSID);
+                if (generated)
+                    idSet.add(newSID);
+            }
+        }
+        
+        @NFLazy
+        public String genSID() {
+            String id = "property" + idCounter++;
+            idSet.add(id);
+            return id;
+        }
+    }
+    private final IDHandler idHandler = new IDHandler();
+    
+    public boolean isGeneratedSID(String sid) {
+        return idHandler.isGeneratedSID(sid);
     }
 
-    Collection<LCP[]> checkCUProps = new ArrayList<LCP[]>();
+    public void changeSID(boolean generated, String oldSID, String newSID) {
+        idHandler.changeSID(generated, oldSID, newSID);
+    }
 
-    // объединяет разные по классам св-ва
-
-    Collection<LCP[]> checkSUProps = new ArrayList<LCP[]>();
+    public String genSID() {
+        return idHandler.genSID();
+    }
 
     // --------------------------------- Identity Strong Lazy ----------------------------------- //
 
@@ -758,26 +816,28 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityStrongLazy
-    public LAP getAddFormAction(CustomClass cls, boolean oldSession) {
-        ClassFormEntity form = cls.getEditForm(baseLM);
-
-        String sid = "addForm" + (oldSession ? "Session" : "") + "_" + BaseUtils.capitalize(cls.getSID());
-
-        LAP property = addDMFAProp(publicGroup, sid, ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
+    public LAP getAddFormAction(ClassFormEntity form, CustomClass cls, boolean oldSession) {
+        return addDMFAProp(publicGroup, genSID(), ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
                 form.form, new ObjectEntity[]{},
                 form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), !oldSession);
+    }
+    public LAP getAddFormAction(CustomClass cls, boolean oldSession, Version version) {
+        ClassFormEntity form = cls.getEditForm(baseLM, version);
+
+        LAP property = getAddFormAction(form, cls, oldSession);
         setAddFormActionProperties(property, form, oldSession);
         return property;
     }
 
     @IdentityStrongLazy
-    public LAP getEditFormAction(CustomClass cls, boolean oldSession) {
-        ClassFormEntity form = cls.getEditForm(baseLM);
+    public LAP getEditFormAction(ClassFormEntity form, boolean oldSession) {
+        return addDMFAProp(publicGroup, genSID(), ServerResourceBundle.getString("logics.edit"),
+                form.form, new ObjectEntity[]{form.object}, !oldSession);        
+    }
+    public LAP getEditFormAction(CustomClass cls, boolean oldSession, Version version) {
+        ClassFormEntity form = cls.getEditForm(baseLM, version);
 
-        String sid = "editForm" + (oldSession ? "Session" : "") + "_" + BaseUtils.capitalize(cls.getSID());
-
-        LAP property = addDMFAProp(publicGroup, sid, ServerResourceBundle.getString("logics.edit"),
-                form.form, new ObjectEntity[]{form.object}, !oldSession);
+        LAP property = getEditFormAction(form, oldSession);
         setEditFormActionProperties(property);
         return property;
     }

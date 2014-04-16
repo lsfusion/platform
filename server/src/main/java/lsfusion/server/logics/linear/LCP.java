@@ -15,6 +15,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.LogFormEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.*;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
@@ -107,13 +108,13 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     }
 
     public void makeLoggable(SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
-        property.loggable = true;
         setupLoggable(systemEventsLM, lazyInit);
+        property.loggable = true;
     }
 
     public void makeUserLoggable(SystemEventsLogicsModule systemEventsLM) {
-        property.loggable = true;
         setupLoggable(systemEventsLM, false);
+        property.loggable = true;
     }
 
     private void setupLoggable(SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
@@ -195,13 +196,13 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
                 (CalcPropertyMapImplement<?, T>) listImplements.get(0), over);
     }
 
-    public void addOperand(boolean hasWhen, Object... params) {
+    public void addOperand(boolean hasWhen, Version version, Object... params) {
         ImList<CalcPropertyInterfaceImplement<T>> readImplements = readCalcImplements(listInterfaces, params);
         CalcPropertyInterfaceImplement<UnionProperty.Interface> operand = (CalcPropertyInterfaceImplement<UnionProperty.Interface>) readImplements.get(0);
         if(hasWhen)
-            ((CaseUnionProperty)property).addCase((CalcPropertyInterfaceImplement<UnionProperty.Interface>) readImplements.get(1), operand);
+            ((CaseUnionProperty)property).addCase((CalcPropertyInterfaceImplement<UnionProperty.Interface>) readImplements.get(1), operand, version);
         else
-            ((CaseUnionProperty)property).addOperand((CalcPropertyMapImplement<?, UnionProperty.Interface>) operand);
+            ((CaseUnionProperty)property).addOperand((CalcPropertyMapImplement<?, UnionProperty.Interface>) operand, version);
     }
 
     public ImRevMap<T, KeyExpr> getMapKeys() {

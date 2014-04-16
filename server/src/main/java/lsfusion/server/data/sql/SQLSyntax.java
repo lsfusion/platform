@@ -5,6 +5,7 @@ import lsfusion.server.data.type.Type;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public interface SQLSyntax {
 
@@ -123,6 +124,20 @@ public interface SQLSyntax {
     boolean isTransactionCanceled(SQLException e);
 
     boolean isConnectionClosed(SQLException e);
+    
+    String getRandomName();
 
     boolean hasJDBCTimeoutMultiThreadProblem();
+
+    void setACID(Statement statement, boolean acid) throws SQLException;
+
+    String getMetaName(String name);
+
+    String getFieldName(String name);
+
+    String getTableName(String tableName);
+
+    String getConstraintName(String name);
+
+    String getIndexName(String name);
 }

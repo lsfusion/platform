@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.FunctionSet;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -28,6 +29,8 @@ import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
+import lsfusion.server.form.entity.filter.FilterEntity;
+import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorAction;
 import lsfusion.server.form.navigator.NavigatorElement;
@@ -35,11 +38,13 @@ import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
 import lsfusion.server.logics.property.actions.flow.*;
 import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.logics.scripted.EvalActionProperty;
 import lsfusion.server.logics.scripted.LazyActionProperty;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
@@ -117,7 +122,7 @@ public abstract class LogicsModule {
 
     public BaseLogicsModule<?> baseLM;
 
-    private final Map<String, List<LP<?,?>>> namedModuleProperties = new HashMap<String, List<LP<?, ?>>>();
+    protected Map<String, List<LP<?,?>>> namedModuleProperties = new HashMap<String, List<LP<?, ?>>>();
     private final Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
     private final Map<String, ValueClass> moduleClasses = new HashMap<String, ValueClass>();
     private final Map<String, AbstractWindow> windows = new HashMap<String, AbstractWindow>();
@@ -156,6 +161,13 @@ public abstract class LogicsModule {
     protected void setName(String name) {
         this.name = name;
     }
+
+    public String getLogName(int moduleCount) {
+        String result = name;
+        if(order != null)
+            result = "#" + order + " of " + moduleCount + " " + result;
+        return result;
+    }    
 
     public LP<?, ?> getLPByOldName(String name) {
         List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
@@ -295,7 +307,6 @@ public abstract class LogicsModule {
 
     public AbstractGroup rootGroup;
     public AbstractGroup publicGroup;
-    public AbstractGroup privateGroup;
     public AbstractGroup baseGroup;
     public AbstractGroup recognizeGroup;
 
@@ -306,7 +317,6 @@ public abstract class LogicsModule {
     protected void initBaseGroupAliases() {
         this.rootGroup = baseLM.rootGroup;
         this.publicGroup = baseLM.publicGroup;
-        this.privateGroup = baseLM.privateGroup;
         this.baseGroup = baseLM.baseGroup;
         this.recognizeGroup = baseLM.recognizeGroup;
     }
@@ -319,17 +329,37 @@ public abstract class LogicsModule {
         return addAbstractGroup(name, caption, null);
     }
 
+    public FunctionSet<Version> visible;
+    public Integer order;
+    private final Version version = new Version() {
+        public boolean canSee(Version version) {
+            return visible.contains(version);
+        }
+
+        public Integer getOrder() {
+            return order;
+        }
+
+        public int compareTo(Version o) {
+            return getOrder().compareTo(o.getOrder());
+        }
+    };
+    public Version getVersion() {
+        return version;
+    }
+    
     protected AbstractGroup addAbstractGroup(String name, String caption, AbstractGroup parent) {
         return addAbstractGroup(name, caption, parent, true);
     }
 
     protected AbstractGroup addAbstractGroup(String name, String caption, AbstractGroup parent, boolean toCreateContainer) {
         AbstractGroup group = new AbstractGroup(transformNameToSID(name), caption);
+        Version version = getVersion();
         if (parent != null) {
-            parent.add(group);
+            parent.add(group, version);
         } else {
-            if (privateGroup != null)
-                privateGroup.add(group);
+            if (baseLM.privateGroup != null)
+                baseLM.privateGroup.add(group, version);
         }
         group.createContainer = toCreateContainer;
         addModuleGroup(group);
@@ -338,18 +368,17 @@ public abstract class LogicsModule {
 
     protected void storeCustomClass(CustomClass customClass) {
         addModuleClass(customClass);
-        assert !baseLM.sidToClass.containsKey(customClass.getSID());
-        baseLM.sidToClass.put(customClass.getSID(), customClass);
+        baseLM.storeSIDClass(customClass);
     }
 
     protected BaseClass addBaseClass(String sID, String caption) {
-        BaseClass baseClass = new BaseClass(sID, caption);
+        BaseClass baseClass = new BaseClass(sID, caption, getVersion());
         storeCustomClass(baseClass);
         return baseClass;
     }
 
     protected CustomClass findCustomClass(String sid) {
-        return baseLM.sidToClass.get(sid);
+        return baseLM.findCustomClass(sid);
     }
 
     protected ValueClass findValueClass(String sid) {
@@ -382,19 +411,20 @@ public abstract class LogicsModule {
 
     protected ConcreteCustomClass addConcreteClass(String name, String caption, List<String> sids, List<String> names, CustomClass... parents) {
         assert parents.length > 0;
-        ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, sids, names, parents);
+        ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, getVersion(), parents);
+        customClass.addStaticObjects(sids, names, version);        
         storeCustomClass(customClass);
         return customClass;
     }
 
     protected AbstractCustomClass addAbstractClass(String name, String caption, CustomClass... parents) {
-        AbstractCustomClass customClass = new AbstractCustomClass(transformNameToSID(name), caption, parents);
+        AbstractCustomClass customClass = new AbstractCustomClass(transformNameToSID(name), caption, getVersion(), parents);
         storeCustomClass(customClass);
         return customClass;
     }
 
     protected ImplementTable addTable(String name, ValueClass... classes) {
-        ImplementTable table = baseLM.tableFactory.include(transformNameToSID(name), classes);
+        ImplementTable table = baseLM.tableFactory.include(transformNameToSID(name), getVersion(), classes);
         addModuleTable(table);
         return table;
     }
@@ -406,9 +436,7 @@ public abstract class LogicsModule {
     //////////////////////////////////////////////////////////////////////////////
 
     public String genSID() {
-        String id = "property" + baseLM.idCounter++;
-        baseLM.idSet.add(id);
-        return id;
+        return baseLM.genSID();
     }
 
     // ------------------- DATA ----------------- //
@@ -516,7 +544,7 @@ public abstract class LogicsModule {
         return addMFAProp(null, caption, form, params, false);
     }
 
-    protected LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
+    public LAP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
         return addMFAProp(group, genSID(), caption, form, objectsToSet, newSession);
     }
 
@@ -703,7 +731,7 @@ public abstract class LogicsModule {
 
     // ------------------- JOIN ----------------- //
 
-    protected LAP addJoinAProp(LAP action, Object... params) {
+    public LAP addJoinAProp(LAP action, Object... params) {
         return addJoinAProp("sys", action, params);
     }
 
@@ -781,6 +809,12 @@ public abstract class LogicsModule {
 
     protected LCP addTProp(String sID, String caption, Time time) {
         return addProperty(null, new LCP<PropertyInterface>(new TimeFormulaProperty(sID, caption, time)));
+    }
+
+    // ------------------- Random ----------------- //
+
+    protected LCP addRMProp(String sID, String caption) {
+        return addProperty(null, new LCP<PropertyInterface>(new RandomFormulaProperty(sID, caption)));
     }
 
     // ------------------- FORMULA ----------------- //
@@ -906,7 +940,7 @@ public abstract class LogicsModule {
     // ------------------- JOIN (продолжение) ----------------- //
 
     public LCP addJProp(LCP mainProp, Object... params) {
-        return addJProp(baseLM.privateGroup, "sys", mainProp, params);
+        return addJProp((AbstractGroup) null, "sys", mainProp, params);
     }
 
     protected LCP addJProp(String caption, LCP mainProp, Object... params) {
@@ -1335,7 +1369,7 @@ public abstract class LogicsModule {
     // ------------------- ACTION ----------------- //
 
     public LAP addAProp(ActionProperty property) {
-        return addAProp(baseLM.privateGroup, property);
+        return addAProp(null, property);
     }
 
     public LAP addAProp(AbstractGroup group, ActionProperty property) {
@@ -1441,7 +1475,8 @@ public abstract class LogicsModule {
         assert property.property.getOrderInterfaces().equals(property.listInterfaces);
         if (property.property instanceof CalcProperty && ((CalcProperty) property.property).supportsDrillDown())
             return addDDAProp((CalcProperty) property.property);
-        else return null;
+        else 
+            throw new UnsupportedOperationException();
     }
 
     public LAP<?> addDDAProp(CalcProperty property) {
@@ -1538,7 +1573,7 @@ public abstract class LogicsModule {
     // ---------------------- Add Form ---------------------- //
 
     public LAP getScriptAddFormAction(CustomClass cls, boolean session) {
-        ClassFormEntity form = cls.getEditForm(baseLM);
+        ClassFormEntity form = cls.getEditForm(baseLM, getVersion());
 
         LAP property = addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.add"),
                 form.form, new ObjectEntity[] {},
@@ -1547,8 +1582,8 @@ public abstract class LogicsModule {
         return property;
     }
 
-    public LAP getAddFormAction(CustomClass cls, boolean oldSession) {
-        return baseLM.getAddFormAction(cls, oldSession);
+    public LAP getAddFormAction(CustomClass cls, boolean oldSession, Version version) {
+        return baseLM.getAddFormAction(cls, oldSession, version);
     }
 
     protected void setAddFormActionProperties(LAP property, ClassFormEntity form, boolean oldSession) {
@@ -1570,14 +1605,14 @@ public abstract class LogicsModule {
     // ---------------------- Edit Form ---------------------- //
 
     public LAP getScriptEditFormAction(CustomClass cls, boolean oldSession) {
-        ClassFormEntity form = cls.getEditForm(baseLM);
+        ClassFormEntity form = cls.getEditForm(baseLM, getVersion());
         LAP property = addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.edit"), form.form, new ObjectEntity[]{form.object}, !oldSession);
         setEditFormActionProperties(property);
         return property;
     }
 
-    public LAP getEditFormAction(CustomClass cls, boolean oldSession) {
-        return baseLM.getEditFormAction(cls, oldSession);
+    public LAP getEditFormAction(CustomClass cls, boolean oldSession, Version version) {
+        return baseLM.getEditFormAction(cls, oldSession, version);
     }
 
     protected void setEditFormActionProperties(LAP property) {
@@ -1610,10 +1645,11 @@ public abstract class LogicsModule {
     }
 
     protected void addPropertyToGroup(Property<?> property, AbstractGroup group) {
+        Version version = getVersion();
         if (group != null) {
-            group.add(property);
+            group.add(property, version);
         } else {
-            baseLM.privateGroup.add(property);
+            baseLM.privateGroup.add(property, version);
         }
     }
 
@@ -1623,7 +1659,7 @@ public abstract class LogicsModule {
             lp.property.freezeSID();
         }
         addModuleLP(lp);
-        baseLM.registerProperty(lp);
+        baseLM.registerProperty(lp, getVersion());
         addPropertyToGroup(lp.property, group);
 
         if (persistent) {
@@ -1636,11 +1672,7 @@ public abstract class LogicsModule {
         String oldSID = lp.property.getSID();
         lp.property.setName(name, generated);
         String newSID = baseLM.getSIDPolicy().createSID(getNamePrefix(), name, null, oldName);
-        if (baseLM.idSet.contains(oldSID)) {
-            baseLM.idSet.remove(oldSID);
-            if (generated)
-                baseLM.idSet.add(newSID);
-        }
+        baseLM.changeSID(generated, oldSID, newSID);
         lp.property.setSID(newSID);
     }
 
@@ -1880,7 +1912,7 @@ public abstract class LogicsModule {
     }
 
     protected NavigatorElement addNavigatorElement(NavigatorElement parent, String name, String caption, String icon) {
-        NavigatorElement elem = new NavigatorElement(parent, transformNameToSID(name), caption, icon);
+        NavigatorElement elem = new NavigatorElement(parent, transformNameToSID(name), caption, icon, getVersion());
         addModuleNavigator(elem);
         return elem;
     }
@@ -1894,7 +1926,7 @@ public abstract class LogicsModule {
     }
 
     protected NavigatorAction addNavigatorAction(NavigatorElement parent, String name, String caption, ActionProperty property, String icon) {
-        NavigatorAction navigatorAction = new NavigatorAction(parent, transformNameToSID(name), caption, icon);
+        NavigatorAction navigatorAction = new NavigatorAction(parent, transformNameToSID(name), caption, icon, getVersion());
         navigatorAction.setProperty(property);
         addModuleNavigator(navigatorAction);
         return navigatorAction;
@@ -1924,12 +1956,14 @@ public abstract class LogicsModule {
     }
 
     protected void addObjectActions(FormEntity form, ObjectEntity object, boolean shouldBeLast) {
+        Version version = getVersion();
+        
         PropertyDrawEntity actionAddPropertyDraw;
-        actionAddPropertyDraw = form.addPropertyDraw(getAddObjectAction(form, object));
+        actionAddPropertyDraw = form.addPropertyDraw(getAddObjectAction(form, object), version);
         actionAddPropertyDraw.shouldBeLast = shouldBeLast;
         actionAddPropertyDraw.toDraw = object.groupTo;
 
-        form.addPropertyDraw(getDeleteAction((CustomClass)object.baseClass, true), object).shouldBeLast = shouldBeLast;
+        form.addPropertyDraw(getDeleteAction((CustomClass)object.baseClass, true), version, object).shouldBeLast = shouldBeLast;
     }
 
     public void addFormActions(FormEntity form, ObjectEntity object) {
@@ -1937,25 +1971,26 @@ public abstract class LogicsModule {
     }
 
     public void addFormActions(FormEntity form, ObjectEntity object, boolean session) {
-        addAddFormAction(form, object, session);
-        addEditFormAction(form, object, session);
-        form.addPropertyDraw(getDeleteAction((CustomClass) object.baseClass, false), object);
+        Version version = getVersion();
+        addAddFormAction(form, object, session, version);
+        addEditFormAction(form, object, session, version);
+        form.addPropertyDraw(getDeleteAction((CustomClass) object.baseClass, false), version, object);
     }
 
-    public PropertyDrawEntity addAddFormAction(FormEntity form, ObjectEntity object, boolean session) {
-        LAP addForm = getAddFormAction((CustomClass)object.baseClass, session);
-        PropertyDrawEntity actionAddPropertyDraw = form.addPropertyDraw(addForm);
+    public PropertyDrawEntity addAddFormAction(FormEntity form, ObjectEntity object, boolean session, Version version) {
+        LAP addForm = getAddFormAction((CustomClass)object.baseClass, session, version);
+        PropertyDrawEntity actionAddPropertyDraw = form.addPropertyDraw(addForm, version);
         actionAddPropertyDraw.toDraw = object.groupTo;
 
         return actionAddPropertyDraw;
     }
 
-    public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object, boolean session) {
-        return form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass, session), object);
+    public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object, boolean session, Version version) {
+        return form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass, session, version), version, object);
     }
 
-    public PropertyDrawEntity addFormDeleteAction(FormEntity form, ObjectEntity object, boolean oldSession) {
-        return form.addPropertyDraw(getDeleteAction((CustomClass) object.baseClass, oldSession), object);
+    public PropertyDrawEntity addFormDeleteAction(FormEntity form, ObjectEntity object, boolean oldSession, Version version) {
+        return form.addPropertyDraw(getDeleteAction((CustomClass) object.baseClass, oldSession), version, object);
     }
 
     public String getNamespace() {
@@ -2122,5 +2157,94 @@ public abstract class LogicsModule {
             ValueClass cls = module.getClassByName(simpleName);             
             return cls == null ? new ArrayList<ValueClass>() : Collections.singletonList(cls);
         }
+    }
+    
+    // для обратной совместимости
+    public void addFormFixedFilter(FormEntity form, FilterEntity filter) {
+        form.addFixedFilter(filter, getVersion());
+    }
+
+    public void addFormGroupObject(FormEntity form, GroupObjectEntity group) {
+        form.addGroupObject(group, getVersion());
+    }
+
+    public ObjectEntity addFormSingleGroupObject(FormEntity form, int ID, String sID, ValueClass baseClass, String caption, Object... groups) {
+        return form.addSingleGroupObject(ID, sID, baseClass, caption, getVersion(), groups);
+    }
+
+    public ObjectEntity addFormSingleGroupObject(FormEntity form, ValueClass baseClass, String caption, Object... groups) {
+        return form.addSingleGroupObject(baseClass, caption, getVersion(), groups);
+    }
+
+    public ObjectEntity addFormSingleGroupObject(FormEntity form, String sID, ValueClass baseClass, String caption, Object... groups) {
+        return form.addSingleGroupObject(sID, baseClass, caption, getVersion(), groups);
+    }
+
+    public ObjectEntity addFormSingleGroupObject(FormEntity form, ValueClass baseClass, Object... groups) {
+        return form.addSingleGroupObject(baseClass, getVersion(), groups);
+    }
+
+    public ObjectEntity addFormSingleGroupObject(FormEntity form, int ID, ValueClass baseClass, Object... groups) {
+        return form.addSingleGroupObject(ID, baseClass, getVersion(), groups);
+    }
+
+    public ObjectEntity addFormSingleGroupObject(FormEntity form, int ID, String sID, ValueClass baseClass, Object... groups) {
+        return form.addSingleGroupObject(ID, sID, baseClass, getVersion(), groups);
+    }
+    
+    public void addFormHintsIncrementTable(FormEntity form, LCP... lps) {
+        form.addHintsIncrementTable(getVersion(), lps);
+    }
+
+    public List<PropertyDrawEntity> addFormPropertyDraw(FormEntity form, AbstractNode group, boolean upClasses, ObjectEntity... objects) {
+        return form.addPropertyDraw(group, upClasses, getVersion(), objects);
+    }
+    
+    public void addFormPropertyDraw(FormEntity form, AbstractNode group, boolean upClasses, boolean useObjSubsets, ObjectEntity... objects) {
+        form.addPropertyDraw(group, upClasses, useObjSubsets, getVersion(), objects);
+    }
+
+    public void addFormPropertyDraw(FormEntity form, ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, Object... groups) {
+        form.addPropertyDraw(object1, object2, object3, getVersion(), groups);
+    }
+
+    public void addFormPropertyDraw(FormEntity form, ObjectEntity object1, ObjectEntity object2, Object... groups) {
+        form.addPropertyDraw(object1, object2, getVersion(), groups);
+    }
+
+    public void addFormPropertyDraw(FormEntity form, ObjectEntity object1, ObjectEntity object2, ObjectEntity object3, ObjectEntity object4, Object... groups) {
+        form.addPropertyDraw(object1, object2, object3, object4, getVersion(), groups);
+    }
+
+    public void addFormPropertyDraw(FormEntity form, ObjectEntity object, Object... groups) {
+        form.addPropertyDraw(object, getVersion(), groups);
+    }
+
+    public PropertyDrawEntity addFormPropertyDraw(FormEntity form, LP property, PropertyObjectInterfaceEntity... objects) {
+        return form.addPropertyDraw(property, getVersion(), objects);
+    }
+
+    public <P extends PropertyInterface> PropertyDrawEntity addFormPropertyDraw(FormEntity form, LP<P, ?> property, GroupObjectEntity groupObject, PropertyObjectInterfaceEntity... objects) {
+        return form.addPropertyDraw(property, groupObject, getVersion(), objects);
+    }
+
+    public void addFormPropertyDraw(FormEntity form, LP[] properties, ObjectEntity... objects) {
+        form.addPropertyDraw(properties, getVersion(), objects);
+    }
+
+    public void addFormRegularFilterGroup(FormEntity form, RegularFilterGroupEntity group) {
+        form.addRegularFilterGroup(group, getVersion());
+    }
+
+    protected PropertyDrawEntity<?> getFormPropertyDraw(FormEntity form, LP<?, ?> lp, ObjectEntity object) {
+        return form.getNFPropertyDraw(lp.property, object.groupTo, getVersion());
+    }
+
+    public PropertyDrawEntity getFormPropertyDraw(FormEntity form, AbstractNode group, ObjectEntity object) {
+        return form.getNFPropertyDraw(group, object, getVersion());
+    }
+
+    public int getModuleComplexity() {
+        return 1;
     }
 }

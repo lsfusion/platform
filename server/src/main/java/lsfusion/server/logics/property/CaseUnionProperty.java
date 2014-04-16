@@ -2,11 +2,9 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
@@ -21,6 +19,9 @@ import lsfusion.server.form.entity.drilldown.CaseUnionDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ScriptParsingException;
+import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.interfaces.NFList;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.PropertyChange;
@@ -35,7 +36,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     // immutable реализация
     public CaseUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, boolean isExclusive, ImList<Case> cases) {
         super(sID, caption, interfaces);
-        this.cases = cases;
+        this.cases = NFFact.finalList(cases);
         this.isExclusive = isExclusive;
         this.isChecked = false;
         this.abstractType = null;
@@ -248,7 +249,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
 
-    private Object cases;
+    private NFList<Case> cases;
 
     private ClassWhere<Object> classValueWhere;
 
@@ -269,7 +270,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         super.finalizeInit();
 
         if(isAbstract())
-            cases = ((MList<Case>)cases).immutableList();
+            cases.finalizeCol();
     }
 
     // для постзадания
@@ -279,18 +280,18 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         this.isExclusive = isExclusive;
         this.isChecked = isChecked;
         this.abstractType = type;
-        cases = ListFact.mList();
+        cases = NFFact.list();
 
         classValueWhere = new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(interfaceClasses, "value", valueClass), true);
     }
 
-    public void addCase(CalcPropertyInterfaceImplement<Interface> where, CalcPropertyInterfaceImplement<Interface> property) {
+    public void addCase(CalcPropertyInterfaceImplement<Interface> where, CalcPropertyInterfaceImplement<Interface> property, Version version) {
         assert abstractType == Type.CASE;
 
-        addCase(new Case(where, property));
+        addCase(new Case(where, property), version);
     }
 
-    public void addOperand(CalcPropertyMapImplement<?,Interface> operand) {
+    public void addOperand(CalcPropertyMapImplement<?,Interface> operand, Version version) {
         assert isAbstract();
 
         Case addCase;
@@ -299,10 +300,10 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         else
             addCase = new Case(operand, operand);
 
-       addCase(addCase);
+       addCase(addCase, version);
     }
 
-    public void addCase(Case addCase) {
+    public void addCase(Case addCase, Version version) {
         if (isAbstract()) {
             ClassWhere<Object> caseClassValueWhere = getCaseClassValueWhere(addCase);
             if (!caseClassValueWhere.means(classValueWhere, false)) {
@@ -311,7 +312,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         }
 
         if (isExclusive) {
-            ImList<Case> listCases = getCases();
+            ImList<Case> listCases = getNFCases(version);
 
             for (int i = 0; i < listCases.size(); i++) {
                 CalcPropertyMapImplement<?, Interface> op1 = (CalcPropertyMapImplement<?, Interface>) listCases.get(i).where;
@@ -323,11 +324,14 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             }
         }
 
-        ((MList<Case>) cases).add(addCase);
+        cases.add(addCase, version);
     }
 
     public ImList<Case> getCases() {
-        return (ImList<Case>)cases;
+        return cases.getList();
+    }
+    public ImList<Case> getNFCases(Version version) {
+        return cases.getNFList(version);
     }
 
     public boolean isAbstract() {

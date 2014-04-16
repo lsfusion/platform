@@ -28,6 +28,7 @@ import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.sql.DataAdapter;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
@@ -105,12 +106,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private ReflectionLogicsModule reflectionLM;
 
-    private EmailLogicsModule emailLM;
-
-    private SystemEventsLogicsModule systemEventsLM;
-
-    private TimeLogicsModule timeLM;
-
     private int systemUserObject;
     private int systemComputer;
 
@@ -168,34 +163,15 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         Assert.notNull(restartManager, "restartManager must be specified");
     }
 
+    public boolean sourceHashChanged; 
     @Override
     protected void onInit(LifecycleEvent event) {
         this.LM = businessLogics.LM;
         this.reflectionLM = businessLogics.reflectionLM;
-        this.emailLM = businessLogics.emailLM;
-        this.systemEventsLM = businessLogics.systemEventsLM;
-        this.timeLM = businessLogics.timeLM;
         try {
 
-            boolean disableVolatileStats = Settings.get().isDisableExplicitVolatileStats();
-            
             systemLogger.info("Synchronizing DB.");
-            boolean sourceHashChanged = synchronizeDB();
-            
-            if (!SystemProperties.isDebug && sourceHashChanged) {
-                systemLogger.info("Synchronizing forms");
-                synchronizeForms(disableVolatileStats);
-                systemLogger.info("Synchronizing groups of properties");
-                synchronizeGroupProperties(disableVolatileStats);
-                systemLogger.info("Synchronizing properties");
-                synchronizeProperties(disableVolatileStats);
-            }
-
-            systemLogger.info("Synchronizing tables");
-            synchronizeTables(disableVolatileStats);
-
-            resetConnectionStatus();
-            logLaunch();
+            sourceHashChanged = synchronizeDB();
         } catch (Exception e) {
             throw new RuntimeException("Error synchronizing DB: ", e);
         }
@@ -220,6 +196,17 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public SQLSession getThreadLocalSql() {
         return threadLocalSql.get();
+    }
+
+    public SQLSession closeThreadLocalSql() {
+        SQLSession sql = threadLocalSql.get();
+        if(sql!=null)
+            try {
+                sql.close(OperationOwner.unknown);
+            } catch (SQLException e) {
+                ServerLoggers.sqlSuppLog(e);
+            }
+        return sql;
     }
 
     public int generateID() throws RemoteException {
@@ -283,586 +270,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
 
-    private void synchronizeForms(boolean disableVolatileStats) {
-        synchronizeNavigatorElements(reflectionLM.form, FormEntity.class, false, reflectionLM.isForm, disableVolatileStats);
-        synchronizeNavigatorElements(reflectionLM.navigatorAction, NavigatorAction.class, true, reflectionLM.isNavigatorAction, disableVolatileStats);
-        synchronizeNavigatorElements(reflectionLM.navigatorElement, NavigatorElement.class, true, reflectionLM.isNavigatorElement, disableVolatileStats);
-        synchronizeParents(disableVolatileStats);
-        synchronizeGroupObjects(disableVolatileStats);
-        synchronizePropertyDraws(disableVolatileStats);
-    }
-
-    private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, boolean exactJavaClass, LCP deleteLP, boolean disableVolatileStats) {
-        ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
-        ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
-
-        ImportKey<?> keyNavigatorElement = new ImportKey(elementCustomClass, reflectionLM.navigatorElementSID.getMapping(sidField));
-
-        List<List<Object>> elementsData = new ArrayList<List<Object>>();
-        for (NavigatorElement element : businessLogics.getNavigatorElements()) {
-            if (exactJavaClass ? filterJavaClass == element.getClass() : filterJavaClass.isInstance(element)) {
-                elementsData.add(asList((Object) element.getSID(), element.caption));
-            }
-        }
-        elementsData.add(asList((Object) "noParentGroup", "Без родительской группы"));
-
-        List<ImportProperty<?>> propsNavigatorElement = new ArrayList<ImportProperty<?>>();
-        propsNavigatorElement.add(new ImportProperty(sidField, reflectionLM.sidNavigatorElement.getMapping(keyNavigatorElement)));
-        propsNavigatorElement.add(new ImportProperty(captionField, reflectionLM.captionNavigatorElement.getMapping(keyNavigatorElement)));
-
-        List<ImportDelete> deletes = asList(
-                new ImportDelete(keyNavigatorElement, deleteLP.getMapping(keyNavigatorElement), false)
-        );
-        ImportTable table = new ImportTable(asList(sidField, captionField), elementsData);
-
-        try {
-            DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
-
-            IntegrationService service = new IntegrationService(session, table, asList(keyNavigatorElement), propsNavigatorElement, deletes);
-            service.synchronize(true, false);
-
-            if(!disableVolatileStats)
-                session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void synchronizeParents(boolean disableVolatileStats) {
-        ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
-        ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
-        ImportField numberField = new ImportField(reflectionLM.numberNavigatorElement);
-
-        List<List<Object>> dataParents = getRelations(LM.root, getElementsWithParent(LM.root));
-
-        ImportKey<?> keyElement = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementSID.getMapping(sidField));
-        ImportKey<?> keyParent = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementSID.getMapping(parentSidField));
-        List<ImportProperty<?>> propsParent = new ArrayList<ImportProperty<?>>();
-        propsParent.add(new ImportProperty(parentSidField, reflectionLM.parentNavigatorElement.getMapping(keyElement), LM.object(reflectionLM.navigatorElement).getMapping(keyParent)));
-        propsParent.add(new ImportProperty(numberField, reflectionLM.numberNavigatorElement.getMapping(keyElement), GroupType.MIN));
-        ImportTable table = new ImportTable(asList(sidField, parentSidField, numberField), dataParents);
-        try {
-            DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
-
-            IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
-            service.synchronize(true, false);
-
-            if(!disableVolatileStats)
-                session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    protected Set<String> getElementsWithParent(NavigatorElement element) {
-        Set<String> parentInfo = new HashSet<String>();
-        List<NavigatorElement> children = (List<NavigatorElement>) element.getChildren();
-        parentInfo.add(element.getSID());
-        for (NavigatorElement child : children) {
-            parentInfo.add(child.getSID());
-            parentInfo.addAll(getElementsWithParent(child));
-        }
-        return parentInfo;
-    }
-
-    protected List<List<Object>> getRelations(NavigatorElement element, Set<String> elementsWithParent) {
-        List<List<Object>> parentInfo = new ArrayList<List<Object>>();
-        List<NavigatorElement> children = (List<NavigatorElement>) element.getChildren();
-        int counter = 1;
-        for (NavigatorElement child : children) {
-            parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID(), counter++));
-            parentInfo.addAll(getRelations(child));
-        }
-        counter = 1;
-        for(NavigatorElement navigatorElement : businessLogics.getNavigatorElements()) {
-            if(!elementsWithParent.contains(navigatorElement.getSID()))
-                parentInfo.add(BaseUtils.toList((Object) navigatorElement.getSID(), "noParentGroup", counter++));
-        }
-        return parentInfo;
-    }
-
-    protected List<List<Object>> getRelations(NavigatorElement element) {
-        List<List<Object>> parentInfo = new ArrayList<List<Object>>();
-        List<NavigatorElement> children = (List<NavigatorElement>) element.getChildren();
-        int counter = 1;
-        for (NavigatorElement child : children) {
-            parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID(), counter++));
-            parentInfo.addAll(getRelations(child));
-        }
-            return parentInfo;
-    }
-
-    private void synchronizePropertyDraws(boolean disableVolatileStats) {
-
-        List<List<Object>> dataPropertyDraws = new ArrayList<List<Object>>();
-        for (FormEntity formElement : businessLogics.getFormEntities()) {
-            List<PropertyDrawEntity> propertyDraws = formElement.propertyDraws;
-            for (PropertyDrawEntity drawEntity : propertyDraws) {
-                GroupObjectEntity groupObjectEntity = drawEntity.getToDraw(formElement);
-                dataPropertyDraws.add(asList(drawEntity.propertyObject.toString(), drawEntity.getSID(), (Object) formElement.getSID(), groupObjectEntity == null ? null : groupObjectEntity.getSID()));
-            }
-        }
-
-        ImportField captionPropertyDrawField = new ImportField(reflectionLM.propertyCaptionValueClass);
-        ImportField sidPropertyDrawField = new ImportField(reflectionLM.propertySIDValueClass);
-        ImportField sidNavigatorElementField = new ImportField(reflectionLM.navigatorElementSIDClass);
-        ImportField sidGroupObjectField = new ImportField(reflectionLM.propertySIDValueClass);
-
-        ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.navigatorElementSID.getMapping(sidNavigatorElementField));
-        ImportKey<?> keyPropertyDraw = new ImportKey(reflectionLM.propertyDraw, reflectionLM.propertyDrawSIDNavigatorElementSIDPropertyDraw.getMapping(sidNavigatorElementField, sidPropertyDrawField));
-        ImportKey<?> keyGroupObject = new ImportKey(reflectionLM.groupObject, reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.getMapping(sidGroupObjectField, sidNavigatorElementField));
-
-        List<ImportProperty<?>> propsPropertyDraw = new ArrayList<ImportProperty<?>>();
-        propsPropertyDraw.add(new ImportProperty(captionPropertyDrawField, reflectionLM.captionPropertyDraw.getMapping(keyPropertyDraw)));
-        propsPropertyDraw.add(new ImportProperty(sidPropertyDrawField, reflectionLM.sidPropertyDraw.getMapping(keyPropertyDraw)));
-        propsPropertyDraw.add(new ImportProperty(sidNavigatorElementField, reflectionLM.formPropertyDraw.getMapping(keyPropertyDraw), LM.object(reflectionLM.navigatorElement).getMapping(keyForm)));
-        propsPropertyDraw.add(new ImportProperty(sidGroupObjectField, reflectionLM.groupObjectPropertyDraw.getMapping(keyPropertyDraw), LM.object(reflectionLM.groupObject).getMapping(keyGroupObject)));
-
-
-        List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(keyPropertyDraw, LM.is(reflectionLM.propertyDraw).getMapping(keyPropertyDraw), false));
-
-        ImportTable table = new ImportTable(asList(captionPropertyDrawField, sidPropertyDrawField, sidNavigatorElementField, sidGroupObjectField), dataPropertyDraws);
-
-        try {
-            DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
-
-            IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw, keyGroupObject), propsPropertyDraw, deletes);
-            service.synchronize(true, false);
-
-            if(!disableVolatileStats)
-                session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void synchronizeGroupObjects(boolean disableVolatileStats) {
-
-        List<List<Object>> dataGroupObjectList = new ArrayList<List<Object>>();
-        for (FormEntity<?> formElement : businessLogics.getFormEntities()) { //formSID - sidGroupObject
-            for (PropertyDrawEntity property : formElement.propertyDraws) {
-                GroupObjectEntity groupObjectEntity = property.getToDraw(formElement);
-                if (groupObjectEntity != null)
-                    dataGroupObjectList.add(Arrays.asList((Object) formElement.getSID(),
-                                                          groupObjectEntity.getSID()));
-            }
-        }
-
-        ImportField sidNavigatorElementField = new ImportField(reflectionLM.navigatorElementSIDClass);
-        ImportField sidGroupObjectField = new ImportField(reflectionLM.propertySIDValueClass);
-
-        ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.navigatorElementSID.getMapping(sidNavigatorElementField));
-        ImportKey<?> keyGroupObject = new ImportKey(reflectionLM.groupObject, reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.getMapping(sidGroupObjectField, sidNavigatorElementField));
-
-        List<ImportProperty<?>> propsGroupObject = new ArrayList<ImportProperty<?>>();
-        propsGroupObject.add(new ImportProperty(sidGroupObjectField, reflectionLM.sidGroupObject.getMapping(keyGroupObject)));
-        propsGroupObject.add(new ImportProperty(sidNavigatorElementField, reflectionLM.navigatorElementGroupObject.getMapping(keyGroupObject), LM.object(reflectionLM.navigatorElement).getMapping(keyForm)));
-
-        List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(keyGroupObject, LM.is(reflectionLM.groupObject).getMapping(keyGroupObject), false));
-
-        ImportTable table = new ImportTable(asList(sidNavigatorElementField, sidGroupObjectField), dataGroupObjectList);
-
-        try {
-            DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
-
-            IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyGroupObject), propsGroupObject, deletes);
-            service.synchronize(true, false);
-
-            if(!disableVolatileStats)
-                session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private boolean needsToBeSynchronized(Property property) {
-        return !LM.isGeneratedSID(property.getSID()) && (property instanceof ActionProperty || (((CalcProperty)property).isFull() && !(((CalcProperty)property).isEmpty())));
-    }
-
-    private void synchronizeProperties(boolean disableVolatileStats) {
-        synchronizePropertyEntities(disableVolatileStats);
-        synchronizePropertyParents(disableVolatileStats);
-    }
-
-    private void synchronizePropertyEntities(boolean disableVolatileStats) {
-        ImportField sidPropertyField = new ImportField(reflectionLM.propertySIDValueClass);
-        ImportField captionPropertyField = new ImportField(reflectionLM.propertyCaptionValueClass);
-        ImportField loggablePropertyField = new ImportField(reflectionLM.propertyLoggableValueClass);
-        ImportField storedPropertyField = new ImportField(reflectionLM.propertyStoredValueClass);
-        ImportField isSetNotNullPropertyField = new ImportField(reflectionLM.propertyIsSetNotNullValueClass);
-        ImportField signaturePropertyField = new ImportField(reflectionLM.propertySignatureValueClass);
-        ImportField returnPropertyField = new ImportField(reflectionLM.propertySignatureValueClass);
-        ImportField classPropertyField = new ImportField(reflectionLM.propertySignatureValueClass);
-        ImportField complexityPropertyField = new ImportField(LongClass.instance);
-
-        ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertySID.getMapping(sidPropertyField));
-
-        try {
-            List<List<Object>> dataProperty = new ArrayList<List<Object>>();
-            for (Property property : businessLogics.getOrderProperties()) {
-                if (needsToBeSynchronized(property)) {
-                    String commonClasses = "";
-                    String returnClass = "";
-                    String classProperty = "";
-                    Long complexityProperty = null;
-                    try {
-                        classProperty = property.getClass().getSimpleName();
-                        if(property instanceof CalcProperty) {
-                            complexityProperty = ((CalcProperty)property).getExpr(((CalcProperty)property).getMapKeys(), Property.defaultModifier).getComplexity(false);
-                        }
-                        returnClass = property.getValueClass().getSID();
-                        for (Object cc : property.getInterfaceClasses(property instanceof ActionProperty ? ClassType.FULL : ClassType.ASSERTFULL).valueIt()) {
-                            if (cc instanceof CustomClass)
-                                commonClasses += ((CustomClass) cc).getSID() + ", ";
-                            else if (cc instanceof DataClass)
-                                commonClasses += ((DataClass) cc).getSID() + ", ";
-                        }
-                        if (!"".equals(commonClasses))
-                            commonClasses = commonClasses.substring(0, commonClasses.length() - 2);
-                    } catch (NullPointerException e) {
-                        commonClasses = "";
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                        commonClasses = "";
-                    }
-                    dataProperty.add(asList((Object) property.getSID(), property.caption, property.loggable ? true : null,
-                            property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
-                            property instanceof CalcProperty && ((CalcProperty) property).setNotNull ? true : null,
-                            commonClasses, returnClass, classProperty, complexityProperty));
-                }
-            }
-    
-            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-            properties.add(new ImportProperty(sidPropertyField, reflectionLM.SIDProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(captionPropertyField, reflectionLM.captionProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(loggablePropertyField, reflectionLM.loggableProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(storedPropertyField, reflectionLM.storedProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(isSetNotNullPropertyField, reflectionLM.isSetNotNullProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(signaturePropertyField, reflectionLM.signatureProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(returnPropertyField, reflectionLM.returnProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(classPropertyField, reflectionLM.classProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(complexityPropertyField, reflectionLM.complexityProperty.getMapping(keyProperty)));
-    
-            List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-            deletes.add(new ImportDelete(keyProperty, LM.is(reflectionLM.property).getMapping(keyProperty), false));
-    
-            ImportTable table = new ImportTable(asList(sidPropertyField, captionPropertyField, loggablePropertyField,
-                    storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField,
-                    classPropertyField, complexityPropertyField), dataProperty);
-
-            DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
-
-            IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties, deletes);
-            service.synchronize(true, false);
-
-            if(!disableVolatileStats)
-                session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    private void synchronizePropertyParents(boolean disableVolatileStats) {
-        ImportField sidPropertyField = new ImportField(reflectionLM.propertySIDValueClass);
-        ImportField numberPropertyField = new ImportField(reflectionLM.numberProperty);
-        ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
-
-        List<List<Object>> dataParent = new ArrayList<List<Object>>();
-        for (Property property : businessLogics.getOrderProperties()) {
-            if (needsToBeSynchronized(property))
-                dataParent.add(asList(property.getSID(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
-        }
-
-        ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertySID.getMapping(sidPropertyField));
-        ImportKey<?> keyParent = new ImportKey(reflectionLM.propertyGroup, reflectionLM.propertyGroupSID.getMapping(parentSidField));
-        List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-
-        properties.add(new ImportProperty(parentSidField, reflectionLM.parentProperty.getMapping(keyProperty), LM.object(reflectionLM.propertyGroup).getMapping(keyParent)));
-        properties.add(new ImportProperty(numberPropertyField, reflectionLM.numberProperty.getMapping(keyProperty)));
-        ImportTable table = new ImportTable(asList(sidPropertyField, parentSidField, numberPropertyField), dataParent);
-
-        try {
-            DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
-
-            IntegrationService service = new IntegrationService(session, table, asList(keyProperty, keyParent), properties);
-            service.synchronize(true, false);
-
-            if(!disableVolatileStats)
-                session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    protected void synchronizeGroupProperties(boolean disableVolatileStats) {
-        ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
-        ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
-        ImportField numberField = new ImportField(reflectionLM.numberPropertyGroup);
-
-        ImportKey<?> key = new ImportKey(reflectionLM.propertyGroup, reflectionLM.propertyGroupSID.getMapping(sidField));
-
-        List<List<Object>> data = new ArrayList<List<Object>>();
-
-        for (AbstractGroup group : businessLogics.getParentGroups()) {
-            data.add(asList(group.getSID(), (Object) group.caption));
-        }
-
-        List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
-        props.add(new ImportProperty(sidField, reflectionLM.SIDPropertyGroup.getMapping(key)));
-        props.add(new ImportProperty(captionField, reflectionLM.captionPropertyGroup.getMapping(key)));
-
-        List<ImportDelete> deletes = new ArrayList<ImportDelete>();
-        deletes.add(new ImportDelete(key, LM.is(reflectionLM.propertyGroup).getMapping(key), false));
-
-        ImportTable table = new ImportTable(asList(sidField, captionField), data);
-
-        List<List<Object>> data2 = new ArrayList<List<Object>>();
-
-        for (AbstractGroup group : businessLogics.getParentGroups()) {
-            if (group.getParent() != null) {
-                data2.add(asList(group.getSID(), (Object) group.getParent().getSID(), getNumberInListOfChildren(group)));
-            }
-        }
-
-        ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
-        ImportKey<?> key2 = new ImportKey(reflectionLM.propertyGroup, reflectionLM.propertyGroupSID.getMapping(parentSidField));
-        List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
-        props2.add(new ImportProperty(parentSidField, reflectionLM.parentPropertyGroup.getMapping(key), LM.object(reflectionLM.propertyGroup).getMapping(key2)));
-        props2.add(new ImportProperty(numberField, reflectionLM.numberPropertyGroup.getMapping(key)));
-        ImportTable table2 = new ImportTable(asList(sidField, parentSidField, numberField), data2);
-
-        try {
-            DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
-
-            IntegrationService service = new IntegrationService(session, table, asList(key), props, deletes);
-            service.synchronize(true, false);
-
-            service = new IntegrationService(session, table2, asList(key, key2), props2);
-            service.synchronize(true, false);
-
-            if(!disableVolatileStats)
-                session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    private Integer getNumberInListOfChildren(AbstractNode abstractNode) {
-        Set<AbstractNode> siblings = abstractNode.getParent().children;
-        if(abstractNode instanceof Property && siblings.size() > 20) // оптимизация
-            return abstractNode.getParent().getIndexedPropChildren().get(((Property) abstractNode).getSID());
-
-        int counter = 0;
-        for (AbstractNode node : siblings) {
-            counter++;
-            if (abstractNode instanceof Property) {
-                if (node instanceof Property)
-                    if (((Property) node).getSID().equals(((Property) abstractNode).getSID())) {
-                        return counter;
-                    }
-            } else {
-                if (node instanceof AbstractGroup)
-                    if (((AbstractGroup) node).getSID().equals(((AbstractGroup) abstractNode).getSID())) {
-                        return counter;
-                    }
-            }
-        }
-        return 0;
-    }
-
-    public void synchronizeTables(boolean disableVolatileStats) {
-        ImportField tableSidField = new ImportField(reflectionLM.sidTable);
-        ImportField tableKeySidField = new ImportField(reflectionLM.sidTableKey);
-        ImportField tableKeyNameField = new ImportField(reflectionLM.nameTableKey);
-        ImportField tableKeyClassField = new ImportField(reflectionLM.classTableKey);
-        ImportField tableColumnSidField = new ImportField(reflectionLM.sidTableColumn);
-
-        ImportKey<?> tableKey = new ImportKey(reflectionLM.table, reflectionLM.tableSID.getMapping(tableSidField));
-        ImportKey<?> tableKeyKey = new ImportKey(reflectionLM.tableKey, reflectionLM.tableKeySID.getMapping(tableKeySidField));
-        ImportKey<?> tableColumnKey = new ImportKey(reflectionLM.tableColumn, reflectionLM.tableColumnSID.getMapping(tableColumnSidField));
-
-        List<List<Object>> data = new ArrayList<List<Object>>();
-        List<List<Object>> dataKeys = new ArrayList<List<Object>>();
-        List<List<Object>> dataProps = new ArrayList<List<Object>>();
-        for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
-            Object tableName = dataTable.name;
-            data.add(asList(tableName));
-            ImMap<KeyField, ValueClass> classes = dataTable.getClasses().getCommonParent(dataTable.getTableKeys());
-            for (KeyField key : dataTable.keys) {
-                dataKeys.add(asList(tableName, key.name, tableName + "." + key.name, classes.get(key).getCaption()));
-            }
-            for (PropertyField property : dataTable.properties) {
-                dataProps.add(asList(tableName, property.name));
-            }
-        }
-
-        List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-        properties.add(new ImportProperty(tableSidField, reflectionLM.sidTable.getMapping(tableKey)));
-
-        List<ImportProperty<?>> propertiesKeys = new ArrayList<ImportProperty<?>>();
-        propertiesKeys.add(new ImportProperty(tableKeySidField, reflectionLM.sidTableKey.getMapping(tableKeyKey)));
-        propertiesKeys.add(new ImportProperty(tableKeyNameField, reflectionLM.nameTableKey.getMapping(tableKeyKey)));
-        propertiesKeys.add(new ImportProperty(tableKeyClassField, reflectionLM.classTableKey.getMapping(tableKeyKey)));
-        propertiesKeys.add(new ImportProperty(null, reflectionLM.tableTableKey.getMapping(tableKeyKey), reflectionLM.tableSID.getMapping(tableSidField)));
-
-        List<ImportProperty<?>> propertiesColumns = new ArrayList<ImportProperty<?>>();
-        propertiesColumns.add(new ImportProperty(tableColumnSidField, reflectionLM.sidTableColumn.getMapping(tableColumnKey)));
-        propertiesColumns.add(new ImportProperty(null, reflectionLM.tableTableColumn.getMapping(tableColumnKey), reflectionLM.tableSID.getMapping(tableSidField)));
-
-        List<ImportDelete> delete = new ArrayList<ImportDelete>();
-        delete.add(new ImportDelete(tableKey, LM.is(reflectionLM.table).getMapping(tableKey), false));
-
-        List<ImportDelete> deleteKeys = new ArrayList<ImportDelete>();
-        deleteKeys.add(new ImportDelete(tableKeyKey, LM.is(reflectionLM.tableKey).getMapping(tableKeyKey), false));
-
-        List<ImportDelete> deleteColumns = new ArrayList<ImportDelete>();
-        deleteColumns.add(new ImportDelete(tableColumnKey, LM.is(reflectionLM.tableColumn).getMapping(tableColumnKey), false));
-
-        ImportTable table = new ImportTable(asList(tableSidField), data);
-        ImportTable tableKeys = new ImportTable(asList(tableSidField, tableKeyNameField, tableKeySidField, tableKeyClassField), dataKeys);
-        ImportTable tableColumns = new ImportTable(asList(tableSidField, tableColumnSidField), dataProps);
-
-        try {
-            DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
-
-            IntegrationService service = new IntegrationService(session, table, asList(tableKey), properties, delete);
-            service.synchronize(true, false);
-
-            service = new IntegrationService(session, tableKeys, asList(tableKeyKey), propertiesKeys, deleteKeys);
-            service.synchronize(true, false);
-
-            service = new IntegrationService(session, tableColumns, asList(tableColumnKey), propertiesColumns, deleteColumns);
-            service.synchronize(true, false);
-
-            if(!disableVolatileStats)
-                session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void setupPropertyNotifications() throws SQLException, SQLHandledException {
-        DataSession session = createSession();
-
-        LCP isNotification = LM.is(emailLM.notification);
-        ImRevMap<Object, KeyExpr> keys = isNotification.getMapKeys();
-        KeyExpr key = keys.singleValue();
-        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
-        query.addProperty("isDerivedChange", emailLM.isEventNotification.getExpr(session.getModifier(), key));
-        query.addProperty("subject", emailLM.subjectNotification.getExpr(session.getModifier(), key));
-        query.addProperty("text", emailLM.textNotification.getExpr(session.getModifier(), key));
-        query.addProperty("emailFrom", emailLM.emailFromNotification.getExpr(session.getModifier(), key));
-        query.addProperty("emailTo", emailLM.emailToNotification.getExpr(session.getModifier(), key));
-        query.addProperty("emailToCC", emailLM.emailToCCNotification.getExpr(session.getModifier(), key));
-        query.addProperty("emailToBC", emailLM.emailToBCNotification.getExpr(session.getModifier(), key));
-        query.and(isNotification.getExpr(key).getWhere());
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
-
-        for (int i=0,size=result.size();i<size;i++) {
-            DataObject notificationObject = new DataObject(result.getKey(i).getValue(0), emailLM.notification);
-            KeyExpr propertyExpr2 = new KeyExpr("property");
-            KeyExpr notificationExpr2 = new KeyExpr("notification");
-            ImRevMap<String, KeyExpr> newKeys2 = MapFact.toRevMap("property", propertyExpr2, "notification", notificationExpr2);
-
-            QueryBuilder<String, String> query2 = new QueryBuilder<String, String>(newKeys2);
-            query2.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(session.getModifier(), propertyExpr2));
-            query2.and(emailLM.inNotificationProperty.getExpr(session.getModifier(), notificationExpr2, propertyExpr2).getWhere());
-            query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
-            ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result2 = query2.execute(session);
-            List<LCP> listInNotificationProperty = new ArrayList();
-            for (int j=0,size2=result2.size();j<size2;j++) {
-                listInNotificationProperty.add(businessLogics.getLCP(result2.getValue(i).get("SIDProperty").toString().trim()));
-            }
-            ImMap<Object, Object> rowValue = result.getValue(i);
-
-            for (LCP prop : listInNotificationProperty) {
-                boolean isDerivedChange = rowValue.get("isDerivedChange") == null ? false : true;
-                String subject = rowValue.get("subject") == null ? "" : rowValue.get("subject").toString().trim();
-                String text = rowValue.get("text") == null ? "" : rowValue.get("text").toString().trim();
-                String emailFrom = rowValue.get("emailFrom") == null ? "" : rowValue.get("emailFrom").toString().trim();
-                String emailTo = rowValue.get("emailTo") == null ? "" : rowValue.get("emailTo").toString().trim();
-                String emailToCC = rowValue.get("emailToCC") == null ? "" : rowValue.get("emailToCC").toString().trim();
-                String emailToBC = rowValue.get("emailToBC") == null ? "" : rowValue.get("emailToBC").toString().trim();
-                LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty(prop.property.getSID() + "emailNotificationProperty", "emailNotificationProperty", prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, businessLogics.emailLM)));
-
-                Integer[] params = new Integer[prop.listInterfaces.size()];
-                for (int j = 0; j < prop.listInterfaces.size(); j++)
-                    params[j] = j + 1;
-                if (isDerivedChange)
-                    emailNotificationProperty.setEventAction(LM, prop, params);
-                else
-                    emailNotificationProperty.setEventSetAction(LM, prop, params);
-            }
-        }
-    }
-
-    private void resetConnectionStatus() {
-        try {
-            DataSession session = createSession();
-
-            PropertyChange statusChanges = new PropertyChange(systemEventsLM.connectionStatus.getDataObject("disconnectedConnection"),
-                                                              systemEventsLM.connectionStatusConnection.property.interfaces.single(),
-                                                              systemEventsLM.connectionStatus.getDataObject("connectedConnection"));
-
-            session.change((CalcProperty) systemEventsLM.connectionStatusConnection.property, statusChanges);
-
-            session.apply(businessLogics);
-            session.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void logLaunch() throws SQLException, SQLHandledException {
-        DataSession session = createSession();
-
-        DataObject newLaunch = session.addObject(systemEventsLM.launch);
-        systemEventsLM.computerLaunch.change(getServerComputer(), session, newLaunch);
-        systemEventsLM.timeLaunch.change(timeLM.currentDateTime.read(session), session, newLaunch);
-        systemEventsLM.revisionLaunch.change(getRevision(), session, newLaunch);
-
-        session.apply(businessLogics);
-        session.close();
-    }
-
-    public Integer getServerComputer() {
-        return getComputer(SystemUtils.getLocalHostName());
-    }
-
     public DataObject getServerComputerObject() {
         return new DataObject(getComputer(SystemUtils.getLocalHostName()), businessLogics.authenticationLM.computer);
     }
@@ -906,9 +313,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         // инициализируем таблицы
         LM.tableFactory.fillDB(sql, LM.baseClass);
 
+        SQLSyntax syntax = adapter;
+
         // "старое" состояние базы
         DataInputStream inputDB = null;
-        byte[] struct = (byte[]) sql.readRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), StructTable.instance.struct, OperationOwner.unknown);
+        StructTable structTable = StructTable.instance;
+        byte[] struct = (byte[]) sql.readRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), structTable.struct, OperationOwner.unknown);
         if (struct != null)
             inputDB = new DataInputStream(new ByteArrayInputStream(struct));
 
@@ -916,7 +326,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         checkModules(oldDBStructure);
 
-        String hashModules = calculateHashModules();
+        String hashModules = SystemProperties.isDebug ? "NOHASH" : calculateHashModules();
         boolean sourceHashChanged = checkHashModulesChanged(oldDBStructure.hashModules, hashModules);
 
         runAlterationScript();
@@ -970,7 +380,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         }
                     }
                     if (drop) {                                       
-                        sql.dropIndex(oldTable.name, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
+                        sql.dropIndex(oldTable.getName(syntax), oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
                     }
                 }
             }
@@ -982,7 +392,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             systemLogger.info("Creating tables");
             for (Table table : newDBStructure.tables.keySet()) {
                 if (oldDBStructure.getTable(table.name) == null)
-                    sql.createTable(table.name, table.keys);
+                    sql.createTable(table.getName(syntax), table.keys);
             }
 
             // проверяем изменение структуры ключей
@@ -992,7 +402,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     for (KeyField key : table.keys) {
                         KeyField oldKey = oldTable.findKey(key.name);
                         if (!(key.type.equals(oldKey.type))) {
-                            sql.modifyColumn(table.name, key, oldKey.type);
+                            sql.modifyColumn(table.getName(syntax), key, oldKey.type);
                             systemLogger.info("Changing type of key column " + key.name + " in table " + table.name + " from " + oldKey.type + " to " + key.type);
                         }
                     }
@@ -1022,8 +432,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         ImMap<KeyField, PropertyInterface> foundInterfaces = mFoundInterfaces.immutable();
 
                         if (foundInterfaces.size() == oldProperty.mapKeys.size()) { // если все нашли
+                            String tableName = newProperty.getTableName(syntax);
                             if (!(keep = newProperty.tableName.equals(oldProperty.tableName))) { // если в другой таблице
-                                sql.addColumn(newProperty.tableName, newProperty.property.field);
+                                sql.addColumn(tableName, newProperty.property.field);
                                 // делаем запрос на перенос
 
                                 systemLogger.info(getString("logics.info.property.is.transferred.from.table.to.table", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName));
@@ -1034,12 +445,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                             } else { // надо проверить что тип не изменился
                                 Type oldType = oldTable.findProperty(oldProperty.sID).type;
                                 if (oldDBStructure.version < 12 && newProperty.property.field.type instanceof ConcatenateType) { // вряд ли сможем конвертить пересоздадим
-                                    sql.dropColumn(newProperty.tableName, newProperty.property.field.name);
-                                    sql.addColumn(newProperty.tableName, newProperty.property.field);
+                                    sql.dropColumn(tableName, newProperty.property.field.getName(syntax));
+                                    sql.addColumn(tableName, newProperty.property.field);
                                     recalculateProperties.add((AggregateProperty) newProperty.property);
                                 } else if (!oldType.equals(newProperty.property.field.type)) {
                                     systemLogger.info("Changing type of property column " + newProperty.property.field.name + " in table " + newProperty.tableName + " from " + oldType + " to " + newProperty.property.field.type);
-                                    sql.modifyColumn(newProperty.tableName, newProperty.property.field, oldType);
+                                    sql.modifyColumn(tableName, newProperty.property.field, oldType);
                                 }
                             }
                             is.remove();
@@ -1054,19 +465,19 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         Savepoint savepoint = connection.setSavepoint();
                         try {
                             savepoint = connection.setSavepoint();
-                            sql.renameColumn(oldProperty.tableName, oldProperty.sID, newName);
+                            sql.renameColumn(oldProperty.getTableName(syntax), oldProperty.sID, newName);
                             columnsToDrop.put(newName, oldProperty.tableName);
                         } catch (PSQLException e) { // колонка с новым именем (с '_deleted') уже существует
                             connection.rollback(savepoint);
-                            mDropColumns.exclAdd(new Pair<String, String>(oldTable.name, oldProperty.sID));
+                            mDropColumns.exclAdd(new Pair<String, String>(oldTable.getName(syntax), oldProperty.sID));
                         }
                     } else
-                        mDropColumns.exclAdd(new Pair<String, String>(oldTable.name, oldProperty.sID));
+                        mDropColumns.exclAdd(new Pair<String, String>(oldTable.getName(syntax), oldProperty.sID));
                 }
             }
 
             for (DBStoredProperty property : restNewDBStored) { // добавляем оставшиеся
-                sql.addColumn(property.tableName, property.property.field);
+                sql.addColumn(property.getTableName(syntax), property.property.field);
                 if (struct != null && property.property instanceof AggregateProperty) // если все свойства "новые" то ничего перерасчитывать не надо
                     recalculateProperties.add((AggregateProperty) property.property);
             }
@@ -1139,7 +550,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             // удаляем таблицы старые
             for (Table table : oldDBStructure.tables.keySet()) {
                 if (newDBStructure.getTable(table.name) == null) {
-                    sql.dropTable(table.name);
+                    sql.dropTable(table.getName(syntax));
                     systemLogger.info("Table " + table.name + " has been dropped");
                 }
             }
@@ -1154,7 +565,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             systemLogger.info("Adding indices");
             for (Map.Entry<Table, Map<List<String>, Boolean>> mapIndex : newDBStructure.tables.entrySet())
                 for (Map.Entry<List<String>, Boolean> index : mapIndex.getValue().entrySet())
-                    sql.addIndex(mapIndex.getKey().name, mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue());
+                    sql.addIndex(mapIndex.getKey().getName(syntax), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue());
 
             systemLogger.info("Filling static objects ids");
             fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges));
@@ -1166,10 +577,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             newDBStructure.writeConcreteClasses(outDB);
 
             try {
-                sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)), true, OperationOwner.unknown);
+                sql.insertRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(structTable.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)), true, OperationOwner.unknown);
             } catch (Exception e) {
-                ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject((Object) new byte[0], ByteArrayClass.instance));
-                sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, OperationOwner.unknown);
+                ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(structTable.struct, (ObjectValue) new DataObject((Object) new byte[0], ByteArrayClass.instance));
+                sql.insertRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, OperationOwner.unknown);
             }
 
             if (oldDBStructure.version < 14) {
@@ -1372,6 +783,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         Map<String, String> propertyChanges = getChangesAfter(data.dbVersion, propertySIDChanges);
         Map<String, String> tableChanges = getChangesAfter(data.dbVersion, tableSIDChanges);
         Map<String, String> classChanges = getChangesAfter(data.dbVersion, classSIDChanges);
+        
+        SQLSyntax syntax = adapter;
 
         for (Map.Entry<String, String> entry : propertyChanges.entrySet()) {
             DBStoredProperty oldProperty = null;
@@ -1383,7 +796,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             if (oldProperty != null) {
                 String newSID = entry.getValue();
                 systemLogger.info("Renaming column from " + oldProperty.sID + " to " + newSID + " in table " + oldProperty.tableName);
-                sql.renameColumn(oldProperty.tableName, oldProperty.sID, newSID);
+                sql.renameColumn(oldProperty.getTableName(syntax), oldProperty.sID, newSID);
                 oldProperty.sID = newSID;
             }
         }
@@ -1404,7 +817,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             if (tableChanges.containsKey(table.name)) {
                 String newSID = tableChanges.get(table.name);
                 systemLogger.info("Renaming table from " + table.name + " to " + newSID);
-                sql.renameTable(table.name, newSID);
+                sql.renameTable(table.getName(syntax), newSID);
                 table.name = newSID;
             }
         }
@@ -1553,7 +966,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public void packTables(SQLSession session, ImCol<ImplementTable> tables, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         for (final Table table : tables) {
-            logger.debug(getString("logics.info.packing.table") + " (" + table + ")... ");
+            logger.debug(getString("logics.info.packing.table") + " (" + table.name + ")... ");
             run(session, isolatedTransaction, new RunService() {
                 @Override
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
@@ -1666,6 +1079,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         public String sID;
         public Boolean isDataProperty;
         public String tableName;
+        
+        public String getTableName(SQLSyntax syntax) {
+            return syntax.getTableName(tableName);
+        }
+        
         public ImMap<Integer, KeyField> mapKeys;
         public CalcProperty<?> property = null;
 

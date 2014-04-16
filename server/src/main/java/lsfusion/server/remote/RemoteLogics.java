@@ -30,6 +30,7 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.serialization.ServerSerializationPool;
 import lsfusion.server.session.DataSession;
@@ -278,7 +279,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             }
         }
 
-        for (PropertyClassImplement<T, ?> implement : baseLM.rootGroup.getProperties(mClassSets.immutableCol(), isAny)) {
+        for (PropertyClassImplement<T, ?> implement : baseLM.rootGroup.getProperties(mClassSets.immutableCol(), isAny, Version.DESCRIPTOR)) {
             result.add(implement.property);
             ArrayList<Integer> ids = new ArrayList<Integer>();
             for (T iface : implement.property.interfaces) {

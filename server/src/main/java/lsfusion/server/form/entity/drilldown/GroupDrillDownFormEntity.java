@@ -18,6 +18,7 @@ import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.GroupProperty;
@@ -34,6 +35,8 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
 
     @Override
     protected void setupDrillDownForm() {
+        Version version = LM.getVersion();
+
         ImMap<I, GroupProperty.Interface<I>> byInnerInterfaces = BaseUtils.immutableCast(
                 property.getMapInterfaces().filterFnValues(new SFunctionSet<CalcPropertyInterfaceImplement<I>>() {
                     @Override
@@ -58,13 +61,13 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 innerObject = new ObjectEntity(genID(), innerIntClass, "");
                 detailsGroup.add(innerObject);
 
-                addPropertyDraw(LM.baseLM.objectValue, false, innerObject);
-                addPropertyDraw(LM.recognizeGroup, true, innerObject);
+                addPropertyDraw(LM.baseLM.objectValue, false, version, innerObject);
+                addPropertyDraw(LM.recognizeGroup, true, version, innerObject);
             }
 
             mInnerObjects.add(innerInterface, innerObject);
         }
-        addGroupObject(detailsGroup);
+        addGroupObject(detailsGroup, version);
 
         ImMap<I, ObjectEntity> innerObjects = mInnerObjects.immutable();
 
@@ -75,9 +78,9 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 CalcPropertyMapImplement<PropertyInterface, I> mapImplement = (CalcPropertyMapImplement<PropertyInterface, I>) groupImplement;
                 ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(innerObjects).mapping;
 
-                addFixedFilter(new NotNullFilterEntity(addPropertyObject(mapImplement.property, mapImplMapping)));
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(mapImplement.property, mapImplMapping)), version);
                 if (mapImplement.property.isFull()) {
-                    addPropertyDraw(mapImplement.property, mapImplMapping);
+                    addPropertyDraw(mapImplement.property, mapImplMapping, version);
                 }
             }
         }
@@ -92,11 +95,11 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 CalcPropertyMapImplement<PropertyInterface, I> mapImplement = (CalcPropertyMapImplement<PropertyInterface, I>) groupImplement;
                 ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(innerObjects).mapping;
 
-                addFixedFilter(new CompareFilterEntity(addPropertyObject(mapImplement.property, mapImplMapping), Compare.EQUALS, interfaceObjects.get(groupInterface)));
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(mapImplement.property, mapImplMapping), Compare.EQUALS, interfaceObjects.get(groupInterface)), version);
                 //добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
                 if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
                     if (mapImplement.property.isFull()) {
-                        addPropertyDraw(mapImplement.property, mapImplMapping);
+                        addPropertyDraw(mapImplement.property, mapImplMapping, version);
                     }
                 }
             }
@@ -118,19 +121,19 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 orderEntity = innerObjects.get(innerInterface);
             }
 
-            addFixedOrder(orderEntity, asc != null && asc);
+            addFixedOrder(orderEntity, asc != null && asc, version);
         }
 
-        implPropertyDraw = addPropertyDraw(property, interfaceObjects);
+        implPropertyDraw = addPropertyDraw(property, interfaceObjects, version);
     }
 
     @Override
-    public FormView createDefaultRichDesign() {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+    public FormView createDefaultRichDesign(Version version) {
+        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
-        detailsContainer.add(design.getGroupObjectContainer(detailsGroup));
+        detailsContainer.add(design.getGroupObjectContainer(detailsGroup), version);
 
-        valueContainer.add(design.get(implPropertyDraw));
+        valueContainer.add(design.get(implPropertyDraw), version);
 
         return design;
     }

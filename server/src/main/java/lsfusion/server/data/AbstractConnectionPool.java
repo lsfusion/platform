@@ -1,10 +1,10 @@
 package lsfusion.server.data;
 
 import lsfusion.server.ServerLoggers;
-import org.postgresql.PGConnection;
 import lsfusion.base.MutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.server.Settings;
+import lsfusion.server.data.sql.SQLSyntax;
 
 import java.lang.ref.WeakReference;
 import java.sql.Connection;
@@ -82,11 +82,14 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         return new ExConnection(newConnection(), new SQLTemporaryPool());
     }
 
+    protected void prepareConnection(Connection connection) {
+    } 
+    
     public Connection newConnection() throws SQLException {
         try {
             Connection newConnection = startConnection();
-            ((PGConnection)newConnection).setPrepareThreshold(2);
-            SQLSession.setACID(newConnection, false);
+            prepareConnection(newConnection);
+            SQLSession.setACID(newConnection, false, (SQLSyntax)this);
             return newConnection;
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);

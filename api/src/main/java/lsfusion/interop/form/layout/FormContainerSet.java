@@ -30,6 +30,10 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
     }
 
     public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>, F extends AbstractFunction<C,T>> FormContainerSet<C,T> fillContainers(AbstractForm<C,T> form, ContainerFactory<C> contFactory) {
+        return fillContainers(form, contFactory, ContainerAdder.<C, T>DEFAULT());
+    }
+
+    public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>, F extends AbstractFunction<C,T>> FormContainerSet<C,T> fillContainers(AbstractForm<C,T> form, ContainerFactory<C> contFactory, ContainerAdder<C, T> adder) {
 
         FormContainerSet<C,T> set = new FormContainerSet<C,T>();
 
@@ -50,8 +54,8 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
         set.mainContainer.setChildrenAlignment(Alignment.LEADING);
         set.mainContainer.setFlex(1);
         set.mainContainer.setAlignment(FlexAlignment.STRETCH);
-        set.mainContainer.add((T)set.noGroupPanelContainer);
-        set.mainContainer.add((T)set.formButtonContainer);
+        adder.add(set.mainContainer, (T)set.noGroupPanelContainer);
+        adder.add(set.mainContainer, (T)set.formButtonContainer);
 
         set.formButtonContainer.setType(ContainerType.CONTAINERH);
         set.formButtonContainer.setAlignment(FlexAlignment.STRETCH);
@@ -59,7 +63,7 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
         set.noGroupPanelContainer.setType(ContainerType.CONTAINERH);
         set.noGroupPanelContainer.setAlignment(FlexAlignment.STRETCH);
         set.noGroupPanelContainer.setChildrenAlignment(Alignment.LEADING);
-        set.noGroupPanelContainer.add((T) set.noGroupPanelPropsContainer);
+        adder.add(set.noGroupPanelContainer, (T) set.noGroupPanelPropsContainer);
 
         set.noGroupPanelPropsContainer.setType(ContainerType.COLUMNS);
         set.noGroupPanelPropsContainer.setColumns(2);

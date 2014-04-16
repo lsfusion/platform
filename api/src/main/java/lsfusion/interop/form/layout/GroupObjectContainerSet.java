@@ -57,6 +57,9 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
     }
 
     public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> GroupObjectContainerSet<C, T> create(AbstractGroupObject<T> group, ContainerFactory<C> factory) {
+        return create(group, factory, ContainerAdder.<C, T>DEFAULT()); 
+    }
+    public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> GroupObjectContainerSet<C, T> create(AbstractGroupObject<T> group, ContainerFactory<C> factory, ContainerAdder<C, T> adder) {
 
         GroupObjectContainerSet<C, T> set = new GroupObjectContainerSet<C, T>();
 
@@ -95,29 +98,29 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.groupContainer.setChildrenAlignment(Alignment.LEADING);
         set.groupContainer.setAlignment(FlexAlignment.STRETCH);
         set.groupContainer.setFlex(1);
-        set.groupContainer.add((T) set.gridContainer);
-        set.groupContainer.add((T) set.controlsContainer);
-        set.groupContainer.add((T) group.getFilter());
-        set.groupContainer.add((T) set.panelContainer);
+        adder.add(set.groupContainer, (T) set.gridContainer);
+        adder.add(set.groupContainer, (T) set.controlsContainer);
+        adder.add(set.groupContainer, (T) group.getFilter());
+        adder.add(set.groupContainer, (T) set.panelContainer);
 
         set.gridContainer.setType(ContainerType.HORIZONTAL_SPLIT_PANE);
         set.gridContainer.setAlignment(FlexAlignment.STRETCH);
         set.gridContainer.setFlex(1);
-        set.gridContainer.add(group.getGrid());
+        adder.add(set.gridContainer, group.getGrid());
 
         set.controlsContainer.setType(ContainerType.CONTAINERH);
         set.controlsContainer.setAlignment(FlexAlignment.STRETCH);
         set.controlsContainer.setChildrenAlignment(Alignment.LEADING);
-        set.controlsContainer.add((T) group.getToolbar());
-        set.controlsContainer.add((T) set.rightControlsContainer);
+        adder.add(set.controlsContainer, (T) group.getToolbar());
+        adder.add(set.controlsContainer, (T) set.rightControlsContainer);
 
         set.rightControlsContainer.setType(ContainerType.CONTAINERH);
         set.rightControlsContainer.setAlignment(FlexAlignment.CENTER);
         set.rightControlsContainer.setChildrenAlignment(Alignment.TRAILING);
         set.rightControlsContainer.setFlex(1);
-        set.rightControlsContainer.add((T) set.filtersContainer);
-        set.rightControlsContainer.add((T) set.toolbarPropsContainer);
-        set.rightControlsContainer.add((T) group.getShowType());
+        adder.add(set.rightControlsContainer, (T) set.filtersContainer);
+        adder.add(set.rightControlsContainer, (T) set.toolbarPropsContainer);
+        adder.add(set.rightControlsContainer, (T) group.getShowType());
 
         set.filtersContainer.setType(ContainerType.CONTAINERH);
         set.filtersContainer.setAlignment(FlexAlignment.CENTER);
@@ -129,7 +132,7 @@ public class GroupObjectContainerSet<C extends AbstractContainer<C, T>, T extend
         set.panelContainer.setType(ContainerType.CONTAINERV);
         set.panelContainer.setAlignment(FlexAlignment.STRETCH);
         set.panelContainer.setChildrenAlignment(Alignment.LEADING);
-        set.panelContainer.add((T) set.panelPropsContainer);
+        adder.add(set.panelContainer, (T) set.panelPropsContainer);
 
         set.panelPropsContainer.setType(ContainerType.COLUMNS);
         set.panelPropsContainer.setColumns(4);

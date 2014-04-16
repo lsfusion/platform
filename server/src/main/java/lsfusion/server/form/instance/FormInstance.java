@@ -162,7 +162,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this.weakFocusListener = new WeakReference<FocusListener<T>>(focusListener);
         this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
 
-        groups = SetFact.fromJavaOrderSet(entity.groups).mapOrderSetValues(new GetValue<GroupObjectInstance, GroupObjectEntity>() {
+        groups = entity.getGroupsList().mapOrderSetValues(new GetValue<GroupObjectInstance, GroupObjectEntity>() {
             public GroupObjectInstance getMapValue(GroupObjectEntity value) {
                 return instanceFactory.getInstance(value);
             }
@@ -174,12 +174,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             groupObject.setClassListener(classListener);
         }
 
-        for (TreeGroupEntity treeGroup : entity.treeGroups) {
+        for (TreeGroupEntity treeGroup : entity.getTreeGroupsIt()) {
             instanceFactory.getInstance(treeGroup); // чтобы зарегить ссылки
         }
 
-        MList<PropertyDrawInstance> mProperties = ListFact.mListMax(entity.propertyDraws.size());
-        for (PropertyDrawEntity<?> propertyDrawEntity : entity.propertyDraws)
+        ImList<PropertyDrawEntity<?>> propertyDraws = entity.getPropertyDrawsList();
+        MList<PropertyDrawInstance> mProperties = ListFact.mListMax(propertyDraws.size());
+        for (PropertyDrawEntity<?> propertyDrawEntity : propertyDraws)
             if (this.securityPolicy.property.view.checkPermission(propertyDrawEntity.propertyObject.property)) {
                 PropertyDrawInstance propertyDrawInstance = instanceFactory.getInstance(propertyDrawEntity);
                 if (propertyDrawInstance.toDraw == null) // для Instance'ов проставляем не null, так как в runtime'е порядок меняться не будет
@@ -188,7 +189,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             }
         properties = mProperties.immutableList();
 
-        ImSet<FilterEntity> allFixedFilters = SetFact.fromJavaSet(entity.fixedFilters);
+        ImSet<FilterEntity> allFixedFilters = entity.getFixedFilters();
         if (contextFilters != null)
             allFixedFilters = allFixedFilters.merge(contextFilters);
         ImMap<GroupObjectInstance, ImSet<FilterInstance>> fixedFilters = allFixedFilters.mapSetValues(new GetValue<FilterInstance, FilterEntity>() {
@@ -204,11 +205,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             fixedFilters.getKey(i).fixedFilters = fixedFilters.getValue(i);
 
 
-        for (RegularFilterGroupEntity filterGroupEntity : entity.regularFilterGroups) {
+        for (RegularFilterGroupEntity filterGroupEntity : entity.getRegularFilterGroupsList()) {
             regularFilterGroups.add(instanceFactory.getInstance(filterGroupEntity));
         }
 
-        ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = MapFact.fromJavaOrderMap(entity.fixedOrders).mapOrderKeys(new GetValue<OrderInstance, OrderEntity<?>>() {
+        ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = entity.getFixedOrdersList().mapOrderKeys(new GetValue<OrderInstance, OrderEntity<?>>() {
             public OrderInstance getMapValue(OrderEntity<?> value) {
                 return value.getInstance(instanceFactory);
             }
@@ -247,10 +248,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         Set<GroupObjectInstance> wasOrder = new HashSet<GroupObjectInstance>();
-        for (Entry<PropertyDrawEntity<?>, Boolean> entry : entity.defaultOrders.entrySet()) {
-            PropertyDrawInstance property = instanceFactory.getInstance(entry.getKey());
+        ImOrderMap<PropertyDrawEntity<?>, Boolean> defaultOrders = entity.getDefaultOrdersList();
+        for (int i=0,size=defaultOrders.size();i<size;i++) {
+            PropertyDrawInstance property = instanceFactory.getInstance(defaultOrders.getKey(i));
             GroupObjectInstance toDraw = property.toDraw;
-            Boolean ascending = entry.getValue();
+            Boolean ascending = defaultOrders.getValue(i);
 
             toDraw.changeOrder((CalcPropertyObjectInstance) property.propertyObject, wasOrder.contains(toDraw) ? ADD : REPLACE);
             if (!ascending) {
@@ -690,7 +692,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }).equals(groupTo.filters);
     }
 
-    public DataObject addFormObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject pushed) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> DataObject addFormObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject pushed) throws SQLException, SQLHandledException {
         DataObject dataObject = session.addObject(cls, pushed);
 
         // резолвим все фильтры
@@ -698,10 +700,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         for (FilterInstance filter : object.groupTo.filters)
             filter.resolveAdd(this, object, dataObject);
 
-        for (LP lp : BL.LM.lproperties) {
-            if (lp instanceof LCP) {
-                LCP<?> lcp = (LCP<?>) lp;
-                CalcProperty<?> property = lcp.property;
+        for (Property lp : BL.getOrderProperties()) {
+            if (lp instanceof CalcProperty) {
+                CalcProperty<P> property = (CalcProperty<P>) lp;
                 if (property.autoset) {
                     ValueClass interfaceClass = property.getInterfaceClasses(ClassType.ASSERTFULL).singleValue();
                     ValueClass valueClass = property.getValueClass();
@@ -709,7 +710,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                             cls.isChild((CustomClass) interfaceClass)) { // в общем то для оптимизации
                         Integer obj = getClassListener().getObject((CustomClass) valueClass);
                         if (obj != null)
-                            lcp.change(obj, this, dataObject);
+                            property.change(MapFact.singleton(property.interfaces.single(), dataObject), this, obj);
                     }
                 }
             }
@@ -1172,10 +1173,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
+    private boolean hasEventActions() {
+        ImMap<Object, ImList<ActionPropertyObjectEntity<?>>> eventActions = entity.getEventActions();
+        for(ImList<ActionPropertyObjectEntity<?>> list : eventActions.valueIt())
+            if(list.size() > 0)
+                return true;
+        return false;
+    }
+    
     // todo : временная затычка
     public void seekObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {
 
-        if (entity.eventActions.size() > 0) { // дебилизм конечно но пока так
+        if (hasEventActions()) { // дебилизм конечно но пока так
             forceChangeObject(object, value);
         } else {
             object.groupTo.addSeek(object, value, false);
@@ -1229,8 +1238,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         assert parent.getType() == ContainerType.TABBED_PANE;
 
         ComponentView visible = visibleTabs.get(parent);
-        if (visible == null && parent.children.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
-            visible = parent.children.iterator().next();
+        ImList<ComponentView> siblings = parent.getChildrenList();
+        if (visible == null && siblings.size() > 0) // аналогичные проверки на клиентах, чтобы при init'е не вызывать
+            visible = siblings.get(0);
         if (!component.equals(visible))
             return true;
 
@@ -1661,7 +1671,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     constrainedProperty.getPropertyObjectEntity(propValues.mapping, filterObject))));
         }
 
-        for (FilterEntity filterEntity : entity.fixedFilters) {
+        for (FilterEntity filterEntity : entity.getFixedFilters()) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             if (filter.getApplyObject() == selectionGroupObject) {
                 for (CalcPropertyValueImplement<?> filterImplement : filter.getResolveChangeProperties(implementProperty)) {
@@ -1681,7 +1691,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public <P extends PropertyInterface, F extends PropertyInterface> ImSet<FilterEntity> getObjectFixedFilters(ClassFormEntity<T> editForm, GroupObjectInstance selectionGroupObject) {
         MSet<FilterEntity> mFixedFilters = SetFact.mSet();
         ObjectEntity object = editForm.object;
-        for (FilterEntity filterEntity : entity.fixedFilters) {
+        for (FilterEntity filterEntity : entity.getFixedFilters()) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             if (filter.getApplyObject() == selectionGroupObject) { // берем фильтры из этой группы
                 for (ObjectEntity filterObject : filterEntity.getObjects()) {
@@ -1815,7 +1825,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private void fireEvent(Object eventObject) throws SQLException, SQLHandledException {
-        List<ActionPropertyObjectEntity<?>> actionsOnEvent = entity.getActionsOnEvent(eventObject);
+        Iterable<ActionPropertyObjectEntity<?>> actionsOnEvent = entity.getEventActionsListIt(eventObject);
         if (actionsOnEvent != null) {
             for (ActionPropertyObjectEntity<?> autoAction : actionsOnEvent) {
                 ActionPropertyObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);

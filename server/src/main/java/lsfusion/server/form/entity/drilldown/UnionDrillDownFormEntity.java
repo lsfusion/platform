@@ -9,6 +9,7 @@ import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Pro
 
     @Override
     protected void setupDrillDownForm() {
+        Version version = LM.getVersion();
+        
         operandProperties = new ArrayList<PropertyDrawEntity>();
 
         ImCol<CalcPropertyInterfaceImplement<UnionProperty.Interface>> operands = property.getOperands();
@@ -43,27 +46,27 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Pro
                 if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
                     if (mapImplement.property.isFull()) {
                         operandProperties.add(
-                                addPropertyDraw(mapImplement.property, mapImplMapping)
+                                addPropertyDraw(mapImplement.property, mapImplMapping, version)
                         );
                     }
                 }
             }
         }
-        implPropertyDraw = addPropertyDraw(property, interfaceObjects);
+        implPropertyDraw = addPropertyDraw(property, interfaceObjects, version);
     }
 
     @Override
-    public FormView createDefaultRichDesign() {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+    public FormView createDefaultRichDesign(Version version) {
+        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
-        valueContainer.add(design.get(implPropertyDraw));
+        valueContainer.add(design.get(implPropertyDraw), version);
 
         ContainerView operandsContainer = design.createContainer(getString("logics.property.drilldown.form.operands"));
         operandsContainer.setAlignment(FlexAlignment.STRETCH);
         for (PropertyDrawEntity operandProperty : operandProperties) {
-            operandsContainer.add(design.get(operandProperty));
+            operandsContainer.add(design.get(operandProperty), version);
         }
-        design.mainContainer.addAfter(operandsContainer, valueContainer);
+        design.mainContainer.addAfter(operandsContainer, valueContainer, version);
         return design;
     }
 }

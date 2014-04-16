@@ -14,6 +14,7 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 
 import java.util.ArrayList;
@@ -33,61 +34,67 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
 
     @Override
     protected void setupDrillDownForm() {
-        detailsProperties = new ArrayList<PropertyDrawEntity>();
-
         CalcProperty<I> implProperty = property.implement.property;
-        ImMap<I, CalcPropertyInterfaceImplement<JoinProperty.Interface>> implMapping = property.implement.mapping;
-        ImMap<I, ValueClass> implClasses = implProperty.getInterfaceClasses(ClassType.ASSERTFULL);
+        if(implProperty.isFull()) {
+            detailsProperties = new ArrayList<PropertyDrawEntity>();
+            Version version = LM.getVersion();
 
-        MMap<I, ObjectEntity> mImplObjects = MapFact.mMap(MapFact.<I, ObjectEntity>override());
-
-        for (int i = 0; i < implMapping.size(); ++i) {
-            I iFace = implMapping.getKey(i);
-            CalcPropertyInterfaceImplement<JoinProperty.Interface> intImpl = implMapping.getValue(i);
-            if (intImpl instanceof CalcPropertyMapImplement) {
-                //добавляем дополнительный объект, если на входе - свойство
-                ObjectEntity innerObject  = addSingleGroupObject(implClasses.get(iFace));
-                innerObject.groupTo.setSingleClassView(ClassViewType.PANEL);
-                mImplObjects.add(iFace, innerObject);
-
-                //добавляем фильтр для этого объекта и соотв. свойства
-                CalcPropertyMapImplement<PropertyInterface, JoinProperty.Interface> mapImplement = (CalcPropertyMapImplement<PropertyInterface, JoinProperty.Interface>) intImpl;
-                ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(interfaceObjects).mapping;
-                addFixedFilter(new CompareFilterEntity(addPropertyObject(mapImplement.property, mapImplMapping), Compare.EQUALS, innerObject));
-
-                //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
-                    if (mapImplement.property.isFull()) {
-                        detailsProperties.add(
-                                addPropertyDraw(mapImplement.property, mapImplMapping)
-                        );
+            ImMap<I, CalcPropertyInterfaceImplement<JoinProperty.Interface>> implMapping = property.implement.mapping;
+            ImMap<I, ValueClass> implClasses = implProperty.getInterfaceClasses(ClassType.ASSERTFULL);
+    
+            MMap<I, ObjectEntity> mImplObjects = MapFact.mMap(MapFact.<I, ObjectEntity>override());
+    
+            for (int i = 0; i < implMapping.size(); ++i) {
+                I iFace = implMapping.getKey(i);
+                CalcPropertyInterfaceImplement<JoinProperty.Interface> intImpl = implMapping.getValue(i);
+                if (intImpl instanceof CalcPropertyMapImplement) {
+                    //добавляем дополнительный объект, если на входе - свойство
+                    ObjectEntity innerObject  = addSingleGroupObject(implClasses.get(iFace), version);
+                    innerObject.groupTo.setSingleClassView(ClassViewType.PANEL);
+                    mImplObjects.add(iFace, innerObject);
+    
+                    //добавляем фильтр для этого объекта и соотв. свойства
+                    CalcPropertyMapImplement<PropertyInterface, JoinProperty.Interface> mapImplement = (CalcPropertyMapImplement<PropertyInterface, JoinProperty.Interface>) intImpl;
+                    ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(interfaceObjects).mapping;
+                    addFixedFilter(new CompareFilterEntity(addPropertyObject(mapImplement.property, mapImplMapping), Compare.EQUALS, innerObject), version);
+    
+                    //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
+                    if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasNFChild(mapImplement.property, version)) {
+                        if (mapImplement.property.isFull()) {
+                            detailsProperties.add(
+                                    addPropertyDraw(mapImplement.property, mapImplMapping, version)
+                            );
+                        }
                     }
+                } else {
+                    JoinProperty.Interface intImplement = (JoinProperty.Interface) intImpl;
+                    mImplObjects.add(iFace, interfaceObjects.get(intImplement));
                 }
-            } else {
-                JoinProperty.Interface intImplement = (JoinProperty.Interface) intImpl;
-                mImplObjects.add(iFace, interfaceObjects.get(intImplement));
             }
-        }
 
-        ImMap<I, ObjectEntity> implObjects = mImplObjects.immutable();
-        implPropertyDraw = addPropertyDraw(implProperty, implObjects);
+            ImMap<I, ObjectEntity> implObjects = mImplObjects.immutable();
+            implPropertyDraw = addPropertyDraw(implProperty, implObjects, version);
+        }
     }
 
     @Override
-    public FormView createDefaultRichDesign() {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+    public FormView createDefaultRichDesign(Version version) {
+        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
         ContainerView extraParamsContainer = design.createContainer(getString("logics.property.drilldown.form.inner.params"));
-        design.mainContainer.addAfter(extraParamsContainer, valueContainer);
-        for (PropertyDrawEntity detailProperty : detailsProperties) {
-            PropertyDrawView detailPropertyView = design.get(detailProperty);
-            if (isRedundantString(detailPropertyView.getCaption())) {
-                detailPropertyView.caption = detailProperty.propertyObject.property.getSID();
-            }
-            detailsContainer.add(detailPropertyView);
-        }
+        design.mainContainer.addAfter(extraParamsContainer, valueContainer, version);
 
-        valueContainer.add(design.get(implPropertyDraw));
+        if(implPropertyDraw != null) {
+            for (PropertyDrawEntity detailProperty : detailsProperties) {
+                PropertyDrawView detailPropertyView = design.get(detailProperty);
+                if (isRedundantString(detailPropertyView.getCaption())) {
+                    detailPropertyView.caption = detailProperty.propertyObject.property.getSID();
+                }
+                detailsContainer.add(detailPropertyView, version);
+            }
+
+            valueContainer.add(design.get(implPropertyDraw), version);
+        }
 
         return design;
     }

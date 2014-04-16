@@ -16,6 +16,7 @@ import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
@@ -58,8 +59,8 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form) {
-        super.proceedDefaultDraw(entity, form);
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form, Version version) {
+        super.proceedDefaultDraw(entity, form, version);
         PropertyObjectInterfaceEntity mapObject = entity.propertyObject.mapping.singleValue();
         if(mapObject instanceof ObjectEntity && !((CustomClass)((ObjectEntity)mapObject).baseClass).hasChildren())
             entity.forceViewType = ClassViewType.HIDE;

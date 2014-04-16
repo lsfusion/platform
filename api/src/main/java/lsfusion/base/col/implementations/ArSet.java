@@ -49,6 +49,7 @@ public class ArSet<K> extends AMSet<K> {
 
     @Override
     public void exclAdd(K key) { // не проверяем, чтобы в профайлере не мусорить
+//        assert !contains(key);
         array[size++] = key;
     }
     public boolean add(K element) {

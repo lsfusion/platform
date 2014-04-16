@@ -8,6 +8,8 @@ public interface MList<K> {
     int size();
     void set(int i, K value);
     K get(int i);
+    
+    void removeAll();
 
     void addAll(ImList<? extends K> list);
         

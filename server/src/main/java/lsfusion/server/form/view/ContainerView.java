@@ -1,19 +1,22 @@
 package lsfusion.server.form.view;
 
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.form.layout.AbstractContainer;
 import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.layout.ContainerAdder;
 import lsfusion.interop.form.layout.ContainerType;
+import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.serialization.ServerSerializationPool;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ContainerView extends ComponentView implements AbstractContainer<ContainerView, ComponentView> {
 
-    public List<ComponentView> children = new ArrayList<ComponentView>();
+    public NFOrderSet<ComponentView> children = NFFact.orderSet();
 
     public String caption;
     public String description;
@@ -62,7 +65,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         ComponentView result = super.findById(id);
         if(result!=null) return result;
         
-        for(ComponentView child : children) {
+        for(ComponentView child : getChildrenIt()) {
             result = child.findById(id);
             if(result!=null) return result;
         }
@@ -70,54 +73,54 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         return null;
     }
 
-    private void changeContainer(ComponentView comp) {
-        if (comp.getContainer() != null)
-            comp.getContainer().remove(comp);
+    private void changeContainer(ComponentView comp, Version version) {
+        ContainerView container = comp.getNFContainer(version);
+        if (container != null)
+            container.remove(comp, version);
 
-        comp.setContainer(this);
+        comp.setContainer(this, version);
     }
+    
+    public static class VersionContainerAdder extends ContainerAdder<ContainerView, ComponentView> {
+        private final Version version;
+
+        public VersionContainerAdder(Version version) {
+            this.version = version;
+        }
+
+        public void add(ContainerView container, ComponentView component) {
+            container.add(component, version); 
+        }
+    } 
 
     public void add(ComponentView comp) {
-        changeContainer(comp);
-        children.add(comp);
+        add(comp, Version.DESCRIPTOR);
+    }
+    
+    public void add(ComponentView comp, Version version) {
+        changeContainer(comp, version);
+        children.add(comp, version);
     }
 
-    public void add(int index, ComponentView comp) {
-        changeContainer(comp);
-        children.add(index, comp);
+    public void addFirst(ComponentView comp, Version version) {
+        changeContainer(comp, version);
+        children.addFirst(comp, version);
     }
 
-    public void addBack(int index, ComponentView comp) {
-        add(children.size() - index, comp);
+    public void addBefore(ComponentView comp, ComponentView compBefore, Version version) {
+        changeContainer(comp, version);
+        children.addIfNotExistsToThenLast(comp, compBefore, false, version);
     }
 
-    public void addBefore(ComponentView comp, ComponentView compBefore) {
-        if (!children.contains(compBefore)) {
-            add(comp);
-        } else {
-            //сначала remove, чтобы indexOf вернул правильный индекс
-            remove(comp);
-            add(children.indexOf(compBefore), comp);
-        }
+    public void addAfter(ComponentView comp, ComponentView compAfter, Version version) {
+        changeContainer(comp, version);
+        children.addIfNotExistsToThenLast(comp, compAfter, true, version);
     }
 
-    public void addAfter(ComponentView comp, ComponentView compAfter) {
-        if (!children.contains(compAfter)) {
-            add(comp);
-        } else {
-            //сначала remove, чтобы indexOf вернул правильный индекс
-            remove(comp);
-            add(children.indexOf(compAfter) + 1, comp);
-        }
-    }
-
-    public void addFirst(ComponentView comp) {
-        add(0, comp);
-    }
-
-    public boolean remove(ComponentView comp) {
-        if (children.remove(comp)) {
-            comp.setContainer(null);
+    public boolean remove(ComponentView comp, Version version) {
+        if (children.containsNF(comp, version)) {
+            children.remove(comp, version);
+            comp.setContainer(null, version);
             return true;
         } else {
             return false;
@@ -125,23 +128,28 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     }
 
     public boolean isAncestorOf(ComponentView container) {
-        return container != null && (super.isAncestorOf(container) || isAncestorOf(container.container));
+        return container != null && (super.isAncestorOf(container) || isAncestorOf(container.getContainer()));
     }
 
-    public void fillOrderList(List<ContainerView> containers) {
-        if(container!=null) container.fillOrderList(containers);
-        if(!containers.contains(this)) containers.add(this);
+    public boolean isNFAncestorOf(ComponentView container, Version version) {
+        return container != null && (super.isNFAncestorOf(container, version) || isNFAncestorOf(container.getNFContainer(version), version));
     }
 
-    public List<ComponentView> getChildren() {
-        return new ArrayList(children);
+    public Iterable<ComponentView> getChildrenIt() {
+        return children.getIt();
+    }
+    public ImList<ComponentView> getChildrenList() {
+        return children.getList();
+    }
+    public Iterable<ComponentView> getNFChildrenIt(Version version) {
+        return children.getNFIt(version);
     }
 
     @Override
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         super.customSerialize(pool, outStream, serializationType);
 
-        pool.serializeCollection(outStream, children, serializationType);
+        pool.serializeCollection(outStream, getChildrenList(), serializationType);
 
         pool.writeString(outStream, caption);
         pool.writeString(outStream, description);
@@ -158,7 +166,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        children = pool.deserializeList(inStream);
+        children = NFFact.finalOrderSet(pool.<ComponentView>deserializeList(inStream));
 
         caption = pool.readString(inStream);
         description = pool.readString(inStream);

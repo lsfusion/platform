@@ -10,7 +10,7 @@ import java.sql.Types;
 public class MSSQLDataAdapter extends DataAdapter {
 
     public MSSQLDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws Exception, SQLException, InstantiationException, IllegalAccessException {
-        super(iDataBase, iServer, iUserID, iPassword);
+        super(iDataBase, iServer, iUserID, iPassword, false);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class MSSQLDataAdapter extends DataAdapter {
         return "net.sourceforge.jtds.jdbc.Driver";
     }
 
-    public void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public void ensureDB(boolean cleanDB) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
         //namedPipe=true;
         Connection connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server +":1433;User=" + userID + ";Password=" + password);

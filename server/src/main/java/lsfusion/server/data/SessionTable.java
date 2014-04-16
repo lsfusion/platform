@@ -555,7 +555,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         
         dbSql.startTransaction(DBManager.DEBUG_TIL, OperationOwner.unknown);
         dbSql.ensureTable(this);
-        dbSql.insertBatchRecords(name, keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass, OperationOwner.debug).getMap(), OperationOwner.unknown);
+        dbSql.insertBatchRecords(getName(sql.syntax), keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass, OperationOwner.debug).getMap(), OperationOwner.unknown);
         dbSql.commitTransaction();
         
         dbSql.close(OperationOwner.unknown);

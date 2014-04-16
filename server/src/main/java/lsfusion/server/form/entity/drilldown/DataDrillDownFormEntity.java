@@ -9,6 +9,7 @@ import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.DataProperty;
@@ -28,7 +29,9 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
 
     @Override
     protected void setupDrillDownForm() {
-        implPropertyDraw = addPropertyDraw(property, interfaceObjects);
+        Version version = LM.getVersion();
+
+        implPropertyDraw = addPropertyDraw(property, interfaceObjects, version);
 
         CalcPropertyMapImplement<?, ClassPropertyInterface> where = (CalcPropertyMapImplement<?, ClassPropertyInterface>) property.event.where; //h
         ImRevMap<PropertyInterface, ClassPropertyInterface> whereMapping = (ImRevMap<PropertyInterface, ClassPropertyInterface>) where.mapping;
@@ -36,7 +39,7 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
         for (PropertyInterface i : whereMapping.keys()) {
                 mapping.add(i, interfaceObjects.get(whereMapping.get(i)));
         }
-        wherePropertyDraw = addPropertyDraw(where.property, mapping.immutable());
+        wherePropertyDraw = addPropertyDraw(where.property, mapping.immutable(), version);
 
         CalcPropertyMapImplement<?, ClassPropertyInterface> writeFrom = (CalcPropertyMapImplement<?, ClassPropertyInterface>) property.event.writeFrom; //g
         ImRevMap<PropertyInterface, ClassPropertyInterface> writeFromMapping = (ImRevMap<PropertyInterface, ClassPropertyInterface>) writeFrom.mapping;
@@ -44,21 +47,21 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
         for (PropertyInterface i : writeFromMapping.keys()) {
                 mapping.add(i, interfaceObjects.get(writeFromMapping.get(i)));
         }
-        writeFromPropertyDraw = addPropertyDraw(writeFrom.property, mapping.immutable());
+        writeFromPropertyDraw = addPropertyDraw(writeFrom.property, mapping.immutable(), version);
     }
 
     @Override
-    public FormView createDefaultRichDesign() {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-        valueContainer.add(design.get(implPropertyDraw));
+    public FormView createDefaultRichDesign(Version version) {
+        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
+        valueContainer.add(design.get(implPropertyDraw), version);
 
         ContainerView whereParamsContainer = design.createContainer(getString("logics.property.drilldown.form.where.params"));
-        whereParamsContainer.add(design.get(wherePropertyDraw));
+        whereParamsContainer.add(design.get(wherePropertyDraw), version);
         ContainerView expressionParamsContainer = design.createContainer(getString("logics.property.drilldown.form.expr.params"));
-        expressionParamsContainer.add(design.get(writeFromPropertyDraw));
+        expressionParamsContainer.add(design.get(writeFromPropertyDraw), version);
 
-        design.mainContainer.addAfter(whereParamsContainer, valueContainer);
-        design.mainContainer.addAfter(expressionParamsContainer, whereParamsContainer);
+        design.mainContainer.addAfter(whereParamsContainer, valueContainer, version);
+        design.mainContainer.addAfter(expressionParamsContainer, whereParamsContainer, version);
 
         return design;
     }

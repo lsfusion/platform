@@ -20,6 +20,7 @@ import lsfusion.server.form.instance.Instantiable;
 import lsfusion.server.form.instance.PropertyDrawInstance;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.Property;
@@ -381,6 +382,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public GroupObjectEntity getToDraw(FormEntity form) {
         return toDraw==null?form.getApplyObject(propertyObject.getObjectInstances()):toDraw;        
+    }
+
+    public GroupObjectEntity getNFToDraw(FormEntity form, Version version) {
+        return toDraw==null?form.getNFApplyObject(propertyObject.getObjectInstances(), version):toDraw;
     }
 
     public boolean isDrawToToolbar() {

@@ -41,7 +41,7 @@ public class ScriptingBusinessLogics extends BusinessLogics<ScriptingBusinessLog
     }
 
     @Override
-    protected void createModules() throws IOException {
+    public void createModules() throws IOException {
         super.createModules();
         addModulesFromResource(scriptFilePaths, excludedScriptFilePaths);
     }

@@ -22,6 +22,7 @@ import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ExtendContextActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
@@ -145,13 +146,13 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity <PropertyInterface> entity, FormEntity<?> form) {
-        super.proceedDefaultDraw(entity, form);
+    public void proceedDefaultDraw(PropertyDrawEntity<PropertyInterface> entity, FormEntity<?> form, Version version) {
+        super.proceedDefaultDraw(entity, form, version);
         entity.setDrawToToolbar(true);
         entity.shouldBeLast = true;
         entity.forceViewType = ClassViewType.PANEL;
 
-        entity.toDraw = form.getObject(valueClass).groupTo;
+        entity.toDraw = form.getNFObject(valueClass, version).groupTo;
     }
 
     @Override

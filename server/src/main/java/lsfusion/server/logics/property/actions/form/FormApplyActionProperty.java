@@ -6,6 +6,7 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -40,8 +41,8 @@ public class FormApplyActionProperty extends FormToolbarActionProperty {
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> propertyDraw, FormEntity<?> form) {
-        super.proceedDefaultDraw(propertyDraw, form);
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> propertyDraw, FormEntity<?> form, Version version) {
+        super.proceedDefaultDraw(propertyDraw, form, version);
 
         propertyDraw.propertyBackground = form.addPropertyObject(applyBackground);
     }

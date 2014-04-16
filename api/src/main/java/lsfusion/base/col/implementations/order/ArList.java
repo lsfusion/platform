@@ -66,4 +66,8 @@ public class ArList<K> extends AList<K> implements MList<K> {
     public ArList(ArList<K> list) {
         col = new ArCol<K>(list.col);
     }
+
+    public void removeAll() {
+        col.removeAll();
+    }
 }

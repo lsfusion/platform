@@ -1,6 +1,5 @@
 package lsfusion.server.logics.table;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -19,6 +18,10 @@ import lsfusion.server.data.*;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.NFLazy;
+import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -26,30 +29,34 @@ import java.util.*;
 public class TableFactory {
 
     private BaseClass baseClass;
-    Map<Integer, List<ImplementTable>> implementTablesMap = new HashMap<Integer, List<ImplementTable>>();
+    private Map<Integer, NFOrderSet<ImplementTable>> implementTablesMap = new HashMap<Integer, NFOrderSet<ImplementTable>>();
+    private Map<Integer, List<ImplementTable>> includedTablesMap = new HashMap<Integer, List<ImplementTable>>(); // для решения \ выделения проблем с mutability и детерминированностью, без этого можно было бы implementTablesMap обойтись 
 
     public TableFactory(BaseClass baseClass) {
         this.baseClass = baseClass;
     }
 
-    public ImplementTable include(String name, ValueClass... classes) {
+    @NFLazy // только NFOrderSet'ов в implementTablesMap и parents недостаточно, так алгоритм include не thread-safe (хотя и устойчив к перестановкам версий)
+    public ImplementTable include(String name, Version version, ValueClass... classes) {
         if (implementTablesMap.get(classes.length) == null)
-            implementTablesMap.put(classes.length, new ArrayList<ImplementTable>());
+            implementTablesMap.put(classes.length, NFFact.<ImplementTable>orderSet());
 
         ImplementTable newTable = new ImplementTable(name, classes);
-        newTable.include(implementTablesMap.get(classes.length), true, SetFact.<ImplementTable>mAddRemoveSet());
+        newTable.include(implementTablesMap.get(classes.length), version, true, SetFact.<ImplementTable>mAddRemoveSet(), null);
         return newTable;
     }
 
     // получает постоянные таблицы
     public ImSet<ImplementTable> getImplementTables() {
         MExclSet<ImplementTable> result = SetFact.mExclSet();
-        for (List<ImplementTable> implementTableEntry : implementTablesMap.values()) {
+        for (NFOrderSet<ImplementTable> implementTableEntry : implementTablesMap.values()) {
             MSet<ImplementTable> mIntTables = SetFact.mSet();
-            for (ImplementTable implementTable : implementTableEntry)
+            for (ImplementTable implementTable : implementTableEntry.getIt())
                 implementTable.fillSet(mIntTables);
             result.exclAddAll(mIntTables.immutable());
         }
+        for (List<ImplementTable> implementTableEntry : includedTablesMap.values())
+            result.exclAddAll(SetFact.fromJavaOrderSet(implementTableEntry).getSet());
         return result.immutable();
     }
 
@@ -62,17 +69,34 @@ public class TableFactory {
     }
 
     public <T> MapKeysTable<T> getMapTable(ImMap<T, ValueClass> findItem) {
-        List<ImplementTable> tables = implementTablesMap.get(findItem.size());
+        NFOrderSet<ImplementTable> tables = implementTablesMap.get(findItem.size());
         if (tables != null)
-            for (ImplementTable implementTable : tables) {
-                MapKeysTable<T> mapTable = implementTable.getMapTable(findItem);
+            for (ImplementTable implementTable : tables.getListIt()) {
+                MapKeysTable<T> mapTable = implementTable.getMapTable(findItem, false);
                 if (mapTable != null) return mapTable;
             }
+
+        return getIncludedMapTable(findItem);
+    }
+
+    // получает "автоматическую таблицу"
+    @NFLazy
+    private <T> MapKeysTable<T> getIncludedMapTable(ImMap<T, ValueClass> findItem) {
+        int classCount = findItem.size();
+        List<ImplementTable> incTables = includedTablesMap.get(classCount);
+        if(incTables==null) {
+            incTables = new ArrayList<ImplementTable>();
+            includedTablesMap.put(classCount, incTables);
+        }
+        for (ImplementTable implementTable : incTables) {
+            MapKeysTable<T> mapTable = implementTable.getMapTable(findItem, true);
+            if (mapTable != null) return mapTable;
+        }
 
         // если не найдена таблица, то создаем новую
         List<ValueClass> valueClasses = new ArrayList<ValueClass>();
 
-        for (int i = 0; i < findItem.size(); i++) {
+        for (int i = 0; i < classCount; i++) {
             ValueClass valueClass = findItem.getValue(i);
             valueClasses.add(valueClass instanceof CustomClass ? baseClass : valueClass);
         }
@@ -93,11 +117,9 @@ public class TableFactory {
                 dataPrefix += "_" + valueClass.getSID();
         }
 
-        MapKeysTable<T> resultTable = include("base_" + baseClassCount + dataPrefix, valueClasses.toArray(new ValueClass[findItem.size()])).getMapTable(findItem);
-        if (resultTable != null)
-            return resultTable;
-        else
-            throw new RuntimeException("No table found");
+        ImplementTable implementTable = new ImplementTable("base_" + baseClassCount + dataPrefix, valueClasses.toArray(new ValueClass[classCount]));
+        incTables.add(implementTable);
+        return implementTable.getMapTable(findItem, true);
     }
 
 

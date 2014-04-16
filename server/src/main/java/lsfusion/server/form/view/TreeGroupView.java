@@ -4,6 +4,7 @@ import lsfusion.interop.form.layout.AbstractTreeGroup;
 import lsfusion.interop.form.layout.FlexAlignment;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.TreeGroupEntity;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
 
@@ -25,13 +26,13 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         
     }
 
-    public TreeGroupView(FormView form, TreeGroupEntity entity) {
+    public TreeGroupView(FormView form, TreeGroupEntity entity, Version version) {
         super(entity.getID());
 
         this.entity = entity;
 
         for (GroupObjectEntity group : entity.getGroups()) {
-            groups.add(form.getGroupObject(group));
+            groups.add(form.getNFGroupObject(group, version));
         }
 
         toolbar = new ToolbarView(form.idGenerator.idShift());

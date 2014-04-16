@@ -344,7 +344,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             String join; // final
             final I innerJoin;
 
-            protected abstract ImMap<String, BaseExpr> initJoins(I innerJoin);
+            protected abstract ImMap<String, BaseExpr> initJoins(I innerJoin, SQLSyntax syntax);
 
             protected boolean isInner() {
                 return InnerSelect.this.isInner(innerJoin);
@@ -358,7 +358,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                 // здесь проблема что keySelect может рекурсивно использоваться 2 раза, поэтому сначала пробежим не по ключам
                 String joinString = "";
-                ImMap<String, BaseExpr> initJoins = initJoins(innerJoin);
+                ImMap<String, BaseExpr> initJoins = initJoins(innerJoin, syntax);
                 MExclMap<String,KeyExpr> mJoinKeys = MapFact.mExclMapMax(initJoins.size());
                 for(int i=0,size=initJoins.size();i<size;i++) {
                     BaseExpr expr = initJoins.getValue(i);
@@ -488,10 +488,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         private class TableSelect extends JoinSelect<Table.Join> {
             private String source;
 
-            protected ImMap<String, BaseExpr> initJoins(Table.Join table) {
+            protected ImMap<String, BaseExpr> initJoins(Table.Join table, final SQLSyntax syntax) {
                 return table.joins.mapKeys(new GetValue<String, KeyField>() {
                     public String getMapValue(KeyField value) {
-                        return value.name;
+                        return value.getName(syntax);
                     }});
             }
 
@@ -521,10 +521,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
 
         public String getSource(Table.Join.Expr expr) {
-            return getAlias(expr.getInnerJoin())+"."+expr.property;
+            return getAlias(expr.getInnerJoin())+"."+expr.property.getName(syntax);
         }
         public String getSource(Table.Join.IsIn where) {
-            return getAlias(where.getJoin()) + "." + where.getFirstKey() + " IS NOT NULL";
+            return getAlias(where.getJoin()) + "." + where.getFirstKey(syntax) + " IS NOT NULL";
         }
         public String getSource(IsClassExpr classExpr) {
             InnerExpr joinExpr = classExpr.getJoinExpr();
@@ -537,7 +537,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         private abstract class QuerySelect<K extends Expr, I extends OuterContext<I>,J extends QueryJoin<K,?,?,?>,E extends QueryExpr<K,I,J,?,?>> extends JoinSelect<J> {
             ImRevMap<String, K> group;
 
-            protected ImMap<String, BaseExpr> initJoins(J groupJoin) {
+            protected ImMap<String, BaseExpr> initJoins(J groupJoin, SQLSyntax syntax) {
                 group = groupJoin.group.mapRevValues(new GenNameIndex("k", "")).reverse();
                 return group.join(groupJoin.group);
             }

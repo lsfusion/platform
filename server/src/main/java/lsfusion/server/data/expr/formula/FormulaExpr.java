@@ -41,11 +41,8 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
         return formula;
     }
 
-    public boolean hasFNotNull() {
-        return false;
-    }
-
     private FormulaExpr(ImList<BaseExpr> exprs, FormulaJoinImpl formula) {
+        assert !formula.hasNotNull();
         this.exprs = exprs;
         this.formula = formula;
     }
@@ -60,7 +57,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
         ImMap<Integer, BaseExpr> indexedExprs = expr.getFParams().toIndexedMap();
         ImMap<Integer, Expr> packParams = packPushFollowFalse(indexedExprs, where);
         if (!BaseUtils.hashEquals(packParams, indexedExprs)) {
-            return create(expr.getFormula(), ListFact.fromIndexedMap(packParams), expr.hasFNotNull());
+            return create(expr.getFormula(), ListFact.fromIndexedMap(packParams));
         }
 
         return (Expr) expr;
@@ -90,7 +87,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
     }
     
     public static Expr translateQuery(FormulaExprInterface expr, QueryTranslator translator) {
-        return create(expr.getFormula(), translator.translate(expr.getFParams()), expr.hasFNotNull());
+        return create(expr.getFormula(), translator.translate(expr.getFParams()));
     }
 
     public static Stat getTypeStat(FormulaExprInterface expr, KeyStat keyStat, boolean forJoin) {
@@ -192,25 +189,22 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
         });
         ImList<Expr> exprs = keys.mapList(params);
 
-        return create(new CustomFormulaImpl(formula, mapParams, valueClass), exprs, hasNotNull);
+        return create(new CustomFormulaImpl(formula, mapParams, valueClass, hasNotNull), exprs);
     }
 
     public static Expr create(final FormulaJoinImpl formula, ImList<? extends Expr> exprs) {
-        return create(formula, exprs, false);
-    }
-    public static Expr create(final FormulaJoinImpl formula, ImList<? extends Expr> exprs, final boolean hasNotNull) {
         return new ExprPullWheres<Integer>() {
             protected Expr proceedBase(ImMap<Integer, BaseExpr> map) {
-                return createBase(ListFact.fromIndexedMap(map), formula, hasNotNull);
+                return createBase(ListFact.fromIndexedMap(map), formula);
             }
         }.proceed(exprs.toIndexedMap());
     }
 
-    private static Expr createBase(ImList<BaseExpr> exprs, final FormulaJoinImpl formula, boolean hasNotNull) {
+    private static Expr createBase(ImList<BaseExpr> exprs, final FormulaJoinImpl formula) {
         if (formula instanceof CustomFormulaImpl) {
             CustomFormulaImpl customFormula = (CustomFormulaImpl) formula;
             if (customFormula.formula.equals(MIN2)) {
-                assert !hasNotNull;
+                assert !formula.hasNotNull();
                 BaseExpr operator1 = exprs.get(0);
                 BaseExpr operator2 = exprs.get(1);
                 if (operator1 instanceof InfiniteExpr) {
@@ -221,7 +215,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
                 }
             }
         }
-        return BaseExpr.create(hasNotNull ? new FormulaNotNullExpr(exprs, formula) : new FormulaExpr(exprs, formula));
+        return BaseExpr.create(formula.hasNotNull() ? new FormulaNotNullExpr(exprs, formula) : new FormulaExpr(exprs, formula));
     }
 }
 

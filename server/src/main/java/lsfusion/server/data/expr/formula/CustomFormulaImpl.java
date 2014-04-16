@@ -18,12 +18,19 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
     public ImMap<String, Integer> mapParams;
 
     public final FormulaClass valueClass;
+    
+    private final boolean hasNotNull;
 
-    public CustomFormulaImpl(String formula, ImMap<String, Integer> mapParams, FormulaClass valueClass) {
+    public boolean hasNotNull() {
+        return hasNotNull;
+    }
+
+    public CustomFormulaImpl(String formula, ImMap<String, Integer> mapParams, FormulaClass valueClass, boolean hasNotNull) {
         this.formula = formula;
         this.mapParams = mapParams;
         this.valueClass = valueClass;
         this.paramsPattern = Pattern.compile(mapParams.keys().toString("|"));
+        this.hasNotNull = hasNotNull;
     }
 
     @Override
@@ -54,11 +61,11 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
 
     @Override
     public int hashCode() {
-        return 31 * (31 * nullHash(valueClass) + mapParams.hashCode()) + formula.hashCode();
+        return 31 * (31 * nullHash(valueClass) + mapParams.hashCode()) + formula.hashCode() + (hasNotNull?1:0);
     }
 
     @Override
     public boolean equals(Object o) {
-        return formula.equals(((CustomFormulaImpl) o).formula) && mapParams.equals(((CustomFormulaImpl) o).mapParams) && nullEquals(valueClass, ((CustomFormulaImpl) o).valueClass);
+        return formula.equals(((CustomFormulaImpl) o).formula) && mapParams.equals(((CustomFormulaImpl) o).mapParams) && nullEquals(valueClass, ((CustomFormulaImpl) o).valueClass) && hasNotNull==((CustomFormulaImpl) o).hasNotNull;
     }
 }

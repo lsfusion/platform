@@ -74,19 +74,6 @@ public class LinearOperandMap extends WrapMap<Expr,Integer> {
         return followedMap.getExpr();
     }
 
-    public Expr getExpr() {
-        if(size()==0)
-            return CaseExpr.NULL;
-
-        // нельзя делать эту оптимизацию так как идет проверка на 0 в логике
-//        if(size()==1) {
-//            Map.Entry<Expr, Integer> entry = BaseUtils.singleEntry(this);
-//            if(entry.getValue().equals(1))
-//                return entry.getKey();
-//        }
-        return new LinearExpr(this);
-    }
-
     protected LinearOperandMap translateOuter(MapTranslate translator) {
         return new LinearOperandMap(translator.translateExprKeys(map));
     }

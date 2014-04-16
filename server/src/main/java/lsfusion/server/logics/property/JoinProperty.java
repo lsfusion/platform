@@ -29,6 +29,7 @@ import lsfusion.server.form.entity.drilldown.JoinDrillDownFormEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.AggChangeActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.DataChanges;
@@ -294,8 +295,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<Interface> entity, FormEntity<?> form) {
-        super.proceedDefaultDraw(entity, form);
+    public void proceedDefaultDraw(PropertyDrawEntity<Interface> entity, FormEntity<?> form, Version version) {
+        super.proceedDefaultDraw(entity, form, version);
         if (implement.mapping.size() == 1 &&
                 (implement.mapping.singleValue() instanceof CalcPropertyMapImplement) &&
                 ((CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property instanceof ObjectClassProperty) {

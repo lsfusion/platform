@@ -2,18 +2,18 @@ package lsfusion.base.identity;
 
 public class DefaultIDGenerator implements IDGenerator {
 
-    int ID = 0;
+    private int ID = 0;
 
-    public void idRegister(int ID) {
+    public synchronized void idRegister(int ID) {
         this.ID = Math.max(this.ID, ID+1);
     }
 
-    public int idShift(int offs) {
+    public synchronized int idShift(int offs) {
         ID += offs;
         return ID;
     }
 
-    public int idShift() {
+    public synchronized int idShift() {
         return idShift(1);
     }
 }

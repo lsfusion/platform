@@ -32,6 +32,7 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
@@ -344,7 +345,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     // по умолчанию заполняет свойства
     // assert что entity этого свойства
-    public void proceedDefaultDraw(PropertyDrawEntity<T> entity, FormEntity<?> form) {
+    public void proceedDefaultDraw(PropertyDrawEntity<T> entity, FormEntity<?> form, Version version) {
         if (shouldBeLast != null)
             entity.shouldBeLast = shouldBeLast;
         if (forceViewType != null)
@@ -387,12 +388,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return prop.equals(this);
     }
 
+    public boolean hasNFChild(Property prop, Version version) {
+        return hasChild(prop);
+    }
+
     public ImOrderSet<Property> getProperties() {
         return SetFact.singletonOrder((Property) this);
     }
 
     @Override
-    public ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface) {
+    public ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface, Version version) {
         MList<PropertyClassImplement> mResultList = ListFact.mList();
         for (ImSet<ValueClassWrapper> classes : classLists) {
             if (interfaces.size() == classes.size()) {
@@ -466,7 +471,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     @ManualLazy
     public ImSet<Link> getLinks(boolean calcEvents) { // чисто для лексикографики
         if(links==null) {
-            links = calculateLinks(calcEvents).mapColSetValues(new GetValue<Link, Pair<Property<?>, LinkType>>() {
+            links = calculateLinks(calcEvents).mapMergeSetValues(new GetValue<Link, Pair<Property<?>, LinkType>>() {
                 public Link getMapValue(Pair<Property<?>, LinkType> value) {
                     return new Link(Property.this, value.first, value.second);
                 }});

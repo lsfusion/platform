@@ -1,5 +1,12 @@
 package lsfusion.server.classes;
 
+import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.Table;
+import lsfusion.server.data.expr.*;
+import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.table.ImplementTable;
+import org.apache.log4j.Logger;
 import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -43,8 +50,8 @@ public class BaseClass extends AbstractCustomClass {
 
     public ConcreteCustomClass objectClass;
 
-    public BaseClass(String sID, String caption) {
-        super(sID, caption);
+    public BaseClass(String sID, String caption, Version version) {
+        super(sID, caption, version);
         unknown = new UnknownClass(this);
     }
 
@@ -72,8 +79,10 @@ public class BaseClass extends AbstractCustomClass {
         return mAllClasses.immutable();
     }
 
-    public void initObjectClass() { // чтобы сохранить immutability классов
-        ImSet<CustomClass> allClasses = getAllClasses();
+    public void initObjectClass(Version version) { // чтобы сохранить immutability классов
+        objectClass = new ConcreteCustomClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), version, this);
+
+        ImSet<CustomClass> allClasses = getAllClasses().remove(SetFact.singleton(objectClass));
 
         // сначала обрабатываем baseClass.objectClass чтобы классы
         List<String> sidClasses = new ArrayList<String>();
@@ -83,7 +92,7 @@ public class BaseClass extends AbstractCustomClass {
                 sidClasses.add(customClass.getSID());
                 nameClasses.add(customClass.caption);
             }
-        objectClass = ConcreteCustomClass.createObjectClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), sidClasses, nameClasses, this);
+        ConcreteCustomClass.fillObjectClass(objectClass, sidClasses, nameClasses, version);
     }
 
     public void fillIDs(DataSession session, LCP staticCaption, LCP staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {

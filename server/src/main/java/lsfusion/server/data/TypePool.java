@@ -10,4 +10,6 @@ public interface TypePool {
 
     void ensureRecursion(ImList<Type> types) throws SQLException;
     void ensureConcType(ConcatenateType concType) throws SQLException;
+    
+    void ensureSafeCast(Type type) throws SQLException;
 }

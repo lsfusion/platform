@@ -33,4 +33,8 @@ public abstract class ArithmeticFormulaImpl extends AbstractFormulaImpl implemen
     }
 
     public abstract String getOperationName();
+
+    public boolean hasNotNull() {
+        return false;
+    }
 }

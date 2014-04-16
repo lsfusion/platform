@@ -183,7 +183,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                 }
 
                 if (chosenValueProperty != null) {
-                    for (GroupObjectEntity group : form.groups) {
+                    for (GroupObjectEntity group : form.getGroupsIt()) {
                         for (ObjectEntity object : group.getObjects()) {
                             chosenValueProperty.write(
                                     object.baseClass.getType(), newFormInstance.instanceFactory.getInstance(object).getObjectValue(), context, new DataObject(object.getSID())

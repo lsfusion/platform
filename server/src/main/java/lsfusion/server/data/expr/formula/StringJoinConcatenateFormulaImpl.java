@@ -26,4 +26,8 @@ public class StringJoinConcatenateFormulaImpl extends StringConcatenateFormulaIm
         builder.append(")");
         return builder.toString();
     }
+
+    public boolean hasNotNull() {
+        return false;
+    }
 }

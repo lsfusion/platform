@@ -154,7 +154,7 @@ public class ReportDesignGenerator {
         
         List<Pair<PropertyDrawView, ColumnUserPreferences>> properties = new ArrayList<Pair<PropertyDrawView, ColumnUserPreferences>>();
         
-        for (PropertyDrawView property : formView.properties) {
+        for (PropertyDrawView property : formView.getPropertiesList()) {
             ColumnUserPreferences columnUserPreferences = null;
             if (groupObjectPreferences != null && groupObjectPreferences.getColumnUserPreferences().containsKey(property.getSID())) {
                 columnUserPreferences = groupObjectPreferences.getColumnUserPreferences().get(property.getSID());
@@ -175,7 +175,7 @@ public class ReportDesignGenerator {
         });
         
         for (Pair<PropertyDrawView, ColumnUserPreferences> prop : properties) {
-            GroupObjectEntity applyGroup = prop.first.entity.propertyObject.getApplyObject(formView.entity.groups);
+            GroupObjectEntity applyGroup = prop.first.entity.propertyObject.getApplyObject(formView.entity.getGroupsList());
             GroupObjectEntity drawGroup = prop.first.entity.getToDraw(formView.entity);
             
             boolean hidden = prop.second != null && prop.second.userHide != null && prop.second.userHide;

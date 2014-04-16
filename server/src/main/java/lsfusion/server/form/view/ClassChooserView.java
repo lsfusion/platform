@@ -19,7 +19,7 @@ public class ClassChooserView extends ComponentView  {
     
     public ClassChooserView(int ID, ObjectEntity view, ObjectView object) {
         super(ID);
-        this.visible = view.baseClass instanceof CustomClass && !((CustomClass)view.baseClass).children.isEmpty();
+        this.visible = view.baseClass instanceof CustomClass && !((CustomClass)view.baseClass).getChildren().isEmpty();
 
         this.object = object;
 

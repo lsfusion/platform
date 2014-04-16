@@ -8,13 +8,16 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 
 public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
     public <P extends PropertyInterface> PropertyFormEntity(BaseLogicsModule<? extends BusinessLogics<?>> LM, CalcProperty<P> property, AbstractGroup recognizeGroup) {
-        super(null, null);
+        super(null, null, LM.getVersion());
+
+        Version version = LM.getVersion();
 
         ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.ASSERTFULL);
         boolean prev = false;
@@ -28,17 +31,19 @@ public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<
             }});
 
         GroupObjectEntity groupObject = new GroupObjectEntity(genID(), mapObjects.valuesSet().toOrderSet(), prev);
-        addGroupObject(groupObject);
+        addGroupObject(groupObject, version);
 
         // добавляем все свойства
         ImSet<ObjectEntity> objects = groupObject.getObjects();
-        addPropertyDraw(recognizeGroup, prev, true, true, objects.toList().toArray(new ObjectEntity[objects.size()]));
+        addPropertyDraw(recognizeGroup, prev, true, true, version, objects.toList().toArray(new ObjectEntity[objects.size()]));
 
         //todo: раскомментить, чтобы можно было использовать форму в LogPropertyActionProperty
 //        for (ObjectEntity object : objects) {
 //            addPropertyDraw(LM.objectValue, false, object);
 //        }
 
-        addFixedFilter(new NotNullFilterEntity<P>(new CalcPropertyObjectEntity<P>(property, mapObjects)));
+        addFixedFilter(new NotNullFilterEntity<P>(new CalcPropertyObjectEntity<P>(property, mapObjects)), version);
+
+        finalizeInit(version);
     }
 }

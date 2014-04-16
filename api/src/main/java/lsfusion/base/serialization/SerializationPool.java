@@ -1,5 +1,8 @@
 package lsfusion.base.serialization;
 
+import lsfusion.base.col.interfaces.immutable.ImCol;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.context.ApplicationContext;
 import lsfusion.base.context.ApplicationContextHolder;
 
@@ -175,6 +178,28 @@ public abstract class SerializationPool<C> {
     }
 
     public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, Collection<T> list, String type) throws IOException {
+        outStream.writeInt(list.size());
+        for (T element : list) {
+            serializeObject(outStream, element, type);
+        }
+    }
+
+    public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, ImList<T> list) throws IOException {
+        serializeCollection(outStream, list, null);
+    }
+
+    public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, ImList<T> list, String type) throws IOException {
+        outStream.writeInt(list.size());
+        for (T element : list) {
+            serializeObject(outStream, element, type);
+        }
+    }
+
+    public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, ImSet<T> list) throws IOException {
+        serializeCollection(outStream, list, null);
+    }
+
+    public <T extends CustomSerializable<? extends SerializationPool<C>>> void serializeCollection(DataOutputStream outStream, ImSet<T> list, String type) throws IOException {
         outStream.writeInt(list.size());
         for (T element : list) {
             serializeObject(outStream, element, type);

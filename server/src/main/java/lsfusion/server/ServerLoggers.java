@@ -53,7 +53,7 @@ public class ServerLoggers {
     public static void assertLog(boolean assertion, String message) {
         if(!assertion)
             assertLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
-        assert assertion;
+        assert assertion : message;
     }
 
     public static void sqlSuppLog(Throwable t) {

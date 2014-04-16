@@ -5,6 +5,7 @@ import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.OldProperty;
 
@@ -21,19 +22,20 @@ public class OldDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyInt
 
     @Override
     protected void setupDrillDownForm() {
-        propertyDraw = addPropertyDraw(property, interfaceObjects);
-        oldPropertyDraw = addPropertyDraw(property.property, interfaceObjects);
+        Version version = LM.getVersion();
+        propertyDraw = addPropertyDraw(property, interfaceObjects, version);
+        oldPropertyDraw = addPropertyDraw(property.property, interfaceObjects, version);
     }
 
     @Override
-    public FormView createDefaultRichDesign() {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+    public FormView createDefaultRichDesign(Version version) {
+        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
-        valueContainer.add(design.get(propertyDraw));
+        valueContainer.add(design.get(propertyDraw), version);
         ContainerView oldValueContainer = design.createContainer(getString("logics.property.drilldown.form.old.value"));
-        oldValueContainer.add(design.get(oldPropertyDraw));
+        oldValueContainer.add(design.get(oldPropertyDraw), version);
 
-        design.mainContainer.addAfter(oldValueContainer, valueContainer);
+        design.mainContainer.addAfter(oldValueContainer, valueContainer, version);
 
         return design;
     }

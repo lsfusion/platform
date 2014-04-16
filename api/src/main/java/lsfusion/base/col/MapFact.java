@@ -210,6 +210,13 @@ public class MapFact {
             }});
     }
 
+    public static <K, V> ImMap<K, ImList<V>> immutableList(MExclMap<K, MList<V>> mMap) {
+        return mMap.immutable().mapValues(new GetValue<ImList<V>, MList<V>>() { // некрасиво конечно, но что поделаешь
+            public ImList<V> getMapValue(MList<V> value) {
+                return value.immutableList();
+            }});
+    }
+
     public static <K, V> ImMap<K, ImSet<V>> immutable(MExclMap<K, MExclSet<V>> mMap) {
         return mMap.immutable().mapValues(new GetValue<ImSet<V>, MExclSet<V>>() {
             public ImSet<V> getMapValue(MExclSet<V> value) {

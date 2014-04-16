@@ -5,16 +5,12 @@ import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.SystemProperties;
-import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
@@ -22,15 +18,17 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
-import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ReflectionLogicsModule;
+import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.NFLazy;
+import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.DataSession;
@@ -56,7 +54,7 @@ public class ImplementTable extends GlobalTable {
             public ValueClass getMapValue(int i) {
                 return implementClasses[i];
             }});
-        parents = new ArrayList<ImplementTable>();
+        parents = NFFact.orderSet();
 
         classes = classes.or(new ClassWhere<KeyField>(mapFields,true));
     }
@@ -82,12 +80,19 @@ public class ImplementTable extends GlobalTable {
         sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery(), OperationOwner.unknown));
     }
 
+    @NFLazy
     public void addField(PropertyField field,ClassWhere<Field> classes) { // кривовато конечно, но пока другого варианта нет
         properties = properties.addExcl(field);
         propertyClasses = propertyClasses.addExcl(field, classes);
     }
 
-    List<ImplementTable> parents;
+    private NFOrderSet<ImplementTable> parents;
+    public Iterable<ImplementTable> getParentsIt() {
+        return parents.getIt();
+    }
+    public Iterable<ImplementTable> getParentsListIt() {
+        return parents.getListIt();
+    }
 
     // operation на что сравниваем
     // 0 - не ToParent
@@ -152,39 +157,64 @@ public class ImplementTable extends GlobalTable {
         return compResult == COMPARE_EQUAL || compResult == COMPARE_UP;
     }
 
-    public void include(List<ImplementTable> tables, boolean toAdd, Set<ImplementTable> checks) {
-
-        Iterator<ImplementTable> i = tables.iterator();
+    public void include(NFOrderSet<ImplementTable> tables, Version version, boolean toAdd, Set<ImplementTable> checks, ImplementTable debugItem) {
+        ImList<ImplementTable> current = tables.getNFList(Version.CURRENT);
+        
+        Iterator<ImplementTable> i = current.iterator();
+        boolean wasRemove = false; // для assertiona
         while(i.hasNext()) {
             ImplementTable item = i.next();
             Integer relation = item.compare(mapFields,new Result<ImRevMap<KeyField, KeyField>>());
             if(relation==COMPARE_DOWN) { // снизу в дереве, добавляем ее как промежуточную
-                parents.add(item);
-                if(toAdd)
-                    i.remove();
-            } else { // сверху в дереве или никак не связаны, передаем дальше
-                if(relation!=COMPARE_EQUAL && !checks.contains(item)) {
-                    checks.add(item);
-                    include(item.parents,relation==COMPARE_UP,checks);
+                if(!parents.containsNF(item, Version.CURRENT)) {
+                    checkSiblings(item, parents, this);
+                    
+                    parents.add(item, version);
                 }
-                if(relation==COMPARE_UP) toAdd = false;
+                if(toAdd) {
+                    wasRemove = true;
+                    tables.remove(item, version);
+                }
+            } else { // сверху в дереве или никак не связаны, передаем дальше
+                if((relation == COMPARE_UP || relation == COMPARE_EQUAL) && !checks.contains(item)) { // для детерменированности эту проверку придется убрать relation!=COMPARE_EQUAL
+                    checks.add(item);
+                    include(item.parents, version, relation==COMPARE_UP,checks, item);
+                }
+                if(relation==COMPARE_UP) {
+                    if(wasRemove)
+                        wasRemove = wasRemove;
+                    assert !wasRemove; // так как не может быть одновременно down и up
+                    toAdd = false;
+                }
             }
         }
 
         // если снизу добавляем Childs
-        if(toAdd)
-            tables.add(this);
+        if(toAdd) {
+            checkSiblings(this, tables, debugItem);
+            tables.add(this, version);
+        }
     }
 
-    public <T> MapKeysTable<T> getMapTable(ImMap<T, ValueClass> findItem) {
+    private void checkSiblings(ImplementTable item, NFOrderSet<ImplementTable> tables, ImplementTable debugItem) {
+        for(ImplementTable siblingTable : tables.getNFList(Version.CURRENT)) {
+            int compare = siblingTable.compare(item.mapFields, new Result<ImRevMap<KeyField, KeyField>>());
+            if(compare==COMPARE_UP || compare == COMPARE_DOWN)
+                compare = compare;
+        }
+    }
+
+    public <T> MapKeysTable<T> getMapTable(ImMap<T, ValueClass> findItem, boolean included) {
         Result<ImRevMap<T,KeyField>> mapCompare = new Result<ImRevMap<T, KeyField>>();
         int relation = compare(findItem,mapCompare);
         // если внизу или отличается то не туда явно зашли
         if(relation==COMPARE_DOWN || relation==COMPARE_DIFF) return null;
 
-        for(ImplementTable item : parents) {
-            MapKeysTable<T> parentTable = item.getMapTable(findItem);
-            if(parentTable!=null) return parentTable;
+        if(!included) {
+            for(ImplementTable item : getParentsListIt()) {
+                MapKeysTable<T> parentTable = item.getMapTable(findItem, false);
+                if(parentTable!=null) return parentTable;
+            }
         }
 
         return new MapKeysTable<T>(this,mapCompare.result);
@@ -200,7 +230,8 @@ public class ImplementTable extends GlobalTable {
 
     void fillSet(MSet<ImplementTable> tableImplements) {
         if(tableImplements.add(this)) return;
-        for(ImplementTable parent : parents) parent.fillSet(tableImplements);
+        for(ImplementTable parent : getParentsIt()) 
+            parent.fillSet(tableImplements);
     }
 
     public StatKeys<KeyField> getStatKeys() {

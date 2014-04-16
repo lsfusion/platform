@@ -8,6 +8,7 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.mutables.NFStaticLazy;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -92,15 +93,18 @@ public class NumericClass extends IntegralClass<BigDecimal> {
 
     private static Collection<NumericClass> instances = new ArrayList<NumericClass>();
 
+    @NFStaticLazy
     public static NumericClass get(byte length, byte precision) {
-        for(NumericClass instance : instances)
-            if(instance.length == length && instance.precision==precision)
-                return instance;
-
-        NumericClass instance = new NumericClass(length,precision);
-        instances.add(instance);
-        DataClass.storeClass(instance);
-        return instance;
+        synchronized (instances) {
+            for(NumericClass instance : instances)
+                if(instance.length == length && instance.precision==precision)
+                    return instance;
+    
+            NumericClass instance = new NumericClass(length,precision);
+            instances.add(instance);
+            DataClass.storeClass(instance);
+            return instance;
+        }
     }
 
     @Override
@@ -139,5 +143,10 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     @Override
     public Stat getTypeStat() {
         return new Stat(10, length);
+    }
+
+    @Override
+    public boolean hasSafeCast() {
+        return true;
     }
 }

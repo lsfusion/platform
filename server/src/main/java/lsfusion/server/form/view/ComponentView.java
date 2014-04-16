@@ -4,6 +4,9 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.ComponentDesign;
 import lsfusion.interop.form.layout.*;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.interfaces.NFProperty;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
 
@@ -17,8 +20,6 @@ import static java.lang.Math.max;
 public class ComponentView extends IdentityObject implements ServerIdentitySerializable, AbstractComponent<ContainerView, ComponentView> {
 
     public ComponentDesign design = new ComponentDesign();
-
-    protected ContainerView container;
 
     public Dimension minimumSize;
     public Dimension maximumSize;
@@ -84,8 +85,12 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return null;
     }
 
+    protected NFProperty<ContainerView> container = NFFact.property();
     public ContainerView getContainer() {
-        return container;
+        return container.get();
+    }
+    public ContainerView getNFContainer(Version version) {
+        return container.getNF(version);
     }
 
     @IdentityLazy
@@ -102,17 +107,22 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return equals(container);
     }
 
-    void setContainer(ContainerView container) {
-        this.container = container;
+    public boolean isNFAncestorOf(ComponentView container, Version version) {
+        return equals(container);
     }
 
-    public boolean removeFromParent() {
-        return container != null && container.remove(this);
+    void setContainer(ContainerView container, Version version) {
+        this.container.set(container, version);
+    }
+
+    public boolean removeFromParent(Version version) {
+        ContainerView nf = container.getNF(version);
+        return nf != null && nf.remove(this, version);
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeObject(outStream, design);
-        pool.serializeObject(outStream, container, serializationType);
+        pool.serializeObject(outStream, getContainer(), serializationType);
 
         pool.writeObject(outStream, minimumSize);
         pool.writeObject(outStream, maximumSize);
@@ -133,7 +143,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         design = pool.readObject(inStream);
 
-        container = pool.deserializeObject(inStream);
+        container = NFFact.finalProperty(pool.<ContainerView>deserializeObject(inStream));
 
         minimumSize = pool.readObject(inStream);
         maximumSize = pool.readObject(inStream);

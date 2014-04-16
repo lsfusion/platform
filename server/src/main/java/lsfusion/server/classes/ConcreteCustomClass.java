@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -26,6 +25,9 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.mutables.interfaces.NFSet;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassDataProperty;
 import lsfusion.server.logics.property.ClassField;
@@ -36,22 +38,14 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass,ConcreteObjectClass, ObjectValueClassSet, StaticClass {
-    public ConcreteCustomClass(String sID, String caption, CustomClass... parents) {
-        super(sID, caption, parents);
+    public ConcreteCustomClass(String sID, String caption, Version version, CustomClass... parents) {
+        super(sID, caption, version, parents);
     }
 
-    public ConcreteCustomClass(String sID, String caption, List<String> names, List<String> captions, CustomClass... parents) {
-        super(sID, caption, parents);
-        assert names.size() == captions.size();
-        addStaticObjects(names, captions);
-    }
-
-    public static ConcreteCustomClass createObjectClass(String sID, String caption, List<String> names, List<String> captions, CustomClass... parents) {
-        ConcreteCustomClass objectClass = new ConcreteCustomClass(sID, caption, names, captions, parents);
-        for (int i = 0; i < objectClass.staticObjectsInfo.size(); i++) {
-            objectClass.staticObjectsInfo.get(i).sid = objectClass.staticObjectsInfo.get(i).name;
-        }
-        return objectClass;
+    public static void fillObjectClass(ConcreteCustomClass objectClass, List<String> names, List<String> captions, Version version) {
+        objectClass.addStaticObjects(names, captions, version);
+        for (ObjectInfo info : objectClass.getNFStaticObjectsInfoIt(version))
+            info.sid = info.name;
     }
 
     public static boolean inSet(ConcreteClass cClass, AndClassSet set) {
@@ -98,7 +92,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public ConcreteCustomClass getSingleClass() {
-        if(children.isEmpty())
+        if(getChildren().isEmpty())
             return this;
         else
             return null;
@@ -141,10 +135,16 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         public Integer id;
     }
 
-    private List<ObjectInfo> staticObjectsInfo = new ArrayList<ObjectInfo>();
+    private NFSet<ObjectInfo> staticObjectsInfo = NFFact.set();
+    public Iterable<ObjectInfo> getStaticObjectsInfoIt() {
+        return staticObjectsInfo.getIt();
+    }
+    public Iterable<ObjectInfo> getNFStaticObjectsInfoIt(Version version) {
+        return staticObjectsInfo.getNFIt(version);
+    }
 
-    public boolean hasStaticObject(String name) {
-        for (ObjectInfo info : staticObjectsInfo) {
+    public boolean hasNFStaticObject(String name, Version version) {
+        for (ObjectInfo info : getNFStaticObjectsInfoIt(version)) {
             if (info.name.equals(name)) {
                 return true;
             }
@@ -153,7 +153,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public int getObjectID(String name) {
-        for (ObjectInfo info : staticObjectsInfo) {
+        for (ObjectInfo info : getStaticObjectsInfoIt()) {
             if (info.name.equals(name)) {
                 return info.id;
             }
@@ -162,7 +162,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public String getObjectName(int id) {
-        for(ObjectInfo info : staticObjectsInfo) {
+        for(ObjectInfo info : getStaticObjectsInfoIt()) {
             if (info.id == id) {
                 return info.name;
             }
@@ -170,24 +170,24 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         throw new RuntimeException("id not found");
     }
 
-    public final void addStaticObjects(List<String> names, List<String> captions) {
+    public final void addStaticObjects(List<String> names, List<String> captions, Version version) {
         assert names.size() == captions.size();
         for (int i = 0; i < names.size(); i++) {
-            staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), null));
+            staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), null), version);
         }
     }
 
-    public List<String> getStaticObjectsNames() {
+    public List<String> getNFStaticObjectsNames(Version version) {
         List<String> sids = new ArrayList<String>();
-        for (ObjectInfo info : staticObjectsInfo) {
+        for (ObjectInfo info : getNFStaticObjectsInfoIt(version)) {
             sids.add(info.name);
         }
         return sids;
     }
 
-    public List<String> getStaticObjectsCaptions() {
+    public List<String> getNFStaticObjectsCaptions(Version version) {
         List<String> names = new ArrayList<String>();
-        for (ObjectInfo info : staticObjectsInfo) {
+        for (ObjectInfo info : getNFStaticObjectsInfoIt(version)) {
             names.add(info.caption);
         }
         return names;
@@ -217,7 +217,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         // новый sid -> старый sid
         Map<String, String> reversedChanges = BaseUtils.reverse(sidChanges);
 
-        for (ObjectInfo info : staticObjectsInfo) {
+        for (ObjectInfo info : getStaticObjectsInfoIt()) {
             String newSID = info.sid; // todo [dale]:
             ConcreteCustomClass usedClass;
             if ((usedClass = usedSIds.put(newSID, this)) != null)

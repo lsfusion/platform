@@ -177,7 +177,7 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
             if (empty) // если в wheres и proceeded ничего не осталось, то более абстрактные классы не берем
                 return null;
         }
-        for(CustomClass parent : addWhere.parents)
+        for(CustomClass parent : addWhere.getParentsListIt())
             if(parent.upInSet(wheres, numWheres, proceeded, numProceeded, addWhere)) // если покрывает все where возвращаем parent
                 return parent;
         return null;

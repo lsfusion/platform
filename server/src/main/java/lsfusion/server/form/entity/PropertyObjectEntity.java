@@ -1,8 +1,11 @@
 package lsfusion.server.form.entity;
 
+import lsfusion.base.BaseUtils;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
@@ -53,7 +56,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
         this.creationPath = creationPath;
     }
 
-    public GroupObjectEntity getApplyObject(List<GroupObjectEntity> groupList) {
+    public GroupObjectEntity getApplyObject(ImOrderSet<GroupObjectEntity> groupList) {
         GroupObjectEntity applyObject = null;
         int maxIndex = -1;
         for (ObjectEntity object : getObjectInstances()) {
@@ -72,6 +75,14 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
             if(object instanceof ObjectEntity)
                 result.add((ObjectEntity) object);
         return result;
+    }
+    
+    public ImMap<P, ObjectEntity> getMapObjectInstances() {
+        return BaseUtils.immutableCast(mapping.filterFnValues(new SFunctionSet<PropertyObjectInterfaceEntity>() {
+            public boolean contains(PropertyObjectInterfaceEntity element) {
+                return element instanceof ObjectEntity;
+            }
+        }));
     }
 
     public void fillObjects(Set<ObjectEntity> objects) {

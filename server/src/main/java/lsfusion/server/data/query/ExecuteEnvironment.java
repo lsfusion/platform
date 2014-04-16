@@ -26,6 +26,7 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
 
     private ImSet<ImList<Type>> recursions;
     private ImSet<ConcatenateType> concTypes;
+    private ImSet<Type> safeCastTypes;
 
     public ExecuteEnvironment() {
         this(false);
@@ -38,6 +39,7 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
 
         recursions = SetFact.EMPTY();
         concTypes = SetFact.EMPTY();
+        safeCastTypes = SetFact.EMPTY();
     }
 
     public void add(ExecuteEnvironment environment) {
@@ -47,6 +49,7 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
 
         recursions = recursions.merge(environment.recursions);
         concTypes = concTypes.merge(environment.concTypes);
+        safeCastTypes = safeCastTypes.merge(environment.safeCastTypes);
     }
 
     public void addNoReadOnly() {
@@ -69,11 +72,17 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         concTypes = concTypes.merge(types);
     }
 
+    public void addNeedSafeCast(Type type) {
+        safeCastTypes = safeCastTypes.merge(type);
+    }
+
     public void before(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
         for(ConcatenateType concType : concTypes)
             sqlSession.typePool.ensureConcType(concType);
         for(ImList<Type> recursion : recursions)
             sqlSession.typePool.ensureRecursion(recursion);
+        for(Type type : safeCastTypes)
+            sqlSession.typePool.ensureSafeCast(type);    
 
         if(noReadOnly)
             sqlSession.pushNoReadOnly(connection.sql);

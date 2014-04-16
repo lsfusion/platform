@@ -7,6 +7,7 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.mutables.Version;
 
 public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEntity<T> {
 
@@ -15,7 +16,7 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEn
 
         object.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-        PropertyDrawEntity objectValue = getPropertyDraw(LM.objectValue, object);
+        PropertyDrawEntity objectValue = getNFPropertyDraw(LM.objectValue, object, LM.getVersion());
         if (objectValue != null)
             objectValue.setEditType(PropertyEditType.READONLY);
     }
@@ -25,10 +26,10 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEn
     }
 
     @Override
-    public FormView createDefaultRichDesign() {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+    public FormView createDefaultRichDesign(Version version) {
+        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
-        design.getDropButton().removeFromParent();
+        design.getDropButton().removeFromParent(version);
 
         return design;
     }

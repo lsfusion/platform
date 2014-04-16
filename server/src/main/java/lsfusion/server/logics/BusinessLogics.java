@@ -48,6 +48,7 @@ import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormActionProperty;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
@@ -56,6 +57,8 @@ import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.logics.tasks.PublicTask;
+import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.mail.NotificationActionProperty;
 import lsfusion.server.session.ApplyFilter;
 import lsfusion.server.session.DataSession;
@@ -137,20 +140,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
         });
     }
+    
+    private PublicTask initTask;
+    public PublicTask getInitTask() {
+        return initTask;
+    }
+
+    public void setInitTask(PublicTask initTask) {
+        this.initTask = initTask;
+    }
 
     @Override
     protected void onInit(LifecycleEvent event) {
         if (initialized.compareAndSet(false, true)) {
             logger.info("Initializing BusinessLogics");
             try {
-                createModules();
-                initModules();
-
-                if (!SystemProperties.isDebug) {
-                    prereadCaches();
-                }
-                initExternalScreens();
-
+                TaskRunner.runTask(getInitTask(), logger);
             } catch (ScriptParsingException e) {
                 throw e;
             } catch (Exception e) {
@@ -213,9 +218,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return daemons;
     }
 
-    protected void initExternalScreens() {
-    }
-
     protected void addExternalScreen(ExternalScreen screen) {
         externalScreens.add(screen);
     }
@@ -242,7 +244,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return module;
     }
 
-    protected void createModules() throws IOException {
+    public void createModules() throws IOException {
         LM = addModule(new BaseLogicsModule(this, new OldSIDPolicy()));
         serviceLM = addModule(new ServiceLogicsModule(this, LM));
         reflectionLM = addModule(new ReflectionLogicsModule(this, LM));
@@ -403,7 +405,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private List<LogicsModule> orderModules(String orderDependencies) {
+    private List<LogicsModule> orderModules(String orderDependencies, Map<LogicsModule, ImSet<LogicsModule>> recRequiredModules) {
 //        outDotFile();
 
         //для обеспечения детерменированности сортируем модули по имени
@@ -439,11 +441,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         Set<LogicsModule> usedModules = new LinkedHashSet<LogicsModule>();
         for (int i = 0; i < logicModules.size(); ++i) {
             for (LogicsModule module : logicModules) {
-                if (degree.get(module.getName()) == 0 && !usedModules.contains(module)) {
-                    for (String nextModule : graph.get(module.getName())) {
+                String moduleName = module.getName();
+                if (degree.get(moduleName) == 0 && !usedModules.contains(module)) {
+                    for (String nextModule : graph.get(moduleName)) {
                         degree.put(nextModule, degree.get(nextModule) - 1);
                     }
                     usedModules.add(module);
+                    
+                    MSet<LogicsModule> mRecDep = SetFact.mSet();
+                    mRecDep.add(module);
+                    for(String depend : module.getRequiredModules())
+                        mRecDep.addAll(recRequiredModules.get(nameToModule.get(depend)));
+                    recRequiredModules.put(module, mRecDep.immutable());    
+                    
                     break;
                 }
             }
@@ -500,123 +510,41 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         nameToModule.clear();
     }
 
-    private void initModules() {
-        Exception initException = null;
-        try {
-            for (LogicsModule module : logicModules) {
-                module.initModuleDependencies();
-            }
+    public void initObjectClass() {
+        LM.baseClass.initObjectClass(LM.getVersion());
+        LM.storeCustomClass(LM.baseClass.objectClass);
+    }
 
-            if (!isRedundantString(topModulesList)) {
-                overrideModulesList(topModulesList);
-            }
+    private List<LogicsModule> orderedModules;
+    public List<LogicsModule> getOrderedModules() {
+        return orderedModules;
+    }
 
-            logger.info("Initializing modules.");
-            List<LogicsModule> orderedModules = orderModules(orderDependencies);
-
-            for (LogicsModule module : orderedModules) {
-                String namespace = module.getNamespace();
-                if (!namespaceToModules.containsKey(namespace)) {
-                    namespaceToModules.put(namespace, new ArrayList<LogicsModule>());
-                }
-                namespaceToModules.get(namespace).add(module);
-            }
-
-            for (LogicsModule module : orderedModules) {
-                module.initModule();
-            }
-
-            logger.info("Initializing property groups.");
-            for (LogicsModule module : orderedModules) {
-                module.initGroups();
-            }
-
-            logger.info("Initializing classes.");
-            for (LogicsModule module : orderedModules) {
-                module.initClasses();
-            }
-
-            LM.baseClass.initObjectClass();
-            LM.storeCustomClass(LM.baseClass.objectClass);
-
-            logger.info("Initializing tables.");
-            for (LogicsModule module : orderedModules) {
-                module.initTables();
-            }
-
-            logger.info("Initializing class tables.");
-            initClassDataProps();
-
-            logger.info("Initializing properties.");
-            int i = 1;
-            for (LogicsModule module : orderedModules) {
-                logger.info(String.format("Initializing properties for module #%d of %d: %s", i++, orderedModules.size(), module.getName()));
-                module.initProperties();
-            }
-
-            logger.info("Finalizing abstracts.");
-            finishAbstract();
-
-            logger.info("Finalizing actions.");
-            finishActions();
-
-            initReflectionProperties();
-
-            logger.info("Setup loggables.");
-            finishLogInit();
-
-            logger.info("Setup drill-down.");
-            setupDrillDown(SystemProperties.isDebug);
-
-            if (!SystemProperties.isDebug) {                
-                logger.info("Setup property policy.");
-                setupPropertyPolicyForms();
-            }
-
-            logger.info("Showing dependencies.");
-            showDependencies();
-
-            logger.info("Building property list.");
-            ImOrderSet<Property> propertyList = getPropertyList();
-            logger.info("Finalizing property list.");
-            for(Property property : propertyList) {
-                property.finalizeAroundInit();
-            }
-
-            logger.info("Initializing class forms.");
-            LM.initClassForms();
-
-//            Set idSet = new HashSet<String>();
-//            for (Property property : getOrderProperties()) {
-//                assert idSet.add(property.getObjectSID()) : "Same sid " + property.getObjectSID();
-//            }
-            logger.info("Initializing indices.");
-            for (LogicsModule module : orderedModules) {
-                module.initIndexes();
-            }
-
-        } catch (RecognitionException e) {
-            initException = new ScriptParsingException(e.getMessage());
-        } catch (Exception e) {
-            initException = e;
+    public void initModuleOrders() {
+        if (!isRedundantString(topModulesList)) {
+            overrideModulesList(topModulesList);
         }
 
-        String syntaxErrors = "";
-        for (LogicsModule module : logicModules) {
-            syntaxErrors += module.getErrorsDescription();
-        }
+        Map<LogicsModule, ImSet<LogicsModule>> recRequiredModules = new HashMap<LogicsModule, ImSet<LogicsModule>>();
+        orderedModules = orderModules(orderDependencies, recRequiredModules);
 
-        if (!syntaxErrors.isEmpty()) {
-            if (initException != null) {
-                syntaxErrors = syntaxErrors + initException.getMessage();
+        int moduleNumber = 0;
+        for (LogicsModule module : orderedModules) {
+            String namespace = module.getNamespace();
+            if (!namespaceToModules.containsKey(namespace)) {
+                namespaceToModules.put(namespace, new ArrayList<LogicsModule>());
             }
-            throw new ScriptParsingException(syntaxErrors);
-        } else if (initException != null) {
-            Throwables.propagate(initException);
+            namespaceToModules.get(namespace).add(module);
+            
+            module.visible = recRequiredModules.get(module).mapSetValues(new GetValue<Version, LogicsModule>() {
+                public Version getMapValue(LogicsModule value) {
+                    return value.getVersion();
+                }});
+            module.order = (moduleNumber++);
         }
     }
 
-    private void initClassDataProps() {
+    public void initClassDataProps() {
         ImMap<ImplementTable, ImSet<ConcreteCustomClass>> groupTables = getConcreteCustomClasses().group(new BaseUtils.Group<ImplementTable, ConcreteCustomClass>() {
             public ImplementTable group(ConcreteCustomClass customClass) {
                 return LM.tableFactory.getMapTable(MapFact.singleton("key", (ValueClass) customClass)).table;
@@ -656,7 +584,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
     }
 
-    private void initReflectionProperties() {
+    public void initReflectionEvents() {
 
         //временное решение
         
@@ -767,20 +695,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         // с одной стороны нужно отрисовать на форме логирования все свойства из recognizeGroup, с другой - LogFormEntity с Action'ом должен уже существовать
         // поэтому makeLoggable делаем сразу, а LogFormEntity при желании заполняем здесь
         for (Property property : getOrderProperties()) {
-            if (property.loggable && property.logFormProperty.property instanceof FormActionProperty) {
-                FormActionProperty formActionProperty = (FormActionProperty) property.logFormProperty.property;
-                if (formActionProperty.form instanceof LogFormEntity) {
-                    LogFormEntity logForm = (LogFormEntity) formActionProperty.form;
-                    if (logForm.lazyInit) {
-                        logForm.initProperties();
-                    }
-                }
+            finishLogInit(property);
+        }
+    }
 
-                //добавляем в контекстное меню пункт для показа формы
-                String actionSID = formActionProperty.getSID();
-                property.setContextMenuAction(actionSID, formActionProperty.caption);
-                property.setEditAction(actionSID, formActionProperty.getImplement(property.getOrderInterfaces()));
+    public void finishLogInit(Property property) {
+        if (property.loggable && property.logFormProperty.property instanceof FormActionProperty) {
+            FormActionProperty formActionProperty = (FormActionProperty) property.logFormProperty.property;
+            if (formActionProperty.form instanceof LogFormEntity) {
+                LogFormEntity logForm = (LogFormEntity) formActionProperty.form;
+                if (logForm.lazyInit) {
+                    logForm.initProperties();
+                }
             }
+
+            //добавляем в контекстное меню пункт для показа формы
+            String actionSID = formActionProperty.getSID();
+            property.setContextMenuAction(actionSID, formActionProperty.caption);
+            property.setEditAction(actionSID, formActionProperty.getImplement(property.getOrderInterfaces()));
         }
     }
 
@@ -790,35 +722,35 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private void setupPropertyPolicyForms() {
+    public void setupPropertyPolicyForms() {
         FormEntity policyFormEntity = securityLM.propertyPolicyForm;
         ObjectEntity propertyObj = policyFormEntity.getObject("p");
         LAP<?> setupPolicyFormProperty = LM.addMFAProp(null, "sys", policyFormEntity, new ObjectEntity[]{propertyObj}, true);
         LAP<?> setupPolicyForPropBySID = LM.addJoinAProp(setupPolicyFormProperty, reflectionLM.propertySID, 1);
 
         for (Property property : getOrderProperties()) {
-            String propertySID = property.getSID();
-            String setupPolicyActionSID = "propertyPolicySetup_" + propertySID;
-            if (!LM.isGeneratedSID(propertySID)) {
-                LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, setupPolicyActionSID, getString("logics.property.propertypolicy.action"),
-                        setupPolicyForPropBySID, LM.addCProp(StringClass.get(propertySID.length()), propertySID));
-
-                ActionProperty setupPolicyAction = setupPolicyLAP.property;
-                setupPolicyAction.checkReadOnly = false;
-                property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
-                property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
-            }
+            setupPropertyPolicyForms(setupPolicyForPropBySID, property);
         }
     }
 
-    private void prereadCaches() {
-        logger.info("Prereading properties graph...");
+    public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropBySID, Property property) {
+        String propertySID = property.getSID();
+        String setupPolicyActionSID = "propertyPolicySetup_" + propertySID;
+        if (!LM.isGeneratedSID(propertySID)) {
+            LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, setupPolicyActionSID, getString("logics.property.propertypolicy.action"),
+                    setupPolicyForPropBySID, LM.addCProp(StringClass.get(propertySID.length()), propertySID));
+
+            ActionProperty setupPolicyAction = setupPolicyLAP.property;
+            setupPolicyAction.checkReadOnly = false;
+            property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
+            property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
+        }
+    }
+
+    public void prereadCaches() {
         getAppliedProperties(ApplyFilter.ONLYCHECK);
         getAppliedProperties(ApplyFilter.NO);
         getOrderMapSingleApplyDepends(ApplyFilter.NO);
-        logger.info("Prereading caches for properties...");
-        for (Property property : getPropertyList())
-            property.prereadCaches();
     }
 
     protected void initAuthentication(SecurityManager securityManager) throws SQLException, SQLHandledException {
@@ -982,7 +914,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return result;
     }
 
-    private void showDependencies() {
+    public void showDependencies() {
         String show = "";
 
         boolean found = false; // оптимизация, так как showDep не так часто используется
@@ -1350,7 +1282,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     private void outputCalcPropertyClasses() {
-        for (LP lp : LM.lproperties) {
+        for (LP lp : LM.getLPropertiesIt()) {
             debuglogger.debug(lp.property.getSID() + " : " + lp.property.caption + " - " + lp.getClassWhere(ClassType.ASIS));
         }
     }

@@ -1,6 +1,7 @@
 package lsfusion.server.form.entity;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 
 import java.util.*;
 
@@ -18,8 +19,8 @@ public class GroupObjectHierarchy {
     private Set<GroupObjectEntity> markedGroups;
 
     /// dependencies должны содержать зависимости, образующие лес (набор деревьев)
-    public GroupObjectHierarchy(List<GroupObjectEntity> groupObjects, Map<GroupObjectEntity, List<GroupObjectEntity>> depends) {
-        groups = new ArrayList<GroupObjectEntity>(groupObjects);
+    public GroupObjectHierarchy(ImOrderSet<GroupObjectEntity> groupObjects, Map<GroupObjectEntity, List<GroupObjectEntity>> depends) {
+        groups = new ArrayList<GroupObjectEntity>(groupObjects.toJavaList());
         dependencies = new HashMap<GroupObjectEntity, List<GroupObjectEntity>>(depends);
         markedGroups = new HashSet<GroupObjectEntity>();
         for (GroupObjectEntity group : groups) {

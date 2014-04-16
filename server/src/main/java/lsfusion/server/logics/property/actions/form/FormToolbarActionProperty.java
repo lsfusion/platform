@@ -8,6 +8,7 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
@@ -58,8 +59,8 @@ public abstract class FormToolbarActionProperty extends ScriptingActionProperty 
     }
 
     @Override
-    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> propertyDraw, FormEntity<?> form) {
-        super.proceedDefaultDraw(propertyDraw, form);
+    public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> propertyDraw, FormEntity<?> form, Version version) {
+        super.proceedDefaultDraw(propertyDraw, form, version);
 
         setupToolbarButton(form, propertyDraw);
     }

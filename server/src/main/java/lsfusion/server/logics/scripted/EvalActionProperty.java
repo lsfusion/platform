@@ -1,6 +1,8 @@
 package lsfusion.server.logics.scripted;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.FullFunctionSet;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ConcreteCustomClass;
@@ -11,6 +13,7 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -79,6 +82,8 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
 
         String script = getScript(context);
         ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(BL, script));
+        module.order = BL.getOrderedModules().size() + 1;
+        module.visible = FullFunctionSet.<Version>instance();
         String errString = "";
         try {
             module.initModuleDependencies();

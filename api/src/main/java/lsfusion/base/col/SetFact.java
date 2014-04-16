@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -334,6 +335,10 @@ public class SetFact {
 
     public static <K> Set<K> mAddRemoveSet() {
         return new HashSet<K>();
+    }
+
+    public static <K> List<K> mAddRemoveOrderSet() {
+        return new ArrayList<K>();
     }
 
     public static <T> Set<T> mAddRemoveSet(ImSet<? extends T> set) {

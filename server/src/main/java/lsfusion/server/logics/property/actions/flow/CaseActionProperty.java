@@ -13,6 +13,9 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.interfaces.NFList;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 
@@ -22,7 +25,7 @@ import static lsfusion.server.logics.property.derived.DerivedProperty.createForA
 
 public class CaseActionProperty extends ListCaseActionProperty {
 
-    private Object cases;
+    private NFList<Case<PropertyInterface>> cases;
 
     public static <I extends PropertyInterface> ActionProperty createIf(String sID, String caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
         assert trueAction != null;
@@ -46,16 +49,16 @@ public class CaseActionProperty extends ListCaseActionProperty {
         }
     }
 
-    public void addCase(CalcPropertyMapImplement<?, PropertyInterface> where, ActionPropertyMapImplement<?, PropertyInterface> action) {
+    public void addCase(CalcPropertyMapImplement<?, PropertyInterface> where, ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
         assert type == AbstractType.CASE;
 
         Case<PropertyInterface> aCase = new Case<PropertyInterface>(where, action);
-        ((MList<Case<PropertyInterface>>)cases).add(aCase);
+        cases.add(aCase, version);
 
-        addWhereCase(aCase.where, aCase.action);
+        addWhereCase(aCase.where, aCase.action, version);
     }
 
-    public void addOperand(ActionPropertyMapImplement<?,PropertyInterface> action) {
+    public void addOperand(ActionPropertyMapImplement<?,PropertyInterface> action, Version version) {
         assert isAbstract();
 
         CalcPropertyMapImplement<?, PropertyInterface> where = action.mapWhereProperty();
@@ -65,14 +68,14 @@ public class CaseActionProperty extends ListCaseActionProperty {
         else
             addCase = new Case<PropertyInterface>(where, action);
 
-        ((MList<Case<PropertyInterface>>)cases).add(addCase);
+        cases.add(addCase, version);
 
-        addWhereOperand(addCase.action);
+        addWhereOperand(addCase.action, version);
     }
 
 
     private ImList<Case<PropertyInterface>> getCases() {
-        return (ImList<Case<PropertyInterface>>)cases;
+        return cases.getList();
     }
 
     public <I extends PropertyInterface> CaseActionProperty(String sID, String caption, boolean isExclusive, ImList<ActionPropertyMapImplement> impls, ImOrderSet<I> innerInterfaces) {
@@ -88,10 +91,10 @@ public class CaseActionProperty extends ListCaseActionProperty {
         super(sID, caption, isExclusive, innerInterfaces);
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
-        this.cases = cases.mapListValues(new GetValue<Case<PropertyInterface>, Case<I>>() {
+        this.cases = NFFact.finalList(cases.mapListValues(new GetValue<Case<PropertyInterface>, Case<I>>() {
             public Case<PropertyInterface> getMapValue(Case<I> value) {
                 return new Case<PropertyInterface>(value.where.map(mapInterfaces), value.action.map(mapInterfaces));
-            }});
+            }}));
 
         finalizeInit();
     }
@@ -99,7 +102,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
     public <I extends PropertyInterface> CaseActionProperty(String sID, String caption, boolean isExclusive, boolean isChecked, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
         super(sID, caption, isExclusive, isChecked, type, innerInterfaces, mapClasses);
 
-        cases = ListFact.mList();
+        cases = NFFact.list();
     }
 
     protected CalcPropertyMapImplement<?, PropertyInterface> calculateWhereProperty() {
@@ -163,7 +166,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
         super.finalizeInit();
 
         if(isAbstract())
-            cases = ((MList<Case<PropertyInterface>>)cases).immutableList();
+            cases.finalizeCol();
     }
 
     @Override

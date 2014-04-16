@@ -2283,4 +2283,31 @@ public class BaseUtils {
     public static String dateToString(String format, Date d) {
         return new SimpleDateFormat(format).format(d);
     }
+    
+    public static String packWords(String string, int reqLength) {
+        if(string.length() <= reqLength)
+            return string;
+
+        String[] words = string.split("(?<!^)(?=[A-Z])");
+        float cut = (float) reqLength / (float)string.length();
+        
+        int[] keepLength = new int[words.length];
+        int total = 0;
+        for(int i=0;i<words.length;i++) {
+            int rounded = (int) (((float) words[i].length()) * cut);
+            keepLength[i] = rounded;
+            total += rounded;
+        }
+        
+        int rest = reqLength - total;
+        assert rest >= 0 && rest<=words.length;
+        for(int i=0;i<rest;i++)
+            keepLength[i]++;
+        
+        StringBuilder result = new StringBuilder();
+        for(int i=0;i<words.length;i++) {
+            result.append(words[i].substring(0, keepLength[i]));
+        }
+        return result.toString();
+    }
 }

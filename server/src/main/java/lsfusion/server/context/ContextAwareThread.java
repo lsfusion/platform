@@ -16,5 +16,6 @@ public class ContextAwareThread extends Thread {
     public void run() {
         ThreadLocalContext.set(context);
         super.run();
+        context.getLogicsInstance().getDbManager().closeThreadLocalSql();
     }
 }

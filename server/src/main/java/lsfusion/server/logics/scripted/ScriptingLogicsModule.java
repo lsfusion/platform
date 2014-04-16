@@ -1,5 +1,6 @@
 package lsfusion.server.logics.scripted;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.base.IOUtils;
@@ -18,6 +19,7 @@ import lsfusion.interop.ModalityType;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
@@ -41,6 +43,7 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.actions.BaseEvent;
@@ -184,6 +187,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    @Override
+    @IdentityLazy
+    public int getModuleComplexity() {
+        try {
+            return createStream().size();
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public ScriptingErrorLog getErrLog() {
         return errLog;
     }
@@ -277,7 +290,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     public ObjectEntity getObjectEntityByName(FormEntity form, String name) throws ScriptingErrorLog.SemanticErrorException {
-        ObjectEntity obj = form.getObject(name);
+        ObjectEntity obj = form.getNFObject(name, getVersion());
         if (obj == null) {
             getErrLog().emitObjectNotFoundError(parser, name);
         }
@@ -341,6 +354,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void extendClass(String className, List<String> instNames, List<String> instCaptions, List<String> parentNames) throws ScriptingErrorLog.SemanticErrorException {
+        Version version = getVersion();
+
         scriptLogger.info("extendClass(" + className + ", " + instNames + ", " + instCaptions + ", " + parentNames + ");");
         CustomClass cls = (CustomClass) findClassByCompoundName(className);
         boolean isAbstract = cls instanceof AbstractCustomClass;
@@ -348,9 +363,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<String> names = instNames;
         List<String> captions = instCaptions;
         if (!isAbstract) {
-            ((ConcreteCustomClass) cls).addStaticObjects(instNames, instCaptions);
-            names = ((ConcreteCustomClass) cls).getStaticObjectsNames();
-            captions = ((ConcreteCustomClass) cls).getStaticObjectsCaptions();
+            ((ConcreteCustomClass) cls).addStaticObjects(instNames, instCaptions, version);
+            names = ((ConcreteCustomClass) cls).getNFStaticObjectsNames(version);
+            captions = ((ConcreteCustomClass) cls).getNFStaticObjectsCaptions(version);
         }
 
         checkStaticClassConstraints(isAbstract, names, captions);
@@ -358,10 +373,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         for (String parentName : parentNames) {
             CustomClass parentClass = (CustomClass) findClassByCompoundName(parentName);
-            if (cls.parents.contains(parentClass)) {
+            if (cls.containsNFParents(parentClass, version)) {
                 errLog.emitDuplicateClassParentError(parser, parentName);
             }
-            cls.addParentClass(parentClass);
+            cls.addParentClass(parentClass, version);
         }
     }
 
@@ -458,28 +473,32 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ", " + title + ");");
         checkDuplicateNavigatorElement(formName);
         caption = (caption == null ? formName : caption);
-        return new ScriptingFormEntity(this, new FormEntity(null, formName, caption, title, icon));
+        return new ScriptingFormEntity(this, new FormEntity(formName, caption, title, icon, getVersion()));
     }
 
     public ScriptingFormView createScriptedFormView(String formName, String caption, boolean applyDefault) throws ScriptingErrorLog.SemanticErrorException {
+        Version version = getVersion();
+        
         scriptLogger.info("createScriptedFormView(" + formName + ", " + applyDefault + ");");
 
         FormEntity form = findFormByCompoundName(formName);
-        FormView formView = applyDefault ? new DefaultFormView(form) : new FormView(form);
+        FormView formView = applyDefault ? new DefaultFormView(form, version) : new FormView(form, version);
         ScriptingFormView scriptingView = new ScriptingFormView(formView, this);
         if (caption != null) {
             formView.caption = caption;
         }
 
-        form.setRichDesign(formView);
+        form.setRichDesign(formView, version);
 
         return scriptingView;
     }
 
     public ScriptingFormView getDesignForExtending(String formName) throws ScriptingErrorLog.SemanticErrorException {
+        Version version = getVersion();
+
         scriptLogger.info("getDesignForExtending(" + formName + ");");
         FormEntity form = findFormByCompoundName(formName);
-        return new ScriptingFormView(form.getRichDesign(), this);
+        return new ScriptingFormView(form.getNFRichDesign(version), this);
     }
 
     public void addScriptedForm(ScriptingFormEntity form) {
@@ -564,7 +583,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkAbstractTypes(type == CaseUnionProperty.Type.CASE, isCase);
 
         try {
-            abstractProp.addOperand(isCase, params.toArray());
+            abstractProp.addOperand(isCase, getVersion(), params.toArray());
         } catch (ScriptParsingException e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
@@ -576,7 +595,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkAbstractTypes(type == ListCaseActionProperty.AbstractType.CASE, isCase);
 
         try {
-            abstractAction.addOperand(isCase, params.toArray());
+            abstractAction.addOperand(isCase, getVersion(), params.toArray());
         } catch (ScriptParsingException e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
@@ -1320,7 +1339,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (String className : paramClassNames) {
             paramClasses.add(findClassByCompoundName(className).getUpSet());
         }
-        checkDuplicateProperty(name, paramClasses);
+//        checkDuplicateProperty(name, paramClasses);
 
         LCP res = addScriptedDProp(returnClassName, paramClassNames, true, false);
         changeLocalPropertyName(res, name);
@@ -1384,6 +1403,31 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> resultParams = getParamsPlainList(singletonList(asyncProp));
         LAP asyncLAP = addAsyncUpdateAProp(resultParams.toArray());
         return new LPWithParams(asyncLAP, asyncProp.usedParams);
+    }
+
+    public LPWithParams addScriptedObjectSeekProp(String name, LPWithParams seekProp) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedObjectSeekProp(" + name + "," + seekProp + ");");
+
+        int pointPos = name.lastIndexOf('.');
+        assert pointPos > 0;
+
+        String formName = name.substring(0, pointPos);
+        String objectName = name.substring(pointPos+1);
+
+        FormEntity form = findFormByCompoundName(formName);
+        if(form == null) {
+            errLog.emitNotFoundError(parser, "form", formName);
+        }
+
+        ObjectEntity object = form.getNFObject(objectName, getVersion());
+        if (object != null) {
+            List<Object> resultParams = getParamsPlainList(singletonList(seekProp));
+            LAP lap = addOSAProp(form, object, resultParams.toArray());
+            return new LPWithParams(lap, seekProp.usedParams);
+        } else {
+            errLog.emitNotFoundError(parser, "оbject", objectName);
+            return null;
+        }
     }
 
     public LPWithParams addScriptedEvalActionProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
@@ -2008,11 +2052,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         ObjectEntity contextObject = contextObjectName == null ? null : findObjectEntity(form, contextObjectName);
 
+        Version version = getVersion();
         PropertyDrawEntity initFilterProperty = null;
         if (initFilterPropertyName != null) {
             initFilterProperty = initFilterPropertyMapping == null
-                                 ? getPropertyDraw(this, form, initFilterPropertyName)
-                                 : getPropertyDraw(this, form, PropertyDrawEntity.createSID(initFilterPropertyName, initFilterPropertyMapping));
+                                 ? getPropertyDraw(this, form, initFilterPropertyName, version)
+                                 : getPropertyDraw(this, form, PropertyDrawEntity.createSID(initFilterPropertyName, initFilterPropertyMapping), version);
         }
 
         LAP property = addFAProp(null, genSID(), "", form, objects, null, contextObject,
@@ -2034,7 +2079,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ObjectEntity findObjectEntity(FormEntity form, String objectName) throws ScriptingErrorLog.SemanticErrorException {
-        ObjectEntity result = form.getObject(objectName);
+        ObjectEntity result = form.getNFObject(objectName, getVersion());
         if (result == null) {
             errLog.emitObjectNotFoundError(parser, objectName);
         }
@@ -2081,6 +2126,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LCP addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
+        Version version = getVersion();
+
         int pointPos = name.lastIndexOf('.');
         assert pointPos > 0;
 
@@ -2091,7 +2138,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass cls = findClassByCompoundName(className);
         if (cls instanceof ConcreteCustomClass) {
             ConcreteCustomClass concreteClass = (ConcreteCustomClass) cls;
-            if (concreteClass.hasStaticObject(instanceName)) {
+            if (concreteClass.hasNFStaticObject(instanceName, version)) {
                 resultProp = addCProp(concreteClass, instanceName);
             } else {
                 errLog.emitNotFoundError(parser, "static оbject", instanceName);
@@ -2100,28 +2147,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitAbstractClassInstancesUseError(parser, className, instanceName);
         }
         return resultProp;
-    }
-
-    public LPWithParams addScriptedObjectSeekProp(String name, LPWithParams seekProp) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedObjectSeekProp(" + name + "," + seekProp + ");");
-
-        int pointPos = name.lastIndexOf('.');
-        assert pointPos > 0;
-
-        String formName = name.substring(0, pointPos);
-        String objectName = name.substring(pointPos+1);
-
-        FormEntity form = findFormByCompoundName(formName);
-
-        ObjectEntity object = form.getObject(objectName);
-        if (object != null) {
-            List<Object> resultParams = getParamsPlainList(singletonList(seekProp));
-            LAP lap = addOSAProp(form, object, resultParams.toArray());
-            return new LPWithParams(lap, seekProp.usedParams);
-        } else {
-            errLog.emitNotFoundError(parser, "оbject", objectName);
-            return null;
-        }
     }
 
     public LCP addScriptedGroupObjectProp(String name, GroupObjectProp prop, List<AndClassSet> outClasses) throws ScriptingErrorLog.SemanticErrorException {
@@ -2134,7 +2159,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         FormEntity form = findFormByCompoundName(formName);
 
-        GroupObjectEntity groupObject = form.getGroupObject(objectName);
+        GroupObjectEntity groupObject = form.getNFGroupObject(objectName, getVersion());
         if (groupObject != null) {
             for (ObjectEntity obj : groupObject.getOrderObjects()) {
                 outClasses.add(obj.baseClass.getUpSet());
@@ -2492,26 +2517,28 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void moveElement(NavigatorElement element, NavigatorElement parentElement, InsertPosition pos, NavigatorElement anchorElement) throws ScriptingErrorLog.SemanticErrorException {
-        if (anchorElement != null && !parentElement.equals(anchorElement.getParent())) {
+        Version version = getVersion();
+        
+        if (anchorElement != null && !parentElement.equals(anchorElement.getNFParent(version))) {
             errLog.emitIllegalInsertBeforeAfterComponentElement(parser, element.getSID(), parentElement.getSID(), anchorElement.getSID());
         }
 
-        if (element.isAncestorOf(parentElement)) {
+        if (element.isAncestorOf(parentElement, version)) {
             errLog.emitIllegalMoveNavigatorToSubnavigator(parser, element.getSID(), parentElement.getSID());
         }
 
         switch (pos) {
             case IN:
-                parentElement.add(element);
+                parentElement.add(element, version);
                 break;
             case BEFORE:
-                parentElement.addBefore(element, anchorElement);
+                parentElement.addBefore(element, anchorElement, version);
                 break;
             case AFTER:
-                parentElement.addAfter(element, anchorElement);
+                parentElement.addAfter(element, anchorElement, version);
                 break;
             case FIRST:
-                parentElement.addFirst(element);
+                parentElement.addFirst(element, version);
                 break;
         }
     }

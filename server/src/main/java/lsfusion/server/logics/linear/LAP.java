@@ -9,6 +9,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.PropertyUtils;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.property.actions.flow.CaseActionProperty;
@@ -82,15 +83,15 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         mainProperty.property.setEditAction(actionSID, actionImplement);
     }
 
-    public void addOperand(boolean hasWhen, Object... params) {
+    public void addOperand(boolean hasWhen, Version version, Object... params) {
         ImList<PropertyInterfaceImplement<T>> readImplements = PropertyUtils.readImplements(listInterfaces, params);
         ActionPropertyMapImplement<?, PropertyInterface> actImpl = (ActionPropertyMapImplement<?, PropertyInterface>)readImplements.get(0);
         if (property instanceof ListActionProperty) {
-            ((ListActionProperty) property).addAction(actImpl);
+            ((ListActionProperty) property).addAction(actImpl, version);
         } else if (hasWhen) {
-            ((CaseActionProperty) property).addCase((CalcPropertyMapImplement<?, PropertyInterface>)readImplements.get(1), actImpl);
+            ((CaseActionProperty) property).addCase((CalcPropertyMapImplement<?, PropertyInterface>)readImplements.get(1), actImpl, version);
         } else {
-            ((CaseActionProperty) property).addOperand(actImpl);
+            ((CaseActionProperty) property).addOperand(actImpl, version);
         }
     }
 }

@@ -597,11 +597,11 @@ public class MapCacheAspect {
                 if(cacheQuery== null || !checkCaches)
                     cacheNoBig(implement, hashCaches, query);
 
-                logger.info("readSaveQuery - not cached "+table);
+                logger.info("readSaveQuery - not cached "+table.name);
             } else {
                 query = cacheQuery;
 
-                logger.info("readSaveQuery - cached "+table);
+                logger.info("readSaveQuery - cached "+table.name);
             }
         }
 

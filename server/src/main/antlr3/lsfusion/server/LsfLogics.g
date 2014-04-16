@@ -22,6 +22,7 @@ grammar LsfLogics;
 	import lsfusion.server.form.view.GroupObjectView;
 	import lsfusion.server.form.view.PropertyDrawView;
 	import lsfusion.server.classes.sets.AndClassSet;
+	import lsfusion.server.logics.mutables.Version;
 	import lsfusion.server.logics.linear.LP;
 	import lsfusion.server.logics.linear.LCP;
 	import lsfusion.server.logics.property.PropertyFollows;
@@ -139,9 +140,9 @@ grammar LsfLogics;
 		}
 	}
 
-	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids) throws ScriptingErrorLog.SemanticErrorException {
+	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids, Version version) throws ScriptingErrorLog.SemanticErrorException {
 		if (inPropParseState()) {
-			return $formStatement::form.getGroupObjectsList(ids);
+			return $formStatement::form.getGroupObjectsList(ids, version);
 		}
 		return null;
 	}
@@ -361,7 +362,7 @@ dialogFormDeclaration
 	:	'DIALOG' cid=classId 'OBJECT' oid=ID
 		{
 			if (inPropParseState()) {
-				$formStatement::form.setAsDialogForm($cid.sid, $oid.text);
+				$formStatement::form.setAsDialogForm($cid.sid, $oid.text, self.getVersion());
 			}
 		}
 	;
@@ -370,7 +371,7 @@ editFormDeclaration
 	:	'EDIT' cid=classId 'OBJECT' oid=ID
 		{
 			if (inPropParseState()) {
-				$formStatement::form.setAsEditForm($cid.sid, $oid.text);
+				$formStatement::form.setAsEditForm($cid.sid, $oid.text, self.getVersion());
 			}
 		}
 	;
@@ -379,7 +380,7 @@ listFormDeclaration
 	:	'LIST' cid=classId 'OBJECT' oid=ID
 		{
 			if (inPropParseState()) {
-				$formStatement::form.setAsListForm($cid.sid, $oid.text);
+				$formStatement::form.setAsListForm($cid.sid, $oid.text, self.getVersion());
 			}
 		}
 	;
@@ -419,7 +420,7 @@ formGroupObjectsList
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptingGroupObjects(groups);
+		$formStatement::form.addScriptingGroupObjects(groups, self.getVersion());
 	}
 }
 	:	'OBJECTS'
@@ -435,7 +436,7 @@ formTreeGroupObjectList
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptingTreeGroupObject(treeSID, groups, properties);
+		$formStatement::form.addScriptingTreeGroupObject(treeSID, groups, properties, self.getVersion());
 	}
 }
 	:	'TREE'
@@ -529,7 +530,7 @@ formPropertiesList
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedPropertyDraws(properties, aliases, mapping, commonOptions, options);
+		$formStatement::form.addScriptedPropertyDraws(properties, aliases, mapping, commonOptions, options, self.getVersion());
 	}
 }
 	:	'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList
@@ -559,7 +560,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'HINTTABLE' { $options.setHintTable(true); }
 		|	'TOOLBAR' { $options.setDrawToToolbar(true); }
 		|	'OPTIMISTICASYNC' { $options.setOptimisticAsync(true); }
-		|	'COLUMNS' (columnsName=stringLiteral)? '(' ids=nonEmptyIdList ')' { $options.setColumns($columnsName.text, getGroupObjectsList($ids.ids)); }
+		|	'COLUMNS' (columnsName=stringLiteral)? '(' ids=nonEmptyIdList ')' { $options.setColumns($columnsName.text, getGroupObjectsList($ids.ids, self.getVersion())); }
 		|	'SHOWIF' propObj=formCalcPropertyObject { $options.setShowIf($propObj.property); }
 		|	'READONLYIF' propObj=formCalcPropertyObject { $options.setReadOnlyIf($propObj.property); }
 		|	'BACKGROUND' propObj=formCalcPropertyObject { $options.setBackground($propObj.property); }
@@ -580,8 +581,8 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 	;
 
 formPropertyDraw returns [PropertyDrawEntity property]
-	:	id=ID              	{ if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($id.text); }
-	|	prop=mappedPropertyDraw { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping); }
+	:	id=ID              	{ if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($id.text, self.getVersion()); }
+	|	prop=mappedPropertyDraw { if (inPropParseState()) $property = $formStatement::form.getPropertyDraw($prop.name, $prop.mapping, self.getVersion()); }
 	;
 
 formMappedPropertiesList returns [List<String> aliases, List<PropertyUsage> properties, List<List<String>> mapping, List<FormPropertyOptions> options]
@@ -635,7 +636,7 @@ formActionPropertyObject returns [ActionPropertyObjectEntity action = null]
 formGroupObjectEntity returns [GroupObjectEntity groupObject]
 	:	id = ID { 
 			if (inPropParseState()) {
-				$groupObject = $formStatement::form.getGroupObjectEntity($ID.text);
+				$groupObject = $formStatement::form.getGroupObjectEntity($ID.text, self.getVersion());
 			} 
 		}
 	;
@@ -651,13 +652,13 @@ formPropertySelector[FormEntity form] returns [PropertyDrawEntity propertyDraw =
 	:	pname=ID
 		{
 		    if (inPropParseState()) {
-                $propertyDraw = form == null ? null : ScriptingFormEntity.getPropertyDraw(self, form, $pname.text);
+                $propertyDraw = form == null ? null : ScriptingFormEntity.getPropertyDraw(self, form, $pname.text, self.getVersion());
             }
 		}
 	|	mappedProp=mappedPropertyDraw	
 		{
 		    if (inPropParseState()) {
-                $propertyDraw = ScriptingFormEntity.getPropertyDraw(self, form, $mappedProp.name, $mappedProp.mapping);
+                $propertyDraw = ScriptingFormEntity.getPropertyDraw(self, form, $mappedProp.name, $mappedProp.mapping, self.getVersion());
             }
 		}
 	;
@@ -718,7 +719,7 @@ formFiltersList
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedFilters(properties, propertyMappings);
+		$formStatement::form.addScriptedFilters(properties, propertyMappings, self.getVersion());
 	}
 }
 	:	'FILTERS'
@@ -732,7 +733,7 @@ formHintsList
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedHints(hintNoUpdate, $list.propUsages);
+		$formStatement::form.addScriptedHints(hintNoUpdate, $list.propUsages, self.getVersion());
 	}
 }
 	:	(('HINTNOUPDATE') | ('HINTTABLE' { hintNoUpdate = false; })) 'LIST'
@@ -746,7 +747,7 @@ formEventsList
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedFormEvents(actions, types);
+		$formStatement::form.addScriptedFormEvents(actions, types, self.getVersion());
 	}
 }
 	:	'EVENTS'
@@ -782,7 +783,7 @@ filterGroupDeclaration
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, captions, keystrokes, properties, mappings, defaults);
+		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, captions, keystrokes, properties, mappings, defaults, self.getVersion());
 	}
 }
 	:	'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; }
@@ -803,7 +804,7 @@ formFilterDeclaration returns [LP property, List<String> mapping]
 @init {
 	List<TypedParameter> context = null;
 	if (inPropParseState()) {
-		context = $formStatement::form.getTypedObjectsNames();
+		context = $formStatement::form.getTypedObjectsNames(self.getVersion());
 	}
 }
 @after {
@@ -826,7 +827,7 @@ formOrderByList
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedDefaultOrder(properties, orders);
+		$formStatement::form.addScriptedDefaultOrder(properties, orders, self.getVersion());
 	}
 }
 	:	'ORDER' 'BY' orderedProp=formPropertyDrawWithOrder { properties.add($orderedProp.property); orders.add($orderedProp.order); }
@@ -2850,7 +2851,7 @@ setupGroupObjectStatement
 			ID
 			{
 				if (inPropParseState()) {
-					groupObject = $designStatement::design.getGroupObject($ID.text);
+					groupObject = $designStatement::design.getGroupObject($ID.text, self.getVersion());
 				}
 			}
 		')'
@@ -2868,7 +2869,7 @@ newComponentStatement[ComponentView parentComponent]
 	:	'NEW' cid=multiCompoundID insPosition=componentInsertPositionSelector[parentComponent]
 		{
 			if (inPropParseState()) {
-				newComp = $designStatement::design.createNewComponent($cid.sid, insPosition.parent, insPosition.position, insPosition.anchor);
+				newComp = $designStatement::design.createNewComponent($cid.sid, insPosition.parent, insPosition.position, insPosition.anchor, self.getVersion());
 			}
 		}
 		componentStatementBody[newComp, newComp]
@@ -2881,7 +2882,7 @@ addComponentStatement[ComponentView parentComponent]
 	:	'ADD' insSelector=componentSelector { insComp = $insSelector.component; } insPosition=componentInsertPositionSelector[parentComponent]
 		{
 			if (inPropParseState()) {
-				$designStatement::design.moveComponent(insComp, insPosition.parent, insPosition.position, insPosition.anchor);
+				$designStatement::design.moveComponent(insComp, insPosition.parent, insPosition.position, insPosition.anchor, self.getVersion());
 			}
 		}
 		componentStatementBody[insComp, insComp]
@@ -2910,7 +2911,7 @@ removeComponentStatement
 	:	'REMOVE' compSelector=componentSelector ('CASCADE' { cascade = true; } )? ';'
 		{
 			if (inPropParseState()) {
-				$designStatement::design.removeComponent($compSelector.component, cascade);
+				$designStatement::design.removeComponent($compSelector.component, cascade, self.getVersion());
 			}
 		}
 	;
@@ -2919,7 +2920,7 @@ componentSelector returns [ComponentView component]
 	:	'PARENT' '(' child=componentSelector ')'
 		{
 			if (inPropParseState()) {
-				$designStatement::design.getParentContainer($child.component);
+				$designStatement::design.getParentContainer($child.component, self.getVersion());
 			}
 		}
 	|	'PROPERTY' '(' prop=propertySelector ')' { $component = $prop.propertyView; }
@@ -2933,13 +2934,19 @@ componentSelector returns [ComponentView component]
 
 
 propertySelector returns [PropertyDrawView propertyView = null]
-    :   pu=formPropertySelector[$designStatement::design == null ? null : $designStatement::design.getView().entity]
-        {
-            if (inPropParseState()) {
-                $propertyView = $designStatement::design.getPropertyView($pu.propertyDraw);
-            }
-        }
-    ;
+	:	pname=ID
+		{
+			if (inPropParseState()) {
+				$propertyView = $designStatement::design.getPropertyView($pname.text, self.getVersion());
+			}
+		}
+	|	mappedProp=mappedPropertyDraw	
+		{
+			if (inPropParseState()) {
+				$propertyView = $designStatement::design.getPropertyView($mappedProp.name, $mappedProp.mapping, self.getVersion());
+			}
+		}
+	;
 
 setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object value]
 	:	ID '=' componentPropertyValue ';'  { setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value); }

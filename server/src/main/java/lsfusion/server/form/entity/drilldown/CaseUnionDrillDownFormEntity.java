@@ -9,6 +9,7 @@ import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.CalcPropertyMapImplement;
 import lsfusion.server.logics.property.CaseUnionProperty;
@@ -31,6 +32,8 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
 
     @Override
     protected void setupDrillDownForm() {
+        Version version = LM.getVersion();
+        
         propProperties = new ArrayList<PropertyDrawEntity>();
         whereProperties = new ArrayList<PropertyDrawEntity>();
 
@@ -48,7 +51,7 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
                 if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
                     if (mapImplement.property.isFull()) {
                         propProperties.add(
-                                addPropertyDraw(mapImplement.property, mapImplMapping)
+                                addPropertyDraw(mapImplement.property, mapImplMapping, version)
                         );
                     }
                 }
@@ -65,26 +68,26 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
                 if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
                     if (mapImplement.property.isFull()) {
                         whereProperties.add(
-                                addPropertyDraw(mapImplement.property, mapImplMapping)
+                                addPropertyDraw(mapImplement.property, mapImplMapping, version)
                         );
                     }
                 }
             }
         }
-        implPropertyDraw = addPropertyDraw(property, interfaceObjects);
+        implPropertyDraw = addPropertyDraw(property, interfaceObjects, version);
     }
 
     @Override
-    public FormView createDefaultRichDesign() {
-        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+    public FormView createDefaultRichDesign(Version version) {
+        DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
-        valueContainer.add(design.get(implPropertyDraw));
+        valueContainer.add(design.get(implPropertyDraw), version);
         for (int i = propProperties.size()-1; i >= 0; i--) {
             ContainerView propsContainer = design.createContainer(getString("logics.property.drilldown.form.where") + " " + (i + 1));
             propsContainer.setAlignment(FlexAlignment.STRETCH);
-            propsContainer.add(design.get(propProperties.get(i)));
-            propsContainer.add(design.get(whereProperties.get(i)));
-            design.mainContainer.addAfter(propsContainer, valueContainer);
+            propsContainer.add(design.get(propProperties.get(i)), version);
+            propsContainer.add(design.get(whereProperties.get(i)), version);
+            design.mainContainer.addAfter(propsContainer, valueContainer, version);
         }
         return design;
     }

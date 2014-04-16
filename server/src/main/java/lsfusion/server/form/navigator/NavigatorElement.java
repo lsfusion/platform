@@ -1,14 +1,21 @@
 package lsfusion.server.form.navigator;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.AbstractWindowType;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.form.window.NavigatorWindow;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
+import lsfusion.server.logics.mutables.interfaces.NFProperty;
+import lsfusion.server.logics.mutables.Version;
 
 import javax.swing.*;
 import java.io.ByteArrayInputStream;
@@ -27,35 +34,46 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
 
     public NavigatorWindow window = null;
 
-    private NavigatorElement<T> parent;
+    private NFProperty<NavigatorElement<T>> parent = NFFact.property();
+    public void setParent(NavigatorElement<T> parent, Version version) {
+        this.parent.set(parent, version);
+    }
 
-    private List<NavigatorElement<T>> children = new ArrayList<NavigatorElement<T>>();
+    private NFOrderSet<NavigatorElement<T>> children = NFFact.orderSet();
+    public Iterable<NavigatorElement<T>> getChildrenIt() {
+        return children.getIt();
+    }
+    public ImSet<NavigatorElement<T>> getChildren() {
+        return children.getSet();
+    }
+    public ImOrderSet<NavigatorElement<T>> getChildrenList() {
+        return children.getOrderSet();
+    }
 
     public NavigatorElement() {
         setImage("/images/open.png");
     }
 
     public NavigatorElement(String sID, String caption) {
-        this(null, sID, caption, null);
+        this(null, sID, caption, null, Version.DESCRIPTOR);
     }
 
-    public NavigatorElement(NavigatorElement<T> parent, String sID, String caption, String icon) {
+    public NavigatorElement(NavigatorElement<T> parent, String sID, String caption, String icon, Version version) {
         this.sID = sID;
         setID(BaseLogicsModule.generateStaticNewID());
         this.caption = caption;
         setImage(icon != null ? icon : "/images/open.png");
         if (parent != null) {
-            this.parent = parent;
-            parent.add(this);
+            setParent(parent, version);
+            parent.add(this, version);
         }
     }
 
     public NavigatorElement<T> getParent() {
-        return parent;
+        return parent.get();
     }
-
-    public List<NavigatorElement<T>> getChildren() {
-        return new ArrayList<NavigatorElement<T>>(children);
+    public NavigatorElement<T> getNFParent(Version version) {
+        return parent.getNF(version);
     }
 
     /**
@@ -70,7 +88,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
 
     private void fillChildrenRecursive(Collection<NavigatorElement<T>> result) {
         result.add(this);
-        for (NavigatorElement<T> child : children) {
+        for (NavigatorElement<T> child : getChildrenIt()) {
             child.fillChildrenRecursive(result);
         }
     }
@@ -88,7 +106,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
 
         List<String> childrenSids = new ArrayList<String>();
         List<ImOrderMap<NavigatorElement<T>, List<String>>> childrenMaps = new ArrayList<ImOrderMap<NavigatorElement<T>, List<String>>>();
-        for (NavigatorElement<T> child : children) {
+        for (NavigatorElement<T> child : getChildrenIt()) {
             ImOrderMap<NavigatorElement<T>, List<String>> childMap = child.getChildrenMap(securityPolicy);
             if (!childMap.isEmpty()) {
                 childrenMaps.add(childMap);
@@ -107,7 +125,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
     public NavigatorElement<T> getNavigatorElement(String elementSID) {
         if (sID.equals(elementSID)) return this;
 
-        for (NavigatorElement<T> child : children) {
+        for (NavigatorElement<T> child : getChildrenIt()) {
             NavigatorElement<T> element = child.getNavigatorElement(elementSID);
             if (element != null) return element;
         }
@@ -115,54 +133,53 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         return null;
     }
 
-    public boolean isAncestorOf(NavigatorElement element) {
-        return element != null && (equals(element) || isAncestorOf(element.parent));
+    public boolean isAncestorOf(NavigatorElement element, Version version) {
+        return element != null && (equals(element) || isAncestorOf(element.getNFParent(version), version));
     }
 
-    public void addFirst(NavigatorElement child) {
-        add(0, child);
+    private void changeContainer(NavigatorElement comp, Version version) {
+        NavigatorElement container = comp.getNFParent(version);
+        if (container != null)
+            container.remove(comp, version);
+        
+        comp.setParent(this, version);
     }
 
-    public void add(NavigatorElement child) {
-        add(children.size(), child);
+    public void addFirst(NavigatorElement child, Version version) {
+        changeContainer(child, version);
+        children.addFirst(child, version);
     }
 
-    public void add(int index, NavigatorElement child) {
-        int currIndex = children.indexOf(child);
-        if (currIndex != -1) {
-            children.remove(child);
-            if (currIndex < index) {
-                index--;
-            }
-        } else if (child.parent != null) {
-            child.parent.remove(child);
+    public void add(NavigatorElement child, Version version) {
+        changeContainer(child, version);
+        children.add(child, version);
+    }
+
+    public void addBefore(NavigatorElement child, NavigatorElement elemBefore, Version version) {
+        changeContainer(child, version);
+        children.addIfNotExistsToThenLast(child, elemBefore, false, version);
+    }
+
+    public void addAfter(NavigatorElement child, NavigatorElement elemAfter, Version version) {
+        changeContainer(child, version);
+        children.addIfNotExistsToThenLast(child, elemAfter, true, version);
+    }
+
+    public boolean remove(NavigatorElement child, Version version) {
+        if(child == null)
+            return false;
+
+        if (children.containsNF(child, version)) {
+            children.remove(child, version);
+            child.setParent(null, version);
+            return true;
+        } else {
+            return false;
         }
-
-        children.add(index, child);
-        child.parent = this;
-    }
-
-    public void addBefore(NavigatorElement child, NavigatorElement elemBefore) {
-        add(elemBefore != null ? children.indexOf(elemBefore) : children.size(), child);
-    }
-
-    public void addAfter(NavigatorElement child, NavigatorElement elemAfter) {
-        add(elemAfter != null ? children.indexOf(elemAfter) + 1 : children.size(), child);
-    }
-
-    public boolean remove(NavigatorElement child) {
-        return child != null && children.remove(child);
-    }
-
-    public void clear() {
-        for (NavigatorElement<T> child : children) {
-            child.parent = null;
-        }
-        children.clear();
     }
 
     public boolean hasChildren() {
-        return !children.isEmpty();
+        return !getChildren().isEmpty();
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

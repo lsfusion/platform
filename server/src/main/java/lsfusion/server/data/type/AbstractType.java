@@ -2,6 +2,7 @@ package lsfusion.server.data.type;
 
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
 
 import java.sql.PreparedStatement;
@@ -15,6 +16,19 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
 
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv) {
         return "CAST(" + value + " AS " + getDB(syntax, typeEnv) + ")";
+    }
+
+    // CAST который возвращает NULL, если не может этого сделать 
+    public String getSafeCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv) {
+        if(hasSafeCast()) {
+            typeEnv.addNeedSafeCast(this);
+            return DataAdapter.genSafeCastName(this) + "(" + value + ")";
+        }
+        return getCast(value, syntax, typeEnv);
+    }
+    
+    public boolean hasSafeCast() {
+        return false;
     }
 
     @Override

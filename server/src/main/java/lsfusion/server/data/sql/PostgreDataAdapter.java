@@ -12,6 +12,7 @@ import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.commons.exec.*;
 import org.postgresql.Driver;
+import org.postgresql.PGConnection;
 import org.postgresql.core.BaseConnection;
 
 import java.io.File;
@@ -54,15 +55,13 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public PostgreDataAdapter(String dataBase, String server, String userID, String password, String binPath, String dumpDir, boolean cleanDB) throws Exception {
-        super(dataBase, server, userID, password);
+        super(dataBase, server, userID, password, cleanDB);
 
         this.binPath = binPath;
         this.dumpDir = dumpDir;
-
-        internalEnsureDB(cleanDB);
     }
 
-    private void internalEnsureDB(boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException {
+    public void ensureDB(boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException {
         Connection connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
         if (cleanDB) {
             try {
@@ -79,18 +78,6 @@ public class PostgreDataAdapter extends DataAdapter {
             logger.info(ServerResourceBundle.getString("data.sql.error.creating.database"), e);
         }
         connect.close();
-
-        ensureConnection = startConnection();
-        ensureConnection.setAutoCommit(true);
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/getAnyNotNull.sc")));
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/jumpWorkdays.sc")));
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/completeBarcode.sc")));
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/aggf.sc")));
-        recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/recursion.sc"));
-    }
-
-    public void ensureDB() throws Exception, SQLException, InstantiationException, IllegalAccessException {
-        //всё делаем в internalEnsureDB
     }
 
     @Override
@@ -315,6 +302,11 @@ public class PostgreDataAdapter extends DataAdapter {
     @Override
     public boolean isTimeout(SQLException e) {
         return e.getSQLState().equals("57014");
+    }
+
+    @Override
+    protected void prepareConnection(Connection connection) {
+        ((PGConnection)connection).setPrepareThreshold(2);
     }
 
     @Override

@@ -18,6 +18,7 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.mutables.NFStaticLazy;
 import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.Modifier;
@@ -41,15 +42,18 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     // по аналогии с SessionDataProperty
     public final static MAddExclMap<ImMap<ValueClass, Integer>, CalcPropertyImplement<?, ValueClass>> cacheClasses = MapFact.mBigStrongMap();
     @ManualLazy
+    @NFStaticLazy
     public static <T, P extends PropertyInterface> CalcPropertyRevImplement<?, T> getProperty(ImMap<T, ValueClass> classes) {
         ImMap<ValueClass, Integer> multiClasses = classes.values().multiSet();
-        CalcPropertyImplement<P, ValueClass> implement = (CalcPropertyImplement<P, ValueClass>) cacheClasses.get(multiClasses);
-        if(implement==null) {
-            CalcPropertyRevImplement<?, T> classImplement = DerivedProperty.createCProp(LogicalClass.instance, true, classes);
-            cacheClasses.exclAdd(multiClasses, classImplement.mapImplement(classes));
-            return classImplement;
-        } else
-            return new CalcPropertyRevImplement<P, T>(implement.property, MapFact.mapValues(implement.mapping, classes));
+        synchronized (cacheClasses) {
+            CalcPropertyImplement<P, ValueClass> implement = (CalcPropertyImplement<P, ValueClass>) cacheClasses.get(multiClasses);
+            if(implement==null) {
+                CalcPropertyRevImplement<?, T> classImplement = DerivedProperty.createCProp(LogicalClass.instance, true, classes);
+                cacheClasses.exclAdd(multiClasses, classImplement.mapImplement(classes));
+                return classImplement;
+            } else
+                return new CalcPropertyRevImplement<P, T>(implement.property, MapFact.mapValues(implement.mapping, classes));
+        }
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> getMapProperty(ImMap<T, ValueClass> classes) {

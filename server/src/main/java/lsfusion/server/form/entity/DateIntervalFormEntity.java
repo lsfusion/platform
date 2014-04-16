@@ -5,6 +5,7 @@ import lsfusion.server.classes.DateClass;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.mutables.Version;
 
 public class DateIntervalFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
@@ -18,16 +19,18 @@ public class DateIntervalFormEntity<T extends BusinessLogics<T>> extends FormEnt
     }
 
     private void addIntervalGroupObject(BaseLogicsModule<?> LM) {
+        Version version = LM.getVersion();
+
         GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
         objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
         objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
         gobjDates.add(objDateFrom);
         gobjDates.add(objDateTo);
 
-        addGroupObject(gobjDates);
+        addGroupObject(gobjDates, version);
         gobjDates.setSingleClassView(ClassViewType.PANEL);
 
-        addPropertyDraw(objDateFrom, LM.objectValue);
-        addPropertyDraw(objDateTo, LM.objectValue);
+        addPropertyDraw(objDateFrom, version, LM.objectValue);
+        addPropertyDraw(objDateTo, version, LM.objectValue);
     }
 }

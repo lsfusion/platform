@@ -74,4 +74,9 @@ public class ArCol<K> extends ACol<K> implements MCol<K>, MAddCol<K> {
     public Iterable<K> it() {
         return this;
     }
+    
+    public void removeAll() {
+        size = 0;
+        array = new Object[4];
+    }
 }

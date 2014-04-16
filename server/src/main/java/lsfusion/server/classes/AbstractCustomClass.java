@@ -1,15 +1,17 @@
 package lsfusion.server.classes;
 
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.server.logics.mutables.Version;
 
 public class AbstractCustomClass extends CustomClass {
 
-    public AbstractCustomClass(String sID, String caption, CustomClass... parents) {
-        super(sID, caption, parents);
+    public AbstractCustomClass(String sID, String caption, Version version, CustomClass... parents) {
+        super(sID, caption, version, parents);
     }
 
     public void fillNextConcreteChilds(MSet<ConcreteCustomClass> mClassSet) {
-        for(CustomClass child : children)
+        for(CustomClass child : getChildrenIt())
             child.fillNextConcreteChilds(mClassSet);
     }
 
@@ -27,7 +29,8 @@ public class AbstractCustomClass extends CustomClass {
     }
 
     public ConcreteCustomClass getSingleClass() {
-        return getSingleClass(children.toArray(new CustomClass[children.size()]));
+        ImSet<CustomClass> children = getChildren();
+        return getSingleClass(children.toList().toArray(new CustomClass[children.size()]));
     }
 
 }

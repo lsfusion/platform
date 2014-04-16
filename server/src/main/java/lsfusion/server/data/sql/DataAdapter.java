@@ -1,15 +1,18 @@
 package lsfusion.server.data.sql;
 
+import lsfusion.base.IOUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.AbstractConnectionPool;
 import lsfusion.server.data.TypePool;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.log4j.Logger;
 import org.springframework.util.PropertyPlaceholderHelper;
@@ -34,9 +37,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     protected DataAdapter() {
     }
 
-    abstract void ensureDB() throws Exception, SQLException, InstantiationException, IllegalAccessException;
+    protected abstract void ensureDB(boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException;
 
-    protected DataAdapter(String dataBase, String server, String userID, String password) throws Exception, SQLException, IllegalAccessException, InstantiationException {
+    protected DataAdapter(String dataBase, String server, String userID, String password, boolean cleanDB) throws Exception, SQLException, IllegalAccessException, InstantiationException {
 
         Class.forName(getClassName());
 
@@ -45,7 +48,16 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         this.userID = userID;
         this.password = password;
 
-        ensureDB();
+        ensureDB(cleanDB);
+
+        ensureConnection = startConnection();
+        ensureConnection.setAutoCommit(true);
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/getAnyNotNull.sc")));
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/jumpWorkdays.sc")));
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/completeBarcode.sc")));
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/aggf.sc")));
+        recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/recursion.sc"));
+        safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/safecast.sc"));
     }
 
     public String getBPTextType() {
@@ -353,6 +365,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
                 throw new RuntimeException(e);
             }
         }
+
+        public void addNeedSafeCast(Type type) {
+            throw new UnsupportedOperationException();
+        }
     };
 
     protected Connection ensureConnection;
@@ -362,7 +378,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         try {
             statement.execute(command);
         } catch(SQLException e) {
-            e = e;
+            ServerLoggers.sqlSuppLog(e);
         } finally {
             statement.close();
         }
@@ -405,6 +421,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     private static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
 
     protected String recursionString;
+    protected String safeCastString;
 
     private LRUSVSMap<ImList<Type>, Boolean> ensuredRecursion = new LRUSVSMap<ImList<Type>, Boolean>(LRUUtil.G2);
 
@@ -433,6 +450,24 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         ensuredRecursion.put(types, true);
     }
 
+    public static String genSafeCastName(Type type) {
+        return "scast_" + type.getSID();
+    }
+
+    private LRUSVSMap<Type, Boolean> ensuredSafeCasts = new LRUSVSMap<Type, Boolean>(LRUUtil.G2);
+
+    public synchronized void ensureSafeCast(Type type) throws SQLException {
+        Properties properties = new Properties();
+        properties.put("function.name", genSafeCastName(type));
+        properties.put("param.type", type.getDB(this, recTypes));
+        properties.put("param.minvalue", type.getInfiniteValue(true).toString());
+        properties.put("param.maxvalue", type.getInfiniteValue(false).toString());
+
+        executeEnsure(stringResolver.replacePlaceholders(safeCastString, properties));
+
+        ensuredSafeCasts.put(type, true);
+    }
+
     public boolean isDeadLock(SQLException e) {
         throw new UnsupportedOperationException();
     }
@@ -445,6 +480,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         throw new UnsupportedOperationException();
     }
 
+    public String getRandomName() {
+        return "random";
+    }
+
     public boolean isTransactionCanceled(SQLException e) {
         throw new UnsupportedOperationException();
     }
@@ -455,5 +494,28 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     public boolean hasJDBCTimeoutMultiThreadProblem() {
         throw new UnsupportedOperationException();
+    }
+
+    public void setACID(Statement statement, boolean acid) throws SQLException {
+    }
+
+    public String getMetaName(String name) {
+        return name;
+    }
+
+    public String getFieldName(String name) {
+        return name;
+    }
+
+    public String getTableName(String name) {
+        return name;
+    }
+
+    public String getConstraintName(String name) {
+        return name;
+    }
+
+    public String getIndexName(String name) {
+        return name;
     }
 }

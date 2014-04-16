@@ -28,6 +28,10 @@ import lsfusion.server.form.instance.CustomObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.mutables.*;
+import lsfusion.server.logics.mutables.interfaces.NFDefault;
+import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
+import lsfusion.server.logics.mutables.interfaces.NFProperty;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.ChangeClassActionProperty;
 
@@ -46,8 +50,27 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     public boolean dialogReadOnly = false;
 
-    public final Collection<CustomClass> parents;
-    public final List<CustomClass> children;
+    public final NFOrderSet<CustomClass> parents = NFFact.orderSet();
+    public Iterable<CustomClass> getParentsIt() { // есть риск нарваться на NF, хотя может и нет так как классы первым прогоном собираются
+        return parents.getIt();
+    }
+    public Iterable<CustomClass> getParentsListIt() {
+        return parents.getListIt();
+    }        
+    public boolean containsNFParents(CustomClass customClass, Version version) {
+        return parents.containsNF(customClass, version);
+    }
+    public Iterable<CustomClass> getNFParentsIt(Version version) {
+        return parents.getNFIt(version);
+    }
+
+    public final NFOrderSet<CustomClass> children = NFFact.orderSet();
+    public ImSet<CustomClass> getChildren() {
+        return children.getSet();
+    }
+    public Iterable<CustomClass> getChildrenIt() {
+        return children.getIt();
+    }
 
     public String toString() {
         return caption + " (" + sID + ")";
@@ -65,27 +88,25 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public String caption;
-    public CustomClass(String sID, String caption, CustomClass... parents) {
+    public CustomClass(String sID, String caption, Version version, CustomClass... parents) {
         this.sID = sID;
         this.caption = caption;
-        this.parents = new ArrayList<CustomClass>();
-        children = new ArrayList<CustomClass>();
 
         for (CustomClass parent : parents) {
-            addParentClass(parent);
+            addParentClass(parent, version);
         }
     }
 
-    public final void addParentClass(CustomClass parent) {
-        this.parents.add(parent);
-        parent.children.add(this);
-        assert checkParentChildsCaches(parent);
+    public final void addParentClass(CustomClass parent, Version version) {
+        this.parents.add(parent, version);
+        parent.children.add(this, version);
+        assert checkParentChildsCaches(parent, version);
     }
 
-    private boolean checkParentChildsCaches(CustomClass parent) {
+    private boolean checkParentChildsCaches(CustomClass parent, Version version) {
         assert parent.allChildren == null;
-        for(CustomClass recParent : parent.parents)
-            checkParentChildsCaches(recParent);
+        for(CustomClass recParent : parent.getNFParentsIt(version))
+            checkParentChildsCaches(recParent, version);
         return true;
     }
 
@@ -100,7 +121,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public boolean hasChildren() {
-        return !children.isEmpty();
+        return !getChildren().isEmpty();
     }
 
     public UpClassSet getUpSet() {
@@ -108,7 +129,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public BaseClass getBaseClass() {
-        return parents.iterator().next().getBaseClass();
+        return getParentsIt().iterator().next().getBaseClass();
     }
 
     public boolean isChild(CustomClass parentClass) {
@@ -122,7 +143,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public CustomClass findClassID(int idClass) {
         if(ID!=null && ID == idClass) return this; // проверка чисто для fillIDs
 
-        for(CustomClass child : children) {
+        for(CustomClass child : getChildrenIt()) {
             CustomClass findClass = child.findClassID(idClass);
             if(findClass!=null) return findClass;
         }
@@ -172,7 +193,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public void fillParents(MSet<CustomClass> parentSet) {
         if (parentSet.add(this)) return;
 
-        for(CustomClass parent : parents)
+        for(CustomClass parent : getParentsIt())
             parent.fillParents(parentSet);
     }
 
@@ -180,7 +201,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public void fillChilds(MSet<CustomClass> classSet) {
         classSet.add(this);
 
-        for(CustomClass child : children)
+        for(CustomClass child : getChildrenIt())
             child.fillChilds(classSet);
     }
 
@@ -213,7 +234,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             if(classSet.add(concreteThis)) return;
         }
 
-        for(CustomClass child : children)
+        for(CustomClass child : getChildrenIt())
             child.fillConcreteChilds(classSet);
     }
 
@@ -257,7 +278,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
                 return;
         }
 
-        for(CustomClass child : (up? parents : children))
+        for(CustomClass child : (up? getParentsIt() : getChildrenIt()))
             child.commonClassSet2(set,free,up,checks);
     }
 
@@ -268,7 +289,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         if(common!=null && check==Check.CLOSEST) common.add(this);
         if(free!=null && check==Check.FIRST) free.add(this);
 
-        for(CustomClass child : (up? parents : children))
+        for(CustomClass child : (up? getParentsIt() : getChildrenIt()))
             child.commonClassSet3(common,free,up,checks);
     }
 
@@ -279,6 +300,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         outStream.writeInt(ID);
         outStream.writeUTF(getSID());
 
+        ImSet<CustomClass> children = getChildren();
         outStream.writeInt(children.size());
         for (CustomClass cls : children)
             cls.serialize(outStream);
@@ -288,18 +310,20 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     public FormEntity getBaseClassForm(BaseLogicsModule LM) {
         if (baseClassForm == null) {
+            Version version = LM.getVersion();
+
             baseClassForm = getListForm(LM).form;
             List<FormEntity> childrenList = new ArrayList<FormEntity>();
-            for (CustomClass child : children) {
+            for (CustomClass child : getChildrenIt()) {
                 FormEntity childForm = child.getBaseClassForm(LM);
-                if (childForm.getParent() == null)
+                if (childForm.getNFParent(version) == null)
                     childrenList.add(childForm);
             }
 
             Collections.sort(childrenList, new FormEntityComparator());
 
             for (FormEntity childForm : childrenList) {
-                baseClassForm.add(childForm);
+                baseClassForm.add(childForm, version);
             }
         }
         return baseClassForm;
@@ -323,7 +347,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             return true; // по child'ам уже не идем они явно все тоже есть
         if(this instanceof ConcreteCustomClass && !set.contains((ConcreteCustomClass) this))
             return false;
-        for(CustomClass child : children)
+        for(CustomClass child : getChildrenIt())
             if(!child.upInSet(upSet, set))
                 return false;
         return true;
@@ -334,7 +358,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         for(int i=0;i<numProceeded;i++) if(isChild(proceeded[i])) return true;
 
         if(this instanceof ConcreteCustomClass) return false;
-        for(CustomClass child : children)
+        for(CustomClass child : getChildrenIt())
             if(!child.upInSet(wheres,numWheres, proceeded, numProceeded, check)) return false;
         return true;
     }
@@ -346,21 +370,38 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     private abstract class ClassFormHolder {
-        private ClassFormEntity form;
+        private NFProperty<ClassFormEntity> form = NFFact.property();
 
-        public ClassFormEntity getForm(BaseLogicsModule LM) {
-            if (form != null) {
-                return form;
-            }
-
-            form = createDefaultForm(LM);
-            LM.addFormEntity(form.form);
-
-            return form;
+        public ClassFormEntity getForm(final BaseLogicsModule LM) {
+            return form.getDefault(new NFDefault<ClassFormEntity>() {
+                public ClassFormEntity create() {
+                    return addDefaultForm(LM);
+                }
+            });
         }
 
-        public void setForm(ClassFormEntity form) {
-            this.form = form;
+        public ClassFormEntity getNFForm(BaseLogicsModule LM, Version version) {
+            ClassFormEntity classForm = form.getNF(version);
+            if (classForm != null) {
+                return classForm;
+            }
+
+            classForm = addDefaultForm(LM);
+            
+            form.set(classForm, version);
+
+            return classForm;
+        }
+        
+        @IdentityStrongLazy
+        private ClassFormEntity addDefaultForm(BaseLogicsModule LM) {
+            ClassFormEntity classForm = createDefaultForm(LM);
+            LM.addFormEntity(classForm.form);
+            return classForm;
+        }
+
+        public void setForm(ClassFormEntity form, Version version) {
+            this.form.set(form, version);
         }
 
         protected abstract ClassFormEntity createDefaultForm(BaseLogicsModule LM);
@@ -397,9 +438,12 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public ClassFormEntity getListForm(BaseLogicsModule LM) {
         return listFormHolder.getForm(LM);
     }
+    public ClassFormEntity getListForm(BaseLogicsModule LM, Version version) {
+        return listFormHolder.getNFForm(LM, version);
+    }
 
-    public void setListForm(FormEntity form, ObjectEntity object) {
-        listFormHolder.setForm(new ClassFormEntity(form, object));
+    public void setListForm(FormEntity form, ObjectEntity object, Version version) {
+        listFormHolder.setForm(new ClassFormEntity(form, object), version);
     }
 
     /**
@@ -409,9 +453,12 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public ClassFormEntity getDialogForm(BaseLogicsModule LM) {
         return dialogFormHolder.getForm(LM);
     }
+    public ClassFormEntity getDialogForm(BaseLogicsModule LM, Version version) {
+        return dialogFormHolder.getNFForm(LM, version);
+    }
 
-    public void setDialogForm(FormEntity form, ObjectEntity object) {
-        dialogFormHolder.setForm(new ClassFormEntity(form, object));
+    public void setDialogForm(FormEntity form, ObjectEntity object, Version version) {
+        dialogFormHolder.setForm(new ClassFormEntity(form, object), version);
     }
 
     /**
@@ -421,9 +468,12 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     public ClassFormEntity getEditForm(BaseLogicsModule LM) {
         return editFormHolder.getForm(LM);
     }
+    public ClassFormEntity getEditForm(BaseLogicsModule LM, Version version) {
+        return editFormHolder.getNFForm(LM, version);
+    }
 
-    public void setEditForm(FormEntity form, ObjectEntity object) {
-        editFormHolder.setForm(new ClassFormEntity(form, object));
+    public void setEditForm(FormEntity form, ObjectEntity object, Version version) {
+        editFormHolder.setForm(new ClassFormEntity(form, object), version);
     }
 
     public static IsClassProperty getProperty(ValueClass valueClass) {
@@ -510,7 +560,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     @IdentityLazy
     public ImMap<ClassField,ObjectValueClassSet> getUpTables() {
         MMap<ClassField, ObjectValueClassSet> mMap = MapFact.mMap(OrObjectClassSet.<ClassField>objectValueSetAdd());
-        for(CustomClass customClass : children)
+        for(CustomClass customClass : getChildrenIt())
             mMap.addAll(customClass.getUpTables());
         if(this instanceof ConcreteCustomClass) // глуповато конечно,
             mMap.add(((ConcreteCustomClass)this).dataProperty, (ConcreteCustomClass)this);

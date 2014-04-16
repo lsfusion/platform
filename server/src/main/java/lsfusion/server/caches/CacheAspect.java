@@ -281,6 +281,7 @@ public class CacheAspect {
 //        return lazyTwinExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
     }
 
+    // не synchronized, но не используется
     public final static SoftHashMap<Object, Object> lazyTwinManualExecute = new SoftHashMap<Object, Object>();
     private Object lazyTwinManualExecute(Object object, ProceedingJoinPoint thisJoinPoint, Object[] args) throws Throwable {
         Object twin = lazyTwinManualExecute.get(object);
@@ -300,6 +301,7 @@ public class CacheAspect {
     
     @Around("execution(@lsfusion.server.caches.ParamTwinLazy * *.*(..)) && target(object)")
     // с call'ом есть баги
+    // не synchronized, но не используется
     public Object callParamTwinMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         Object[] args = thisJoinPoint.getArgs();
         Object[] switchArgs = new Object[args.length];

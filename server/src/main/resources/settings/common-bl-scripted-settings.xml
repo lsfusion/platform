@@ -12,6 +12,8 @@
     <bean id="businessLogics" class="lsfusion.server.logics.scripted.ScriptingBusinessLogics">
         <property name="scriptFilePaths" value="${logics.includedPaths:}"/>
         <property name="excludedScriptFilePaths" value="${logics.excludedPaths:}"/>
+        
+        <property name="initTask" ref="initBLTask"/>
 
         <property name="topModulesList" value="${logics.topModulesList:}"/>
         <property name="orderDependencies" value="${logics.orderDependencies:}"/>

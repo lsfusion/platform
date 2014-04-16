@@ -159,7 +159,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
             mChildPathes.add(customClass, 0);
 
         boolean hasFullChild = false;
-        for(CustomClass childClass : customClass.children)
+        for(CustomClass childClass : customClass.getChildrenIt())
             if(used.contains(childClass)) {
                 ImMap<CustomClass, Integer> recChildPathes = recCommonClass(childClass, used, commonSet, mPathes, mFirstFulls);
                 hasFullChild = hasFullChild || recChildPathes.keys().containsAll(commonSet);

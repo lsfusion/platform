@@ -12,6 +12,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.SystemEventsLogicsModule;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 
 import java.util.Arrays;
@@ -42,11 +43,14 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     public boolean lazyInit;
 
     public LogFormEntity(String sID, String caption, LCP<?> property, LCP<?> logProperty, SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
-        super(sID, caption);
+        super(sID, caption, systemEventsLM.getVersion());
+
         this.systemEventsLM = systemEventsLM;
         this.logProperty = logProperty;
         this.property = property;
         this.lazyInit = lazyInit;
+
+        Version version = getVersion();
 
         ValueClass[] classes = getValueClassesList(property);
         entities = new ObjectEntity[classes.length + 1];
@@ -69,22 +73,30 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         entities[classes.length] = objSession;
         logGroup.add(objSession);
 
-        addGroupObject(paramsGroup);
-        addGroupObject(logGroup);
+        addGroupObject(paramsGroup, version);
+        addGroupObject(logGroup, version);
 
         if (!lazyInit)
             initProperties();
+        
+        // finalizeInit внутри initProperties
+    }
+
+    private Version getVersion() {
+        return systemEventsLM.getVersion();
     }
 
     public void initProperties() {
+        Version version = getVersion();
+
         for (ObjectEntity obj : entities) {
-            addPropertyDraw(obj, systemEventsLM.baseLM.recognizeGroup, true);
+            addPropertyDraw(obj, version, systemEventsLM.baseLM.recognizeGroup, true);
         }
 
-        addPropertyDraw(logProperty, entities);
+        addPropertyDraw(logProperty, version, entities);
 
         ImList<PropertyClassImplement> recognizePropImpls =
-                systemEventsLM.baseLM.recognizeGroup.getProperties(SetFact.singleton(SetFact.singleton(new ValueClassWrapper(property.property.getValueClass()))), true);
+                systemEventsLM.baseLM.recognizeGroup.getProperties(SetFact.singleton(SetFact.singleton(new ValueClassWrapper(property.property.getValueClass()))), true, version);
 
         for (PropertyClassImplement impl : recognizePropImpls) {
             if(impl instanceof CalcPropertyClassImplement) {
@@ -103,11 +115,13 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
                         listInterfaces, false, mapCalcImplement(lpMainProp, readCalcImplements(listInterfaces, params)));
                 jProp.inheritFixedCharWidth(impl.property);
                 LCP<?> ljProp = new LCP<JoinProperty.Interface>(jProp, listInterfaces);
-                addPropertyDraw(ljProp, entities);
+                addPropertyDraw(ljProp, version, entities);
             }
         }
 
-        addFixedFilter(new NotNullFilterEntity(addPropertyObject(logProperty, entities)));
+        addFixedFilter(new NotNullFilterEntity(addPropertyObject(logProperty, entities)), version);
+
+        finalizeInit(version);
 
         setEditType(PropertyEditType.READONLY);
     }

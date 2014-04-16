@@ -7,6 +7,4 @@ public interface FormulaExprInterface {
     
     ImList<BaseExpr> getFParams();
     FormulaJoinImpl getFormula();
-
-    boolean hasFNotNull();
 }

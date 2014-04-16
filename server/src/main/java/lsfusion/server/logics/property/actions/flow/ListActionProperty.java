@@ -10,6 +10,7 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 
@@ -18,10 +19,10 @@ import java.sql.SQLException;
 public class ListActionProperty extends ListCaseActionProperty {
 
     private Object actions;
-    public void addAction(ActionPropertyMapImplement<?, PropertyInterface> action) {
+    public void addAction(ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
         ((MList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).add(action);
 
-        addWhereOperand(action);
+        addWhereOperand(action, version);
     }
 
     private ImList<ActionPropertyMapImplement<?, PropertyInterface>> getActions() {

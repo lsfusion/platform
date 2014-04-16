@@ -32,6 +32,9 @@ public class TreeGroupContainerSet <C extends AbstractContainer<C, T>, T extends
     }
 
     public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> TreeGroupContainerSet<C, T> create(AbstractTreeGroup<C,T> treeGroup, ContainerFactory<C> factory) {
+        return create(treeGroup, factory, ContainerAdder.<C, T>DEFAULT());
+    }
+    public static <C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>> TreeGroupContainerSet<C, T> create(AbstractTreeGroup<C,T> treeGroup, ContainerFactory<C> factory, ContainerAdder<C, T> adder) {
         TreeGroupContainerSet<C,T> set = new TreeGroupContainerSet<C,T>();
 
         set.treeContainer = factory.createContainer();
@@ -57,21 +60,21 @@ public class TreeGroupContainerSet <C extends AbstractContainer<C, T>, T extends
         set.treeContainer.setType(ContainerType.CONTAINERV);
         set.treeContainer.setFlex(1);
         set.treeContainer.setAlignment(FlexAlignment.STRETCH);
-        set.treeContainer.add((T) treeGroup);
-        set.treeContainer.add((T) set.controlsContainer);
-        set.treeContainer.add((T) treeGroup.getFilter());
+        adder.add(set.treeContainer, (T) treeGroup);
+        adder.add(set.treeContainer, (T) set.controlsContainer);
+        adder.add(set.treeContainer, (T) treeGroup.getFilter());
 
         set.controlsContainer.setType(ContainerType.CONTAINERH);
         set.controlsContainer.setAlignment(FlexAlignment.STRETCH);
         set.controlsContainer.setChildrenAlignment(Alignment.LEADING);
-        set.controlsContainer.add((T) treeGroup.getToolbar());
-        set.controlsContainer.add((T) set.rightControlsContainer);
+        adder.add(set.controlsContainer, (T) treeGroup.getToolbar());
+        adder.add(set.controlsContainer, (T) set.rightControlsContainer);
 
         set.rightControlsContainer.setType(ContainerType.CONTAINERH);
         set.rightControlsContainer.setAlignment(FlexAlignment.CENTER);
         set.rightControlsContainer.setChildrenAlignment(Alignment.TRAILING);
-        set.rightControlsContainer.add((T) set.filtersContainer);
-        set.rightControlsContainer.add((T) set.toolbarPropsContainer);
+        adder.add(set.rightControlsContainer, (T) set.filtersContainer);
+        adder.add(set.rightControlsContainer, (T) set.toolbarPropsContainer);
 
         set.filtersContainer.setType(ContainerType.CONTAINERH);
         set.filtersContainer.setAlignment(FlexAlignment.CENTER);

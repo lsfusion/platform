@@ -52,7 +52,7 @@ public class ModifyQuery {
 
                 whereSelect = changeCompile.whereSelect.mergeCol(changeCompile.keySelect.mapColValues(new GetKeyValue<String, KeyField, String>() {
                     public String getMapValue(KeyField key, String value) {
-                        return table.getName(syntax)+"."+key.name +"="+ changeCompile.keySelect.get(key);
+                        return table.getName(syntax)+"."+key.getName(syntax) +"="+ changeCompile.keySelect.get(key);
                     }}));
 
                 Result<ImOrderSet<KeyField>> keyOrder = new Result<ImOrderSet<KeyField>>();
@@ -62,7 +62,7 @@ public class ModifyQuery {
                         SQLSession.mapNames(changeCompile.propertySelect,changeCompile.propertyNames,propertyOrder)),
                         whereSelect.toString(" AND "),"","","", "");
 
-                setString = SetFact.addOrderExcl(keyOrder.result, propertyOrder.result).toString(Field.<Field>nameGetter(), ",");
+                setString = SetFact.addOrderExcl(keyOrder.result, propertyOrder.result).toString(Field.<Field>nameGetter(syntax), ",");
 
                 update = "UPDATE " + table.getName(syntax) + " SET ("+setString+") = ("+selectString+") WHERE EXISTS ("+selectString+")";
                 break;
@@ -78,12 +78,12 @@ public class ModifyQuery {
 
                 whereSelect = changeCompile.keyNames.mapColValues(new GetKeyValue<String, KeyField, String>() {
                     public String getMapValue(KeyField key, String value) {
-                        return table.getName(syntax)+"."+key.name + "=" + changeAlias + "." + changeCompile.keyNames.get(key);
+                        return table.getName(syntax)+"."+key.getName(syntax) + "=" + changeAlias + "." + changeCompile.keyNames.get(key);
                     }});
 
                 setString = changeCompile.propertyNames.toString(new GetKeyValue<String, PropertyField, String>() {
                     public String getMapValue(PropertyField key, String value) {
-                        return key.name + "=" + changeAlias + "." + value;
+                        return key.getName(syntax) + "=" + changeAlias + "." + value;
                     }}, ",");
 
                 update = "UPDATE " + table.getName(syntax) + " SET " + setString + " FROM " + table.getName(syntax) + " JOIN (" +
@@ -93,12 +93,12 @@ public class ModifyQuery {
                 // по умолчанию - нормальная
                 whereSelect = changeCompile.whereSelect.mergeCol(changeCompile.keySelect.mapColValues(new GetKeyValue<String, KeyField, String>() {
                     public String getMapValue(KeyField key, String value) {
-                        return table.getName(syntax)+"."+key.name +"="+ changeCompile.keySelect.get(key);
+                        return table.getName(syntax)+"."+key.getName(syntax) +"="+ changeCompile.keySelect.get(key);
                     }}));
 
                 setString = changeCompile.propertySelect.toString(new GetKeyValue<String, PropertyField, String>() {
                     public String getMapValue(PropertyField key, String value) {
-                        return key.name + "=" + value;
+                        return key.getName(syntax) + "=" + value;
                     }}, ",");
                 
                 update = "UPDATE " + syntax.getUpdate(table.getName(syntax)," SET "+setString,changeCompile.from,BaseUtils.clause("WHERE", whereSelect.toString(" AND ")));
@@ -117,7 +117,7 @@ public class ModifyQuery {
 
         ImSet<String> whereSelect = table.getTableKeys().mapSetValues(new GetValue<String, KeyField>() {
             public String getMapValue(KeyField value) {
-                return table.getName(syntax) + "." + value.name + "=" + deleteAlias + "." + deleteCompile.keyNames.get(value);
+                return table.getName(syntax) + "." + value.getName(syntax) + "=" + deleteAlias + "." + deleteCompile.keyNames.get(value);
             }});
 
         String delete = "DELETE FROM " + table.getName(syntax) + " USING (" + deleteCompile.select + ") " + deleteAlias + " WHERE " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
@@ -176,7 +176,7 @@ public class ModifyQuery {
     public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, SQLSyntax syntax) {
         CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(syntax);
 
-        String insertString = SetFact.addOrderExcl(changeCompile.keyOrder, changeCompile.propertyOrder).toString(Field.<Field>nameGetter(), ",");
+        String insertString = SetFact.addOrderExcl(changeCompile.keyOrder, changeCompile.propertyOrder).toString(Field.<Field>nameGetter(syntax), ",");
 
         ExecuteEnvironment execEnv = new ExecuteEnvironment();
         execEnv.add(changeCompile.env);

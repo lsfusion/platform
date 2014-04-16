@@ -33,6 +33,8 @@ public class LogicsInstance implements InitializingBean {
 
     private DBManager dbManager;
 
+    private ReflectionManager reflectionManager;
+
     private RMIManager rmiManager;
 
     private Settings settings;
@@ -99,6 +101,14 @@ public class LogicsInstance implements InitializingBean {
 
     public void setDbManager(DBManager dbManager) {
         this.dbManager = dbManager;
+    }
+
+    public ReflectionManager getReflectionManager() {
+        return reflectionManager;
+    }
+
+    public void setReflectionManager(ReflectionManager reflectionManager) {
+        this.reflectionManager = reflectionManager;
     }
 
     public RMIManager getRmiManager() {

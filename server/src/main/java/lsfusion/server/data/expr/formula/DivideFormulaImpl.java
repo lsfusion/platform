@@ -29,8 +29,13 @@ public class DivideFormulaImpl extends ArithmeticFormulaImpl {
             Type type = conversion.getType(type1, type2);
             if (type != null) {
                 return "(" + src1 + "/" + src2 + ")";
+//                return "(" + src1 + "/notZero(" + src2 + "))";
             }
             return null;
         }
     }
+
+/*    public boolean hasNotNull() {
+        return true;
+    }*/
 }

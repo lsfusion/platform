@@ -272,19 +272,21 @@ public class StringClass extends DataClass {
     }
 
     private static StringClass getCached(Collection<StringClass> cached, ExtInt length, boolean blankPadded, boolean caseInsensitive, boolean rich) {
-        for (StringClass string : cached) {
-            if (string.length.equals(length) && string.blankPadded == blankPadded && string.caseInsensitive == caseInsensitive && string.rich == rich) {
-                return string;
+        synchronized (cached) {
+            for (StringClass string : cached) {
+                if (string.length.equals(length) && string.blankPadded == blankPadded && string.caseInsensitive == caseInsensitive && string.rich == rich) {
+                    return string;
+                }
             }
+    
+            StringClass string = new StringClass(blankPadded, length, caseInsensitive, rich);
+    
+            cached.add(string);
+            
+            DataClass.storeClass(string);
+            
+            return string;
         }
-
-        StringClass string = new StringClass(blankPadded, length, caseInsensitive, rich);
-
-        cached.add(string);
-        
-        DataClass.storeClass(string);
-        
-        return string;
     }
 
     @Override
