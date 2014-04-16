@@ -1,6 +1,7 @@
 package lsfusion.server.remote;
 
 import lsfusion.server.Settings;
+import lsfusion.server.context.ThreadLocalContext;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -25,7 +26,7 @@ public class RemoteLoggerAspect {
         if (logger.isDebugEnabled()) {
             logger.debug(logCall(thisJoinPoint, runTime));
         } else {
-            if(runTime > 3000)
+            if(runTime > Settings.get().getRemoteLogTime())
                 logger.info(logCall(thisJoinPoint, runTime));
         }
 

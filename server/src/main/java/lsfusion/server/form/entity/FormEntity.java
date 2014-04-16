@@ -162,7 +162,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public FormEntity() {
     }
     
-    protected void finalizeInit(Version version) {
+    public void finalizeInit(Version version) {
 //        getNFRichDesign(version);
         richDesign.set(createDefaultRichDesign(version), version);
     }
@@ -178,7 +178,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public FormEntity(String sID, String caption, String ititle, String icon, Version version) {
         this(null, sID, caption, ititle, icon, version);
-        finalizeInit(version);
     }
     
     private FormEntity(NavigatorElement<T> parent, String sID, String caption, String ititle, String icon, Version version) {

@@ -503,7 +503,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void addScriptedForm(ScriptingFormEntity form) {
         scriptLogger.info("addScriptedForm(" + form + ");");
-        addFormEntity(form.getForm());
+        addFormEntity(form.getForm()).finalizeInit(getVersion());
     }
 
     public ScriptingFormEntity getFormForExtending(String name) throws ScriptingErrorLog.SemanticErrorException {
