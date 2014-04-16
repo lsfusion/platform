@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TaskRunner {
     
     public static int availableProcessors() {
-        return Runtime.getRuntime().availableProcessors() / 2; 
+        return Runtime.getRuntime().availableProcessors() / 2;
     }
     public static void runTask(PublicTask task, Logger logger) throws InterruptedException {
         Set<Task> initialTasks = new HashSet<Task>();
