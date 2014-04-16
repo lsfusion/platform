@@ -205,6 +205,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 sql.close(OperationOwner.unknown);
             } catch (SQLException e) {
                 ServerLoggers.sqlSuppLog(e);
+            } finally {
+                threadLocalSql.set(null);
             }
         return sql;
     }

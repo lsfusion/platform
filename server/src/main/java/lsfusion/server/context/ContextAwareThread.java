@@ -1,5 +1,7 @@
 package lsfusion.server.context;
 
+import lsfusion.server.Settings;
+
 public class ContextAwareThread extends Thread {
     private final Context context;
 
