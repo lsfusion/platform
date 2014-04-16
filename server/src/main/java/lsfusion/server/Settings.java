@@ -1015,4 +1015,14 @@ public class Settings {
     public void setUseSafeStringAgg(boolean useSafeStringAgg) {
         this.useSafeStringAgg = useSafeStringAgg;
     }
+    
+    private int remoteLogTime = 3000; // millisectonds
+
+    public int getRemoteLogTime() {
+        return remoteLogTime;
+    }
+
+    public void setRemoteLogTime(int remoteLogTime) {
+        this.remoteLogTime = remoteLogTime;
+    }
 }

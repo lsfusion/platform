@@ -1,5 +1,6 @@
 package lsfusion.server.remote;
 
+import lsfusion.server.Settings;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -22,16 +23,21 @@ public class RemoteLoggerAspect {
         long runTime = System.currentTimeMillis() - startTime;
 
         if (logger.isDebugEnabled()) {
-            logger.debug(
-                    String.format(
-                            "Executing remote method (time: %1$d ms.): %2$s(%3$s)",
-                            runTime,
-                            thisJoinPoint.getSignature().getName(),
-                            BaseUtils.toString(", ", thisJoinPoint.getArgs())
-                    )
-            );
+            logger.debug(logCall(thisJoinPoint, runTime));
+        } else {
+            if(runTime > Settings.get().getRemoteLogTime())
+                logger.info(logCall(thisJoinPoint, runTime));
         }
 
         return result;
+    }
+
+    private String logCall(ProceedingJoinPoint thisJoinPoint, long runTime) {
+        return String.format(
+                "Executing remote method (time: %1$d ms.): %2$s(%3$s)",
+                runTime,
+                thisJoinPoint.getSignature().getName(),
+                BaseUtils.toString(", ", thisJoinPoint.getArgs())
+        );
     }
 }
