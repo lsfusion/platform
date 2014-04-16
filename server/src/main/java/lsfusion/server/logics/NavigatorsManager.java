@@ -101,7 +101,8 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
         reuseSession = false;
 
-        scheduleRemoveExpired();
+        //логика EXPIRED навигаторов неактуальна, пока не работает механизм восстановления сессии
+//        scheduleRemoveExpired();
 
         DataSession session;
         try {
@@ -192,7 +193,9 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
             synchronized (navigators) {
                 for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext(); ) {
                     RemoteNavigator navigator = iterator.next().getValue();
-                    if (NavigatorFilter.EXPIRED.accept(navigator) || filter.accept(navigator)) {
+                    //логика EXPIRED навигаторов неактуальна, пока не работает механизм восстановления сессии
+//                    if (NavigatorFilter.EXPIRED.accept(navigator) || filter.accept(navigator)) {
+                    if (filter.accept(navigator)) {
                         removeNavigator(navigator, session);
                         iterator.remove();
                     }
@@ -208,6 +211,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
     }
 
+    //логика EXPIRED навигаторов неактуальна, пока не работает механизм восстановления сессии
     private synchronized void scheduleRemoveExpired() {
         if (removeExpiredScheduled.compareAndSet(false, true)) {
             executor.schedule(new Runnable() {
