@@ -44,6 +44,7 @@ import lsfusion.server.form.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.form.instance.filter.RegularFilterInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
+import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.ContainerView;
 import lsfusion.server.logics.*;
@@ -494,6 +495,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public FocusListener<T> getFocusListener() {
         return weakFocusListener.get();
+    }
+    
+    public LogInfo getLogInfo() {
+        FocusListener<T> focusListener = getFocusListener();
+        if(focusListener != null)
+            return focusListener.getLogInfo();
+
+        return LogInfo.system; 
     }
 
     private final WeakReference<CustomClassListener> weakClassListener;

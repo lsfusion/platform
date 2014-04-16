@@ -4,6 +4,8 @@ public class LogInfo {
     public String userName;
     public String hostnameComputer;
     public String remoteAddress;
+    
+    public static LogInfo system = new LogInfo("system", "system", "system");
 
     public LogInfo(String userName, String hostnameComputer, String remoteAddress) {
         this.userName = userName;

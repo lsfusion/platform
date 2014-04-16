@@ -15,6 +15,7 @@ import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.User;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
@@ -180,7 +181,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return currentInvocation.getLogMessage();
     }
 
-    LogInfo getLogInfo() {
+    @IdentityLazy
+    public LogInfo getLogInfo() {
         try {
             DataSession session = createSession();
             String userName = (String) businessLogics.authenticationLM.currentUserName.read(session);

@@ -950,8 +950,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return currentInvocation.getLogMessage();
     }
     
-    LogInfo getLogInfo() {
-        return new LogInfo("system", "system", "system");
+    public LogInfo getLogInfo() {
+        return form.getLogInfo();
     }
 
     void delayUserInteraction(ClientAction action) {

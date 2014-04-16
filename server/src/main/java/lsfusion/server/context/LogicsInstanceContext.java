@@ -63,7 +63,7 @@ public class LogicsInstanceContext extends AbstractContext {
 
     @Override
     public LogInfo getLogInfo() {
-        return new LogInfo("system", "system", "system");
+        return LogInfo.system;
     }
 
     @Override
