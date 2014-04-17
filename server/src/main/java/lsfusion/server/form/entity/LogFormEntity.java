@@ -121,9 +121,9 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
         addFixedFilter(new NotNullFilterEntity(addPropertyObject(logProperty, entities)), version);
 
-        finalizeInit(version);
+        setNFEditType(PropertyEditType.READONLY, version);
 
-        setEditType(PropertyEditType.READONLY);
+        finalizeInit(version);
     }
 
     private static ValueClass[] getValueClassesList(LCP<?> property) {

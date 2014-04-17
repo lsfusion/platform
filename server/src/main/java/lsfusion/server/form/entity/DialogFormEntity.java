@@ -5,6 +5,7 @@ import lsfusion.interop.PropertyEditType;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.mutables.Version;
 
 public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEntity<T> {
 
@@ -15,12 +16,14 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassForm
 
 //        LM.addObjectActions(this, object);
 
+        Version version = LM.getVersion();
+
+        setNFEditType(PropertyEditType.READONLY, version);
+
         if (!cls.dialogReadOnly)
             LM.addFormActions(this, object);
 
-        finalizeInit(LM.getVersion());
-
-        setEditType(PropertyEditType.READONLY);
+        finalizeInit(version);
     }
 
     public DialogFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {

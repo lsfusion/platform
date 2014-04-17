@@ -1331,6 +1331,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
+    public void setNFEditType(PropertyEditType editType, Version version) {
+        for (PropertyDrawEntity propertyView : getPropertyDrawsIt()) {
+            setEditType(propertyView, editType);
+        }
+    }
+
     public void setEditType(ObjectEntity objectEntity, PropertyEditType editType) {
         for (PropertyDrawEntity property : getProperties(objectEntity.groupTo)) {
             setEditType(property, editType);
