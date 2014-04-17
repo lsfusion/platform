@@ -19,6 +19,8 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEn
         PropertyDrawEntity objectValue = getNFPropertyDraw(LM.objectValue, object, LM.getVersion());
         if (objectValue != null)
             objectValue.setEditType(PropertyEditType.READONLY);
+
+        finalizeInit(LM.getVersion());
     }
 
     public EditFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {

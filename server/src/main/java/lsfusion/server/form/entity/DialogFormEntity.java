@@ -15,10 +15,12 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassForm
 
 //        LM.addObjectActions(this, object);
 
-        setEditType(PropertyEditType.READONLY);
-
         if (!cls.dialogReadOnly)
             LM.addFormActions(this, object);
+
+        finalizeInit(LM.getVersion());
+
+        setEditType(PropertyEditType.READONLY);
     }
 
     public DialogFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
