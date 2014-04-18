@@ -28,6 +28,7 @@ import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.sql.DataAdapter;
+import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.ObjectType;
@@ -116,16 +117,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public DBManager() {
         super(DBMANAGER_ORDER);
 
-        threadLocalSql = new ThreadLocal<SQLSession>() {
-            @Override
-            public SQLSession initialValue() {
-                try {
-                    return createSQL();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
+        threadLocalSql = new ThreadLocal<SQLSession>();
     }
 
     public String getDataBaseName() {
@@ -194,8 +186,16 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return new SQLSession(adapter);
     }
 
-    public SQLSession getThreadLocalSql() {
-        return threadLocalSql.get();
+    public SQLSession getThreadLocalSql() throws SQLException {
+        SQLSession sqlSession = threadLocalSql.get();
+        if(sqlSession == null) {
+            try {
+                sqlSession = createSQL();
+            } catch (Throwable t) {
+                throw ExceptionUtils.propagate(t, SQLException.class);
+            }
+        }
+        return sqlSession;
     }
 
     public SQLSession closeThreadLocalSql() {
