@@ -4,7 +4,7 @@
     <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
         <param name="target" value="System.out"/>
         <layout class="org.apache.log4j.EnhancedPatternLayout">
-            <param name="ConversionPattern" value="%d{DATE} %5p %c{1} - %m%n%throwable{1000}"/>
+            <param name="ConversionPattern" value="%d{DATE} %X{client} - %X{computer} - %X{remoteAddress} %5p %c{1} - %m%n%throwable{1000}"/>
         </layout>
     </appender>
 

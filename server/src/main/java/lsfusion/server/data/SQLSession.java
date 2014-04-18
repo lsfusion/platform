@@ -564,9 +564,10 @@ public class SQLSession extends MutableObject {
     private void removeUnusedTemporaryTables(boolean force, OperationOwner opOwner) throws SQLException {
         for (Iterator<Map.Entry<String, WeakReference<TableOwner>>> iterator = sessionTablesMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String, WeakReference<TableOwner>> entry = iterator.next();
-            if (force || entry.getValue().get() == null) {
+            TableOwner tableOwner = entry.getValue().get();
+            if (force || tableOwner == null) {
 //                    dropTemporaryTableFromDB(entry.getKey());
-                truncate(entry.getKey(), opOwner, TableOwner.none);
+                truncate(entry.getKey(), opOwner, tableOwner == null ? TableOwner.none : tableOwner);
                 iterator.remove();
             }
         }
@@ -1581,6 +1582,9 @@ public class SQLSession extends MutableObject {
     private void checkTableOwner(String table, TableOwner owner) {
         WeakReference<TableOwner> wCurrentOwner = sessionTablesMap.get(table);
         TableOwner currentOwner;
+        if(owner == TableOwner.debug)
+            return;
+        
         if(wCurrentOwner == null || (currentOwner = wCurrentOwner.get()) == null) {
             if(owner != TableOwner.none)
                 ServerLoggers.assertLog(false, "UPDATED RETURNED TABLE : " + table + " " + owner);

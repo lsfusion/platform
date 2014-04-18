@@ -2,6 +2,7 @@ package lsfusion.server.logics.mutables.impl;
 
 import lsfusion.base.MutableObject;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.mutables.Version;
 
 import java.util.TreeMap;
@@ -11,8 +12,8 @@ public abstract class NFImpl<M, F> extends MutableObject {
     private Object changes;
     protected M getChanges() {
         if(checkFinal(changes)) {
+            ServerLoggers.assertLog(false, "NF COLLECTION RESTARTED");
             changes = prevChanges;
-            System.out.println("RESTARTED");
         }
         return (M)changes;
     }

@@ -817,7 +817,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @IdentityStrongLazy
     public LAP getAddFormAction(ClassFormEntity form, CustomClass cls, boolean oldSession) {
-        return addDMFAProp(privateGroup, genSID(), ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
+        return addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
                 form.form, new ObjectEntity[]{},
                 form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), !oldSession);
     }
@@ -831,7 +831,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @IdentityStrongLazy
     public LAP getEditFormAction(ClassFormEntity form, boolean oldSession) {
-        return addDMFAProp(publicGroup, genSID(), ServerResourceBundle.getString("logics.edit"),
+        return addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.edit"),
                 form.form, new ObjectEntity[]{form.object}, !oldSession);        
     }
     public LAP getEditFormAction(CustomClass cls, boolean oldSession, Version version) {

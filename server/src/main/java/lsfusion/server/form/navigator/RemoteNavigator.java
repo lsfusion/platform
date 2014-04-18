@@ -184,6 +184,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     @IdentityLazy
     public LogInfo getLogInfo() {
         try {
+            if(closed)
+                return LogInfo.system;
+                
             DataSession session = createSession();
             String userName = (String) businessLogics.authenticationLM.currentUserName.read(session);
             String computerName = (String) businessLogics.authenticationLM.hostnameCurrentComputer.read(session);
