@@ -457,6 +457,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     private LRUSVSMap<Type, Boolean> ensuredSafeCasts = new LRUSVSMap<Type, Boolean>(LRUUtil.G2);
 
     public synchronized void ensureSafeCast(Type type) throws SQLException {
+        Boolean ensured = ensuredSafeCasts.get(type);
+        if(ensured != null)
+            return;
+
         Properties properties = new Properties();
         properties.put("function.name", genSafeCastName(type));
         properties.put("param.type", type.getDB(this, recTypes));
