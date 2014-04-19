@@ -191,6 +191,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         if(sqlSession == null) {
             try {
                 sqlSession = createSQL();
+                threadLocalSql.set(sqlSession);
             } catch (Throwable t) {
                 throw ExceptionUtils.propagate(t, SQLException.class);
             }
