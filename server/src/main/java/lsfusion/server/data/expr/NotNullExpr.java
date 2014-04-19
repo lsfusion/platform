@@ -115,7 +115,7 @@ public abstract class NotNullExpr extends VariableSingleClassExpr {
             if(expr instanceof InnerExpr)
                 mResult.add((InnerExpr)expr);
             else {
-                if(mUnionJoins!=null && !(expr instanceof CurrentEnvironmentExpr))
+                if(mUnionJoins!=null && expr instanceof UnionExpr)
                     mUnionJoins.add(((UnionExpr)expr).getBaseJoin());
                 mResult.addAll(getInnerExprs(expr.getExprFollows(NotNullExpr.INNERJOINS, false), unionJoins));
             }
