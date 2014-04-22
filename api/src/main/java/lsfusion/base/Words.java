@@ -58,6 +58,8 @@ public class Words {
         fractalPostfix.put("number2", new String[]{"cотая ", "сотых ", "сотых "});
         fractalPostfix.put("number3", new String[]{"тысячная ", "тысячных ", "тысячных "});
         fractalPostfix.put("number4", new String[]{"десятитысячная ", "десятитысячных ", "десятитысячных "});
+        fractalPostfix.put("number5", new String[]{"стотысячная ", "стотысячных ", "стотысячных "});
+        fractalPostfix.put("number6", new String[]{"миллионная ", "миллионных ", "миллионных "});
     }
 
     private static final HashMap<String, Boolean> sexMap = new HashMap<String, Boolean>(); //true - female, false - male
@@ -283,7 +285,7 @@ public class Words {
     //для дабла без типа
     public static String toString(Double numObject, Integer numOfDigits, Boolean female) {
         double num = numObject == null ? 0.0 : numObject;
-        int numOfDig = numOfDigits == null ? 0 : Math.min(numOfDigits, 4);
+        int numOfDig = numOfDigits == null ? 0 : Math.min(numOfDigits, 6);
         long fract = numOfDig == 0 ? 0 : (long) (Math.round(num * Math.pow(10, numOfDig)) - ((long) num) * Math.pow(10, numOfDig));
         String result;
         if (fract != 0)
@@ -300,11 +302,11 @@ public class Words {
     public static String toString(Double numObject, Boolean female) {
         double num = numObject == null ? 0.0 : numObject;
         int numOfDig = 0;
-        while (Math.abs(num - Math.round(num)) > 1E-7) {
+        while (Math.abs(num - Math.round(num)) > 1E-7) { 
             numOfDig++;
             num = num * 10;
         }
-        return toString(numObject, Math.min(numOfDig, 4), female);
+        return toString(numObject, Math.min(numOfDig, 6), female);
 
     }
 
