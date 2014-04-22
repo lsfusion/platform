@@ -133,7 +133,7 @@ public class Settings {
 
     private int limitHintIncrementComplexity = 50;
 
-    private int limitGrowthIncrementComplexity = 2;
+    private double limitGrowthIncrementComplexity = 1.5;
 
     private int limitHintIncrementStat = 1000;
 
@@ -623,11 +623,11 @@ public class Settings {
         this.limitWrapComplexity = limitWrapComplexity;
     }
 
-    public int getLimitGrowthIncrementComplexity() {
+    public double getLimitGrowthIncrementComplexity() {
         return limitGrowthIncrementComplexity;
     }
 
-    public void setLimitGrowthIncrementComplexity(int limitGrowthIncrementComplexity) {
+    public void setLimitGrowthIncrementComplexity(double limitGrowthIncrementComplexity) {
         this.limitGrowthIncrementComplexity = limitGrowthIncrementComplexity;
     }
 
@@ -985,7 +985,17 @@ public class Settings {
     public void setQueryRowCountOptDivider(int queryRowCountOptDivider) {
         this.queryRowCountOptDivider = queryRowCountOptDivider;
     }
-    
+
+    private int queryLengthLimit = 1000 * 1000;
+
+    public int getQueryLengthLimit() {
+        return queryLengthLimit;
+    }
+
+    public void setQueryLengthLimit(int queryLengthLimit) {
+        this.queryLengthLimit = queryLengthLimit;
+    }
+
     private boolean enableHacks = true;
 
     public boolean isEnableHacks() {

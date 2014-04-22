@@ -3,6 +3,7 @@ package lsfusion.server.data;
 import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.Settings;
 import lsfusion.server.data.query.AdjustState;
 import lsfusion.server.data.query.AdjustVolatileExecuteEnvironment;
 import lsfusion.server.data.query.ExecuteEnvironment;
@@ -20,7 +21,7 @@ public class SQLAspect {
     } 
     @Around("execution(* lsfusion.server.data.SQLSession.executeDML(java.lang.String, lsfusion.server.data.OperationOwner, lsfusion.server.data.TableOwner, lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.data.query.ExecuteEnvironment, lsfusion.server.data.query.QueryExecuteEnvironment, int)) && target(sql) && args(queryString, owner, tableOwner, paramObjects, env, queryExecEnv, transactTimeout)")
     public Object executeDML(final ProceedingJoinPoint thisJoinPoint, final SQLSession sql, final String queryString, final OperationOwner owner, final TableOwner tableOwner, final ImMap paramObjects, final ExecuteEnvironment env, QueryExecuteEnvironment queryExecEnv, final int transactTimeout) throws Throwable {
-        return executeRepeatableStatement(thisJoinPoint, sql, owner, queryExecEnv, new ProceedDefaultEnv() {
+        return executeRepeatableStatement(thisJoinPoint, sql, owner, queryExecEnv, queryString, new ProceedDefaultEnv() {
             public Object proceed() throws Throwable {
                 return thisJoinPoint.proceed(new Object[] {sql, queryString, owner, tableOwner, paramObjects, env, QueryExecuteEnvironment.DEFAULT, transactTimeout});
             }});
@@ -29,14 +30,17 @@ public class SQLAspect {
     @Around("execution(* lsfusion.server.data.SQLSession.executeSelect(java.lang.String, lsfusion.server.data.OperationOwner, lsfusion.server.data.query.ExecuteEnvironment, lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.data.query.QueryExecuteEnvironment, int," +
             "lsfusion.base.col.interfaces.immutable.ImRevMap, lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.base.col.interfaces.immutable.ImRevMap, lsfusion.base.col.interfaces.immutable.ImMap)) && target(sql) && args(select, owner, env, paramObjects, queryExecEnv, transactTimeout, keyNames, keyReaders, propertyNames, propertyReaders)")
     public Object executeSelect(final ProceedingJoinPoint thisJoinPoint, final SQLSession sql, final String select, final OperationOwner owner, final ExecuteEnvironment env, final ImMap paramObjects, QueryExecuteEnvironment queryExecEnv, final int transactTimeout, final ImRevMap keyNames, final ImMap keyReaders, final ImRevMap propertyNames, final ImMap propertyReaders) throws Throwable {
-        return executeRepeatableStatement(thisJoinPoint, sql, owner, queryExecEnv, new ProceedDefaultEnv() {
+        return executeRepeatableStatement(thisJoinPoint, sql, owner, queryExecEnv, select, new ProceedDefaultEnv() {
             public Object proceed() throws Throwable {
                 return thisJoinPoint.proceed(new Object[] {sql, select, owner, env, paramObjects, QueryExecuteEnvironment.DEFAULT, transactTimeout, keyNames, keyReaders, propertyNames, propertyReaders});
             }});
     }
 
     // проверка на closed
-    private Object executeRepeatableStatement(ProceedingJoinPoint thisJoinPoint, SQLSession session, OperationOwner owner, QueryExecuteEnvironment env, ProceedDefaultEnv proceedDefault) throws Throwable {
+    private Object executeRepeatableStatement(ProceedingJoinPoint thisJoinPoint, SQLSession session, OperationOwner owner, QueryExecuteEnvironment env, String command, ProceedDefaultEnv proceedDefault) throws Throwable {
+        if(command.length() > Settings.get().getQueryLengthLimit())
+            throw new SQLTooLongQueryException(command);
+        
         Object result = null;
         try {
             if(env instanceof AdjustVolatileExecuteEnvironment)
@@ -67,7 +71,7 @@ public class SQLAspect {
             
             env.succeeded(state);
         } catch (SQLHandledException e) {
-            if(e instanceof SQLClosedException || e instanceof SQLTooLargeQueryException)
+            if(e instanceof SQLClosedException || e instanceof SQLTooLargeQueryException || e instanceof SQLTooLongQueryException)
                 throw e;
             env.failed(state, e);
             if(session.lockIsInTransaction(owner)) // транзакция все равно прервана
