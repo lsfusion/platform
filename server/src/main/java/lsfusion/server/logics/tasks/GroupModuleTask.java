@@ -15,6 +15,7 @@ import lsfusion.server.logics.LogicsModule;
 import org.antlr.runtime.RecognitionException;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class GroupModuleTask extends GroupProgramTask {
     
@@ -32,10 +33,11 @@ public abstract class GroupModuleTask extends GroupProgramTask {
         final BusinessLogics<?> BL = (BusinessLogics<?>) getBL();
         List<LogicsModule> logicModules = BL.getLogicModules();
         final int modulesCount = logicModules.size();
+        final AtomicInteger moduleOrder = new AtomicInteger(0);
         for(final LogicsModule logicModule : logicModules) {
             SingleProgramTask task = new SingleProgramTask() {
                 public String getCaption() {
-                    return GroupModuleTask.this.getCaption() + " for module : " + logicModule.getLogName(modulesCount);
+                    return GroupModuleTask.this.getCaption() + " for module : " + logicModule.getLogName(modulesCount, moduleOrder.incrementAndGet());
                 }
 
                 public String toString() {

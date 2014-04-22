@@ -163,10 +163,10 @@ public abstract class LogicsModule {
         this.name = name;
     }
 
-    public String getLogName(int moduleCount) {
+    public String getLogName(int moduleCount, int orderNum) {
         String result = name;
         if(order != null)
-            result = "#" + order + " of " + moduleCount + " " + result;
+            result = "#" + orderNum + " of " + moduleCount + " " + result;
         return result;
     }    
 
@@ -2011,6 +2011,14 @@ public abstract class LogicsModule {
         this.requiredModules = requiredModules;
     }
 
+    public List<LP> getNamedProperties() {
+        List<LP> properties = new ArrayList<LP>();
+        for (List<LP<?, ?>> propList : namedModuleProperties.values()) {
+            properties.addAll(propList);    
+        }
+        return properties; 
+    }
+    
     public LPEqualNameModuleFinder getEqualLPModuleFinder() {
         return new LPEqualNameModuleFinder();        
     }
