@@ -1052,7 +1052,10 @@ public class SQLSession extends MutableObject {
                     returnStatement.result.proceed(statement, runTime);
             }}, firstException);
 
-        unlockTimeout(execInfo.needTimeoutLock());
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                unlockTimeout(execInfo.needTimeoutLock());
+            }}, firstException);
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
@@ -1070,10 +1073,14 @@ public class SQLSession extends MutableObject {
     private void afterStatementExecute(Result<Throwable> firstException, final String command, final ExecuteEnvironment env, final ExConnection connection, final Statement statement, final OperationOwner owner) throws SQLException {
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
-                statement.close();
+                if(statement != null)
+                    statement.close();
             }}, firstException);
 
-        unlockTimeout();
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                unlockTimeout();
+            }}, firstException);
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
@@ -1230,7 +1237,7 @@ public class SQLSession extends MutableObject {
                 errorString = statement.toString();
         }
         
-        afterExStatementExecute(null, select, owner, env, queryExecEnv, execInfo, connection, runTime, returnStatement, statement);
+        afterExStatementExecute(firstException, select, owner, env, queryExecEnv, execInfo, connection, runTime, returnStatement, statement);
 
         try {
             finishHandledExceptions(firstException);

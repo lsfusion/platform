@@ -124,7 +124,7 @@
             <param name="fileNamePattern" value="logs/jdbc-%i.log.zip"/>
         </rollingPolicy>
         <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="90485760"/> <!-- 90MB -->
+            <param name="maxFileSize" value="990485760"/> <!-- 90MB -->
         </triggeringPolicy>
         <layout class="lsfusion.server.data.SimpleLayout">
         </layout>
