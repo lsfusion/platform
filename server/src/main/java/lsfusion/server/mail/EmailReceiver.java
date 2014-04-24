@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 import java.io.*;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -176,7 +177,7 @@ public class EmailReceiver {
             String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
             String idEmail = String.valueOf(dateTimeSentEmail.getTime()) + fromAddressEmail;
             String subjectEmail = message.getSubject();
-            MultipartBody messageEmail = message.getContent() instanceof Multipart ? getMultipartBody((Multipart) message.getContent()) : new MultipartBody((String) message.getContent(), null);
+            MultipartBody messageEmail = message.getContent() instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) message.getContent()) : new MultipartBody((String) message.getContent(), null);
             byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
             dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
                     fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
@@ -201,28 +202,36 @@ public class EmailReceiver {
         return out.toByteArray();
     }
 
-    private MultipartBody getMultipartBody(Multipart mp) throws IOException, MessagingException {
+    private MultipartBody getMultipartBody(String subjectEmail, Multipart mp) throws IOException, MessagingException {
         String body = "";
         Map<String, byte[]> attachments = new HashMap<String, byte[]>();
         for (int i = 0; i < mp.getCount(); i++) {
             BodyPart bp = mp.getBodyPart(i);
             String disp = bp.getDisposition();
-            if (disp != null && (disp.equals(BodyPart.ATTACHMENT))) {
+            if (disp != null && (disp.equalsIgnoreCase(BodyPart.ATTACHMENT))) {
+                String fileName = MimeUtility.decodeText(bp.getFileName());
+                String[] fileNameAndExt = fileName.split("\\.");
+                String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
+                
                 InputStream is = bp.getInputStream();
                 File f = File.createTempFile("attachment", "");
-                FileOutputStream fos = new FileOutputStream(f);
-                byte[] buf = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = is.read(buf)) != -1) {
-                    fos.write(buf, 0, bytesRead);
+                try {
+                    FileOutputStream fos = new FileOutputStream(f);
+                    byte[] buf = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = is.read(buf)) != -1) {
+                        fos.write(buf, 0, bytesRead);
+                    }
+                    fos.close();
+                } catch (IOException ioe) {
+                    ServerLoggers.systemLogger.error("Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
+                    throw ioe;
                 }
-                fos.close();
-                String[] fileName = bp.getFileName().split("\\.");
-                String fileExtension = fileName.length > 1 ? fileName[fileName.length - 1] : "";
-                attachments.put(bp.getFileName(), BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(f), fileExtension.getBytes()));
+                
+                attachments.put(fileName, BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(f), fileExtension.getBytes()));
             } else {
                 Object content = bp.getContent();
-                body = content instanceof MimeMultipart ? getMultipartBody((Multipart) content).message : String.valueOf(content);
+                body = content instanceof MimeMultipart ? getMultipartBody(subjectEmail, (Multipart) content).message : String.valueOf(content);
             }
         }
         return new MultipartBody(body, attachments);
