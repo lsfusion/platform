@@ -100,7 +100,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final CompoundNameResolver<NavigatorElement, ?> navigatorResolver = new CompoundNameResolver<NavigatorElement, Object>(new NavigatorElementNameModuleFinder());
     private final CompoundNameResolver<AbstractWindow, ?> windowResolver = new CompoundNameResolver<AbstractWindow, Object>(new WindowNameModuleFinder());
     private final CompoundNameResolver<ImplementTable, ?> tableResolver = new CompoundNameResolver<ImplementTable, Object>(new TableNameModuleFinder());
-    private final CompoundNameResolver<ValueClass, ?> classResolver = new CompoundNameResolver<ValueClass, Object>(new ClassNameModuleFinder());
+    private final CompoundNameResolver<CustomClass, ?> classResolver = new CompoundNameResolver<CustomClass, Object>(new ClassNameModuleFinder());
 
     private final BusinessLogics<?> BL;
 

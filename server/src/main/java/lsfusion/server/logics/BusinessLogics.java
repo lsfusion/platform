@@ -43,6 +43,7 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.LogFormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
+import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.linear.LAP;
@@ -55,6 +56,7 @@ import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.property.actions.SystemEvent;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.logics.scripted.MetaCodeFragment;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.tasks.PublicTask;
@@ -1292,28 +1294,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return (LCP) LM.getLP(sID);
     }
 
-    public LP getLP(String canonicalName) {
-        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(canonicalName);
-        try {
-            String namespaceName = parser.getNamespace();
-            String name = parser.getName();
-            List<AndClassSet> signature = parser.getSignature();
-            return findProperty(namespaceName, name, signature);
-        } catch (CNParseException e) {
-            return null;
-        }
-    }
-    
-    public CustomClass getCustomClass(String canonicalName) {
-        assert canonicalName != null;
-        if (canonicalName.contains(".")) {
-            String namespaceName = canonicalName.substring(0, canonicalName.indexOf('.'));
-            String className = canonicalName.substring(canonicalName.indexOf('.')+1);
-            return findClass(namespaceName, className);
-        }
-        return null;
-    }
-
     public static class CNParseException extends Exception {
         public CNParseException(String msg) {
             super(msg);
@@ -1503,7 +1483,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
         
         private CustomClass findCustomClass(String name) {
-            CustomClass cls = getCustomClass(name);
+            CustomClass cls = findClass(name);
             if (cls == null) {
                 throw new CNParseInnerException("Пользовательский класс " + name + " не найден");
             }
@@ -1539,6 +1519,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return (LAP) LM.getLP(sID);
     }
 
+    public LP findProperty(String canonicalName) {
+        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(canonicalName);
+        try {
+            String namespaceName = parser.getNamespace();
+            String name = parser.getName();
+            List<AndClassSet> signature = parser.getSignature();
+            return findProperty(namespaceName, name, signature);
+        } catch (CNParseException e) {
+            return null;
+        }
+    }
+
     public LP findProperty(String namespace, String name, ValueClass... classes) {
         List<AndClassSet> classSets = null;
         if (classes.length > 0) {
@@ -1551,21 +1543,53 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // todo [dale]: временные реализации
-    public LP findProperty(String namespace, String name, List<AndClassSet> classes) {
+    private LP findProperty(String namespace, String name, List<AndClassSet> classes) {
         assert namespaceToModules.get(namespace) != null;
         NamespacePropertyFinder finder = new NamespacePropertyFinder(new SoftLPNameModuleFinder(), namespaceToModules.get(namespace));
         List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundElements = finder.findInNamespace(namespace, name, classes);
         assert foundElements.size() <= 1;
         return foundElements.size() == 0 ? null : foundElements.get(0).value;
     }
-    
-    public CustomClass findClass(String namespace, String name) {
-        assert namespaceToModules.get(namespace) != null;
-        NamespaceElementFinder<ValueClass, ?> finder = new NamespaceElementFinder<ValueClass, Object>(new ClassNameModuleFinder(), namespaceToModules.get(namespace));
-        List<NamespaceElementFinder.FoundItem<ValueClass>> resList = finder.findInNamespace(namespace, name);
-        return resList.size() == 0 ? null : (CustomClass)resList.get(0).value; 
+
+    private <T, P> T findElement(String canonicalName, P param, ModuleFinder<T, P> moduleFinder) {
+        assert canonicalName != null;
+        if (canonicalName.contains(".")) {
+            String namespaceName = canonicalName.substring(0, canonicalName.indexOf('.'));
+            String className = canonicalName.substring(canonicalName.indexOf('.')+1);
+
+            assert namespaceToModules.get(namespaceName) != null;
+            NamespaceElementFinder<T, P> finder = new NamespaceElementFinder<T, P>(moduleFinder, namespaceToModules.get(namespaceName));
+            List<NamespaceElementFinder.FoundItem<T>> resList = finder.findInNamespace(namespaceName, className, param);
+            assert resList.size() <= 1; 
+            return resList.size() == 0 ? null : (T)resList.get(0).value;
+        }
+        return null;
     }
     
+    public CustomClass findClass(String canonicalName) {
+        return findElement(canonicalName, null, new ClassNameModuleFinder());
+    }
+
+    public AbstractGroup findGroup(String canonicalName) {
+        return findElement(canonicalName, null, new GroupNameModuleFinder());
+    }
+
+    public ImplementTable findTable(String canonicalName) {
+        return findElement(canonicalName, null, new TableNameModuleFinder());
+    }
+
+    public AbstractWindow findWindow(String canonicalName) {
+        return findElement(canonicalName, null, new WindowNameModuleFinder());
+    }
+
+    public NavigatorElement findNavigatorElement(String canonicalName) {
+        return findElement(canonicalName, null, new NavigatorElementNameModuleFinder());
+    }
+
+    public MetaCodeFragment findMetaCode(String canonicalName, int paramCnt) {
+        return findElement(canonicalName, paramCnt, new MetaCodeNameModuleFinder());
+    }
+
     private void outputPersistent() {
         String result = "";
 
@@ -1613,7 +1637,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // Набор методов для поиска модуля, в котором находится элемент системы
-    private LogicsModule getModuleContainingObject(String namespaceName, String name, Object param, ModuleFinder finder) {
+    private <T, P> LogicsModule getModuleContainingObject(String namespaceName, String name, P param, ModuleFinder<T, P> finder) {
         List<LogicsModule> modules = namespaceToModules.get(namespaceName);
         if (modules != null) {
             for (LogicsModule module : modules) {

@@ -125,7 +125,7 @@ public abstract class LogicsModule {
 
     protected Map<String, List<LP<?,?>>> namedModuleProperties = new HashMap<String, List<LP<?, ?>>>();
     private final Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
-    private final Map<String, ValueClass> moduleClasses = new HashMap<String, ValueClass>();
+    private final Map<String, CustomClass> moduleClasses = new HashMap<String, CustomClass>();
     private final Map<String, AbstractWindow> windows = new HashMap<String, AbstractWindow>();
     public final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
     private final Map<String, ImplementTable> moduleTables = new HashMap<String, ImplementTable>();
@@ -236,15 +236,15 @@ public abstract class LogicsModule {
         moduleGroups.put(group.getSID(), group);
     }
 
-    public ValueClass getClassBySID(String sid) {
+    public CustomClass getClassBySID(String sid) {
         return moduleClasses.get(sid);
     }
 
-    public ValueClass getClassByName(String name) {
+    public CustomClass getClassByName(String name) {
         return getClassBySID(transformNameToSID(name));
     }
 
-    protected void addModuleClass(ValueClass valueClass) {
+    protected void addModuleClass(CustomClass valueClass) {
         assert !moduleClasses.containsKey(valueClass.getSID());
         moduleClasses.put(valueClass.getSID(), valueClass);
     }
@@ -2161,11 +2161,11 @@ public abstract class LogicsModule {
         }
     }
 
-    public static class ClassNameModuleFinder implements ModuleFinder<ValueClass, Object> {
+    public static class ClassNameModuleFinder implements ModuleFinder<CustomClass, Object> {
         @Override
-        public List<ValueClass> resolveInModule(LogicsModule module, String simpleName, Object param) {
-            ValueClass cls = module.getClassByName(simpleName);             
-            return cls == null ? new ArrayList<ValueClass>() : Collections.singletonList(cls);
+        public List<CustomClass> resolveInModule(LogicsModule module, String simpleName, Object param) {
+            CustomClass cls = module.getClassByName(simpleName);             
+            return cls == null ? new ArrayList<CustomClass>() : Collections.singletonList(cls);
         }
     }
     
