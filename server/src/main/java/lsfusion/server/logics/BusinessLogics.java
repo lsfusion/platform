@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.implementations.ArIndexedSet;
 import lsfusion.base.col.implementations.HSet;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
@@ -17,15 +18,14 @@ import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.classes.sets.UpClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.ScannerDaemonTask;
-import lsfusion.server.data.ModifyQuery;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -60,11 +60,7 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.mail.NotificationActionProperty;
-import lsfusion.server.session.ApplyFilter;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.SessionCreator;
-import lsfusion.server.session.SingleKeyTableUsage;
-import org.antlr.runtime.RecognitionException;
+import lsfusion.server.session.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -76,6 +72,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
@@ -765,6 +762,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return getOrderProperties().getSet();
     }
 
+    public List<LP> getNamedProperties() {
+        List<LP> namedProperties = new ArrayList<LP>();
+        for (LogicsModule module : logicModules) {
+            namedProperties.addAll(module.getNamedProperties());
+        }
+        return namedProperties;
+    }
+    
     public List<AbstractGroup> getParentGroups() {
         return LM.rootGroup.getParentGroups();
     }
@@ -989,7 +994,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<Property>() {
             public boolean contains(Property property) {
                 return property instanceof CalcProperty && ((CalcProperty) property).isStored();
-            }}));
+            }
+        }));
     }
 
     public ImSet<CustomClass> getCustomClasses() {
@@ -1273,20 +1279,293 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
     }
 
+    private void test(String testCase) {
+        try {
+            List<AndClassSet> res = new PropertyCanonicalNameParser(testCase).getSignature();
+            System.out.println('"' + testCase + "\": " + (res == null ? "null" : res.toString()));
+        } catch (CNParseException e) {
+            System.out.println('"' + testCase + "\": error (" + e.getMessage() + ")");
+        }
+    }
+    
     public LCP getLCP(String sID) {
         return (LCP) LM.getLP(sID);
     }
 
+    public LP getLP(String canonicalName) {
+        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(canonicalName);
+        try {
+            String namespaceName = parser.getNamespace();
+            String name = parser.getName();
+            List<AndClassSet> signature = parser.getSignature();
+            return findProperty(namespaceName, name, signature);
+        } catch (CNParseException e) {
+            return null;
+        }
+    }
+    
+    public CustomClass getCustomClass(String canonicalName) {
+        assert canonicalName != null;
+        if (canonicalName.contains(".")) {
+            String namespaceName = canonicalName.substring(0, canonicalName.indexOf('.'));
+            String className = canonicalName.substring(canonicalName.indexOf('.')+1);
+            return findClass(namespaceName, className);
+        }
+        return null;
+    }
+
+    public static class CNParseException extends Exception {
+        public CNParseException(String msg) {
+            super(msg);
+        } 
+    }
+    
+    private static class CNParseInnerException extends RuntimeException {
+        public CNParseInnerException(String msg) {
+            super(msg);
+        }
+    }
+
+    public class PropertyCanonicalNameParser {
+
+        private final String canonicalName;
+        
+        private int pos;
+        private String parseText;
+        private int len;
+        private final String CPREFIX = "CONCAT(";
+        private final String UNKNOWNCLASS = "?";
+        
+        public PropertyCanonicalNameParser(String canonicalName) {
+            assert canonicalName != null;
+            this.canonicalName = canonicalName.replaceAll(" ", "");    
+        }
+        
+        public String getNamespace() throws CNParseException {
+            int pointIndex = canonicalName.indexOf('.');
+            if (pointIndex < 0) {
+                throw new CNParseException("Отсутствует имя пространства имен");
+            }
+            String namespaceName = canonicalName.substring(0, pointIndex);
+            return checkID(namespaceName);
+        }
+        
+        public String getName() throws CNParseException {
+            getNamespace(); // проверим валидность пространства имен
+            int pointIndex = canonicalName.indexOf('.');
+            int sqbracketIndex = canonicalName.indexOf("[");
+            
+            String name;
+            if (sqbracketIndex < 0) {
+                name = canonicalName.substring(pointIndex+1);
+            } else {
+                name = canonicalName.substring(pointIndex+1, sqbracketIndex);
+            }
+            return checkID(name);
+        }
+        
+        public List<AndClassSet> getSignature() throws CNParseException {
+            int sqBracketPos = canonicalName.indexOf('[');
+            if (sqBracketPos >= 0) {
+                if (canonicalName.lastIndexOf(']') != canonicalName.length() - 1) {
+                    throw new CNParseException("Сигнатура должна завершаться скобкой");
+                }
+                
+                parseText = canonicalName.substring(sqBracketPos+1, canonicalName.length() - 1);
+                pos = 0;
+                len = parseText.length();
+                
+                try {
+                    List<AndClassSet> result = parseAndClassSetList(true);
+                    if (pos < len) {
+                        throw new CNParseException("Ошибка парсинга");
+                    }
+                    return result;
+                } catch (CNParseInnerException e) {
+                    throw new CNParseException(e.getMessage());
+                }
+            }
+            return null;
+        }
+        
+        private boolean isNext(String str) {
+            return pos + str.length() <= len && parseText.substring(pos, pos + str.length()).equals(str);
+        }
+
+        private void checkNext(String str) {
+            if (isNext(str)) {
+                pos += str.length();
+            } else {
+                throw new CNParseInnerException("Ожидалась подстрока '" + str + "'");
+            }
+        }
+        
+        private String checkID(final String str) throws CNParseException {
+            if (!str.matches("[a-zA-Z0-9_]+")) {
+                throw new CNParseException("Идентификатор содаржит запрещенные символы");    
+            }
+            return str;
+        }
+        
+        private List<AndClassSet> parseAndClassSetList(boolean isSignature) {
+            List<AndClassSet> result = new ArrayList<AndClassSet>();
+            while (pos < len) {
+                if (isSignature && isNext(UNKNOWNCLASS)) {
+                    checkNext(UNKNOWNCLASS);
+                    result.add(null);
+                } else {
+                    result.add(parseAndClassSet());
+                }
+                
+                if (isNext(",")) { 
+                    checkNext(",");
+                } else {
+                    break;
+                }
+            }
+            return result;
+        }
+        
+        private AndClassSet parseAndClassSet() {
+            AndClassSet result;
+            if (isNext(CPREFIX)) {
+                result = parseConcatenateClassSet();
+            } else if (isNext("{")) {
+                result = parseOrObjectClassSet();
+            } else if (isNext("(")) {
+                result = parseUpClassSet();
+            } else {
+                result = parseSingleClass();
+            }
+            return result;
+        }
+        
+        private ConcatenateClassSet parseConcatenateClassSet() {
+            checkNext(CPREFIX);
+            List<AndClassSet> classes = parseAndClassSetList(false);
+            checkNext(")");
+            return new ConcatenateClassSet(classes.toArray(new AndClassSet[classes.size()]));
+        }
+        
+        private OrObjectClassSet parseOrObjectClassSet() {
+            checkNext("{");
+            UpClassSet up = parseUpClassSet();
+            checkNext(",");
+            ImSet<ConcreteCustomClass> customClasses = SetFact.EMPTY();
+            if (!isNext("}")) {
+                customClasses = parseCustomClassList();        
+            }
+            OrObjectClassSet orSet = new OrObjectClassSet(up, customClasses);
+            checkNext("}");
+            return orSet;
+        }
+        
+        private ImSet<ConcreteCustomClass> parseCustomClassList() {
+            List<ConcreteCustomClass> classes = new ArrayList<ConcreteCustomClass>();            
+            while (pos < len) {
+                ConcreteCustomClass cls = (ConcreteCustomClass) parseCustomClass();
+                classes.add(cls);
+                if (!isNext(",")) {
+                    break;
+                }
+                checkNext(",");
+            }
+            return new ArIndexedSet<ConcreteCustomClass>(classes.size(), classes.toArray(new ConcreteCustomClass[classes.size()]));        
+        }
+        
+        private UpClassSet parseUpClassSet() {
+            if (isNext("(")) {
+                checkNext("(");
+                List<CustomClass> classes = new ArrayList<CustomClass>();
+                while (!isNext(")")) {
+                    classes.add(parseCustomClass());
+                    if (!isNext(")")) {
+                        checkNext(",");
+                    }
+                }
+                checkNext(")");
+                return new UpClassSet(classes.toArray(new CustomClass[classes.size()]));
+            } else {
+                CustomClass cls = parseCustomClass();
+                return new UpClassSet(cls);
+            }
+        }
+        
+        private String parseClassName() {
+            Matcher matcher = Pattern.compile("[^\\w\\.]").matcher(parseText);
+            int nextPos = (matcher.find(pos) ? matcher.start() : len);
+            if (nextPos + 1 < len && parseText.charAt(nextPos) == '[') {
+                nextPos = parseText.indexOf(']', nextPos + 1) + 1;
+            }
+            String name = parseText.substring(pos, nextPos);
+            pos = nextPos;
+            return name;
+        }
+        
+        private CustomClass findCustomClass(String name) {
+            CustomClass cls = getCustomClass(name);
+            if (cls == null) {
+                throw new CNParseInnerException("Пользовательский класс " + name + " не найден");
+            }
+            return cls;
+        }
+        
+        private CustomClass parseCustomClass() {
+            String parsedName = parseClassName();
+            return findCustomClass(parsedName);
+        }
+        
+        private AndClassSet parseSingleClass() {
+            final String strConst = "STRING";
+            final String numericConst = "NUMERIC";
+            
+            String parsedName = parseClassName();
+            DataClass cls = ScriptingLogicsModule.getPredefinedClass(parsedName);
+            if (parsedName.equals(strConst)) {
+                cls = StringClass.text;
+            } else if (parsedName.equals(numericConst)) {
+                cls = NumericClass.get(5, 2);
+            }
+            
+            if (cls != null) {
+                return cls;
+            } else {
+                return findCustomClass(parsedName).getUpSet();
+            }
+        }
+    }
+    
     public LAP getLAP(String sID) {
         return (LAP) LM.getLP(sID);
     }
 
-    private void outputCalcPropertyClasses() {
-        for (LP lp : LM.getLPropertiesIt()) {
-            debuglogger.debug(lp.property.getSID() + " : " + lp.property.caption + " - " + lp.getClassWhere(ClassType.ASIS));
+    public LP findProperty(String namespace, String name, ValueClass... classes) {
+        List<AndClassSet> classSets = null;
+        if (classes.length > 0) {
+            classSets = new ArrayList<AndClassSet>();
+            for (ValueClass cls : classes) {
+                classSets.add(cls.getUpSet());
+            }
         }
+        return findProperty(namespace, name, classSets);
     }
 
+    // todo [dale]: временные реализации
+    public LP findProperty(String namespace, String name, List<AndClassSet> classes) {
+        assert namespaceToModules.get(namespace) != null;
+        NamespacePropertyFinder finder = new NamespacePropertyFinder(new SoftLPNameModuleFinder(), namespaceToModules.get(namespace));
+        List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundElements = finder.findInNamespace(namespace, name, classes);
+        assert foundElements.size() <= 1;
+        return foundElements.size() == 0 ? null : foundElements.get(0).value;
+    }
+    
+    public CustomClass findClass(String namespace, String name) {
+        assert namespaceToModules.get(namespace) != null;
+        NamespaceElementFinder<ValueClass, ?> finder = new NamespaceElementFinder<ValueClass, Object>(new ClassNameModuleFinder(), namespaceToModules.get(namespace));
+        List<NamespaceElementFinder.FoundItem<ValueClass>> resList = finder.findInNamespace(namespace, name);
+        return resList.size() == 0 ? null : (CustomClass)resList.get(0).value; 
+    }
+    
     private void outputPersistent() {
         String result = "";
 
@@ -1336,16 +1615,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     // Набор методов для поиска модуля, в котором находится элемент системы
     private LogicsModule getModuleContainingObject(String namespaceName, String name, Object param, ModuleFinder finder) {
         List<LogicsModule> modules = namespaceToModules.get(namespaceName);
-        if(modules==null)
-            return null;
-        for (LogicsModule module : modules) {
-            if (!finder.resolveInModule(module, name, param).isEmpty()) {
-                return module;
+        if (modules != null) {
+            for (LogicsModule module : modules) {
+                if (!finder.resolveInModule(module, name, param).isEmpty()) {
+                    return module;
+                }
             }
         }
         return null;
     }
 
+    // Здесь ищется точное совпадение по сигнатуре
     public LogicsModule getModuleContainingLP(String namespaceName, String name, List<AndClassSet> classes) {
         return getModuleContainingObject(namespaceName, name, classes, new LogicsModule.LPEqualNameModuleFinder());
     }

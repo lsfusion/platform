@@ -709,9 +709,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         for (FilterInstance filter : object.groupTo.filters)
             filter.resolveAdd(this, object, dataObject);
 
-        for (Property lp : BL.getOrderProperties()) {
-            if (lp instanceof CalcProperty) {
-                CalcProperty<P> property = (CalcProperty<P>) lp;
+        for (LP lp : BL.getNamedProperties()) {
+            if (lp instanceof LCP) {
+                LCP<P> lcp = (LCP<P>) lp;
+                CalcProperty<P> property = lcp.property;
                 if (property.autoset) {
                     ValueClass interfaceClass = property.getInterfaceClasses(ClassType.ASSERTFULL).singleValue();
                     ValueClass valueClass = property.getValueClass();
