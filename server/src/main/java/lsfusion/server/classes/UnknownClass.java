@@ -88,4 +88,9 @@ public class UnknownClass extends ImmutableObject implements FormulaClass, Concr
     public ValueClassSet getValueClassSet() {
         return OrObjectClassSet.FALSE;
     }
+
+    @Override
+    public String getCanonicalSID() {
+        return null;
+    }
 }

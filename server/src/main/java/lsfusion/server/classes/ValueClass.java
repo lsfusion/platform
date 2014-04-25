@@ -22,8 +22,6 @@ public interface ValueClass extends RemoteClass {
 
     String getSID();
     
-    String getUserSID(); 
-
     String getCaption();
 
     Object getDefaultValue();

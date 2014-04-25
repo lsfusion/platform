@@ -117,4 +117,14 @@ public class ConcatenateClassSet implements ConcreteClass, ValueClassSet  { // Ð
             types[i] = classes[i].getValueClassSet();
         return new ConcatenateClassSet(types);
     }
+
+    @Override
+    public String getCanonicalSID() {
+        String sid = "CONCAT(";
+        for (AndClassSet set : classes) {
+            sid += (sid.length() > 1 ? "," : "");
+            sid += set.getCanonicalSID();
+        }
+        return sid + ")";
+    }
 }

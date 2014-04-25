@@ -177,7 +177,7 @@ public class StringClass extends DataClass {
     }
 
     @Override
-    public String getUserSID() {
+    public String getCanonicalSID() {
         String userSID = getSID();
         if (length == ExtInt.UNLIMITED) {
             return userSID;

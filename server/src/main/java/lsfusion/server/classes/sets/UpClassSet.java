@@ -19,7 +19,7 @@ import java.util.Arrays;
 // выше вершин
 public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements ObjectValueClassSet {
 
-    private UpClassSet(CustomClass[] classes) {
+    public UpClassSet(CustomClass[] classes) {
         super(classes);
     }
 
@@ -207,6 +207,19 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
 
     public ValueClassSet getValueClassSet() {
         return this;
+    }
+
+    @Override
+    public String getCanonicalSID() {
+        if (wheres.length == 1) {
+            return wheres[0].getCanonicalSID();
+        }
+        String sid = "(";
+        for (CustomClass cls : wheres) {
+            sid += (sid.length() > 1 ? "," : "");
+            sid += cls.getCanonicalSID();
+        }
+        return sid + ")";
     }
 
     @Override

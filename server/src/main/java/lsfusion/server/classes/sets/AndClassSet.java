@@ -29,4 +29,6 @@ public interface AndClassSet {
     };
 
     ValueClassSet getValueClassSet();
+    
+    String getCanonicalSID();
 }

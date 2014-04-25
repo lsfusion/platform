@@ -34,6 +34,10 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         this.unknown = unknown;
     }
 
+    public OrObjectClassSet(UpClassSet up, ImSet<ConcreteCustomClass> set) {
+        this(up, set, false); 
+    } 
+    
     public OrObjectClassSet(UpClassSet up) {
         this(up, SetFact.<ConcreteCustomClass>EMPTY(),false);
     }
@@ -381,5 +385,20 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         if(!unknown) // оптимизация
             return this;
         return new OrObjectClassSet(up, set, false);
+    }
+
+    @Override
+    public String getCanonicalSID() {
+        if (set.size() == 0) {
+            return up.getCanonicalSID();
+        } else {
+            String sid = "{";
+            sid += up.getCanonicalSID();
+            for (int i = 0; i < set.size(); i++) {
+                sid += ",";
+                sid += set.get(i).getCanonicalSID();
+            }
+            return sid + "}";
+        }
     }
 }

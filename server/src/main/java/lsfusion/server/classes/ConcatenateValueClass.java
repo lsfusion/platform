@@ -52,10 +52,6 @@ public class ConcatenateValueClass implements ValueClass {
         return sID;
     }
 
-    public String getUserSID() {
-        return getSID();
-    }
-    
     public String getCaption() {
         throw new RuntimeException("not supported");
     }
