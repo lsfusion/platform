@@ -235,7 +235,7 @@ public class Words {
             numOfDigits++;
             num = num * 10;
         }
-        return Math.min(numOfDigits, 4);
+        return Math.min(numOfDigits, 6);
     }
 
     //для лонга с типом
@@ -276,7 +276,7 @@ public class Words {
             if (fract != 0)
                 result = toString((long) num, type, null, sexMap.get(type)) + toString(fract, type, numOfDigits, sexMap.get(type + numOfDigits));
             else
-                result = toString((int) num, type);
+                result = toString((long) num, type);
             return result;
         } else
             return toString(numObject, numOfDigits, true);
@@ -291,7 +291,7 @@ public class Words {
         if (fract != 0)
             result = toString((long) num, "number", 0, female) + toString(fract, "number" + numOfDig, numOfDig, female);
         else
-            result = toString((int) num, "number0");
+            result = toString((long) num, "number0");
         return result;
     }
 
