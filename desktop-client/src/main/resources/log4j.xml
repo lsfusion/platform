@@ -9,6 +9,7 @@
     </appender>
 
     <appender name="clientlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
             <param name="maxIndex" value="5"/>
@@ -24,6 +25,7 @@
     </appender>
 
     <appender name="clienterr" class="org.apache.log4j.rolling.RollingFileAppender">
+        <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
             <param name="maxIndex" value="5"/>
@@ -42,6 +44,7 @@
     </appender>
 
     <appender name="remotelog" class="lsfusion.logging.FlushableRollingFileAppender">
+        <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
             <param name="maxIndex" value="5"/>

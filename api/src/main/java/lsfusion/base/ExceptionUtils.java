@@ -5,6 +5,7 @@ import lsfusion.interop.exceptions.RemoteServerException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.rmi.*;
 
 public class ExceptionUtils {
@@ -82,8 +83,12 @@ public class ExceptionUtils {
 
     public static String getStackTraceString(Throwable t) {
         ByteArrayOutputStream stackStream = new ByteArrayOutputStream();
-        t.printStackTrace(new PrintStream(stackStream));
-        return stackStream.toString();
+        try {
+            t.printStackTrace(new PrintStream(stackStream, false, "UTF-8"));
+            return stackStream.toString("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public static boolean isFatalRemoteException(Throwable t) {

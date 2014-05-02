@@ -120,6 +120,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     }
 
     public void logException(BusinessLogics bl, Throwable t, DataObject user, String clientName, boolean client) throws SQLException, SQLHandledException {
+        @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
         String message = Throwables.getRootCause(t).getLocalizedMessage();
         String errorType = t.getClass().getName();
         String erTrace = ExceptionUtils.getStackTraceString(t);
