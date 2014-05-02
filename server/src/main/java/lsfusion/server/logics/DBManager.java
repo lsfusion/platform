@@ -178,8 +178,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
+    @IdentityStrongLazy
     private SQLSession getSystemSql() throws SQLException {
-        return getIDSql();
+        try {
+            return createSQL();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
