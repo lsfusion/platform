@@ -26,7 +26,7 @@
         <google.guava.version>13.0.1</google.guava.version>
         <jdom.version>1.1</jdom.version>
         <netty.version>3.2.1.Final</netty.version>
-        <postgresql.version>9.4-1200-jdbc4-patched</postgresql.version>
+        <postgresql.version>9.4-1200-jdbc4-patched-1</postgresql.version>
         <jasper.version>5.5.0</jasper.version>
         <apache.poi.version>3.7</apache.poi.version>
         <docking.frames.version>1.1.2p10f</docking.frames.version>

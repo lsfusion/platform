@@ -6,6 +6,10 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.base.col.lru.LRUWSVSMap;
+import lsfusion.base.col.lru.LRUWVSMap;
+import lsfusion.base.col.lru.LRUWWVSMap;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
@@ -18,6 +22,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.session.*;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static lsfusion.base.BaseUtils.merge;
 
@@ -43,15 +49,15 @@ public class OverrideSessionModifier extends SessionModifier {
         return merge(override.getProperties(), forceHintIncrement, forceNoUpdate);
     }
 
-//    private Map<CalcProperty, Boolean> pushHint = new HashMap<CalcProperty, Boolean>();
+    private static LRUWWVSMap<OverrideSessionModifier, CalcProperty, Boolean> pushHint = new LRUWWVSMap<OverrideSessionModifier, CalcProperty, Boolean>(LRUUtil.L2);
     @ManualLazy
     private boolean pushHint(CalcProperty property) { // частый вызов из-за кэширования хинтов, уже нет так как отрезается проверкой на complex
-//        Boolean result = pushHint.get(property);
-//        if(result==null) {
-            return  !CalcProperty.dependsSet(property, override.getProperties(), forceHintIncrement, forceNoUpdate);
-//            pushHint.put(property, result);
-//        }
-//        return result;
+        Boolean result = pushHint.get(this, property);
+        if(result==null) {
+            result = !CalcProperty.dependsSet(property, override.getProperties(), forceHintIncrement, forceNoUpdate);
+            pushHint.put(this, property, result);
+        }
+        return result;
     }
 
     @Override

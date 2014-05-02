@@ -29,4 +29,8 @@ public class ExConnection {
         ServerLoggers.sqlLogger.info("CONNECTION CLOSE " + sql);
         sql.close();
     }
+    
+    public void checkClosed() throws SQLException {
+        ServerLoggers.assertLog(!sql.isClosed(), "CONNECTION IS ALREADY CLOSED " + sql);
+    }
 }

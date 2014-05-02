@@ -282,15 +282,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
         random = addRMProp("random", "Random");
 
-        super.initProperties();
-
-        canceled = getLCPByOldName("canceled");
-
-        apply = getLAPByOldName("apply");
-        cancel = getLAPByOldName("cancel");
-
-        onStarted = getLAPByOldName("onStarted");
-
         // только через операторы 
         flowBreak = addProperty(null, new LAP(new BreakActionProperty()));
         flowReturn = addProperty(null, new LAP(new ReturnActionProperty()));
@@ -327,8 +318,18 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         vzero = addCProp(DoubleClass.instance, 0);
         vnull = addProperty((AbstractGroup) null, new LCP<PropertyInterface>(NullValueProperty.instance));
 
+        super.initProperties();
+
         // через JOIN (не операторы)
-        
+
+        canceled = getLCPByOldName("canceled");
+
+        apply = getLAPByOldName("apply");
+        cancel = getLAPByOldName("cancel");
+
+        onStarted = getLAPByOldName("onStarted");
+
+
         // Обработка строк
         upper = getLCPByOldName("upper");
 

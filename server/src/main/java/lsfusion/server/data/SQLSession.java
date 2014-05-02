@@ -97,6 +97,7 @@ public class SQLSession extends MutableObject {
             resultConnection = connectionPool.getCommon(this);
         }
         
+        resultConnection.checkClosed();
         resultConnection.updateLogLevel(syntax);
         return resultConnection;
     }
@@ -131,6 +132,7 @@ public class SQLSession extends MutableObject {
     }
 
     private void needPrivate() throws SQLException { // получает unique connection
+        assertLock();
         if(privateConnection ==null)
             privateConnection = connectionPool.getPrivate(this);
     }
@@ -138,12 +140,17 @@ public class SQLSession extends MutableObject {
     private void tryCommon(OperationOwner owner) throws SQLException { // пытается вернуться к
         removeUnusedTemporaryTables(false, owner);
         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
+        assertLock();
         if(inTransaction == 0 && volatileStats.get() == 0 && sessionTablesMap.isEmpty()) { // вернемся к commonConnection'у
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
         }
     }
-    
+
+    private void assertLock() {
+        ServerLoggers.assertLog((temporaryTablesLock.isLocked() && lock.getReadLockCount() > 0) || lock.isWriteLocked(), "TEMPORARY TABLE SHOULD BY LOCKED");
+    }
+
     public void lockNeedPrivate() throws SQLException {
         temporaryTablesLock.lock();
         
@@ -255,7 +262,7 @@ public class SQLSession extends MutableObject {
                 setACID(privateConnection.sql, true, syntax);
             }
         } catch (SQLException e) {
-            throw propagate(e, "START TRANSACTION", privateConnection);
+            throw ExceptionUtils.propagate(handle(e, "START TRANSACTION", privateConnection), SQLException.class, SQLHandledException.class);
         }
     }
 
@@ -905,11 +912,15 @@ public class SQLSession extends MutableObject {
     }
     private Problem problemInTransaction = null;
 
-    private SQLException propagate(SQLException e, String message, ExConnection connection) throws SQLException, SQLHandledException {
-        return propagate(e, message, false, connection);
+    private Throwable handle(SQLException e, String message, ExConnection connection) {
+        return handle(e, message, false, connection, true);
     }
     
-    private SQLException propagate(SQLException e, String message, boolean isTransactTimeout, ExConnection connection) throws SQLException, SQLHandledException {
+    private Throwable handle(Throwable t, String message, boolean isTransactTimeout, ExConnection connection, boolean errorPrivate) {
+        if(!(t instanceof SQLException))
+            return t;
+        
+        SQLException e = (SQLException)t;            
         if(message == null)
             message = "PREPARING STATEMENT";
             
@@ -926,17 +937,17 @@ public class SQLSession extends MutableObject {
             handled = new SQLTimeoutException(isTransactTimeout);
         
         if(syntax.isConnectionClosed(e)) {
-            handled = new SQLClosedException(connection.sql, e, privateConnection != null);
+            handled = new SQLClosedException(connection.sql, e, errorPrivate);
             problemInTransaction = Problem.CLOSED;
         }
 
         if(handled != null) {
             handLogger.info(message + (inTransaction ? " TRANSACTION" : "") + " " + handled.toString());
-            throw handled;
+            return handled;
         }
         
         logger.error(message); // duplicate keys валится при : неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses), неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями, недетерминированные ORDER функции (GROUP LAST и т.п.), нецелостной базой (значения классов в базе не правильные)
-        throw e;
+        return e;
     }
 
     
@@ -993,7 +1004,7 @@ public class SQLSession extends MutableObject {
         PreparedStatement statement = null;
         
         Result<Throwable> firstException = new Result<Throwable>();
-        String errorString = null;
+        boolean errorPrivate = false;
         try {
             env.before(this, connection, command, owner);
 
@@ -1024,18 +1035,13 @@ public class SQLSession extends MutableObject {
                 runTime = System.currentTimeMillis() - started;
             }
         } catch (Throwable t) { // по хорошему тоже надо через runSuppressed, но будут проблемы с final'ами
+            t = handle(t, statement != null ? statement.toString() : "PREPARING STATEMENT", execInfo.isTransactTimeout, connection, privateConnection != null);
             firstException.set(t);
-            if(statement != null)
-                errorString = statement.toString();
         }
 
         afterExStatementExecute(firstException, command, owner, env, queryExecEnv, execInfo, connection, runTime, returnStatement, statement);
 
-        try {
-            finishHandledExceptions(firstException);
-        } catch (SQLException e) {
-            throw propagate(e, errorString, execInfo.isTransactTimeout, connection);
-        }
+        finishHandledExceptions(firstException);
         
         return result;
     }
@@ -1179,7 +1185,6 @@ public class SQLSession extends MutableObject {
         PreparedStatement statement = null;
         MOrderExclMap<ImMap<K,Object>,ImMap<V,Object>> mExecResult = null;
 
-        String errorString = null;
         Result<Throwable> firstException = new Result<Throwable>();
         try {
             env.before(this, connection, select, owner);
@@ -1232,18 +1237,13 @@ public class SQLSession extends MutableObject {
                 result.close();
             }
         } catch (Throwable t) { // по хорошему тоже надо через runSuppressed, но будут проблемы с final'ами
+            t = handle(t, statement != null ? statement.toString() : "PREPARING STATEMENT", execInfo.isTransactTimeout, connection, privateConnection != null);
             firstException.set(t);
-            if(statement != null)
-                errorString = statement.toString();
         }
         
         afterExStatementExecute(firstException, select, owner, env, queryExecEnv, execInfo, connection, runTime, returnStatement, statement);
 
-        try {
-            finishHandledExceptions(firstException);
-        } catch (SQLException e) {
-            throw propagate(e, errorString, execInfo.isTransactTimeout, connection);
-        }
+        finishHandledExceptions(firstException);
         
         return mExecResult.immutableOrder();
     }
@@ -1527,7 +1527,6 @@ public class SQLSession extends MutableObject {
         ImMap<String, String> readProps = mReadProps.immutable();
 
         String select = "SELECT " + SQLSession.stringExpr(readKeys, readProps) + " FROM " + syntax.getSessionTableName(table.getName(syntax));
-
 
         lockRead(opOwner);
 

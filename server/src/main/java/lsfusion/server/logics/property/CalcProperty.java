@@ -413,9 +413,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getPullDataChanges(changes, toNull).add(changes);
     }
 
-    @IdentityLazy
+    private ImSet<CalcProperty> recDepends;
+    @ManualLazy
     public ImSet<CalcProperty> getRecDepends() {
-        return calculateRecDepends();
+        if(recDepends == null)
+            recDepends = calculateRecDepends();
+        return recDepends;
     }
 
     public ImSet<CalcProperty> calculateRecDepends() {
@@ -1041,7 +1044,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return isFull(interfaces);
     }
     private Boolean isFull;
-    @IdentityLazy
+    @ManualLazy
     public boolean isFull() {
         if(isFull==null)
             isFull = calculateIsFull();
