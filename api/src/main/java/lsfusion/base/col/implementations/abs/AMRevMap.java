@@ -42,6 +42,12 @@ public abstract class AMRevMap<K, V> extends ARevMap<K, V> implements MMap<K, V>
         return null;
     }
 
+    protected abstract MExclMap<K, V> copy();
+
+    public ImMap<K, V> immutableCopy() {
+        return copy().immutable();
+    }
+
     public V getMapValue(int i) {
         return getValue(i);
     }

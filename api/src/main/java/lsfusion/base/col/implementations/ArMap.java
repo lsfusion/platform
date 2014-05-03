@@ -6,6 +6,7 @@ import lsfusion.base.col.implementations.abs.AMRevMap;
 import lsfusion.base.col.implementations.order.ArOrderMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.AddValue;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
@@ -88,7 +89,7 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
         return new ArMap<K, M>(this);
     }
 
-    public ImMap<K, V> immutableCopy() {
+    protected MExclMap<K, V> copy() {
         return new ArMap<K,V>(this, true);
     }
 

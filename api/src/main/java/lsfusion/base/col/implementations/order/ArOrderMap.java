@@ -6,6 +6,7 @@ import lsfusion.base.col.implementations.*;
 import lsfusion.base.col.implementations.abs.AMWrapOrderMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.AddValue;
+import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 
 public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
@@ -29,6 +30,15 @@ public class ArOrderMap<K, V> extends AMWrapOrderMap<K, V, ArMap<K, V>> {
     // ImValueMap
     public ArOrderMap(ArOrderMap<K, ?> orderMap) {
         super(new ArMap<K, V>(orderMap.wrapMap));
+    }
+
+    public ArOrderMap(ArOrderMap<K, V> orderMap, boolean clone) {
+        super(new ArMap<K, V>(orderMap.wrapMap, clone));
+        assert clone;
+    }
+
+    public MOrderExclMap<K, V> orderCopy() {
+        return new ArOrderMap<K, V>(this, true);
     }
 
     public ArOrderMap(ArOrderSet<K> orderSet) {

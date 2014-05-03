@@ -7,6 +7,7 @@ import lsfusion.base.col.implementations.abs.AMWrapOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
+import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 
 public class HOrderMap<K, V> extends AMWrapOrderMap<K, V, HMap<K, V>> {
@@ -34,6 +35,15 @@ public class HOrderMap<K, V> extends AMWrapOrderMap<K, V, HMap<K, V>> {
 
     public HOrderMap(HOrderSet<K> hOrderSet) {
         super(new HMap<K, V>(hOrderSet.wrapSet));
+    }
+
+    public HOrderMap(HOrderMap<K, V> orderMap, boolean clone) {
+        super(new HMap<K, V>(orderMap.wrapMap, clone));
+        assert clone;
+    }
+
+    public MOrderExclMap<K, V> orderCopy() {
+        return new HOrderMap<K, V>(this, true);
     }
 
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {

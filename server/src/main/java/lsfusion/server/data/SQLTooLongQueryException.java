@@ -7,6 +7,8 @@ public class SQLTooLongQueryException extends SQLHandledException {
     private final String select;
 
     public SQLTooLongQueryException(String select) {
+        super(null);
+        
         this.select = select;
     }
 

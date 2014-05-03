@@ -25,4 +25,10 @@ public abstract class AMOrderMap<K, V> extends AOrderMap<K, V> implements MOrder
     public void keep(K key, V value) {
         exclAdd(key, value);
     }
+
+    protected abstract MOrderExclMap<K, V> orderCopy();
+
+    public ImOrderMap<K, V> immutableOrderCopy() {
+        return orderCopy().immutableOrder();
+    }
 }

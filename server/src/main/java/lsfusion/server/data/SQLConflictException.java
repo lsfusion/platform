@@ -3,7 +3,9 @@ package lsfusion.server.data;
 public class SQLConflictException extends SQLHandledException {
 
     private final boolean updateConflict;
-    public SQLConflictException(boolean updateConflict) {
+    public SQLConflictException(boolean updateConflict, boolean isInTransaction) {
+        super(isInTransaction);
+        
         this.updateConflict = updateConflict;
     }
 

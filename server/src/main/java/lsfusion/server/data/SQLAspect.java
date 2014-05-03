@@ -48,7 +48,7 @@ public class SQLAspect {
             else 
                 result = thisJoinPoint.proceed();
         } catch (SQLClosedException e) {
-            if(session.lockIsInTransaction(owner) || !session.tryRestore(owner, e.connection, e.isPrivate))
+            if(e.isInTransaction() || !session.tryRestore(owner, e.connection, e.isPrivate))
                 throw e;
         }
 
@@ -74,7 +74,7 @@ public class SQLAspect {
             if(e instanceof SQLClosedException || e instanceof SQLTooLargeQueryException || e instanceof SQLTooLongQueryException)
                 throw e;
             env.failed(state, e);
-            if(session.lockIsInTransaction(owner)) // транзакция все равно прервана
+            if(e.isInTransaction()) // транзакция все равно прервана
                 throw e;
             // вообще тут только timeout и closed могут быть.
         } finally {

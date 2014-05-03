@@ -73,6 +73,11 @@ public class ByteArrayClass extends DataClass<byte[]> {
         return ExtInt.UNLIMITED;
     }
 
+    @Override
+    public int getSize(byte[] value) {
+        return value.length;
+    }
+
     public byte[] parseString(String s) throws ParseException {
         throw new RuntimeException("not supported");
     }

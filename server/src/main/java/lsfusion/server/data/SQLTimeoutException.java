@@ -4,7 +4,9 @@ public class SQLTimeoutException extends SQLHandledException {
     
     public final boolean isTransactTimeout;
 
-    public SQLTimeoutException(boolean isTransactTimeout) {
+    public SQLTimeoutException(boolean isTransactTimeout, boolean isInTransaction) {
+        super(isInTransaction);
+        
         this.isTransactTimeout = isTransactTimeout;
     }
 

@@ -165,6 +165,12 @@ public class StringClass extends DataClass {
     }
 
     @Override
+    public int getSize(Object value) {
+        assert length.isUnlimited();
+        return ((String)value).length();
+    }
+
+    @Override
     public String getSID() {
         String sid = (length == ExtInt.UNLIMITED
                       ? (rich ? "RICHTEXT" : "TEXT")

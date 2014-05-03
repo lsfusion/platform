@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
+import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 
 public class ArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
@@ -46,6 +47,17 @@ public class ArOrderIndexedMap<K, V> extends AMOrderMap<K, V> {
     public ArOrderIndexedMap(ArOrderIndexedSet<K> orderSet) {
         arMap = new ArIndexedMap<K, V>(orderSet.arSet);
         order = orderSet.order.clone();
+    }
+
+
+    public ArOrderIndexedMap(ArOrderIndexedMap<K, V> orderMap, boolean clone) {
+        arMap = new ArIndexedMap<K, V>(orderMap.arMap, clone);
+        order = orderMap.order.clone();
+        assert clone;
+    }
+
+    public MOrderExclMap<K, V> orderCopy() {
+        return new ArOrderIndexedMap<K, V>(this, true);
     }
 
     public ImMap<K, V> getMap() {

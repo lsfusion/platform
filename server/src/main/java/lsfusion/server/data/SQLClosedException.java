@@ -9,7 +9,9 @@ public class SQLClosedException extends SQLHandledException {
     public transient final SQLException wrapped;
     public final boolean isPrivate;
     
-    public SQLClosedException(Connection connection, SQLException wrapped, boolean isPrivate) {
+    public SQLClosedException(Connection connection, boolean isInTransaction, SQLException wrapped, boolean isPrivate) {
+        super(isInTransaction);
+        
         this.connection = connection;
         this.wrapped = wrapped;
         this.isPrivate = isPrivate;

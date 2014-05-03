@@ -6,6 +6,7 @@ import lsfusion.base.col.implementations.abs.AMRevMap;
 import lsfusion.base.col.implementations.order.ArOrderIndexedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.AddValue;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
@@ -102,7 +103,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
         return this;
     }
 
-    public ImMap<K, V> immutableCopy() {
+    protected MExclMap<K, V> copy() {
         return new ArIndexedMap<K,V>(this, true);
     }
 

@@ -192,7 +192,7 @@ public class HMap<K, V> extends AMRevMap<K, V> {
         return this;
     }
 
-    public ImMap<K, V> immutableCopy() {
+    protected MExclMap<K, V> copy() {
         return new HMap<K, V>(this, true);
     }
 

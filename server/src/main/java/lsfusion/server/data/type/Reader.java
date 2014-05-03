@@ -12,6 +12,7 @@ public interface Reader<T> {
     T read(Object value);
 
     ExtInt getCharLength();
+    int getSize(T value);
 
     // блок для случая когда JDBC драйвер не поддерживает STRUCT'ы
     String writeDeconc(SQLSyntax syntax, TypeEnvironment env);

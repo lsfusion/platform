@@ -21,4 +21,7 @@ public abstract class AbstractReader<T> implements Reader<T> {
         return read(set.getObject(name));
     }
 
+    public int getSize(T value) {
+        throw new UnsupportedOperationException();
+    }
 }

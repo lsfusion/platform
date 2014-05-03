@@ -168,16 +168,6 @@ public class SQLSession extends MutableObject {
     public boolean isInTransaction() {
         return inTransaction > 0;
     }
-    
-    public boolean lockIsInTransaction(OperationOwner opOwner) {
-        lockRead(opOwner);
-        
-        boolean isInTransaction = isInTransaction(); 
-        
-        unlockRead();
-        
-        return isInTransaction;
-    }
 
     public static void setACID(Connection connection, boolean ACID, SQLSyntax syntax) throws SQLException {
         connection.setAutoCommit(!ACID);
@@ -582,45 +572,49 @@ public class SQLSession extends MutableObject {
 
     public void returnTemporaryTable(final SessionTable table, TableOwner owner, final OperationOwner opOwner) throws SQLException {
         lockRead(opOwner);
-        temporaryTablesLock.lock();
 
         try {
             returnTemporaryTable(table.name, owner, opOwner, true);
         } finally {
-            temporaryTablesLock.unlock();
             unlockRead();
         }
     }
 
     public void returnTemporaryTable(final String table, final TableOwner owner, final OperationOwner opOwner, boolean truncate) throws SQLException {
-        Result<Throwable> firstException = new Result<Throwable>();
-        if(truncate) {
-            runSuppressed(new SQLRunnable() {
-                public void run() throws SQLException {
-                    truncate(syntax.getSessionTableName(table), opOwner, owner);
-                }}, firstException);
-            if(firstException.result != null) {
+        temporaryTablesLock.lock();
+
+        try {
+            Result<Throwable> firstException = new Result<Throwable>();
+            if(truncate) {
                 runSuppressed(new SQLRunnable() {
                     public void run() throws SQLException {
-                        privateConnection.temporary.removeTable(table);
+                        truncate(syntax.getSessionTableName(table), opOwner, owner);
                     }}, firstException);
+                if(firstException.result != null) {
+                    runSuppressed(new SQLRunnable() {
+                        public void run() throws SQLException {
+                            privateConnection.temporary.removeTable(table);
+                        }}, firstException);
+                }
             }
+    
+            runSuppressed(new SQLRunnable() {
+                public void run() throws SQLException {
+                    assert sessionTablesMap.containsKey(table);
+                    WeakReference<TableOwner> removed = sessionTablesMap.remove(table);
+                    assert removed.get()==owner;
+                }}, firstException);
+    
+    //            dropTemporaryTableFromDB(table.name);
+            runSuppressed(new SQLRunnable() {
+                public void run() throws SQLException {
+                    tryCommon(opOwner);
+                }}, firstException);
+
+            finishExceptions(firstException);
+        } finally { 
+            temporaryTablesLock.unlock();
         }
-
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                assert sessionTablesMap.containsKey(table);
-                WeakReference<TableOwner> removed = sessionTablesMap.remove(table);
-                assert removed.get()==owner;
-            }}, firstException);
-
-//            dropTemporaryTableFromDB(table.name);
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                tryCommon(opOwner);
-            }}, firstException);
-
-        finishExceptions(firstException);
     }
     
     public void rollReturnTemporaryTable(SessionTable table, TableOwner owner, OperationOwner opOwner) throws SQLException {
@@ -659,7 +653,8 @@ public class SQLSession extends MutableObject {
     }
 
     public void vacuumAnalyzeSessionTable(String table, OperationOwner owner) throws SQLException {
-        executeDDL((isInTransaction()? "" :"VACUUM ") + "ANALYZE " + table, ExecuteEnvironment.NOREADONLY, owner);
+//        (isInTransaction()? "" :"VACUUM ") + по идее не надо так как TRUNCATE делается
+        executeDDL("ANALYZE " + table, ExecuteEnvironment.NOREADONLY, owner);
     }
 
     private int noReadOnly = 0;
@@ -931,13 +926,13 @@ public class SQLSession extends MutableObject {
         SQLHandledException handled = null;
         boolean deadLock = false;
         if(syntax.isUpdateConflict(e) || (deadLock = syntax.isDeadLock(e)))
-            handled = new SQLConflictException(!deadLock);
+            handled = new SQLConflictException(!deadLock, inTransaction);
         
         if(syntax.isTimeout(e))
-            handled = new SQLTimeoutException(isTransactTimeout);
+            handled = new SQLTimeoutException(isTransactTimeout, inTransaction);
         
         if(syntax.isConnectionClosed(e)) {
-            handled = new SQLClosedException(connection.sql, e, errorPrivate);
+            handled = new SQLClosedException(connection.sql, inTransaction, e, errorPrivate);
             problemInTransaction = Problem.CLOSED;
         }
 
@@ -1211,10 +1206,7 @@ public class SQLSession extends MutableObject {
                 while(result.next()) {
                     if(rowCount++ > pessLimit) {
                         if(adjLimit == 0) {
-                            for(Reader reader : keyReaders.valueIt())
-                                rowSize += reader.getCharLength().getAprValue();
-                            for(Reader reader : propertyReaders.valueIt())
-                                rowSize += reader.getCharLength().getAprValue();
+                            rowSize = calculateRowSize(keyReaders, propertyReaders, mExecResult);
                             adjLimit = BaseUtils.max(getMemoryLimit() / rowSize, pessLimit);
                         }
                         if(rowCount > adjLimit) {
@@ -1246,6 +1238,44 @@ public class SQLSession extends MutableObject {
         finishHandledExceptions(firstException);
         
         return mExecResult.immutableOrder();
+    }
+    
+    private <K> boolean hasUnlimited(ImMap<K, ? extends Reader> keyReaders) {
+        for(Reader reader : keyReaders.valueIt())
+            if(reader.getCharLength().isUnlimited())
+                return true;
+        return false;
+    }                                        
+
+    private <K, V> int calculateRowSize(ImMap<K, ? extends Reader> keyReaders, ImMap<V, ? extends Reader> propertyReaders, MOrderExclMap<ImMap<K, Object>, ImMap<V, Object>> mExecResult) {
+        
+        ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execResult = null;
+        if(hasUnlimited(keyReaders) || hasUnlimited(propertyReaders)) // оптимизация
+            execResult = mExecResult.immutableOrderCopy();
+
+        return calculateRowSize(keyReaders, execResult == null ? null :  execResult.keyIt()) +
+                    calculateRowSize(propertyReaders, execResult == null ? null :  execResult.valueIt());
+    }
+
+    private <K> int calculateRowSize(ImMap<K, ? extends Reader> keyReaders, Iterable<ImMap<K, Object>> keys) {
+        int rowSize = 0;
+        for(int i=0, size = keyReaders.size();i<size;i++) {
+            Reader reader = keyReaders.getValue(i);
+            ExtInt length = reader.getCharLength();
+            if(length.isUnlimited()) {
+                K key = keyReaders.getKey(i);
+                int proceededSize = 0; int total = 0;
+                for(ImMap<K, Object> keyValue : keys) {
+                    Object value = keyValue.get(key);
+                    if(value != null)
+                        proceededSize += reader.getSize(value);
+                    total++;
+                }
+                rowSize += (proceededSize  / total);
+            } else                
+                rowSize += length.getValue();
+        }
+        return rowSize;
     }
 
     public void insertBatchRecords(String table, ImOrderSet<KeyField> keys, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, OperationOwner opOwner, TableOwner tableOwner) throws SQLException {
@@ -1452,9 +1482,9 @@ public class SQLSession extends MutableObject {
         checkTableOwner(table, tableOwner);
         
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
-        if(problemInTransaction == null) {                                
-//            executeDML("TRUNCATE TABLE " + syntax.getSessionTableName(table)); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
-            executeDML("DELETE FROM " + syntax.getSessionTableName(table), owner, tableOwner);
+        if(problemInTransaction == null) {
+            executeDDL("TRUNCATE TABLE " + syntax.getSessionTableName(table), ExecuteEnvironment.NOREADONLY, owner); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
+//            executeDML("DELETE FROM " + syntax.getSessionTableName(table), owner, tableOwner);
         }
     }
 

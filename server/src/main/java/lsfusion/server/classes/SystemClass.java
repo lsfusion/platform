@@ -69,7 +69,7 @@ public class SystemClass extends DataClass<Integer> {
     }
 
     public ExtInt getCharLength() {
-        return ExtInt.UNLIMITED;
+        return new ExtInt(8);
     }
 
     public Integer parseString(String s) throws ParseException {
