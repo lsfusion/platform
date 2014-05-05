@@ -9,8 +9,6 @@ import lsfusion.gwt.form.client.form.ui.GGridPropertyTable;
 import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
-import static lsfusion.gwt.base.shared.GwtSharedUtils.isRedundantString;
-
 public class TextGridCellRenderer extends TextBasedGridCellRenderer {
     private final boolean rich;
 
@@ -44,7 +42,7 @@ public class TextGridCellRenderer extends TextBasedGridCellRenderer {
 
     @Override
     protected void updateElement(DivElement div, Object value) {
-        if (!rich || isRedundantString((String) value)) {
+        if (!rich || value == null) {
             super.updateElement(div, value);
         } else {
             div.removeClassName("nullValueString");

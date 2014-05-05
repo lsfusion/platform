@@ -1,8 +1,10 @@
 package lsfusion.gwt.form.shared.view.grid.renderer;
 
 import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
+
+import static lsfusion.gwt.base.shared.GwtSharedUtils.isRedundantString;
+import static lsfusion.gwt.base.shared.GwtSharedUtils.multiplyString;
 
 public class StringGridCellRenderer extends TextBasedGridCellRenderer<String> {
     private boolean echoSymbols;
@@ -17,8 +19,11 @@ public class StringGridCellRenderer extends TextBasedGridCellRenderer<String> {
     @Override
     protected String renderToString(String value) {
         if (echoSymbols) {
-            return GwtSharedUtils.multiplyString(EscapeUtils.UNICODE_BULLET, 6);
+            return multiplyString(EscapeUtils.UNICODE_BULLET, 6);
         } else if (!isVarString) {
+            if (isRedundantString(value)) {
+                return null;
+            }
             return value.trim();
         } else {
             return value;

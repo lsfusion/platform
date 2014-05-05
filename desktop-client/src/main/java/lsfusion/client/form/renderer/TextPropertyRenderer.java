@@ -1,6 +1,5 @@
 package lsfusion.client.form.renderer;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.form.editor.rich.RichEditorKit;
 import lsfusion.client.form.editor.rich.RichEditorPane;
@@ -50,7 +49,7 @@ public class TextPropertyRenderer extends JEditorPane implements PropertyRendere
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        if (BaseUtils.isRedundantString(value)) {
+        if (value == null) {
             setContentType("text");
             setText(EMPTY_STRING);
             setForeground(UIManager.getColor("TextField.inactiveForeground"));

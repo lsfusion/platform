@@ -9,7 +9,6 @@ import lsfusion.gwt.form.shared.view.GFont;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 import static lsfusion.gwt.base.client.EscapeUtils.unicodeEscape;
-import static lsfusion.gwt.base.shared.GwtSharedUtils.isRedundantString;
 
 public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRenderer {
     protected final String EMPTY_VALUE = "Не определено";
@@ -72,7 +71,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
     protected void updateElement(DivElement div, Object value) {
         String text = value == null ? null : renderToString((T) value);
 
-        if (isRedundantString(text)) {
+        if (text == null) {
             div.setTitle("");
             setInnerText(div, null);
         } else {
