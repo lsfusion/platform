@@ -522,4 +522,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public String getIndexName(String name) {
         return name;
     }
+
+    public void ensureLogLevel(int logLevel) {
+    }
 }

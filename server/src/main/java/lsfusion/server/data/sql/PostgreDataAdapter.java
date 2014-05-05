@@ -1,13 +1,11 @@
 package lsfusion.server.data.sql;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.Log4jWriter;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.commons.exec.*;
@@ -62,6 +60,8 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public void ensureDB(boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException {
+        ensureLogLevel(1);
+
         Connection connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
         if (cleanDB) {
             try {
@@ -327,10 +327,16 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     public void setLogLevel(Connection connection, int level) {
-        if (level != 0 && DriverManager.getLogWriter() == null)
+        ensureLogLevel(level);
+        ((BaseConnection)connection).getLogger().setLogLevel(level);
+    }
+
+    @Override
+    public void ensureLogLevel(int logLevel) {
+        if (logLevel != 0 && DriverManager.getLogWriter() == null)
         {
             DriverManager.setLogWriter(new PrintWriter(new Log4jWriter(ServerLoggers.jdbcLogger), false));
         }
-        ((BaseConnection)connection).getLogger().setLogLevel(level);
+        Driver.setLogLevel(logLevel);
     }
 }

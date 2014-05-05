@@ -154,6 +154,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         if (initialized.compareAndSet(false, true)) {
             logger.info("Initializing BusinessLogics");
             try {
+                getDbManager().ensureLogLevel();
+                
                 TaskRunner.runTask(getInitTask(), logger);
             } catch (ScriptParsingException e) {
                 throw e;

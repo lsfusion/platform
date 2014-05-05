@@ -551,7 +551,8 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         }
         return result.immutable();
     }
-
+    
+    // вообще при таком подходе, скажем из-за формул в ExprJoin, LEFT JOIN'ы могут быть раньше INNER, но так как SQL Server это позволяет бороться до конца за это не имеет особого смысла 
     public Where fillInnerJoins(ImMap<WhereJoin, Where> upWheres, MList<String> whereSelect, CompileSource source) {
         Where innerWhere = Where.TRUE;
         for (WhereJoin where : wheres)

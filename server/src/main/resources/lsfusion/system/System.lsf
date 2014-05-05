@@ -150,12 +150,12 @@ META defineRandom1(cls, name, fnc)
      randNumber###name###cls (prm1) = PARTITION SUM 1 IF fnc(prm1) ORDER prm1;
      cls###name###fromRandNumber (number) = GROUP NAGGR prm1 BY randNumber###name###cls(prm1);
      maxRand###name###cls = GROUP SUM 1 IF fnc(prm1);
-     random###name###cls(max) = cls###name###fromRandNumber(randInt(MIN maxRand###name###cls(), max AS INTEGER));     
+     random###name###cls(max) = cls###name###fromRandNumber(MIN maxRand###name###cls(), max AS INTEGER);     
 END;
 
 META defineRandom2(cls1, cls2, name, fnc)
      randNumber###name###cls1###cls2 (prm1, prm2) = PARTITION SUM 1 IF fnc(prm1, prm2) BY prm2 ORDER prm1;
      cls1###name###fromRandNumber###cls2 (number, prm2) = GROUP NAGGR prm1 BY randNumber###name###cls1###cls2(prm1, prm2), prm2;
      maxRand###name###cls1###cls2 = GROUP SUM 1 IF fnc(prm1, prm2) BY prm2;
-     random###name###cls1###cls2(max, prm2) = cls1###name###fromRandNumber###cls2(randInt(MIN maxRand###name###cls1###cls2(prm2), max AS INTEGER), prm2);     
+     random###name###cls1###cls2(max, prm2) = cls1###name###fromRandNumber###cls2((MIN maxRand###name###cls1###cls2(prm2), max AS INTEGER), prm2);     
 END;

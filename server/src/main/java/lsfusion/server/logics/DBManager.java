@@ -1,6 +1,5 @@
 package lsfusion.server.logics;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -28,30 +27,20 @@ import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.sql.DataAdapter;
-import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.GroupObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.navigator.*;
-import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
-import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.group.AbstractGroup;
-import lsfusion.server.logics.property.group.AbstractNode;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
-import lsfusion.server.mail.NotificationActionProperty;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SessionCreator;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -71,7 +60,6 @@ import java.sql.Savepoint;
 import java.sql.Timestamp;
 import java.util.*;
 
-import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -161,7 +149,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         this.LM = businessLogics.LM;
         this.reflectionLM = businessLogics.reflectionLM;
         try {
-
             systemLogger.info("Synchronizing DB.");
             sourceHashChanged = synchronizeDB();
         } catch (Exception e) {
@@ -676,6 +663,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public void recalculateAggregations(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         recalculateAggregations(session, businessLogics.getAggregateStoredProperties(), isolatedTransaction);
+    }
+
+    public void ensureLogLevel() {
+        adapter.ensureLogLevel(Settings.get().getLogLevelJDBC());
     }
 
     public static interface RunServiceData {
