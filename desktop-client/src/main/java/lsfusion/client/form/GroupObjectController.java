@@ -32,7 +32,6 @@ public class GroupObjectController extends AbstractGroupObjectController {
 
     public GridController grid;
     public ShowTypeController showType;
-    public FilterController filter;
 
     private final Map<ClientObject, ObjectController> objects = new HashMap<ClientObject, ObjectController>();
 

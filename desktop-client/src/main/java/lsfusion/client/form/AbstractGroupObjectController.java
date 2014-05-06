@@ -3,6 +3,7 @@ package lsfusion.client.form;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.panel.PanelController;
 import lsfusion.client.form.panel.ToolbarView;
+import lsfusion.client.form.queries.FilterController;
 import lsfusion.client.logics.ClientObject;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.ClientToolbar;
@@ -18,6 +19,7 @@ public abstract class AbstractGroupObjectController implements GroupObjectLogics
 
     protected PanelController panel;
     protected final ToolbarView toolbarView;
+    protected FilterController filter;
 
     public AbstractGroupObjectController(ClientFormController form, LogicsSupplier logicsSupplier, ClientFormLayout formLayout, ClientToolbar toolbar) {
         this.form = form;

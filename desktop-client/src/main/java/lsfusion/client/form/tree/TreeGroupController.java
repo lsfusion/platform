@@ -4,8 +4,8 @@ import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.AbstractGroupObjectController;
 import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.LogicsSupplier;
+import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.panel.PanelController;
 import lsfusion.client.form.queries.FilterController;
 import lsfusion.client.logics.*;
@@ -38,7 +38,7 @@ public class TreeGroupController extends AbstractGroupObjectController {
         lastGroupObject = BaseUtils.last(treeGroup.groups);
 
         if (!treeGroup.plainTreeMode) {
-            FilterController filter = new FilterController(this, treeGroup.filter) {
+            filter = new FilterController(this, treeGroup.filter) {
                 protected void remoteApplyQuery() {
                     try {
                         form.changeFilter(treeGroup, getConditions());
@@ -104,8 +104,29 @@ public class TreeGroupController extends AbstractGroupObjectController {
             }
         }
 
-        panel.update();
+        update();
+    }
+
+    private void update() {
         tree.restoreVisualState();
+
+        boolean isTreeVisible = tree.getColumnCount() > 1;
+        
+        view.setVisible(isTreeVisible);
+        
+        if (toolbarView != null) {
+            toolbarView.setVisible(isTreeVisible);
+        }
+
+        if (filter != null) {
+            filter.setVisible(isTreeVisible);
+        }
+        
+        for (ClientGroupObject groupObject : treeGroup.groups) {
+            form.setFiltersVisible(groupObject, isTreeVisible);
+        }
+
+        panel.update();
     }
 
     public ClientGroupObjectValue getCurrentPath() {
