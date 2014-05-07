@@ -73,9 +73,10 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
     @ManualLazy
     public InnerJoins getInnerJoins() {
         if(innerJoins == null) {
-            innerJoins = InnerJoins.EMPTY;
+            InnerJoins calcInnerJoins = InnerJoins.EMPTY;
             for(WhereJoin where : wheres)
-                innerJoins = innerJoins.and(where.getInnerJoins());
+                calcInnerJoins = calcInnerJoins.and(where.getInnerJoins());
+            innerJoins = calcInnerJoins;
         }
         return innerJoins;
     }

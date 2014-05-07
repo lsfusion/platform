@@ -111,8 +111,9 @@ public abstract class AbstractTranslateContext<T, M extends MapObject, H extends
     @ManualLazy
     public T pack() {
         if(packed==null) {
-            packed = calculatePack();
-            ((AbstractTranslateContext)packed).packed = packed;
+            T calcPacked = calculatePack();
+            ((AbstractTranslateContext)calcPacked).packed = calcPacked;
+            packed = calcPacked;
         }
         return packed;
     }

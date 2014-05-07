@@ -43,13 +43,15 @@ public class SessionDataProperty extends DataProperty {
     @ManualLazy
     public static <T extends PropertyInterface, P extends PropertyInterface> CalcPropertyMapImplement<?, T> getProperty(ValueClass value, ImMap<T, ValueClass> classes) {
         Pair<ImMap<ValueClass, Integer>, ValueClass> multiClasses = new Pair<ImMap<ValueClass, Integer>, ValueClass>(classes.values().multiSet(), value);
-        CalcPropertyImplement<P, ValueClass> implement = (CalcPropertyImplement<P, ValueClass>) cacheClasses.get(multiClasses);
-        if(implement==null) {
-            CalcPropertyMapImplement<?, T> classImplement = DerivedProperty.createDataProp(true, classes, value);
-            cacheClasses.exclAdd(multiClasses, classImplement.mapImplement(classes));
-            return classImplement;
-        } else
-            return new CalcPropertyMapImplement<P, T>(implement.property, MapFact.mapValues(implement.mapping, classes));
+        synchronized (cacheClasses) {
+            CalcPropertyImplement<P, ValueClass> implement = (CalcPropertyImplement<P, ValueClass>) cacheClasses.get(multiClasses);
+            if (implement == null) {
+                CalcPropertyMapImplement<?, T> classImplement = DerivedProperty.createDataProp(true, classes, value);
+                cacheClasses.exclAdd(multiClasses, classImplement.mapImplement(classes));
+                return classImplement;
+            } else
+                return new CalcPropertyMapImplement<P, T>(implement.property, MapFact.mapValues(implement.mapping, classes));
+        }
     }
 
 }

@@ -43,6 +43,8 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
                     throw Throwables.propagate(e);
                 } catch (SQLHandledException e) {
                     throw Throwables.propagate(e);
+                } catch (Throwable t) {
+                    throw Throwables.propagate(t);
                 }
             }
         };

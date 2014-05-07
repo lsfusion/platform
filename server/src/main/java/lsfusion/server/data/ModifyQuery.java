@@ -19,7 +19,7 @@ import lsfusion.server.session.DataSession;
 public class ModifyQuery {
     public final Table table;
     private final IQuery<KeyField, PropertyField> change;
-    private final QueryEnvironment env;
+    public final QueryEnvironment env;
     public final TableOwner owner;
     
     public OperationOwner getOwner() {

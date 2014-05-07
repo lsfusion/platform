@@ -710,8 +710,9 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     @ManualLazy
     public AndWhere not() { // именно здесь из-за того что типы надо перегружать без generics
         if(not==null) {
-            not = new AndWhere(not(wheres), check);
-            not.not = this; // для оптимизации
+            AndWhere calcNot = new AndWhere(not(wheres), check);
+            calcNot.not = this; // для оптимизации
+            not = calcNot; 
         }
         return not;
     }

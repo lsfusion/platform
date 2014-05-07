@@ -1428,7 +1428,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        System.out.println(select + '\n' + readSelect(session, env));
+        System.out.println(select + " " + params + '\n' + readSelect(session, env));
     }
 
     public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {

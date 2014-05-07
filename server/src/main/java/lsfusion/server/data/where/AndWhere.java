@@ -130,8 +130,9 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
     @ManualLazy
     public OrWhere not() { // именно здесь из-за того что типы надо перегружать без generics
         if(not==null) {
-            not = new OrWhere(not(wheres), check);
-            not.not = this; // для оптимизации
+            OrWhere calcNot = new OrWhere(not(wheres), check);
+            calcNot.not = this; // для оптимизации
+            not = calcNot;
         }
         return not;
     }
@@ -177,7 +178,8 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
                 if(leftNotWheres!=null) // нашли decision, sibling'и right + оставшиеся left из правого
                     rawDecisions[decnum++] = new Decision(rightWhere.wheres[i],siblingsWhere(rightWhere.wheres,i),toWhere(leftNotWheres),rightWhere,leftWhere);
             }
-        decisions = new Decision[decnum]; System.arraycopy(rawDecisions,0,decisions,0,decnum);
+        Decision[] calcDecisions = new Decision[decnum]; System.arraycopy(rawDecisions,0,calcDecisions,0,decnum);
+        decisions = calcDecisions;
         return decisions;
     }
 

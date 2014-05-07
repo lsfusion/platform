@@ -142,6 +142,7 @@ public class SQLSession extends MutableObject {
         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
         assertLock();
         if(inTransaction == 0 && volatileStats.get() == 0 && sessionTablesMap.isEmpty()) { // вернемся к commonConnection'у
+            ServerLoggers.assertLog(privateConnection != null, "BRACES NEEDPRIVATE - TRYCOMMON SHOULD MATCH");
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
         }
@@ -151,13 +152,18 @@ public class SQLSession extends MutableObject {
         ServerLoggers.assertLog((temporaryTablesLock.isLocked() && lock.getReadLockCount() > 0) || lock.isWriteLocked(), "TEMPORARY TABLE SHOULD BY LOCKED");
     }
 
+    private boolean explicitNeedPrivate; 
     public void lockNeedPrivate() throws SQLException {
         temporaryTablesLock.lock();
+        
+        explicitNeedPrivate = true;
         
         needPrivate();
     }
 
     public void lockTryCommon(OperationOwner owner) throws SQLException {
+        explicitNeedPrivate = false;
+
         tryCommon(owner);
         
         temporaryTablesLock.unlock();
@@ -1690,6 +1696,7 @@ public class SQLSession extends MutableObject {
 
     public int insertLeftSelect(ModifyQuery modify, boolean updateProps, boolean insertOnlyNotNull) throws SQLException, SQLHandledException {
         checkTableOwner(modify);
+//        modify.getInsertLeftQuery(updateProps, insertOnlyNotNull).outSelect(this, modify.env);
         return executeDML(modify.getInsertLeftKeys(syntax, updateProps, insertOnlyNotNull));
     }
 
@@ -1863,7 +1870,7 @@ public class SQLSession extends MutableObject {
         }
     }
 
-    private static final LRUWSVSMap<SQLSession, ParseStatement, ParsedStatement> statementPool = new LRUWSVSMap<SQLSession, ParseStatement, ParsedStatement>(LRUUtil.G1);
+    private static final LRUWSVSMap<Connection, ParseStatement, ParsedStatement> statementPool = new LRUWSVSMap<Connection, ParseStatement, ParsedStatement>(LRUUtil.G1);
 
     private static interface ReturnStatement {
         void proceed(PreparedStatement statement, long runTime) throws SQLException;
@@ -1896,7 +1903,7 @@ public class SQLSession extends MutableObject {
         ServerLoggers.assertLog(sessionTable != null && sessionTable.get() != null, "USED RETURNED TABLE : " + table.name);
     }
 
-    private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, ExConnection connection, SQLSyntax syntax, ExecuteEnvironment env, Result<ReturnStatement> returnStatement, boolean noPrepare) throws SQLException {
+    private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, final ExConnection connection, SQLSyntax syntax, ExecuteEnvironment env, Result<ReturnStatement> returnStatement, boolean noPrepare) throws SQLException {
 
         boolean poolPrepared = !noPrepare && !Settings.get().isDisablePoolPreparedStatements() && command.length() > Settings.get().getQueryPrepareLength();
 
@@ -1905,7 +1912,7 @@ public class SQLSession extends MutableObject {
 
         ParsedStatement parsed = null;
         if(poolPrepared)
-            parsed = statementPool.get(this, parse);
+            parsed = statementPool.get(connection.sql, parse);
         if(parsed==null) {
             parsed = parseStatement(parse, connection.sql, syntax);
             if(poolPrepared) {
@@ -1913,7 +1920,7 @@ public class SQLSession extends MutableObject {
                 returnStatement.set(new ReturnStatement() {
                     public void proceed(PreparedStatement statement, long runTime) throws SQLException {
                         if(runTime > Settings.get().getQueryPrepareRunTime())
-                            statementPool.put(SQLSession.this, parse, fParsed);
+                            statementPool.put(connection.sql, parse, fParsed);
                         else
                             statement.close();
                     }

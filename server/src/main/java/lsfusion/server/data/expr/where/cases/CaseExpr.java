@@ -244,9 +244,10 @@ public class CaseExpr extends Expr {
     @ManualLazy
     public int getWhereDepth() {
         if(whereDepth<0) {
+            int calcWhereDepth = -1;
             for(ExprCase exprCase : cases)
-                whereDepth = BaseUtils.max(whereDepth, exprCase.data.getWhereDepth());
-            whereDepth = whereDepth + 1;
+                calcWhereDepth = BaseUtils.max(calcWhereDepth, exprCase.data.getWhereDepth());
+            whereDepth = calcWhereDepth + 1;
         }
         return whereDepth;
     }
