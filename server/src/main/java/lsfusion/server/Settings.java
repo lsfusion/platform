@@ -83,7 +83,7 @@ public class Settings {
 
     private boolean disablePoolConnections = false;
 
-    private boolean disablePoolPreparedStatements = false;
+    private boolean disablePoolPreparedStatements = true;
 
     private boolean disableWhenCalcDo = true;
 
