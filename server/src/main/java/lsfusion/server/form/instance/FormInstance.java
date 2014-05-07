@@ -7,6 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKey;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.interop.*;
@@ -81,6 +82,23 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironment implements ReallyChanged {
 
+    private final static GetKey<CalcPropertyObjectInstance<?>, PropertyReaderInstance> GET_PROPERTY_OBJECT_FROM_READER =
+            new GetKey<CalcPropertyObjectInstance<?>, PropertyReaderInstance>() {
+                @Override
+                public CalcPropertyObjectInstance<?> getMapValue(PropertyReaderInstance key) {
+                    return key.getPropertyObjectInstance();
+                }
+            };
+
+    private final GetKey<CalcPropertyObjectInstance<?>, ContainerView> GET_CONTAINER_SHOWIF =
+            new GetKey<CalcPropertyObjectInstance<?>, ContainerView>() {
+                @Override
+                public CalcPropertyObjectInstance<?> getMapValue(ContainerView key) {
+                    return containerShowIfs.get(key);
+                }
+            };
+
+
     public final LogicsInstance logicsInstance;
 
     public final T BL;
@@ -99,6 +117,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     public final ImList<PropertyDrawInstance> properties;
+    
+    public final ImMap<ContainerView, CalcPropertyObjectInstance<?>> containerShowIfs;
+
+    // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
+    protected Map<PropertyDrawInstance, Boolean> isInInterface = new HashMap<PropertyDrawInstance, Boolean>();
+    protected Map<PropertyDrawInstance, Boolean> isShown = new HashMap<PropertyDrawInstance, Boolean>();
+    protected Map<ContainerView, Boolean> isContainerShown = new HashMap<ContainerView, Boolean>();
 
     public final PropertyDrawEntity initFilterPropertyDraw;
 
@@ -190,6 +215,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             }
         properties = mProperties.immutableList();
 
+        MExclMap<ContainerView, CalcPropertyObjectInstance<?>> mContainerShowIfs = MapFact.mExclMap();
+        fillContainerShowIfs(mContainerShowIfs, entity.getRichDesign().mainContainer);
+        containerShowIfs = mContainerShowIfs.immutable();
+
         ImSet<FilterEntity> allFixedFilters = entity.getFixedFilters();
         if (contextFilters != null)
             allFixedFilters = allFixedFilters.merge(contextFilters);
@@ -278,6 +307,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
 
         fireOnInit();
+    }
+
+    private void fillContainerShowIfs(MExclMap<ContainerView, CalcPropertyObjectInstance<?>> mContainerShowIfs, ContainerView container) {
+        if (container.showIf != null) {
+            mContainerShowIfs.exclAdd(container, instanceFactory.getInstance(container.showIf));
+        }
+        for (ComponentView component : container.getChildrenIt()) {
+            if (component instanceof ContainerView) {
+                fillContainerShowIfs(mContainerShowIfs, (ContainerView) component);
+            }
+        }
     }
 
     private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean manageSession, boolean isReadOnly, boolean showDrop) {
@@ -1206,10 +1246,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 //        fireObjectChanged(object); // запускаем все Action'ы, которые следят за этим объектом
     }
 
-    // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
-    protected Map<PropertyDrawInstance, Boolean> isInInterface = new HashMap<PropertyDrawInstance, Boolean>();
-    protected Map<PropertyDrawInstance, Boolean> isShown = new HashMap<PropertyDrawInstance, Boolean>();
-
     // кэш на изменение
     protected Set<CalcPropertyObjectInstance> isReallyChanged = new HashSet<CalcPropertyObjectInstance>();
     public boolean containsChange(CalcPropertyObjectInstance instance) {
@@ -1316,23 +1352,39 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
+    private void updateDrawProps(
+            MExclMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties,
+            ImSet<GroupObjectInstance> keyGroupObjects,
+            ImOrderSet<PropertyReaderInstance> propertySet) throws SQLException, SQLHandledException {
+        queryPropertyObjectValues(propertySet, properties, keyGroupObjects, GET_PROPERTY_OBJECT_FROM_READER);
+    }
+
     @Message("message.form.update.props")
-    private <T extends PropertyReaderInstance> void updateDrawProps(MExclMap<T, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties, ImSet<GroupObjectInstance> keyGroupObjects, @ParamMessage ImOrderSet<T> propertySet) throws SQLException, SQLHandledException {
+    private <T> void queryPropertyObjectValues(
+            @ParamMessage ImOrderSet<T> keysSet,
+            MExclMap<T, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> valuesMap,
+            ImSet<GroupObjectInstance> keyGroupObjects,
+            GetKey<CalcPropertyObjectInstance<?>, T> getPropertyObject
+    ) throws SQLException, SQLHandledException {
+        
         QueryBuilder<ObjectInstance, T> selectProps = new QueryBuilder<ObjectInstance, T>(GroupObjectInstance.getObjects(getUpTreeGroups(keyGroupObjects)));
         for (GroupObjectInstance keyGroup : keyGroupObjects) {
             selectProps.and(keyGroup.keyTable.getWhere(selectProps.getMapExprs()));
         }
 
-        for (T propertyReader : propertySet) {
-            selectProps.addProperty(propertyReader, propertyReader.getPropertyObjectInstance().getExpr(selectProps.getMapExprs(), getModifier(), this));
+        for (T key : keysSet) {
+            selectProps.addProperty(
+                    key,
+                    getPropertyObject.getMapValue(key).getExpr(selectProps.getMapExprs(), getModifier(), this)
+            );
         }
 
         ImMap<ImMap<ObjectInstance, DataObject>, ImMap<T, ObjectValue>> queryResult = selectProps.executeClasses(this, BL.LM.baseClass).getMap();
-        for (final T propertyReader : propertySet) {
-            properties.exclAdd(propertyReader,
+        for (final T key : keysSet) {
+            valuesMap.exclAdd(key,
                     queryResult.mapValues(new GetValue<ObjectValue, ImMap<T, ObjectValue>>() {
                         public ObjectValue getMapValue(ImMap<T, ObjectValue> value) {
-                            return value.get(propertyReader);
+                            return value.get(key);
                         }
                     }));
         }
@@ -1407,8 +1459,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         ServerLoggers.assertLog(classListener == null || !classListener.isClosed(), "NAVIGATOR CLOSED " + BaseUtils.nullToString(classListener));
     }
 
-    private ImMap<ShowIfReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> readShowIfs(Map<PropertyDrawInstance, Boolean> newIsShown, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids, Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowColumnGrids, ChangedData changedProps) throws SQLException, SQLHandledException {
-        final MOrderExclMap<ShowIfReaderInstance, ImSet<GroupObjectInstance>> mShowIfs = MapFact.mOrderExclMap();
+    private ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> readShowIfs(
+            Map<PropertyDrawInstance, Boolean> newIsShown,
+            Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids,
+            Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowColumnGrids,
+            ChangedData changedProps) throws SQLException, SQLHandledException {
+
+        updateContainersShowIfs(changedProps);
+
+        final MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mShowIfs = MapFact.mOrderExclMap();
         for (PropertyDrawInstance drawProperty : properties) {
             ClassViewType curClassView = drawProperty.getCurClassView();
             if (curClassView == HIDE) continue;
@@ -1428,15 +1487,21 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 newInInterface = false;
             }
 
+            if (newInInterface != null && !containerShowIfs.isEmpty() && !isPropertyShownInContainers(drawProperty, newInInterface)) {
+                newInInterface = null;
+            }
+
             rowGrids.put(drawProperty, propRowGrids);
             rowColumnGrids.put(drawProperty, propRowColumnGrids);
             newIsShown.put(drawProperty, newInInterface);
 
             Boolean oldInInterface = isInInterface.put(drawProperty, newInInterface);
             if (newInInterface != null && drawProperty.propertyShowIf != null) {
-                boolean read = refresh || !newInInterface.equals(oldInInterface) // если изменилось представление
-                        || groupUpdated(drawProperty.getColumnGroupObjects(), UPDATED_CLASSVIEW); // изменились группы в колонки (так как отбираются только GRID)
-                if (read || propertyUpdated(drawProperty.propertyShowIf, propRowColumnGrids, changedProps)) {
+                boolean read = refresh
+                               || !newInInterface.equals(oldInInterface) // если изменилось представление
+                               || groupUpdated(drawProperty.getColumnGroupObjects(), UPDATED_CLASSVIEW) // изменились группы в колонки (так как отбираются только GRID)
+                               || propertyUpdated(drawProperty.propertyShowIf, propRowColumnGrids, changedProps); //изменился propertyShowIf 
+                if (read) {
                     mShowIfs.exclAdd(drawProperty.showIfReader, propRowColumnGrids);
                 } else {
                     //т.е. не поменялся ни inInterface, ни showIf
@@ -1444,16 +1509,16 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 }
             }
         }
-
-        MExclMap<ShowIfReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> showIfValues = MapFact.mExclMap();
-        ImOrderMap<ImSet<GroupObjectInstance>, ImOrderSet<ShowIfReaderInstance>> changedShowIfs = mShowIfs.immutableOrder().groupOrderValues();
+        
+        MExclMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> showIfValues = MapFact.mExclMap();
+        ImOrderMap<ImSet<GroupObjectInstance>, ImOrderSet<PropertyReaderInstance>> changedShowIfs = mShowIfs.immutableOrder().groupOrderValues();
         for (int i = 0, size = changedShowIfs.size(); i < size; i++) {
             updateDrawProps(showIfValues, changedShowIfs.getKey(i), changedShowIfs.getValue(i));
         }
 
-        ImMap<ShowIfReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> immShowIfs = showIfValues.immutable();
+        ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> immShowIfs = showIfValues.immutable();
         for (int i = 0, size = immShowIfs.size(); i < size; ++i) {
-            ShowIfReaderInstance key = immShowIfs.getKey(i);
+            ShowIfReaderInstance key = (ShowIfReaderInstance) immShowIfs.getKey(i);
             ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue> values = immShowIfs.getValue(i);
 
             boolean allNull = true;
@@ -1472,13 +1537,68 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return immShowIfs;
     }
 
+    private void updateContainersShowIfs(ChangedData changedProps) throws SQLException, SQLHandledException {
+        if (!containerShowIfs.isEmpty()) {
+            ImSet<GroupObjectInstance> groupObjectKeys = SetFact.EMPTY();
+            
+            MOrderExclSet<ContainerView> changedContainersShowIfs = SetFact.mOrderExclSet();
+            
+            int containerShowIfCount = containerShowIfs.size();
+            for (int i = 0; i < containerShowIfCount; ++i) {
+                ContainerView container = containerShowIfs.getKey(i);
+                CalcPropertyObjectInstance<?> showIf = containerShowIfs.getValue(i);
+                if (propertyUpdated(showIf, groupObjectKeys, changedProps)) {
+                    changedContainersShowIfs.exclAdd(container);
+                }
+            }
+            
+            MExclMap<ContainerView, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> containerShowIfValues = MapFact.mExclMap();
+            queryPropertyObjectValues(changedContainersShowIfs.immutableOrder(), containerShowIfValues, groupObjectKeys, GET_CONTAINER_SHOWIF);
+            ImMap<ContainerView, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> immContainerShowIfs = containerShowIfValues.immutable();
+
+            int containerShowIfsCount = immContainerShowIfs.size();
+            for (int i = 0; i < containerShowIfsCount; ++i) {
+                ContainerView container = immContainerShowIfs.getKey(i);
+                ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue> value = immContainerShowIfs.getValue(i);
+                isContainerShown.put(container, value.getValue(0).getValue() != null);
+            }
+        }
+    }
+
+    private boolean isPropertyShownInContainers(PropertyDrawInstance<?> property, boolean inInterface) {
+        ContainerView parent;
+        if (inInterface) {
+            GroupObjectEntity group = property.toDraw.entity;
+            if (group.treeGroup == null) {
+                parent = entity.getRichDesign().get(group).grid.getContainer();
+            } else {
+                parent = entity.getRichDesign().get(group.treeGroup).getContainer();
+            }
+        } else {
+            parent = entity.getRichDesign().get(property.entity).getContainer();
+        }
+        
+        while (parent != null) {
+            Boolean shown = isContainerShown.get(parent);
+            
+            if (shown != null && !shown) {
+                return false;
+            }
+            
+            parent = parent.getContainer();
+        }
+        
+        return true;
+    }
+
     private void fillChangedDrawProps(MFormChanges result, ChangedData changedProps) throws SQLException, SQLHandledException {
         //1е чтение - читаем showIfs
         HashMap<PropertyDrawInstance, Boolean> newIsShown = new HashMap<PropertyDrawInstance, Boolean>();
         HashMap<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowGrids = new HashMap<PropertyDrawInstance, ImSet<GroupObjectInstance>>();
         Map<PropertyDrawInstance, ImSet<GroupObjectInstance>> rowColumnGrids = new HashMap<PropertyDrawInstance, ImSet<GroupObjectInstance>>();
 
-        ImMap<ShowIfReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> showIfValues = readShowIfs(newIsShown, rowGrids, rowColumnGrids, changedProps);
+        ImMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> showIfValues =
+                readShowIfs(newIsShown, rowGrids, rowColumnGrids, changedProps);
 
         MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mReadProperties = MapFact.mOrderExclMap();
 
@@ -1555,7 +1675,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private void fillChangedReader(CalcPropertyObjectInstance<?> drawProperty, PropertyReaderInstance propertyReader, ImSet<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean read, MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> readProperties, ChangedData changedProps) throws SQLException, SQLHandledException {
+    private void fillChangedReader(CalcPropertyObjectInstance<?> drawProperty, PropertyReaderInstance propertyReader,
+                                   ImSet<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean read,
+                                   MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> readProperties,
+                                   ChangedData changedProps) throws SQLException, SQLHandledException {
         if (drawProperty != null && (read || (!hidden && pendingHidden.contains(propertyReader)) || propertyUpdated(drawProperty, columnGroupGrids, changedProps))) {
             if (hidden)
                 pendingHidden.add(propertyReader);

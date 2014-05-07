@@ -2964,6 +2964,16 @@ componentPropertyValue returns [Object value]
 	|   doubleB=boundsDoubleLiteral { $value = $doubleB.val; }
 	|   contType=containerTypeLiteral { $value = $contType.val; }
 	|   alignment=flexAlignmentLiteral { $value = $alignment.val; }
+	|   calcProp=designCalcPropertyObject { $value = $calcProp.property; }
+	;
+	
+designCalcPropertyObject returns [CalcPropertyObjectEntity property = null]
+	:	mProperty=formMappedProperty
+		{
+			if (inPropParseState()) {
+				$property = $designStatement::design.addCalcPropertyObject($mProperty.propUsage, $mProperty.mapping);
+			}
+		}
 	;
 
 

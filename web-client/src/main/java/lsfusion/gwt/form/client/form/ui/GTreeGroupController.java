@@ -16,11 +16,13 @@ import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.base.client.GwtClientUtils.setupFillParent;
 
 public class GTreeGroupController extends GAbstractGroupObjectController {
-    private GTreeGroup treeGroup;
+    private final GTreeGroup treeGroup;
 
-    private GTreeTable tree;
+    private final ResizableSimplePanel treeView;
 
-    public GGroupObject lastGroupObject;
+    private final GTreeTable tree;
+    
+    private final GGroupObject lastGroupObject;
 
     public GTreeGroupController(GTreeGroup iTreeGroup, GFormController iFormController, GForm iForm) {
         super(iFormController, iTreeGroup.toolbar);
@@ -29,7 +31,7 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
 
         tree = new GTreeTable(iFormController, iForm, this);
 
-        ResizableSimplePanel treeView = new ResizableSimplePanel();
+        treeView = new ResizableSimplePanel();
         treeView.setStyleName("gridResizePanel");
         treeView.setWidget(tree);
         setupFillParent(treeView.getElement(), tree.getElement());
@@ -106,34 +108,44 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
     }
 
     private void addPanelProperty(GGroupObject group, GPropertyDraw property) {
-        if (tree != null)
-            tree.removeProperty(group, property);
+        tree.removeProperty(group, property);
         panel.addProperty(property);
     }
 
     private void addGridProperty(GGroupObject group, GPropertyDraw property) {
-        if (tree != null)
-            tree.addProperty(group, property);
+        tree.addProperty(group, property);
         panel.removeProperty(property);
     }
 
     private void update() {
-        if (tree != null) {
-            tree.update();
+        tree.update();
+
+        tree.restoreVisualState();
+
+        boolean isTreeVisible = tree.getColumnCount() > 1;
+
+        treeView.setVisible(isTreeVisible);
+
+        if (toolbarView != null) {
+            toolbarView.setVisible(isTreeVisible);
+        }
+
+        if (filter != null) {
+            filter.setVisible(isTreeVisible);
+        }
+
+        for (GGroupObject groupObject : treeGroup.groups) {
+            formController.setFiltersVisible(groupObject, isTreeVisible);
         }
         panel.update();
     }
 
     public void beforeHidingGrid() {
-        if (tree != null) {
-            tree.beforeHiding();
-        }
+        tree.beforeHiding();
     }
 
     public void afterShowingGrid() {
-        if (tree != null) {
-            tree.afterShowing();
-        }
+        tree.afterShowing();
     }
 
     @Override

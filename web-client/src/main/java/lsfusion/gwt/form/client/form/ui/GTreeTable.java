@@ -95,6 +95,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         dataUpdated = true;
         int index = tree.removeProperty(group, property);
         if (index > 0) {
+            createdFields.remove(index);
+            headers.remove(index);
             removeColumn(index);
             preferredWidth -= property.getMinimumPixelWidth(font);
         }

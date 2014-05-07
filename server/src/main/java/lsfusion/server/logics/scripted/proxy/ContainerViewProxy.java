@@ -3,6 +3,7 @@ package lsfusion.server.logics.scripted.proxy;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.view.ContainerView;
 
 public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
@@ -26,7 +27,7 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     public void setType(ContainerType type) {
         target.setType(type);
     }
-
+    
     public void setChildrenAlignment(FlexAlignment falign) {
         Alignment align;
         switch (falign) {
@@ -41,5 +42,9 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
 
     public void setColumns(int columns) {
         target.columns = columns;
+    }
+
+    public void setShowIf(CalcPropertyObjectEntity<?> showIf) {
+        target.setShowIf(showIf);
     }
 }

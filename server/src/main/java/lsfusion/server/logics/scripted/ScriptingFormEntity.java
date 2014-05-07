@@ -504,7 +504,12 @@ public class ScriptingFormEntity {
     }
 
     public CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule.PropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        PropertyObjectEntity propObject = addPropertyObject(property, mapping);
+        return addCalcPropertyObject(LM, form, property, mapping);
+    }
+
+    public static CalcPropertyObjectEntity addCalcPropertyObject(ScriptingLogicsModule LM, FormEntity form, ScriptingLogicsModule.PropertyUsage property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        MappedProperty prop = LM.getPropertyWithMapping(form, property, mapping);
+        PropertyObjectEntity propObject = form.addPropertyObject(prop.property, prop.mapping);
         if (!(propObject instanceof CalcPropertyObjectEntity)) {
             LM.getErrLog().emitNotCalculationPropertyError(LM.getParser());
         }
