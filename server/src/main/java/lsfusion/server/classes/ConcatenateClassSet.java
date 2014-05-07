@@ -7,6 +7,7 @@ import lsfusion.server.classes.sets.OrClassSet;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.ClassCanonicalNameUtils;
 
 import java.util.Arrays;
 
@@ -118,13 +119,12 @@ public class ConcatenateClassSet implements ConcreteClass, ValueClassSet  { // Ð
         return new ConcatenateClassSet(types);
     }
 
+    public AndClassSet[] getClasses() {
+        return classes;
+    }
+    
     @Override
     public String getCanonicalSID() {
-        String sid = "CONCAT(";
-        for (AndClassSet set : classes) {
-            sid += (sid.length() > 1 ? "," : "");
-            sid += set.getCanonicalSID();
-        }
-        return sid + ")";
+        return ClassCanonicalNameUtils.createName(this);
     }
 }

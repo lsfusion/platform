@@ -17,6 +17,7 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.ClassCanonicalNameUtils;
 import lsfusion.server.logics.property.ClassField;
 
 import java.util.Comparator;
@@ -389,16 +390,6 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
 
     @Override
     public String getCanonicalSID() {
-        if (set.size() == 0) {
-            return up.getCanonicalSID();
-        } else {
-            String sid = "{";
-            sid += up.getCanonicalSID();
-            for (int i = 0; i < set.size(); i++) {
-                sid += ",";
-                sid += set.get(i).getCanonicalSID();
-            }
-            return sid + "}";
-        }
+        return ClassCanonicalNameUtils.createName(this);
     }
 }

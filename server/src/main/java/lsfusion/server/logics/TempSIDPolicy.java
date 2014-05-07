@@ -1,7 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.form.entity.PropertyObjectEntity;
 
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
 
 public class TempSIDPolicy implements PropertySIDPolicy {
     @Override
-    public String createSID(String namespaceName, String name, List<ValueClass> signature, String oldName) {
+    public String createSID(String namespaceName, String name, List<AndClassSet> signature, String oldName) {
         String actualName = oldName == null ? name : oldName;
         if (namespaceName == null) {
             return actualName;
@@ -27,9 +27,9 @@ public class TempSIDPolicy implements PropertySIDPolicy {
     @Override
     public String transformCanonicalNameToSID(String canonicalName) {
         String sid = canonicalName.replace(".", "_");
-        int bracePos = sid.indexOf("(");
-        if (bracePos >= 0) {
-            sid = sid.substring(0, bracePos);
+        int bracketPos = sid.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
+        if (bracketPos >= 0) {
+            sid = sid.substring(0, bracketPos);
         }
         return sid;
     }

@@ -1285,9 +1285,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private void test(String testCase) {
         try {
-            List<AndClassSet> res = new PropertyCanonicalNameParser(testCase).getSignature();
-            System.out.println('"' + testCase + "\": " + (res == null ? "null" : res.toString()));
-        } catch (CNParseException e) {
+            PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, testCase);
+            List<AndClassSet> res = parser.getSignature();
+            System.out.print('"' + testCase + "\": " + (res == null ? "null" : res.toString()));
+            testCase = testCase.replaceAll(" ", "");
+            System.out.println(" -> " + DefaultSIDPolicy.staticTransformCanonicalNameToSID(testCase));
+        } catch (PropertyCanonicalNameParser.CNParseException e) {
             System.out.println('"' + testCase + "\": error (" + e.getMessage() + ")");
         }
     }
@@ -1296,239 +1299,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return (LCP) LM.getLP(sID);
     }
 
-    public static class CNParseException extends Exception {
-        public CNParseException(String msg) {
-            super(msg);
-        } 
-    }
-    
-    private static class CNParseInnerException extends RuntimeException {
-        public CNParseInnerException(String msg) {
-            super(msg);
-        }
-    }
-
-    public class PropertyCanonicalNameParser {
-
-        private final String canonicalName;
-        
-        private int pos;
-        private String parseText;
-        private int len;
-        private final String CPREFIX = "CONCAT(";
-        private final String UNKNOWNCLASS = "?";
-        
-        public PropertyCanonicalNameParser(String canonicalName) {
-            assert canonicalName != null;
-            this.canonicalName = canonicalName.replaceAll(" ", "");    
-        }
-        
-        public String getNamespace() throws CNParseException {
-            int pointIndex = canonicalName.indexOf('.');
-            if (pointIndex < 0) {
-                throw new CNParseException("Отсутствует имя пространства имен");
-            }
-            String namespaceName = canonicalName.substring(0, pointIndex);
-            return checkID(namespaceName);
-        }
-        
-        public String getName() throws CNParseException {
-            getNamespace(); // проверим валидность пространства имен
-            int pointIndex = canonicalName.indexOf('.');
-            int sqbracketIndex = canonicalName.indexOf("[");
-            
-            String name;
-            if (sqbracketIndex < 0) {
-                name = canonicalName.substring(pointIndex+1);
-            } else {
-                name = canonicalName.substring(pointIndex+1, sqbracketIndex);
-            }
-            return checkID(name);
-        }
-        
-        public List<AndClassSet> getSignature() throws CNParseException {
-            int sqBracketPos = canonicalName.indexOf('[');
-            if (sqBracketPos >= 0) {
-                if (canonicalName.lastIndexOf(']') != canonicalName.length() - 1) {
-                    throw new CNParseException("Сигнатура должна завершаться скобкой");
-                }
-                
-                parseText = canonicalName.substring(sqBracketPos+1, canonicalName.length() - 1);
-                pos = 0;
-                len = parseText.length();
-                
-                try {
-                    List<AndClassSet> result = parseAndClassSetList(true);
-                    if (pos < len) {
-                        throw new CNParseException("Ошибка парсинга");
-                    }
-                    return result;
-                } catch (CNParseInnerException e) {
-                    throw new CNParseException(e.getMessage());
-                }
-            }
-            return null;
-        }
-        
-        private boolean isNext(String str) {
-            return pos + str.length() <= len && parseText.substring(pos, pos + str.length()).equals(str);
-        }
-
-        private void checkNext(String str) {
-            if (isNext(str)) {
-                pos += str.length();
-            } else {
-                throw new CNParseInnerException("Ожидалась подстрока '" + str + "'");
-            }
-        }
-        
-        private String checkID(final String str) throws CNParseException {
-            if (!str.matches("[a-zA-Z0-9_]+")) {
-                throw new CNParseException("Идентификатор содаржит запрещенные символы");    
-            }
-            return str;
-        }
-        
-        private List<AndClassSet> parseAndClassSetList(boolean isSignature) {
-            List<AndClassSet> result = new ArrayList<AndClassSet>();
-            while (pos < len) {
-                if (isSignature && isNext(UNKNOWNCLASS)) {
-                    checkNext(UNKNOWNCLASS);
-                    result.add(null);
-                } else {
-                    result.add(parseAndClassSet());
-                }
-                
-                if (isNext(",")) { 
-                    checkNext(",");
-                } else {
-                    break;
-                }
-            }
-            return result;
-        }
-        
-        private AndClassSet parseAndClassSet() {
-            AndClassSet result;
-            if (isNext(CPREFIX)) {
-                result = parseConcatenateClassSet();
-            } else if (isNext("{")) {
-                result = parseOrObjectClassSet();
-            } else if (isNext("(")) {
-                result = parseUpClassSet();
-            } else {
-                result = parseSingleClass();
-            }
-            return result;
-        }
-        
-        private ConcatenateClassSet parseConcatenateClassSet() {
-            checkNext(CPREFIX);
-            List<AndClassSet> classes = parseAndClassSetList(false);
-            checkNext(")");
-            return new ConcatenateClassSet(classes.toArray(new AndClassSet[classes.size()]));
-        }
-        
-        private OrObjectClassSet parseOrObjectClassSet() {
-            checkNext("{");
-            UpClassSet up = parseUpClassSet();
-            checkNext(",");
-            ImSet<ConcreteCustomClass> customClasses = SetFact.EMPTY();
-            if (!isNext("}")) {
-                customClasses = parseCustomClassList();        
-            }
-            OrObjectClassSet orSet = new OrObjectClassSet(up, customClasses);
-            checkNext("}");
-            return orSet;
-        }
-        
-        private ImSet<ConcreteCustomClass> parseCustomClassList() {
-            List<ConcreteCustomClass> classes = new ArrayList<ConcreteCustomClass>();            
-            while (pos < len) {
-                ConcreteCustomClass cls = (ConcreteCustomClass) parseCustomClass();
-                classes.add(cls);
-                if (!isNext(",")) {
-                    break;
-                }
-                checkNext(",");
-            }
-            return new ArIndexedSet<ConcreteCustomClass>(classes.size(), classes.toArray(new ConcreteCustomClass[classes.size()]));        
-        }
-        
-        private UpClassSet parseUpClassSet() {
-            if (isNext("(")) {
-                checkNext("(");
-                List<CustomClass> classes = new ArrayList<CustomClass>();
-                while (!isNext(")")) {
-                    classes.add(parseCustomClass());
-                    if (!isNext(")")) {
-                        checkNext(",");
-                    }
-                }
-                checkNext(")");
-                return new UpClassSet(classes.toArray(new CustomClass[classes.size()]));
-            } else {
-                CustomClass cls = parseCustomClass();
-                return new UpClassSet(cls);
-            }
-        }
-        
-        private String parseClassName() {
-            Matcher matcher = Pattern.compile("[^\\w\\.]").matcher(parseText);
-            int nextPos = (matcher.find(pos) ? matcher.start() : len);
-            if (nextPos + 1 < len && parseText.charAt(nextPos) == '[') {
-                nextPos = parseText.indexOf(']', nextPos + 1) + 1;
-            }
-            String name = parseText.substring(pos, nextPos);
-            pos = nextPos;
-            return name;
-        }
-        
-        private CustomClass findCustomClass(String name) {
-            CustomClass cls = findClass(name);
-            if (cls == null) {
-                throw new CNParseInnerException("Пользовательский класс " + name + " не найден");
-            }
-            return cls;
-        }
-        
-        private CustomClass parseCustomClass() {
-            String parsedName = parseClassName();
-            return findCustomClass(parsedName);
-        }
-        
-        private AndClassSet parseSingleClass() {
-            final String strConst = "STRING";
-            final String numericConst = "NUMERIC";
-            
-            String parsedName = parseClassName();
-            DataClass cls = ScriptingLogicsModule.getPredefinedClass(parsedName);
-            if (parsedName.equals(strConst)) {
-                cls = StringClass.text;
-            } else if (parsedName.equals(numericConst)) {
-                cls = NumericClass.get(5, 2);
-            }
-            
-            if (cls != null) {
-                return cls;
-            } else {
-                return findCustomClass(parsedName).getUpSet();
-            }
-        }
-    }
-    
     public LAP getLAP(String sID) {
         return (LAP) LM.getLP(sID);
     }
 
     public LP findProperty(String canonicalName) {
-        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(canonicalName);
+        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, canonicalName);
         try {
             String namespaceName = parser.getNamespace();
             String name = parser.getName();
             List<AndClassSet> signature = parser.getSignature();
             return findProperty(namespaceName, name, signature);
-        } catch (CNParseException e) {
+        } catch (PropertyCanonicalNameParser.CNParseException e) {
             return null;
         }
     }

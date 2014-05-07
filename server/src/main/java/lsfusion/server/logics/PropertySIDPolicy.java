@@ -1,9 +1,7 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.form.entity.PropertyObjectEntity;
-import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.property.Property;
 
 import java.util.List;
 
@@ -14,7 +12,7 @@ import java.util.List;
  */
 
 public interface PropertySIDPolicy {
-    String createSID(String namespaceName, String name, List<ValueClass> signature, String oldName);
+    String createSID(String namespaceName, String name, List<AndClassSet> signature, String oldName);
     
     String transformCanonicalNameToSID(String canonicalName);
     

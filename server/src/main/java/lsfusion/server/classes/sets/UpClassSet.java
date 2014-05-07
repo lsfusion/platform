@@ -12,6 +12,7 @@ import lsfusion.server.classes.*;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.ClassCanonicalNameUtils;
 import lsfusion.server.logics.property.ClassField;
 
 import java.util.Arrays;
@@ -211,15 +212,7 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
 
     @Override
     public String getCanonicalSID() {
-        if (wheres.length == 1) {
-            return wheres[0].getCanonicalSID();
-        }
-        String sid = "(";
-        for (CustomClass cls : wheres) {
-            sid += (sid.length() > 1 ? "," : "");
-            sid += cls.getCanonicalSID();
-        }
-        return sid + ")";
+        return ClassCanonicalNameUtils.createName(this);
     }
 
     @Override
