@@ -40,10 +40,7 @@ public class AdjustVolatileExecuteEnvironment extends QueryExecuteEnvironment {
         }
     }
 
-    public synchronized void failed(AdjustState state, SQLHandledException e) {
-        
-        if(!(e instanceof SQLTimeoutException && !((SQLTimeoutException)e).isTransactTimeout))
-            return;
+    public synchronized void failed(AdjustState state) {
         
         // discard'м если состояние на конец отличается от состояния на начало
         if(!(volatileStats == state.volatileStats && timeout == state.prevTimeout))

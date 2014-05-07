@@ -71,9 +71,9 @@ public class SQLAspect {
             
             env.succeeded(state);
         } catch (SQLHandledException e) {
-            if(e instanceof SQLClosedException || e instanceof SQLTooLargeQueryException || e instanceof SQLTooLongQueryException)
+            if(!(e instanceof SQLTimeoutException && !((SQLTimeoutException)e).isTransactTimeout))
                 throw e;
-            env.failed(state, e);
+            env.failed(state);
             if(e.isInTransaction()) // транзакция все равно прервана
                 throw e;
             // вообще тут только timeout и closed могут быть.

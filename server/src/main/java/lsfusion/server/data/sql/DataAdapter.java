@@ -480,6 +480,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         throw new UnsupportedOperationException();
     }
 
+    public boolean isUniqueViolation(SQLException e) {
+        throw new UnsupportedOperationException();
+    }
+
     public boolean isTimeout(SQLException e) {
         throw new UnsupportedOperationException();
     }

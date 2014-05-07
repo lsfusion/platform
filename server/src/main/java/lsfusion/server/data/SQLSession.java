@@ -933,7 +933,10 @@ public class SQLSession extends MutableObject {
         boolean deadLock = false;
         if(syntax.isUpdateConflict(e) || (deadLock = syntax.isDeadLock(e)))
             handled = new SQLConflictException(!deadLock, inTransaction);
-        
+
+        if(syntax.isUniqueViolation(e))
+            handled = new SQLUniqueViolationException(inTransaction, false);
+
         if(syntax.isTimeout(e))
             handled = new SQLTimeoutException(isTransactTimeout, inTransaction);
         
@@ -1663,21 +1666,10 @@ public class SQLSession extends MutableObject {
     }
     public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner) throws SQLException, SQLHandledException {
 //        query.outSelect(this, env);
-        checkTableOwner(name, owner);        
-        
-        SQLExecute insertSelect = ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax);
+        checkTableOwner(name, owner);
+
         try {
-            if(Settings.get().isEnableHacks() && insertSelect.command.contains("FROM base_0 t0 JOIN ZReport_sumNegativeMarkupGeneralLedger t1")) {
-                query.outSelect(this, env);
-            }
-        } catch (Throwable t) {
-            if(isInTransaction() && t instanceof SQLHandledException)
-                throw (SQLHandledException)t;
-            ServerLoggers.sqlSuppLog(t);
-        }            
-            
-        try {
-            return executeDML(insertSelect);
+            return executeDML(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax));
         } catch(Throwable t) {
             Result<Throwable> firstException = new Result<Throwable>();
             firstException.set(t);
@@ -1701,7 +1693,11 @@ public class SQLSession extends MutableObject {
     }
 
     public int modifyRecords(ModifyQuery modify) throws SQLException, SQLHandledException {
-        return modifyRecords(modify, new Result<Integer>());
+        try {
+            return modifyRecords(modify, new Result<Integer>());
+        } catch (SQLUniqueViolationException e) {
+            throw e.raceCondition();
+        }
     }
 
     public int modifyRecords(ModifyQuery modify, Result<Integer> proceeded) throws SQLException, SQLHandledException {

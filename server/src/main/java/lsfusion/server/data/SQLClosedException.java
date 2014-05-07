@@ -1,5 +1,7 @@
 package lsfusion.server.data;
 
+import lsfusion.server.Settings;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -17,7 +19,10 @@ public class SQLClosedException extends SQLHandledException {
         this.isPrivate = isPrivate;
     }
 
-    public boolean repeatApply(SQLSession sql, OperationOwner owner) throws SQLException {
+    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) throws SQLException {
+        if(attempts > Settings.get().getTooMuchAttempts())
+            return false;
+                    
         return sql.tryRestore(owner, connection, isPrivate);
     }
 

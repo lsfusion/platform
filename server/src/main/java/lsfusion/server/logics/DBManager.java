@@ -687,8 +687,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public static interface RunService {
         void run(SQLSession sql) throws SQLException, SQLHandledException;
     }
-    
+
     public static void run(SQLSession session, boolean runInTransaction, RunService run) throws SQLException, SQLHandledException {
+        run(session, runInTransaction, run, 0);
+    }
+    
+    private static void run(SQLSession session, boolean runInTransaction, RunService run, int attempts) throws SQLException, SQLHandledException {
         if(runInTransaction) {
             session.startTransaction(RECALC_TIL, OperationOwner.unknown);
             try {
@@ -696,8 +700,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 session.commitTransaction();
             } catch (Throwable t) {
                 session.rollbackTransaction();
-                if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session, OperationOwner.unknown)) { // update conflict или deadlock или timeout - пробуем еще раз
-                    run(session, runInTransaction, run);
+                if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
+                    run(session, runInTransaction, run, attempts + 1);
                     return;
                 }
                 

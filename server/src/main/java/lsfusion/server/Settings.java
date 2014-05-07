@@ -198,7 +198,8 @@ public class Settings {
 
     private int dialogTransactionTimeout = 5000;
 
-    private boolean disableExplicitVolatileStats = false;  
+    private boolean disableExplicitVolatileStats = false;
+    private int tooMuchAttempts = 15;
 
     public static Settings get() {
         return ThreadLocalContext.getSettings();
@@ -1034,5 +1035,13 @@ public class Settings {
 
     public void setRemoteLogTime(int remoteLogTime) {
         this.remoteLogTime = remoteLogTime;
+    }
+
+    public int getTooMuchAttempts() {
+        return tooMuchAttempts;
+    }
+
+    public void setTooMuchAttempts(int tooMuchAttempts) {
+        this.tooMuchAttempts = tooMuchAttempts;
     }
 }

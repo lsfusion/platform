@@ -52,7 +52,6 @@ import lsfusion.server.logics.table.ImplementTable;
 import javax.swing.*;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.Callable;
 
 import static lsfusion.base.BaseUtils.filterKeys;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -1360,10 +1359,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         dataModifier.clearHints(sql, getOwner());
 
-        return transactApply(BL, update, interaction, 0, applyAction);
+        return transactApply(BL, update, interaction, 0, 0, applyAction);
     }
 
-    private boolean transactApply(BusinessLogics<?> BL, UpdateCurrentClasses update, UserInteraction interaction, int autoAttemptCount, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
+    private boolean transactApply(BusinessLogics<?> BL, UpdateCurrentClasses update, UserInteraction interaction, int attemptCount, int autoAttemptCount, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
         startTransaction(update, BL);
 
@@ -1372,37 +1371,37 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         } catch (Throwable t) { // assert'им что последняя SQL комманда, работа с транзакцией
             try {
                 rollbackApply();
-                
-                if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(sql, getOwner())) { // update conflict или deadlock или timeout - пробуем еще раз
-                    boolean noTimeout = false;
-                    if(t instanceof SQLTimeoutException && ((SQLTimeoutException)t).isTransactTimeout) {
-                        if(interaction == null) {
-                            autoAttemptCount++;
-                            if(autoAttemptCount > Settings.get().getApplyAutoAttemptCountLimit()) {
-                                ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(getString("logics.server.apply.timeout.canceled"), true));                            
-                                return false;
-                            }
-                        } else {
-                            int option = (Integer)interaction.requestUserInteraction(new ConfirmClientAction("lsFusion",getString("logics.server.restart.transaction"), true, Settings.get().getDialogTransactionTimeout(), JOptionPane.CANCEL_OPTION));
-                            if(option == JOptionPane.CANCEL_OPTION)
-                                return false;
-                            if(option == JOptionPane.YES_OPTION)
-                                noTimeout = true;
-                        }
-                    }
-                    
-                    if(noTimeout)
-                        sql.pushNoTransactTimeout();
-                        
-                    try {
-                        return transactApply(BL, update, interaction, 0, applyAction);
-                    } finally {
-                        if(noTimeout)
-                            sql.popNoTransactTimeout();
-                    }
-                }
             } catch (Throwable rs) {
                 ServerLoggers.sqlHandLogger.info("ROLLBACK EXCEPTION " + rs.toString() + '\n' + ExceptionUtils.getStackTrace(rs));
+            }
+                
+            if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(sql, getOwner(), attemptCount)) { // update conflict или deadlock или timeout - пробуем еще раз
+                boolean noTimeout = false;
+                if(t instanceof SQLTimeoutException && ((SQLTimeoutException)t).isTransactTimeout) {
+                    if(interaction == null) {
+                        autoAttemptCount++;
+                        if(autoAttemptCount > Settings.get().getApplyAutoAttemptCountLimit()) {
+                            ThreadLocalContext.delayUserInteraction(new LogMessageClientAction(getString("logics.server.apply.timeout.canceled"), true));                            
+                            return false;
+                        }
+                    } else {
+                        int option = (Integer)interaction.requestUserInteraction(new ConfirmClientAction("lsFusion",getString("logics.server.restart.transaction"), true, Settings.get().getDialogTransactionTimeout(), JOptionPane.CANCEL_OPTION));
+                        if(option == JOptionPane.CANCEL_OPTION)
+                            return false;
+                        if(option == JOptionPane.YES_OPTION)
+                            noTimeout = true;
+                    }
+                }
+                
+                if(noTimeout)
+                    sql.pushNoTransactTimeout();
+                    
+                try {
+                    return transactApply(BL, update, interaction, attemptCount++, autoAttemptCount, applyAction);
+                } finally {
+                    if(noTimeout)
+                        sql.popNoTransactTimeout();
+                }
             }
 
             throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);

@@ -119,6 +119,8 @@ public interface SQLSyntax {
 
     boolean isUpdateConflict(SQLException e);
 
+    boolean isUniqueViolation(SQLException e);
+
     boolean isTimeout(SQLException e);
 
     boolean isTransactionCanceled(SQLException e);

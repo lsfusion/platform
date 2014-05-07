@@ -300,6 +300,11 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
+    public boolean isUniqueViolation(SQLException e) {
+        return e.getSQLState().equals("23505");
+    }
+
+    @Override
     public boolean isTimeout(SQLException e) {
         return e.getSQLState().equals("57014");
     }

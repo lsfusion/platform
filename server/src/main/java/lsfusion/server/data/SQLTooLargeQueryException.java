@@ -16,7 +16,7 @@ public class SQLTooLargeQueryException extends SQLHandledException {
         this.rowSize = rowSize;
     }
 
-    public boolean repeatApply(SQLSession sql, OperationOwner owner) throws SQLException {
+    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) throws SQLException {
         return false;
     }
 

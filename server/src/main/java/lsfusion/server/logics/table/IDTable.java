@@ -103,8 +103,12 @@ public class IDTable extends GlobalTable {
         }
     }
 
-        // возвращает первый, и резервирует себе еще count id'ков
     public int reserveIDs(int count, SQLSession dataSession, int idType) throws SQLException {
+        return reserveIDs(count, dataSession, idType, 0);
+    }
+
+        // возвращает первый, и резервирует себе еще count id'ков
+    private int reserveIDs(int count, SQLSession dataSession, int idType, int attempts) throws SQLException {
         int freeID = 0;
         try {
             dataSession.startTransaction(DBManager.ID_TIL, OperationOwner.unknown);
@@ -119,8 +123,8 @@ public class IDTable extends GlobalTable {
         } catch (Throwable e) {
             dataSession.rollbackTransaction();
 
-            if(e instanceof SQLHandledException && ((SQLHandledException)e).repeatApply(dataSession, OperationOwner.unknown)) // update conflict или deadlock или timeout - пробуем еще раз
-                return reserveIDs(count, dataSession, idType);
+            if(e instanceof SQLHandledException && ((SQLHandledException)e).repeatApply(dataSession, OperationOwner.unknown, attempts)) // update conflict или deadlock или timeout - пробуем еще раз
+                return reserveIDs(count, dataSession, idType, attempts + 1);
             
             throw ExceptionUtils.propagate(e, SQLException.class);
         }

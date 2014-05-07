@@ -12,7 +12,7 @@ public class SQLTooLongQueryException extends SQLHandledException {
         this.select = select;
     }
 
-    public boolean repeatApply(SQLSession sql, OperationOwner owner) throws SQLException {
+    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) throws SQLException {
         return false;
     }
 

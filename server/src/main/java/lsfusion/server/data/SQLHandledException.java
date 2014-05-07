@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 public abstract class SQLHandledException extends Exception{
     
-    private Boolean isInTransaction;
+    protected Boolean isInTransaction;
     
     public boolean isInTransaction() {
         return isInTransaction;
@@ -14,7 +14,7 @@ public abstract class SQLHandledException extends Exception{
         this.isInTransaction = isInTransaction;
     }
 
-    public boolean repeatApply(SQLSession sql, OperationOwner owner) throws SQLException {
+    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) throws SQLException {
         return true;
     }
 }
