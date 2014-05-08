@@ -426,7 +426,7 @@ public abstract class GroupingDialog extends JDialog {
     }
 
     public Map<Integer, List<byte[]>> getSelectedSumMap() {
-        Map<Integer, List<byte[]>> selectedSumMap = new OrderedMap<Integer, List<byte[]>>();
+        Map<Integer, List<byte[]>> selectedSumMap = new LinkedHashMap<Integer, List<byte[]>>();
         if (quantityCheck.isSelected()) {
             selectedSumMap.put(RECORD_QUANTITY_ID, null);
         }
@@ -476,7 +476,7 @@ public abstract class GroupingDialog extends JDialog {
     }
 
     public Map<Integer, List<byte[]>> getSelectedMaxMap() {
-        Map<Integer, List<byte[]>> selectedMaxMap = new OrderedMap<Integer, List<byte[]>>();
+        Map<Integer, List<byte[]>> selectedMaxMap = new LinkedHashMap<Integer, List<byte[]>>();
         for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JCheckBox> entry : maxChecks.entrySet()) {
             if (entry.getValue().isSelected()) {
                 int propertyID = entry.getKey().first.getID();

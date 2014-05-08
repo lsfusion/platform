@@ -1105,10 +1105,10 @@ public class ClientFormController implements AsyncListener {
         return rmiQueue.syncRequest(new RmiCheckNullFormRequest<Map<List<Object>,List<Object>>>("groupData") {
             @Override
             protected Map<List<Object>, List<Object>> doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                byte[] grouppedData = remoteForm.groupData(requestIndex, lastReceivedRequestIndex, groupMap, sumMap, maxMap, onlyNotNull);
+                byte[] groupedData = remoteForm.groupData(requestIndex, lastReceivedRequestIndex, groupMap, sumMap, maxMap, onlyNotNull);
                 
                 Map<List<Object>, List<Object>> result = new OrderedMap<List<Object>, List<Object>>();
-                DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(grouppedData));
+                DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(groupedData));
                 try {
                     int resultSize = inputStream.readInt();
                     for (int i = 0; i < resultSize; i++) {
