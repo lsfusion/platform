@@ -45,16 +45,17 @@ public class BusyDisplayer extends TimerTask {
         }
     }
 
-    public void stop() {
+    public synchronized void stop() {
         if (drawingWindow != null) {
             executionTimer.cancel();
             drawingWindow.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             drawingWindow.repaint();
+            drawingWindow = null;
         }
     }
 
     @Override
-    public void run() {
+    public synchronized void run() {
         if (drawingWindow != null) {
             initializeIfNeeded(drawingWindow);
             drawProgressBar(drawingWindow);
