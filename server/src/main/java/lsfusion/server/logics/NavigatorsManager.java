@@ -120,7 +120,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
                 RemoteNavigator navigator = navigators.get(loginKey);
                 if (navigator != null) {
                     navigator.disconnect();
-                    navigator.unexportNow();
+                    navigator.unexportAndClean();
                     removeNavigator(loginKey);
                 }
             }
@@ -238,7 +238,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
             navigator.disconnect();
 
             removeNavigator(key);
-            navigator.unexportLater();
+            navigator.unexportAndCleanLater();
         }
     }
 

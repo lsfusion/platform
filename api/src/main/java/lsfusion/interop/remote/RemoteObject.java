@@ -1,6 +1,5 @@
 package lsfusion.interop.remote;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 
 import java.rmi.NoSuchObjectException;
@@ -32,20 +31,23 @@ public class RemoteObject implements Remote {
     public int getExportPort() {
         return exportPort;
     }
-
-    public void unexportNow() {
+    
+    public final void unexport() {
         try {
             UnicastRemoteObject.unexportObject(this, true);
-        } catch (NoSuchObjectException e) {
-            Throwables.propagate(e);
+        } catch (NoSuchObjectException ignore) {
         }
     }
 
-    public void unexportLater() {
+    public void unexportAndClean() {
+        unexport();
+    }
+
+    public void unexportAndCleanLater() {
         BaseUtils.runLater(15000, new Runnable() {
             @Override
             public void run() {
-                unexportNow();
+                unexportAndClean();
             }
         });
     }

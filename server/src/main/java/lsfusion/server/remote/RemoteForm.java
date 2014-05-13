@@ -865,7 +865,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         resultActions.addAll(pendingActions);
 
         if (delayedHideForm) {
-            unexportLater();
+            unexportAndCleanLater();
         }
 
         return new ServerResponse(requestIndex, resultActions.toArray(new ClientAction[resultActions.size()]), false);
@@ -974,11 +974,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
-    public void unexportNow() {
+    public void unexportAndClean() {
         RemoteFormListener listener = getRemoteFormListener();
         if (listener != null) {
             listener.formDestroyed(this);
         }
-        super.unexportNow();
+        super.unexportAndClean();
     }
 }

@@ -48,12 +48,12 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     }
 
     @Override
-    public void unexportNow() {
+    public void unexportAndClean() {
         synchronized (threads) {
             for (Thread thread : threads) {
                 thread.stop();
             }
         }
-        super.unexportNow();
+        super.unexportAndClean();
     }
 }

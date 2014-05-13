@@ -611,18 +611,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return currentInvocation.resumeWithThrowable(clientThrowable);
     }
 
-    public synchronized void close() throws RemoteException {
-        ServerLoggers.assertLog(!closed, "NAVIGATOR ALREADY CLOSED");
-        shutdown();
-    }
-
-    @Override
-    public void unreferenced() {
-        unexportNow();
-        //TODO:
-        systemShutdown();
-    }
-
     @Override
     public void formCreated(RemoteForm form) {
         DataObject connection = getConnection();
@@ -638,19 +626,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
-    public void unexportNow() {
-        //form.unexport изменяет createdForms, поэтому работает с копией, чтобы не было ConcurrentModificationException
-        Set<RemoteForm> formsCopy;
-        synchronized (createdForms) {
-            formsCopy = new HashSet<RemoteForm>(createdForms.keySet());
-        }
-        for (RemoteForm form : formsCopy) {
-            if (form != null) {
-                form.unexportNow();
-            }
-        }
+    public void unexportAndClean() {
+        shutdownForms();
 
-        super.unexportNow();
+        super.unexportAndClean();
 
         try {
             ThreadLocalContext.set(context);
@@ -660,7 +639,40 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
-    private synchronized void systemShutdown() {
+    public void shutdownForms() {
+        //form.unexport изменяет createdForms, поэтому работает с копией, чтобы не было ConcurrentModificationException
+        Set<RemoteForm> formsCopy;
+        synchronized (createdForms) {
+            formsCopy = new HashSet<RemoteForm>(createdForms.keySet());
+        }
+        for (RemoteForm form : formsCopy) {
+            if (form != null) {
+                form.unexportAndClean();
+            }
+        }
+    }
+
+    public synchronized void close() throws RemoteException {
+        ServerLoggers.assertLog(!closed, "NAVIGATOR ALREADY CLOSED");
+        
+        //убиваем весь remote для этого клиента сразу, чтобы не было случайных запросов
+        shutdownForms();
+        unexport();
+        
+        shutdown();
+    }
+
+    protected void finalize() throws Throwable {
+        super.finalize();
+        setContextAndShutdown();
+    }
+
+    @Override
+    public void unreferenced() {
+        setContextAndShutdown();
+    }
+
+    private synchronized void setContextAndShutdown() {
         ThreadLocalContext.set(context);
         shutdown();
     }
@@ -673,23 +685,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             try {
                 navigatorManager.navigatorClosed(this);
             } finally {
-                unexportLater();
+                unexportAndCleanLater();
             }
         }
     }
 
-    @Override
-    public String toString() {
-        return "RemoteNavigator[clientAddress: " + remoteAddress + "]";
-    }
-
     public boolean isClosed() {
         return closed;
-    }
-
-    protected void finalize() throws Throwable {
-        super.finalize();
-        systemShutdown();
     }
 
     //todo: вернуть, когда/если починиться механизм восстановления сессии
@@ -703,5 +705,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 //        for (RemoteForm form : invalidatedForms.values()) {
 //            form.disconnect();
 //        }
+    }
+
+    @Override
+    public String toString() {
+        return "RemoteNavigator[clientAddress: " + remoteAddress + "]";
     }
 }
