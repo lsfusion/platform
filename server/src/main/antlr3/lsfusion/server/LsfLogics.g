@@ -852,8 +852,8 @@ propertyStatement
 }
 @after {
 	if (inPropParseState()) {
-	    if(property != null) // not native
-		    self.setPropertyScriptInfo(property, $text, lineNumber);
+	    if (property != null) // not native
+		self.setPropertyScriptInfo(property, $text, lineNumber);
 	}
 }
 	:	declaration=propertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }
@@ -1809,8 +1809,8 @@ actionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns 
 	;
 
 actionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, List<AndClassSet> signature]
-	:	extPDB=extendContextActionPDB[context, dynamic] { $property = $extPDB.property; $signature = self.getClassesFromTypedParams(context); }
-	|	keepPDB=keepContextActionPDB[context, dynamic] 	{ $property = $keepPDB.property; $signature = self.getClassesFromTypedParams(context); }
+	:	extPDB=extendContextActionPDB[context, dynamic] { $property = $extPDB.property; if (inPropParseState()) $signature = self.getClassesFromTypedParams(context); }
+	|	keepPDB=keepContextActionPDB[context, dynamic] 	{ $property = $keepPDB.property; if (inPropParseState()) $signature = self.getClassesFromTypedParams(context); }
 	|	ciPDB=contextIndependentActionPDB	 	{ $property = $ciPDB.property; $signature = $ciPDB.signature; }
 	;
 
@@ -3079,7 +3079,9 @@ parameter
 
 typedParameter returns [TypedParameter param]
 @after {
-	$param = self.new TypedParameter($cname.sid, $pname.text);
+	if (inPropParseState()) {
+		$param = self.new TypedParameter($cname.sid, $pname.text);
+	}
 }
 	:	(cname=classId)? pname=ID
 	;
