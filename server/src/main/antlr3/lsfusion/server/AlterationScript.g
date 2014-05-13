@@ -105,11 +105,12 @@ fragment NEXT_ID_LETTER	: 	('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 fragment DIGIT		:	'0'..'9';
 fragment DIGITS		:	('0'..'9')+;
 
+PRIMITIVE_TYPE      :   'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATETIME' | 'DATE' | 'YEAR' | 'TIME'
+                    |   'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'CUSTOMFILE' | 'EXCELFILE'
+                    |   'STRING' | 'NUMERIC' | 'COLOR'
+			        ;
 
-VERSION			:	'V' DIGIT+ ('.' DIGIT+)*;
-ID          		:	FIRST_ID_LETTER NEXT_ID_LETTER*;
-WS			:	(NEWLINE | SPACE) { $channel=HIDDEN; };
-COMMENTS		:	('//' .* '\n') { $channel=HIDDEN; };
-PRIMITIVE_TYPE  	:	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'DATETIME' | 'YEAR' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'CUSTOMFILE' | 'EXCELFILE'
-			| 	'STRING' | 'NUMERIC' | 'COLOR'
-			;
+VERSION     :	'V' DIGIT+ ('.' DIGIT+)*;
+ID          :	FIRST_ID_LETTER NEXT_ID_LETTER*;
+WS          :	(NEWLINE | SPACE) { $channel=HIDDEN; };
+COMMENTS    :	('//' .* '\n') { $channel=HIDDEN; };
