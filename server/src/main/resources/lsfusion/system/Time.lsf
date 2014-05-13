@@ -91,9 +91,9 @@ CLASS DOW 'День недели' {
     friday 'Пятница',
     saturday 'Суббота'
 }
-FORM DOWs
+FORM DOWs 'Дни недели'
     OBJECTS d = DOW
-    PROPERTIES(d) staticCaption
+    PROPERTIES(d) READONLY staticCaption
     DIALOG DOW OBJECT d
 ;
 
@@ -105,3 +105,5 @@ DOWNumber 'День недели (ИД)' (dow) = GROUP AGGR dow BY numberDOW(dow
 extractDOWNumber = [= FORMULA INTEGER '(extract(dow from ($1)))'](date AS DATE);
 extractDOW 'День недели (ИД)' (date) = DOWNumber(extractDOWNumber(date));
 extractDOWName 'День недели' (date) = staticCaption(extractDOW(date));
+
+distanceDOWDOW (d1, d2) = (numberDOW(d2) - numberDOW(d1)) (+) (7 IF numberDOW(d2) < numberDOW(d1));     
