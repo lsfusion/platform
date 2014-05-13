@@ -60,7 +60,7 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     // свойства
 
-    ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] columnKey, String actionSID) throws RemoteException;
+    ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID) throws RemoteException;
 
     // асинхронные вызовы
 

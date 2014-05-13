@@ -21,8 +21,8 @@ public class ExecuteEditActionHandler extends ServerResponseActionHandler<Execut
     public ServerResponseResult executeEx(ExecuteEditAction action, ExecutionContext context) throws DispatchException, IOException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
 
-        byte[] columnKey = gwtConverter.convertOrCast(action.columnKey);
+        byte[] fullKey = gwtConverter.convertOrCast(action.fullKey);
 
-        return getServerResponseResult(form, form.remoteForm.executeEditAction(action.requestIndex, -1, action.propertyId, columnKey, action.actionSID));
+        return getServerResponseResult(form, form.remoteForm.executeEditAction(action.requestIndex, -1, action.propertyId, fullKey, action.actionSID));
     }
 }

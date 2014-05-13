@@ -224,8 +224,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return mMapValues.immutable();
     }
 
-    private ImMap<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, byte[] columnKeys) throws IOException, SQLException, SQLHandledException {
-        ImMap<ObjectInstance, Object> dataKeys = deserializeKeysValues(columnKeys);
+    private ImMap<ObjectInstance, DataObject> deserializePropertyKeys(PropertyDrawInstance<?> propertyDraw, byte[] remapKeys) throws IOException, SQLException, SQLHandledException {
+        ImMap<ObjectInstance, Object> dataKeys = deserializeKeysValues(remapKeys);
 
         ImFilterValueMap<ObjectInstance, DataObject> mvKeys = dataKeys.mapFilterValues();
         for (int i=0,size=dataKeys.size();i<size;i++) {
@@ -709,12 +709,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] columnKey, final String actionSID) throws RemoteException {
+    public ServerResponse executeEditAction(long requestIndex, long lastReceivedRequestIndex, final int propertyID, final byte[] fullKey, final String actionSID) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-                ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKey);
+                ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, fullKey);
 
                 form.executeEditAction(propertyDraw, actionSID, keys);
 

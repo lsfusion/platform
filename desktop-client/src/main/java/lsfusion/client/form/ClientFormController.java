@@ -821,11 +821,13 @@ public class ClientFormController implements AsyncListener {
 
         SwingUtils.commitDelayedGroupObjectChange(property.getGroupObject());
 
+        final byte[] fullCurrentKey = getFullCurrentKey(columnKey);
+
         ServerResponse result =
                 rmiQueue.syncRequest(new RmiCheckNullFormRequest<ServerResponse>("executeEditAction") {
                     @Override
                     protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                        return remoteForm.executeEditAction(requestIndex, lastReceivedRequestIndex, property.getID(), columnKey.serialize(), actionSID);
+                        return remoteForm.executeEditAction(requestIndex, lastReceivedRequestIndex, property.getID(), fullCurrentKey, actionSID);
                     }
                 });
         return result == null ? ServerResponse.EMPTY : result;

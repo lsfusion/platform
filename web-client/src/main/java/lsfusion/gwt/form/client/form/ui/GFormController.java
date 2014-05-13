@@ -625,7 +625,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
     public void executeEditAction(GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<ServerResponseResult> callback) {
         DeferredRunner.get().commitDelayedGroupObjectChange(property.groupObject);
-        syncDispatch(new ExecuteEditAction(property.ID, columnKey == null ? null : columnKey, actionSID), callback);
+        syncDispatch(new ExecuteEditAction(property.ID, getFullCurrentKey(columnKey), actionSID), callback);
     }
 
     public void continueServerInvocation(Object[] actionResults, AsyncCallback<ServerResponseResult> callback) {
