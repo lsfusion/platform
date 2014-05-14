@@ -390,8 +390,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public final SQLSession sql;
     public final SQLSession idSession;
+    
+    @Override
+    protected void explicitClose(Object o) throws SQLException {
+        assert o == null;
+        
+//        SQLSession.fifo.add("DC " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
+        dropTables(SetFact.<SessionDataProperty>EMPTY());
 
-    public void close() throws SQLException {
+        sessionEventChangedOld.clear(sql, getOwner());
+        sessionEventNotChangedOld.clear();
     }
 
     public static class UpdateChanges {
@@ -415,13 +423,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     // формы, для которых с момента последнего update уже был restart, соотвественно в значениях - изменения от посл. update (prev) до посл. apply
-    public IdentityHashMap<FormInstance, UpdateChanges> appliedChanges = new IdentityHashMap<FormInstance, UpdateChanges>();
+    public WeakIdentityHashMap<FormInstance, UpdateChanges> appliedChanges = new WeakIdentityHashMap<FormInstance, UpdateChanges>();
 
     // формы для которых с момента последнего update не было restart, соответственно в значениях - изменения от посл. update (prev) до посл. изменения
-    public IdentityHashMap<FormInstance, UpdateChanges> incrementChanges = new IdentityHashMap<FormInstance, UpdateChanges>();
+    public WeakIdentityHashMap<FormInstance, UpdateChanges> incrementChanges = new WeakIdentityHashMap<FormInstance, UpdateChanges>();
 
     // assert что те же формы что и в increment, соответственно в значениях - изменения от посл. apply до посл. update (prev)
-    public IdentityHashMap<FormInstance, UpdateChanges> updateChanges = new IdentityHashMap<FormInstance, UpdateChanges>();
+    public WeakIdentityHashMap<FormInstance, UpdateChanges> updateChanges = new WeakIdentityHashMap<FormInstance, UpdateChanges>();
 
     public final BaseClass baseClass;
     public final ConcreteCustomClass sessionClass;
@@ -478,6 +486,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(upOwner == null)
             upOwner = new OperationOwner() {}; 
         this.owner = upOwner;
+
+//        SQLSession.fifo.add("DCR " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
     }
 
     public DataSession createSession() throws SQLException {
@@ -494,13 +504,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         //    по кому не было restart :  from -> в applied (помечая что был restart)
 
         if(!cancel)
-            for(Map.Entry<FormInstance,UpdateChanges> appliedChange : appliedChanges.entrySet())
-                appliedChange.getValue().add(new UpdateChanges(this));
+            for(Pair<FormInstance, UpdateChanges> appliedChange : appliedChanges.entryIt())
+                appliedChange.second.add(new UpdateChanges(this));
 
-        assert Collections.disjoint(appliedChanges.keySet(),(cancel?updateChanges:incrementChanges).keySet());
+        assert appliedChanges.disjointKeys(cancel ? updateChanges : incrementChanges);
         appliedChanges.putAll(cancel?updateChanges:incrementChanges);
-        incrementChanges = new IdentityHashMap<FormInstance, UpdateChanges>();
-        updateChanges = new IdentityHashMap<FormInstance, UpdateChanges>();
+        incrementChanges = new WeakIdentityHashMap<FormInstance, UpdateChanges>();
+        updateChanges = new WeakIdentityHashMap<FormInstance, UpdateChanges>();
 
         dropTables(keep);
         add.clear();
@@ -776,11 +786,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public void updateProperties(ImSet<? extends CalcProperty> changes, FunctionSet<? extends CalcProperty> sourceChanges) throws SQLException {
         dataModifier.eventDataChanges(changes, sourceChanges);
 
-        for(Map.Entry<FormInstance,UpdateChanges> incrementChange : incrementChanges.entrySet()) {
-            incrementChange.getValue().add(changes);
+        for(Pair<FormInstance, UpdateChanges> incrementChange : incrementChanges.entryIt()) {
+            incrementChange.second.add(changes);
         }
 
-        for (FormInstance form : activeForms.keySet()) {
+        for (FormInstance form : activeForms.keysIt()) {
             form.dataChanged = true;
         }
     }
@@ -1408,7 +1418,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private IdentityHashMap<FormInstance, Object> activeForms = new IdentityHashMap<FormInstance, Object>();
+    private WeakIdentityHashMap<FormInstance, Object> activeForms = new WeakIdentityHashMap<FormInstance, Object>();
     public void registerForm(FormInstance form) throws SQLException, SQLHandledException {
         activeForms.put(form, true);
 
@@ -1431,8 +1441,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         activeSessionEvents = null;
         sessionEventOldDepends = null;
     }
-    public Set<FormInstance> getActiveForms() {
-        return activeForms.keySet();
+    public Iterable<FormInstance> getActiveForms() {
+        return activeForms.keysIt();
     }
     public <K> ImOrderSet<K> filterOrderEnv(ImOrderMap<K, SessionEnvEvent> elements) {
         return elements.filterOrderValues(new SFunctionSet<SessionEnvEvent>() {
@@ -1935,5 +1945,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public void popVolatileStats() throws SQLException {
         sql.popVolatileStats(null, getOwner());
+    }
+
+    @Override
+    public String toString() {
+        return "DS@"+System.identityHashCode(this);
     }
 }

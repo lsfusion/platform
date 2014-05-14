@@ -72,12 +72,14 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
             innerContext.apply();
         }
 
-        innerContext.getSession().close();
-
         FormInstance<?> formInstance = context.getFormInstance();
         if (formInstance != null) {
             formInstance.refreshData();
         }
+    }
+
+    protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
+        innerContext.getSession().close();
     }
 
     @Override

@@ -7,6 +7,7 @@ import lsfusion.server.ServerLoggers;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.jboss.netty.util.internal.ConcurrentIdentityHashMap;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -18,7 +19,7 @@ import static lsfusion.server.ServerLoggers.sqlLogger;
 @Aspect
 public class AssertSynchronizedAspect {
 
-    private static Map<Object, WeakReference<Thread>> map = new ConcurrentHashMap<Object, WeakReference<Thread>>();
+    private static Map<Object, WeakReference<Thread>> map = new ConcurrentIdentityHashMap<Object, WeakReference<Thread>>();
 
     @Around("execution(@lsfusion.server.data.AssertSynchronized * *.*(..)) && target(object)")
     public Object callMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {

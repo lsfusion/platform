@@ -30,11 +30,15 @@ public abstract class AroundAspectActionProperty extends KeepContextActionProper
         if(innerContext==null)
             return FlowResult.FINISH;
 
-        FlowResult result = proceed(innerContext);
+        try {
+            FlowResult result = proceed(innerContext);
 
-        afterAspect(result, context, innerContext);
+            afterAspect(result, context, innerContext);
 
-        return result;
+            return result;
+        } finally {
+            finallyAspect(context, innerContext);
+        }
     }
 
     protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
@@ -46,6 +50,9 @@ public abstract class AroundAspectActionProperty extends KeepContextActionProper
     }
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
+    }
+
+    protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
     }
 
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {

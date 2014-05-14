@@ -40,7 +40,7 @@ public class StringAggUnionProperty extends FormulaUnionProperty {
 
     @Override
     public boolean supportsDrillDown() {
-        return isFull();
+        return isDrillFull();
     }
 
     @Override

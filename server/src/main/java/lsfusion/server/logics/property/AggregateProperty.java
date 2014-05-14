@@ -118,6 +118,12 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         ImRevMap<T,NotNullKeyExpr> mapExprs = getMapNotNullKeys();
         return Query.getClassWhere(Where.TRUE, mapExprs, MapFact.singleton((Object)"value", calculateClassExpr(mapExprs, prevSameClasses)));
     }
+    
+    @IdentityLazy
+    protected boolean checkNotNull() {
+        ImRevMap<T,NotNullKeyExpr> mapExprs = getMapNotNullKeys();
+        return calculateClassExpr(mapExprs, defaultPrevSameClasses).getWhere().means(Expr.getWhere(mapExprs));
+    }
 
     private ImRevMap<T, NotNullKeyExpr> getMapNotNullKeys() {
         return interfaces.mapRevValues(new GetIndexValue<NotNullKeyExpr, T>() {

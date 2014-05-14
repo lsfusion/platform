@@ -37,10 +37,12 @@ import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.session.StructChanges;
 
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 
 import static lsfusion.base.BaseUtils.capitalize;
+import static lsfusion.base.BaseUtils.join;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementProperty<JoinProperty.Interface> {
@@ -86,8 +88,40 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 return value.mapExpr(joinImplement, calcType, propChanges, changedWhere);
             }});
     }
+    
+    // оптимизация для логических констант настройки (остальные случаи пока не интересны)
+    public static <P extends PropertyInterface> boolean checkPrereadNull(ImMap<P, ? extends Expr> joinImplement, boolean notNull, ImCol<CalcPropertyInterfaceImplement<P>> col, final CalcType calcType, final PropertyChanges propChanges) {
+        if(!notNull || !calcType.isExpr())
+            return false;
 
+        ImCol<CalcPropertyInterfaceImplement<P>> complexMapping = col.filterCol(new SFunctionSet<CalcPropertyInterfaceImplement<P>>() {
+            public boolean contains(CalcPropertyInterfaceImplement<P> element) {
+                return element.mapIsComplex();
+            }
+        });
+        if(!complexMapping.isEmpty()) {
+            // сортируем по сложности
+            for(CalcPropertyInterfaceImplement<P> mapImpl : complexMapping.sort(new Comparator<CalcPropertyInterfaceImplement<P>>() {
+                public int compare(CalcPropertyInterfaceImplement<P> o1, CalcPropertyInterfaceImplement<P> o2) {
+                    return Long.compare(o1.mapComplexity(), o2.mapComplexity());
+                }})) {
+                WhereBuilder changedWhere = new WhereBuilder();
+                if (mapImpl.mapExpr(joinImplement, calcType, propChanges, changedWhere).isNull() && changedWhere.toWhere().isFalse())
+                    return true;
+            }
+        }
+
+        return false;                
+    }
+
+    private boolean checkPrereadNull(ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
+        return checkPrereadNull(joinImplement, implement.property.isNotNull(), implement.mapping.values(), calcType, propChanges);
+    }
+    
     public Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        if(checkPrereadNull(joinImplement, calcType, propChanges))
+            return Expr.NULL;
+        
         return implement.property.getExpr(getJoinImplements(joinImplement, calcType, propChanges, changedWhere), calcType, propChanges, changedWhere);
     }
 
@@ -331,7 +365,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
     @Override
     public boolean supportsDrillDown() {
-        return isFull() && implement.property.isFull();
+        return isDrillFull() && implement.property.isDrillFull();
     }
 
     @Override

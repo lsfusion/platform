@@ -79,7 +79,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 ImMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapImplement(innerObjects).mapping;
 
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(mapImplement.property, mapImplMapping)), version);
-                if (mapImplement.property.isFull()) {
+                if (mapImplement.property.isDrillFull()) {
                     addPropertyDraw(mapImplement.property, mapImplMapping, version);
                 }
             }
@@ -98,7 +98,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 addFixedFilter(new CompareFilterEntity(addPropertyObject(mapImplement.property, mapImplMapping), Compare.EQUALS, interfaceObjects.get(groupInterface)), version);
                 //добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
                 if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
-                    if (mapImplement.property.isFull()) {
+                    if (mapImplement.property.isDrillFull()) {
                         addPropertyDraw(mapImplement.property, mapImplMapping, version);
                     }
                 }

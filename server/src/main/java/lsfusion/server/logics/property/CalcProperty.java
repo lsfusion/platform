@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -1010,7 +1011,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     // в будущем propClasses можно заменить на PropertyTables propTables
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if (isFull() && (Settings.get().isUseQueryExpr() || Query.getMapKeys(joinImplement)!=null))
+        if (isNotNull() && (Settings.get().isUseQueryExpr() || Query.getMapKeys(joinImplement)!=null))
             return getQueryExpr(joinImplement, calcType, propChanges, changedWhere);
         else
             return getJoinExpr(joinImplement, calcType, propChanges, changedWhere);
@@ -1020,7 +1021,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         getRecDepends();
         getClassWhere(ClassType.ASIS);
         getClassWhere(ClassType.FULL);
-        if(isFull())
+        if(isNotNull())
             getQuery(CalcType.EXPR, PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, MapFact.<T, Expr>EMPTY()).pack();
     }
 
@@ -1045,10 +1046,23 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
     private Boolean isFull;
     @ManualLazy
-    public boolean isFull() {
+    public boolean isFull() { // обозначает что можно вывести классы всех параметров, используется в частности для материализации (stored, hints) чтобы знать типы колонок, или даже в subQuery (для статистики)
         if(isFull==null)
             isFull = calculateIsFull();
         return isFull;
+    }
+    
+    public boolean isNotNull() { // обозначает что при null одном из параметров - null значение
+        if(isFull())
+            return true;
+        
+        if(this instanceof AggregateProperty)
+            return ((AggregateProperty)this).checkNotNull();
+        return false;
+    }
+    
+    public boolean isDrillFull() {
+        return isFull();
     }
 
     public boolean isEmpty() {
@@ -1065,5 +1079,16 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                     return false;
 
         return true;
+    }
+    
+    @IdentityLazy
+    public long getComplexity() {
+        try {
+            return getExpr(getMapKeys(), Property.defaultModifier).getComplexity(false);
+        } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        } catch (SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
     }
 }

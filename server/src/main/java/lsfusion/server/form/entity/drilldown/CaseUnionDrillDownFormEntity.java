@@ -49,7 +49,7 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
                 if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
-                    if (mapImplement.property.isFull()) {
+                    if (mapImplement.property.isDrillFull()) {
                         propProperties.add(
                                 addPropertyDraw(mapImplement.property, mapImplMapping, version)
                         );
@@ -66,7 +66,7 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
                 if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasChild(mapImplement.property)) {
-                    if (mapImplement.property.isFull()) {
+                    if (mapImplement.property.isDrillFull()) {
                         whereProperties.add(
                                 addPropertyDraw(mapImplement.property, mapImplMapping, version)
                         );

@@ -1,5 +1,6 @@
 package lsfusion.server.session;
 
+import lsfusion.base.MutableClosedObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.data.QueryEnvironment;
@@ -15,7 +16,7 @@ import lsfusion.server.logics.property.actions.flow.FlowResult;
 
 import java.sql.SQLException;
 
-public abstract class ExecutionEnvironment {
+public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
 
     private ObjectValue lastUserInput;
     private boolean wasUserInput = false;

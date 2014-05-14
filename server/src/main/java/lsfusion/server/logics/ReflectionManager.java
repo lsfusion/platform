@@ -361,7 +361,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                     try {
                         classProperty = property.getClass().getSimpleName();
                         if(property instanceof CalcProperty) {
-                            complexityProperty = ((CalcProperty)property).getExpr(((CalcProperty)property).getMapKeys(), Property.defaultModifier).getComplexity(false);
+                            complexityProperty = ((CalcProperty)property).getComplexity();
                         }
                         returnClass = property.getValueClass().getSID();
                         for (Object cc : property.getInterfaceClasses(property instanceof ActionProperty ? ClassType.FULL : ClassType.ASSERTFULL).valueIt()) {

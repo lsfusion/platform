@@ -63,7 +63,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
             while(it.hasNext()) {
                 Map.Entry<ExConnection, WeakReference<MutableObject>> usedEntry = it.next();
                 if(usedEntry.getValue().get()==null) {
-                    it.remove(); // можно было бы попробовать использовать повторно, но connection может быть "грязным" то есть с транзакцией или временными таблицами
+                    it.remove(); // можно было бы попробовать использовать повторно, но connection может быть "грязным" то есть с транзакцией или неочмщенными временными таблицами
                     usedEntry.getKey().close();
                 }
             }

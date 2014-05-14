@@ -9,6 +9,7 @@ import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.concurrent.Executors;
@@ -38,7 +39,12 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
             public void run() {
                 try {
                     ThreadLocalContext.set(logicsContext);
-                    proceed(context.override(dbManager.createSession()));
+                    DataSession session = dbManager.createSession();
+                    try {
+                        proceed(context.override(session));
+                    } finally {
+                        session.close();
+                    }
                 } catch (SQLException e) {
                     throw Throwables.propagate(e);
                 } catch (SQLHandledException e) {

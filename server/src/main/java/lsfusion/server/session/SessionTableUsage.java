@@ -217,6 +217,6 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
     @Override
     public String toString() {
-        return table.toString();
+        return "SU@" + System.identityHashCode(this) + " " + table.toString();
     }
 }

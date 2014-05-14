@@ -662,11 +662,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         shutdown();
     }
 
-    protected void finalize() throws Throwable {
-        super.finalize();
-        setContextAndShutdown();
-    }
-
     @Override
     public void unreferenced() {
         setContextAndShutdown();
@@ -692,6 +687,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public boolean isClosed() {
         return closed;
+    }
+
+    protected void finalize() throws Throwable {
+        try {
+            setContextAndShutdown();
+        } catch (Throwable ignored) {
+        } finally {
+            super.finalize();
+        }
     }
 
     //todo: вернуть, когда/если починиться механизм восстановления сессии

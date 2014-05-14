@@ -17,6 +17,11 @@ public class WeakIdentityHashMap<K, V> {
         expunge();
         return map.get(new IdentityWeakReference<K>(key));
     }
+    
+    public boolean containsKey(K key) {
+        expunge();
+        return map.containsKey(new IdentityWeakReference<K>(key));
+    } 
 
     public V put(K key, V value) {
         expunge();
@@ -76,7 +81,7 @@ public class WeakIdentityHashMap<K, V> {
         }
     }
 
-    Iterator<K> keysIterator() {
+    public Iterator<K> keysIterator() {
         expunge();
         final Iterator<WeakReference<K>> it = map.keySet().iterator();
         return new Iterator<K>() {
@@ -101,5 +106,61 @@ public class WeakIdentityHashMap<K, V> {
                 throw new RuntimeException("not supported");
             }
         };
+    }
+    
+    public boolean disjointKeys(WeakIdentityHashMap<K, V> map) {
+        for(K key : keysIt())
+            if (map.get(key) != null)
+                return false;
+        return true;
+    }
+    
+    public Iterable<K> keysIt() {
+        return new Iterable<K>() {
+            public Iterator<K> iterator() {
+                return keysIterator();
+            }
+        };
+    };
+
+    public Iterator<Pair<K, V>> entryIterator() {
+        expunge();
+        final Iterator<Map.Entry<WeakReference<K>, V>> it = map.entrySet().iterator();
+        return new Iterator<Pair<K, V>>() {
+            Pair<K, V> next = null;
+            public boolean hasNext() {
+                while(next==null) {
+                    if(it.hasNext()) {
+                        Map.Entry<WeakReference<K>, V> itNext = it.next();
+                        K key = itNext.getKey().get();
+                        if(key == null)
+                            next = null;
+                        else
+                            next = new Pair<K, V>(key, itNext.getValue());
+                    }
+                    else
+                        return false;
+                }
+                return true;
+            }
+
+            public Pair<K, V> next() {
+                Pair<K, V> result = next;
+                next = null;
+                return result;
+            }
+
+            public void remove() {
+                throw new RuntimeException("not supported");
+            }
+        };
+    }
+    
+    public Iterable<Pair<K, V>> entryIt() {
+        return new Iterable<Pair<K, V>>() {
+            public Iterator<Pair<K, V>> iterator() {
+                return entryIterator();
+            }
+        }; 
     }
 }

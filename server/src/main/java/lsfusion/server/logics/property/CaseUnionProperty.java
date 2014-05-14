@@ -144,6 +144,10 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return result;
     }
 
+    private boolean checkPrereadNull(Case cCase, ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
+       return JoinProperty.checkPrereadNull(joinImplement, true, SetFact.singleton(cCase.where), calcType, propChanges); // isExclusive ? SetFact.toSet(cCase.where, cCase.property) : SetFact.singleton(cCase.where)
+    }
+
     protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         if(isAbstract() && calcType.isClass())
             return getClassTableExpr(joinImplement, calcType);
@@ -153,6 +157,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         // до непосредственно вычисления, для хинтов
         ImList<Pair<Expr, Expr>> caseExprs = cases.mapListValues(new GetValue<Pair<Expr, Expr>, Case>() {
             public Pair<Expr, Expr> getMapValue(Case value) {
+                if(checkPrereadNull(value, joinImplement, calcType, propChanges))
+                    return new Pair<Expr, Expr>(Expr.NULL, Expr.NULL);
+                    
                 return new Pair<Expr, Expr>(
                         value.where.mapExpr(joinImplement, calcType, propChanges, changedWhere),
                         value.property.mapExpr(joinImplement, calcType, propChanges, changedWhere));
@@ -173,6 +180,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         // до непосредственно вычисления, для хинтов
         ImList<Pair<Pair<Expr, Where>, Pair<Expr, Where>>> caseExprs = cases.mapListValues(new GetValue<Pair<Pair<Expr, Where>, Pair<Expr, Where>>, Case>() {
             public Pair<Pair<Expr, Where>, Pair<Expr, Where>> getMapValue(Case propCase) {
+                if(checkPrereadNull(propCase, joinImplement, CalcType.EXPR, propChanges))
+                    return new Pair<Pair<Expr, Where>, Pair<Expr, Where>>(new Pair<Expr, Where>(Expr.NULL, Where.FALSE), new Pair<Expr, Where>(Expr.NULL, Where.FALSE));
+
                 WhereBuilder changedWhereCase = new WhereBuilder();
                 WhereBuilder changedExprCase = new WhereBuilder();
                 return new Pair<Pair<Expr, Where>, Pair<Expr, Where>>(
@@ -394,7 +404,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     @Override
     public boolean supportsDrillDown() {
-        return isFull() && getImplement().property.isFull();
+        return isDrillFull() && getImplement().property.isDrillFull();
     }
 
     @Override

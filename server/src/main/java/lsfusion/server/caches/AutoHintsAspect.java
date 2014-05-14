@@ -219,7 +219,10 @@ public class AutoHintsAspect {
         return property.hasChanges(propChanges);
     }
     private static Object getQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, AMap interfaceValues) throws Throwable {
-        assert property.isFull();
+        assert property.isNotNull();
+        
+        if(!property.isFull() || !calcType.isExpr())
+            return thisJoinPoint.proceed();
 
         SessionModifier catchHint = catchAutoHint.get();
         if(calcType.isExpr() && catchHint!=null && catchHint.allowPrereadValues(property,interfaceValues)) // если есть не "прочитанные" параметры - значения, вычисляем

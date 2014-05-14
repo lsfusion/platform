@@ -124,10 +124,19 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
         });
     }
 
+    private boolean checkPrereadNull(ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
+        return JoinProperty.checkPrereadNull(joinImplement, true, props.getCol(), calcType, propChanges) ||
+                JoinProperty.checkPrereadNull(joinImplement, true, partitions, calcType, propChanges) ||
+                JoinProperty.checkPrereadNull(joinImplement, ordersNotNull, orders.keys(), calcType, propChanges);
+    }
+    
     protected Expr calculateExpr(ImMap<Interface<T>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
 
         Result<ImMap<KeyExpr, Expr>> mapExprs = new Result<ImMap<KeyExpr, Expr>>();
         ImMap<T, ? extends Expr> mapKeys = getGroupKeys(joinImplement, mapExprs);
+        
+        if(checkPrereadNull(mapKeys, calcType, propChanges))
+            return Expr.NULL;
 
         WhereBuilder orderWhere = cascadeWhere(changedWhere);
         ImMap<CalcPropertyInterfaceImplement<T>,Expr> partitionImplements = getPartitionImplements(mapKeys, calcType, propChanges, orderWhere);

@@ -1,10 +1,14 @@
 package lsfusion.server.data;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.MutableClosedObject;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.query.*;
+import org.apache.commons.collections.Buffer;
+import org.apache.commons.collections.BufferUtils;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import lsfusion.base.*;
@@ -34,9 +38,14 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -47,7 +56,7 @@ import static lsfusion.server.ServerLoggers.remoteLogger;
 import static lsfusion.server.ServerLoggers.sqlLogger;
 import static lsfusion.server.ServerLoggers.systemLogger;
 
-public class SQLSession extends MutableObject {
+public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static final Logger logger = ServerLoggers.sqlLogger;
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
 
@@ -204,7 +213,7 @@ public class SQLSession extends MutableObject {
     }
 
     private void checkClosed() {
-        ServerLoggers.assertLog(!closed, "SQL SESSION IS ALREADY CLOSED " + this);
+        ServerLoggers.assertLog(!isClosed(), "SQL SESSION IS ALREADY CLOSED " + this);
     }
 
     private void unlockRead() {
@@ -313,7 +322,8 @@ public class SQLSession extends MutableObject {
 
                             ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES");
 //                            returnUsed(transactionTable, sessionTablesMap);
-                            sessionTablesMap.remove(transactionTable);
+                            WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
+//                            fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + this + " " + ExceptionUtils.getStackTrace());                            
 //                            
 //                            if(Settings.get().isEnableHacks())
 //                                sessionTablesStackReturned.put(transactionTable, ExceptionUtils.getStackTrace());
@@ -531,6 +541,19 @@ public class SQLSession extends MutableObject {
     private final Set<String> transactionTables = SetFact.mAddRemoveSet();
     private Integer transactionCounter = null;
 
+    public static Buffer fifo = BufferUtils.synchronizedBuffer(new CircularFifoBuffer(1000000));
+    public static void outFifo() throws IOException {
+        String filename = "e:\\out.txt";
+        BufferedWriter outputWriter = null;
+        outputWriter = new BufferedWriter(new FileWriter(filename));
+        for (Object ff : fifo) {
+            outputWriter.write(ff+"");
+            outputWriter.newLine();
+        }
+        outputWriter.flush();
+        outputWriter.close();
+     }
+    
     public String getTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable fill, Integer count, Result<Integer> actual, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
         lockRead(opOwner);
         temporaryTablesLock.lock();
@@ -544,10 +567,11 @@ public class SQLSession extends MutableObject {
             Result<Boolean> isNew = new Result<Boolean>();
             // в зависимости от политики или локальный пул (для сессии) или глобальный пул
             table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, isNew, owner, opOwner); //, sessionTablesStackGot
+//            fifo.add("GET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + owner + " " + opOwner  + " " + this + " " + ExceptionUtils.getStackTrace());
             try {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
             } catch (Throwable t) {
-                returnTemporaryTable(table, owner, opOwner, t instanceof SQLTimeoutException); // вернем таблицу, если не смогли ее заполнить
+                returnTemporaryTable(table, owner, opOwner, t instanceof SQLTimeoutException); // вернем таблицу, если не смогли ее заполнить, truncate при timeoutе потому как в остальных случаях и так должна быть пустая (строго говоря с timeout'ом это тоже перестраховка) 
                 try { ServerLoggers.assertLog(problemInTransaction != null || getCount(table, opOwner) == 0, "TEMPORARY TABLE AFTER FILL NOT EMPTY"); } catch (Throwable i) { ServerLoggers.sqlSuppLog(i); }
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
             } finally {
@@ -564,13 +588,24 @@ public class SQLSession extends MutableObject {
         return table;
     }
 
+    public static String getCurrentTimeStamp() {
+        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");//dd/MM/yyyy
+        Date now = new Date();
+        String strDate = sdfDate.format(now);
+        return strDate;
+    }
+    
     private void removeUnusedTemporaryTables(boolean force, OperationOwner opOwner) throws SQLException {
+        if(isInTransaction()) // потому как truncate сможет rollback'ся
+            return;
+        
         for (Iterator<Map.Entry<String, WeakReference<TableOwner>>> iterator = sessionTablesMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String, WeakReference<TableOwner>> entry = iterator.next();
             TableOwner tableOwner = entry.getValue().get();
             if (force || tableOwner == null) {
 //                    dropTemporaryTableFromDB(entry.getKey());
-                truncate(entry.getKey(), opOwner, tableOwner == null ? TableOwner.none : tableOwner);
+//                fifo.add("RU " + getCurrentTimeStamp() + " " + force + " " + entry.getKey() + " " + privateConnection.temporary + " " + (tableOwner == null ? TableOwner.none : tableOwner) + " " + opOwner + " " + this + " " + ExceptionUtils.getStackTrace());
+                truncate(entry.getKey(), opOwner, (tableOwner == null ? TableOwner.none : tableOwner));
                 iterator.remove();
             }
         }
@@ -586,16 +621,23 @@ public class SQLSession extends MutableObject {
         }
     }
 
+    @Override
+    public OperationOwner getFinalizeOwner() {
+        return OperationOwner.unknown;
+    }
+
     public void returnTemporaryTable(final String table, final TableOwner owner, final OperationOwner opOwner, boolean truncate) throws SQLException {
         temporaryTablesLock.lock();
 
         try {
             Result<Throwable> firstException = new Result<Throwable>();
+//            fifo.add("RETURN " + getCurrentTimeStamp() + " " + truncate + " " + table + " " + privateConnection.temporary + " " + BaseUtils.nullToString(sessionTablesMap.get(table)) +  " " + owner + " " + opOwner  + " " + this + " " + ExceptionUtils.getStackTrace());
             if(truncate) {
                 runSuppressed(new SQLRunnable() {
                     public void run() throws SQLException {
                         truncate(syntax.getSessionTableName(table), opOwner, owner);
-                    }}, firstException);
+                    }
+                }, firstException);
                 if(firstException.result != null) {
                     runSuppressed(new SQLRunnable() {
                         public void run() throws SQLException {
@@ -634,7 +676,9 @@ public class SQLSession extends MutableObject {
             // в принципе он не настолько нужен, но для порядка пусть будет
             // придется убрать так как чистых использований уже достаточно много, например ClassChange.materialize, DataSession.addObjects, правда что сейчас с assertion'ами делать неясно
             assert !sessionTablesMap.containsKey(table.name); // вернул назад
-            sessionTablesMap.put(table.name, new WeakReference<TableOwner>(owner));
+            WeakReference<TableOwner> value = new WeakReference<TableOwner>(owner);
+//            fifo.add("RGET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + value + " " + owner + " " + opOwner  + " " + this + " " + ExceptionUtils.getStackTrace());
+            sessionTablesMap.put(table.name, value);
 
         } finally {
             temporaryTablesLock.unlock();
@@ -1721,9 +1765,9 @@ public class SQLSession extends MutableObject {
         proceeded.set(result + updated);
         return result;
     }
-
-    private boolean closed = false;
-    public void close(OperationOwner owner) throws SQLException {
+    
+    @Override
+    protected void explicitClose(OperationOwner owner) throws SQLException {
         lockWrite(owner);
         temporaryTablesLock.lock();
 
@@ -1738,7 +1782,6 @@ public class SQLSession extends MutableObject {
                 }
             }
             ServerLoggers.exinfoLog("SQL SESSION CLOSE " + this);
-            closed = true;
         } finally {
             temporaryTablesLock.unlock();
             unlockWrite();

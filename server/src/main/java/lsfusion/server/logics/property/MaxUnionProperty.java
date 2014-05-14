@@ -67,7 +67,7 @@ public class MaxUnionProperty extends IncrementUnionProperty {
 
     @Override
     public boolean supportsDrillDown() {
-        return isFull();
+        return isDrillFull();
     }
 
     @Override

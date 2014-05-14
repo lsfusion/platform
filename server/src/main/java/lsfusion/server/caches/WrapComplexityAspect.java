@@ -52,10 +52,10 @@ public class WrapComplexityAspect {
     }
 
     public <T extends PropertyInterface> IQuery<T, String> getQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, ImMap<T, ? extends Expr> interfaceValues) throws Throwable {
-        assert property.isFull();
+        assert property.isNotNull();
         IQuery<T, String> query = (IQuery<T, String>) thisJoinPoint.proceed();
         
-        if(Settings.get().isDisableWrapComplexity() && !property.complex && !(property instanceof OldProperty && Settings.get().isEnablePrevWrapComplexity()))
+        if((Settings.get().isDisableWrapComplexity() && !property.complex && !(property instanceof OldProperty && Settings.get().isEnablePrevWrapComplexity())) || !property.isFull())
             return query;
 
         ImRevMap<T, KeyExpr> mapKeys = query.getMapKeys();

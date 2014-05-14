@@ -134,7 +134,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         final IQuery<KeyField, PropertyField> insertQuery = query;
         SessionTable table = session.createTemporaryTable(keys.filterOrderIncl(query.getMapKeys().keys()), query.getProperties(), null, new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException, SQLHandledException {
-                ServerLoggers.assertLog(session.getCount(name, opOwner)==0, "TEMPORARY TABLE SHOULD BE EMPTY");
+//                ServerLoggers.assertLog(session.getCount(name, opOwner)==0, "TEMPORARY TABLE SHOULD BE EMPTY");
                 return session.insertSessionSelect(name, insertQuery, env, owner);
             }
         }, getQueryClasses(query), owner, opOwner);

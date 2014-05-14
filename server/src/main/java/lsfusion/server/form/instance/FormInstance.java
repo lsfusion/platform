@@ -795,7 +795,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     public void executeEditAction(PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
         executeEditAction(property, editActionSID, keys, null, null, false);
     }
-
+    
+    @LogTime
     public void executeEditAction(PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, ObjectValue pushChange, DataObject pushAdd, boolean pushConfirm) throws SQLException, SQLHandledException {
         ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
 
@@ -1168,14 +1169,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             focusListener.gainedFocus(this);
     }
 
-    private boolean closed = false;
+    @Override
+    protected void explicitClose(Object o) throws SQLException {
+        assert o == null;
 
-    @AssertSynchronized
-    public void close() throws SQLException {
-        ServerLoggers.assertLog(!closed, "ALREADY CLOSED");
-        if(closed)
-            return;
-        closed = true;
         session.unregisterForm(this);
         for (GroupObjectInstance group : getGroups()) {
             OperationOwner owner = session.getOwner();
@@ -1412,8 +1409,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         final MFormChanges result = new MFormChanges();
 
-        if (closed)
+        if (isClosed()) {
+//            ServerLoggers.assertLog(false, "FORM IS ALREADY CLOSED");
             return result.immutable();
+        }
 
         checkNavigatorClosed();
 
@@ -2067,5 +2066,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void formRefresh() throws SQLException, SQLHandledException {
         refreshData();
+    }
+
+    @Override
+    public String toString() {
+        return "FORM@"+System.identityHashCode(this);
     }
 }

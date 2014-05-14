@@ -35,7 +35,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
     @Override
     protected void setupDrillDownForm() {
         CalcProperty<I> implProperty = property.implement.property;
-        if(implProperty.isFull()) {
+        if(implProperty.isDrillFull()) {
             detailsProperties = new ArrayList<PropertyDrawEntity>();
             Version version = LM.getVersion();
 
@@ -60,7 +60,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
     
                     //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
                     if (mapImplMapping.size() != 1 || !LM.recognizeGroup.hasNFChild(mapImplement.property, version)) {
-                        if (mapImplement.property.isFull()) {
+                        if (mapImplement.property.isDrillFull()) {
                             detailsProperties.add(
                                     addPropertyDraw(mapImplement.property, mapImplMapping, version)
                             );

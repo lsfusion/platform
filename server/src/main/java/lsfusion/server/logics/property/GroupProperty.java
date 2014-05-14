@@ -59,6 +59,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     public abstract ImList<CalcPropertyInterfaceImplement<I>> getProps();
 
     public abstract ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders();
+    public abstract boolean getOrdersNotNull();
 
     public ImMap<I, ValueClass> getInnerInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
         final boolean isSelect = getGroupType().isSelect();
@@ -156,9 +157,18 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
         return classWhere.getCommonParent(innerInterfaces);*/
     }
 
+    protected boolean checkPrereadNull(ImMap<I, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
+        return JoinProperty.checkPrereadNull(joinImplement, true, getProps().getCol(), calcType, propChanges) ||
+                JoinProperty.checkPrereadNull(joinImplement, true, interfaces.mapSetValues(new GetValue<CalcPropertyInterfaceImplement<I>, Interface<I>>() {
+                    public CalcPropertyInterfaceImplement<I> getMapValue(Interface<I> value) {
+                        return value.implement;
+                    }}), calcType, propChanges) ||
+                JoinProperty.checkPrereadNull(joinImplement, getOrdersNotNull(), getOrders().keys(), calcType, propChanges);
+    }
+
     @Override
     public boolean supportsDrillDown() {
-        return isFull();
+        return isDrillFull();
     }
 
     @Override

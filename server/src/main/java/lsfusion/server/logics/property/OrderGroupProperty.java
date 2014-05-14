@@ -27,6 +27,10 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return orders;
     }
 
+    public boolean getOrdersNotNull() {
+        return ordersNotNull;
+    }
+
     public OrderGroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, ImList<CalcPropertyInterfaceImplement<I>> props, GroupType groupType, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
         super(sID, caption, innerInterfaces, groupInterfaces);
         this.props = props;
@@ -40,6 +44,9 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
     protected Expr calculateExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         // если нужна инкрементность
         ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
+
+        if(checkPrereadNull(mapKeys, calcType, propChanges))
+            return Expr.NULL;
 
         WhereBuilder changedGroupWhere = cascadeWhere(changedWhere);
 

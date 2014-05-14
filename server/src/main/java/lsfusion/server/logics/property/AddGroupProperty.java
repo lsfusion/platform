@@ -34,9 +34,16 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
         return MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER();
     }
 
+    public boolean getOrdersNotNull() {
+        return false;
+    }
+
     protected Expr calculateIncrementExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
         // если нужна инкрементность
         ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
+
+        if(checkPrereadNull(mapKeys, CalcType.EXPR, propChanges))
+            return Expr.NULL;
 
         // новые группировочные записи
         WhereBuilder changedGroupWhere = new WhereBuilder();
@@ -54,6 +61,10 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
 
     protected Expr calculateNewExpr(ImMap<Interface<I>, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges) {
         ImMap<I, Expr> mapKeys = getGroupKeys(joinImplement);
+
+        if(checkPrereadNull(mapKeys, calcType, propChanges))
+            return Expr.NULL;
+
         return GroupExpr.create(getGroupImplements(mapKeys, calcType, propChanges), groupProperty.mapExpr(mapKeys, calcType, propChanges, null), getGroupType(), joinImplement);
     }
 
