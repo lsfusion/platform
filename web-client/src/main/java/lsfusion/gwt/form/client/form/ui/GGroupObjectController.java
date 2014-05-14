@@ -18,6 +18,7 @@ import lsfusion.gwt.form.shared.view.reader.*;
 import java.util.*;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
+import static lsfusion.gwt.form.shared.view.GClassViewType.GRID;
 
 public class GGroupObjectController extends GAbstractGroupObjectController {
     public GGroupObject groupObject;
@@ -25,7 +26,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     private GGridController grid;
     private GShowTypeView showTypeView;
 
-    private GClassViewType classView = GClassViewType.GRID;
+    private GClassViewType classView = GRID;
 
     private GCountQuantityButton quantityButton;
     private GCalculateSumButton sumButton;
@@ -189,14 +190,16 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
             }
         }
 
-        ArrayList<GGroupObjectValue> keys = fc.gridObjects.get(groupObject);
-        if (keys != null && grid != null) {
-            grid.getTable().setKeys(keys);
-        }
+        if (classView == GRID) {
+            ArrayList<GGroupObjectValue> keys = fc.gridObjects.get(groupObject);
+            if (keys != null && grid != null) {
+                grid.getTable().setKeys(keys);
+            }
 
-        GGroupObjectValue currentKey = fc.objects.get(groupObject);
-        if (currentKey != null && grid != null) {
-            grid.getTable().setCurrentKey(currentKey);
+            GGroupObjectValue currentKey = fc.objects.get(groupObject);
+            if (currentKey != null && grid != null) {
+                grid.getTable().setCurrentKey(currentKey);
+            }
         }
 
         for (Map.Entry<GPropertyReader, HashMap<GGroupObjectValue, Object>> readProperty : fc.properties.entrySet()) {
@@ -374,7 +377,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     }
 
     public boolean isInGridClassView() {
-        return classView == GClassViewType.GRID;
+        return classView == GRID;
     }
 
     public boolean isGridEmpty() {
@@ -472,7 +475,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
     }
 
     public void modifyGroupObject(GGroupObjectValue key, boolean add) {
-        assert classView == GClassViewType.GRID;
+        assert classView == GRID;
 
         grid.modifyGridObject(key, add);
     }
