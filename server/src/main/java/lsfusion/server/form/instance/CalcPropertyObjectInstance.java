@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -26,7 +25,7 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
     }
 
     public CalcPropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        return new CalcPropertyObjectInstance<P>(property, remap(mapKeyValues));
+        return new CalcPropertyObjectInstance<P>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
     public CalcPropertyValueImplement<P> getValueImplement() {

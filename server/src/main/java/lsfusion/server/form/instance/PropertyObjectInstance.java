@@ -80,6 +80,30 @@ public abstract class PropertyObjectInstance<P extends PropertyInterface, T exte
         return mapping.replaceValues(mapKeyValues);
     }
 
+    protected ImMap<P, PropertyObjectInterfaceInstance> remapSkippingEqualsObjectInstances(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+        return replaceValues((ImMap<PropertyObjectInterfaceInstance, DataObject>) mapKeyValues);
+    }
+
+    private ImMap<P, PropertyObjectInterfaceInstance> replaceValues(final ImMap<PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+        return mapping.mapValues(new GetValue<PropertyObjectInterfaceInstance, PropertyObjectInterfaceInstance>() {
+            public PropertyObjectInterfaceInstance getMapValue(PropertyObjectInterfaceInstance value) {
+                DataObject mapValue = mapKeyValues.get(value);
+                if (mapValue != null) {
+                    if (value instanceof ObjectInstance) {
+                        Object currentValue = ((ObjectInstance) value).getObjectValue().getValue();
+                        if (!BaseUtils.nullEquals(currentValue, mapValue.getValue())) {
+                            value = mapValue;
+                        }
+                    } else {
+                        value = mapValue;
+                    }
+                }
+                return value;
+            }
+        });
+    }
+    
+
     @Override
     public String toString() {
         return property.toString();

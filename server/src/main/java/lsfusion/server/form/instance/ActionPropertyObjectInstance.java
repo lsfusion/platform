@@ -19,7 +19,7 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
     }
 
     public ActionPropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        return new ActionPropertyObjectInstance<P>(property, remap(mapKeyValues));
+        return new ActionPropertyObjectInstance<P>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
     }
 
     public FlowResult execute(ExecutionEnvironment env) throws SQLException, SQLHandledException {
