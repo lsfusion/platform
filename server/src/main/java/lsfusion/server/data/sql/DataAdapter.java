@@ -529,4 +529,12 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     public void ensureLogLevel(int logLevel) {
     }
+
+    public boolean hasSelectivityProblem() {
+        return false;
+    }
+
+    public String getAdjustSelectivityPredicate() {
+        throw new UnsupportedOperationException();
+    }
 }

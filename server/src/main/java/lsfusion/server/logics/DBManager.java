@@ -657,7 +657,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public String checkAggregations(SQLSession session) throws SQLException, SQLHandledException {
         String message = "";
         for (AggregateProperty property : businessLogics.getAggregateStoredProperties())
-            message += property.checkAggregation(session);
+            message += property.checkAggregation(session, LM.baseClass);
         return message;
     }
 
@@ -715,7 +715,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         for (final AggregateProperty property : recalculateProperties)
             run(session, isolatedTransaction, new RunService() {
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    property.recalculateAggregation(sql);
+                    property.recalculateAggregation(sql, LM.baseClass);
                 }});    
     }
 
@@ -725,7 +725,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 final AggregateProperty aggregateProperty = (AggregateProperty) property;
                 run(session, isolatedTransaction, new RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                        aggregateProperty.recalculateAggregation(sql);
+                        aggregateProperty.recalculateAggregation(sql, LM.baseClass);
                     }});
             }
     }

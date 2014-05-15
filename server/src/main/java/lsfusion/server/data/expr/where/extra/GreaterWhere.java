@@ -5,6 +5,7 @@ import lsfusion.interop.Compare;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
 
 // если operator1 не null и больше operator2 или operator2 null
@@ -51,5 +52,10 @@ public class GreaterWhere<T> extends CompareWhere<GreaterWhere<T>> {
 
     protected boolean isEquals() {
         return false;
+    }
+
+    @Override
+    protected boolean adjustSelectivity(SQLSyntax syntax) {
+        return syntax.hasSelectivityProblem();
     }
 }

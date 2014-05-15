@@ -142,4 +142,8 @@ public interface SQLSyntax {
     String getConstraintName(String name);
 
     String getIndexName(String name);
+    
+    boolean hasSelectivityProblem();
+
+    String getAdjustSelectivityPredicate();
 }

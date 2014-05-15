@@ -35,6 +35,7 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.instance.ChangedData;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
@@ -925,27 +926,32 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @Message("logics.checking.data.classes")
-    public static String checkClasses(@ParamMessage StoredDataProperty property, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+    public static String checkClasses(@ParamMessage CalcProperty property, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+        assert property.isStored();
+        
         ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = property.getMapKeys();
         Where where = getIncorrectWhere(property, baseClass, mapKeys);
         Query<ClassPropertyInterface, String> query = new Query<ClassPropertyInterface, String>(mapKeys, where);
 
         String incorrect = query.readSelect(sql);
         if(!incorrect.isEmpty())
-            return "---- Checking Classes for DataProperty : " + property + "-----" + '\n' + incorrect;
+            return "---- Checking Classes for " + (property instanceof DataProperty ? "data" : "aggregate") + " property : " + property + "-----" + '\n' + incorrect;
         return "";
     }
 
-    public static Where getIncorrectWhere(StoredDataProperty property, BaseClass baseClass, ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys) {
-        Where correctClasses = Where.TRUE;
-        Expr dataExpr = property.getInconsistentExpr(mapKeys, baseClass);
-        for(int i=0,size= mapKeys.size();i<size;i++) {
-            ValueClass interfaceClass = mapKeys.getKey(i).interfaceClass;
-            if(interfaceClass instanceof CustomClass)
-                correctClasses = correctClasses.and(mapKeys.getValue(i).isClass(((CustomClass) interfaceClass).getUpSet(), true));
-        }
-        if(property.value instanceof CustomClass)
-            correctClasses = correctClasses.and(dataExpr.isClass(((CustomClass) property.value).getUpSet(), true));
+    public static <P extends PropertyInterface> Where getIncorrectWhere(CalcProperty<P> property, BaseClass baseClass, final ImRevMap<P, KeyExpr> mapKeys) {
+        assert property.isStored();
+                
+        final Expr dataExpr = property.getInconsistentExpr(mapKeys, baseClass);
+
+        Where correctClasses = property.getClassValueWhere(ClassType.ASSERTFULL).getWhere(new GetValue<Expr, Object>() {
+            public Expr getMapValue(Object value) {
+                if(value instanceof PropertyInterface) {
+                    return mapKeys.get((P)value);
+                }
+                assert value.equals("value");
+                return dataExpr;
+            }}, true);
         return dataExpr.getWhere().and(correctClasses.not());
     }
 

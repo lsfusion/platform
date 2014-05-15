@@ -5,6 +5,7 @@ import lsfusion.base.MutableClosedObject;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.server.classes.IntegerClass;
+import lsfusion.server.data.expr.where.extra.BinaryWhere;
 import lsfusion.server.data.query.*;
 import org.apache.commons.collections.Buffer;
 import org.apache.commons.collections.BufferUtils;
@@ -1820,8 +1821,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static ParsedStatement parseStatement(ParseStatement parse, Connection connection, SQLSyntax syntax) throws SQLException {
         ExecuteEnvironment env = new ExecuteEnvironment();
 
-        char[][] paramArrays = new char[parse.params.size()][];
-        String[] params = new String[parse.params.size()];
+        char[][] paramArrays = new char[parse.params.size()+1][];
+        String[] params = new String[paramArrays.length];
         String[] safeStrings = new String[paramArrays.length];
         Type[] notSafeTypes = new Type[paramArrays.length];
         int paramNum = 0;
@@ -1832,6 +1833,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             safeStrings[paramNum] = parse.safeStrings.get(param);
             notSafeTypes[paramNum++] = parse.notSafeTypes.get(param);
         }
+        // в общем случае неправильно использовать тот же механизм что и для параметров, но в текущей реализации будет работать 
+        paramArrays[paramNum] = BinaryWhere.adjustSelectivity.toCharArray();
+//      params[paramNum] = ;
+        safeStrings[paramNum] = parse.volatileStats && Settings.get().isEnableAdjustSelectivity() ? " OR " + syntax.getAdjustSelectivityPredicate() : "";
+        notSafeTypes[paramNum++] = null;
 
         // те которые isString сразу транслируем
         MList<String> mPreparedParams = ListFact.mList();
@@ -1892,20 +1898,22 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         public final ImSet<String> params;
         public final ImMap<String, String> safeStrings;
         public final ImMap<String, Type> notSafeTypes;
+        public final boolean volatileStats;
 
-        private ParseStatement(String statement, ImSet<String> params, ImMap<String, String> safeStrings, ImMap<String, Type> notSafeTypes) {
+        private ParseStatement(String statement, ImSet<String> params, ImMap<String, String> safeStrings, ImMap<String, Type> notSafeTypes, boolean volatileStats) {
             this.statement = statement;
             this.params = params;
             this.safeStrings = safeStrings;
             this.notSafeTypes = notSafeTypes;
+            this.volatileStats = volatileStats;
         }
 
         public boolean calcTwins(TwinImmutableObject o) {
-            return notSafeTypes.equals(((ParseStatement) o).notSafeTypes) && params.equals(((ParseStatement) o).params) && safeStrings.equals(((ParseStatement) o).safeStrings) && statement.equals(((ParseStatement) o).statement);
+            return notSafeTypes.equals(((ParseStatement) o).notSafeTypes) && params.equals(((ParseStatement) o).params) && safeStrings.equals(((ParseStatement) o).safeStrings) && statement.equals(((ParseStatement) o).statement) && volatileStats == ((ParseStatement) o).volatileStats;
         }
 
         public int immutableHashCode() {
-            return 31 * (31 * (31 * statement.hashCode() + params.hashCode()) + safeStrings.hashCode()) + notSafeTypes.hashCode();
+            return 31 * (31 * (31 * (31 * statement.hashCode() + params.hashCode()) + safeStrings.hashCode()) + notSafeTypes.hashCode()) + ( volatileStats ? 1 : 0 );
         }
     }
 
@@ -1992,7 +2000,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             if(!parseInterface.isSafeType())
                 mvNotSafeTypes.mapValue(i, parseInterface.getType());
         }
-        return new ParseStatement(command, paramObjects.keys(), mvSafeStrings.immutableValue(), mvNotSafeTypes.immutableValue());
+        return new ParseStatement(command, paramObjects.keys(), mvSafeStrings.immutableValue(), mvNotSafeTypes.immutableValue(), isVolatileStats());
     }
 
     private final static GetKeyValue<String, String, String> addFieldAliases = new GetKeyValue<String, String, String>() {

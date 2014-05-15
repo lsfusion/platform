@@ -40,12 +40,4 @@ public class StoredDataProperty extends DataProperty {
         }
     };
 
-
-    @Message("logics.recalculating.data.classes")
-    public void recalculateClasses(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
-        ImRevMap<KeyField, KeyExpr> mapKeys = mapTable.table.getMapKeys();
-        Where where = DataSession.getIncorrectWhere(this, baseClass, mapTable.mapKeys.join(mapKeys));
-        Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(mapKeys, Expr.NULL, field, where);
-        sql.updateRecords(new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global));
-    }
 }

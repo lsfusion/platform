@@ -344,4 +344,14 @@ public class PostgreDataAdapter extends DataAdapter {
         }
         Driver.setLogLevel(logLevel);
     }
+
+    @Override
+    public boolean hasSelectivityProblem() {
+        return true;
+    }
+
+    @Override
+    public String getAdjustSelectivityPredicate() {
+        return "current_timestamp<>current_timestamp";
+    }
 }

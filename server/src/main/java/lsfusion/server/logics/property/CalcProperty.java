@@ -636,7 +636,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return getClassValueWhere(type, prevSameClasses).filterKeys(interfaces); // не полностью, собсно для этого и есть full
     }
 
-    protected ClassWhere<Object> getClassValueWhere(ClassType type) {
+    public ClassWhere<Object> getClassValueWhere(ClassType type) {
         return getClassValueWhere(type, defaultPrevSameClasses);
     }
     protected abstract ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses);
@@ -1090,5 +1090,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Message("logics.recalculating.data.classes")
+    public void recalculateClasses(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+        assert isStored();
+        
+        ImRevMap<KeyField, KeyExpr> mapKeys = mapTable.table.getMapKeys();
+        Where where = DataSession.getIncorrectWhere(this, baseClass, mapTable.mapKeys.join(mapKeys));
+        Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(mapKeys, Expr.NULL, field, where);
+        sql.updateRecords(new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global));
     }
 }

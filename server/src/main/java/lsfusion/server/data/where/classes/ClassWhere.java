@@ -1,13 +1,11 @@
 package lsfusion.server.data.where.classes;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
-import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.DataClass;
@@ -124,13 +122,17 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     }
 
     public Where getWhere(ImMap<K, ? extends Expr> mapExprs) {
-        return getWhere((GetValue<Expr, K>) mapExprs.fnGetValue());
+        return getWhere((GetValue<Expr, K>) mapExprs.fnGetValue(), false);
     }
 
-    public Where getWhere(GetValue<Expr, K> mapExprs) {
+    public Where getWhere(ImMap<K, ? extends Expr> mapExprs, boolean inconsistent) {
+        return getWhere((GetValue<Expr, K>) mapExprs.fnGetValue(), inconsistent);
+    }
+
+    public Where getWhere(GetValue<Expr, K> mapExprs, boolean inconsistent) {
         Where result = Where.FALSE;
         for(And<K> andWhere : wheres)
-            result = result.or(andWhere.getWhere(mapExprs));
+            result = result.or(andWhere.getWhere(mapExprs, inconsistent));
         return result;
     }
 

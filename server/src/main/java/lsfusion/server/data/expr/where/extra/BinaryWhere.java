@@ -21,6 +21,7 @@ import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.WhereJoin;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.DataWhere;
@@ -107,10 +108,26 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
     public boolean calcTwins(TwinImmutableObject obj) {
         return operator1.equals(((BinaryWhere)obj).operator1) && operator2.equals(((BinaryWhere)obj).operator2);
     }
-
+    
+    public static final String adjustSelectivity = "<<adj_sel>>";
+    
+    protected boolean adjustSelectivity(SQLSyntax syntax) {
+        return false;
+    }
+    
     protected abstract String getCompareSource(CompileSource compile);
     public String getSource(CompileSource compile) {
+        return fixSelectivity(compile, getBaseSource(compile));
+    }
+
+    private String getBaseSource(CompileSource compile) {
         return operator1.getSource(compile) + getCompareSource(compile) + operator2.getSource(compile);
+    }
+
+    private String fixSelectivity(CompileSource compile, String result) {
+        if(adjustSelectivity(compile.syntax))
+            result = "(" + result + adjustSelectivity + ")";
+        return result;
     }
 
     protected String getNotSource(CompileSource compile) {
@@ -122,11 +139,12 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             result = op1Source + " IS NULL";
         if(!compile.means(operator2.getNotNullWhere()))
             result = (result.length()==0?"":result+" OR ") + op2Source + " IS NULL";
-        String compare = "NOT " + getSource(compile);
+        String compare = "NOT " + getBaseSource(compile);
         if(result.length()==0)
-            return compare;
+            result = compare;
         else
-            return "(" + result + " OR " + compare + ")";
+            result = "(" + result + " OR " + compare + ")";
+        return fixSelectivity(compile, result);
     }
 
     protected static Where create(BaseExpr operator1, BaseExpr operator2, BinaryWhere where) {

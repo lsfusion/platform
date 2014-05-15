@@ -1002,6 +1002,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }));
     }
 
+    @IdentityLazy
+    public ImOrderSet<StoredDataProperty> getStoredDataProperties() {
+        return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<Property>() {
+            public boolean contains(Property property) {
+                return property instanceof StoredDataProperty;
+            }
+        }));
+    }
+
     public ImSet<CustomClass> getCustomClasses() {
         return LM.baseClass.getAllClasses();
     }
@@ -1211,9 +1220,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public String checkClasses(SQLSession session) throws SQLException, SQLHandledException {
         String message = DataSession.checkClasses(session, LM.baseClass);
-        for (Property property : getPropertyList())
-            if (property instanceof StoredDataProperty)
-                message += DataSession.checkClasses((StoredDataProperty)property, session, LM.baseClass);
+        for (CalcProperty property : getStoredDataProperties()) // getStoredProperties()
+            message += DataSession.checkClasses(property, session, LM.baseClass);
         return message;
     }
 
@@ -1274,13 +1282,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void recalculateClasses(SQLSession session, boolean isolatedTransactions) throws SQLException, SQLHandledException {
         recalculateExclusiveness(session, isolatedTransactions);
 
-        for (final Property property : getPropertyList())
-            if (property instanceof StoredDataProperty) {
-                DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
-                    public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                        ((StoredDataProperty)property).recalculateClasses(sql, LM.baseClass);
-                    }});                
-            }
+        for (final CalcProperty property : getStoredDataProperties())
+            DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
+                public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                    property.recalculateClasses(sql, LM.baseClass);
+                }});                
     }
 
     private void test(String testCase) {

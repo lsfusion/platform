@@ -11,6 +11,7 @@ import lsfusion.interop.Compare;
 import lsfusion.server.Message;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
@@ -42,14 +43,14 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     // проверяет аггрегацию для отладки
     @ThisMessage
     @Message("logics.info.checking.aggregated.property")
-    public String checkAggregation(SQLSession session) throws SQLException, SQLHandledException {
+    public String checkAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
         session.pushVolatileStats(null, OperationOwner.unknown);
         
         try {
     
             String message = "";
     
-            ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = getRecalculateQuery(true).execute(session, OperationOwner.unknown);
+            ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = getRecalculateQuery(true, baseClass).execute(session, OperationOwner.unknown);
             if(checkResult.size() > 0) {
                 message += "---- Checking Aggregations : " + this + "-----" + '\n';
                 for(int i=0,size=checkResult.size();i<size;i++)
@@ -74,16 +75,18 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return calculateExpr(joinImplement, CalcType.STAT, PropertyChanges.EMPTY, null);
     }
 
-    private Query<T, String> getRecalculateQuery(boolean outDB) {
+    private Query<T, String> getRecalculateQuery(boolean outDB, BaseClass baseClass) {
+        assert isStored();
+        
         QueryBuilder<T, String> query = new QueryBuilder<T, String>(this);
 
-        Expr dbExpr = getExpr(query.getMapExprs());
+        Expr dbExpr = getInconsistentExpr(query.getMapExprs(), baseClass);
         Expr calculateExpr = calculateExpr(query.getMapExprs());
         if(outDB)
             query.addProperty("dbvalue", dbExpr);
         query.addProperty("calcvalue", calculateExpr);
         query.and(dbExpr.getWhere().or(calculateExpr.getWhere()));
-        if(!DBManager.RECALC_REUPDATE)
+        if(outDB || !DBManager.RECALC_REUPDATE)
             query.and(dbExpr.compare(calculateExpr, Compare.EQUALS).not().and(dbExpr.getWhere().or(calculateExpr.getWhere())));
         return query.getQuery();
     }
@@ -92,10 +95,10 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
     @Message("logics.info.recalculation.of.aggregated.property")
     @ThisMessage
-    public void recalculateAggregation(SQLSession session) throws SQLException, SQLHandledException {
+    public void recalculateAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
         session.pushVolatileStats(null, OperationOwner.unknown);
         try {
-            session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false).map(
+            session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass).map(
                     mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), OperationOwner.unknown, TableOwner.global));
         } finally {
             session.popVolatileStats(null, OperationOwner.unknown);

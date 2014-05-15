@@ -200,6 +200,7 @@ public class Settings {
 
     private boolean disableExplicitVolatileStats = false;
     private int tooMuchAttempts = 15;
+    private boolean enableAdjustSelectivity = false; // включает повышение selectivity при volatile stats для операторов >, пока были непостоянные случаи, поэтому выключен
 
     public static Settings get() {
         return ThreadLocalContext.getSettings();
@@ -1043,5 +1044,14 @@ public class Settings {
 
     public void setTooMuchAttempts(int tooMuchAttempts) {
         this.tooMuchAttempts = tooMuchAttempts;
+    }
+
+
+    public boolean isEnableAdjustSelectivity() {
+        return enableAdjustSelectivity;
+    }
+
+    public void setEnableAdjustSelectivity(boolean enableAdjustSelectivity) {
+        this.enableAdjustSelectivity = enableAdjustSelectivity;
     }
 }
