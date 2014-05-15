@@ -365,6 +365,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             query.addProperty("groupObjectSID", BL.reflectionLM.sidGroupObject.getExpr(groupObjectPropertyDrawExpr));
 
             query.addProperty("generalShowPropertyName", BL.reflectionLM.nameShowPropertyDraw.getExpr(propertyDrawExpr));
+            //query.addProperty("generalCaption", BL.reflectionLM.columnCaptionPropertyDraw.getExpr(propertyDrawExpr));
             query.addProperty("generalWidth", BL.reflectionLM.columnWidthPropertyDraw.getExpr(propertyDrawExpr));
             query.addProperty("generalOrder", BL.reflectionLM.columnOrderPropertyDraw.getExpr(propertyDrawExpr));
             query.addProperty("generalSort", BL.reflectionLM.columnSortPropertyDraw.getExpr(propertyDrawExpr));
@@ -375,6 +376,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             query.addProperty("generalIsFontItalic", BL.reflectionLM.isFontItalicGroupObject.getExpr(groupObjectPropertyDrawExpr));
 
             query.addProperty("userShowPropertyName", BL.reflectionLM.nameShowPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            //query.addProperty("userCaption", BL.reflectionLM.columnCaptionPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.addProperty("userWidth", BL.reflectionLM.columnWidthPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.addProperty("userOrder", BL.reflectionLM.columnOrderPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.addProperty("userSort", BL.reflectionLM.columnSortPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
@@ -412,11 +414,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             String hide = (String) values.get(prefix + "ShowPropertyName");
             Boolean needToHide = hide == null ? null : hide.trim().endsWith("Hide");
+            //String caption = (String) values.get(prefix + "Caption");
             Integer width = (Integer) values.get(prefix + "Width");
             Integer order = (Integer) values.get(prefix + "Order");
             Integer sort = (Integer) values.get(prefix + "Sort");
             Boolean userAscendingSort = (Boolean) values.get(prefix + "AscendingSort");
-            ColumnUserPreferences columnPrefs = new ColumnUserPreferences(needToHide, width, order, sort, userAscendingSort != null ? userAscendingSort : (sort != null ? false : null));
+            ColumnUserPreferences columnPrefs = new ColumnUserPreferences(needToHide, /*caption, */width, order, sort, userAscendingSort != null ? userAscendingSort : (sort != null ? false : null));
 
             Object hasPreferences = values.get(prefix + "HasUserPreferences");
             Integer fontSize = (Integer) values.get(prefix + "FontSize");
@@ -459,12 +462,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     Integer idShow = columnPreferences.userHide == null ? null : BL.reflectionLM.propertyDrawShowStatus.getObjectID(columnPreferences.userHide ? "Hide" : "Show");
                     if (forAllUsers) {
                         BL.reflectionLM.showPropertyDraw.change(idShow, dataSession, propertyDrawObject);
+                        //BL.reflectionLM.columnCaptionPropertyDraw.change(columnPreferences.userCaption, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnWidthPropertyDraw.change(columnPreferences.userWidth, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnOrderPropertyDraw.change(columnPreferences.userOrder, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnSortPropertyDraw.change(columnPreferences.userSort, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnAscendingSortPropertyDraw.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject);
                     } else {
                         BL.reflectionLM.showPropertyDrawCustomUser.change(idShow, dataSession, propertyDrawObject, userObject);
+                        //BL.reflectionLM.columnCaptionPropertyDrawCustomUser.change(columnPreferences.userCaption, dataSession, propertyDrawObject, userObject);
                         BL.reflectionLM.columnWidthPropertyDrawCustomUser.change(columnPreferences.userWidth, dataSession, propertyDrawObject, userObject);
                         BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(columnPreferences.userOrder, dataSession, propertyDrawObject, userObject);
                         BL.reflectionLM.columnSortPropertyDrawCustomUser.change(columnPreferences.userSort, dataSession, propertyDrawObject, userObject);
@@ -914,9 +919,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return property.getID() + "_" + index;
     }
 
-    public Map<List<Object>, List<Object>> groupData(ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>> toGroup,
-                                                     ImMap<Object, ImList<ImMap<ObjectInstance, DataObject>>> toSum,
-                                                     ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>> toMax, boolean onlyNotNull) throws SQLException, SQLHandledException {
+    public Map<List<Object>, List<Object>> groupData(ImOrderMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>> toGroup,
+                                                     ImOrderMap<Object, ImList<ImMap<ObjectInstance, DataObject>>> toSum,
+                                                     ImOrderMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>> toMax, boolean onlyNotNull) throws SQLException, SQLHandledException {
         GroupObjectInstance groupObject = toGroup.getKey(0).toDraw;
         ImRevMap<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
 

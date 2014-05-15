@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.interop.ClassViewType;
@@ -500,9 +501,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public byte[] call() throws Exception {
                 List<Map<Integer, List<byte[]>>> inMaps = new ArrayList<Map<Integer, List<byte[]>>>(BaseUtils.toList(groupMap, sumMap, maxMap));
-                List<ImMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>> outMaps = new ArrayList<ImMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>>();
+                List<ImOrderMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>> outMaps = new ArrayList<ImOrderMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>>();
                 for (Map<Integer, List<byte[]>> one : inMaps) {
-                    MExclMap<Object, ImList<ImMap<ObjectInstance, DataObject>>> mOutMap = MapFact.mExclMap(one.size());
+                    MOrderExclMap<Object, ImList<ImMap<ObjectInstance, DataObject>>> mOutMap = MapFact.mOrderExclMap(one.size());
                     for (Map.Entry<Integer, List<byte[]>> oneEntry : one.entrySet()) {
                         PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(oneEntry.getKey());
                         MList<ImMap<ObjectInstance, DataObject>> mList = ListFact.mList();
@@ -514,20 +515,20 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                         } else
                             mOutMap.exclAdd(0, ListFact.<ImMap<ObjectInstance, DataObject>>EMPTY());
                     }
-                    outMaps.add(mOutMap.immutableCopy());
+                    outMaps.add(mOutMap.immutableOrderCopy());
                 }
 
                 if (logger.isTraceEnabled()) {
                     logger.trace("groupData Action");
                 }
 
-                Map<List<Object>, List<Object>> groupped = form.groupData(BaseUtils.<ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(0)),
-                        outMaps.get(1), BaseUtils.<ImMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(2)), onlyNotNull);
+                Map<List<Object>, List<Object>> grouped = form.groupData(BaseUtils.<ImOrderMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(0)),
+                        outMaps.get(1), BaseUtils.<ImOrderMap<PropertyDrawInstance, ImList<ImMap<ObjectInstance, DataObject>>>>immutableCast(outMaps.get(2)), onlyNotNull);
 
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 DataOutputStream outStream = new DataOutputStream(out);
-                outStream.writeInt(groupped.size());
-                for (Map.Entry<List<Object>, List<Object>> entry : groupped.entrySet()) {
+                outStream.writeInt(grouped.size());
+                for (Map.Entry<List<Object>, List<Object>> entry : grouped.entrySet()) {
                     outStream.writeInt(entry.getKey().size());
                     for (Object key : entry.getKey()) {
                         BaseUtils.serializeObject(outStream, key);
