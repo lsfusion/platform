@@ -113,7 +113,7 @@ public abstract class GAbstractContainerView {
     protected Dimension addCaptionDimensions(Dimension dimension) {
         if (needCaption()) {
             dimension.width += 10;
-            dimension.height += 18;
+            dimension.height += 20;
         }
         return dimension;
     }

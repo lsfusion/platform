@@ -462,10 +462,6 @@ textarea {
 }
 
 /* ------------ Other components  ------------ */
-.formController {
-    overflow: auto !important;
-}
-
 .gridResizePanel{
     min-height: 130px !important;
 }

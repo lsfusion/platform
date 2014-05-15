@@ -2,6 +2,7 @@ package lsfusion.gwt.form.client.form.ui;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -133,8 +134,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                 asyncView.setIcon("loading.gif");
             }
         };
-
-        addStyleName("formController");
 
         if (form.sID != null) {
             getElement().setAttribute("lsfusion-form", form.sID);
@@ -1126,6 +1125,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             @Override
             public void execute() {
                 onResize();
+                getElement().getStyle().setOverflow(Style.Overflow.AUTO);
                 focusFirstWidget();
             }
         });

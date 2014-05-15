@@ -145,6 +145,12 @@ public abstract class ColumnsContainerView<P extends Panel> extends GAbstractCon
                     columnWidth = Math.max(columnWidth, childPref.width);
                 }
             }
+            
+            if (columnWidth == 0) {
+                //пустые колонки всё равно ренедрятся шириной в 1 пиксел
+                columnWidth = 1;
+            }
+            
             width += columnWidth;
             height = Math.max(height, columnHeight);
         }

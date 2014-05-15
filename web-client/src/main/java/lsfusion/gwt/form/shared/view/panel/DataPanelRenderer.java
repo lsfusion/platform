@@ -42,11 +42,12 @@ public class DataPanelRenderer implements PanelRenderer {
     private String tooltip;
 
     private EventTarget focusTargetAfterEdit;
+    private final boolean vertical;
 
     public DataPanelRenderer(final GFormController form, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
         this.property = iproperty;
 
-        boolean vertical = property.panelLabelAbove;
+        vertical = property.panelLabelAbove;
 
         tooltip = property.getTooltipText(property.getCaptionOrEmpty());
 
@@ -221,10 +222,13 @@ public class DataPanelRenderer implements PanelRenderer {
         @Override
         public Dimension getPreferredSize() {
             Dimension pref = getOffsetSize(label);
+            if (!vertical) {
+                pref.width += 4; //extra for right label margin
+            }
 
             //+extra for borders and margins
-            int width = property.getPreferredPixelWidth() + 5;
-            int height = property.getPreferredPixelHeight() + 5;
+            int width = property.getPreferredPixelWidth() + 4;
+            int height = property.getPreferredPixelHeight() + 4;
 
             if (isVertical()) {
                 pref.width = Math.max(pref.width, width);
