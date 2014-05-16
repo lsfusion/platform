@@ -120,7 +120,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         return fixSelectivity(compile, getBaseSource(compile));
     }
 
-    private String getBaseSource(CompileSource compile) {
+    protected String getBaseSource(CompileSource compile) {
         return operator1.getSource(compile) + getCompareSource(compile) + operator2.getSource(compile);
     }
 

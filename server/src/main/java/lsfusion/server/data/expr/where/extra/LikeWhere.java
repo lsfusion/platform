@@ -48,7 +48,7 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
     }
 
     @Override
-    public String getSource(CompileSource compile) {
+    protected String getBaseSource(CompileSource compile) {
         Type type = operator1.getType(compile.keyType);
         String likeString = type instanceof StringClass && ((StringClass) type).caseInsensitive ? " " + compile.syntax.getInsensitiveLike() + " " : " LIKE ";
 

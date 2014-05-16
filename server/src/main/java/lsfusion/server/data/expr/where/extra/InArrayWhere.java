@@ -26,7 +26,7 @@ public class InArrayWhere extends BinaryWhere<InArrayWhere> {
     }
 
     @Override
-    public String getSource(CompileSource compile) {
+    protected String getBaseSource(CompileSource compile) {
         return operator1.getSource(compile) + " = ANY(" + operator2.getSource(compile) + ")";
     }
 
