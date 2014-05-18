@@ -1003,10 +1003,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     @IdentityLazy
-    public ImOrderSet<StoredDataProperty> getStoredDataProperties() {
+    public ImOrderSet<CalcProperty> getStoredDataProperties() {
         return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<Property>() {
             public boolean contains(Property property) {
-                return property instanceof StoredDataProperty;
+                return property instanceof StoredDataProperty || property instanceof ClassDataProperty;
             }
         }));
     }

@@ -164,18 +164,17 @@ public class ImplementTable extends GlobalTable {
         boolean wasRemove = false; // для assertiona
         while(i.hasNext()) {
             ImplementTable item = i.next();
-            Integer relation = item.compare(mapFields,new Result<ImRevMap<KeyField, KeyField>>());
+            int relation = item.compare(mapFields,new Result<ImRevMap<KeyField, KeyField>>());
             if(relation==COMPARE_DOWN) { // снизу в дереве, добавляем ее как промежуточную
-                if(!parents.containsNF(item, Version.CURRENT)) {
-                    assert checkSiblings(item, parents, this);                    
+                if(checkSiblings(item, parents, this))
                     parents.add(item, version);
-                }
+                
                 if(toAdd) {
                     wasRemove = true;
                     tables.remove(item, Version.CURRENT); // последняя версия нужна, так как в противном случае удаление может пойти до добавления 
                 }
             } else { // сверху в дереве или никак не связаны, передаем дальше
-                if((relation == COMPARE_UP || relation == COMPARE_EQUAL) && !checks.contains(item)) { // для детерменированности эту проверку придется убрать relation!=COMPARE_EQUAL
+                if(!checks.contains(item)) { // для детерменированности эту проверку придется убрать 
                     checks.add(item);
                     include(item.parents, version, relation==COMPARE_UP,checks, item);
                 }
@@ -195,6 +194,8 @@ public class ImplementTable extends GlobalTable {
 
     private boolean checkSiblings(ImplementTable item, NFOrderSet<ImplementTable> tables, ImplementTable debugItem) {
         for(ImplementTable siblingTable : tables.getNFList(Version.CURRENT)) {
+            if(BaseUtils.hashEquals(item, siblingTable))
+                return false;
             int compare = siblingTable.compare(item.mapFields, new Result<ImRevMap<KeyField, KeyField>>());
             if(compare==COMPARE_UP || compare == COMPARE_DOWN)
                 return false;
