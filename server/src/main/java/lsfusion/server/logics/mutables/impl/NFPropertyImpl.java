@@ -1,4 +1,4 @@
-package lsfusion.server.logics.mutables.impl;
+    package lsfusion.server.logics.mutables.impl;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.logics.mutables.Version;
@@ -11,6 +11,10 @@ public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFPropert
     public NFPropertyImpl() {
     }
 
+    public NFPropertyImpl(boolean allowVersionFinalRead) {
+        super(allowVersionFinalRead);
+    }
+
     public NFPropertyImpl(K changes) {
         super(changes);
     }
@@ -20,6 +24,10 @@ public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFPropert
     }
 
     public K getNF(Version version) {
+        K result = proceedFinal(version);
+        if(result!=null)
+            return result;
+        
         ImList<K> list = getChanges().getNFList(version);
         int last = list.size();
         if(last == 0)
