@@ -1191,9 +1191,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
 
         public DBStructure(DataInputStream inputDB, SQLSession sql) throws IOException, SQLException, SQLHandledException {
+            dbVersion = new DBVersion("0.0");
             if (inputDB == null) {
                 version = -2;
-                dbVersion = new DBVersion("0.0");
             } else {
                 version = inputDB.read() - 'v';
                 if (version < 0) {
@@ -1202,8 +1202,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
                 if (version > 2) {
                     dbVersion = new DBVersion(inputDB.readUTF());
-                } else {
-                    dbVersion = new DBVersion("0.0");
                 }
 
                 if (version > 9) {

@@ -79,8 +79,8 @@ public class BaseClass extends AbstractCustomClass {
         return mAllClasses.immutable();
     }
 
-    public void initObjectClass(Version version) { // чтобы сохранить immutability классов
-        objectClass = new ConcreteCustomClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), version, this);
+    public void initObjectClass(Version version, String sid) { // чтобы сохранить immutability классов
+        objectClass = new ConcreteCustomClass(sid, ServerResourceBundle.getString("classes.object.class"), version, this);
 
         ImSet<CustomClass> allClasses = getAllClasses().remove(SetFact.singleton(objectClass));
 

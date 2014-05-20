@@ -512,7 +512,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void initObjectClass() {
-        LM.baseClass.initObjectClass(LM.getVersion());
+        LM.baseClass.initObjectClass(LM.getVersion(), LM.transformNameToSID("CustomObjectClass"));
         LM.storeCustomClass(LM.baseClass.objectClass);
     }
 
@@ -557,7 +557,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             ImSet<ConcreteCustomClass> set = groupTables.getValue(i);
 
             ObjectValueClassSet classSet = OrObjectClassSet.fromSetConcreteChildren(set);
-            ClassDataProperty dataProperty = new ClassDataProperty(table.name+"_class", classSet.toString(), classSet);
+            ClassDataProperty dataProperty = new ClassDataProperty("_CLASS_" + table.name, classSet.toString(), classSet);
             LM.addProperty(null, new LCP<ClassPropertyInterface>(dataProperty));
             dataProperty.markStored(LM.tableFactory, table);
 

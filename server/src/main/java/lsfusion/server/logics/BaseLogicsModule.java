@@ -231,7 +231,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @Override
     public void initClasses() throws RecognitionException {
-        baseClass = addBaseClass("Object", getString("logics.object"));
+        baseClass = addBaseClass(transformNameToSID("Object"), getString("logics.object"));
         
         super.initClasses();
 
@@ -644,11 +644,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public void initClassForms() {
         objectForm = baseClass.getBaseClassForm(this);
         objects.add(objectForm, getVersion());
-    }
-
-    @Override
-    public String getNamePrefix() {
-        return null;
     }
 
     private final SIDHandler<CustomClass> classSIDHandler = new SIDHandler<CustomClass>() {

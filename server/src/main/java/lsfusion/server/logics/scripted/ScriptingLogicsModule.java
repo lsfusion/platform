@@ -130,7 +130,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         put("LONG", LongClass.instance);
         put("DATE", DateClass.instance);
         put("BOOLEAN", LogicalClass.instance);
-        put("DATETIME", DateTimeClass.instance );
+        put("DATETIME", DateTimeClass.instance);
         put("TEXT", StringClass.text);
         put("RICHTEXT", StringClass.richText);
         put("TIME", TimeClass.instance);
