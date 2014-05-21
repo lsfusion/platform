@@ -1,19 +1,13 @@
 package lsfusion.server.logics.tasks;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.Property;
 
 public abstract class GroupPropertiesTask extends GroupProgramTask {
@@ -28,8 +22,9 @@ public abstract class GroupPropertiesTask extends GroupProgramTask {
         ImMap<Integer, ImSet<Property>> groupProps = BL.getOrderProperties().getSet().mapValues(new GetIndex<Integer>() {
             public Integer getMapValue(int i) {
                 return i / splitCount;
-            }}).groupValues();
-        for(int i=0,size=groupProps.size();i<size;i++) {
+            }
+        }).groupValues();
+        for (int i = 0, size = groupProps.size(); i < size; i++) {
             final int group = groupProps.getKey(i);
             final ImSet<Property> propSet = groupProps.getValue(i);
 
@@ -45,8 +40,9 @@ public abstract class GroupPropertiesTask extends GroupProgramTask {
                 }
 
                 public void run() {
-                    for(Property prop : propSet)
+                    for (Property prop : propSet) {
                         runTask(prop);
+                    }
                 }
             });
         }

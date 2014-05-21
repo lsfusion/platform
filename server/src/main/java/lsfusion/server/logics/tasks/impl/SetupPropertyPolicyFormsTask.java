@@ -7,21 +7,21 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.tasks.GroupPropertiesTask;
-import lsfusion.server.logics.tasks.SimpleBLTask;
 
 public class SetupPropertyPolicyFormsTask extends GroupPropertiesTask {
+
+    LAP<?> setupPolicyForPropBySID;
 
     public String getCaption() {
         return "Setup property policy";
     }
 
-    LAP<?> setupPolicyForPropBySID;
-            
     @Override
     protected boolean prerun() {
-        if(SystemProperties.isDebug)
+        if (SystemProperties.isDebug) {
             return false;
-        
+        }
+
         BusinessLogics BL = getBL();
         FormEntity policyFormEntity = BL.securityLM.propertyPolicyForm;
         ObjectEntity propertyObj = policyFormEntity.getObject("p");

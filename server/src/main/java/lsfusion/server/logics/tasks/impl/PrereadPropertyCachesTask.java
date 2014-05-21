@@ -12,12 +12,13 @@ public class PrereadPropertyCachesTask extends GroupPropertiesTask {
 
     @Override
     protected boolean prerun() {
-        if(SystemProperties.isDebug)
+        if (SystemProperties.isDebug) {
             return false;
+        }
         return true;
     }
 
     protected void runTask(Property property) {
-        property.prereadCaches();        
+        property.prereadCaches();
     }
 }

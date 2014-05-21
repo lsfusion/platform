@@ -70,6 +70,10 @@
             <artifactId>commons-lang</artifactId>
         </dependency>
         <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+        </dependency>
+        <dependency>
             <groupId>lsfusion.platform</groupId>
             <artifactId>api</artifactId>
         </dependency>

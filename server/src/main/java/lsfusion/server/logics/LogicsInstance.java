@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.MultiCauseException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -190,16 +191,25 @@ public class LogicsInstance implements InitializingBean {
             lifecycle.fireStarted();
             logger.info("Logics instance has successfully started");
         } catch (Throwable throwable) {
-            try {
-                throw throwable;
-            } catch (ScriptParsingException e) {
-                // используем .info, т.к. это контролируемое сообщение для пользователя, а не системная ошибка
-                logger.info("Parsing error, while starting logics instance: \n" + e.getMessage());
-            } catch (Throwable t) {
-                logger.error("Exception while starting business logic: ", t);
+            Throwable[] throwables = throwable instanceof MultiCauseException
+                                     ? ((MultiCauseException) throwable).getCauses()
+                                     : new Throwable[]{throwable};
+            
+            String errorString = "";
+            for (Throwable t : throwables) {
+                errorString += t.getMessage();
+
+                try {
+                    throw t;
+                } catch (ScriptParsingException parsingEx) {
+                    // используем .info, т.к. это контролируемое сообщение для пользователя, а не системная ошибка
+                    logger.info("Parsing error, while starting logics instance: \n" + parsingEx.getMessage());
+                } catch (Throwable otherEx) {
+                    logger.error("Exception while starting business logic: ", otherEx);
+                }
             }
 
-            lifecycle.fireError(throwable.getMessage());
+            lifecycle.fireError(errorString);
 
             Throwables.propagate(throwable);
         }

@@ -11,9 +11,10 @@ public class FinalizeActionAbstractTask extends GroupPropertiesTask {
     }
 
     protected void runTask(Property property) {
-        if(property instanceof ActionProperty) {
-            if(property instanceof ListCaseActionProperty && ((ListCaseActionProperty)property).isAbstract())
+        if (property instanceof ActionProperty) {
+            if (property instanceof ListCaseActionProperty && ((ListCaseActionProperty) property).isAbstract()) {
                 property.finalizeInit();
+            }
         }
     }
 }

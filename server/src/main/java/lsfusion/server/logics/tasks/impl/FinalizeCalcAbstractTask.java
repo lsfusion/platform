@@ -11,7 +11,8 @@ public class FinalizeCalcAbstractTask extends GroupPropertiesTask {
     }
 
     protected void runTask(Property property) {
-        if (property instanceof CaseUnionProperty && ((CaseUnionProperty) property).isAbstract())
+        if (property instanceof CaseUnionProperty && ((CaseUnionProperty) property).isAbstract()) {
             property.finalizeInit();
+        }
     }
 }

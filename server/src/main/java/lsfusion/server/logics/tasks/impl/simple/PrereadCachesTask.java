@@ -10,7 +10,8 @@ public class PrereadCachesTask extends SimpleBLTask {
     }
 
     public void run() {
-        if(!SystemProperties.isDebug)
+        if (!SystemProperties.isDebug) {
             getBL().prereadCaches();
+        }
     }
 }

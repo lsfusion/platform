@@ -6,13 +6,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class TaskBlockingQueue<E extends Task.PriorityRunnable>  extends AbstractQueue<E>
-            implements BlockingQueue<E> {
+public class TaskBlockingQueue<E extends Task.PriorityRunnable> extends AbstractQueue<E>
+        implements BlockingQueue<E> {
 
     private final PriorityQueue<E> qDiameter;
     private final PriorityQueue<E> qLeastEstimated;
     private final ReentrantLock lock = new ReentrantLock(true);
     private final Condition notEmpty = lock.newCondition();
+    private TreeSet<E> polled = new TreeSet<E>();
 
     public TaskBlockingQueue() {
         qDiameter = new PriorityQueue<E>();
@@ -25,12 +26,11 @@ public class TaskBlockingQueue<E extends Task.PriorityRunnable>  extends Abstrac
 
     /**
      * Inserts the specified element into this priority queue.
-     *
      * @param e the element to add
      * @return <tt>true</tt> (as specified by {@link java.util.Queue#offer})
-     * @throws ClassCastException if the specified element cannot be compared
-     *         with elements currently in the priority queue according to the
-     *         priority queue's ordering
+     * @throws ClassCastException   if the specified element cannot be compared
+     *                              with elements currently in the priority queue according to the
+     *                              priority queue's ordering
      * @throws NullPointerException if the specified element is null
      */
     public boolean offer(E e) {
@@ -55,8 +55,6 @@ public class TaskBlockingQueue<E extends Task.PriorityRunnable>  extends Abstrac
     public boolean offer(E e, long timeout, TimeUnit unit) {
         return offer(e); // never need to block
     }
-    
-    private TreeSet<E> polled = new TreeSet<E>();
 
     public void ensurePolled(E task) {
         final ReentrantLock lock = this.lock;
@@ -79,23 +77,19 @@ public class TaskBlockingQueue<E extends Task.PriorityRunnable>  extends Abstrac
         }
     }
 
-    private static <E extends Task.PriorityRunnable> boolean useLeastEstimated(E maxRunning, E maxDiamWaiting, E leastWaiting) {
-        return maxRunning != null && maxRunning.getComplexity() > maxDiamWaiting.getComplexity(); //- maxRunning.getBaseComplexity() - leastWaiting.getBaseComplexity() 
-    }
-
     private E internalPoll() {
         Iterator<E> eIterator = polled.descendingIterator();
         E maxRunning = eIterator.hasNext() ? eIterator.next() : null;
         E maxDiamWaiting = qDiameter.peek();
-        if(maxDiamWaiting == null) {
+        if (maxDiamWaiting == null) {
             assert qLeastEstimated.peek() == null;
             return null;
-        }   
+        }
         E leastWaiting = qLeastEstimated.peek();
-        
+
         boolean removed;
         E polledTask;
-        if(useLeastEstimated(maxRunning, maxDiamWaiting, leastWaiting)) { 
+        if (useLeastEstimated(maxRunning, maxDiamWaiting, leastWaiting)) {
             E leastPoll = qLeastEstimated.poll();
             removed = qDiameter.remove(leastPoll);
             polledTask = leastPoll;
@@ -114,10 +108,11 @@ public class TaskBlockingQueue<E extends Task.PriorityRunnable>  extends Abstrac
         E maxRunning = polled.size() > 0 ? polled.descendingIterator().next() : null;
         E maxDiamWaiting = qDiameter.peek();
         E leastWaiting = qLeastEstimated.peek();
-        if(useLeastEstimated(maxRunning, maxDiamWaiting, leastWaiting))
+        if (useLeastEstimated(maxRunning, maxDiamWaiting, leastWaiting)) {
             return leastWaiting;
-        else
+        } else {
             return maxDiamWaiting;
+        }
     }
 
     public E poll() {
@@ -135,8 +130,9 @@ public class TaskBlockingQueue<E extends Task.PriorityRunnable>  extends Abstrac
         lock.lockInterruptibly();
         try {
             try {
-                while (qDiameter.size() == 0)
+                while (qDiameter.size() == 0) {
                     notEmpty.await();
+                }
             } catch (InterruptedException ie) {
                 notEmpty.signal(); // propagate to non-interrupted thread
                 throw ie;
@@ -154,12 +150,14 @@ public class TaskBlockingQueue<E extends Task.PriorityRunnable>  extends Abstrac
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
-            for (;;) {
+            for (; ; ) {
                 E x = internalPoll();
-                if (x != null)
+                if (x != null) {
                     return x;
-                if (nanos <= 0)
+                }
+                if (nanos <= 0) {
                     return null;
+                }
                 try {
                     nanos = notEmpty.awaitNanos(nanos);
                 } catch (InterruptedException ie) {
@@ -234,7 +232,6 @@ public class TaskBlockingQueue<E extends Task.PriorityRunnable>  extends Abstrac
         }
     }
 
-
     public String toString() {
         final ReentrantLock lock = this.lock;
         lock.lock();
@@ -246,16 +243,18 @@ public class TaskBlockingQueue<E extends Task.PriorityRunnable>  extends Abstrac
     }
 
     public int drainTo(Collection<? super E> c) {
-        if (c == null)
+        if (c == null) {
             throw new NullPointerException();
-        if (c == this)
+        }
+        if (c == this) {
             throw new IllegalArgumentException();
+        }
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
             int n = 0;
             E e;
-            while ( (e = internalPoll()) != null) {
+            while ((e = internalPoll()) != null) {
                 c.add(e);
                 ++n;
             }
@@ -266,12 +265,15 @@ public class TaskBlockingQueue<E extends Task.PriorityRunnable>  extends Abstrac
     }
 
     public int drainTo(Collection<? super E> c, int maxElements) {
-        if (c == null)
+        if (c == null) {
             throw new NullPointerException();
-        if (c == this)
+        }
+        if (c == this) {
             throw new IllegalArgumentException();
-        if (maxElements <= 0)
+        }
+        if (maxElements <= 0) {
             return 0;
+        }
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
@@ -317,11 +319,14 @@ public class TaskBlockingQueue<E extends Task.PriorityRunnable>  extends Abstrac
      * elements as they existed upon construction of the iterator, and
      * may (but is not guaranteed to) reflect any modifications
      * subsequent to construction.
-     *
      * @return an iterator over the elements in this queue
      */
     public Iterator<E> iterator() {
         return new Itr(toArray());
+    }
+
+    private static <E extends Task.PriorityRunnable> boolean useLeastEstimated(E maxRunning, E maxDiamWaiting, E leastWaiting) {
+        return maxRunning != null && maxRunning.getComplexity() > maxDiamWaiting.getComplexity(); //- maxRunning.getBaseComplexity() - leastWaiting.getBaseComplexity() 
     }
 
     /**
@@ -342,15 +347,17 @@ public class TaskBlockingQueue<E extends Task.PriorityRunnable>  extends Abstrac
         }
 
         public E next() {
-            if (cursor >= array.length)
+            if (cursor >= array.length) {
                 throw new NoSuchElementException();
+            }
             lastRet = cursor;
-            return (E)array[cursor++];
+            return (E) array[cursor++];
         }
 
         public void remove() {
-            if (lastRet < 0)
+            if (lastRet < 0) {
                 throw new IllegalStateException();
+            }
             Object x = array[lastRet];
             lastRet = -1;
             // Traverse underlying queue to find == element,

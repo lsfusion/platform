@@ -11,13 +11,13 @@ public abstract class PublicTask extends Task {
     public Set<PublicTask> getDependencies() {
         return dependencies;
     }
-    
-    protected static Set<Task> getAllDependencies(PublicTask task) {
-        return BaseUtils.immutableCast(task.getDependencies());
-    }
 
     public void setDependencies(Set<PublicTask> dependencies) {
         this.dependencies = dependencies;
     }
-    
+
+    protected static Set<Task> getAllDependencies(PublicTask task) {
+        return BaseUtils.immutableCast(task.getDependencies());
+    }
+
 }

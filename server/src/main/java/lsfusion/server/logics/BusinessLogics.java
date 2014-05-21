@@ -4,7 +4,6 @@ import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.implementations.ArIndexedSet;
 import lsfusion.base.col.implementations.HSet;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
@@ -23,7 +22,6 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
-import lsfusion.server.classes.sets.UpClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.ScannerDaemonTask;
 import lsfusion.server.data.OperationOwner;
@@ -62,9 +60,13 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.mail.NotificationActionProperty;
-import lsfusion.server.session.*;
+import lsfusion.server.session.ApplyFilter;
+import lsfusion.server.session.DataSession;
+import lsfusion.server.session.SessionCreator;
+import lsfusion.server.session.SingleKeyTableUsage;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -74,11 +76,9 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
-import static lsfusion.base.BaseUtils.remove;
 import static lsfusion.base.BaseUtils.systemLogger;
 import static lsfusion.server.logics.LogicsModule.*;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -115,6 +115,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private String orderDependencies;
 
+    private PublicTask initTask;
+
     //чтобы можно было использовать один инстанс логики с несколькими инстансами, при этом инициализировать только один раз
     private final AtomicBoolean initialized = new AtomicBoolean();
 
@@ -130,23 +132,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         this.orderDependencies = orderDependencies;
     }
 
+    public void setInitTask(PublicTask initTask) {
+        this.initTask = initTask;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception {
+        Assert.notNull(initTask, "initTask must be specified");
+        
         LRUUtil.initLRUTuner(new LRULogger() {
             @Override
             public void log(String log) {
                 lruLogger.info(log);
             }
         });
-    }
-    
-    private PublicTask initTask;
-    public PublicTask getInitTask() {
-        return initTask;
-    }
-
-    public void setInitTask(PublicTask initTask) {
-        this.initTask = initTask;
     }
 
     @Override
@@ -156,9 +155,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             try {
                 getDbManager().ensureLogLevel();
                 
-                TaskRunner.runTask(getInitTask(), logger);
+                TaskRunner.runTask(initTask, logger);
             } catch (ScriptParsingException e) {
                 throw e;
+            } catch (RuntimeException re) {
+                throw re;
             } catch (Exception e) {
                 throw new RuntimeException("Error initializing BusinessLogics: ", e);
             }

@@ -7,24 +7,6 @@ import java.util.Set;
 
 public abstract class GroupProgramTask extends BLTask {
 
-    protected abstract Pair<Iterable<SingleProgramTask>, Iterable<SingleProgramTask>> initTasks();
-    protected boolean prerun() {
-        return true;
-    }
-    
-    protected boolean isGroupLoggable() {
-        return false;
-    }
-
-    protected boolean isPreLoggable() {
-        return true;
-    }
-
-    @Override
-    public boolean isLoggable() {
-        return false;
-    }
-
     protected Task preTask = new ProgramTask() {
 
         public Set<Task> getAllDependencies() {
@@ -40,20 +22,41 @@ public abstract class GroupProgramTask extends BLTask {
         }
 
         public void run() {
-            if(prerun()) {
+            if (prerun()) {
                 Pair<Iterable<SingleProgramTask>, Iterable<SingleProgramTask>> tasks = initTasks();
-                for(SingleProgramTask task : tasks.first)
+                for (SingleProgramTask task : tasks.first) {
                     task.addDependency(this, false);
-                for(SingleProgramTask task : tasks.second)
+                }
+                for (SingleProgramTask task : tasks.second) {
                     GroupProgramTask.this.addDependency(task);
+                }
             }
         }
     };
-    
+
+    protected abstract Pair<Iterable<SingleProgramTask>, Iterable<SingleProgramTask>> initTasks();
+
+    protected boolean prerun() {
+        return true;
+    }
+
+    protected boolean isGroupLoggable() {
+        return false;
+    }
+
+    protected boolean isPreLoggable() {
+        return true;
+    }
+
+    @Override
+    public boolean isLoggable() {
+        return false;
+    }
+
     public Set<Task> getAllDependencies() {
         return Collections.singleton(preTask);
     }
 
-    public void run() {                
+    public void run() {
     }
 }

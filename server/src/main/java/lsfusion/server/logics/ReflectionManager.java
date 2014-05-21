@@ -5,15 +5,12 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
-import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
-import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
@@ -37,6 +34,7 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -52,17 +50,14 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     
     private DBManager dbManager;
 
+    private PublicTask initTask;
+
     public void setBusinessLogics(BusinessLogics<?> businessLogics) {
         this.businessLogics = businessLogics;
     }
 
     public void setDbManager(DBManager dbManager) {
         this.dbManager = dbManager;
-    }
-
-    private PublicTask initTask;
-    public PublicTask getInitTask() {
-        return initTask;
     }
 
     public void setInitTask(PublicTask initTask) {
@@ -75,6 +70,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     private TimeLogicsModule timeLM;
 
     public void afterPropertiesSet() throws Exception {
+        Assert.notNull(initTask, "initTask must be specified");
     }
 
     @Override
@@ -88,9 +84,9 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     @Override
     protected void onStarted(LifecycleEvent event) {
         try {
-            TaskRunner.runTask(getInitTask(), systemLogger);
+            TaskRunner.runTask(initTask, systemLogger);
         } catch (Exception e) {
-            throw new RuntimeException("Error synchronizing DB: ", e);
+            throw new RuntimeException("Error starting ReflectionManager: ", e);
         }
     }
 

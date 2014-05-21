@@ -1,7 +1,5 @@
 package lsfusion.server.logics.tasks;
 
-import lsfusion.base.BaseUtils;
-
 import java.util.Set;
 
 public class GroupTask extends PublicTask {
