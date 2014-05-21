@@ -304,7 +304,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="setupPropertyPolicyFormsTask" class="lsfusion.server.logics.tasks.impl.SetupPropertyPolicyFormsTask">
+    <bean id="setupDrillDownTask" class="lsfusion.server.logics.tasks.impl.SetupDrillDownTask">
         <property name="dependencies">
             <set>
                 <ref bean="finalizeTask"/>
@@ -313,10 +313,19 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <bean id="setupPropertyPolicyFormsTask" class="lsfusion.server.logics.tasks.impl.SetupPropertyPolicyFormsTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="setupDrillDownTask"/> <!-- т.к. нужна возможность настройки policy и для drilldown action'ов -->
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
     <bean id="showDependenciesTask" class="lsfusion.server.logics.tasks.impl.simple.ShowDependenciesTask">
         <property name="dependencies">
             <set>
-                <ref bean="finalizeTask"/>
+                <ref bean="setupDrillDownTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -367,6 +376,7 @@
                 <ref bean="getPropertyListTask"/>
                 <ref bean="setupPropertyPolicyFormsTask"/>
                 <ref bean="finishLogInitTask"/>
+                <ref bean="finalizePropsTask"/>
                 <ref bean="initIndicesTask"/>
                 <ref bean="initClassFormsTask"/>
             </set>

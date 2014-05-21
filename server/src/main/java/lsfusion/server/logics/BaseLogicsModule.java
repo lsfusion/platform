@@ -16,7 +16,6 @@ import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
-import lsfusion.server.data.Time;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.form.entity.ClassFormEntity;
 import lsfusion.server.form.entity.FormEntity;
@@ -33,7 +32,6 @@ import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.SIDHandler;
 import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.mutables.impl.NFSimpleOrderSetImpl;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
@@ -261,6 +259,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         recognizeGroup.createContainer = false;
 
         drillDownGroup = getGroupByName("drillDown");
+        drillDownGroup.changeChildrenToSimple(version);
         drillDownGroup.createContainer = false;
 
         propertyPolicyGroup = getGroupByName("propertyPolicy");

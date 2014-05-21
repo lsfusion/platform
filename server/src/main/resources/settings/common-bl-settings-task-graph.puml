@@ -1,0 +1,39 @@
+для просмотра нужен плагин
+    http://plugins.jetbrains.com/plugin/7017?pr=
+    + Graphviz
+
+@startuml
+
+(createModulesTask) <-- (initModuleDependenciesTask)
+(initModuleDependenciesTask) <-- (initModuleOrderTask)
+(initModuleOrderTask) <-- (initModuleRestTask)
+(initModuleRestTask) <-- (initGroupsTask)
+(initGroupsTask) <-- (initClassesTask)
+(initClassesTask) <-- (initObjectClassTask)
+(initObjectClassTask) <-- (initTablesTask)
+(initTablesTask) <-- (initClassDataPropsTask)
+(initClassDataPropsTask) <-- (initPropertiesTask)
+(initPropertiesTask) <-- (finalizeCalcAbstractTask)
+(initPropertiesTask) <-- (finalizeActionAbstractTask)
+(finalizeCalcAbstractTask) <-- (checkAbstractTask)
+(finalizeCalcAbstractTask) <-- (finalizeTask)
+(finalizeActionAbstractTask) <-- (finalizeTask)
+(finalizeTask) <-- (initReflectionEventsTask)
+(initReflectionEventsTask) <-- (finishLogInitTask)
+(setupDrillDownTask) <-- (setupPropertyPolicyFormsTask)
+(finalizeTask) <-- (setupDrillDownTask)
+(setupDrillDownTask) <-- (showDependenciesTask)
+(initReflectionEventsTask) <-- (getPropertyListTask)
+(showDependenciesTask) <-- (getPropertyListTask)
+(finalizeTask) <-- (finalizePropsTask)
+(finalizeTask) <-- (initClassFormsTask)
+(finalizeTask) <-- (initIndicesTask)
+(checkAbstractTask) <-- (initBLTask)
+(getPropertyListTask) <-- (initBLTask)
+(setupPropertyPolicyFormsTask) <-- (initBLTask)
+(finishLogInitTask) <-- (initBLTask)
+(finalizePropsTask) <-- (initBLTask)
+(initIndicesTask) <-- (initBLTask)
+(initClassFormsTask) <-- (initBLTask)
+
+@enduml

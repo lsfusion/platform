@@ -250,7 +250,12 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeInt(entity.propertyObject.property.interfaces.size());
         for (PropertyInterface iFace : entity.propertyObject.property.interfaces) {
             pool.writeString(outStream, interfaceEntities.get(iFace).toString());
-            interfaceClasses.get(iFace).serialize(outStream);
+            
+            ValueClass paramClass = interfaceClasses.get(iFace);
+            outStream.writeBoolean(paramClass != null);
+            if (paramClass != null) {
+                paramClass.serialize(outStream);
+            }
         }
 
         entity.propertyObject.property.getValueClass().serialize(outStream);

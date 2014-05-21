@@ -39,7 +39,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.LogFormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.lifecycle.LifecycleAdapter;
@@ -721,17 +720,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private void setupDrillDown(boolean isDebug) {
         for (Property property : getOrderProperties()) {
             LM.setupDrillDownProperty(property, isDebug);
-        }
-    }
-
-    public void setupPropertyPolicyForms() {
-        FormEntity policyFormEntity = securityLM.propertyPolicyForm;
-        ObjectEntity propertyObj = policyFormEntity.getObject("p");
-        LAP<?> setupPolicyFormProperty = LM.addMFAProp(null, "sys", policyFormEntity, new ObjectEntity[]{propertyObj}, true);
-        LAP<?> setupPolicyForPropBySID = LM.addJoinAProp(setupPolicyFormProperty, reflectionLM.propertySID, 1);
-
-        for (Property property : getOrderProperties()) {
-            setupPropertyPolicyForms(setupPolicyForPropBySID, property);
         }
     }
 

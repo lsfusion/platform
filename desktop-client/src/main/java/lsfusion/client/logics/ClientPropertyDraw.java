@@ -390,7 +390,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         interfacesTypes = new ClientClass[n];
         for (int i = 0; i < n; ++i) {
             interfacesCaptions[i] = pool.readString(inStream);
-            interfacesTypes[i] = ClientTypeSerializer.deserializeClientClass(inStream);
+            interfacesTypes[i] = inStream.readBoolean()
+                                 ? ClientTypeSerializer.deserializeClientClass(inStream)
+                                 : null;
         }
 
         returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
