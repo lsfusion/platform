@@ -62,7 +62,10 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     }
 
     public String getCaption() {
-        return get(0).getCaption();
+        if (size() > 0)
+            return get(0).getCaption();
+        else
+            return null;
     }
 
     public int getID() {
