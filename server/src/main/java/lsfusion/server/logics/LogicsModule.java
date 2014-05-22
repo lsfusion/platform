@@ -1344,7 +1344,7 @@ public abstract class LogicsModule {
     // ------------------- Loggable ----------------- //
 
     public LCP addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp, ValueClass... classes) {
-        return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log") + " " + lp.property, 1, lp,
+        return addDCProp(baseLM.privateGroup, "LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log") + " " + lp.property, 1, lp,
                 add(new Object[]{true}, add(getParams(lp), add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, add(directLI(lp), classes)))));
     }
 
