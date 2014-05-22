@@ -344,7 +344,9 @@
     <bean id="finalizePropsTask" class="lsfusion.server.logics.tasks.impl.FinalizePropsTask">
         <property name="dependencies">
             <set>
-                <ref bean="finalizeTask"/>
+                <!-- должно быть после всего, что может поменять editAction, contextMenu, etc.-->
+                <ref bean="setupDrillDownTask"/>
+                <ref bean="setupPropertyPolicyFormsTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
