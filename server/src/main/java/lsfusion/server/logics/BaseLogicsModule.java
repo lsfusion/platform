@@ -243,6 +243,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         Version version = getVersion();
 
         rootGroup = getGroupByName("root");
+        rootGroup.changeChildrenToSimple(version);
         rootGroup.createContainer = false;
 
         publicGroup = getGroupByName("public");
