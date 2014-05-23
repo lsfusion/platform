@@ -86,7 +86,7 @@ public abstract class UserPreferencesDialog extends JDialog {
                 boolean hasFocus = visibleList.hasFocus() || visibleList.requestFocusInWindow();
                 if(hasFocus) {
                     String newText = getSelectedItemCaption(visibleList);
-                    if (!columnCaptionField.getText().equals(newText) && visibleList.hasFocus()) {
+                    if (!columnCaptionField.getText().equals(newText) && visibleList.getSelectedValue() != null) {
                         columnCaptionField.setText(newText);
                     }
                 }
@@ -102,6 +102,7 @@ public abstract class UserPreferencesDialog extends JDialog {
                     int index = list.locationToIndex(e.getPoint());
                     invisibleListModel.addElement(visibleListModel.get(index));
                     visibleListModel.remove(index);
+                    columnCaptionField.setText(null);
                 }
             }
         });
@@ -110,7 +111,7 @@ public abstract class UserPreferencesDialog extends JDialog {
             @Override
             public void focusGained(FocusEvent e) {
                 String caption = getSelectedItemCaption(visibleList);
-                if(caption != null)
+                if(visibleList.getSelectedValue() != null)
                     invisibleList.clearSelection();
                 if(caption != null && !columnCaptionField.getText().equals(caption))
                     columnCaptionField.setText(caption);
@@ -139,7 +140,7 @@ public abstract class UserPreferencesDialog extends JDialog {
                 boolean hasFocus = invisibleList.hasFocus() || invisibleList.requestFocusInWindow();
                 if (hasFocus) {
                     String newText = getSelectedItemCaption(invisibleList);
-                    if (!columnCaptionField.getText().equals(newText) && invisibleList.hasFocus()) {
+                    if (!columnCaptionField.getText().equals(newText) && (invisibleList.getSelectedValue() != null)) {
                         columnCaptionField.setText(newText);
                     }
                 }
@@ -156,6 +157,7 @@ public abstract class UserPreferencesDialog extends JDialog {
                         int index = list.locationToIndex(e.getPoint());
                         visibleListModel.addElement(invisibleListModel.get(index));
                         invisibleListModel.remove(index);
+                        columnCaptionField.setText(null);
                     }
                 }
             }
@@ -165,7 +167,7 @@ public abstract class UserPreferencesDialog extends JDialog {
             @Override
             public void focusGained(FocusEvent e) {
                 String caption = getSelectedItemCaption(invisibleList);
-                if(caption != null)
+                if(invisibleList.getSelectedValue() != null)
                     visibleList.clearSelection();
                 if(caption != null && !columnCaptionField.getText().equals(caption))
                     columnCaptionField.setText(caption);
@@ -185,6 +187,7 @@ public abstract class UserPreferencesDialog extends JDialog {
                     visibleListModel.addElement(invisibleListModel.get(i));
                 }
                 invisibleListModel.clear();
+                columnCaptionField.setText(null);
             }
         });
 
@@ -197,6 +200,7 @@ public abstract class UserPreferencesDialog extends JDialog {
                     invisibleListModel.addElement(visibleListModel.get(i));
                 }
                 visibleListModel.clear();
+                columnCaptionField.setText(null);
             }
         });
 
@@ -253,10 +257,10 @@ public abstract class UserPreferencesDialog extends JDialog {
             }
 
             public void updateColumnName() {
-                if(visibleList.getSelectedValue() != null && !columnCaptionField.getText().equals(getSelectedItemCaption(visibleList))) {
+                if(invisibleList.getSelectedValue() == null && visibleList.getSelectedValue() != null && !columnCaptionField.getText().isEmpty()) {
                     setSelectedItemCaption(visibleList, columnCaptionField.getText());
                     visibleList.update(visibleList.getGraphics());
-                } else if(invisibleList.getSelectedValue() != null && !columnCaptionField.getText().equals(getSelectedItemCaption(invisibleList))) {
+                } else if(visibleList.getSelectedValue() == null && invisibleList.getSelectedValue() != null && !columnCaptionField.getText().isEmpty()) {
                     setSelectedItemCaption(invisibleList, columnCaptionField.getText());
                     invisibleList.update(invisibleList.getGraphics());
                 }
@@ -366,12 +370,12 @@ public abstract class UserPreferencesDialog extends JDialog {
 
     private void okButtonPressed() throws IOException {
         for (PropertyListItem propertyItem : visibleListModel.toArray()) {
-            initialTable.setUserCaption(propertyItem.property, propertyItem.getUserCaption());
+            initialTable.setUserCaption(propertyItem.property, propertyItem.getUserCaption(true));
             initialTable.setUserOrder(propertyItem.property, visibleListModel.indexOf(propertyItem));
             initialTable.setUserHide(propertyItem.property, false);
         }
         for (PropertyListItem propertyItem : invisibleListModel.toArray()) {
-            initialTable.setUserCaption(propertyItem.property, propertyItem.getUserCaption());
+            initialTable.setUserCaption(propertyItem.property, propertyItem.getUserCaption(true));
             initialTable.setUserOrder(propertyItem.property, visibleListModel.getSize() + invisibleListModel.indexOf(propertyItem));
             initialTable.setUserHide(propertyItem.property, true);
         }
@@ -418,7 +422,7 @@ public abstract class UserPreferencesDialog extends JDialog {
                                                                Pair<Boolean, Integer> sortDirections) {
         Boolean sortDirection = sortDirections != null ? sortDirections.first : null;
         Integer sortIndex = sortDirections != null ? sortDirections.second : null;
-        initialTable.setUserCaption(propertyItem.property, propertyItem.getUserCaption());
+        initialTable.setUserCaption(propertyItem.property, propertyItem.getUserCaption(true));
         initialTable.setUserHide(propertyItem.property, hide);
         initialTable.setUserOrder(propertyItem.property, propertyOrder);
         initialTable.setUserSort(propertyItem.property, sortDirection != null ? sortIndex : null);
@@ -516,12 +520,12 @@ public abstract class UserPreferencesDialog extends JDialog {
     
     private String getSelectedItemCaption(JList list) {
         PropertyListItem item = (PropertyListItem) list.getSelectedValue();
-        return item == null ? null : item.getUserCaption();
+        return item == null ? null : item.getUserCaption(true);
     }
     
     private void setSelectedItemCaption(JList list, String caption) {
         PropertyListItem item = (PropertyListItem) list.getSelectedValue();
-        if(item != null) {
+        if(item != null && caption != null) {
             initialTable.setUserCaption(item.property, caption);
             item.setUserCaption(caption);
         }
@@ -558,8 +562,8 @@ public abstract class UserPreferencesDialog extends JDialog {
             this.inGrid = inGrid;
         }
         
-        public String getUserCaption() {
-            return userCaption != null ? userCaption : property.getCaption();    
+        public String getUserCaption(boolean ignoreDefault) {
+            return userCaption != null ? userCaption : (ignoreDefault ? null : property.getCaption());  
         }
         
         public void setUserCaption(String userCaption) {
@@ -568,7 +572,7 @@ public abstract class UserPreferencesDialog extends JDialog {
 
         @Override
         public String toString() {
-            String result = getUserCaption();
+            String result = getUserCaption(false);
             if (inGrid == null) {
                 result += " (" + getString("form.grid.preferences.property.not.shown") + ")";
             } else if (!inGrid) {

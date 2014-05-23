@@ -13,8 +13,8 @@ public class PropertyListItem {
         this.inGrid = inGrid;
     }
 
-    public String getUserCaption() {
-        return userCaption != null ? userCaption : property.getNotEmptyCaption();
+    public String getUserCaption(boolean ignoreDefault) {
+        return userCaption != null ? userCaption : (ignoreDefault ? null : property.getNotEmptyCaption());
     }
 
     public void setUserCaption(String userCaption) {
@@ -23,7 +23,7 @@ public class PropertyListItem {
 
     @Override
     public String toString() {
-        String result = getUserCaption();
+        String result = getUserCaption(false);
         if (inGrid == null) {
             result += " (не отображается)";
         } else if (!inGrid) {

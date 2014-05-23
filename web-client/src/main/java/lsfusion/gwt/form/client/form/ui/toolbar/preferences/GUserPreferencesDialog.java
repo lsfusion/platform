@@ -194,14 +194,14 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     private void okPressed() {
         for (Widget label : columnsDualListBox.getVisibleWidgets()) {
             PropertyListItem property = ((PropertyLabel) label).getPropertyItem();
-            grid.setUserCaption(property.property, property.getUserCaption());
+            grid.setUserCaption(property.property, property.getUserCaption(true));
             grid.setUserOrder(property.property, columnsDualListBox.getVisibleIndex(label));
             grid.setUserHide(property.property, false);
         }
 
         for (Widget label : columnsDualListBox.getInvisibleWidgets()) {
             PropertyListItem property = ((PropertyLabel) label).getPropertyItem();
-            grid.setUserCaption(property.property, property.getUserCaption());
+            grid.setUserCaption(property.property, property.getUserCaption(true));
             grid.setUserOrder(property.property, columnsDualListBox.getVisibleCount() + columnsDualListBox.getInvisibleIndex(label));
             grid.setUserHide(property.property, true);
         }
@@ -268,7 +268,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     private void refreshPropertyUserPreferences(PropertyListItem property, boolean hide, int propertyOrder, Map<Boolean, Integer> userSortDirections) {
         Boolean sortDirection = userSortDirections != null ? userSortDirections.keySet().iterator().next() : null;
         Integer sortIndex = userSortDirections != null ? userSortDirections.values().iterator().next() : null;
-        grid.setUserCaption(property.property, property.getUserCaption());
+        grid.setUserCaption(property.property, property.getUserCaption(true));
         grid.setUserHide(property.property, hide);
         grid.setUserOrder(property.property, propertyOrder);
         grid.setUserSort(property.property, sortDirection != null ? sortIndex : null);

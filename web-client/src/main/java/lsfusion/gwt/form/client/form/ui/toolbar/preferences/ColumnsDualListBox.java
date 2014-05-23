@@ -41,7 +41,7 @@ public class ColumnsDualListBox extends AbsolutePanel {
         left = new ColumnsListBox(dragController) {
             @Override
             public void singleclicked() {
-                setColumnCaptionBoxText(left);
+                setColumnCaptionBoxText(left, true);
             }
 
             @Override
@@ -53,7 +53,7 @@ public class ColumnsDualListBox extends AbsolutePanel {
         right = new ColumnsListBox(dragController) {
             @Override
             public void singleclicked() {
-                setColumnCaptionBoxText(right);
+                setColumnCaptionBoxText(right, true);
             }
 
             @Override
@@ -136,12 +136,18 @@ public class ColumnsDualListBox extends AbsolutePanel {
             @Override
             public void onChange(ChangeEvent changeEvent) {
                 if(getSelectedWidget(left) != null) {
-                    getSelectedWidget(left).setText(columnCaptionBox.getText());
-                    getSelectedWidget(left).setUserCaption(columnCaptionBox.getText());
+                    String columnCaption = columnCaptionBox.getText();
+                    if(!columnCaption.isEmpty()) {
+                        getSelectedWidget(left).setText(columnCaption);
+                        getSelectedWidget(left).setUserCaption(columnCaption);
+                    }
                 }
                 else if(getSelectedWidget(right) != null) {
-                    getSelectedWidget(right).setText(columnCaptionBox.getText());
-                    getSelectedWidget(right).setUserCaption(columnCaptionBox.getText());
+                    String columnCaption = columnCaptionBox.getText();
+                    if(!columnCaption.isEmpty()) {
+                        getSelectedWidget(right).setText(columnCaption);
+                        getSelectedWidget(right).setUserCaption(columnCaption );
+                    }
                 }
             }
         });
@@ -181,10 +187,10 @@ public class ColumnsDualListBox extends AbsolutePanel {
         return selectedWidgets.size() == 0 ? null : (PropertyLabel)(selectedWidgets.get(selectedWidgets.size() - 1));
     }
     
-    protected void setColumnCaptionBoxText(ColumnsListBox list) {
+    protected void setColumnCaptionBoxText(ColumnsListBox list, boolean ignoreDefault) {
         PropertyLabel selectedWidget = getSelectedWidget(list);
         if(selectedWidget != null)
-            columnCaptionBox.setText(selectedWidget.getUserCaption());
+            columnCaptionBox.setText(selectedWidget.getUserCaption(ignoreDefault));
     }
 
     public ArrayList<Widget> getVisibleWidgets() {
