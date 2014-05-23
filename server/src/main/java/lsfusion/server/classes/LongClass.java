@@ -8,6 +8,7 @@ import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -45,6 +46,11 @@ public class LongClass extends IntegralClass<Long> {
     }
 
     @Override
+    public boolean isSafeType(Object value) {
+        return false; // в рекурсии например не safetype, когда 1 скажем по умолчанию integer и они не кастятся друг к другу
+    }
+
+    @Override
     protected boolean isNegative(Long value) {
         return value < 0;
     }
@@ -52,6 +58,18 @@ public class LongClass extends IntegralClass<Long> {
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getLongType();
     }
+
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "SqlInt64";
+    }
+
+    public String getDotNetRead(String reader) {
+        return reader + ".ReadInt64()";
+    }
+    public String getDotNetWrite(String writer, String value) {
+        return writer + ".Write(" + value + ");";
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getLongSQL();
     }
@@ -59,6 +77,14 @@ public class LongClass extends IntegralClass<Long> {
     public Long read(Object value) {
         if(value==null) return null;
         return ((Number)value).longValue();
+    }
+
+    @Override
+    public Long read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        long anLong = set.getLong(name);
+        if(set.wasNull())
+            return null;
+        return anLong;
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {

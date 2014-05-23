@@ -364,10 +364,18 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         });
     }
 
-    public ImMap<K, V> removeNotEquals(final ImMap<K, V> full) {
+    public ImMap<K, V> mergeEqualsIncl(final ImMap<K, V> full) {
         return filterFn(new GetKeyValue<Boolean, K, V>() {
             public Boolean getMapValue(K key, V value) {
                 return BaseUtils.hashEquals(full.get(key), value);
+            }});
+    }
+
+    public ImMap<K, V> mergeEquals(final ImMap<K, V> map) {
+        return filterFn(new GetKeyValue<Boolean, K, V>() {
+            public Boolean getMapValue(K key, V value) {
+                V mapValue = map.get(key);
+                return mapValue != null && BaseUtils.hashEquals(mapValue, value);
             }});
     }
 

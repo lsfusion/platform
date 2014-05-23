@@ -142,8 +142,8 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         ImMap<PropertyField, ObjectValue> propertyValues = rows.getValue(0);
 
         for(int i=1,size=rows.size();i<size;i++) {
-            keyValues = keyValues.removeNotEquals(rows.getKey(i));
-            propertyValues = propertyValues.removeNotEquals(rows.getValue(i));
+            keyValues = keyValues.mergeEqualsIncl(rows.getKey(i));
+            propertyValues = propertyValues.mergeEqualsIncl(rows.getValue(i));
         }
 
         final ImSet<KeyField> removeKeys = keyValues.keys(); final ImSet<PropertyField> removeProperties = propertyValues.keys();

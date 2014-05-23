@@ -7,6 +7,7 @@ import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DoubleClass extends IntegralClass<Double> {
@@ -47,6 +48,17 @@ public class DoubleClass extends IntegralClass<Double> {
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getDoubleType();
     }
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "SqlDouble";
+    }
+
+    public String getDotNetRead(String reader) {
+        return reader + ".ReadDouble()";
+    }
+    public String getDotNetWrite(String writer, String value) {
+        return writer + ".Write(" + value + ");";
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getDoubleSQL();
     }
@@ -54,6 +66,14 @@ public class DoubleClass extends IntegralClass<Double> {
     public Double read(Object value) {
         if(value==null) return null;
         return ((Number) value).doubleValue();
+    }
+
+    @Override
+    public Double read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        double anDouble = set.getDouble(name);
+        if(set.wasNull())
+            return null;
+        return anDouble;
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {

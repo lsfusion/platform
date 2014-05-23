@@ -9,6 +9,7 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.sql.MSSQLDataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.form.view.report.ReportDrawField;
 
@@ -28,6 +29,9 @@ public interface Type<T> extends ClassReader<T> {
     String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv);
 
     String getDB(SQLSyntax syntax, TypeEnvironment typeEnv);
+    String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv); // for ms sql
+    String getDotNetRead(String reader); // for ms sql
+    String getDotNetWrite(String writer, String value); // for ms sql
     int getSQL(SQLSyntax syntax);
 
     boolean isSafeString(Object value);

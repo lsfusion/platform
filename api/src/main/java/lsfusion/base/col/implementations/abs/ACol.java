@@ -55,6 +55,12 @@ public abstract class ACol<K> extends AColObject implements ImCol<K> {
         return mCol.immutableCol();
     }
 
+    public ImCol<K> addCol(K element) {
+        MCol<K> mCol = ListFact.mCol(this);
+        mCol.add(element);
+        return mCol.immutableCol();
+    }
+
     public ImCol<K> filterCol(FunctionSet<K> filter) {
         MCol<K> mCol = ListFact.mColFilter(this);
         for(int i=0,size=size();i<size;i++) {

@@ -1,5 +1,6 @@
 package lsfusion.server.data.query;
 
+import lsfusion.base.Pair;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -9,6 +10,7 @@ import lsfusion.server.caches.AbstractTranslateValues;
 import lsfusion.server.data.ExConnection;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
@@ -27,6 +29,7 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
     private ImSet<ImList<Type>> recursions;
     private ImSet<ConcatenateType> concTypes;
     private ImSet<Type> safeCastTypes;
+    private ImSet<Pair<GroupType, ImList<Type>>> groupAggOrders;
 
     public ExecuteEnvironment() {
         this(false);
@@ -40,6 +43,8 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         recursions = SetFact.EMPTY();
         concTypes = SetFact.EMPTY();
         safeCastTypes = SetFact.EMPTY();
+        
+        groupAggOrders = SetFact.EMPTY();
     }
 
     public void add(ExecuteEnvironment environment) {
@@ -50,6 +55,8 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         recursions = recursions.merge(environment.recursions);
         concTypes = concTypes.merge(environment.concTypes);
         safeCastTypes = safeCastTypes.merge(environment.safeCastTypes);
+        
+        groupAggOrders = groupAggOrders.merge(environment.groupAggOrders);
     }
 
     public void addNoReadOnly() {
@@ -76,13 +83,19 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         safeCastTypes = safeCastTypes.merge(type);
     }
 
+    public void addNeedAggOrder(GroupType groupType, ImList<Type> types) {
+        groupAggOrders = groupAggOrders.merge(new Pair<GroupType, ImList<Type>>(groupType, types));
+    }
+
     public void before(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
         for(ConcatenateType concType : concTypes)
             sqlSession.typePool.ensureConcType(concType);
         for(ImList<Type> recursion : recursions)
             sqlSession.typePool.ensureRecursion(recursion);
         for(Type type : safeCastTypes)
-            sqlSession.typePool.ensureSafeCast(type);    
+            sqlSession.typePool.ensureSafeCast(type);
+        for(Pair<GroupType, ImList<Type>> gaOrder : groupAggOrders)
+            sqlSession.typePool.ensureGroupAggOrder(gaOrder);
 
         if(noReadOnly)
             sqlSession.pushNoReadOnly(connection.sql);

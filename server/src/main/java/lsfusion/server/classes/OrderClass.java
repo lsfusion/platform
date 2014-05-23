@@ -134,6 +134,19 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         throw new UnsupportedOperationException();
     }
 
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getDotNetRead(String reader) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getDotNetWrite(String writer, String value) {
+        throw new UnsupportedOperationException();
+    }
+
+
     public int getSQL(SQLSyntax syntax) {
         throw new UnsupportedOperationException();
     }

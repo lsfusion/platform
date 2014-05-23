@@ -9,7 +9,7 @@ import java.sql.SQLException;
 class MySQLDataAdapter extends DataAdapter {
 
     MySQLDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws Exception, SQLException, InstantiationException, IllegalAccessException {
-        super(iDataBase, iServer, iUserID, iPassword, false);
+        super(iDataBase, iServer, null, iUserID, iPassword, false);
     }
 
     public boolean allowViews() {

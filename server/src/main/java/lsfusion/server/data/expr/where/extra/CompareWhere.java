@@ -53,7 +53,7 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
         return OrWhere.checkTrue(getSymmetricWhere(),where);
     }
 
-    public static <K> Where compare(ImMap<K, ? extends Expr> map1, ImMap<K, ? extends Expr> map2) {
+    public static <K> Where compare(ImMap<? extends K, ? extends Expr> map1, ImMap<K, ? extends Expr> map2) {
         Where where = TRUE;
         for(int i=0,size=map1.size();i<size;i++)
             where = where.and(map1.getValue(i).compare(map2.get(map1.getKey(i)), Compare.EQUALS));

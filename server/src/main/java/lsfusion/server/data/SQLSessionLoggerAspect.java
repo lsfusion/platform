@@ -33,7 +33,7 @@ public class SQLSessionLoggerAspect {
     }
     @Around("execution(* lsfusion.server.data.SQLSession.readSingleValues(lsfusion.server.data.SessionTable, ..)) && args(table, ..)")
     public Object executeReadSingleValues(ProceedingJoinPoint thisJoinPoint, SessionTable table) throws Throwable {
-        return executeMethodAndLogTime(thisJoinPoint, "READ SINGLE VALUES " + table.name);
+        return executeMethodAndLogTime(thisJoinPoint, "READ SINGLE VALUES " + table);
     }
 
     private static long runningTotal = 0;

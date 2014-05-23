@@ -240,4 +240,8 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
             hashCode = 31 * hashCode + get(i).hashCode();
         return hashCode;
     }
+
+    public K last() {
+        return get(size() - 1);
+    }
 }

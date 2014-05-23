@@ -54,7 +54,8 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
 
         return operator1.getSource(compile)
                + likeString
-               + "(" + (isStartWith != null && !isStartWith ? "'%' || " : "") + operator2.getSource(compile) + (isStartWith != null ? " || '%'" : "") + ")";
+               + "(" + (isStartWith != null && !isStartWith ? "'%' " + compile.syntax.getStringConcatenate() + " " : "") 
+                + operator2.getSource(compile) + (isStartWith != null ? " " + compile.syntax.getStringConcatenate() + " '%'" : "") + ")";
     }
 
     public static Where create(BaseExpr operator1, BaseExpr operator2, Boolean isStartWith) {

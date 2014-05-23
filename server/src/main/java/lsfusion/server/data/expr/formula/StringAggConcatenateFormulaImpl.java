@@ -30,10 +30,10 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
 
             if(Settings.get().isUseSafeStringAgg()) {
                 result = "CASE WHEN " + result + " IS NOT NULL" +
-                        " THEN " + result + " || (CASE WHEN " + exprSource + " IS NOT NULL THEN '" + separator + "' || " + exprSource + " ELSE '' END)" +
+                        " THEN " + result + " " + source.getSyntax().getStringConcatenate() + " (CASE WHEN " + exprSource + " IS NOT NULL THEN '" + separator + "' " + source.getSyntax().getStringConcatenate() + " " + exprSource + " ELSE '' END)" +
                         " ELSE " + exprSource + " END";
             } else {
-                result = "STRINGC(" + result + "," + exprSource + ",'" + separator + "')";
+                result = source.getSyntax().getStringCFunc() + "(" + result + "," + exprSource + ",'" + separator + "')";
             }
         }
         return "(" + result + ")";

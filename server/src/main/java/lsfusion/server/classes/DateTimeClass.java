@@ -11,10 +11,7 @@ import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.ServerResourceBundle;
 
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -68,6 +65,18 @@ public class DateTimeClass extends DataClass<Timestamp> {
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getDateTimeType();
     }
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "SqlDateTime";
+    }
+
+    public String getDotNetRead(String reader) {
+        return "DateTime.FromBinary("+reader+".ReadInt64())";
+    }
+
+    public String getDotNetWrite(String writer, String value) {
+        return writer + ".Write(" +value + ".ToBinary());";
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getDateTimeSQL();
     }
@@ -75,6 +84,11 @@ public class DateTimeClass extends DataClass<Timestamp> {
     public Timestamp read(Object value) {
         if (value == null) return null;
         return (Timestamp) value;
+    }
+
+    @Override
+    public Timestamp read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        return set.getTimestamp(name);
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {

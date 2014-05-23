@@ -67,7 +67,7 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
                     src2 = "rtrim(" + src2 + ")";
                 }
 
-                return type.getCast("(" + src1 + " || " + src2 + ")", syntax, env);
+                return type.getCast("(" + src1 + " " + syntax.getStringConcatenate() + " " + src2 + ")", syntax, env);
             }
             return null;
         }

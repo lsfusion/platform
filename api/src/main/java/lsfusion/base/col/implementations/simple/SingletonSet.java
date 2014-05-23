@@ -31,6 +31,13 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return key;
     }
 
+    public ImCol<K> addCol(K element) {
+        MCol<K> mResult = ListFact.mCol(2);
+        mResult.add(key);
+        mResult.add(element);
+        return mResult.immutableCol();
+    }
+
     public <M> ImValueMap<K, M> mapItValues() {
         return new SingletonRevMap<K, M>(key);
     }
@@ -591,5 +598,9 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     @Override
     public String toString() {
         return toString(",");
+    }
+
+    public K last() {
+        return key;
     }
 }

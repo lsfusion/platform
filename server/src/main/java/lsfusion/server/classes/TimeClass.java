@@ -9,6 +9,7 @@ import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.text.DateFormat;
@@ -57,6 +58,19 @@ public class TimeClass extends DataClass<Time> {
         return syntax.getTimeType();
     }
 
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getDotNetRead(String reader) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getDotNetWrite(String writer, String value) {
+        throw new UnsupportedOperationException();
+    }
+
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getTimeSQL();
     }
@@ -103,5 +117,10 @@ public class TimeClass extends DataClass<Time> {
 
     public Time read(Object value) {
         return value == null ? null : (Time) value;
+    }
+
+    @Override
+    public Time read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        return set.getTime(name);
     }
 }

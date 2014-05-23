@@ -38,6 +38,7 @@ import lsfusion.server.data.query.stat.WhereJoins;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.OrWhere;
 import lsfusion.server.data.where.Where;
@@ -106,11 +107,11 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             }), orders, ordersNotNull, type);
         }
 
-        public String getSource(ImMap<Expr, String> fromPropertySelect, lsfusion.server.data.query.Query<KeyExpr, Expr> query, SQLSyntax syntax, TypeEnvironment typeEnv, Type resultType) {
+        public String getSource(ImMap<Expr, String> fromPropertySelect, ImMap<Expr, ClassReader> propReaders, lsfusion.server.data.query.Query<KeyExpr, Expr> query, SQLSyntax syntax, TypeEnvironment typeEnv, Type resultType) {
             ImOrderMap<Expr, CompileOrder> compileOrders = query.getCompileOrders(orders);
             if(ordersNotNull) // если notNull, то все пометим
                 compileOrders = CompileOrder.setNotNull(compileOrders);
-            return type.getSource(exprs.mapList(fromPropertySelect), compileOrders.map(fromPropertySelect), resultType, syntax, typeEnv);
+            return type.getSource(exprs.mapList(fromPropertySelect), exprs.mapList(propReaders), compileOrders.map(fromPropertySelect), resultType, syntax, typeEnv);
         }
     }
 
@@ -228,14 +229,15 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         Result<ImCol<String>> fromWhereSelect = new Result<ImCol<String>>(); // проверить crossJoin
         lsfusion.server.data.query.Query<KeyExpr,Expr> subQuery = new lsfusion.server.data.query.Query<KeyExpr,Expr>(getInner().getQueryKeys().toRevMap(),
                 group.keys().addExcl(query.getExprs()).toMap(), getInner().getFullWhere());
-        String fromSelect = subQuery.compile(source.syntax, subcontext).fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, fromWhereSelect, source.params, null);
+        CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(source.syntax, subcontext);
+        String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, fromWhereSelect, source.params, null);
         
         ImCol<String> whereSelect = fromWhereSelect.result.mergeCol(group.mapColValues(new GetKeyValue<String, Expr, BaseExpr>() {
             public String getMapValue(Expr key, BaseExpr value) {
                 return fromPropertySelect.result.get(key)+"="+value.getSource(source);
             }}));
 
-        return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect.result, subQuery, source.syntax, source.env, getType()),
+        return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect.result, compiled.propertyReaders, subQuery, source.syntax, source.env, getType()),
                 whereSelect.toString(" AND "), "", "", "", "") + ")";
     }
 
@@ -606,8 +608,14 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 result = query.type.add(result, innerResult);
             }
             return result;
-        } else
+        } else {
+            KeyEqual keyEqual = getFullWhere(query, outerInner).getKeyEquals().getSingle();
+            if(!keyEqual.isEmpty()) {
+                QueryTranslator equalTranslator = keyEqual.getTranslator();
+                return createInner(equalTranslator.translate(outerInner), query.translateQuery(equalTranslator), pack);
+            }
             return createInnerBase(outerInner, query, pack, null);
+        }
     }
 
     private static Expr createInnerBase(ImMap<BaseExpr, Expr> outerInner, Query query, boolean pack, Query splitQuery) {

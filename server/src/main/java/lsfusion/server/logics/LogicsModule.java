@@ -258,8 +258,8 @@ public abstract class LogicsModule {
     }
 
     protected void addModuleTable(ImplementTable table) {
-        assert !moduleTables.containsKey(table.name);
-        moduleTables.put(table.name, table);
+        assert !moduleTables.containsKey(table.getName());
+        moduleTables.put(table.getName(), table);
     }
 
     protected <T extends AbstractWindow> T addWindow(T window) {

@@ -38,21 +38,28 @@ import java.util.Collection;
 public class ConcatenateType extends AbstractType<Object[]> {
 
     private Type[] types;
+    private boolean[] desc;
 
     private static Collection<ConcatenateType> instances = new ArrayList<ConcatenateType>();
 
     public static ConcatenateType get(Type[] types) {
+        return get(types, new boolean[types.length]);
+    }
+    
+    public synchronized static ConcatenateType get(Type[] types, boolean[] desc) {
         for (ConcatenateType instance : instances)
-            if (Arrays.equals(types, instance.types))
+            if (Arrays.equals(types, instance.types) && Arrays.equals(desc, instance.desc))
                 return instance;
 
-        ConcatenateType instance = new ConcatenateType(types);
+        ConcatenateType instance = new ConcatenateType(types, desc);
         instances.add(instance);
         return instance;
     }
 
-    private ConcatenateType(Type[] types) {
+    private ConcatenateType(Type[] types, boolean[] desc) {
         this.types = types;
+        this.desc = desc;
+        assert types.length == desc.length;
     }
 
     public Type get(int i) {
@@ -66,6 +73,19 @@ public class ConcatenateType extends AbstractType<Object[]> {
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         typeEnv.addNeedType(this);
         return DataAdapter.genConcTypeName(this);
+    }
+
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        typeEnv.addNeedType(this);
+        return DataAdapter.genConcTypeName(this);
+    }
+
+    public String getDotNetRead(String reader) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getDotNetWrite(String writer, String value) {
+        throw new UnsupportedOperationException();
     }
 
     public boolean isSafeString(Object value) {
@@ -127,14 +147,18 @@ public class ConcatenateType extends AbstractType<Object[]> {
         return ListFact.toList(types);
     }
 
+    public boolean[] getDesc() {
+        return desc;
+    }
+
     @Override
     public String writeDeconc(final SQLSyntax syntax, final TypeEnvironment env) { // дублирование getConcatenateSource, но по идее так тоже можно
         if(syntax.hasDriverCompositeProblem())
-            return getNotSafeConcatenateSource(ListFact.toList(types).mapListValues(new GetValue<String, Type>() {
+            return syntax.getNotSafeConcatenateSource(this, ListFact.toList(types).mapListValues(new GetValue<String, Type>() {
                 public String getMapValue(Type value) {
                     return value.writeDeconc(syntax, env);
                 }
-            }), syntax, env);
+            }), env);
 
         return super.writeDeconc(syntax, env);
     }
@@ -203,11 +227,11 @@ public class ConcatenateType extends AbstractType<Object[]> {
         Type[] compatible = new Type[types.length];
         for(int i=0;i<types.length;i++) {
             Type compType = types[i].getCompatible(concatenate.types[i]);
-            if(compType == null)
+            if(compType == null || desc[i] != concatenate.desc[i])
                 return null;
             compatible[i] = compType;
         }
-        return get(compatible);
+        return get(compatible, desc);
     }
 
     private ConcreteClass createConcrete(ConcreteClass[] classes) {
@@ -225,12 +249,8 @@ public class ConcatenateType extends AbstractType<Object[]> {
         return createConcrete(classes);
     }
 
-    public String getNotSafeConcatenateSource(ImList<String> exprs, SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return "ROW(" + exprs.toString(",") + ")";
-    }
-
     public String getConcatenateSource(ImList<String> exprs, SQLSyntax syntax, TypeEnvironment typeEnv) {
-        String source = getCast(getNotSafeConcatenateSource(exprs, syntax, typeEnv), syntax, typeEnv);
+        String source = syntax.getNotSafeConcatenateSource(this, exprs, typeEnv);
 
         if(exprs.size()>0)
             source =  "CASE WHEN " + exprs.toString(new GetValue<String, String>() {
@@ -300,12 +320,16 @@ public class ConcatenateType extends AbstractType<Object[]> {
         for (Type type : types) {
             TypeSerializer.serializeType(outStream, type);
         }
+        for (boolean d : desc)
+            if (d)
+                throw new UnsupportedOperationException();
     }
 
     public String getSID() {
         String result = "C";
-        for (Type type : types)
-            result = result + "_" + type.getSID() + "_C";
+        for (int i = 0; i < types.length; i++) {
+            result = result + "_" + types[i].getSID() + (desc[i] ? "_D" : "") + "_C";
+        }
         return result;
     }
 

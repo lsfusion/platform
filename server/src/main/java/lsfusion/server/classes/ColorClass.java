@@ -8,6 +8,7 @@ import lsfusion.server.logics.ServerResourceBundle;
 
 import java.awt.*;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Format;
 
@@ -39,6 +40,17 @@ public class ColorClass extends DataClass<Color> {
     @Override
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getColorType();
+    }
+    @Override
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "SqlInt32";
+    }
+
+    public String getDotNetRead(String reader) {
+        return reader + ".ReadInt32()";
+    }
+    public String getDotNetWrite(String writer, String value) {
+        return writer + ".Write(" + value + ");";
     }
 
     @Override
@@ -94,5 +106,13 @@ public class ColorClass extends DataClass<Color> {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public Color read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        int anInt = set.getInt(name);
+        if(set.wasNull())
+            return null;
+        return read(anInt);
     }
 }

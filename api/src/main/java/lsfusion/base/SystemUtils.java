@@ -378,6 +378,11 @@ public class SystemUtils {
         return getResourcePath(libName + libExtension, path + libPath + '/', cls, false, false); // будем считать, что в library зашифрована вер
     }
 
+    public static String getExePath(String exeName, String path, Class<?> cls) throws IOException {
+        assert IS_OS_WINDOWS;
+        return getResourcePath(exeName + ".exe", path + '/', cls, true, false); // будем считать, что в library зашифрована вер
+    }
+
     public static void loadLibrary(String libName, String path, Class<?> cls) throws IOException {
         System.load(getLibraryPath(libName, path, cls));
     }

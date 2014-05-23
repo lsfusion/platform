@@ -14,6 +14,7 @@ import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.Format;
@@ -65,6 +66,18 @@ public class DateClass extends DataClass<Date> {
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getDateType();
     }
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "SqlDateTime";
+    }
+
+    public String getDotNetRead(String reader) {
+        return "DateTime.FromBinary("+reader+".ReadInt64())";
+    }
+
+    public String getDotNetWrite(String writer, String value) {
+        return writer + ".Write(" +value + ".ToBinary());";
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getDateSQL();
     }
@@ -72,6 +85,14 @@ public class DateClass extends DataClass<Date> {
     public Date read(Object value) {
         DateConverter.assertDateToSql((java.util.Date)value);
         return DateConverter.safeDateToSql((java.util.Date)value);
+    }
+
+    @Override
+    public Date read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+//        Date read = super.read(set, syntax, name);
+        Date date = set.getDate(name);
+//        assert BaseUtils.hashEquals(read, date);
+        return date;
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {

@@ -13,11 +13,18 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public abstract class Field extends TwinImmutableObject {
-    public String name;
+    protected String name;
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     public Type type;
     
     public String getName(SQLSyntax syntax) {
         return syntax.getFieldName(name);
+    }
+    public String getName() {
+        return name;
     }
 
     private final static Type.Getter<Field> typeGetter = new Type.Getter<Field>() {
@@ -33,6 +40,13 @@ public abstract class Field extends TwinImmutableObject {
         return (GetValue<String, F>) new GetValue<String, Field>() {
             public String getMapValue(Field value) {
                 return value.getName(syntax);
+            }};
+    }
+
+    public static <F extends Field> GetValue<String, F> nameGetter() {
+        return (GetValue<String, F>) new GetValue<String, Field>() {
+            public String getMapValue(Field value) {
+                return value.getName();
             }};
     }
 

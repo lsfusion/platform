@@ -557,7 +557,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             ImSet<ConcreteCustomClass> set = groupTables.getValue(i);
 
             ObjectValueClassSet classSet = OrObjectClassSet.fromSetConcreteChildren(set);
-            ClassDataProperty dataProperty = new ClassDataProperty("_CLASS_" + table.name, classSet.toString(), classSet);
+            ClassDataProperty dataProperty = new ClassDataProperty("_CLASS_" + table.getName(), classSet.toString(), classSet);
             LM.addProperty(null, new LCP<ClassPropertyInterface>(dataProperty));
             dataProperty.markStored(LM.tableFactory, table);
 

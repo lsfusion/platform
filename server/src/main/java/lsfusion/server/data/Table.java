@@ -51,7 +51,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 public abstract class Table extends AbstractOuterContext<Table> implements MapKeysInterface<KeyField> {
-    public String name;
+    protected String name;
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     public ImOrderSet<KeyField> keys; // List потому как в таком порядке индексы будут строиться
     public ImOrderSet<KeyField> getOrderTableKeys() {
         return keys;
@@ -157,19 +161,23 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
 
     public String toString() {
-        return name;
+        return getName();
+    }
+    
+    public String getName() {
+        return name; 
     }
 
     public KeyField findKey(String name) {
         for(KeyField key : keys)
-            if(key.name.equals(name))
+            if(key.getName().equals(name))
                 return key;
         return null;
     }
 
     public PropertyField findProperty(String name) {
         for(PropertyField property : properties)
-            if(property.name.equals(name))
+            if(property.getName().equals(name))
                 return property;
         return null;
     }
@@ -374,7 +382,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
     public String outputField(PropertyField field, boolean outputTable) {
         ImMap<Field, ValueClass> commonParent = propertyClasses.get(field).getCommonParent(SetFact.addExcl(getTableKeys(), field));
-        return (outputTable ? ServerResourceBundle.getString("data.table")+" : " + name + ", ":"") + ServerResourceBundle.getString("data.field") +" : " + field.toString() + " - " + commonParent.get(field) + ", "+ServerResourceBundle.getString("data.keys")+" : " + commonParent.remove(field);
+        return (outputTable ? ServerResourceBundle.getString("data.table")+" : " + name + ", ":"") + ServerResourceBundle.getString("data.field") +" : " + field.getName() + " - " + commonParent.get(field) + ", "+ServerResourceBundle.getString("data.keys")+" : " + commonParent.remove(field);
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
@@ -719,7 +727,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
         @Override
         public String toString() {
-            return Table.this.toString();
+            return Table.this.getName();
         }
     }
 
@@ -731,3 +739,52 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return propertyClasses.get(property);
     }
 }
+
+/* для работы с cross-column статистикой
+
+    public final Set<List<List<Field>>> indexes; // предполагается безпрефиксные
+
+    public static String getTuple(List<String> list) {
+        assert list.size() > 0;
+        if(list.size()==1)
+            return single(list);
+    }
+
+    private static <K> void recBuildMaps(int i, List<List<Field>> index, Map<K, ? extends Field> fields, Stack<List<K>> current, RecIndexTuples<K> result) {
+
+        result.proceed(fields); // нужно еще промежуточные покрытия добавлять, чтобы комбинировать индексы
+
+        if(i >= index.size())
+            return;
+
+        List<Field> tuple = index.get(i);
+        List<K> map = dfdf; Map<K, Field> rest = dsds;
+
+        current.push(map); // итерироваться
+        recBuildMaps(i+1, index, rest, current, result);
+        current.pop();
+    }
+    private static <K> void recBuildMaps(List<List<Field>> index, Map<K, ? extends Field> fields, RecIndexTuples<K> result) {
+        recBuildMaps(0, index, fields, new Stack<List<K>>(), result);
+    }
+
+    public static interface RecIndexTuples<K> {
+        void proceed(Map<K, ? extends Field> restFields);
+    }
+    public static <K> void recIndexTuples(final int i, final List<List<List<Field>>> indexes, final Map<K, ? extends Field> fields, final Stack<List<List<K>>> current, final RecIndexTuples<K> result) {
+        if(i >= indexes.size()) {
+            result.proceed(fields);
+            return;
+        }
+
+        recBuildMaps(indexes.get(i), fields, new RecIndexTuples<K>() {
+            public void proceed(Map<K, ? extends Field> restFields) {
+                recIndexTuples(i + 1, indexes, fields, current, result);
+            }
+        });
+    }
+
+    public <K> void recIndexTuples(Map<K, ? extends Field> fields, Stack<List<List<K>>> current, RecIndexTuples<K> result) {
+        recIndexTuples(0, new ArrayList<List<List<Field>>>(indexes), fields, current, result);
+    }
+*/ 

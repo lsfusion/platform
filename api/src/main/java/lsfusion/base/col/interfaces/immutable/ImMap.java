@@ -44,6 +44,8 @@ public interface ImMap<K, V> {
     ImMap<K, V> addExcl(K key, V value);
     ImMap<K, V> addExcl(ImMap<? extends K, ? extends V> map); // не пересекаются
     ImMap<K, V> addEquals(ImMap<? extends K, ? extends V> map); // слить если равны, аналог mergeEquals в BaseUtils
+    ImMap<K, V> mergeEqualsIncl(ImMap<K, V> full); // тоже самое что сверху, с переменой параметров
+    ImMap<K, V> mergeEquals(ImMap<K, V> map); // тоже самое что сверху, с переменой параметров
 
     // joins
 
@@ -69,7 +71,6 @@ public interface ImMap<K, V> {
     ImMap<K, V> remove(ImSet<? extends K> keys);
     ImMap<K, V> remove(K key);
     ImMap<K, V> removeValues(V value); // желательно не менять если нет
-    ImMap<K, V> removeNotEquals(ImMap<K, V> full);
 
     // replaces
 

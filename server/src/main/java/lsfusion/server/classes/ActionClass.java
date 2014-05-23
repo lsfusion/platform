@@ -53,6 +53,16 @@ public class ActionClass extends DataClass<Object> {
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getBitType();
     }
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        throw new UnsupportedOperationException();
+    }
+    public String getDotNetRead(String reader) {
+        throw new UnsupportedOperationException();
+    }
+    public String getDotNetWrite(String writer, String value) {
+        throw new UnsupportedOperationException();
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getBitSQL();
     }

@@ -353,7 +353,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void checkSessionTableMap(SessionTable table, Object owner) {
-        assert sessionTablesMap.get(table.name).get() == owner;
+        assert sessionTablesMap.get(table.getName()).get() == owner;
     }
 
     public void commitTransaction() throws SQLException {
@@ -382,12 +382,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 //                                + ", "+res.getString("REMARKS"));
 //            }
             DatabaseMetaData metaData = connection.sql.getMetaData();
-            ResultSet tables = metaData.getTables(null, null, syntax.getMetaName(table.name), new String[]{"TABLE"});
+            ResultSet tables = metaData.getTables(null, null, syntax.getMetaName(table.getName()), new String[]{"TABLE"});
             if (!tables.next()) {
-                String tableName = table.getName(syntax);
-                createTable(tableName, table.keys);
+                createTable(table, table.keys);
                 for (PropertyField property : table.properties)
-                    addColumn(tableName, property);
+                    addColumn(table, property);
             }
         } finally {
             returnConnection(connection);
@@ -396,10 +395,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
-    public void addExtraIndices(String table, ImOrderSet<KeyField> keys) throws SQLException {
-        ImOrderSet<String> keyStrings = keys.mapOrderSetValues(Field.<KeyField>nameGetter(syntax));
+    public void addExtraIndices(Table table, ImOrderSet<KeyField> keys) throws SQLException {
         for(int i=1;i<keys.size();i++)
-            addIndex(table, keyStrings.subOrder(i, keys.size()).toOrderMap(true));
+            addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true));
     }
 
     private String getConstraintName(String table) {
@@ -408,60 +406,72 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private String getConstraintDeclare(String table, ImOrderSet<KeyField> keys) {
         String keyString = keys.toString(Field.<KeyField>nameGetter(syntax), ",");
-        return "CONSTRAINT " + getConstraintName(table) + " PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
+        // "CONSTRAINT " + getConstraintName(table) + " "
+        return "PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
     }
 
-    public void createTable(String table, ImOrderSet<KeyField> keys) throws SQLException {
+    public void createTable(Table table, ImOrderSet<KeyField> keys) throws SQLException {
         ExecuteEnvironment env = new ExecuteEnvironment();
 
         if (keys.size() == 0)
             keys = SetFact.singletonOrder(KeyField.dumb);
         String createString = keys.toString(this.<KeyField>getDeclare(env), ",");
-        createString = createString + "," + getConstraintDeclare(table, keys);
+        createString = createString + "," + getConstraintDeclare(table.getName(), keys);
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
-        executeDDL("CREATE TABLE " + table + " (" + createString + ")", env);
+        executeDDL("CREATE TABLE " + table.getName(syntax) + " (" + createString + ")", env);
         addExtraIndices(table, keys);
     }
 
-    public void renameTable(String oldTableName, String newTableName) throws SQLException {
-        executeDDL("ALTER TABLE " + oldTableName + " RENAME TO " + newTableName);
+    public void renameTable(Table table, String newTableName) throws SQLException {
+        executeDDL("ALTER TABLE " + table.getName(syntax) + " RENAME TO " + syntax.getTableName(newTableName));
     }
 
-    public void dropTable(String table) throws SQLException {
-        executeDDL("DROP TABLE " + table);
+    public void dropTable(Table table) throws SQLException {
+        executeDDL("DROP TABLE " + table.getName(syntax));
     }
 
-    static String getIndexName(String table, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
-        return syntax.getIndexName(table + "_" + fields.keys().toString("_") + "_idx");
+    static String getIndexName(Table table, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
+        return syntax.getIndexName((syntax.isIndexNameLocal() ? "" : table.getName() + "_") + fields.keys().toString("_") + "_idx");
+    }
+
+    static String getIndexName(Table table, SQLSyntax syntax, ImOrderMap<Field, Boolean> fields) {
+        return getIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax);
     }
 
     private ImOrderMap<String, Boolean> getOrderFields(ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) {
         ImOrderMap<String, Boolean> result = fields.toOrderMap(false);
         if(order)
-            result = result.addOrderExcl(keyFields.mapOrderSetValues(Field.<KeyField>nameGetter(syntax)).toOrderMap(true));
+            result = result.addOrderExcl(keyFields.mapOrderSetValues(Field.<KeyField>nameGetter()).toOrderMap(true));
+        return result;
+    }
+
+    private ImOrderMap<Field, Boolean> getOrderFields(ImOrderSet<KeyField> keyFields, boolean order, ImOrderSet<Field> fields) {
+        ImOrderMap<Field, Boolean> result = fields.toOrderMap(false);
+        if(order)
+            result = result.addOrderExcl(keyFields.toOrderMap(true));
         return result;
     }
     
-    public void addIndex(String table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) throws SQLException {
-        addIndex(table, getOrderFields(keyFields, fields, order));
+    public void addIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order) throws SQLException {
+        addIndex(table, getOrderFields(keyFields, order, fields));
     }
 
-    public void addIndex(String table, ImOrderMap<String, Boolean> fields) throws SQLException {
-        String columns = fields.toString(new GetKeyValue<String, String, Boolean>() {
-            public String getMapValue(String key, Boolean value) {
-                return key + " ASC" + (value?"":" NULLS FIRST");
+    public void addIndex(Table table, ImOrderMap<Field, Boolean> fields) throws SQLException {
+        String columns = fields.toString(new GetKeyValue<String, Field, Boolean>() {
+            public String getMapValue(Field key, Boolean value) {
+                return key.getName(syntax) + " " + syntax.getOrderDirection(false, value);
             }}, ",");
 
-        executeDDL("CREATE INDEX " + getIndexName(table, fields, syntax) + " ON " + table + " (" + columns + ")");
+        executeDDL("CREATE INDEX " + getIndexName(table, syntax, fields) + " ON " + table.getName(syntax) + " (" + columns + ")");
     }
 
-    public void dropIndex(String table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) throws SQLException {
+    public void dropIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) throws SQLException {
         dropIndex(table, getOrderFields(keyFields, fields, order));
     }
     
-    public void dropIndex(String table, ImOrderMap<String, Boolean> fields) throws SQLException {
-        executeDDL("DROP INDEX " + getIndexName(table, fields, syntax));
+    public void dropIndex(Table table, ImOrderMap<String, Boolean> fields) throws SQLException {
+        executeDDL("DROP INDEX " + getIndexName(table, fields, syntax) + (syntax.isIndexNameLocal() ? " ON " + table.getName(syntax) : ""));
     }
 
 /*    public void addKeyColumns(String table, Map<KeyField, Object> fields, List<KeyField> keys) throws SQLException {
@@ -490,20 +500,28 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 //        executeDerived("CREATE INDEX " + "idx_" + table + "_" + field.name + " ON " + table + " (" + field.name + ")"); //COLUMN
     }*/
 
-    public void addColumn(String table, PropertyField field) throws SQLException {
+    public void addColumn(Table table, PropertyField field) throws SQLException {
         ExecuteEnvironment env = new ExecuteEnvironment();
-        executeDDL("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax, env), env); //COLUMN
+        executeDDL("ALTER TABLE " + table.getName(syntax) + " ADD " + field.getDeclare(syntax, env), env); //COLUMN
+    }
+
+    public void dropColumn(Table table, Field field) throws SQLException {
+        innerDropColumn(table.getName(syntax), field.getName(syntax));
     }
 
     public void dropColumn(String table, String field) throws SQLException {
+        innerDropColumn(syntax.getTableName(table), syntax.getFieldName(field));
+    }
+
+    private void innerDropColumn(String table, String field) throws SQLException {
         executeDDL("ALTER TABLE " + table + " DROP COLUMN " + field);
     }
 
     public void renameColumn(String table, String columnName, String newColumnName) throws SQLException {
-        executeDDL("ALTER TABLE " + table + " RENAME " + columnName + " TO " + newColumnName);
+        executeDDL(syntax.getRenameColumn(table, columnName, newColumnName));
     }
 
-    public void modifyColumn(String table, Field field, Type oldType) throws SQLException {
+    public void modifyColumn(Table table, Field field, Type oldType) throws SQLException {
         ExecuteEnvironment env = new ExecuteEnvironment();
         executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.getName(syntax) + " TYPE " +
                 field.type.getDB(syntax, env) + " " + syntax.typeConvertSuffix(oldType, field.type, field.getName(syntax), env), env);
@@ -616,7 +634,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         lockRead(opOwner);
 
         try {
-            returnTemporaryTable(table.name, owner, opOwner, true);
+            returnTemporaryTable(table.getName(), owner, opOwner, true);
         } finally {
             unlockRead();
         }
@@ -636,7 +654,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             if(truncate) {
                 runSuppressed(new SQLRunnable() {
                     public void run() throws SQLException {
-                        truncate(syntax.getSessionTableName(table), opOwner, owner);
+                        truncate(table, opOwner, owner);
                     }
                 }, firstException);
                 if(firstException.result != null) {
@@ -676,10 +694,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             // assertion построен на том что между началом транзакции ее rollback'ом, все созданные таблицы в явную drop'ся, соответственно может нарушится если скажем открыта форма и не close'ута, или просто new IntegrationService идет
             // в принципе он не настолько нужен, но для порядка пусть будет
             // придется убрать так как чистых использований уже достаточно много, например ClassChange.materialize, DataSession.addObjects, правда что сейчас с assertion'ами делать неясно
-            assert !sessionTablesMap.containsKey(table.name); // вернул назад
+            assert !sessionTablesMap.containsKey(table.getName()); // вернул назад
             WeakReference<TableOwner> value = new WeakReference<TableOwner>(owner);
 //            fifo.add("RGET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + value + " " + owner + " " + opOwner  + " " + this + " " + ExceptionUtils.getStackTrace());
-            sessionTablesMap.put(table.name, value);
+            sessionTablesMap.put(table.getName(), value);
 
         } finally {
             temporaryTablesLock.unlock();
@@ -732,7 +750,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
     
     public void pushVolatileStats(Connection connection, OperationOwner owner) throws SQLException {
-        if(syntax.noDynamicSampling())
+        if(syntax.supportsVolatileStats())
             if(volatileStats.getAndIncrement() == 0) {
                 lockRead(owner);
                 temporaryTablesLock.lock();
@@ -748,7 +766,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void popVolatileStats(Connection connection, OperationOwner opOwner) throws SQLException {
-        if (syntax.noDynamicSampling())
+        if (syntax.supportsVolatileStats())
             if (volatileStats.decrementAndGet() == 0) {
                 if(problemInTransaction == null)
                     executeDDL("SET enable_nestloop=on", opOwner);
@@ -1589,9 +1607,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         mReadKeys.exclAdd(getCnt(""), syntax.getCount("*"));
         if(tableKeys.size() > 1)
             for(KeyField field : tableKeys) {
-                String filedName = field.getName(syntax);
-                mReadKeys.exclAdd(getCntDist(filedName), syntax.getCountDistinct(filedName));
-                field.type.readDeconc("ANYVALUE(" + filedName + ")", filedName, mReadKeys, syntax, env);
+                String fieldName = field.getName(syntax);
+                mReadKeys.exclAdd(getCntDist(field.getName()), syntax.getCountDistinct(fieldName));
+                field.type.readDeconc(syntax.getAnyValueFunc() + "(" + fieldName + ")", field.getName(), mReadKeys, syntax, env);
             }
         else 
             if(table.properties.isEmpty()) {
@@ -1604,13 +1622,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         MExclMap<String, String> mReadProps = MapFact.mExclMap();
         for(PropertyField field : table.properties) {
             String fieldName = field.getName(syntax);
-            mReadProps.exclAdd(getCntDist(fieldName), syntax.getCountDistinct(fieldName));
-            mReadProps.exclAdd(getCnt(fieldName), syntax.getCount(fieldName));
-            field.type.readDeconc("ANYVALUE(" + fieldName + ")", fieldName, mReadProps, syntax, env);
+            mReadProps.exclAdd(getCntDist(field.getName()), syntax.getCountDistinct(fieldName));
+            mReadProps.exclAdd(getCnt(field.getName()), syntax.getCount(fieldName));
+            field.type.readDeconc(syntax.getAnyValueFunc() + "(" + fieldName + ")", fieldName, mReadProps, syntax, env);
         }
         ImMap<String, String> readProps = mReadProps.immutable();
 
-        String select = "SELECT " + SQLSession.stringExpr(readKeys, readProps) + " FROM " + syntax.getSessionTableName(table.getName(syntax));
+        String select = "SELECT " + SQLSession.stringExpr(readKeys, readProps) + " FROM " + table.getName(syntax);
 
         lockRead(opOwner);
 
@@ -1630,7 +1648,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     ImFilterValueMap<KeyField, Object> mKeyValues = tableKeys.mapFilterValues();
                     for(int i=0,size=tableKeys.size();i<size;i++) {
                         KeyField tableKey = tableKeys.get(i);
-                        String fieldName = tableKey.getName(syntax);
+                        String fieldName = tableKey.getName();
                         Integer cnt = readInt(result.getObject(getCntDist(fieldName)));
                         if(cnt == 1)
                             mKeyValues.mapValue(i, tableKey.type.read(result, syntax, fieldName));
@@ -1642,7 +1660,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 ImFilterValueMap<PropertyField, Object> mvPropValues = table.properties.mapFilterValues();
                 for(int i=0,size=table.properties.size();i<size;i++) {
                     PropertyField tableProperty = table.properties.get(i);
-                    String fieldName = tableProperty.getName(syntax);
+                    String fieldName = tableProperty.getName();
                     Integer cntDistinct = readInt(result.getObject(getCntDist(fieldName)));
                     if(cntDistinct==0)
                         mvPropValues.mapValue(i, null);
@@ -1683,9 +1701,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
     private void checkTableOwner(Table table, TableOwner owner) {
         if(table instanceof SessionTable)
-            checkTableOwner(table.name, owner);
+            checkTableOwner(table.getName(), owner);
         else
-            ServerLoggers.assertLog(owner == TableOwner.global || owner == TableOwner.debug, "THERE SHOULD BE NO OWNER FOR GLOBAL TABLE " + table.name + " " + owner);
+            ServerLoggers.assertLog(owner == TableOwner.global || owner == TableOwner.debug, "THERE SHOULD BE NO OWNER FOR GLOBAL TABLE " + table.getName() + " " + owner);
     }
     private void checkTableOwner(ModifyQuery modify) {
         checkTableOwner(modify.table, modify.owner);
@@ -1946,8 +1964,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
     
     public void checkSessionTable(SessionTable table) {
-        WeakReference<TableOwner> sessionTable = sessionTablesMap.get(table.name);
-        ServerLoggers.assertLog(sessionTable != null && sessionTable.get() != null, "USED RETURNED TABLE : " + table.name);
+        WeakReference<TableOwner> sessionTable = sessionTablesMap.get(table.getName());
+        ServerLoggers.assertLog(sessionTable != null && sessionTable.get() != null, "USED RETURNED TABLE : " + table.getName());
     }
 
     private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, final ExConnection connection, SQLSyntax syntax, ExecuteEnvironment env, Result<ReturnStatement> returnStatement, boolean noPrepare) throws SQLException {

@@ -245,7 +245,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             select = getSelect(from, keySelect, keyNames, resultKeyOrder, propertySelect, propertyNames, resultPropertyOrder, whereSelect, syntax, compileOrders, top, false);
         }
 
-        queryExecEnv = (select.length() > Settings.get().getQueryLengthTimeout() && syntax.noDynamicSampling() ? new AdjustVolatileExecuteEnvironment() : QueryExecuteEnvironment.DEFAULT);
+        queryExecEnv = (select.length() > Settings.get().getQueryLengthTimeout() && syntax.supportsVolatileStats() ? new AdjustVolatileExecuteEnvironment() : QueryExecuteEnvironment.DEFAULT);
 
         keyOrder = resultKeyOrder.result; propertyOrder = resultPropertyOrder.result;
 
@@ -640,12 +640,13 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 final Result<ImCol<String>> whereSelect = new Result<ImCol<String>>(); // проверить crossJoin
                 final Result<ImMap<Expr,String>> fromPropertySelect = new Result<ImMap<Expr, String>>();
                 final Query<KeyExpr, Expr> query = new Query<KeyExpr, Expr>(keys.toRevMap(), queryExprs.toMap(), groupWhere);
-                String fromSelect = query.compile(syntax, subcontext).fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, whereSelect, params, env);
+                final CompiledQuery<KeyExpr, Expr> compiled = query.compile(syntax, subcontext);
+                String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, whereSelect, params, env);
 
                 ImMap<String, String> keySelect = group.join(fromPropertySelect.result);
                 ImMap<String, String> propertySelect = queries.mapValues(new GetValue<String, GroupExpr.Query>() {
                     public String getMapValue(GroupExpr.Query value) {
-                        return value.getSource(fromPropertySelect.result, query, syntax, env, exprs.get(value).getType());
+                        return value.getSource(fromPropertySelect.result, compiled.propertyReaders, query, syntax, env, exprs.get(value).getType());
                     }});
 
                 ImCol<String> havingSelect;
@@ -813,7 +814,17 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
 
         protected String getGroupSelect(String fromSelect, ImOrderMap<String, String> keySelect, ImOrderMap<String, String> propertySelect, ImCol<String> whereSelect, ImCol<String> havingSelect) {
-            return syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect, propertySelect), whereSelect.toString(" AND "), "", getGroupBy(keySelect.values()), havingSelect.toString(" AND "), "");
+            String groupBy;
+            if(keySelect.isEmpty()) {
+                if(syntax.supportGroupSingleValue())
+                    groupBy = "3+2";
+                else {
+                    groupBy = "";
+                    havingSelect = havingSelect.addCol("COUNT(*) > 0");
+                }
+            } else
+                groupBy =  BaseUtils.evl(((ImList) (syntax.supportGroupNumbers() ? ListFact.consecutiveList(keySelect.size()) : keySelect.values().toList())).toString(","), "3+2");
+            return syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect, propertySelect), whereSelect.toString(" AND "), "", groupBy, havingSelect.toString(" AND "), "");
         }
         protected String getGroupSelect(String fromSelect, ImMap<String, String> keySelect, ImMap<String, String> propertySelect, ImCol<String> whereSelect, ImCol<String> havingSelect) {
             return getGroupSelect(fromSelect, keySelect.toOrderMap(), propertySelect.toOrderMap(), whereSelect, havingSelect);
@@ -844,7 +855,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         public String getMapValue(String key, String value) {
                             Type type = columnTypes.get(key);
                             return type.getCast((type instanceof ArrayClass ? GroupType.AGGAR_SETADD : GroupType.SUM).getSource(
-                                    ListFact.<String>singleton(value), MapFact.<String, CompileOrder>EMPTYORDER(), type, syntax, env), syntax, env);
+                                    ListFact.<String>singleton(value), null, MapFact.<String, CompileOrder>EMPTYORDER(), type, syntax, env), syntax, env);
                         }});
                     return "(" + getGroupSelect(fromSelect, orderCastKeySelect, orderGroupPropertySelect, whereSelect.result, SetFact.<String>EMPTY()) + ")";
                 } else
@@ -917,7 +928,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                         }});
                     propertySelect = queries.mapValues(new GetKeyValue<String, String, RecursiveExpr.Query>() {
                         public String getMapValue(String key, RecursiveExpr.Query value) {
-                            return GroupType.SUM.getSource(ListFact.singleton(key), MapFact.<String, CompileOrder>EMPTYORDER(), value.getType(), syntax, env);
+                            return GroupType.SUM.getSource(ListFact.singleton(key), null, MapFact.<String, CompileOrder>EMPTYORDER(), value.getType(), syntax, env);
                         }});
                 }
 
@@ -952,7 +963,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
                     Expr rowSource = FormulaExpr.createCustomFormula(rowType.getCast("ARRAY[prm1]", syntax, env), rowType, concKeys); // баг сервера, с какого-то бодуна ARRAY[char(8)] дает text[]
                     initialExprs = initialExprs.addRevExcl(rowPath, rowSource); // заполняем начальный путь
-                    stepExprs = stepExprs.addExcl(rowPath, FormulaExpr.createCustomFormula(rowType.getCast("(prm1 || prm2)", syntax, env), rowType, prevPath, rowSource)); // добавляем тек. вершину
+                    stepExprs = stepExprs.addExcl(rowPath, FormulaExpr.createCustomFormula(rowType.getCast("(prm1 " + syntax.getArrayConcatenate() + " prm2)", syntax, env), rowType, prevPath, rowSource)); // добавляем тек. вершину
                 } else
                     recWhere = recJoin.getWhere();
 
@@ -1003,7 +1014,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                             "'" + StringEscapeUtils.escapeSql(initialSelect)+"','" +StringEscapeUtils.escapeSql(stepSelect)+"'"+outerParams+") recursion ("
                             + Field.getDeclare(fieldOrder.mapOrderMap(columnTypes), syntax, env) + ")", keySelect, propertySelect, SetFact.<String>EMPTY(), havingSelect) + ")";
                 } else {
-                    if(StringUtils.countMatches(stepSelect, recName) > 1)
+                    if(StringUtils.countMatches(stepSelect, recName) > 1) // почти у всех SQL серверов ограничение что не больше 2-х раз CTE можно использовать
                         return null;
                     String recursiveWith = "WITH RECURSIVE " + recName + "(" + fieldOrder.toString(",") + ") AS (" + initialSelect +
                             " UNION " + (isLogical && cyclePossible?"":"ALL ") + stepSelect + ") ";
@@ -1023,6 +1034,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 boolean isLogical = innerJoin.isLogical();
                 boolean cyclePossible = innerJoin.isCyclePossible();
 
+                // проверка на cyclePossible, потому как в противном случае количество записей в итерации (так как туда ключом попадет путь) будет расти экспоненциально
                 if(isLogical || !cyclePossible) { // если isLogical или !cyclePossible пытаемся обойтись рекурсивным CTE
                     String cteSelect = getCTESource(false);
                     if(cteSelect!=null)
@@ -1461,6 +1473,345 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 }
 
+/*
+        // для работы с cross-column статистикой
+        // не получается сделать, не выстраивая порядок JOIN'ов, а это уже перебор, уж за это SQL Server сам должен отвечать
+        // вообще надо adjustSelectivity бороться, делая из SQL сервера пессимиста
+
+        private static class RightJoins {
+            public Map<Table.Join, Map<String, Field>> map = new HashMap<Table.Join, Map<String, Field>>();
+
+            public void add(Table.Join join, String key, Field field) {
+                Map<String, Field> joinFields = map.get(join);
+                if(joinFields==null) {
+                    joinFields = new HashMap<String, Field>();
+                    map.put(join, joinFields);
+                }
+                joinFields.put(key, field);
+            }
+
+            public void addAll(RightJoins add) {
+                for(Map.Entry<Table.Join, Map<String, Field>> addEntry : add.map.entrySet())
+                    for(Map.Entry<String, Field> addField : addEntry.getValue().entrySet())
+                        add(addEntry.getKey(), addField.getKey(), addField.getValue());
+            }
+
+            public void addAll(Map<String, Pair<Table.Join, KeyField>> add) {
+                for(Map.Entry<String, Pair<Table.Join, KeyField>> addEntry : add.entrySet())
+                    add(addEntry.getValue().first, addEntry.getKey(), addEntry.getValue().second);
+            }
+        }
+
+        // для работы с cross-column статистикой
+
+        // перебор индексов по соединяемым таблицам
+        public static interface RecJoinTables {
+            void proceed(Collection<String> freeFields);
+        }
+        private static void recJoinTables(final int i, final List<Table.Join> list, final Map<Table.Join, Map<String, Field>> joinTables, final Stack<List<List<String>>> current, final Collection<String> freeFields, final RecJoinTables result) {
+            if(i>=list.size()) {
+                result.proceed(freeFields);
+                return;
+            }
+            Table.Join tableJoin = list.get(i);
+            tableJoin.getTable().recIndexTuples(joinTables.get(tableJoin), current, new Table.RecIndexTuples<String>() {
+                public void proceed(Map<String, ? extends Field> restFields) { // можно не учитывать restFields так как join'ы не пересекаются
+                    recJoinTables(i + 1, list, joinTables, current, BaseUtils.merge(freeFields, restFields.keySet()), result);
+                }
+            });
+        }
+
+        private static class Coverage { // именно в таком приоритете
+            private final int notIndexed;
+            private final int leftRight;
+            private final int tuples;
+            private final int indexes;
+
+            private Coverage(int notIndexed, int leftRight, int tuples, int indexes) {
+                this.notIndexed = notIndexed;
+                this.leftRight = leftRight;
+                this.tuples = tuples;
+                this.indexes = indexes;
+            }
+
+            boolean better(Coverage cov) {
+                if(notIndexed < cov.notIndexed) // минимум не индексированных полей
+                    return true;
+                if(notIndexed > cov.notIndexed)
+                    return false;
+                if(leftRight > cov.leftRight) // максимум 2-сторонних индексов
+                    return true;
+                if(leftRight < cov.leftRight)
+                    return false;
+                if(tuples < cov.tuples) // минимум tuples (чтобы лучше статистика была)
+                    return true;
+                if(tuples > cov.tuples)
+                    return false;
+                if(indexes < cov.indexes) // минимум индексов
+                    return true;
+                if(tuples > cov.tuples)
+                    return false;
+
+                return false;
+            }
+        }
+
+        // перебираем "правые" индексы
+        private static void recJoinTables(Map<Table.Join, Map<String, Field>> joinTables, Stack<List<List<String>>> current, RecJoinTables result) {
+            recJoinTables(0, new ArrayList<Table.Join>(joinTables.keySet()), joinTables, current, new ArrayList<String>(), result);
+        }
+
+        // перебор табличных join'ов, из которых брать ключи
+        public static interface RecJoinKeyTables {
+            void proceed(Map<String, Pair<Table.Join, KeyField>> map); // mutable
+        }
+        private static void recJoinKeyTables(final int i, final List<String> list, Map<String, KeyExpr> mapKeys, Map<KeyExpr, Collection<Pair<Table.Join, KeyField>>> keyTables, Map<String, Pair<Table.Join, KeyField>> current, RecJoinKeyTables result) {
+            if(i>=list.size()) {
+                result.proceed(current);
+                return;
+            }
+
+            String key = list.get(i);
+            for(Pair<Table.Join, KeyField> keyTable : keyTables.get(mapKeys.get(key))) {
+                current.put(key, keyTable);
+                recJoinKeyTables(i + 1, list, mapKeys, keyTables, current, result);
+                current.remove(key);
+            }
+        }
+        private static void recJoinKeyTables(Map<String, KeyExpr> mapKeys, Map<KeyExpr, Collection<Pair<Table.Join, KeyField>>> keyTables, RecJoinKeyTables result) {
+            recJoinKeyTables(0, new ArrayList<String>(mapKeys.keySet()), mapKeys, keyTables, new HashMap<String, Pair<Table.Join, KeyField>>(), result);
+        }
+
+
+        // для работы с cross-column статистикой
+        private Map<KeyExpr, Collection<Pair<Table.Join, KeyField>>> keyTables = new HashMap<KeyExpr, Collection<Pair<Table.Join, KeyField>>>();
+
+        private abstract class JoinSelect<I extends InnerJoin> {
+
+            final String alias; // final
+            final String join; // final
+            final I innerJoin;
+
+            protected abstract Map<String, BaseExpr> initJoins(I innerJoin);
+
+            protected boolean isInner() {
+                return InnerSelect.this.isInner(innerJoin);
+            }
+
+            protected JoinSelect(final I innerJoin) {
+                alias = subcontext.wrapAlias("t" + (aliasNum++));
+                this.innerJoin = innerJoin;
+
+                useTuples = true && isInner();
+
+                // здесь проблема что keySelect может рекурсивно использоваться 2 раза, поэтому сначала пробежим не по ключам
+                RightJoins joinTables = null;
+                if(useTuples)
+                    joinTables = new RightJoins();
+
+                Map<String, String> joinSources = new HashMap<String, String>();
+                Map<String,KeyExpr> joinKeys = new HashMap<String, KeyExpr>();
+                for(Map.Entry<String, BaseExpr> keyJoin : initJoins(innerJoin).entrySet()) {
+                    String keySource = alias + "." + keyJoin.getKey();
+                    if(keyJoin.getValue() instanceof KeyExpr)
+                        joinKeys.put(keySource,(KeyExpr)keyJoin.getValue());
+                    else {
+                        joinSources.put(keySource, keyJoin.getValue().getSource(InnerSelect.this));
+
+                        if(useTuples && keyJoin instanceof Table.Join.Expr) {
+                            Table.Join.Expr tableExpr = (Table.Join.Expr) keyJoin;
+                            joinTables.add(tableExpr.getInnerJoin(), keySource, tableExpr.property);
+                        }
+                    }
+                }
+                for(Map.Entry<String,KeyExpr> keyJoin : joinKeys.entrySet()) { // дозаполним ключи
+                    String keySource = keySelect.get(keyJoin.getValue());
+                    if(keySource==null) {
+                        assert isInner();
+                        keySelect.put(keyJoin.getValue(),keyJoin.getKey());
+                    } else
+                        joinSources.put(keyJoin.getKey(), keySource);
+                }
+
+                if(useTuples) {
+                    if(this instanceof TableSelect) { // записываем себя к ключам
+                        Map<String, KeyField> mapKeys = ((TableSelect)this).initFields((Table.Join) innerJoin);
+                        for(Map.Entry<String, KeyExpr> keyJoin : joinKeys.entrySet()) {
+                            Collection<Pair<Table.Join, KeyField>> keyList = keyTables.get(keyJoin.getValue());
+                            if(keyList==null) {
+                                keyList = new ArrayList<Pair<Table.Join, KeyField>>();
+                                keyTables.put(keyJoin.getValue(), keyList);
+                            }
+                            keyList.add(new Pair<Table.Join, KeyField>((Table.Join)innerJoin, mapKeys.get(keyJoin.getKey())));
+                        }
+                    }
+                    join = "";
+                    this.joinTables = joinTables; this.joinSources = joinSources; this.joinKeys = joinKeys;
+                } else {
+                    Collection<String> joinSelect = new ArrayList<String>();
+                    for(Map.Entry<String, String> joinSource : joinSources.entrySet())
+                        joinSelect.add(joinSource.getKey() + "=" + joinSource.getValue());
+                    join = BaseUtils.toString(joinSelect, " AND ");
+                }
+
+                InnerSelect.this.joins.add(this);
+            }
+
+            // для работы с cross-column статистикой, не очень красиво, но других очевидных вариантов не видно
+            private final boolean useTuples;
+            private RightJoins joinTables; private Map<String, String> joinSources; private Map<String, KeyExpr> joinKeys;
+            private void tupleJoin(Collection<String> joinSelect) {
+                final Map<String, KeyExpr> joinKeyTables = BaseUtils.filterValues(joinKeys, keyTables.keySet()); // интересуют только, те для которых есть таблицы
+
+                final Table table;
+                final Map<String, KeyField> mapKeys;
+                if(this instanceof TableSelect) {
+                    table = ((Table.Join) innerJoin).getTable(); mapKeys = ((TableSelect)this).initFields((Table.Join) innerJoin);
+                } else {
+                    table = null; mapKeys = null;
+                }
+
+                final Result<Pair<Coverage, List<List<String>>>> bestCoverage = new Result<Pair<Coverage, List<List<String>>>>();
+                final Result<Map<String, String>> bestKeySources = new Result<Map<String, String>>();
+
+                // перебираем использование ключей в таблицах
+                recJoinKeyTables(joinKeyTables, keyTables, new RecJoinKeyTables() {
+                    public void proceed(final Map<String, Pair<Table.Join, KeyField>> mapKeyFields) {
+                        final RightJoins recJoinTables = new RightJoins();
+                        recJoinTables.addAll(mapKeyFields);
+                        recJoinTables.addAll(joinTables);
+
+                        final Stack<List<List<String>>> leftIndexes = new Stack<List<List<String>>>(); // здесь левые индексы
+                        final Stack<List<List<String>>> rightIndexes = new Stack<List<List<String>>>(); // здесь правые индексы
+                        final RecJoinTables finalResult = new RecJoinTables() {
+                            public void proceed(Collection<String> freeFields) {
+                                int keys = freeFields.size();
+                                int leftRight = 0;
+                                int tuples = 0;
+                                int indexes = 0;
+
+                                indexes += leftIndexes.size();
+                                for(List<List<String>> leftIndex : leftIndexes)
+                                    tuples += leftIndex.size();
+
+                                indexes += rightIndexes.size();
+                                if(table!=null) { // если таблица, считаем кол-во 2-сторонних индексов
+                                    for(List<List<String>> rightIndex : rightIndexes) {
+                                        tuples += rightIndex.size();
+                                        int maxCommon = 0;
+                                        for(List<List<Field>> leftIndex : table.indexes) {
+                                            int cc = 0; int ckeys = 0; List<KeyField> commonTuple;
+                                            while((cc < rightIndex.size() && cc<leftIndex.size()) && ((commonTuple = mapList(rightIndex.get(cc), mapKeys)).equals(leftIndex.get(cc)))) {
+                                                ckeys += commonTuple.size(); cc++;
+                                            }
+                                            maxCommon = max(maxCommon, ckeys);
+                                        }
+                                        leftRight += maxCommon;
+                                    }
+                                }
+
+                                Coverage coverage = new Coverage(keys, leftRight, tuples, indexes);
+                                if(bestCoverage.result == null || coverage.better(bestCoverage.result.first)) {
+                                    List<List<String>> resultIndexes = new ArrayList<List<String>>();
+                                    for(List<List<String>> leftIndex : leftIndexes)
+                                        resultIndexes.addAll(leftIndex);
+                                    for(List<List<String>> rightIndex : rightIndexes)
+                                        resultIndexes.addAll(rightIndex);
+                                    for(String freeField : freeFields)
+                                        resultIndexes.add(Collections.singletonList(freeField));
+                                    bestCoverage.set(new Pair<Coverage, List<List<String>>>(coverage, resultIndexes));
+
+                                    Map<String, String> keySources = new HashMap<String, String>();
+                                    for(Map.Entry<String, Pair<Table.Join, KeyField>> mapKeyField : mapKeyFields.entrySet())
+                                        keySources.put(mapKeyField.getKey(), getAlias(mapKeyField.getValue().first) + "." + mapKeyField.getValue().second);
+                                    bestKeySources.set(keySources);
+                                }
+                            }
+                        };
+
+                        if(table!=null) // перебираем "левые" индексы
+                            recJoinTables(recJoinTables.map, rightIndexes, new RecJoinTables() {
+                                public void proceed(Collection<String> freeFields) {
+                                    table.recIndexTuples(filterKeys(mapKeys, freeFields), leftIndexes, new Table.RecIndexTuples<String>() {
+                                        public void proceed(Map<String, ? extends Field> restFields) {
+                                            finalResult.proceed(restFields.keySet());
+                                        }
+                                    });
+                                }
+                            });
+                        else
+                            recJoinTables(recJoinTables.map, rightIndexes, finalResult);
+                    }
+                });
+
+                joinSources.putAll(bestKeySources.result); // берем реально использованные ключи
+                for(List<String> tuple : bestCoverage.result.second)
+                    joinSelect.add(Table.getTuple(tuple) + " = " + Table.getTuple(mapList(tuple, joinSources)));
+
+                this.joinTables = null; this.joinSources = null; this.joinKeys = null;
+            }
+
+            public abstract String getSource(ExecuteEnvironment env);
+
+            protected abstract Where getInnerWhere(); // assert что isInner
+        }
+        public void fillInnerJoins(Collection<String> whereSelect) { // заполним Inner Joins, чтобы чтобы keySelect'ы были
+            innerWhere = whereJoins.fillInnerJoins(upWheres, whereSelect, this);
+        }
+
+        private Where innerWhere;
+        // получает условия следующие из логики inner join'ов SQL
+        private Where getInnerWhere() {
+            Where result = innerWhere;
+            for(InnerJoin innerJoin : getInnerJoins()) {
+                JoinSelect joinSelect = getJoinSelect(innerJoin);
+                if(joinSelect!=null)
+                    result = result.and(joinSelect.getInnerWhere());
+            }
+            return result;
+        }
+
+        public String getFrom(Where where, Collection<String> whereSelect, ExecuteEnvironment env) {
+            where.getSource(this);
+            whereSelect.add(where.followFalse(getInnerWhere().not()).getSource(this));
+
+            if(joins.isEmpty()) return "dumb";
+
+            String from;
+            Iterator<JoinSelect> ij = joins.iterator();
+            JoinSelect first = ij.next();
+            if(first.isInner()) {
+                from = first.getSource(env) + " " + first.alias;
+                if(!(first.join.length()==0))
+                    whereSelect.add(first.join);
+
+                if(first.useTuples)
+                    first.tupleJoin(whereSelect);
+            } else {
+                from = "dumb";
+                ij = joins.iterator();
+            }
+
+            while(ij.hasNext()) {
+                JoinSelect join = ij.next();
+                from = from + (join.isInner() ?"":" LEFT")+" JOIN " + join.getSource(env) + " " + join.alias  + " ON " + (join.join.length()==0?Where.TRUE_STRING:join.join);
+
+                if(join.useTuples)
+                    join.tupleJoin(whereSelect);
+            }
+
+            return from;
+        }
+
+
+            protected Map<String, KeyField> initFields(Table.Join table) {
+                Map<String, KeyField> result = new HashMap<String, KeyField>();
+                for(KeyField key : table.joins.keySet())
+                    result.put(key.toString(),key);
+                return result;
+            }
+
+ */
 
 /* !!!!! UNION ALL код            // в Properties закинем Orders,
             HashMap<Object,Query> UnionProps = new HashMap<Object, Query>(query.property);

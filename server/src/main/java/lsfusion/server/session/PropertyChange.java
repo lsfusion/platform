@@ -67,9 +67,8 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     }
 
     public static <C> ImMap<C, Expr> simplifyExprs(ImMap<C, ? extends Expr> implementExprs, Where andWhere) {
-        KeyEquals keyEquals = andWhere.getKeyEquals(); // оптимизация
-        KeyEqual keyEqual;
-        if(keyEquals.size() == 1 && !(keyEqual=keyEquals.getKey(0)).isEmpty())
+        KeyEqual keyEqual = andWhere.getKeyEquals().getSingle(); // оптимизация
+        if(!keyEqual.isEmpty())
             implementExprs = keyEqual.getTranslator().translate(implementExprs);
         return (ImMap<C, Expr>) implementExprs;
     }

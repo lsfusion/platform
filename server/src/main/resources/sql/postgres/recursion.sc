@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE FUNCTION ${function.name}(rectable text, initial text, step text ${params.declare}) RETURNS SETOF RECORD AS
 $$
     DECLARE inserted INT;

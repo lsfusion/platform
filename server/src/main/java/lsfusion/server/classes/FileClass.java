@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Format;
 import java.util.*;
@@ -43,6 +44,17 @@ public abstract class FileClass extends DataClass<byte[]> {
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getByteArrayType();
     }
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "SqlBinary";
+    }
+
+    public String getDotNetRead(String reader) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getDotNetWrite(String writer, String value) {
+        throw new UnsupportedOperationException();
+    }
 
     public int getSQL(SQLSyntax syntax) {
         return syntax.getByteArraySQL();
@@ -58,6 +70,10 @@ public abstract class FileClass extends DataClass<byte[]> {
 
     public byte[] read(Object value) {
         return (byte[]) value;
+    }
+
+    public byte[] read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        return set.getBytes(name);
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {

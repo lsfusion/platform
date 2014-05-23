@@ -48,7 +48,7 @@ public enum PartitionType implements AggrType {
                 prm1 = "CAST(" + prm1 + " AS " + rType + ")";
                 prm2 = "CAST(" + prm2 + " AS " + rType + ")";  
             }
-            distrMin = "MIN(" + prm1 + "," + prm2 + ")";
+            distrMin = syntax.getMaxMin(false, prm1, prm2);
         }
 
         switch (this) {

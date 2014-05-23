@@ -29,6 +29,7 @@ import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.property.ClassField;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -52,6 +53,19 @@ public class ObjectType extends AbstractType<Integer> {
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return idClass.getDB(syntax, typeEnv);
     }
+
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return idClass.getDotNetType(syntax, typeEnv);
+    }
+
+    public String getDotNetRead(String reader) {
+        return idClass.getDotNetRead(reader);
+    }
+    public String getDotNetWrite(String writer, String value) {
+        return idClass.getDotNetWrite(writer, value);
+    }
+
+
     public int getSQL(SQLSyntax syntax) {
         return idClass.getSQL(syntax);
     }
@@ -59,6 +73,14 @@ public class ObjectType extends AbstractType<Integer> {
     public Integer read(Object value) {
         if(value==null) return null;
         return ((Number)value).intValue();
+    }
+
+    @Override
+    public Integer read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        int anInt = set.getInt(name);
+        if(set.wasNull())
+            return null;
+        return anInt;
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {

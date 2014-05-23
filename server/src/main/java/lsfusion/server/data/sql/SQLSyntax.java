@@ -1,6 +1,13 @@
 package lsfusion.server.data.sql;
 
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.query.CompileOrder;
 import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.type.ClassReader;
+import lsfusion.server.data.type.ConcatenateType;
+import lsfusion.server.data.type.Reader;
 import lsfusion.server.data.type.Type;
 
 import java.sql.Connection;
@@ -139,6 +146,8 @@ public interface SQLSyntax {
 
     String getTableName(String tableName);
 
+    String getGlobalTableName(String tableName);
+
     String getConstraintName(String name);
 
     String getIndexName(String name);
@@ -146,4 +155,32 @@ public interface SQLSyntax {
     boolean hasSelectivityProblem();
 
     String getAdjustSelectivityPredicate();
+
+    String getStringConcatenate();
+    String getArrayConcatenate();
+
+    boolean supportGroupSingleValue();
+
+    String getAnyValueFunc();
+    String getLastFunc();
+    String getMaxMin(boolean max, String expr1, String expr2);
+    String getNotZero(String expr);
+
+    boolean supportsAnalyzeSessionTable();
+    String getAnalyzeSessionTable(String tableName);
+
+    boolean supportsVolatileStats();
+    String getVolatileStats(boolean on);
+
+    String getChangeColumnType();
+
+    String getStringCFunc();
+
+    String getOrderGroupAgg(GroupType groupType, ImList<String> exprs, ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv);
+
+    String getNotSafeConcatenateSource(ConcatenateType type, ImList<String> exprs, TypeEnvironment typeEnv);
+
+    boolean isIndexNameLocal();
+
+    String getRenameColumn(String table, String columnName, String newColumnName);
 }

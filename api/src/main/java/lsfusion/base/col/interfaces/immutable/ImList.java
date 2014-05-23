@@ -49,4 +49,6 @@ public interface ImList<K> extends Iterable<K> {
     String toString(GetIndexValue<String, K> getter, String delimiter);
 
     List<K> toJavaList();
+
+    K last();
 }

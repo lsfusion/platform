@@ -16,6 +16,9 @@ import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.session.DataSession;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 public class ModifyQuery {
     public final Table table;
     private final IQuery<KeyField, PropertyField> change;
@@ -113,19 +116,41 @@ public class ModifyQuery {
     }
 
     public SQLExecute getDelete(final SQLSyntax syntax) {
-        // пока реализуем чисто PostgreSQL синтаксис
+
+        int updateModel = syntax.updateModel();
         final CompiledQuery<KeyField, PropertyField> deleteCompile = change.compile(syntax);
-        final String deleteAlias = "ch_dl_sq";
+        ImSet<String> whereSelect;
+        String delete; final String deleteAlias;
 
-        ImSet<String> whereSelect = table.getTableKeys().mapSetValues(new GetValue<String, KeyField>() {
-            public String getMapValue(KeyField value) {
-                return table.getName(syntax) + "." + value.getName(syntax) + "=" + deleteAlias + "." + deleteCompile.keyNames.get(value);
-            }});
+        switch(updateModel) {
+            case 1:
+                deleteAlias = "ch_dl_sq";
 
-        String delete = "DELETE FROM " + table.getName(syntax) + " USING (" + deleteCompile.select + ") " + deleteAlias + " WHERE " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
+                whereSelect = table.getTableKeys().mapSetValues(new GetValue<String, KeyField>() {
+                    public String getMapValue(KeyField value) {
+                        return table.getName(syntax) + "." + value.getName(syntax) + "=" + deleteAlias + "." + deleteCompile.keyNames.get(value);
+                    }});
+
+                delete = "DELETE FROM " + table.getName(syntax) + " FROM " + table.getName(syntax) + " JOIN (" +
+                        deleteCompile.select + ") " + deleteAlias + " ON " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
+                break;
+            case 0:
+                deleteAlias = "ch_dl_sq";
+
+                whereSelect = table.getTableKeys().mapSetValues(new GetValue<String, KeyField>() {
+                    public String getMapValue(KeyField value) {
+                        return table.getName(syntax) + "." + value.getName(syntax) + "=" + deleteAlias + "." + deleteCompile.keyNames.get(value);
+                    }});
+
+                delete = "DELETE FROM " + table.getName(syntax) + " USING (" + deleteCompile.select + ") " + deleteAlias + " WHERE " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
 
         return new SQLExecute(delete, deleteCompile.getQueryParams(env), deleteCompile.env, deleteCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
     }
+
 
     public SQLExecute getInsertLeftKeys(SQLSyntax syntax, boolean updateProps, boolean insertOnlyNotNull) {
         return (new ModifyQuery(table, getInsertLeftQuery(updateProps, insertOnlyNotNull), env, owner)).getInsertSelect(syntax);

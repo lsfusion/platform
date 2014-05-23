@@ -51,7 +51,9 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
         m.appendTail(result);
         result.append(")");
 
-        return result.toString();
+        String sourceString = result.toString();
+        sourceString = sourceString.replace("||", source.getSyntax().getStringConcatenate()); // используется в BaseLogicsModule.toDateTime, StringAggUnionProperty тоже
+        return "("+sourceString+")"; // type.getCast(sourceString, compile.syntax, false)
     }
 
     @Override

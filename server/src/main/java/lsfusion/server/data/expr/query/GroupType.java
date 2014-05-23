@@ -1,6 +1,6 @@
 package lsfusion.server.data.expr.query;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -8,10 +8,11 @@ import lsfusion.server.Settings;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.CompileOrder;
-import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.ConcatenateType;
+import lsfusion.server.data.type.Reader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.property.*;
@@ -106,9 +107,7 @@ public enum GroupType implements AggrType {
         return !isSelect();
     }
 
-    public String getSource(ImList<String> exprs, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
-        String orderClause = BaseUtils.clause("ORDER BY", Query.stringOrder(orders, syntax));
-
+    public String getSource(ImList<String> exprs, ImList<ClassReader> exprReaders, ImOrderMap<String, CompileOrder> orders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
         switch (this) {
             case MAX:
                 assert exprs.size()==1 && orders.size()==0;
@@ -118,19 +117,19 @@ public enum GroupType implements AggrType {
                 return (type instanceof ConcatenateType ? "MINC" : "MIN") + "(" + exprs.get(0) + ")";
             case ANY:
                 assert exprs.size()==1 && orders.size()==0;
-                return "ANYVALUE(" + exprs.get(0) + ")";
+                return syntax.getAnyValueFunc() + "(" + exprs.get(0) + ")";
             case SUM:
                 assert exprs.size()==1 && orders.size()==0;
-                return "notZero(SUM(" + exprs.get(0) + "))";
+                return syntax.getNotZero("SUM(" + exprs.get(0) + ")");
             case STRING_AGG:
                 assert exprs.size()==2;
-                return type.getCast("STRING_AGG(" + exprs.get(0) + "," + exprs.get(1) + orderClause + ")", syntax, typeEnv); // тут точная ширина не нужна главное чтобы не больше
+                return type.getCast(syntax.getOrderGroupAgg(this, exprs, exprReaders, orders, typeEnv), syntax, typeEnv); // тут точная ширина не нужна главное чтобы не больше
             case AGGAR_SETADD:
-                assert exprs.size()==1;
-                return "AGGAR_SETADD(" + exprs.get(0) + orderClause + ")";
+                assert exprs.size()==1 && orders.isEmpty();
+                return "AGGAR_SETADD(" + exprs.get(0) + ")";
             case LAST:
                 assert exprs.size()==2;
-                return "LAST(" + exprs.get(1) + orderClause + ")";
+                return syntax.getOrderGroupAgg(this, ListFact.<String>singleton(exprs.get(1)), ListFact.<ClassReader>singleton(exprReaders.get(1)), orders, typeEnv);
             default:
                 throw new RuntimeException("can not be");
         }

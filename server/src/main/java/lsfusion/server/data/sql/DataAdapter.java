@@ -1,27 +1,29 @@
 package lsfusion.server.data.sql;
 
-import lsfusion.base.IOUtils;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.AbstractConnectionPool;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.TypePool;
+import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.query.CompileOrder;
+import lsfusion.server.data.query.ExecuteEnvironment;
+import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.TypeEnvironment;
-import lsfusion.server.data.type.ConcatenateType;
-import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.data.type.*;
 import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.log4j.Logger;
 import org.springframework.util.PropertyPlaceholderHelper;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 import java.util.List;
 import java.util.Properties;
 
@@ -29,6 +31,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     protected final static Logger logger = Logger.getLogger(DataAdapter.class);
 
     public String server;
+    public String instance;
     public String dataBase;
     public String userID;
     public String password;
@@ -39,7 +42,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     protected abstract void ensureDB(boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException;
 
-    protected DataAdapter(String dataBase, String server, String userID, String password, boolean cleanDB) throws Exception, SQLException, IllegalAccessException, InstantiationException {
+    protected DataAdapter(String dataBase, String server, String instance, String userID, String password, boolean cleanDB) throws Exception, SQLException, IllegalAccessException, InstantiationException {
 
         Class.forName(getClassName());
 
@@ -47,17 +50,17 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         this.server = server;
         this.userID = userID;
         this.password = password;
+        this.instance = instance;
 
         ensureDB(cleanDB);
 
         ensureConnection = startConnection();
         ensureConnection.setAutoCommit(true);
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/getAnyNotNull.sc")));
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/jumpWorkdays.sc")));
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/completeBarcode.sc")));
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/aggf.sc")));
-        recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/recursion.sc"));
-        safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/safecast.sc"));
+        ensureSystemFuncs();
+    }
+
+    protected void ensureSystemFuncs() throws IOException, SQLException {
+        throw new UnsupportedOperationException();        
     }
 
     public String getBPTextType() {
@@ -268,11 +271,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     }
 
     public boolean noDynamicSampling() {
-        return true;
+        return false;
     }
 
     public void setLogLevel(Connection connection, int level) {
-        throw new UnsupportedOperationException();
     }
 
     public boolean orderTopTrouble() {
@@ -291,58 +293,19 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "";
     }
 
-    public void useDLL(){
-        /*try {
-            Class.forName("net.sourceforge.jtds.jdbc.Driver");
-
-            Connection connect = DriverManager.getConnection("jdbc:jtds:sqlserver://localhost:1433;instance=SQLEXPRESS;User=sa;Password=11111");
-
-            InputStream dllStream = Main.class.getResourceAsStream("SQLUtils.dll");
-            String dllName = "SQLUtils";
-
-            connect.createStatement().execute("USE test");
-
-            connect.createStatement().execute("IF OBJECT_ID(N'Concatenate', N'AF') is not null DROP Aggregate Concatenate;");
-
-            PreparedStatement statement = connect.prepareStatement("IF EXISTS (SELECT * FROM sys.assemblies WHERE [name] = ?) DROP ASSEMBLY SQLUtils;");
-            statement.setString(1, dllName);
-            statement.execute();
-            statement.clearParameters();
-
-            statement = connect.prepareStatement("CREATE ASSEMBLY [SQLUtils] \n" +
-                    "FROM  ? "+
-                    "WITH permission_set = Safe;");
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            while (dllStream.read(buffer) != -1) out.write(buffer);
-
-            statement.setBytes(1, out.toByteArray());
-            statement.execute();
-            statement.clearParameters();
-
-            connect.createStatement().execute("CREATE AGGREGATE [dbo].[Concatenate](@input nvarchar(4000))\n" +
-                    "RETURNS nvarchar(4000)\n" +
-                    "EXTERNAL NAME [SQLUtils].[Concatenate];");
-
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }*/
+    public static String genTypePostfix(ImList<Type> types) {
+        return genTypePostfix(types, new boolean[types.size()]);
     }
 
-    public static String genTypePostfix(ImList<Type> types) {
+    public static String genTypePostfix(ImList<Type> types, boolean[] desc) {
         String result = "";
         for(int i=0,size=types.size();i<size;i++)
-            result = (result.length()==0?"":result + "_") + types.get(i).getSID();
+            result = (result.length()==0?"":result + "_") + types.get(i).getSID() + (desc[i]?"_D":"");
         return result;
     }
 
     public static String genConcTypeName(ConcatenateType type) {
-        return "T" + genTypePostfix(type.getTypes());
+        return "T" + genTypePostfix(type.getTypes(), type.getDesc());
     }
 
     public static String genRecursionName(ImList<Type> types) {
@@ -353,7 +316,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "NROW" + types.size();
     }
 
-    private final TypeEnvironment recTypes = new TypeEnvironment() {
+    protected final TypeEnvironment recTypes = new TypeEnvironment() {
         public void addNeedRecursion(ImList<Type> types) {
             throw new UnsupportedOperationException();
         }
@@ -366,6 +329,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
             }
         }
 
+        public void addNeedAggOrder(GroupType groupType, ImList<Type> types) {
+            throw new UnsupportedOperationException();
+        }
+        
         public void addNeedSafeCast(Type type) {
             throw new UnsupportedOperationException();
         }
@@ -384,41 +351,40 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         }
     }
 
-    private MAddExclMap<ConcatenateType, Boolean> ensuredConcTypes = MapFact.mAddExclMap();
+    protected void executeEnsureParams(String command, ImList<TypeObject> params) throws SQLException {
+        PreparedStatement statement = ensureConnection.prepareStatement(command);
+        SQLSession.ParamNum paramNum = new SQLSession.ParamNum();
+        for(TypeObject param : params)
+            param.writeParam(statement, paramNum, this, ExecuteEnvironment.EMPTY);
+        try {
+            statement.execute();
+        } catch(SQLException e) {
+            ServerLoggers.sqlSuppLog(e);
+        } finally {
+            statement.close();
+        }
+    }
+
+    protected MAddExclMap<ConcatenateType, Boolean> ensuredConcTypes = MapFact.mAddExclMap();
 
     protected String notNullRowString;
 
+    protected void proceedEnsureConcType(ConcatenateType concType) throws SQLException {
+        throw new UnsupportedOperationException();
+    }
+    
     public synchronized void ensureConcType(ConcatenateType concType) throws SQLException {
 
         Boolean ensured = ensuredConcTypes.get(concType);
         if(ensured != null)
             return;
 
-        // ensuring types
-        String declare = "";
-        ImList<Type> types = concType.getTypes();
-        for (int i=0,size=types.size();i<size;i++)
-            declare = (declare.length() ==0 ? "" : declare + ",") + ConcatenateType.getFieldName(i) + " " + types.get(i).getDB(this, recTypes);
-
-        String typeName = genConcTypeName(concType);
-        executeEnsure("CREATE TYPE " + typeName + " AS (" + declare + ")");
-
-        // создаем cast'ы всем concatenate типам
-        for(int i=0,size=ensuredConcTypes.size();i<size;i++) {
-            ConcatenateType ensuredType = ensuredConcTypes.getKey(i);
-            if(concType.getCompatible(ensuredType)!=null) {
-                String ensuredName = genConcTypeName(ensuredType);
-                executeEnsure("DROP CAST IF EXISTS (" + typeName + " AS " + ensuredName + ")");
-                executeEnsure("CREATE CAST (" + typeName + " AS " + ensuredName + ") WITH INOUT AS IMPLICIT"); // в обе стороны так как containsAll в DataClass по прежнему не направленный
-                executeEnsure("DROP CAST IF EXISTS (" + ensuredName + " AS " + typeName + ")");
-                executeEnsure("CREATE CAST (" + ensuredName + " AS " + typeName + ") WITH INOUT AS IMPLICIT");
-            }
-        }
+        proceedEnsureConcType(concType);
 
         ensuredConcTypes.exclAdd(concType, true);
     }
 
-    private static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
+    protected static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
 
     protected String recursionString;
     protected String safeCastString;
@@ -472,6 +438,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         ensuredSafeCasts.put(type, true);
     }
 
+    public void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) throws SQLException {
+    }
+
     public boolean isDeadLock(SQLException e) {
         throw new UnsupportedOperationException();
     }
@@ -519,6 +488,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return name;
     }
 
+    public String getGlobalTableName(String name) {
+        return name;
+    }
+
     public String getConstraintName(String name) {
         return name;
     }
@@ -536,5 +509,90 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     public String getAdjustSelectivityPredicate() {
         throw new UnsupportedOperationException();
+    }
+
+    public String getStringConcatenate() {
+        return "+";
+    }
+
+    public String getArrayConcatenate() {
+        return "+";
+    }
+
+    public boolean supportGroupSingleValue() {
+        return true;
+    }
+    
+    protected SQLSyntax getSyntax() {
+        return this;
+    }
+
+    public String getAnyValueFunc() {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getStringCFunc() {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getLastFunc() {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getOrderGroupAgg(GroupType groupType, ImList<String> exprs, ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv) {
+        String orderClause = BaseUtils.clause("ORDER BY", Query.stringOrder(orders, this));
+
+        String fnc;
+        switch (groupType) {
+            case STRING_AGG:
+                fnc = "STRING_AGG";
+                break;
+            case LAST:
+                fnc = getLastFunc();
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+        return fnc + "(" + exprs.toString(",") + orderClause + ")";
+    }
+
+    public String getNotSafeConcatenateSource(ConcatenateType type, ImList<String> exprs, TypeEnvironment typeEnv) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean isIndexNameLocal() {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getRenameColumn(String table, String columnName, String newColumnName) {
+        return "ALTER TABLE " + table + " RENAME " + columnName + " TO " + newColumnName;
+    }
+
+    public String getMaxMin(boolean max, String expr1, String expr2) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getNotZero(String expr) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean supportsAnalyzeSessionTable() {
+        return false;
+    }
+
+    public String getAnalyzeSessionTable(String tableName) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean supportsVolatileStats() {
+        return false;
+    }
+
+    public String getVolatileStats(boolean on) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getChangeColumnType() {
+        return "";
     }
 }

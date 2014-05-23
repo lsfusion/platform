@@ -249,4 +249,14 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
     public KeyEquals translateOuter(MapTranslate translator) {
         return new KeyEquals(translator.translateMap(map), isSimple);
     }
+
+    public KeyEqual getSingle() {
+        if(size()==1) // оптимизация
+            return getKey(0);
+
+        KeyEqual keyEqual = KeyEqual.EMPTY;
+        for(int i=0,size=size();i<size;i++)
+            keyEqual = keyEqual.or(getKey(i));
+        return keyEqual;
+    }
 }

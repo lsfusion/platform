@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MOrderFilterMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.Settings;
@@ -20,15 +21,21 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.*;
+import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.expr.where.pull.ExclExprPullWheres;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.innerjoins.KeyEqual;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.PartialQueryTranslator;
 import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExpr.Query, PartitionJoin, PartitionExpr, PartitionExpr.QueryInnerContext> {
 
@@ -48,6 +55,16 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         protected Query translate(MapTranslate translator) {
             return new Query(this, translator);
         }
+
+        private Query(Query query, QueryTranslator translator, ImSet<Expr> restPartitions) {
+            super(query, translator);
+            this.partitions = translator.translate(restPartitions);
+        }
+
+        public Query translateQuery(QueryTranslator translator, ImSet<Expr> restPartitions) {
+            return new Query(this, translator, restPartitions);
+        }
+
 
         @Override
         public boolean calcTwins(TwinImmutableObject o) {
@@ -105,8 +122,8 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         return new QueryInnerContext(this);
     }
 
-    private PartitionExpr(PartitionType partitionType, ImMap<KeyExpr, BaseExpr> group, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, ImSet<Expr> partitions) {
-        this(new Query(exprs, orders, ordersNotNull, partitions, partitionType), group);
+    private PartitionExpr(ImMap<KeyExpr, BaseExpr> group, Query query) {
+        this(query, group);
     }
 
     // трансляция
@@ -143,7 +160,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
 
     @ParamLazy
     public Expr translateQuery(QueryTranslator translator) {
-        return create(query.type, query.exprs, query.orders, query.ordersNotNull, query.partitions, translator.translate(group));
+        return create(query, translator.translate(group));
     }
 
     @Override
@@ -156,30 +173,71 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         ImMap<KeyExpr, Expr> packedGroup = packPushFollowFalse(group, falseWhere);
         Query packedQuery = query.pack();
         if(!(BaseUtils.hashEquals(packedQuery, query) && BaseUtils.hashEquals(packedGroup,group)))
-            return create(query.type, packedQuery.exprs, packedQuery.orders, packedQuery.ordersNotNull, packedQuery.partitions, packedGroup);
+            return create(packedQuery, packedGroup);
         else
             return this;
     }
 
-    protected static Expr createBase(PartitionType partitionType, ImMap<KeyExpr, BaseExpr> group, ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, final ImSet<Expr> partitions) {
+    protected static Expr createBase(ImMap<KeyExpr, BaseExpr> group, Query query) {
         // проверим если в group есть ключи которые ссылаются на ValueExpr и они есть в partition'е - убираем их из partition'а
         Result<ImMap<KeyExpr, BaseExpr>> restGroup = new Result<ImMap<KeyExpr, BaseExpr>>();
+        final Query fQuery = query;
         ImMap<KeyExpr, BaseExpr> translate = group.splitKeys(new GetKeyValue<Boolean, KeyExpr, BaseExpr>() {
             public Boolean getMapValue(KeyExpr key, BaseExpr value) {
-                return value.isValue() && partitions.contains(key);
+                return value.isValue() && fQuery.partitions.contains(key);
             }
         }, restGroup);
 
-        ImSet<Expr> restPartitions = partitions.remove(translate.keys());
+        ImSet<Expr> restPartitions = query.partitions.remove(translate.keys());
 
-        if(translate.size()>0) {
-            QueryTranslator translator = new PartialQueryTranslator(translate, true);
-            exprs = translator.translate(exprs);
-            orders = translator.translate(orders);
-            restPartitions = translator.translate(restPartitions);
+        if(translate.size()>0)
+            query = query.translateQuery(new PartialQueryTranslator(translate, true), restPartitions);
+        else
+            assert BaseUtils.hashEquals(restPartitions, query.partitions);
+
+        return createKeyEqual(restGroup.result, query);
+    }
+
+    // нижние оптимизации важны так как некоторые SQL SERVER'а константы где не надо не любят
+    private static Expr createKeyEqual(ImMap<KeyExpr, BaseExpr> group, Query query) {
+        final KeyEqual keyEqual = query.getWhere().getKeyEquals().getSingle();
+        if(!keyEqual.isEmpty()) {
+            Result<ImMap<KeyExpr,BaseExpr>> restGroup = new Result<ImMap<KeyExpr, BaseExpr>>();
+            Where keyWhere = CompareWhere.compare(group.splitKeys(new SFunctionSet<KeyExpr>() {
+                public boolean contains(KeyExpr element) {
+                    return keyEqual.keyExprs.containsKey(element);
+                }
+            }, restGroup), keyEqual.keyExprs);
+
+            return createKeyEqual(restGroup.result, query.translateQuery(keyEqual.getTranslator(), query.partitions)).and(keyWhere);
         }
+        return createRemoveValues(group, query);
+    }
 
-        return BaseExpr.create(new PartitionExpr(partitionType, restGroup.result, exprs, orders, ordersNotNull, restPartitions));
+    private static Expr createRemoveValues(ImMap<KeyExpr, BaseExpr> group, Query query) {
+        ImMap<BaseExpr, BaseExpr> exprValues = query.getWhere().getExprValues();// keys'ов уже очевидно нет
+
+        MOrderFilterMap<Expr, Boolean> mRemovedOrders = MapFact.mOrderFilter(query.orders);
+        Where removeWhere = Where.TRUE;
+        for(int i=0,size=query.orders.size();i<size;i++) {
+            Expr exprValue;
+            Expr orderExpr = query.orders.getKey(i);
+            if(orderExpr.isValue()) // ищем VALUE
+                exprValue = orderExpr;
+            else
+                exprValue = exprValues.getObject(orderExpr); // ищем EXPRVALUE
+            if(exprValue!=null) {
+                if(query.ordersNotNull)
+                    removeWhere = removeWhere.and(exprValue.getWhere());
+            } else
+                mRemovedOrders.keep(orderExpr, query.orders.getValue(i));
+        }
+        ImOrderMap<Expr, Boolean> removedOrders = MapFact.imOrderFilter(mRemovedOrders, query.orders);
+        if(removedOrders.size() < query.orders.size()) // оптимизация
+            return BaseExpr.create(new PartitionExpr(new Query(query.exprs, removedOrders, query.ordersNotNull, query.partitions, query.type), group)).and(removeWhere);
+
+        assert removeWhere.isTrue();
+        return BaseExpr.create(new PartitionExpr(query, group));
     }
 
     public static Expr create(final PartitionType partitionType, final ImList<Expr> exprs, final ImOrderMap<Expr, Boolean> orders, boolean ordersNotNull, final ImSet<? extends Expr> partitions, final ImMap<KeyExpr, ? extends Expr> group, final PullExpr noPull) {
@@ -191,9 +249,13 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     }
 
     public static Expr create(final PartitionType partitionType, final ImList<Expr> exprs, final ImOrderMap<Expr, Boolean> orders, final boolean ordersNotNull, final ImSet<? extends Expr> partitions, ImMap<KeyExpr, ? extends Expr> group) {
+        return create(new Query(exprs, orders, ordersNotNull, (ImSet<Expr>) partitions, partitionType), group);
+    }
+
+    public static Expr create(final Query query, ImMap<KeyExpr, ? extends Expr> group) {
         return new ExprPullWheres<KeyExpr>() {
             protected Expr proceedBase(ImMap<KeyExpr, BaseExpr> map) {
-                return createBase(partitionType, map, exprs, orders, ordersNotNull, (ImSet<Expr>) partitions);
+                return createBase(map, query);
             }
         }.proceed(group);
     }

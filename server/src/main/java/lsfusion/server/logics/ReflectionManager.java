@@ -551,14 +551,14 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         List<List<Object>> dataKeys = new ArrayList<List<Object>>();
         List<List<Object>> dataProps = new ArrayList<List<Object>>();
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
-            Object tableName = dataTable.name;
+            Object tableName = dataTable.getName();
             data.add(asList(tableName));
             ImMap<KeyField, ValueClass> classes = dataTable.getClasses().getCommonParent(dataTable.getTableKeys());
             for (KeyField key : dataTable.keys) {
-                dataKeys.add(asList(tableName, key.name, tableName + "." + key.name, classes.get(key).getCaption()));
+                dataKeys.add(asList(tableName, key.getName(), tableName + "." + key.getName(), classes.get(key).getCaption()));
             }
             for (PropertyField property : dataTable.properties) {
-                dataProps.add(asList(tableName, property.name));
+                dataProps.add(asList(tableName, property.getName()));
             }
         }
 

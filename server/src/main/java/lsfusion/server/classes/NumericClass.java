@@ -14,6 +14,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,6 +66,18 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getNumericType(length,precision);
     }
+
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "SqlDecimal";
+    }
+
+    public String getDotNetRead(String reader) {
+        return reader + ".ReadDecimal()";
+    }
+    public String getDotNetWrite(String writer, String value) {
+        return writer + ".Write(" + value + ");";
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getNumericSQL();
     }
@@ -81,6 +94,11 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         if(bigDec.scale()!=precision) // важно, так как у BigDecimal'а очень странный equals
             bigDec = bigDec.setScale(precision, BigDecimal.ROUND_HALF_UP);
         return bigDec;
+    }
+
+    @Override
+    public BigDecimal read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        return read(set.getBigDecimal(name));
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {

@@ -40,7 +40,7 @@ public class MaxFormulaImpl extends AbstractFormulaImpl implements FormulaUnionI
             String exprSource = source.getSource(i);
             if(noMaxImplicitCast)
                 exprSource = type.getCast(exprSource, syntax, env);
-            result = (isMin ? "MIN" : "MAX") + "(" + result + "," + exprSource + ")";
+            result = syntax.getMaxMin(!isMin, result , exprSource);
         }
         return result;
     }

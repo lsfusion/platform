@@ -17,7 +17,8 @@ public interface ImCol<T> extends Iterable<T> {
     ImList<T> toList();
 
     ImCol<T> mergeCol(ImCol<T> col);
-    
+    ImCol<T> addCol(T element);
+
     ImCol<T> filterCol(FunctionSet<T> filter);
     
     ImMap<T, Integer> multiSet();

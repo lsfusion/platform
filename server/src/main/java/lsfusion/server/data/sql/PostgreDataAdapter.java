@@ -1,11 +1,15 @@
 package lsfusion.server.data.sql;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.IOUtils;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.Log4jWriter;
 import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.commons.exec.*;
@@ -17,10 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public PostgreDataAdapter(String dataBase, String server, String userID, String password, String binPath, String dumpDir, boolean cleanDB) throws Exception {
-        super(dataBase, server, userID, password, cleanDB);
+        super(dataBase, server, null, userID, password, cleanDB);
 
         this.binPath = binPath;
         this.dumpDir = dumpDir;
@@ -78,6 +79,16 @@ public class PostgreDataAdapter extends DataAdapter {
             logger.info(ServerResourceBundle.getString("data.sql.error.creating.database"), e);
         }
         connect.close();
+    }
+
+    @Override
+    protected void ensureSystemFuncs() throws IOException, SQLException {
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/getAnyNotNull.sc")));
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/jumpWorkdays.sc")));
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/completeBarcode.sc")));
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/aggf.sc")));
+        recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/recursion.sc"));
+        safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecast.sc"));
     }
 
     @Override
@@ -143,7 +154,7 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     public String getOrderDirection(boolean descending, boolean notNull) {
-        return (descending ? "DESC" : "ASC") + (!notNull ? " NULLS " + (descending ? "LAST" : "FIRST") : "");
+        return (descending ? "DESC" : "ASC") + (!notNull ? " NULLS " + (descending ? "LAST" : "FIRST") : "");  // так как по умолчанию не nulls first
     }
 
     @Override
@@ -187,10 +198,6 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public boolean supportGroupNumbers() {
-        return true;
-    }
-
-    public boolean orderTopTrouble() {
         return true;
     }
 
@@ -353,5 +360,115 @@ public class PostgreDataAdapter extends DataAdapter {
     @Override
     public String getAdjustSelectivityPredicate() {
         return "current_timestamp<>current_timestamp";
+    }
+
+    @Override
+    public String getStringConcatenate() {
+        return "||";
+    }
+
+    @Override
+    public String getArrayConcatenate() {
+        return "||";
+    }
+
+    @Override
+    public boolean orderTopTrouble() {
+        return true;
+    }
+
+    @Override
+    public void setACID(Statement statement, boolean acid) throws SQLException {
+        statement.execute("SET SESSION synchronous_commit TO " + (acid ? "DEFAULT" : "OFF"));
+        statement.execute("SET SESSION commit_delay TO " + (acid ? "DEFAULT" : "100000"));
+    }
+
+    @Override
+    public String getAnyValueFunc() {
+        return "ANYVALUE";
+    }
+
+    @Override
+    public String getStringCFunc() {
+        return "STRINGC";
+    }
+
+    @Override
+    public String getLastFunc() {
+        return "LAST";
+    }
+
+    @Override
+    public String getMaxMin(boolean max, String expr1, String expr2) {
+        return (max?"MAX":"MIN") + "(" + expr1 + "," + expr2 + ")";
+    }
+
+    @Override
+    public String getNotZero(String expr) {
+        return "notZero(" + expr + ")";
+    }
+
+    @Override
+    public boolean supportsAnalyzeSessionTable() {
+        return true;
+    }
+
+    @Override
+    public String getAnalyzeSessionTable(String tableName) {
+        return "ANALYZE " + getSessionTableName(tableName);
+    }
+
+    @Override
+    public boolean supportsVolatileStats() {
+        return true;
+    }
+
+    @Override
+    public String getVolatileStats(boolean on) {
+        return "SET enable_nestloop=" + (on ? "off" : "on");
+    }
+
+    @Override
+    public String getChangeColumnType() {
+        return " TYPE ";
+    }
+
+    @Override
+    public boolean noDynamicSampling() {
+        return true;
+    }
+
+    @Override
+    protected void proceedEnsureConcType(ConcatenateType concType) throws SQLException {
+        // ensuring types
+        String declare = "";
+        ImList<Type> types = concType.getTypes();
+        for (int i=0,size=types.size();i<size;i++)
+            declare = (declare.length() ==0 ? "" : declare + ",") + ConcatenateType.getFieldName(i) + " " + types.get(i).getDB(this, recTypes);
+
+        String typeName = genConcTypeName(concType);
+        executeEnsure("CREATE TYPE " + typeName + " AS (" + declare + ")");
+
+        // создаем cast'ы всем concatenate типам
+        for(int i=0,size=ensuredConcTypes.size();i<size;i++) {
+            ConcatenateType ensuredType = ensuredConcTypes.getKey(i);
+            if(concType.getCompatible(ensuredType)!=null) {
+                String ensuredName = genConcTypeName(ensuredType);
+                executeEnsure("DROP CAST IF EXISTS (" + typeName + " AS " + ensuredName + ")");
+                executeEnsure("CREATE CAST (" + typeName + " AS " + ensuredName + ") WITH INOUT AS IMPLICIT"); // в обе стороны так как containsAll в DataClass по прежнему не направленный
+                executeEnsure("DROP CAST IF EXISTS (" + ensuredName + " AS " + typeName + ")");
+                executeEnsure("CREATE CAST (" + ensuredName + " AS " + typeName + ") WITH INOUT AS IMPLICIT");
+            }
+        }
+    }
+
+    @Override
+    public String getNotSafeConcatenateSource(ConcatenateType type, ImList<String> exprs, TypeEnvironment typeEnv) {
+        return type.getCast("ROW(" + exprs.toString(",") + ")", this, typeEnv);
+    }
+
+    @Override
+    public boolean isIndexNameLocal() {
+        return false;
     }
 }

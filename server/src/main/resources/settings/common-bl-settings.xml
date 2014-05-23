@@ -111,6 +111,15 @@
         <constructor-arg value="${backup.dumpDir:}"/>
     </bean>
 
+    <!--<bean id="dataAdapter" class="lsfusion.server.data.sql.MSSQLDataAdapter">-->
+        <!--<constructor-arg value="${db.name}"/>-->
+        <!--<constructor-arg value="${db.server}"/>-->
+        <!--<constructor-arg value="${db.user}"/>-->
+        <!--<constructor-arg value="${db.password}"/>-->
+        <!--<constructor-arg value="${db.instance}"/>-->
+    <!--</bean>-->
+
+
     <bean id="dbManager" class="lsfusion.server.logics.DBManager">
         <property name="adapter" ref="dataAdapter"/>
         <property name="businessLogics" ref="businessLogics"/>

@@ -28,7 +28,16 @@ public class ArrayClass<T> extends DataClass<T[]> {
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return type.getDB(syntax, typeEnv) + "[]";
     }
-
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return type.getDotNetType(syntax, typeEnv) + "[]";
+    }
+    public String getDotNetRead(String reader) {
+        throw new UnsupportedOperationException();
+    }
+    public String getDotNetWrite(String writer, String value) {
+        throw new UnsupportedOperationException();
+    }
+    
     public int getSQL(SQLSyntax syntax) {
         return Types.ARRAY;
     }

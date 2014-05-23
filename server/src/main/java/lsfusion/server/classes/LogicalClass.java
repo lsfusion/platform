@@ -11,6 +11,7 @@ import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Format;
 
@@ -61,6 +62,19 @@ public class LogicalClass extends DataClass<Boolean> {
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getBitType();
     }
+
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "SqlInt32";
+    }
+
+    public String getDotNetRead(String reader) {
+        return reader + ".ReadInt32()";
+    }
+    public String getDotNetWrite(String writer, String value) {
+        return writer + ".Write(" + value + ");";
+    }
+
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getBitSQL();
     }
@@ -68,6 +82,11 @@ public class LogicalClass extends DataClass<Boolean> {
     public Boolean read(Object value) {
         if(value!=null) return true;
         return null;
+    }
+
+    @Override
+    public Boolean read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        return super.read(set, syntax, name);//set.getBoolean(name);
     }
 
     public boolean isSafeString(Object value) {

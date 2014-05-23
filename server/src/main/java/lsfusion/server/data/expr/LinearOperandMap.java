@@ -48,7 +48,7 @@ public class LinearOperandMap extends WrapMap<Expr,Integer> {
             else
                 linearWhere = linearWhere.or(operand.getKey().getWhere());*/
         }
-        return "notZero(" + source + ")";//"(CASE WHEN " + linearWhere.getSource(compile) + (orderWhere.size()==0?"":" OR "+BaseUtils.toString(orderWhere," OR ")) + " THEN " + (source.length()==0?"0":source) + " ELSE " + SQLSyntax.NULL + " END)";
+        return compile.syntax.getNotZero(source);//"(CASE WHEN " + linearWhere.getSource(compile) + (orderWhere.size()==0?"":" OR "+BaseUtils.toString(orderWhere," OR ")) + " THEN " + (source.length()==0?"0":source) + " ELSE " + SQLSyntax.NULL + " END)";
     }
 
     public String toString() {

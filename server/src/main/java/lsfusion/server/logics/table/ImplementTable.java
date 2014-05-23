@@ -276,16 +276,16 @@ public class ImplementTable extends GlobalTable {
             mResult.exclAdd(0, readCount(session, inWhere));
             ImMap<Object, Object> result = mResult.immutable();
 
-            DataObject tableObject = (DataObject) reflectionLM.tableSID.readClasses(session, new DataObject(name));
+            DataObject tableObject = (DataObject) reflectionLM.tableSID.readClasses(session, new DataObject(getName()));
             reflectionLM.rowsTable.change(BaseUtils.nvl(result.get(0), 0), session, tableObject);
 
             for (KeyField key : keys) {
-                DataObject keyObject = (DataObject) reflectionLM.tableKeySID.readClasses(session, new DataObject(name + "." + key.name));
+                DataObject keyObject = (DataObject) reflectionLM.tableKeySID.readClasses(session, new DataObject(getName() + "." + key.getName()));
                 reflectionLM.quantityTableKey.change(BaseUtils.nvl(result.get(key), 0), session, keyObject);
             }
 
             for (PropertyField property : properties) {
-                DataObject propertyObject = (DataObject) reflectionLM.tableColumnSID.readClasses(session, new DataObject(property.name));
+                DataObject propertyObject = (DataObject) reflectionLM.tableColumnSID.readClasses(session, new DataObject(property.getName()));
                 reflectionLM.quantityTableColumn.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
             }
 
@@ -295,7 +295,7 @@ public class ImplementTable extends GlobalTable {
                 mNotNulls.exclAdd(property, readCount(session, join.getExpr(property).getWhere()));
             ImMap<Object, Object> notNulls = mNotNulls.immutable();
             for (PropertyField property : properties) {
-                DataObject propertyObject = (DataObject) reflectionLM.tableColumnSID.readClasses(session, new DataObject(property.name));
+                DataObject propertyObject = (DataObject) reflectionLM.tableColumnSID.readClasses(session, new DataObject(property.getName()));
                 int notNull = (Integer) BaseUtils.nvl(notNulls.get(property), 0);
                 reflectionLM.notNullQuantityTableColumn.change(notNull, session, propertyObject);
             }
@@ -311,7 +311,7 @@ public class ImplementTable extends GlobalTable {
 
         ImValueMap<KeyField, Stat> mvDistinctKeys = getTableKeys().mapItValues(); // exception есть
         for(int i=0,size=keys.size();i<size;i++) {
-            String keySID = name + "." + keys.get(i).name;
+            String keySID = getName() + "." + keys.get(i).getName();
             if (!keyStats.containsKey(keySID))
                 mvDistinctKeys.mapValue(i, Stat.DEFAULT);
             else
@@ -324,8 +324,8 @@ public class ImplementTable extends GlobalTable {
             PropertyField prop = properties.get(i);
             Stat distinctStat;
             Stat notNullStat;
-            if(propStats.containsKey(prop.name)) {
-                Pair<Integer, Integer> propStat = propStats.get(prop.name);
+            if(propStats.containsKey(prop.getName())) {
+                Pair<Integer, Integer> propStat = propStats.get(prop.getName());
                 distinctStat = new Stat(BaseUtils.nvl(propStat.first, 0));
                 notNullStat = new Stat(BaseUtils.nvl(propStat.second, 0));
             } else {

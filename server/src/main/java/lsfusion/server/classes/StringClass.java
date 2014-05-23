@@ -13,6 +13,7 @@ import lsfusion.server.logics.ServerResourceBundle;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Format;
 import java.util.ArrayList;
@@ -129,6 +130,17 @@ public class StringClass extends DataClass {
         return syntax.getVarStringType(lengthValue==0? 1 : lengthValue);
     }
 
+    public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "SqlString";
+    }
+
+    public String getDotNetRead(String reader) {
+        return reader + ".ReadString()";
+    }
+    public String getDotNetWrite(String writer, String value) {
+        return writer + ".Write(" + value + ");";
+    }
+
     public int getSQL(SQLSyntax syntax) {
         boolean isUnlimited = length.isUnlimited();
         if(blankPadded) {
@@ -157,6 +169,11 @@ public class StringClass extends DataClass {
         if(length.isUnlimited())
             return (String) value;
         return BaseUtils.truncate((String) value, length.getValue());
+    }
+
+    @Override
+    public Object read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
+        return read(set.getString(name));
     }
 
     @Override

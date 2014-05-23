@@ -63,7 +63,7 @@ public class TableFactory {
     public ImRevMap<String, ImplementTable> getImplementTablesMap() {
         return getImplementTables().mapRevKeys(new GetValue<String, ImplementTable>() {
             public String getMapValue(ImplementTable value) {
-                return value.name;
+                return value.getName();
             }
         });
     }

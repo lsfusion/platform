@@ -1,5 +1,6 @@
 package lsfusion.server.data.query.innerjoins;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -10,6 +11,7 @@ import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.TranslateContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.query.ExprEqualsJoin;
@@ -21,6 +23,9 @@ import lsfusion.server.data.translator.PartialQueryTranslator;
 import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface<KeyEqual>,TranslateContext<KeyEqual> {
 
@@ -52,6 +57,10 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
 
     public KeyEqual and(KeyEqual and) {
         return new KeyEqual(keyExprs.merge(and.keyExprs, KeyEqual.<BaseExpr>keepValue()));
+    }
+
+    public KeyEqual or(KeyEqual and) {
+        return new KeyEqual(keyExprs.mergeEquals(and.keyExprs));
     }
 
     public boolean isFalse() {
