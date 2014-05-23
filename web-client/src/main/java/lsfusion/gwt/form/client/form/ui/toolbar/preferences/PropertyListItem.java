@@ -4,16 +4,26 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 public class PropertyListItem {
     public GPropertyDraw property;
+    private String userCaption;
     Boolean inGrid; // false - panel, null - hidden through showIf
 
-    public PropertyListItem(GPropertyDraw property, Boolean inGrid) {
+    public PropertyListItem(GPropertyDraw property, String userCaption, Boolean inGrid) {
         this.property = property;
+        this.userCaption = userCaption;
         this.inGrid = inGrid;
+    }
+
+    public String getUserCaption() {
+        return userCaption != null ? userCaption : property.getNotEmptyCaption();
+    }
+
+    public void setUserCaption(String userCaption) {
+        this.userCaption = userCaption;
     }
 
     @Override
     public String toString() {
-        String result = property.getNotEmptyCaption();
+        String result = getUserCaption();
         if (inGrid == null) {
             result += " (не отображается)";
         } else if (!inGrid) {

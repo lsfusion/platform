@@ -446,7 +446,7 @@ public class GridTable extends ClientPropertyTable {
                     ((getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) ? cell.getMinimumWidth(this) : cell.getPreferredWidth(this)));
             column.setMaxWidth(cell.getMaximumWidth(this));
 
-            column.setHeaderValue(model.getColumnName(i));
+            column.setHeaderValue(getUserCaption(cell) != null ? getUserCaption(cell) : model.getColumnName(i));
 
             rowHeight = max(rowHeight, cell.getPreferredHeight(this));
 
@@ -1261,6 +1261,10 @@ public class GridTable extends ClientPropertyTable {
     public Boolean getUserHide(ClientPropertyDraw property) {
         return currentGridPreferences.getUserHide(property);
     }
+
+    public String getUserCaption(ClientPropertyDraw property) {
+        return currentGridPreferences.getUserCaption(property);
+    }
     
     public Integer getUserWidth(ClientPropertyDraw property) {
         return currentGridPreferences.getUserWidth(property);
@@ -1284,6 +1288,10 @@ public class GridTable extends ClientPropertyTable {
     
     public void setUserHide(ClientPropertyDraw property, Boolean userHide) {
         currentGridPreferences.setUserHide(property, userHide);
+    }
+
+    public void setUserCaption(ClientPropertyDraw property, String userCaption) {
+        currentGridPreferences.setUserCaption(property, userCaption);
     }
     
     public void setUserWidth(ClientPropertyDraw property, Integer userWidth) {

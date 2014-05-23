@@ -73,7 +73,7 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
             HashMap<String, GColumnUserPreferences> gColumnUPMap = new HashMap<String, GColumnUserPreferences>();
             for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectUP.getColumnUserPreferences().entrySet()) {
                 ColumnUserPreferences columnUP = entry.getValue();
-                gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.userHide, columnUP.userWidth, columnUP.userOrder, columnUP.userSort, columnUP.userAscendingSort));
+                gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.userHide, columnUP.userCaption, columnUP.userWidth, columnUP.userOrder, columnUP.userSort, columnUP.userAscendingSort));
             }
             GFont userFont = convertFont(groupObjectUP.fontInfo);
             GGroupObject groupObj = gForm.getGroupObject(groupObjectUP.groupObjectSID);

@@ -21,4 +21,12 @@ public class PropertyLabel extends Label {
     public PropertyListItem getPropertyItem() {
         return propertyItem;
     }
+    
+    public String getUserCaption() {
+        return propertyItem.getUserCaption();
+    }
+    
+    public void setUserCaption(String userCaption) {
+        propertyItem.setUserCaption(userCaption);
+    }
 }

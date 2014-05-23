@@ -79,6 +79,9 @@ nameShowPropertyDrawCustomUser 'Показ свойства для пользо�
 captionShowPropertyDraw 'Показ свойства' (propertyDraw) = staticCaption(showPropertyDraw (propertyDraw)) PREFCHARWIDTH 20;
 captionShowPropertyDrawCustomUser 'Показ свойства для пользователя' (propertyDraw, customUser) = staticCaption(showPropertyDrawCustomUser(propertyDraw, customUser)) PREFCHARWIDTH 20;
 
+columnCaptionPropertyDrawCustomUser 'Заголовок свойства для пользователя' = DATA VARSTRING[100] (PropertyDraw, CustomUser);
+columnCaptionPropertyDraw 'Заголовок свойства' = DATA VARSTRING[100] (PropertyDraw);
+
 columnWidthPropertyDrawCustomUser 'Ширина для пользователя' = DATA INTEGER (PropertyDraw, CustomUser);
 columnWidthPropertyDraw 'Ширина' = DATA INTEGER (PropertyDraw);
 
@@ -253,6 +256,8 @@ FORM forms 'Формы'
 
     PROPERTIES(p) captionShowPropertyDraw
     PROPERTIES(p,u) captionShowPropertyDrawCustomUser
+    PROPERTIES(p) columnCaptionPropertyDraw
+    PROPERTIES(p,u) columnCaptionPropertyDrawCustomUser
     PROPERTIES(p) columnWidthPropertyDraw
     PROPERTIES(p,u) columnWidthPropertyDrawCustomUser
     PROPERTIES(p) columnOrderPropertyDraw

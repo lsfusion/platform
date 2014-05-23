@@ -83,6 +83,11 @@ public class ColumnsListBoxDragController extends PickupDragController {
         draggableList = (ColumnsListBox) context.draggable.getParent().getParent();
         ColumnsListBox proxyMouseListBox = new ColumnsListBox(null) {
             @Override
+            public void singleclicked() {
+                // nothing to do
+            }
+
+            @Override
             public void doubleclicked() {
                 // nothing to do
             }

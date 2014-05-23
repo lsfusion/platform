@@ -193,15 +193,17 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
     private void okPressed() {
         for (Widget label : columnsDualListBox.getVisibleWidgets()) {
-            GPropertyDraw property = ((PropertyLabel) label).getPropertyItem().property;
-            grid.setUserOrder(property, columnsDualListBox.getVisibleIndex(label));
-            grid.setUserHide(property, false);
+            PropertyListItem property = ((PropertyLabel) label).getPropertyItem();
+            grid.setUserCaption(property.property, property.getUserCaption());
+            grid.setUserOrder(property.property, columnsDualListBox.getVisibleIndex(label));
+            grid.setUserHide(property.property, false);
         }
 
         for (Widget label : columnsDualListBox.getInvisibleWidgets()) {
-            GPropertyDraw property = ((PropertyLabel) label).getPropertyItem().property;
-            grid.setUserOrder(property, columnsDualListBox.getVisibleCount() + columnsDualListBox.getInvisibleIndex(label));
-            grid.setUserHide(property, true);
+            PropertyListItem property = ((PropertyLabel) label).getPropertyItem();
+            grid.setUserCaption(property.property, property.getUserCaption());
+            grid.setUserOrder(property.property, columnsDualListBox.getVisibleCount() + columnsDualListBox.getInvisibleIndex(label));
+            grid.setUserHide(property.property, true);
         }
 
         GFont userFont = getUserFont();
@@ -247,14 +249,14 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         }
 
         for (Widget w : columnsDualListBox.getVisibleWidgets()) {
-            GPropertyDraw property = ((PropertyLabel) w).getPropertyItem().property;
-            refreshPropertyUserPreferences(property, false, columnsDualListBox.getVisibleIndex(w), userSortDirections.get(property));
+            PropertyListItem property = ((PropertyLabel) w).getPropertyItem();
+            refreshPropertyUserPreferences(property, false, columnsDualListBox.getVisibleIndex(w), userSortDirections.get(property.property));
         }
 
         for (Widget w : columnsDualListBox.getInvisibleWidgets()) {
-            GPropertyDraw property = ((PropertyLabel) w).getPropertyItem().property;
+            PropertyListItem property = ((PropertyLabel) w).getPropertyItem();
             int propertyOrder = columnsDualListBox.getVisibleCount() + columnsDualListBox.getInvisibleIndex(w);
-            refreshPropertyUserPreferences(property, true, propertyOrder, userSortDirections.get(property));
+            refreshPropertyUserPreferences(property, true, propertyOrder, userSortDirections.get(property.property));
         }
 
         GFont userFont = getUserFont();
@@ -263,13 +265,14 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         grid.saveCurrentPreferences(forAllUsers, createSaveCallback("Сохранение настроек успешно завершено"));
     }
 
-    private void refreshPropertyUserPreferences(GPropertyDraw property, boolean hide, int propertyOrder, Map<Boolean, Integer> userSortDirections) {
+    private void refreshPropertyUserPreferences(PropertyListItem property, boolean hide, int propertyOrder, Map<Boolean, Integer> userSortDirections) {
         Boolean sortDirection = userSortDirections != null ? userSortDirections.keySet().iterator().next() : null;
         Integer sortIndex = userSortDirections != null ? userSortDirections.values().iterator().next() : null;
-        grid.setUserHide(property, hide);
-        grid.setUserOrder(property, propertyOrder);
-        grid.setUserSort(property, sortDirection != null ? sortIndex : null);
-        grid.setUserAscendingSort(property, sortDirection);
+        grid.setUserCaption(property.property, property.getUserCaption());
+        grid.setUserHide(property.property, hide);
+        grid.setUserOrder(property.property, propertyOrder);
+        grid.setUserSort(property.property, sortDirection != null ? sortIndex : null);
+        grid.setUserAscendingSort(property.property, sortDirection);
     }
 
     private Boolean getPropertyState(GPropertyDraw property) {
@@ -283,15 +286,15 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
     private void refreshValues(GFont font) {
         List<GPropertyDraw> orderedVisibleProperties = grid.getOrderedVisibleProperties(groupController.getGroupObjectProperties());
-
+        GGridUserPreferences currentPreferences = grid.getCurrentPreferences();
         columnsDualListBox.clearLists();
 
         for (GPropertyDraw property : orderedVisibleProperties) {
-            columnsDualListBox.addVisible(new PropertyListItem(property, getPropertyState(property)));
+            columnsDualListBox.addVisible(new PropertyListItem(property, currentPreferences.getUserCaption(property), getPropertyState(property)));
         }
         for (GPropertyDraw property : groupController.getGroupObjectProperties()) {
             if (!orderedVisibleProperties.contains(property)) {
-                columnsDualListBox.addInvisible(new PropertyListItem(property, getPropertyState(property)));
+                columnsDualListBox.addInvisible(new PropertyListItem(property, currentPreferences.getUserCaption(property), getPropertyState(property)));
             }
         }
 

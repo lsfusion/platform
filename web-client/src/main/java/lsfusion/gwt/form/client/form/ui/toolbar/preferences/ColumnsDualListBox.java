@@ -1,9 +1,14 @@
 package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
 
 import com.allen_sauer.gwt.dnd.client.DragController;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.base.client.ui.FlexPanel;
+import lsfusion.gwt.base.client.ui.GFlexAlignment;
 import lsfusion.gwt.form.client.form.ui.GCaptionPanel;
 
 import java.util.ArrayList;
@@ -17,6 +22,8 @@ public class ColumnsDualListBox extends AbsolutePanel {
     private ColumnsListBox left;
 
     private ColumnsListBox right;
+    
+    private TextBox columnCaptionBox;
 
     public ColumnsDualListBox() {
         setSize("100%", "100%");
@@ -33,11 +40,22 @@ public class ColumnsDualListBox extends AbsolutePanel {
         dragController = new ColumnsListBoxDragController(this);
         left = new ColumnsListBox(dragController) {
             @Override
+            public void singleclicked() {
+                setColumnCaptionBoxText(left);
+            }
+
+            @Override
             public void doubleclicked() {
                 moveItems(left, right, true);
             }
         };
+        
         right = new ColumnsListBox(dragController) {
+            @Override
+            public void singleclicked() {
+                setColumnCaptionBoxText(right);
+            }
+
             @Override
             public void doubleclicked() {
                 moveItems(right, left, true);
@@ -62,7 +80,7 @@ public class ColumnsDualListBox extends AbsolutePanel {
         horizontalPanel.add(rightColumns);
         horizontalPanel.setCellHeight(rightColumns, "100%");
 
-        horizontalPanel.setSize("100%", "100%");
+        horizontalPanel.setSize("100%", "80%");
 
         Button oneRight = new Button("&gt;");
         Button oneLeft = new Button("&lt;");
@@ -110,6 +128,31 @@ public class ColumnsDualListBox extends AbsolutePanel {
         dragController.registerDropController(rightDropController);
         dragController.registerDropController(rightPanelDropController);
         dragController.registerDropController(leftPanelDropController);
+       
+        // column caption settings        
+        columnCaptionBox = new TextBox();
+        columnCaptionBox.setSize("100%", "100%");
+        columnCaptionBox.addChangeHandler(new ChangeHandler() {
+            @Override
+            public void onChange(ChangeEvent changeEvent) {
+                if(getSelectedWidget(left) != null) {
+                    getSelectedWidget(left).setText(columnCaptionBox.getText());
+                    getSelectedWidget(left).setUserCaption(columnCaptionBox.getText());
+                }
+                else if(getSelectedWidget(right) != null) {
+                    getSelectedWidget(right).setText(columnCaptionBox.getText());
+                    getSelectedWidget(right).setUserCaption(columnCaptionBox.getText());
+                }
+            }
+        });
+
+        FlexPanel columnCaptionPanel = new FlexPanel();
+        columnCaptionPanel.add(new Label("Заголовок колонки " + ": "), GFlexAlignment.CENTER);
+        columnCaptionPanel.add(columnCaptionBox, GFlexAlignment.CENTER);
+
+        GCaptionPanel columnCaptionSettingsPanel = new GCaptionPanel("Настройки выбранной колонки", columnCaptionPanel);
+        add(columnCaptionSettingsPanel);
+        add(GwtClientUtils.createVerticalStrut(5));
     }
 
     public void addVisible(PropertyListItem property) {
@@ -131,6 +174,17 @@ public class ColumnsDualListBox extends AbsolutePanel {
             from.remove(widget);
             to.add(widget);
         }
+    }
+
+    protected PropertyLabel getSelectedWidget(ColumnsListBox list) {
+        ArrayList<Widget> selectedWidgets = dragController.getSelectedWidgets(list);
+        return selectedWidgets.size() == 0 ? null : (PropertyLabel)(selectedWidgets.get(selectedWidgets.size() - 1));
+    }
+    
+    protected void setColumnCaptionBoxText(ColumnsListBox list) {
+        PropertyLabel selectedWidget = getSelectedWidget(list);
+        if(selectedWidget != null)
+            columnCaptionBox.setText(selectedWidget.getUserCaption());
     }
 
     public ArrayList<Widget> getVisibleWidgets() {

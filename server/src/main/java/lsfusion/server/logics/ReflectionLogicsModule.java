@@ -72,6 +72,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP nameShowPropertyDraw;
     public LCP nameShowPropertyDrawCustomUser;
 
+    public LCP columnCaptionPropertyDrawCustomUser;
+    public LCP columnCaptionPropertyDraw;
     public LCP columnWidthPropertyDrawCustomUser;
     public LCP columnWidthPropertyDraw;
     public LCP columnOrderPropertyDrawCustomUser;
@@ -219,6 +221,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         nameShowPropertyDraw = getLCPByOldName("nameShowPropertyDraw");
         nameShowPropertyDrawCustomUser = getLCPByOldName("nameShowPropertyDrawCustomUser");
 
+        columnCaptionPropertyDrawCustomUser = getLCPByOldName("columnCaptionPropertyDrawCustomUser");
+        columnCaptionPropertyDraw = getLCPByOldName("columnCaptionPropertyDraw");
+        
         columnWidthPropertyDrawCustomUser = getLCPByOldName("columnWidthPropertyDrawCustomUser");
         columnWidthPropertyDraw = getLCPByOldName("columnWidthPropertyDraw");
 

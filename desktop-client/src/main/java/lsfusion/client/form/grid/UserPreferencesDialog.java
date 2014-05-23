@@ -10,6 +10,10 @@ import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.FontInfo;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -25,9 +29,11 @@ public abstract class UserPreferencesDialog extends JDialog {
     private GridTable initialTable;
 
     private PropertyListModel visibleListModel, invisibleListModel;
+    private JList visibleList, invisibleList;
     private JTextField fontSizeField;
     private JCheckBox isFontBoldCheckBox;
     private JCheckBox isFontItalicCheckBox;
+    private JTextField columnCaptionField;
 
     public UserPreferencesDialog(Frame owner, final GridTable initialTable, GroupObjectController goController) throws IOException {
         super(owner, getString("form.grid.preferences"), true);
@@ -59,12 +65,9 @@ public abstract class UserPreferencesDialog extends JDialog {
 
         visibleListModel = new PropertyListModel();
         invisibleListModel = new PropertyListModel();
-
-        JLabel fontSizeLabel = new JLabel(getString("descriptor.editor.font.size") + ": ");
-        fontSizeField = new JTextField(2);
-        isFontBoldCheckBox = new JCheckBox(getString("descriptor.editor.font.style.bold"));
-        isFontItalicCheckBox = new JCheckBox(getString("descriptor.editor.font.style.italic"));
-        JList visibleList = new JList(visibleListModel);
+        visibleList = new JList(visibleListModel);
+        invisibleList = new JList(invisibleListModel);
+        
         visibleList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         visibleList.setTransferHandler(arrayListHandler);
         visibleList.setDragEnabled(true);
@@ -74,6 +77,22 @@ public abstract class UserPreferencesDialog extends JDialog {
         TitledPanel visiblePanel = new TitledPanel(getString("form.grid.preferences.displayed.columns"));
         visiblePanel.setLayout(new BorderLayout());
         visiblePanel.add(visibleListView, BorderLayout.CENTER);
+
+        visibleList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!visibleList.isFocusable())
+                    visibleList.setFocusable(true);
+                boolean hasFocus = visibleList.hasFocus() || visibleList.requestFocusInWindow();
+                if(hasFocus) {
+                    String newText = getSelectedItemCaption(visibleList);
+                    if (!columnCaptionField.getText().equals(newText) && visibleList.hasFocus()) {
+                        columnCaptionField.setText(newText);
+                    }
+                }
+            }
+        });
+       
 
         visibleList.addMouseListener(new MouseAdapter() {
             @Override
@@ -86,8 +105,22 @@ public abstract class UserPreferencesDialog extends JDialog {
                 }
             }
         });
+        
+        visibleList.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                String caption = getSelectedItemCaption(visibleList);
+                if(caption != null)
+                    invisibleList.clearSelection();
+                if(caption != null && !columnCaptionField.getText().equals(caption))
+                    columnCaptionField.setText(caption);
+            }
 
-        JList invisibleList = new JList(invisibleListModel);
+            @Override
+            public void focusLost(FocusEvent e) {
+            }
+        });
+
         invisibleList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         invisibleList.setTransferHandler(arrayListHandler);
         invisibleList.setDragEnabled(true);
@@ -97,6 +130,21 @@ public abstract class UserPreferencesDialog extends JDialog {
         TitledPanel invisiblePanel = new TitledPanel(getString("form.grid.preferences.hidden.columns"));
         invisiblePanel.setLayout(new BorderLayout());
         invisiblePanel.add(invisibleListView, BorderLayout.CENTER);
+
+        invisibleList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!invisibleList.isFocusable())
+                    invisibleList.setFocusable(true);
+                boolean hasFocus = invisibleList.hasFocus() || invisibleList.requestFocusInWindow();
+                if (hasFocus) {
+                    String newText = getSelectedItemCaption(invisibleList);
+                    if (!columnCaptionField.getText().equals(newText) && invisibleList.hasFocus()) {
+                        columnCaptionField.setText(newText);
+                    }
+                }
+            }
+        });
 
         invisibleList.addMouseListener(new MouseAdapter() {
             @Override
@@ -113,6 +161,21 @@ public abstract class UserPreferencesDialog extends JDialog {
             }
         });
 
+        invisibleList.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                String caption = getSelectedItemCaption(invisibleList);
+                if(caption != null)
+                    visibleList.clearSelection();
+                if(caption != null && !columnCaptionField.getText().equals(caption))
+                    columnCaptionField.setText(caption);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+            }
+        });
+        
         JButton showAllButton = new JButton(new ImageIcon(Main.class.getResource("/images/arrowLeft.png")));
         showAllButton.setBorder(null);
         showAllButton.addActionListener(new ActionListener() {
@@ -177,16 +240,49 @@ public abstract class UserPreferencesDialog extends JDialog {
         currentUserPanel.add(applyButton, BorderLayout.NORTH);
         currentUserPanel.add(resetButton, BorderLayout.SOUTH);
 
-        Box fontAndApplyResetPanel = new Box(BoxLayout.Y_AXIS);
+        columnCaptionField = new JTextField(30);
+        columnCaptionField.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                updateColumnName();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                updateColumnName();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                updateColumnName();
+            }
 
+            public void updateColumnName() {
+                if(visibleList.getSelectedValue() != null && !columnCaptionField.getText().equals(getSelectedItemCaption(visibleList))) {
+                    setSelectedItemCaption(visibleList, columnCaptionField.getText());
+                    visibleList.update(visibleList.getGraphics());
+                } else if(invisibleList.getSelectedValue() != null && !columnCaptionField.getText().equals(getSelectedItemCaption(invisibleList))) {
+                    setSelectedItemCaption(invisibleList, columnCaptionField.getText());
+                    invisibleList.update(invisibleList.getGraphics());
+                }
+            }
+        });
+
+        TitledPanel columnCaptionPanel = new TitledPanel(getString("form.grid.preferences.selected.column.settings"));
+        columnCaptionPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        columnCaptionPanel.add(new JLabel(getString("form.grid.preferences.column.caption") + ": "));
+        columnCaptionPanel.add(columnCaptionField);
+        
+        fontSizeField = new JTextField(2);
+        isFontBoldCheckBox = new JCheckBox(getString("descriptor.editor.font.style.bold"));
+        isFontItalicCheckBox = new JCheckBox(getString("descriptor.editor.font.style.italic"));
+        
         TitledPanel fontPanel = new TitledPanel(getString("form.grid.preferences.font.settings"));
         fontPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        fontPanel.add(fontSizeLabel);
+        fontPanel.add(new JLabel(getString("descriptor.editor.font.size") + ": "));
         fontPanel.add(fontSizeField);
         fontPanel.add(isFontBoldCheckBox);
         fontPanel.add(isFontItalicCheckBox);
-        fontAndApplyResetPanel.add(fontPanel);
 
+        Box fontAndCaptionSettingsPanel = new Box(BoxLayout.Y_AXIS);
+        fontAndCaptionSettingsPanel.add(columnCaptionPanel);
+        fontAndCaptionSettingsPanel.add(fontPanel);
+        
         JPanel applyResetButtonsPanel = new JPanel();
         applyResetButtonsPanel.add(currentUserPanel, BorderLayout.WEST);
 
@@ -221,7 +317,9 @@ public abstract class UserPreferencesDialog extends JDialog {
             applyResetButtonsPanel.add(allUsersPanelPanel, BorderLayout.EAST);
         }
 
-        fontAndApplyResetPanel.add(applyResetButtonsPanel);
+        Box settingsAndApplyResetPanel = new Box(BoxLayout.Y_AXIS);
+        settingsAndApplyResetPanel.add(fontAndCaptionSettingsPanel);
+        settingsAndApplyResetPanel.add(applyResetButtonsPanel);
 
 
         JButton okButton = new JButton("OK");
@@ -250,7 +348,7 @@ public abstract class UserPreferencesDialog extends JDialog {
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BorderLayout());
-        bottomPanel.add(fontAndApplyResetPanel, BorderLayout.NORTH);
+        bottomPanel.add(settingsAndApplyResetPanel, BorderLayout.NORTH);
         bottomPanel.add(buttonsPanel, BorderLayout.EAST);
 
         JPanel mainPanel = new JPanel();
@@ -268,10 +366,12 @@ public abstract class UserPreferencesDialog extends JDialog {
 
     private void okButtonPressed() throws IOException {
         for (PropertyListItem propertyItem : visibleListModel.toArray()) {
+            initialTable.setUserCaption(propertyItem.property, propertyItem.getUserCaption());
             initialTable.setUserOrder(propertyItem.property, visibleListModel.indexOf(propertyItem));
             initialTable.setUserHide(propertyItem.property, false);
         }
         for (PropertyListItem propertyItem : invisibleListModel.toArray()) {
+            initialTable.setUserCaption(propertyItem.property, propertyItem.getUserCaption());
             initialTable.setUserOrder(propertyItem.property, visibleListModel.getSize() + invisibleListModel.indexOf(propertyItem));
             initialTable.setUserHide(propertyItem.property, true);
         }
@@ -318,6 +418,7 @@ public abstract class UserPreferencesDialog extends JDialog {
                                                                Pair<Boolean, Integer> sortDirections) {
         Boolean sortDirection = sortDirections != null ? sortDirections.first : null;
         Integer sortIndex = sortDirections != null ? sortDirections.second : null;
+        initialTable.setUserCaption(propertyItem.property, propertyItem.getUserCaption());
         initialTable.setUserHide(propertyItem.property, hide);
         initialTable.setUserOrder(propertyItem.property, propertyOrder);
         initialTable.setUserSort(propertyItem.property, sortDirection != null ? sortIndex : null);
@@ -362,15 +463,15 @@ public abstract class UserPreferencesDialog extends JDialog {
     
     private void refreshValues(FontInfo font) {
         List<ClientPropertyDraw> orderedVisibleProperties = initialTable.getOrderedVisibleProperties(goController.getGroupObjectProperties());
-
+        GridUserPreferences currentPreferences = initialTable.getCurrentPreferences();
         visibleListModel.clear();
         invisibleListModel.clear();
         for (ClientPropertyDraw property : orderedVisibleProperties) {
-            visibleListModel.addElement(new PropertyListItem(property, getPropertyState(property)));
+            visibleListModel.addElement(new PropertyListItem(property, currentPreferences.getUserCaption(property), getPropertyState(property)));
         }
         for (ClientPropertyDraw property : goController.getGroupObjectProperties()) {
             if (!orderedVisibleProperties.contains(property)) {
-                invisibleListModel.addElement(new PropertyListItem(property, getPropertyState(property)));
+                invisibleListModel.addElement(new PropertyListItem(property, currentPreferences.getUserCaption(property), getPropertyState(property)));
             }
         }
         
@@ -413,9 +514,22 @@ public abstract class UserPreferencesDialog extends JDialog {
         return fontSize != 0 ? fontSize : oldSize;
     }
     
-    public abstract void preferencesChanged();
+    private String getSelectedItemCaption(JList list) {
+        PropertyListItem item = (PropertyListItem) list.getSelectedValue();
+        return item == null ? null : item.getUserCaption();
+    }
     
-    private class PropertyListModel extends DefaultListModel {
+    private void setSelectedItemCaption(JList list, String caption) {
+        PropertyListItem item = (PropertyListItem) list.getSelectedValue();
+        if(item != null) {
+            initialTable.setUserCaption(item.property, caption);
+            item.setUserCaption(caption);
+        }
+    }
+    
+    public abstract void preferencesChanged();
+  
+    private class PropertyListModel extends DefaultListModel  {
         @Override
         public PropertyListItem getElementAt(int index) {
             return (PropertyListItem) super.getElementAt(index);
@@ -435,16 +549,26 @@ public abstract class UserPreferencesDialog extends JDialog {
     
     private class PropertyListItem {
         public ClientPropertyDraw property;
+        private String userCaption;
         Boolean inGrid; // false - panel, null - hidden through showIf
         
-        public PropertyListItem(ClientPropertyDraw property, Boolean inGrid) {
+        public PropertyListItem(ClientPropertyDraw property, String userCaption, Boolean inGrid) {
             this.property = property;
+            this.userCaption = userCaption;
             this.inGrid = inGrid;
+        }
+        
+        public String getUserCaption() {
+            return userCaption != null ? userCaption : property.getCaption();    
+        }
+        
+        public void setUserCaption(String userCaption) {
+            this.userCaption = userCaption;
         }
 
         @Override
         public String toString() {
-            String result = property.getCaption();
+            String result = getUserCaption();
             if (inGrid == null) {
                 result += " (" + getString("form.grid.preferences.property.not.shown") + ")";
             } else if (!inGrid) {

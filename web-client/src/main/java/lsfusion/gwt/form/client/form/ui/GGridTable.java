@@ -319,12 +319,15 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 //дублирование логики изменения captions для оптимизации
                 String columnCaption = null;
                 Map<GGroupObjectValue, Object> propCaptions = propertyCaptions.get(property);
-                Object propCaption = null;
-                if (propCaptions == null || (propCaption = propCaptions.get(columnKey)) != null) {
-                    if (propCaptions != null) {
-                        columnCaption = property.getDynamicCaption(propCaption);
-                    } else {
-                        columnCaption = property.getCaptionOrEmpty();
+                columnCaption = getUserCaption(property);
+                if(columnCaption == null) {
+                    Object propCaption = null;
+                    if (propCaptions == null || (propCaption = propCaptions.get(columnKey)) != null) {
+                        if (propCaptions != null) {
+                            columnCaption = property.getDynamicCaption(propCaption);
+                        } else {
+                            columnCaption = property.getCaptionOrEmpty();
+                        }
                     }
                 }
 
@@ -981,6 +984,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         return currentGridPreferences.getUserHide(property);
     }
 
+    public String getUserCaption(GPropertyDraw property) {
+        return currentGridPreferences.getUserCaption(property);
+    }
+    
     public Integer getUserWidth(GPropertyDraw property) {
         return currentGridPreferences.getUserWidth(property);
     }
@@ -1005,6 +1012,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         currentGridPreferences.setUserHide(property, userHide);
     }
 
+    public void setUserCaption(GPropertyDraw property, String caption) {
+        currentGridPreferences.setUserCaption(property, caption);
+    }
+    
     public void setUserWidth(GPropertyDraw property, Integer userWidth) {
         currentGridPreferences.setUserWidth(property, userWidth);
     }

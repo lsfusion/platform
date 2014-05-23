@@ -49,6 +49,11 @@ public class GridUserPreferences {
         return prefs.userHide;
     }
 
+    public String getUserCaption(ClientPropertyDraw property) {
+        ColumnUserPreferences prefs = ensureColumnPreferences(property);
+        return prefs.userCaption;
+    }
+    
     public Integer getUserWidth(ClientPropertyDraw property) {
         ColumnUserPreferences prefs = ensureColumnPreferences(property);
         return prefs.userWidth;
@@ -72,7 +77,7 @@ public class GridUserPreferences {
     private ColumnUserPreferences ensureColumnPreferences(ClientPropertyDraw property) {
         ColumnUserPreferences prefs = columnUserPreferences.get(property);
         if (prefs == null) {
-            prefs = new ColumnUserPreferences(null, null, null, null, null);
+            prefs = new ColumnUserPreferences(null, null, null, null, null, null);
             columnUserPreferences.put(property, prefs);
         }
         return prefs;
@@ -83,6 +88,11 @@ public class GridUserPreferences {
         prefs.userHide = userHide;
     }
 
+    public void setUserCaption(ClientPropertyDraw property, String userCaption) {
+        ColumnUserPreferences prefs = ensureColumnPreferences(property);
+        prefs.userCaption = userCaption;
+    }
+    
     public void setUserWidth(ClientPropertyDraw property, Integer userWidth) {
         ColumnUserPreferences prefs = ensureColumnPreferences(property);
         prefs.userWidth = userWidth;
@@ -107,7 +117,7 @@ public class GridUserPreferences {
         fontInfo = new FontInfo(null, -1, false, false);
         hasUserPreferences = false;
         for (ClientPropertyDraw property : new HashSet<ClientPropertyDraw>(columnUserPreferences.keySet())) {
-            columnUserPreferences.put(property, new ColumnUserPreferences(null, null, null, null, null));
+            columnUserPreferences.put(property, new ColumnUserPreferences(null, null, null, null, null, null));
         }
     }
 

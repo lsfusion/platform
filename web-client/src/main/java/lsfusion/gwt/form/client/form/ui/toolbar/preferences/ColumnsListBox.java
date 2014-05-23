@@ -1,5 +1,7 @@
 package lsfusion.gwt.form.client.form.ui.toolbar.preferences;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.user.client.ui.Composite;
@@ -25,13 +27,18 @@ public abstract class ColumnsListBox extends Composite {
         grid.setCellPadding(0);
         grid.setCellSpacing(0);
 
+        grid.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent clickEvent) {
+                singleclicked();     
+            }
+        });
         grid.addDoubleClickHandler(new DoubleClickHandler() {
             @Override
             public void onDoubleClick(DoubleClickEvent event) {
                 doubleclicked();
             }
         });
-
         setWidth("100%");
         addStyleName(CSS_DRAGGABLE_LIST_BOX);
     }
@@ -108,6 +115,8 @@ public abstract class ColumnsListBox extends Composite {
             remove(w);
         }
     }
+
+    public abstract void singleclicked();
 
     public abstract void doubleclicked();
 }
