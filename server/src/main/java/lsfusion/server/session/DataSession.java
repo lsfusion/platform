@@ -852,8 +852,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public <T extends PropertyInterface> void resolve(ActionProperty<?> action) throws SQLException, SQLHandledException {
         IncrementChangeProps changes = new IncrementChangeProps();
         for(SessionCalcProperty sessionCalcProperty : action.getSessionCalcDepends(false))
-            if(sessionCalcProperty instanceof ChangedProperty) // именно так, OldProperty нельзя подменять, так как предполагается что SET и DROPPED требуют разные значения PREV
-                changes.add(sessionCalcProperty, ((ChangedProperty)sessionCalcProperty).getFullChange(getModifier()));
+            if(sessionCalcProperty instanceof ChangedProperty) {
+                PropertyChange fullChange = ((ChangedProperty) sessionCalcProperty).getFullChange(getModifier());
+                if(fullChange!=null)
+                    changes.add(sessionCalcProperty, fullChange);
+            }
         
         resolveModifier = new OverrideSessionModifier(changes, true, dataModifier);
         try {

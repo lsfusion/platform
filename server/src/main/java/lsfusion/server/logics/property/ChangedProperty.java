@@ -78,7 +78,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
                 where = expr.getWhere().not().and(property.getClassProperty().mapExpr(mapKeys, modifier).getWhere());
                 break;
             default:
-                throw new RuntimeException();
+                return null;
         }
         return new PropertyChange<T>(mapKeys, ValueExpr.get(where), Where.TRUE);
     }
