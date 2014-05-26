@@ -114,11 +114,6 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         EmailLogicsModule emailLM = context.getBL().emailLM;
         try {
-            if (emailLM.disableAccount.read(context) != null) {
-                logger.error(getString("mail.disabled"));
-                return;
-            }
-
             assert subject != null && fromAddressAccount != null;
 
             List<EmailSender.AttachmentProperties> attachments = new ArrayList<EmailSender.AttachmentProperties>();
@@ -156,12 +151,19 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionTypeAccount.read(context, defaultAccount);
                 String smtpHostAccount = (String) emailLM.smtpHostAccount.read(context, defaultAccount);
                 String smtpPortAccount = (String) emailLM.smtpPortAccount.read(context, defaultAccount);
-                String fromAddressAccount = (String) this.fromAddressAccount.read(context, context.getKeys());
+                
+                ObjectValue fromAddressAccount = (ObjectValue) this.fromAddressAccount.readClasses(context, context.getKeys());
+                
                 String subject = (String) this.subject.read(context, context.getKeys());
                 String nameAccount = (String) emailLM.nameAccount.read(context, defaultAccount);
                 String passwordAccount = (String) emailLM.passwordAccount.read(context, defaultAccount);
-
-                sendEmail(context, smtpHostAccount, smtpPortAccount, nameAccount, passwordAccount, encryptedConnectionType, fromAddressAccount, subject, recipients, inlineForms, attachments, attachmentFiles);
+                
+                if (emailLM.disableAccount.read(context, fromAddressAccount) != null) {
+                    logger.error(getString("mail.disabled"));
+                    return;
+                }
+                
+                sendEmail(context, smtpHostAccount, smtpPortAccount, nameAccount, passwordAccount, encryptedConnectionType, (String)fromAddressAccount.getValue(), subject, recipients, inlineForms, attachments, attachmentFiles);
             }
         } catch (Exception e) {
             String errorMessage = getString("mail.failed.to.send.mail") + " : " + e.toString();
