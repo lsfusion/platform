@@ -5,6 +5,8 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.SystemClass;
@@ -44,6 +46,7 @@ public class IDTable extends GlobalTable {
 
     public final static int OBJECT = 1;
     public final static int FORM = 2;
+    public final static int NAME = 3;
 
     static ImMap<Integer, Integer> getCounters() {
         return MapFact.toMap(OBJECT, 10, FORM, 0); // потому как есть базовый пул 0,1,2 предопределенных ID'ков
@@ -58,13 +61,22 @@ public class IDTable extends GlobalTable {
         return query.getQuery();
     }
 
-    private int freeID = 0;
-    private int maxReservedID = -1;
+    private MAddMap<Integer, Pair<Integer, Integer>> ids = MapFact.mAddMap(MapFact.<Integer, Pair<Integer, Integer>>override());
+    {
+        ImMap<Integer, Integer> counters = getCounters();
+        for(int i=0,size=counters.size();i<size;i++)
+            ids.add(counters.getKey(i), new Pair<Integer, Integer>(0, -1));
+    }
+    
     public int generateID(SQLSession dataSession, int idType) throws SQLException {
 
         Integer result;
         synchronized (this) {
             assert !dataSession.isInTransaction();
+
+            Pair<Integer, Integer> id = ids.get(idType);
+            int freeID = id.first;
+            int maxReservedID = id.second;
 
             if(freeID > maxReservedID) { // читаем новый пул
                 int reserveIDStep = Settings.get().getReserveIDStep();
@@ -72,6 +84,8 @@ public class IDTable extends GlobalTable {
                 maxReservedID = freeID + reserveIDStep - 1;
             }
             result = freeID++;
+
+            ids.add(idType, new Pair<Integer, Integer>(freeID, maxReservedID));
         }
 
         return result;
@@ -79,11 +93,17 @@ public class IDTable extends GlobalTable {
 
     public Pair<Integer, Integer>[] generateIDs(int count, SQLSession dataSession, int idType) throws SQLException {
         synchronized (this) {
+            Pair<Integer, Integer> id = ids.get(idType);
+            int freeID = id.first;
+            int maxReservedID = id.second;
+
             Pair<Integer, Integer> fromPoolIDs;
             int fromPool = maxReservedID - freeID + 1;
             if(fromPool >= count) {
                 fromPoolIDs = new Pair<Integer, Integer>(freeID, count);
                 freeID += count;
+
+                ids.add(idType, new Pair<Integer, Integer>(freeID, maxReservedID));
                 return new Pair[]{fromPoolIDs};
             } else
                 fromPoolIDs = new Pair<Integer, Integer>(freeID, fromPool);
@@ -97,6 +117,8 @@ public class IDTable extends GlobalTable {
 
             maxReservedID = newID + newReserved - 1;
             freeID = newID + rest;
+
+            ids.add(idType, new Pair<Integer, Integer>(freeID, maxReservedID));
             if(fromPool > 0)
                 return new Pair[] {fromPoolIDs, genPoolIDs};
             return new Pair[] {genPoolIDs};

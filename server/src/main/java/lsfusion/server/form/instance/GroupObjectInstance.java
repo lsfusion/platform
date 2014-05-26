@@ -738,6 +738,13 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
                 if (isInTree()) { // если дерево, то без поиска, но возможно с parent'ами
                     assert orderSeeks.values.isEmpty() && !orderSeeks.end;
+                    
+                    if(updateFilters) {
+                        if(expandTable !=null) { // потому как могут уже скажем классы стать не актуальными после применения
+                            expandTable.drop(sql, env.getOpOwner());
+                            expandTable = null;
+                        }
+                    }
 
                     ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> treeElements = executeTree(sql, env, modifier, baseClass, reallyChanged);
 

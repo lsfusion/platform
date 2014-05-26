@@ -114,13 +114,17 @@ public class TimeClass extends DataClass<Time> {
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
     }
-
+    
     public Time read(Object value) {
-        return value == null ? null : (Time) value;
+        if(value == null)
+            return null;
+        if(value instanceof String)
+            return Time.valueOf(((String)value).substring(0, 8));
+        return (Time) value;
     }
 
     @Override
     public Time read(ResultSet set, SQLSyntax syntax, String name) throws SQLException {
-        return set.getTime(name);
+        return super.read(set, syntax, name); //return set.getTime(name); в частности jtds глючит String вместо Time возвращает
     }
 }

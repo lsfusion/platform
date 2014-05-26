@@ -4,14 +4,22 @@ import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.lru.LRUSVSMap;
+import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.data.Field;
+import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.CompileOrder;
 import lsfusion.server.data.query.TypeEnvironment;
@@ -70,7 +78,7 @@ public class MSSQLDataAdapter extends DataAdapter {
 //        } catch (Exception e) {
 //
 //        }
-            connect.createStatement().execute("CREATE DATABASE "+ dataBase);
+            connect.createStatement().execute("CREATE DATABASE " + dataBase);
         } catch(Exception e) {
         }
 //
@@ -80,9 +88,22 @@ public class MSSQLDataAdapter extends DataAdapter {
 //            e = e;
 //        }
 //
+
+        try {
+            connect.createStatement().execute("ALTER DATABASE " + dataBase + " SET ALLOW_SNAPSHOT_ISOLATION ON");
+        } catch(Exception e) {
+            e = e;
+        }
+
+        try {
+            connect.createStatement().execute("ALTER DATABASE " + dataBase + " SET READ_COMMITTED_SNAPSHOT ON");
+        } catch(Exception e) {
+            e = e;
+        }
+
         connect.close();
     }
-
+    
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         //namedPipe=true;
         Connection connect = getConnection();
@@ -126,6 +147,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     
     private final static String passPrmsConc = "${field.name}";
     private String concTypeString;
+    private String arrayClassString;
     
     private static class GroupAggParse {
         public final String code;
@@ -143,6 +165,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     protected void ensureSystemFuncs() throws IOException, SQLException {
         compilerExe = SystemUtils.getExePath("cc", "/sql/mssql/", BusinessLogics.class);
         concTypeString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/ConcType.cs"));
+        arrayClassString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/ArrayClass.cs"));
         executeEnsure("EXEC sp_configure 'clr enabled', '1'");
         executeEnsure("RECONFIGURE");
         
@@ -151,10 +174,9 @@ public class MSSQLDataAdapter extends DataAdapter {
                 GroupType.STRING_AGG, new GroupAggParse(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/StringAgg.cs")), new String[]{ null, null, "ov"}),
                 GroupType.LAST, new GroupAggParse(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/LastValue.cs")), new String[]{ "lastValue", "lastOrder"}));
 
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/aggf.sc")));
+        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/aggf.sc" )));
 
-        ensuredGroupAggOrders = MapFact.mAddExclMap();
-        ensureGroupAggOrder(new Pair<GroupType, ImList<Type>>(GroupType.LAST, ListFact.<Type>toList(StringClass.getv(40), IntegerClass.instance)));
+        recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/recursion.sc"));
     }
 
     @Override
@@ -354,9 +376,9 @@ public class MSSQLDataAdapter extends DataAdapter {
         return "dbo." + getOrderGroupAggName(groupType, fixedTypes) + "(" + exprs.toString(",") + "," + orderSource + ")";
     }
 
-    protected MAddExclMap<Pair<GroupType, ImList<Type>>, Boolean> ensuredGroupAggOrders;// = MapFact.mAddExclMap();
+    protected MAddExclMap<Pair<GroupType, ImList<Type>>, Boolean> ensuredGroupAggOrders = MapFact.mAddExclMap();
 
-    public void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) throws SQLException {
+    public synchronized void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) throws SQLException {
         Boolean ensured = ensuredGroupAggOrders.get(groupAggOrder);
         if(ensured != null)
             return;
@@ -433,6 +455,26 @@ public class MSSQLDataAdapter extends DataAdapter {
     @Override
     public boolean isIndexNameLocal() {
         return true;
+    }
+
+    @Override
+    public String getParamUsage(int num) {
+        return "@prm" + num;
+    }
+
+    // треш конечно, нужно отличать только использованные в рекурсиях таблицы, но пока так грубо
+    @Override
+    public String getQueryName(String tableName, SessionTable.TypeStruct struct, StringBuilder envString, boolean usedRecursion) {
+        String table = super.getQueryName(tableName, struct, envString, usedRecursion);
+        if(usedRecursion) {
+            ImOrderSet<Field> fields = struct.getFields();
+            String varTable = "@" + tableName;
+            envString.append("DECLARE " + varTable + " AS " + struct.getDB(this, recTypes) + '\n');
+            String fst = fields.toString(Field.nameGetter(this), ",");
+            envString.append("INSERT INTO " + varTable + " (" + fst + ") SELECT " + fst + " FROM " + table + '\n');
+            return varTable;
+        }
+        return table;
     }
 
     public ImList<Pair<String, String>> getTypesSources(ImList<Type> types, Set<String> refs) {
@@ -647,7 +689,244 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
 
     @Override
+    public String getTextType() {
+        return "nvarchar(max)";
+    }
+
+    @Override
+    public int getTextSQL() {
+        return Types.NVARCHAR;
+    }
+
+    @Override
     public String getRenameColumn(String table, String columnName, String newColumnName) {
         return "EXEC sp_rename '" + table + "." + columnName + "','" + newColumnName + "','COLUMN'";
+    }
+    
+//    private Map<Recursion, String> mapNames = new HashMap<Recursion, String>();     
+//    private String getRecursionName(Recursion recursion) {
+//        String name = SystemUtils.generateID(recursion);
+//        String prevName = mapNames.get(recursion);
+//        if(!prevName.equals(name)) {
+//            for(Map.Entry<Recursion, String> mapN : mapNames.entrySet()) {
+//                if(mapN.getKey().equals(recursion)) {
+//                    SystemUtils.generateID(mapN.getKey());
+//                }
+//                    
+//            }
+//        }
+//        return name;
+//    }
+//
+    private static class Recursion implements BinarySerializable {
+        public final ImList<FunctionType> types;
+        public final String recName;
+        public final String initialSelect;
+        public final String stepSelect;
+        public final String fieldDeclare;
+
+        private Recursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String fieldDeclare) {
+            this.types = types;
+            this.recName = recName;
+            this.initialSelect = initialSelect;
+            this.stepSelect = stepSelect;
+            this.fieldDeclare = fieldDeclare;
+        }
+        
+        public String getName() {
+            return SystemUtils.generateID(this);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || o instanceof Recursion && fieldDeclare.equals(((Recursion) o).fieldDeclare) && initialSelect.equals(((Recursion) o).initialSelect) && recName.equals(((Recursion) o).recName) && stepSelect.equals(((Recursion) o).stepSelect) && types.equals(((Recursion) o).types);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * (31 * (31 * (31 * types.hashCode() + recName.hashCode()) + initialSelect.hashCode()) + stepSelect.hashCode()) + fieldDeclare.hashCode();
+        }
+
+        @Override
+        public void write(DataOutputStream out) throws IOException {
+            SystemUtils.write(out, types);
+            out.writeUTF(recName);
+            out.writeUTF(initialSelect);
+            out.writeUTF(stepSelect);
+            out.writeUTF(fieldDeclare);
+        }
+    }
+    
+    @Override
+    public String getRecursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String fieldDeclare, String outerParams, TypeEnvironment typeEnv) {
+        Recursion recursion = new Recursion(types, recName, initialSelect, stepSelect, fieldDeclare);
+        typeEnv.addNeedRecursion(recursion);
+        return "dbo." + recursion.getName() + "(" + outerParams+ ")";
+    }
+
+    protected String recursionString;
+
+    @IdentityStrongLazy
+    public String getTableTypeName(SessionTable.TypeStruct tableType) {
+        return SystemUtils.generateID(tableType);
+    }
+
+    @Override
+    public boolean noDynamicSQL() {
+        return true;
+    }
+
+    @Override
+    public boolean enabledCTE() {
+        return false;
+    }
+
+    protected MAddExclMap<SessionTable.TypeStruct, Boolean> ensuredTableTypes = MapFact.mAddExclMap();
+
+    @Override
+    protected void ensureTableType(SessionTable.TypeStruct tableType) throws SQLException {
+        Boolean ensured = ensuredTableTypes.get(tableType);
+        if(ensured != null)
+            return;
+        
+        String typeName = getTableTypeName(tableType);
+        ImOrderSet<Field> fields = SetFact.addOrderExcl(tableType.keys, tableType.properties);
+        executeEnsure("CREATE TYPE " + typeName + " AS TABLE (" + fields.toString(SQLSession.getDeclare(this, recTypes), "," ) + ")");
+
+        ensuredTableTypes.exclAdd(tableType, true);
+    }
+    
+    private static String getArrayClassName(ArrayClass arrayClass) {
+        return arrayClass.getSID();
+    }
+    
+    private static String getArrayAggName(String className) {
+        return "AGG_" + className;
+    }
+
+    protected MAddExclMap<ArrayClass, Boolean> ensuredArrayClasses = MapFact.mAddExclMap();
+
+    private Pair<String, String> getFullArrayCode(ArrayClass arrayClass) {
+
+        StringBuilder read = new StringBuilder();
+        StringBuilder write = new StringBuilder();
+        Properties properties = new Properties();
+
+        Type type = arrayClass.getArrayType();
+        String dotNetType = type.getDotNetType(this, recTypes);
+        properties.put("value.type", dotNetType);
+        properties.put("value.sqltype", getSQLType(type));
+        appendSerialization(read, write, type, dotNetType, "vals[i]");
+
+        properties.put("ser.read", read.toString());
+        properties.put("ser.write", write.toString());
+
+        String typeName = getArrayClassName(arrayClass);
+        properties.put("type.name", typeName);
+        properties.put("aggr.name", getArrayAggName(typeName));
+
+        return new Pair<String, String>(typeName, stringResolver.replacePlaceholders(arrayClassString, properties));
+    }
+
+    @Override
+    public void ensureArrayClass(ArrayClass arrayClass) throws SQLException {
+
+        Boolean ensured = ensuredArrayClasses.get(arrayClass);
+        if(ensured != null)
+            return;
+
+        Pair<String, String> code = getFullArrayCode(arrayClass);
+        ensureDTL(code, false, ListFact.singleton(arrayClass.getArrayType())); // сам array тип в tempdb не нужен, так как не материализуется, при этом из-за кривости manager studio его приходится удалять програмно, поэтому пока отключим 
+
+        ensuredArrayClasses.exclAdd(arrayClass, true);
+    }
+
+    @Override
+    public String getArrayConcatenate(ArrayClass arrayClass, String prm1, String prm2, TypeEnvironment env) {
+        env.addNeedArrayClass(arrayClass);
+        
+        return prm1 + "." + "\"Add\"(" + prm2 + ")";
+    }
+
+    @Override
+    public String getArrayAgg(String s, ClassReader classReader, TypeEnvironment env) {
+        ArrayClass arrayClass = (ArrayClass) classReader;
+        env.addNeedArrayClass(arrayClass);
+        
+        return "dbo.AGG_" + getArrayClassName(arrayClass) + "(" + s + ")";
+    }
+
+    @Override
+    public String getArrayConstructor(String source, ArrayClass rowType, TypeEnvironment env) {
+        env.addNeedArrayClass(rowType);
+        
+        return "dbo." + getArrayClassName(rowType) + "(" + source + ")";
+    }
+
+    @Override
+    public String getArrayType(ArrayClass arrayClass, TypeEnvironment env) {
+        env.addNeedArrayClass(arrayClass);
+        return getArrayClassName(arrayClass); 
+    }
+
+    @Override
+    public String getInArray(String element, String array) {
+        return array + ".\"Contains\"(" + element + ")!=0";
+    }
+
+    @Override
+    public boolean hasGroupByConstantProblem() {
+        return true;
+    }
+
+    private LRUSVSMap<Object, Boolean> ensuredRecursion = new LRUSVSMap<Object, Boolean>(LRUUtil.G2);
+    
+    @Override
+    public synchronized void ensureRecursion(Object object) throws SQLException {
+        Recursion recursion = (Recursion)object;
+
+        Boolean ensured = ensuredRecursion.get(object);
+        if(ensured == null) {
+            String declare = recursion.types.toString(new GetIndexValue<String, FunctionType>() {
+                public String getMapValue(int i, FunctionType value) {
+                    return getParamUsage(i+1) + " " + value.getParamFunctionDB(MSSQLDataAdapter.this, recTypes);
+                }}, ",");
+    
+            Properties properties = new Properties();
+            properties.put("function.name", recursion.getName());
+            properties.put("params.declare", declare);
+            properties.put("result.declare", recursion.fieldDeclare);
+            properties.put("rec.table", recursion.recName);
+            properties.put("initial.select", recursion.initialSelect);
+            String nextTable = "nt" + recursion.recName + "it";
+            properties.put("rec.nexttable", nextTable);
+            properties.put("step.select", recursion.stepSelect.replace(recursion.recName, "@" + recursion.recName));
+            properties.put("step.nextselect", recursion.stepSelect.replace(recursion.recName, "@" + nextTable));
+            
+            executeEnsure(stringResolver.replacePlaceholders(recursionString, properties));
+    
+            ensuredRecursion.put(object, true);
+        }
+        
+        // нужно к команде добавить заполнение переменных
+    }
+
+    @Override
+    public boolean isUpdateConflict(SQLException e) {
+        return e.getSQLState().equals("S0005");
+    }
+
+    @Override
+    public boolean isDeadLock(SQLException e) {
+        return e.getSQLState().equals("40001");
+    }
+
+    @Override
+    public boolean isUniqueViolation(SQLException e) {
+        return e.getSQLState().equals("23000");
+    }
+
+    public String getDateTime() {
+        return "GETDATE()";
     }
 }

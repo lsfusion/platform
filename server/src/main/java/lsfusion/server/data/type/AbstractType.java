@@ -5,6 +5,8 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -42,5 +44,13 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
     public void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
         statement.setNull(num.get(), getSQL(syntax));
+    }
+
+    public String getParamFunctionDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return getDB(syntax, typeEnv);
+    }
+
+    public void write(DataOutputStream out) throws IOException {
+        out.writeUTF(getSID());
     }
 }

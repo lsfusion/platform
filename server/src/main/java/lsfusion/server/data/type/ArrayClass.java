@@ -20,16 +20,20 @@ public class ArrayClass<T> extends DataClass<T[]> {
         super(ServerResourceBundle.getString("classes.array")+" " + type);
         this.type = type;
     }
+    
+    public Type getArrayType() {
+        return type;
+    }
 
     public Format getReportFormat() {
         throw new RuntimeException("not supported");
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return type.getDB(syntax, typeEnv) + "[]";
+        return syntax.getArrayType(this, typeEnv);
     }
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return type.getDotNetType(syntax, typeEnv) + "[]";
+        throw new UnsupportedOperationException();
     }
     public String getDotNetRead(String reader) {
         throw new UnsupportedOperationException();
@@ -90,7 +94,7 @@ public class ArrayClass<T> extends DataClass<T[]> {
     }
 
     public String getSID() { // закомментил DataClass.storeClass
-        throw new RuntimeException("not supported");
+        return "ar_" + type.getSID();
     }
 
     public Object getDefaultValue() {

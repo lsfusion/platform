@@ -1,5 +1,6 @@
 package lsfusion.server.data;
 
+import lsfusion.base.BinarySerializable;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -12,7 +13,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public abstract class Field extends TwinImmutableObject {
+public abstract class Field extends TwinImmutableObject implements BinarySerializable {
     protected String name;
     public void setName(String name) {
         this.name = name;
@@ -97,5 +98,10 @@ public abstract class Field extends TwinImmutableObject {
 
     public int immutableHashCode() {
         return (getClass().hashCode() * 31 + name.hashCode()) * 31 + type.hashCode();
+    }
+
+    public void write(DataOutputStream out) throws IOException {
+        out.writeUTF(name);
+        type.write(out);
     }
 }

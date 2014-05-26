@@ -17,7 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
 
-public interface Type<T> extends ClassReader<T> {
+public interface Type<T> extends ClassReader<T>, FunctionType {
 
     public static interface Getter<K> {
         Type getType(K key);

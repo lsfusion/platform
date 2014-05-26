@@ -86,8 +86,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public SQLSyntax syntax;
-    
+
     public <F extends Field> GetValue<String, F> getDeclare(final TypeEnvironment typeEnv) {
+        return getDeclare(syntax, typeEnv);
+    }
+    
+    public static <F extends Field> GetValue<String, F> getDeclare(final SQLSyntax syntax, final TypeEnvironment typeEnv) {
         return new GetValue<String, F>() {
             public String getMapValue(F value) {
                 return value.getDeclare(syntax, typeEnv);
@@ -1860,7 +1864,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         // те которые isString сразу транслируем
         MList<String> mPreparedParams = ListFact.mList();
         char[] toparse = parse.statement.toCharArray();
-        String parsedString = "";
+        String parsedString = parse.envString;
         char[] parsed = new char[toparse.length + paramArrays.length * 100];
         int num = 0;
         for (int i = 0; i < toparse.length;) {
@@ -1917,21 +1921,23 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         public final ImMap<String, String> safeStrings;
         public final ImMap<String, Type> notSafeTypes;
         public final boolean volatileStats;
-
-        private ParseStatement(String statement, ImSet<String> params, ImMap<String, String> safeStrings, ImMap<String, Type> notSafeTypes, boolean volatileStats) {
+        public final String envString;
+        
+        private ParseStatement(String statement, ImSet<String> params, ImMap<String, String> safeStrings, ImMap<String, Type> notSafeTypes, boolean volatileStats, String envString) {
             this.statement = statement;
             this.params = params;
             this.safeStrings = safeStrings;
             this.notSafeTypes = notSafeTypes;
             this.volatileStats = volatileStats;
+            this.envString = envString;
         }
 
         public boolean calcTwins(TwinImmutableObject o) {
-            return notSafeTypes.equals(((ParseStatement) o).notSafeTypes) && params.equals(((ParseStatement) o).params) && safeStrings.equals(((ParseStatement) o).safeStrings) && statement.equals(((ParseStatement) o).statement) && volatileStats == ((ParseStatement) o).volatileStats;
+            return notSafeTypes.equals(((ParseStatement) o).notSafeTypes) && params.equals(((ParseStatement) o).params) && safeStrings.equals(((ParseStatement) o).safeStrings) && statement.equals(((ParseStatement) o).statement) && volatileStats == ((ParseStatement) o).volatileStats && envString.equals(((ParseStatement) o).envString);
         }
 
         public int immutableHashCode() {
-            return 31 * (31 * (31 * (31 * statement.hashCode() + params.hashCode()) + safeStrings.hashCode()) + notSafeTypes.hashCode()) + ( volatileStats ? 1 : 0 );
+            return 31 * (31 * (31 * (31 * (31 * statement.hashCode() + params.hashCode()) + safeStrings.hashCode()) + notSafeTypes.hashCode()) + ( volatileStats ? 1 : 0 )) + envString.hashCode();
         }
     }
 
@@ -1973,7 +1979,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         boolean poolPrepared = !noPrepare && !Settings.get().isDisablePoolPreparedStatements() && command.length() > Settings.get().getQueryPrepareLength();
 
         checkSessionTables(paramObjects);
-        final ParseStatement parse = preparseStatement(command, poolPrepared, paramObjects, syntax);
+        final ParseStatement parse = preparseStatement(command, poolPrepared, paramObjects, syntax, env.hasRecursion());
 
         ParsedStatement parsed = null;
         if(poolPrepared)
@@ -2008,17 +2014,18 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return parsed.statement;
     }
 
-    private ParseStatement preparseStatement(String command, boolean parseParams, ImMap<String, ParseInterface> paramObjects, SQLSyntax syntax) {
+    private ParseStatement preparseStatement(String command, boolean parseParams, ImMap<String, ParseInterface> paramObjects, SQLSyntax syntax, boolean usedRecursion) {
+        StringBuilder envString = new StringBuilder();
         ImFilterValueMap<String, String> mvSafeStrings = paramObjects.mapFilterValues();
         ImFilterValueMap<String, Type> mvNotSafeTypes = paramObjects.mapFilterValues();
         for(int i=0,size=paramObjects.size();i<size;i++) {
             ParseInterface parseInterface = paramObjects.getValue(i);
             if(parseInterface.isSafeString() && !(parseParams && parseInterface instanceof TypeObject))
-                mvSafeStrings.mapValue(i, parseInterface.getString(syntax));
+                mvSafeStrings.mapValue(i, parseInterface.getString(syntax, envString, usedRecursion));
             if(!parseInterface.isSafeType())
                 mvNotSafeTypes.mapValue(i, parseInterface.getType());
         }
-        return new ParseStatement(command, paramObjects.keys(), mvSafeStrings.immutableValue(), mvNotSafeTypes.immutableValue(), isVolatileStats());
+        return new ParseStatement(command, paramObjects.keys(), mvSafeStrings.immutableValue(), mvNotSafeTypes.immutableValue(), isVolatileStats(), envString.toString());
     }
 
     private final static GetKeyValue<String, String, String> addFieldAliases = new GetKeyValue<String, String, String>() {

@@ -2,13 +2,11 @@ package lsfusion.server.data.sql;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.CompileOrder;
 import lsfusion.server.data.query.TypeEnvironment;
-import lsfusion.server.data.type.ClassReader;
-import lsfusion.server.data.type.ConcatenateType;
-import lsfusion.server.data.type.Reader;
-import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -29,8 +27,9 @@ public interface SQLSyntax {
 
     String getClustered();
     String getCommandEnd();
-
+    
     String getSessionTableName(String tableName);
+    String getQueryName(String tableName, SessionTable.TypeStruct type, StringBuilder envString, boolean usedRecursion);
     String getCreateSessionTable(String tableName, String declareString);
     String getDropSessionTable(String tableName);
 
@@ -157,7 +156,6 @@ public interface SQLSyntax {
     String getAdjustSelectivityPredicate();
 
     String getStringConcatenate();
-    String getArrayConcatenate();
 
     boolean supportGroupSingleValue();
 
@@ -183,4 +181,26 @@ public interface SQLSyntax {
     boolean isIndexNameLocal();
 
     String getRenameColumn(String table, String columnName, String newColumnName);
+
+    String getParamUsage(int num);
+
+    String getRecursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String fieldDeclare, String outerParams, TypeEnvironment typeEnv);
+
+    String getTableTypeName(SessionTable.TypeStruct tableType);
+
+    boolean noDynamicSQL();
+
+    boolean enabledCTE();
+
+    String getArrayConstructor(String source, ArrayClass rowType, TypeEnvironment env);
+
+    String getArrayConcatenate(ArrayClass arrayClass, String prm1, String prm2, TypeEnvironment env);
+
+    String getArrayAgg(String s, ClassReader classReader, TypeEnvironment typeEnv);
+
+    String getArrayType(ArrayClass arrayClass, TypeEnvironment typeEnv);
+
+    String getInArray(String element, String array);
+
+    boolean hasGroupByConstantProblem();
 }

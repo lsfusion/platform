@@ -32,12 +32,13 @@ public abstract class UnionExpr extends StaticClassNotNullExpr {
 
     @Override
     public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
-        for(Expr operand : getParams()) // просто гоним по операндам
-            operand.fillJoinWheres(joins, andWhere);
+        fillAndJoinWheres(joins, andWhere);
     }
 
     // мы и так перегрузили fillJoinWheres
     public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
+        for(Expr operand : getParams()) // просто гоним по операндам
+            operand.fillJoinWheres(joins, andWhere);
     }
 
     @Override

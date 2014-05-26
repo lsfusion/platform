@@ -28,10 +28,12 @@ import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.StringParseInterface;
@@ -41,6 +43,8 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.session.DataSession;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import static lsfusion.base.BaseUtils.hashEquals;
@@ -132,8 +136,8 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     public ParseInterface getParseInterface() {
         return new StringParseInterface() {
-            public String getString(SQLSyntax syntax) {
-                return getName(syntax);
+            public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
+                return syntax.getQueryName(name, usedRecursion ? getFunctionType() : null, envString, usedRecursion);
             }
 
             @Override
@@ -142,12 +146,57 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             }
         };
     }
+    
+    public TypeStruct getFunctionType() {
+        return new TypeStruct(keys, properties);
+    }
 
+    // не будем агрегировать в Struct так как используется только в рекурсиях
+    public static class TypeStruct extends TwinImmutableObject implements GlobalObject, FunctionType {
+        public final ImOrderSet<KeyField> keys; // List потому как в таком порядке индексы будут строиться
+        public final ImOrderSet<PropertyField> properties;
+        
+        public ImOrderSet<Field> getFields() {
+            return SetFact.addOrderExcl(keys, properties);
+        }
+        
+        private TypeStruct(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties) {
+            this.keys = keys;
+            this.properties = properties.toOrderSet();
+        }
+
+        @Override
+        public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+            typeEnv.addNeedTableType(this);
+            return syntax.getTableTypeName(this);
+        }
+
+        @Override
+        public String getParamFunctionDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+            typeEnv.addNeedTableType(this);
+            return getDB(syntax, typeEnv) + " READONLY";
+        }
+
+        public boolean calcTwins(TwinImmutableObject o) {
+            return keys.equals(((TypeStruct) o).keys) && properties.equals(((TypeStruct) o).properties);
+        }
+
+        public int immutableHashCode() {
+            return 31 * keys.hashCode() + properties.hashCode();
+        }
+
+        @Override
+        public void write(DataOutputStream out) throws IOException {
+            SystemUtils.write(out, keys);
+            SystemUtils.write(out, properties);
+        }
+    }
+    
     // теоретически достаточно только
     private static class Struct extends TwinImmutableObject implements GlobalObject {
 
-        public final ImOrderSet<KeyField> keys; // List потому как в таком порядке индексы будут строиться
-        public final ImCol<PropertyField> properties;
+        private final ImOrderSet<KeyField> keys; // List потому как в таком порядке индексы будут строиться
+        private final ImCol<PropertyField> properties;
         protected final ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
         protected final ImMap<PropertyField, ClassWhere<Field>> propertyClasses;
 

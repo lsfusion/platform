@@ -4,17 +4,21 @@ import lsfusion.base.Pair;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractTranslateValues;
 import lsfusion.server.data.ExConnection;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.type.ArrayClass;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 
+import java.lang.reflect.Array;
 import java.sql.SQLException;
 
 public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironment> implements TypeEnvironment {
@@ -26,10 +30,16 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
     private boolean volatileStats;
     private boolean noPrepare;
 
-    private ImSet<ImList<Type>> recursions;
+    private ImOrderSet<Object> recursions;
     private ImSet<ConcatenateType> concTypes;
     private ImSet<Type> safeCastTypes;
     private ImSet<Pair<GroupType, ImList<Type>>> groupAggOrders;
+
+    private ImSet<ArrayClass> arrayClasses;
+
+    public boolean hasRecursion() {
+        return !recursions.isEmpty();
+    }
 
     public ExecuteEnvironment() {
         this(false);
@@ -40,11 +50,12 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         this.volatileStats = false;
         this.noPrepare = false;
 
-        recursions = SetFact.EMPTY();
+        recursions = SetFact.EMPTYORDER();
         concTypes = SetFact.EMPTY();
         safeCastTypes = SetFact.EMPTY();
         
         groupAggOrders = SetFact.EMPTY();
+        arrayClasses = SetFact.EMPTY();
     }
 
     public void add(ExecuteEnvironment environment) {
@@ -52,11 +63,12 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         volatileStats = volatileStats || environment.volatileStats;
         noPrepare = noPrepare || environment.noPrepare;
 
-        recursions = recursions.merge(environment.recursions);
+        recursions = recursions.mergeOrder(environment.recursions);
         concTypes = concTypes.merge(environment.concTypes);
         safeCastTypes = safeCastTypes.merge(environment.safeCastTypes);
         
         groupAggOrders = groupAggOrders.merge(environment.groupAggOrders);
+        arrayClasses = arrayClasses.merge(environment.arrayClasses);
     }
 
     public void addNoReadOnly() {
@@ -71,12 +83,20 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         noPrepare = true;
     }
 
-    public void addNeedRecursion(ImList<Type> types) {
-        recursions = recursions.merge(types);
+    public void addNeedRecursion(Object types) {
+        recursions = recursions.mergeOrder(types);
     }
 
     public void addNeedType(ConcatenateType types) {
         concTypes = concTypes.merge(types);
+    }
+
+    public void addNeedArrayClass(ArrayClass arrayClass) {
+        arrayClasses = arrayClasses.merge(arrayClass);
+    }
+
+    public void addNeedTableType(SessionTable.TypeStruct tableType) {
+        throw new UnsupportedOperationException();
     }
 
     public void addNeedSafeCast(Type type) {
@@ -90,7 +110,9 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
     public void before(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
         for(ConcatenateType concType : concTypes)
             sqlSession.typePool.ensureConcType(concType);
-        for(ImList<Type> recursion : recursions)
+        for(ArrayClass arrayClass : arrayClasses)
+            sqlSession.typePool.ensureArrayClass(arrayClass);
+        for(Object recursion : recursions)
             sqlSession.typePool.ensureRecursion(recursion);
         for(Type type : safeCastTypes)
             sqlSession.typePool.ensureSafeCast(type);

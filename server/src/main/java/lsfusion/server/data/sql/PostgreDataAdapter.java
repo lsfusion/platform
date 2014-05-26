@@ -2,17 +2,20 @@ package lsfusion.server.data.sql;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.lru.LRUSVSMap;
+import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.Log4jWriter;
 import lsfusion.server.data.query.TypeEnvironment;
-import lsfusion.server.data.type.ConcatenateType;
-import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.*;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.commons.exec.*;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.postgresql.Driver;
 import org.postgresql.PGConnection;
 import org.postgresql.core.BaseConnection;
@@ -25,6 +28,7 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -368,8 +372,13 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String getArrayConcatenate() {
-        return "||";
+    public String getArrayConcatenate(ArrayClass arrayClass, String prm1, String prm2, TypeEnvironment env) {
+        return arrayClass.getCast("(" + prm1 + " || " + prm2 + ")", this, env);
+    }
+
+    @Override
+    public String getArrayAgg(String s, ClassReader classReader, TypeEnvironment typeEnv) {
+        return "AGGAR_SETADD(" + s + ")";
     }
 
     @Override
@@ -470,5 +479,87 @@ public class PostgreDataAdapter extends DataAdapter {
     @Override
     public boolean isIndexNameLocal() {
         return false;
+    }
+
+    @Override
+    public String getParamUsage(int num) {
+        return "$" + num;
+    }
+
+    @Override
+    public boolean noDynamicSQL() {
+        return false;
+    }
+
+    @Override
+    public boolean enabledCTE() {
+        return true;
+    }
+
+    @Override
+    public String getRecursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String fieldDeclare, String outerParams, TypeEnvironment typeEnv) {
+        assert types.size() == types.filterList(new SFunctionSet<FunctionType>() {
+            public boolean contains(FunctionType element) {
+                return element instanceof Type;
+            }}).size();
+        
+        typeEnv.addNeedRecursion(types);
+        String recursionName = genRecursionName(BaseUtils.<ImList<Type>>immutableCast(types));
+        return recursionName + "('" + recName +"'," +
+                "'(" + StringEscapeUtils.escapeSql(initialSelect)+")','(" +StringEscapeUtils.escapeSql(stepSelect)+")'"+(outerParams.length() == 0 ? "" : "," + outerParams)+") recursion ("
+                + fieldDeclare + ")";
+    }
+
+    @Override
+    public String getArrayConstructor(String source, ArrayClass rowType, TypeEnvironment env) {
+        return rowType.getCast("ARRAY[" + source + "]", this, env);
+    }
+
+    @Override
+    public String getInArray(String element, String array) {
+        return element + " = ANY(" + array + ")";
+    }
+
+    public String getArrayType(ArrayClass arrayClass, TypeEnvironment typeEnv) {
+        return arrayClass.getArrayType().getDB(this, typeEnv) + "[]";
+    }
+
+    protected String recursionString;
+
+    public static String genRecursionName(ImList<Type> types) {
+        return "recursion_" + genTypePostfix(types);
+    }
+
+    public void ensureArrayClass(ArrayClass arrayClass) {
+    }
+
+    private LRUSVSMap<Object, Boolean> ensuredRecursion = new LRUSVSMap<Object, Boolean>(LRUUtil.G2);
+
+    @Override
+    public synchronized void ensureRecursion(Object object) throws SQLException {
+
+        Boolean ensured = ensuredRecursion.get(object);
+        if(ensured != null)
+            return;
+
+        ImList<Type> types = (ImList<Type>)object;
+
+        String declare = "";
+        String using = "";
+        for (int i=0,size=types.size();i<size;i++) {
+            String paramName = "p" + i;
+            Type type = types.get(i);
+            declare = declare + ", " + paramName + " " + type.getDB(this, recTypes);
+            using = (using.length() == 0 ? "USING " : using + ",") + paramName;
+        }
+
+        Properties properties = new Properties();
+        properties.put("function.name", genRecursionName(types));
+        properties.put("params.declare", declare);
+        properties.put("params.usage", using);
+
+        executeEnsure(stringResolver.replacePlaceholders(recursionString, properties));
+
+        ensuredRecursion.put(object, true);
     }
 }

@@ -219,4 +219,8 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
     public String toString() {
         return "SU@" + System.identityHashCode(this) + " " + table.toString();
     }
+
+    public void updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException {
+        table = table.updateCurrentClasses(session);
+    }
 }

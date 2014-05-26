@@ -1,11 +1,15 @@
 package lsfusion.base;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.col.interfaces.immutable.ImList;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.jar.Attributes;
@@ -547,5 +551,67 @@ public class SystemUtils {
         }
 
         return false;
+    }
+    
+    private static char[] ids = new char[] {
+            'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+            'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+            '0','1','2','3','4','5','6', '7', '8', '9', '_', 'x'
+    };
+    
+    private static String generateIDForHash(byte[] hash) {
+        assert ids.length == 64;
+        
+        int bytes = 0;
+        byte currentByte = hash[bytes];
+        int bits = 0;
+        int bit = 0;
+        char[] result = new char[hash.length * 8 / 6 + 1];
+        int num = 0;
+        while(bytes < hash.length) {
+            byte symb = 0;
+            
+            for(int i=0;i<6;i++) {
+                symb = (byte) ((symb << 1) + (currentByte & 1));
+                currentByte = (byte) (currentByte >> 1);
+                bit++;
+                if(bit == 8) {
+                    bit = 0;
+                    if(++bytes >= hash.length)
+                        break;
+                    currentByte = hash[bytes];
+                }
+            }
+            if(num==0 && symb >= 52)
+                symb = 0;
+            result[num++] = ids[symb];
+        }
+        return new String(result, 0, num);
+    }
+    
+    public static String generateID(byte[] array) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            messageDigest.update(array);
+            byte[] digest = messageDigest.digest();
+            return generateIDForHash(digest);
+        } catch (NoSuchAlgorithmException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static String generateID(BinarySerializable object) {
+        try {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            object.write(new DataOutputStream(stream));
+            return SystemUtils.generateID(stream.toByteArray());
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static <K extends BinarySerializable> void write(DataOutputStream stream, ImList<K> list) throws IOException {
+        for(K element : list)
+            element.write(stream);
     }
 }

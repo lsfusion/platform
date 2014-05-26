@@ -11,6 +11,7 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.AbstractConnectionPool;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.TypePool;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.CompileOrder;
@@ -203,6 +204,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return tableName;
     }
 
+    public String getQueryName(String tableName, SessionTable.TypeStruct type, StringBuilder envString, boolean usedRecursion) {
+        return getSessionTableName(tableName);
+    }
+
     public boolean isGreatest() {
         return true;
     }
@@ -308,16 +313,12 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "T" + genTypePostfix(type.getTypes(), type.getDesc());
     }
 
-    public static String genRecursionName(ImList<Type> types) {
-        return "recursion_" + genTypePostfix(types);
-    }
-
     public static String genNRowName(ImList<Type> types) {
         return "NROW" + types.size();
     }
 
     protected final TypeEnvironment recTypes = new TypeEnvironment() {
-        public void addNeedRecursion(ImList<Type> types) {
+        public void addNeedRecursion(Object types) {
             throw new UnsupportedOperationException();
         }
 
@@ -329,14 +330,42 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
             }
         }
 
+        public void addNeedTableType(SessionTable.TypeStruct tableType) {
+            try {
+                ensureTableType(tableType);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         public void addNeedAggOrder(GroupType groupType, ImList<Type> types) {
             throw new UnsupportedOperationException();
         }
-        
+
+        public void addNeedArrayClass(ArrayClass tableType) {
+            throw new UnsupportedOperationException();
+        }
+
         public void addNeedSafeCast(Type type) {
             throw new UnsupportedOperationException();
         }
     };
+
+    protected void ensureTableType(SessionTable.TypeStruct tableType) throws SQLException {
+        throw new UnsupportedOperationException();
+    }
+    
+    public String getTableTypeName(SessionTable.TypeStruct tableType) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean noDynamicSQL() {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean enabledCTE() {
+        throw new UnsupportedOperationException();
+    }
 
     protected Connection ensureConnection;
 
@@ -386,34 +415,14 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     protected static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
 
-    protected String recursionString;
     protected String safeCastString;
 
-    private LRUSVSMap<ImList<Type>, Boolean> ensuredRecursion = new LRUSVSMap<ImList<Type>, Boolean>(LRUUtil.G2);
+    public synchronized void ensureRecursion(Object ot) throws SQLException {
+        throw new UnsupportedOperationException();
+    }
 
-    public synchronized void ensureRecursion(ImList<Type> types) throws SQLException {
-
-        Boolean ensured = ensuredRecursion.get(types);
-        if(ensured != null)
-            return;
-
-        String declare = "";
-        String using = "";
-        for (int i=0,size=types.size();i<size;i++) {
-            String paramName = "p" + i;
-            Type type = types.get(i);
-            declare = declare + ", " + paramName + " " + type.getDB(this, recTypes);
-            using = (using.length() == 0 ? "USING " : using + ",") + paramName;
-        }
-
-        Properties properties = new Properties();
-        properties.put("function.name", genRecursionName(types));
-        properties.put("params.declare", declare);
-        properties.put("params.usage", using);
-
-        executeEnsure(stringResolver.replacePlaceholders(recursionString, properties));
-
-        ensuredRecursion.put(types, true);
+    public void ensureArrayClass(ArrayClass arrayClass) throws SQLException {
+        throw new UnsupportedOperationException();
     }
 
     public static String genSafeCastName(Type type) {
@@ -515,8 +524,12 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "+";
     }
 
-    public String getArrayConcatenate() {
-        return "+";
+    public String getArrayConcatenate(ArrayClass arrayClass, String prm1, String prm2, TypeEnvironment env) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getArrayAgg(String s, ClassReader classReader, TypeEnvironment typeEnv) {
+        throw new UnsupportedOperationException();
     }
 
     public boolean supportGroupSingleValue() {
@@ -562,6 +575,30 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     public boolean isIndexNameLocal() {
         throw new UnsupportedOperationException();
+    }
+
+    public String getParamUsage(int num) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getRecursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String fieldDeclare, String outerParams, TypeEnvironment typeEnv) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getArrayConstructor(String source, ArrayClass rowType, TypeEnvironment env) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getArrayType(ArrayClass arrayClass, TypeEnvironment typeEnv) {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getInArray(String element, String array) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean hasGroupByConstantProblem() {
+        return false;
     }
 
     public String getRenameColumn(String table, String columnName, String newColumnName) {

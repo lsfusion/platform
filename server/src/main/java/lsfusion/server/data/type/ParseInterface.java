@@ -12,7 +12,7 @@ public interface ParseInterface {
     boolean isSafeString();
 
     // есди isSafeString
-    public String getString(SQLSyntax syntax);
+    public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion);
     
     // иначе
     public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax, TypeEnvironment env) throws SQLException;
@@ -27,7 +27,7 @@ public interface ParseInterface {
             return false;
         }
 
-        public String getString(SQLSyntax syntax) {
+        public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
             throw new RuntimeException("not supported");
         }
     };

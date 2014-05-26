@@ -57,10 +57,6 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         updateAdded(sql, baseClass, "value", shifts, owner);
     }
 
-    public void updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException {
-        table = table.updateCurrentClasses(session);
-    }
-
     public void checkClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
         table = table.checkClasses(session, baseClass);
     }

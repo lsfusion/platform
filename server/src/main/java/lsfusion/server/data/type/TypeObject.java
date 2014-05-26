@@ -38,7 +38,7 @@ public class TypeObject extends AbstractParseInterface {
         return type;
     }
 
-    public String getString(SQLSyntax syntax) {
+    public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
         return type.getString(object, syntax);
     }
 
