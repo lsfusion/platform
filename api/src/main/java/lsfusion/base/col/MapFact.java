@@ -454,7 +454,7 @@ public class MapFact {
     }
 
     public static <K, V> MOrderExclMap<K, V> mOrderExclMap() {
-        return new HOrderMap<K, V>(MapFact.<K,V>exclusive());
+        return new ArOrderMap<K, V>(MapFact.<K,V>exclusive());
     }
 
     public static <K, V> MOrderExclMap<K, V> mOrderExclMap(int size) {
