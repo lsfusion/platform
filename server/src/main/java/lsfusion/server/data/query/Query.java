@@ -23,6 +23,8 @@ import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.*;
+import lsfusion.server.data.type.ClassReader;
+import lsfusion.server.data.type.Reader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -485,12 +487,24 @@ public class Query<K,V> extends IQuery<K,V> {
         final KeyType keyType = classQuery.first.getWhere();
         final ImRevMap<K, KeyExpr> mapKeys = classQuery.first.getMapKeys();
         final ImSet<V> props = (ImSet<V>) classQuery.first.getProperties().remove(classQuery.second.valuesSet());
+        
+        // оптимизация
+        final ImMap<K, ClassReader> keyReaders = mapKeys.mapValues(new GetValue<ClassReader, KeyExpr>() {
+            public ClassReader getMapValue(KeyExpr value) {
+                return value.getReader(keyType);
+            }});
+        final ImMap<V, Pair<Expr, ClassReader>> propExprReaders = props.mapValues(new GetValue<Pair<Expr, ClassReader>, V>() {
+            public Pair<Expr, ClassReader> getMapValue(V prop) {
+                Expr expr = classQuery.first.getExpr(prop);
+                return new Pair<Expr, ClassReader>(expr, expr.getReader(keyType));
+            }});
+        
         return rows.mapOrderKeyValues(new GetKeyValue<ImMap<K, DataObject>, ImMap<K, Object>, ImMap<Object, Object>>() {
             public ImMap<K, DataObject> getMapValue(final ImMap<K, Object> rowKey, final ImMap<Object, Object> rowValue) {
                 final ImMap<Expr, Object> exprValues = classQuery.second.join(rowValue);
                 return mapKeys.mapValues(new GetKeyValue<DataObject, K, KeyExpr>() {
                     public DataObject getMapValue(K key, KeyExpr keyExpr) {
-                        return new DataObject(rowKey.get(key), keyExpr.getReader(keyType).readClass(keyExpr, exprValues, baseClass, keyType));
+                        return new DataObject(rowKey.get(key), keyReaders.get(key).readClass(keyExpr, exprValues, baseClass, keyType));
                     }
                 });
             }}, new GetValue<ImMap<V, ObjectValue>, ImMap<Object, Object>>() {
@@ -498,8 +512,8 @@ public class Query<K,V> extends IQuery<K,V> {
                 final ImMap<Expr, Object> exprValues = classQuery.second.join(value);
                 return props.mapValues(new GetValue<ObjectValue, V>() {
                     public ObjectValue getMapValue(V prop) {
-                        Expr expr = classQuery.first.getExpr(prop);
-                        return ObjectValue.getValue(value.get(prop), expr.getReader(keyType).readClass(expr, exprValues, baseClass, keyType));
+                        Pair<Expr, ClassReader> exprReader = propExprReaders.get(prop);
+                        return ObjectValue.getValue(value.get(prop), exprReader.second.readClass(exprReader.first, exprValues, baseClass, keyType));
                     }
                 });}});
     }
