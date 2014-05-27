@@ -316,6 +316,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "should be a calculation property here");
     }
 
+    public void emitNotSessionOrLocalPropertyError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "should be a session or local property here");
+    }
+
     public void emitExtendActionContextError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "action parameters must be defined explicitly");
     }

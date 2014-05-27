@@ -619,11 +619,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         windows.tree = (NavigatorWindow) getWindowByName("tree");
 
-        windows.forms = addWindow(new AbstractWindow("forms", getString("logics.window.forms"), 20, 20, 80, 79));
+        windows.forms = addWindow("forms", new AbstractWindow(null, getString("logics.window.forms"), 20, 20, 80, 79));
 
-        windows.log = addWindow(new AbstractWindow("log", getString("logics.window.log"), 0, 70, 20, 29));
+        windows.log = addWindow("log", new AbstractWindow(null, getString("logics.window.log"), 0, 70, 20, 29));
 
-        windows.status = addWindow(new AbstractWindow("status", getString("logics.window.status"), 0, 99, 100, 1));
+        windows.status = addWindow("status", new AbstractWindow(null, getString("logics.window.status"), 0, 99, 100, 1));
         windows.status.titleShown = false;
 
         // todo : перенести во внутренний класс Navigator, как в Windows
@@ -804,7 +804,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         LAP res = addChangeClassAProp(oldSession ? sid : genSID(), baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
         if (!oldSession) {
-            res = (LAP) addNewSessionAProp(null, sid, res.property.caption, res, true, false, SetFact.<SessionDataProperty>EMPTY(), SetFact.<SessionDataProperty>EMPTY());
+            res = (LAP) addNewSessionAProp(null, sid, res.property.caption, res, true, false);
             res.setAskConfirm(true);
         }
         setDeleteActionOptions(res);

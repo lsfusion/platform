@@ -1286,31 +1286,39 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ArrayList<Integer>(s);
     }
 
-    public LPWithParams addScriptedListAProp(boolean newSession, boolean doApply, boolean singleApply, PropertyUsage used, List<LPWithParams> properties, List<LP> localProps, boolean newThread, long delay, Long period) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedListAProp(boolean newSession, List<PropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
+                                             boolean doApply, boolean singleApply, List<LPWithParams> properties,
+                                             List<LP> localProps, boolean newThread, long delay, Long period) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedListAProp(" + newSession + ", " + doApply + ", " + properties + ");");
-
-        ImSet<SessionDataProperty> sessionUsed = used != null ? SetFact.singleton((SessionDataProperty) findLPByPropertyUsage(used).property) : SetFact.<SessionDataProperty>EMPTY();
 
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
 
         LAP<?> listLP = addListAProp(resultParams.toArray());
-        
+
         currentLocalProperties.removeAll(localProps);
         for (LP<?, ?> localProp : localProps) {
             propClasses.remove(localProp);
             removeModuleLP(localProp);
         }
-        
+
         MExclSet<SessionDataProperty> mUpLocal = SetFact.mExclSet(currentLocalProperties.size()); // exception кидается
-        for(LP<?, ?> local : currentLocalProperties) {
+        for (LP<?, ?> local : currentLocalProperties) {
             mUpLocal.exclAdd((SessionDataProperty) local.property);
         }
 
-        if(newSession)
-            listLP = addNewSessionAProp(null, genSID(), "", listLP, doApply, singleApply, mUpLocal.immutable(), sessionUsed); 
+        MExclSet<SessionDataProperty> mMigrateProps = SetFact.mExclSet(migrateSessionProps.size());
+        for (PropertyUsage migratePropUsage : migrateSessionProps) {
+            LP<?, ?> prop = findLPByPropertyUsage(migratePropUsage);
+            checkSessionProperty(prop);
+            mMigrateProps.exclAdd((SessionDataProperty) prop.property);
+        }
 
-        if(newThread) {
+        if (newSession) {
+            listLP = addNewSessionAProp(null, genSID(), "", listLP, doApply, singleApply, migrateAllSessionProps, mMigrateProps.immutable(), mUpLocal.immutable());
+        }
+
+        if (newThread) {
             assert newSession;
             listLP = addNewThreadAProp(null, genSID(), "", listLP, delay, period);
         }
@@ -2816,6 +2824,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void checkCalculationProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
         if (!(property instanceof LCP<?>)) {
             errLog.emitNotCalculationPropertyError(parser);
+        }
+    }
+
+    public void checkSessionProperty(LP property) throws ScriptingErrorLog.SemanticErrorException {
+        if (!(property.property instanceof SessionDataProperty)) {
+            errLog.emitNotSessionOrLocalPropertyError(parser);
         }
     }
 

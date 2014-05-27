@@ -81,10 +81,10 @@ public abstract class PropertyObjectInstance<P extends PropertyInterface, T exte
     }
 
     protected ImMap<P, PropertyObjectInterfaceInstance> remapSkippingEqualsObjectInstances(ImMap<? extends PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
-        return replaceValues((ImMap<PropertyObjectInterfaceInstance, DataObject>) mapKeyValues);
+        return replaceEqualObjectInstances((ImMap<PropertyObjectInterfaceInstance, DataObject>) mapKeyValues);
     }
 
-    private ImMap<P, PropertyObjectInterfaceInstance> replaceValues(final ImMap<PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
+    private ImMap<P, PropertyObjectInterfaceInstance> replaceEqualObjectInstances(final ImMap<PropertyObjectInterfaceInstance, DataObject> mapKeyValues) {
         return mapping.mapValues(new GetValue<PropertyObjectInterfaceInstance, PropertyObjectInterfaceInstance>() {
             public PropertyObjectInterfaceInstance getMapValue(PropertyObjectInterfaceInstance value) {
                 DataObject mapValue = mapKeyValues.get(value);

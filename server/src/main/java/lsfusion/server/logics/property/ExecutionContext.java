@@ -342,7 +342,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
 
     // зеркалирование Context, чтобы если что можно было бы не юзать ThreadLocal
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
-        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
+        return ThreadLocalContext.createFormInstance(formEntity, mapObjects, this, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance) {

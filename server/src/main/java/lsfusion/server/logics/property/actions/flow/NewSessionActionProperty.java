@@ -9,23 +9,29 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.PropertyChange;
+import lsfusion.server.session.SinglePropertyTableUsage;
 
 import java.sql.SQLException;
+import java.util.Map;
 
 public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final boolean doApply;
-    private final ImSet<SessionDataProperty> sessionUsed;
+    private final boolean migrateAllSessionProperties;
+    private final ImSet<SessionDataProperty> migrateSessionProperties;
     private final ImSet<SessionDataProperty> localUsed;
     private final boolean singleApply;
 
     public <I extends PropertyInterface> NewSessionActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces,
                                                                   ActionPropertyMapImplement<?, I> action, boolean doApply, boolean singleApply,
-                                                                  ImSet<SessionDataProperty> sessionUsed, ImSet<SessionDataProperty> localUsed) {
+                                                                  boolean migrateAllSessionProperties, ImSet<SessionDataProperty> migrateSessionProperties,
+                                                                  ImSet<SessionDataProperty> localUsed) {
         super(sID, caption, innerInterfaces, action);
 
         this.doApply = doApply;
         this.singleApply = singleApply;
-        this.sessionUsed = sessionUsed;
+        this.migrateAllSessionProperties = migrateAllSessionProperties;
+        this.migrateSessionProperties = migrateSessionProperties;
         this.localUsed = localUsed; // именно так, потому что getDepends (used) нельзя вызывать до завершения инициализации
 
         finalizeInit();
@@ -49,17 +55,21 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
     @IdentityLazy
     private ImSet<SessionDataProperty> getUsed() {
-        return CalcProperty.used(localUsed, aspectActionImplement.property.getUsedProps()).merge(sessionUsed);
+        return CalcProperty.used(localUsed, aspectActionImplement.property.getUsedProps()).merge(migrateSessionProperties);
     }
 
-    protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException {
+    protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
         if(session.isInTransaction()) { // если в транзацкции
             session.addRecursion(aspectActionImplement.getValueImplement(context.getKeys()), getUsed(), singleApply);
             return null;
         }
 
-        return context.override(session.createSession());
+        DataSession newSession = session.createSession();
+
+        migrateProperties(session, newSession);
+
+        return context.override(newSession);
     }
 
     @Override
@@ -68,6 +78,9 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
+
+        migrateProperties(innerContext.getSession(), context.getSession());
+
         if (doApply) {
             innerContext.apply();
         }
@@ -75,6 +88,28 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         FormInstance<?> formInstance = context.getFormInstance();
         if (formInstance != null) {
             formInstance.refreshData();
+        }
+    }
+
+    private void migrateProperties(DataSession migrateFrom, DataSession migrateTo) throws SQLException, SQLHandledException {
+        if (migrateAllSessionProperties) {
+            for (Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : migrateFrom.getDataChanges()) {
+                DataProperty prop = e.getKey();
+                if (prop instanceof SessionDataProperty) {
+                    SinglePropertyTableUsage<ClassPropertyInterface> usage = e.getValue();
+                    migrateTo.change(prop, SinglePropertyTableUsage.getChange(usage));
+                }
+            }
+        } else {
+            int migrateCount = migrateSessionProperties.size();
+            for (int i = 0; i < migrateCount; ++i) {
+                SessionDataProperty migrateProp = migrateSessionProperties.get(i);
+
+                PropertyChange<ClassPropertyInterface> propChange = migrateFrom.getDataChange(migrateProp);
+                if (propChange != null) {
+                    migrateTo.change(migrateProp, propChange);
+                }
+            }
         }
     }
 

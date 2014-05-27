@@ -768,12 +768,21 @@ public abstract class LogicsModule {
     
     // ------------------- NEWSESSION ----------------- //
 
-    protected LAP addNewSessionAProp(AbstractGroup group, String name, String caption, LAP action, boolean doApply, boolean singleApply, ImSet<SessionDataProperty> local, ImSet<SessionDataProperty> sessionUsed) {
+    protected LAP addNewSessionAProp(AbstractGroup group, String name, String caption, LAP action, boolean doApply, boolean singleApply) {
+        return addNewSessionAProp(group, name, caption, action, doApply, singleApply, false, SetFact.<SessionDataProperty>EMPTY(), SetFact.<SessionDataProperty>EMPTY());
+    }
+    
+    protected LAP addNewSessionAProp(AbstractGroup group, String name, String caption,
+                                     LAP action, boolean doApply, boolean singleApply,
+                                     boolean migrateAllSessionProps, ImSet<SessionDataProperty> migrateSessionProps,
+                                     ImSet<SessionDataProperty> local) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
-        return addProperty(group, new LAP(new NewSessionActionProperty(name, caption, listInterfaces, actionImplement, doApply,
-                singleApply, sessionUsed, local)));
+        return addProperty(group, new LAP(
+                new NewSessionActionProperty(
+                        name, caption, listInterfaces, actionImplement, doApply, singleApply, migrateAllSessionProps, migrateSessionProps, local)));
+        
     }
 
     protected LAP addNewThreadAProp(AbstractGroup group, String name, String caption, LAP action, long delay, Long period) {

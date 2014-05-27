@@ -35,7 +35,6 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.instance.ChangedData;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
@@ -91,6 +90,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
     public ImSet<CalcProperty> getChangedProps() {
         return getChangedProps(SetFact.fromJavaSet(add), SetFact.fromJavaSet(remove), SetFact.fromJavaSet(usedOldClasses), SetFact.fromJavaSet(usedNewClasses), SetFact.fromJavaSet(data.keySet()));
+    }
+    
+    public Set<Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>>> getDataChanges() {
+        return data.entrySet();
     }
 
     private class DataModifier extends SessionModifier {

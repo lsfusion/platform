@@ -62,7 +62,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     }
 
     public boolean apply(BusinessLogics BL, UserInteraction interaction) throws SQLException, SQLHandledException {
-        return apply(BL, null, null);
+        return apply(BL, null, interaction);
     }
 
     public boolean apply(ExecutionContext context) throws SQLException, SQLHandledException {

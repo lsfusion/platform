@@ -1031,11 +1031,10 @@ multiplicativePE[List<TypedParameter> context, boolean dynamic] returns [LPWithP
 	}
 }
 	:	firstExpr=unaryMinusPE[context, dynamic] { props.add($firstExpr.property); }
-		(operand=MULT_OPERAND { ops.add($operand.text); }
+		(operand=multOperand { ops.add($operand.text); }
 		nextExpr=unaryMinusPE[context, dynamic] { props.add($nextExpr.property); })*
 	;
 
-	
 unaryMinusPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property] 
 @init {
 	boolean minusWas = false;
@@ -2141,6 +2140,8 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<LP> localProps = new ArrayList<LP>();
 	boolean newSession = false;
+	List<PropertyUsage> migrateSessionProps = new ArrayList<PropertyUsage>();
+	boolean migrateAllSessionProps = false;
 	boolean doApply = false;
 	boolean singleApply = false;
 	boolean newThread = false;
@@ -2149,12 +2150,28 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedListAProp(newSession, doApply, singleApply, null, props, localProps, newThread, ldelay, lperiod);
+		$property = self.addScriptedListAProp(newSession, migrateSessionProps, migrateAllSessionProps, doApply, singleApply, props, localProps, newThread, ldelay, lperiod);
 	}
 }
-	:	((('NEWTHREAD' { newThread = true; } (period=intLiteral { lperiod = (long)$period.val; })? ('DELAY' delay=intLiteral { ldelay = $delay.val; })? ) 
-	                | 'NEWSESSION') { newSession = true; } ('AUTOAPPLY' {doApply = true; } )?
-					('SINGLE' { singleApply = true; })? )?
+	:   (
+            (
+                (
+                    'NEWSESSION'
+                    (
+                        '('
+                            (
+                                MULT { migrateAllSessionProps = true; }
+                                | list=nonEmptyPropertyUsageList { migrateSessionProps = $list.propUsages; }
+                            )
+                        ')'
+                    )?
+                )
+                |
+                ('NEWTHREAD' { newThread = true; } (period=intLiteral { lperiod = (long)$period.val; })? ('DELAY' delay=intLiteral { ldelay = $delay.val; })? ) 
+            ) { newSession = true; }
+            ('AUTOAPPLY' {doApply = true; } )?
+            ('SINGLE' { singleApply = true; })? 
+        )?
 		'{'
 			(	(PDB=actionPropertyDefinitionBody[context, dynamic] { props.add($PDB.property); }
 				( {!self.semicolonNeeded()}?=>  | ';'))
@@ -3403,6 +3420,10 @@ ulongLiteral returns [long val]
 relOperand 
 	:	RELEQ_OPERAND | LESS_OPERAND | GR_OPERAND	
 	;
+	
+multOperand
+    : MULT | DIV
+    ;
 
 /////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////// LEXER //////////////////////////////////////
@@ -3439,9 +3460,10 @@ EQ_OPERAND	:	('==') | ('!=');
 LESS_OPERAND	: 	('<');
 GR_OPERAND	:	('>');
 RELEQ_OPERAND	: 	('<=') | ('>=');
-MINUS		:	'-';
-PLUS		:	'+';
-MULT_OPERAND	:	('*') | ('/');
+MINUS       :	'-';
+PLUS        :	'+';
+MULT        :	'*';
+DIV         :	'/';
 ADDOR_OPERAND	:	'(+)' | {ahead("(-)")}?=> '(-)';
 CONCAT_OPERAND	:	'##';
 CONCAT_CAPITALIZE_OPERAND	:	'###';	
