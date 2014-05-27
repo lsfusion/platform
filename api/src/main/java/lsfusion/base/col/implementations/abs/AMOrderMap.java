@@ -10,7 +10,7 @@ public abstract class AMOrderMap<K, V> extends AOrderMap<K, V> implements MOrder
 
     public void addAll(ImOrderMap<? extends K, ? extends V> map) {
         for(int i=0,size=map.size();i<size;i++)
-            exclAdd(map.getKey(i), map.getValue(i));
+            add(map.getKey(i), map.getValue(i));
     }
 
     public void exclAddAll(ImOrderMap<? extends K, ? extends V> map) {
