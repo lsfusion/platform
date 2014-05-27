@@ -32,7 +32,7 @@ public abstract class AMWrapOrderMap<K, V, W extends AMRevMap<K, V>> extends AMO
     }
 
     public void exclAdd(K key, V value) {
-        wrapMap.add(key, value);
+        wrapMap.exclAdd(key, value);
     }
 
     public void mapValue(int i, V value) {
