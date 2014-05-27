@@ -1008,7 +1008,7 @@ public class Settings {
         this.enableHacks = enableHacks;
     }
     
-    private int logLevelJDBC = 1;
+    private int logLevelJDBC = 0;
 
     public int getLogLevelJDBC() {
         return logLevelJDBC;
