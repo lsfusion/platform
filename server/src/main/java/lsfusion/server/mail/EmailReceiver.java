@@ -229,6 +229,7 @@ public class EmailReceiver {
                 }
                 
                 attachments.put(fileName, BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(f), fileExtension.getBytes()));
+                f.delete();
             } else {
                 Object content = bp.getContent();
                 body = content instanceof MimeMultipart ? getMultipartBody(subjectEmail, (Multipart) content).message : String.valueOf(content);
