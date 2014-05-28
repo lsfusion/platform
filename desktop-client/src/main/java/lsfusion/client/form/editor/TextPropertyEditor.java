@@ -108,7 +108,8 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
     }
 
     public Object getCellEditorValue() {
-        return textArea.getText();
+        String text = textArea.getText();
+        return text.isEmpty() ? null : text;
     }
 
     public boolean valueChanged() {
