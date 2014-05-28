@@ -107,7 +107,7 @@
         <constructor-arg value="${db.server}"/>
         <constructor-arg value="${db.user}"/>
         <constructor-arg value="${db.password}"/>
-        <constructor-arg value="${db.connectTimeout}"/>
+        <constructor-arg value="${db.connectTimeout:10000}"/>
         <constructor-arg value="${backup.binPath:}"/>
         <constructor-arg value="${backup.dumpDir:}"/>
     </bean>
