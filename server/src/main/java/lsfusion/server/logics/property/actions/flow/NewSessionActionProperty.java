@@ -1,8 +1,10 @@
 package lsfusion.server.logics.property.actions.flow;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
@@ -19,20 +21,17 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final boolean doApply;
     private final boolean migrateAllSessionProperties;
     private final ImSet<SessionDataProperty> migrateSessionProperties;
-    private final ImSet<SessionDataProperty> localUsed;
     private final boolean singleApply;
 
     public <I extends PropertyInterface> NewSessionActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces,
                                                                   ActionPropertyMapImplement<?, I> action, boolean doApply, boolean singleApply,
-                                                                  boolean migrateAllSessionProperties, ImSet<SessionDataProperty> migrateSessionProperties,
-                                                                  ImSet<SessionDataProperty> localUsed) {
+                                                                  boolean migrateAllSessionProperties, ImSet<SessionDataProperty> migrateSessionProperties) {
         super(sID, caption, innerInterfaces, action);
 
         this.doApply = doApply;
         this.singleApply = singleApply;
         this.migrateAllSessionProperties = migrateAllSessionProperties;
         this.migrateSessionProperties = migrateSessionProperties;
-        this.localUsed = localUsed; // именно так, потому что getDepends (used) нельзя вызывать до завершения инициализации
 
         finalizeInit();
     }
@@ -54,14 +53,29 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     @IdentityLazy
-    private ImSet<SessionDataProperty> getUsed() {
-        return CalcProperty.used(localUsed, aspectActionImplement.property.getUsedProps()).merge(migrateSessionProperties);
+    private ImSet<SessionDataProperty> getUsed(ExecutionContext<PropertyInterface> context) {
+//        return CalcProperty.used(localUsed, aspectActionImplement.property.getUsedProps()).merge(migrateSessionProperties);
+
+        if (migrateAllSessionProperties) {
+            DataSession session = context.getSession();
+
+            MExclSet<SessionDataProperty> mMigrateProps = SetFact.mExclSet();
+            for (DataProperty changedProp : session.getDataChanges().keySet()) {
+                if (changedProp instanceof SessionDataProperty) {
+                    mMigrateProps.exclAdd((SessionDataProperty) changedProp);
+                }
+            }
+
+            return mMigrateProps.immutable();
+        } else {
+            return migrateSessionProperties;
+        }
     }
 
     protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
         if(session.isInTransaction()) { // если в транзацкции
-            session.addRecursion(aspectActionImplement.getValueImplement(context.getKeys()), getUsed(), singleApply);
+            session.addRecursion(aspectActionImplement.getValueImplement(context.getKeys()), getUsed(context), singleApply);
             return null;
         }
 
@@ -78,8 +92,9 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
-
-        migrateProperties(innerContext.getSession(), context.getSession());
+        if (!context.getSession().isInTransaction()) {
+            migrateProperties(innerContext.getSession(), context.getSession());
+        }
 
         if (doApply) {
             innerContext.apply();
@@ -93,7 +108,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
     private void migrateProperties(DataSession migrateFrom, DataSession migrateTo) throws SQLException, SQLHandledException {
         if (migrateAllSessionProperties) {
-            for (Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : migrateFrom.getDataChanges()) {
+            for (Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : migrateFrom.getDataChanges().entrySet()) {
                 DataProperty prop = e.getKey();
                 if (prop instanceof SessionDataProperty) {
                     SinglePropertyTableUsage<ClassPropertyInterface> usage = e.getValue();

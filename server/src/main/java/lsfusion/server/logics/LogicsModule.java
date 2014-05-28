@@ -769,19 +769,18 @@ public abstract class LogicsModule {
     // ------------------- NEWSESSION ----------------- //
 
     protected LAP addNewSessionAProp(AbstractGroup group, String name, String caption, LAP action, boolean doApply, boolean singleApply) {
-        return addNewSessionAProp(group, name, caption, action, doApply, singleApply, false, SetFact.<SessionDataProperty>EMPTY(), SetFact.<SessionDataProperty>EMPTY());
+        return addNewSessionAProp(group, name, caption, action, doApply, singleApply, false, SetFact.<SessionDataProperty>EMPTY());
     }
     
     protected LAP addNewSessionAProp(AbstractGroup group, String name, String caption,
                                      LAP action, boolean doApply, boolean singleApply,
-                                     boolean migrateAllSessionProps, ImSet<SessionDataProperty> migrateSessionProps,
-                                     ImSet<SessionDataProperty> local) {
+                                     boolean migrateAllSessionProps, ImSet<SessionDataProperty> migrateSessionProps) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
         return addProperty(group, new LAP(
                 new NewSessionActionProperty(
-                        name, caption, listInterfaces, actionImplement, doApply, singleApply, migrateAllSessionProps, migrateSessionProps, local)));
+                        name, caption, listInterfaces, actionImplement, doApply, singleApply, migrateAllSessionProps, migrateSessionProps)));
         
     }
 

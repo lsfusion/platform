@@ -38,7 +38,8 @@ public class MessageActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public boolean hasFlow(ChangeFlowType type) { // потому как важен порядок, в котором выдаются MESSAGE'и, иначе компилятор начнет их переставлять
+    public boolean hasFlow(ChangeFlowType type) {
+        // потому как важен порядок, в котором выдаются MESSAGE'и, иначе компилятор начнет их переставлять
         return type == ChangeFlowType.VOLATILE;
     }
 }

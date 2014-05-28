@@ -115,8 +115,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private String lastOpimizedJPropSID = null;
 
-    private Set<LP<?, ?>> currentLocalProperties = new HashSet<LP<?, ?>>();
-
     private Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<String, List<LogicsModule>>();
 
     public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, LOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
@@ -1296,15 +1294,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LAP<?> listLP = addListAProp(resultParams.toArray());
 
-        currentLocalProperties.removeAll(localProps);
         for (LP<?, ?> localProp : localProps) {
             propClasses.remove(localProp);
             removeModuleLP(localProp);
-        }
-
-        MExclSet<SessionDataProperty> mUpLocal = SetFact.mExclSet(currentLocalProperties.size()); // exception кидается
-        for (LP<?, ?> local : currentLocalProperties) {
-            mUpLocal.exclAdd((SessionDataProperty) local.property);
         }
 
         MExclSet<SessionDataProperty> mMigrateProps = SetFact.mExclSet(migrateSessionProps.size());
@@ -1315,7 +1307,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (newSession) {
-            listLP = addNewSessionAProp(null, genSID(), "", listLP, doApply, singleApply, migrateAllSessionProps, mMigrateProps.immutable(), mUpLocal.immutable());
+            listLP = addNewSessionAProp(null, genSID(), "", listLP, doApply, singleApply, migrateAllSessionProps, mMigrateProps.immutable());
         }
 
         if (newThread) {
@@ -1353,7 +1345,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         changeLocalPropertyName(res, name);
         List<AndClassSet> outParams = createClassSetsFromClassNames(paramClassNames);
         propClasses.put(res, outParams);
-        currentLocalProperties.add(res);
         return res;
     }
 
@@ -1687,8 +1678,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         allCreationParams.addAll(noInline);
 
-        LP result = addForAProp(null, genSID(), "", !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(), 
-                addClassName != null ? (CustomClass)findClassByCompoundName(addClassName) : null, condition!=null, noInline.size(), forceInline, getParamsPlainList(allCreationParams).toArray());
+        LP result = addForAProp(null, genSID(), "", !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(),
+                                addClassName != null ? (CustomClass) findClassByCompoundName(addClassName) : null, condition != null, noInline.size(), forceInline, getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
     }
 

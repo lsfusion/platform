@@ -92,8 +92,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return getChangedProps(SetFact.fromJavaSet(add), SetFact.fromJavaSet(remove), SetFact.fromJavaSet(usedOldClasses), SetFact.fromJavaSet(usedNewClasses), SetFact.fromJavaSet(data.keySet()));
     }
     
-    public Set<Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>>> getDataChanges() {
-        return data.entrySet();
+    public Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> getDataChanges() {
+        return data;
     }
 
     private class DataModifier extends SessionModifier {
