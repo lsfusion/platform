@@ -49,8 +49,8 @@ isDefaultNotificationAccount 'Использовать для отправки �
 defaultNotificationAccount 'E-mail аккаунт для отправки уведомлений' = GROUP MAX account IF isDefaultNotificationAccount(account);
 fromAddressDefaultNotificationAccount 'Адрес для отправки уведомлений по умолчанию' () = fromAddressAccount(defaultNotificationAccount());
 
-isDefaultInboxAccount 'Использовать для получения сообщений' = DATA BOOLEAN (Account);
-defaultInboxAccount 'E-mail аккаунт для получения сообщений' = GROUP MAX account IF isDefaultInboxAccount(account);
+isDefaultInboxAccount 'Использовать для отправки/получения сообщений' = DATA BOOLEAN (Account);
+defaultInboxAccount 'E-mail аккаунт для отправки/получения сообщений' = GROUP MAX account IF isDefaultInboxAccount(account);
 
 smtpHostAccount 'SMTP хост' = DATA VARSTRING[50](Account);
 smtpPortAccount 'SMTP порт' = DATA VARSTRING[10](Account);
