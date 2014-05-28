@@ -39,7 +39,7 @@ class OracleDataAdapter extends DataAdapter {
     }
 
     public OracleDataAdapter(String database, String server, String userID, String password) throws Exception, SQLException, InstantiationException, IllegalAccessException {
-        super(database, server, null, userID, password, false);
+        super(database, server, null, userID, password, null, false);
     }
 
     public boolean allowViews() {

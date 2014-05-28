@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.postgresql.Driver;
 import org.postgresql.PGConnection;
 import org.postgresql.core.BaseConnection;
+import org.postgresql.util.PSQLException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -50,15 +51,15 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public PostgreDataAdapter(String dataBase, String server, String userID, String password, boolean cleanDB) throws Exception{
-        this(dataBase, server, userID, password, null, null, cleanDB);
+        this(dataBase, server, userID, password, null, null, null, cleanDB);
     }
 
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password, String binPath, String dumpDir) throws Exception {
-        this(dataBase, server, userID, password, binPath, dumpDir, false);
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password, Long connectTimeout, String binPath, String dumpDir) throws Exception {
+        this(dataBase, server, userID, password, connectTimeout, binPath, dumpDir, false);
     }
 
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password, String binPath, String dumpDir, boolean cleanDB) throws Exception {
-        super(dataBase, server, null, userID, password, cleanDB);
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password, Long connectTimeout, String binPath, String dumpDir, boolean cleanDB) throws Exception {
+        super(dataBase, server, null, userID, password, connectTimeout, cleanDB);
 
         this.binPath = binPath;
         this.dumpDir = dumpDir;
@@ -67,7 +68,15 @@ public class PostgreDataAdapter extends DataAdapter {
     public void ensureDB(boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException {
         ensureLogLevel(1);
 
-        Connection connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
+        Connection connect = null;
+        while(connect == null) {
+            try {
+                connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
+            } catch (PSQLException e) {
+                logger.error(e);
+                Thread.sleep(connectTimeout);
+            }
+        }
         if (cleanDB) {
             try {
                 connect.createStatement().execute("DROP DATABASE " + dataBase);

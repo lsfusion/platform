@@ -35,7 +35,7 @@ import java.util.*;
 public class MSSQLDataAdapter extends DataAdapter {
 
     public MSSQLDataAdapter(String database, String server, String userID, String password, String instance) throws Exception, SQLException, InstantiationException, IllegalAccessException {
-        super(database, server, instance, userID, password, false);
+        super(database, server, instance, userID, password, null, false);
     }
 
     @Override

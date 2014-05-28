@@ -36,6 +36,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public String dataBase;
     public String userID;
     public String password;
+    public Long connectTimeout;
 
     // для debuga
     protected DataAdapter() {
@@ -43,7 +44,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     protected abstract void ensureDB(boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException;
 
-    protected DataAdapter(String dataBase, String server, String instance, String userID, String password, boolean cleanDB) throws Exception, SQLException, IllegalAccessException, InstantiationException {
+    protected DataAdapter(String dataBase, String server, String instance, String userID, String password, Long connectTimeout, boolean cleanDB) throws Exception, SQLException, IllegalAccessException, InstantiationException {
 
         Class.forName(getClassName());
 
@@ -51,6 +52,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         this.server = server;
         this.userID = userID;
         this.password = password;
+        this.connectTimeout = connectTimeout;
         this.instance = instance;
 
         ensureDB(cleanDB);
