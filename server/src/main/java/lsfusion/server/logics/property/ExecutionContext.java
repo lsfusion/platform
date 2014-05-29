@@ -2,6 +2,7 @@ package lsfusion.server.logics.property;
 
 import jasperapi.ReportGenerator;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -228,7 +229,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
 
     public boolean apply(ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
-        return getEnv().apply(getBL(), this, this, applyAction);
+        return apply(applyAction, SetFact.<SessionDataProperty>EMPTY());
+    }
+    
+    public boolean apply(ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
+        return getEnv().apply(getBL(), this, this, applyAction, keepProperties);
     }
 
     public void cancel() throws SQLException, SQLHandledException {

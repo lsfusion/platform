@@ -757,11 +757,13 @@ public abstract class LogicsModule {
 
     // ------------------------ APPLY ----------------- //
 
-    protected LAP addApplyAProp(AbstractGroup group, String name, String caption, LAP action, boolean singleApply) {
+    protected LAP addApplyAProp(AbstractGroup group, String name, String caption, LAP action, boolean singleApply,
+                                boolean keepAllSessionProps, ImSet<SessionDataProperty> keepSessionProps) {
+        
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
-        ApplyActionProperty applyAction = new ApplyActionProperty(baseLM, actionImplement, name, caption, listInterfaces);
+        ApplyActionProperty applyAction = new ApplyActionProperty(baseLM, actionImplement, name, caption, listInterfaces, keepAllSessionProps, keepSessionProps);
         actionImplement.property.singleApply = singleApply;
         return addProperty(group, new LAP(applyAction));
     }
@@ -769,19 +771,19 @@ public abstract class LogicsModule {
     // ------------------- NEWSESSION ----------------- //
 
     protected LAP addNewSessionAProp(AbstractGroup group, String name, String caption, LAP action, boolean doApply, boolean singleApply) {
-        return addNewSessionAProp(group, name, caption, action, doApply, singleApply, false, SetFact.<SessionDataProperty>EMPTY());
+        return addNewSessionAProp(group, name, caption, action, doApply, singleApply, false, SetFact.<SessionDataProperty>EMPTY(), false);
     }
     
     protected LAP addNewSessionAProp(AbstractGroup group, String name, String caption,
                                      LAP action, boolean doApply, boolean singleApply,
-                                     boolean migrateAllSessionProps, ImSet<SessionDataProperty> migrateSessionProps) {
+                                     boolean migrateAllSessionProps, ImSet<SessionDataProperty> migrateSessionProps,
+                                     boolean isNested) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
         return addProperty(group, new LAP(
                 new NewSessionActionProperty(
-                        name, caption, listInterfaces, actionImplement, doApply, singleApply, migrateAllSessionProps, migrateSessionProps)));
-        
+                        name, caption, listInterfaces, actionImplement, doApply, singleApply, migrateAllSessionProps, migrateSessionProps, isNested)));
     }
 
     protected LAP addNewThreadAProp(AbstractGroup group, String name, String caption, LAP action, long delay, Long period) {

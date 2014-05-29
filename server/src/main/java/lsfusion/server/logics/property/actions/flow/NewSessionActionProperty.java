@@ -21,17 +21,20 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final boolean doApply;
     private final boolean migrateAllSessionProperties;
     private final ImSet<SessionDataProperty> migrateSessionProperties;
+    private final boolean isNested;
     private final boolean singleApply;
 
     public <I extends PropertyInterface> NewSessionActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces,
                                                                   ActionPropertyMapImplement<?, I> action, boolean doApply, boolean singleApply,
-                                                                  boolean migrateAllSessionProperties, ImSet<SessionDataProperty> migrateSessionProperties) {
+                                                                  boolean migrateAllSessionProperties, ImSet<SessionDataProperty> migrateSessionProperties,
+                                                                  boolean isNested) {
         super(sID, caption, innerInterfaces, action);
 
         this.doApply = doApply;
         this.singleApply = singleApply;
         this.migrateAllSessionProperties = migrateAllSessionProperties;
         this.migrateSessionProperties = migrateSessionProperties;
+        this.isNested = isNested;
 
         finalizeInit();
     }
@@ -122,6 +125,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
                 PropertyChange<ClassPropertyInterface> propChange = migrateFrom.getDataChange(migrateProp);
                 if (propChange != null) {
+                    migrateTo.dropChanges(migrateProp);
                     migrateTo.change(migrateProp, propChange);
                 }
             }

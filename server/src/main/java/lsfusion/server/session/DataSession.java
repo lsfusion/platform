@@ -69,7 +69,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private Map<CustomClass, DataObject> singleAdd = MapFact.mAddRemoveMap();
     private Map<CustomClass, DataObject> singleRemove = MapFact.mAddRemoveMap();
     private Map<DataObject, ConcreteObjectClass> newClasses = MapFact.mAddRemoveMap(); // просто lazy кэш для getCurrentClass
-
+    
     public static Where isValueClass(Expr expr, CustomClass customClass, Set<ConcreteObjectClass> usedNewClasses) {
         return isValueClass(expr, customClass.getUpSet(), usedNewClasses);
     }
@@ -506,7 +506,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         // cancel
         //    по кому не было restart :  from -> в applied (помечая что был restart)
-
+        
         if(!cancel)
             for(Pair<FormInstance, UpdateChanges> appliedChange : appliedChanges.entryIt())
                 appliedChange.second.add(new UpdateChanges(this));
@@ -1069,14 +1069,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 
-    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
-        return apply(BL, null, update, interaction, applyAction);
+    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
+        return apply(BL, null, update, interaction, applyAction, keepProperties);
     }
 
     public boolean check(BusinessLogics BL, FormInstance form, UserInteraction interaction) throws SQLException, SQLHandledException {
         setApplyFilter(ApplyFilter.ONLYCHECK);
 
-        boolean result = apply(BL, form, null, interaction, null);
+        boolean result = apply(BL, form, null, interaction, null, SetFact.<SessionDataProperty>EMPTY());
 
         setApplyFilter(ApplyFilter.NO);
         return result;
@@ -1347,10 +1347,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         recursiveUsed.addAll(sessionUsed.toJavaSet());
     }
 
-    public boolean apply(final BusinessLogics<?> BL, FormInstance form, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
+    public boolean apply(final BusinessLogics<?> BL, FormInstance form, UpdateCurrentClasses update, UserInteraction interaction,
+                         ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         if(!hasChanges() && applyAction == null)
             return true;
-
+        
         // до чтения persistent свойств в сессию
         if (applyObject == null) {
             try {
@@ -1381,15 +1382,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         dataModifier.clearHints(sql, getOwner());
 
-        return transactApply(BL, update, interaction, 0, 0, applyAction);
+        return transactApply(BL, update, interaction, 0, 0, applyAction, keepProps);
     }
 
-    private boolean transactApply(BusinessLogics<?> BL, UpdateCurrentClasses update, UserInteraction interaction, int attemptCount, int autoAttemptCount, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
+    private boolean transactApply(BusinessLogics<?> BL, UpdateCurrentClasses update,
+                                  UserInteraction interaction,
+                                  int attemptCount, int autoAttemptCount,
+                                  ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
         startTransaction(update, BL);
 
         try {
-            return recursiveApply(applyAction == null ? SetFact.<ActionPropertyValueImplement>EMPTYORDER() : SetFact.singletonOrder(applyAction), BL, update);
+            return recursiveApply(applyAction == null ? SetFact.<ActionPropertyValueImplement>EMPTYORDER() : SetFact.singletonOrder(applyAction), BL, update, keepProps);
         } catch (Throwable t) { // assert'им что последняя SQL комманда, работа с транзакцией
             try {
                 rollbackApply();
@@ -1419,7 +1423,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     sql.pushNoTransactTimeout();
                     
                 try {
-                    return transactApply(BL, update, interaction, attemptCount++, autoAttemptCount, applyAction);
+                    return transactApply(BL, update, interaction, attemptCount++, autoAttemptCount, applyAction, keepProps);
                 } finally {
                     if(noTimeout)
                         sql.popNoTransactTimeout();
@@ -1475,7 +1479,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         rollbackInfo.add(run);
     }
 
-    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, UpdateCurrentClasses update) throws SQLException, SQLHandledException {
+    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, UpdateCurrentClasses update, ImSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         ImOrderSet<Object> execActions = SetFact.addOrderExcl(actions, BL.getAppliedProperties(this));
         for (Object property : execActions) {
@@ -1518,7 +1522,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
     
             apply.clear(sql, owner); // все сохраненные хинты обнуляем
-            restart(false, SetFact.fromJavaSet(recursiveUsed)); // оставляем usedSessiona
+            restart(false, SetFact.fromJavaSet(recursiveUsed).merge(keepProps)); // оставляем usedSessiona
         } finally {
             sql.inconsistent = false;
         }
@@ -1526,7 +1530,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(recursiveActions.size() > 0) {
             recursiveUsed.clear();
             recursiveActions.clear();
-            return recursiveApply(updatedRecursiveActions, BL, update);
+            return recursiveApply(updatedRecursiveActions, BL, update, SetFact.<SessionDataProperty>EMPTY());
         }
 
         commitTransaction();

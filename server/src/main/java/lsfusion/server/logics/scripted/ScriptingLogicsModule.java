@@ -1285,7 +1285,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedListAProp(boolean newSession, List<PropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
-                                             boolean doApply, boolean singleApply, List<LPWithParams> properties,
+                                             boolean isNested, boolean doApply, boolean singleApply, List<LPWithParams> properties,
                                              List<LP> localProps, boolean newThread, long delay, Long period) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedListAProp(" + newSession + ", " + doApply + ", " + properties + ");");
 
@@ -1307,7 +1307,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (newSession) {
-            listLP = addNewSessionAProp(null, genSID(), "", listLP, doApply, singleApply, migrateAllSessionProps, mMigrateProps.immutable());
+            listLP = addNewSessionAProp(null, genSID(), "", listLP, doApply, singleApply, migrateAllSessionProps, mMigrateProps.immutable(), isNested);
         }
 
         if (newThread) {
@@ -1624,13 +1624,21 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     }
 
-    public LPWithParams addScriptedApplyAProp(LPWithParams action, boolean singleApply) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedApplyAProp(LPWithParams action, boolean singleApply, List<PropertyUsage> keepSessionProps, boolean keepAllSessionProps) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedApplyAProp(" + action + ");");
         List<LPWithParams> propParams = new ArrayList<LPWithParams>();
-        if(action != null)
+        if (action != null) {
             propParams.add(action);
-        
-        LP result = addApplyAProp(null, genSID(), "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null, singleApply);
+        }
+
+        MExclSet<SessionDataProperty> mKeepProps = SetFact.mExclSet(keepSessionProps.size());
+        for (PropertyUsage migratePropUsage : keepSessionProps) {
+            LP<?, ?> prop = findLPByPropertyUsage(migratePropUsage);
+            checkSessionProperty(prop);
+            mKeepProps.exclAdd((SessionDataProperty) prop.property);
+        }
+
+        LP result = addApplyAProp(null, genSID(), "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null, singleApply, keepAllSessionProps, mKeepProps.immutable());
         return new LPWithParams(result, mergeAllParams(propParams));
     }
 

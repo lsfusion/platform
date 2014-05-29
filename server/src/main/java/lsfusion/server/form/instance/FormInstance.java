@@ -1121,19 +1121,19 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return session.check(BL, this, interaction);
     }
 
-    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
+    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
         if (entity.isSynchronizedApply)
             synchronized (entity) {
-                return syncApply(update, interaction, applyAction);
+                return syncApply(update, interaction, applyAction, keepProperties);
             }
         else
-            return syncApply(update, interaction, applyAction);
+            return syncApply(update, interaction, applyAction, keepProperties);
     }
-    
-    private boolean syncApply(UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
+
+    private boolean syncApply(UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
         update = CompoundUpdateCurrentClasses.merge(update, outerUpdateCurrentClasses);
         
-        boolean succeeded = session.apply(BL, this, update, interaction, applyAction);
+        boolean succeeded = session.apply(BL, this, update, interaction, applyAction, keepProperties);
 
         if (!succeeded)
             return false;

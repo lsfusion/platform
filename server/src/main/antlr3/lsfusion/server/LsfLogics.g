@@ -2140,8 +2140,9 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
 	List<LP> localProps = new ArrayList<LP>();
 	boolean newSession = false;
-	List<PropertyUsage> migrateSessionProps = new ArrayList<PropertyUsage>();
+	List<PropertyUsage> migrateSessionProps = Collections.emptyList();
 	boolean migrateAllSessionProps = false;
+	boolean isNested = false;
 	boolean doApply = false;
 	boolean singleApply = false;
 	boolean newThread = false;
@@ -2150,20 +2151,14 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedListAProp(newSession, migrateSessionProps, migrateAllSessionProps, doApply, singleApply, props, localProps, newThread, ldelay, lperiod);
+		$property = self.addScriptedListAProp(newSession, migrateSessionProps, migrateAllSessionProps, isNested, doApply, singleApply, props, localProps, newThread, ldelay, lperiod);
 	}
 }
 	:   (
             (
-                (
-                    'NEWSESSION'
-                    (
-                        '('
-                            (
-                                MULT { migrateAllSessionProps = true; }
-                                | list=nonEmptyPropertyUsageList { migrateSessionProps = $list.propUsages; }
-                            )
-                        ')'
+                (   'NEWSESSION'
+                    (   mps=migratePropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; }
+                    |   'NESTED' { isNested = true; }
                     )?
                 )
                 |
@@ -2180,6 +2175,14 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 			)*
 		'}'
 	;
+
+migratePropertiesSelector returns[boolean all = false, List<PropertyUsage> props = new ArrayList<PropertyUsage>()]
+    :   '('
+            (   MULT { $all = true; }
+            |   list=nonEmptyPropertyUsageList { $props = $list.propUsages; }
+            )
+        ')'
+    ;
 	
 localDataPropertyDefinition returns [LP property]
 @after {
@@ -2281,13 +2284,16 @@ actionCaseBranchBody[List<TypedParameter> context, boolean dynamic] returns [LPW
 applyActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	boolean single = false;
+	List<PropertyUsage> keepSessionProps = Collections.emptyList();
+	boolean keepAllSessionProps = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedApplyAProp($applyPDB.property, single);
+		$property = self.addScriptedApplyAProp($applyPDB.property, single, keepSessionProps, keepAllSessionProps);
 	}
 }
 	:	'APPLY' 
+        (mps=migratePropertiesSelector { keepAllSessionProps = $mps.all; keepSessionProps = $mps.props; })?
         ('SINGLE' { single = true; })?
         applyPDB=actionPropertyDefinitionBody[context, dynamic]
 	;
