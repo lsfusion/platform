@@ -355,6 +355,7 @@
         <property name="dependencies">
             <set>
                 <!-- должно быть после всего, что может поменять editAction, contextMenu, etc.-->
+                <ref bean="finishLogInitTask"/>
                 <ref bean="setupDrillDownTask"/>
                 <ref bean="setupPropertyPolicyFormsTask"/>
             </set>
@@ -387,7 +388,6 @@
                 <ref bean="checkAbstractTask"/>
                 <ref bean="getPropertyListTask"/>
                 <ref bean="setupPropertyPolicyFormsTask"/>
-                <ref bean="finishLogInitTask"/>
                 <ref bean="finalizePropsTask"/>
                 <ref bean="initIndicesTask"/>
                 <ref bean="initClassFormsTask"/>
