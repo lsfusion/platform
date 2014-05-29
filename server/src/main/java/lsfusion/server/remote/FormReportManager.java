@@ -46,10 +46,26 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         if (customDesigns != null) {
             Set<String> keySet = customDesigns.keySet();
             for (String key : keySet) {
-                ret.put(
-                        SystemProperties.userDir + "/src/main/resources/" + findCustomReportDesignName(key, sid),
-                        SystemProperties.userDir + "/target/classes/" + findCustomReportDesignName(key, sid)
-                );
+                boolean foundInUserDir = new File(SystemProperties.userDir + "/src/main/resources/" + findCustomReportDesignName(key, sid)).exists();
+                if(foundInUserDir) {
+                    ret.put(
+                            SystemProperties.userDir + "/src/main/resources/" + findCustomReportDesignName(key, sid),
+                            SystemProperties.userDir + "/target/classes/" + findCustomReportDesignName(key, sid)
+                    );
+                }   else {
+                    String[] classPath = System.getProperty("java.class.path").split(System.getProperty("path.separator"));
+                    for(String path : classPath) {
+                        String sourcePath = path + "/../../src/main/resources/" + findCustomReportDesignName(key, sid);
+                        if(new File(sourcePath).exists()) {
+                            ret.put(
+                                    sourcePath,
+                                    path + "/" + findCustomReportDesignName(key, sid)
+                            );
+                            break;
+                        }
+                    }
+                }
+                 
             }
         } else {
             Set<Integer> hidedGroupsId = new HashSet<Integer>();
