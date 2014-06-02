@@ -34,6 +34,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.LPWithParams;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.TypedParameter;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.PropertyUsage;
+	import lsfusion.server.logics.scripted.ScriptingFormEntity.RegularFilterInfo;
 	import lsfusion.server.mail.SendEmailActionProperty.FormStorageType;
 	import lsfusion.server.mail.AttachmentFormat;
 	import lsfusion.server.logics.property.actions.flow.Inline;
@@ -350,6 +351,7 @@ scope {
 		|	formHintsList
 		|	formEventsList
 		|	filterGroupDeclaration
+		|	extendFilterGroupDeclaration
 		|	formOrderByList
 		|	dialogFormDeclaration
 		|	editFormDeclaration
@@ -775,30 +777,38 @@ formEventDeclaration returns [ActionPropertyObjectEntity action, Object type]
 filterGroupDeclaration
 @init {
 	String filterGroupSID = null;
-	List<String> captions = new ArrayList<String>();
-	List<String> keystrokes = new ArrayList<String>();
-	List<LP> properties = new ArrayList<LP>();
-	List<List<String>> mappings = new ArrayList<List<String>>();
-	List<Boolean> defaults = new ArrayList<Boolean>();
+	List<RegularFilterInfo> filters = new ArrayList<RegularFilterInfo>();
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, captions, keystrokes, properties, mappings, defaults, self.getVersion());
+		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, filters, self.getVersion());
 	}
 }
-	:	'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; }
-		(
-			'FILTER' caption=stringLiteral keystroke=stringLiteral filter=formFilterDeclaration setDefault=filterSetDefault
-			{
-				captions.add($caption.val);
-				keystrokes.add($keystroke.val);
-				properties.add($filter.property);
-				mappings.add($filter.mapping);
-				defaults.add($setDefault.isDefault);
-			}
-		)+
+	:   'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; }
+		( rf=formRegularFilterDeclaration { filters.add($rf.filter); } )*
 	;
 
+extendFilterGroupDeclaration
+@init {
+	String filterGroupSID = null;
+	List<RegularFilterInfo> filters = new ArrayList<RegularFilterInfo>();
+}
+@after {
+	if (inPropParseState()) {
+		$formStatement::form.extendScriptedRegularFilterGroup(filterGroupSID, filters, self.getVersion());
+	}
+}
+	:	'EXTEND'
+	    'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; }
+		( rf=formRegularFilterDeclaration { filters.add($rf.filter); } )+
+	;
+	
+formRegularFilterDeclaration returns [RegularFilterInfo filter]
+    :   'FILTER' caption=stringLiteral keystroke=stringLiteral fd=formFilterDeclaration setDefault=filterSetDefault
+        {
+            $filter = new RegularFilterInfo($caption.val, $keystroke.val, $fd.property, $fd.mapping, $setDefault.isDefault);
+        }
+    ;
 	
 formFilterDeclaration returns [LP property, List<String> mapping] 
 @init {

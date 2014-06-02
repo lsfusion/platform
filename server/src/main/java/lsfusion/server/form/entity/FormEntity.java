@@ -219,6 +219,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         if (richDesign != null)
             richDesign.addRegularFilterGroup(group, version);
     }
+    
+    public void addRegularFilter(RegularFilterGroupEntity filterGroup, RegularFilterEntity filter, boolean isDefault, Version version) {
+        filterGroup.addFilter(filter, isDefault, version);
+        
+        FormView richDesign = getNFRichDesign(version);
+        if (richDesign != null)
+            richDesign.addRegularFilter(filterGroup, filter, version);
+    }
 
     // получает свойства, которые изменяют propChanges и соответственно hint'ить нельзя - временная затычка
     public ImSet<CalcProperty> getChangeModifierProps() {
@@ -360,7 +368,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public RegularFilterEntity getRegularFilter(int id) {
         for (RegularFilterGroupEntity filterGroup : getRegularFilterGroupsIt()) {
-            for (RegularFilterEntity filter : filterGroup.filters) {
+            for (RegularFilterEntity filter : filterGroup.getFiltersList()) {
                 if (filter.getID() == id) {
                     return filter;
                 }

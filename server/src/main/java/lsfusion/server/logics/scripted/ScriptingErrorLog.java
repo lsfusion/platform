@@ -128,6 +128,10 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "window", name);
     }
 
+    public void emitFilterGroupNotFoundError(ScriptParser parser, String name) throws SemanticErrorException {
+        emitNotFoundError(parser, "filter group", name);
+    }
+
     public void emitIllegalMoveNavigatorToSubnavigator(ScriptParser parser, String movingElement, String movedToElement) throws SemanticErrorException {
         emitSimpleError(parser, format("can't move navigator element '%s' to it's subelement '%s'", movingElement, movedToElement));
     }

@@ -2199,6 +2199,10 @@ public abstract class LogicsModule {
     public ObjectEntity addFormSingleGroupObject(FormEntity form, String sID, ValueClass baseClass, String caption, Object... groups) {
         return form.addSingleGroupObject(sID, baseClass, caption, getVersion(), groups);
     }
+    
+    public RegularFilterGroupEntity newRegularFilterGroupEntity(int id) {
+        return new RegularFilterGroupEntity(id, getVersion());
+    }
 
     public ObjectEntity addFormSingleGroupObject(FormEntity form, ValueClass baseClass, Object... groups) {
         return form.addSingleGroupObject(baseClass, getVersion(), groups);

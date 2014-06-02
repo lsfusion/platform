@@ -44,6 +44,11 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
         return getNF(version);
     }
 
+    @Override
+    public int size(Version version) {
+        return getNF(version).size();
+    }
+
     public ImSet<T> getSet() {
         return getOrderSet().getSet();
     }

@@ -10,56 +10,64 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.TreeGroupEntity;
+import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static java.util.Collections.synchronizedMap;
 
 public class DefaultFormView extends FormView {
-    protected transient Map<GroupObjectView, ContainerView> groupContainers = new HashMap<GroupObjectView, ContainerView>();
+    protected transient final Map<GroupObjectView, ContainerView> groupContainers = synchronizedMap(new HashMap<GroupObjectView, ContainerView>());
     public ContainerView getGroupObjectContainer(GroupObjectView groupObject) { return groupContainers.get(groupObject); }
     public ContainerView getGroupObjectContainer(GroupObjectEntity groupObject) { return getGroupObjectContainer(get(groupObject)); }
 
-    protected transient Map<GroupObjectView, ContainerView> gridContainers = new HashMap<GroupObjectView, ContainerView>();
+    protected transient final Map<GroupObjectView, ContainerView> gridContainers = synchronizedMap(new HashMap<GroupObjectView, ContainerView>());
     public ContainerView getGridContainer(GroupObjectView treeGroup) { return gridContainers.get(treeGroup); }
     public ContainerView getGridContainer(GroupObjectEntity groupObject) { return getGridContainer(get(groupObject)); }
 
-    protected transient Map<GroupObjectView, ContainerView> panelContainers = new HashMap<GroupObjectView, ContainerView>();
+    protected transient final Map<GroupObjectView, ContainerView> panelContainers = synchronizedMap(new HashMap<GroupObjectView, ContainerView>());
     public ContainerView getPanelContainer(GroupObjectView groupObject) { return panelContainers.get(groupObject); }
     public ContainerView getPanelContainer(GroupObjectEntity groupObject) { return getPanelContainer(get(groupObject)); }
 
-    protected final Map<ServerIdentitySerializable, ContainerView> panelPropsContainers = new HashMap<ServerIdentitySerializable, ContainerView>();
+    protected final Map<ServerIdentitySerializable, ContainerView> panelPropsContainers = synchronizedMap(new HashMap<ServerIdentitySerializable, ContainerView>());
     public ContainerView getPanelPropsContainer(GroupObjectView groupObject) { return panelPropsContainers.get(groupObject); }
 
-    protected transient Map<TreeGroupView, ContainerView> treeContainers = new HashMap<TreeGroupView, ContainerView>();
+    protected transient final Map<TreeGroupView, ContainerView> treeContainers = synchronizedMap(new HashMap<TreeGroupView, ContainerView>());
     public ContainerView getTreeContainer(TreeGroupView treeGroup) { return treeContainers.get(treeGroup); }
     public ContainerView getTreeContainer(TreeGroupEntity treeGroup) { return getTreeContainer(get(treeGroup)); }
 
-    protected transient Map<ServerIdentitySerializable, ContainerView> controlsContainers = new HashMap<ServerIdentitySerializable, ContainerView>();
+    protected transient final Map<ServerIdentitySerializable, ContainerView> controlsContainers = synchronizedMap(new HashMap<ServerIdentitySerializable, ContainerView>());
     public ContainerView getControlsContainer(GroupObjectView groupObject) { return controlsContainers.get(groupObject); }
     public ContainerView getControlsContainer(TreeGroupView treeGroup) { return controlsContainers.get(treeGroup); }
 
-    protected final Map<ServerIdentitySerializable, ContainerView> toolbarPropsContainers = new HashMap<ServerIdentitySerializable, ContainerView>();
+    protected final Map<ServerIdentitySerializable, ContainerView> toolbarPropsContainers = synchronizedMap(new HashMap<ServerIdentitySerializable, ContainerView>());
     public ContainerView getToolbarPropsContainer(GroupObjectView groupObject) { return toolbarPropsContainers.get(groupObject); }
     public ContainerView getToolbarPropsContainer(TreeGroupView treeGroup) { return toolbarPropsContainers.get(treeGroup); }
 
-    protected transient Map<ServerIdentitySerializable, ContainerView> rightControlsContainers = new HashMap<ServerIdentitySerializable, ContainerView>();
+    protected transient final Map<ServerIdentitySerializable, ContainerView> rightControlsContainers = synchronizedMap(new HashMap<ServerIdentitySerializable, ContainerView>());
     public ContainerView getRightControlsContainer(GroupObjectView groupObject) { return rightControlsContainers.get(groupObject); }
     public ContainerView getRightControlsContainer(TreeGroupView treeGroup) { return rightControlsContainers.get(treeGroup); }
 
-    protected final Map<ServerIdentitySerializable,ContainerView> filtersContainers = new HashMap<ServerIdentitySerializable, ContainerView>();
+    protected final Map<ServerIdentitySerializable,ContainerView> filtersContainers = synchronizedMap(new HashMap<ServerIdentitySerializable, ContainerView>());
     public ContainerView getFilterContainer(GroupObjectView groupObject) { return filtersContainers.get(groupObject); }
     public ContainerView getFilterContainer(TreeGroupView treeGroup) { return filtersContainers.get(treeGroup); }
 
-    protected transient Table<Optional<GroupObjectView>, AbstractGroup, ContainerView> groupPropertyContainers = HashBasedTable.create();
-    public ContainerView getGroupPropertyContainer(GroupObjectView groupObject, AbstractGroup group) { return groupPropertyContainers.get(Optional.fromNullable(groupObject), group); }
-    public ContainerView getGroupPropertyContainer(GroupObjectEntity groupObject, AbstractGroup group) { return getGroupPropertyContainer(get(groupObject), group); }
+    protected transient final Table<Optional<GroupObjectView>, AbstractGroup, ContainerView> groupPropertyContainers = HashBasedTable.create();
+    public void putGroupPropertyContainer(GroupObjectView groupObject, AbstractGroup group, ContainerView container) {
+        synchronized (groupPropertyContainers) {
+            groupPropertyContainers.put(Optional.fromNullable(groupObject), group, container);
+        }
+    }
+    public ContainerView getGroupPropertyContainer(GroupObjectView groupObject, AbstractGroup group) {
+        synchronized (groupPropertyContainers) {
+            return groupPropertyContainers.get(Optional.fromNullable(groupObject), group);
+        }
+    }
 
     public ContainerView formButtonContainer;
     public ContainerView noGroupPanelContainer;
@@ -265,17 +273,6 @@ public class DefaultFormView extends FormView {
         }
     }
 
-    private void addRegularFilterGroupView(RegularFilterGroupView filterGroup, Version version) {
-        ContainerView filterContainer = null;
-        GroupObjectEntity groupObject = filterGroup.entity.getNFToDraw(entity, version);
-        if (groupObject.treeGroup != null) {
-            filterContainer = getFilterContainer(mtreeGroups.get(groupObject.treeGroup));
-        } else {
-            filterContainer = getFilterContainer(mgroupObjects.get(groupObject));
-        }
-        filterContainer.add(filterGroup, version);
-    }
-
     @Override
     public GroupObjectView addGroupObject(GroupObjectEntity groupObject, Version version) {
         GroupObjectView view = super.addGroupObject(groupObject, version);
@@ -304,7 +301,40 @@ public class DefaultFormView extends FormView {
         return view;
     }
 
-//    private void addPropertyDrawToLayout(GroupObjectView groupObject, PropertyDrawView propertyDraw) {
+    private void addRegularFilterGroupView(RegularFilterGroupView filterGroup, Version version) {
+        ContainerView filterContainer = getFilterContainer(filterGroup, version);
+        if (filterContainer != null) {
+            filterContainer.add(filterGroup, version);
+        }
+    }
+
+    private ContainerView getFilterContainer(RegularFilterGroupView filterGroup, Version version) {
+        GroupObjectEntity groupObject = filterGroup.entity.getNFToDraw(entity, version);
+        if (groupObject != null) {
+            return groupObject.treeGroup != null
+                   ? getFilterContainer(get(groupObject.treeGroup))
+                   : getFilterContainer(get(groupObject));
+        }
+        return null;
+    }
+
+    @Override
+    public RegularFilterView addRegularFilter(RegularFilterGroupEntity filterGroup, RegularFilterEntity filter, Version version) {
+        RegularFilterGroupView filterGroupView = get(filterGroup);
+        boolean moveGroupToNewContainer = false;
+        if (filterGroupView.getNFContainer(version) == getFilterContainer(filterGroupView, version)) {
+            //если группа осталась в дефолтном контейнере, то перемещаем её в новое дефолтное место
+            moveGroupToNewContainer = true;
+        }
+        
+        RegularFilterView filterView = super.addRegularFilter(filterGroup, filter, version);
+        if (moveGroupToNewContainer) {
+            addRegularFilterGroupView(filterGroupView, version);
+        }
+        return filterView;
+    }
+
+    //    private void addPropertyDrawToLayout(GroupObjectView groupObject, PropertyDrawView propertyDraw) {
 //        AbstractGroup propertyParentGroup = propertyDraw.entity.propertyObject.property.getParent();
 //
 //        Pair<ContainerView, ContainerView> groupContainers = getPropGroupContainer(groupObject, propertyParentGroup);
@@ -384,7 +414,7 @@ public class DefaultFormView extends FormView {
         }
 
         //ищем в созданных
-        ContainerView currentGroupContainer = groupPropertyContainers.get(Optional.fromNullable(groupObject), currentGroup);
+        ContainerView currentGroupContainer = getGroupPropertyContainer(groupObject, currentGroup);
         if (currentGroupContainer == null) {
             String currentGroupContainerSID = getPropertyGroupContainerSID(groupObject, currentGroup);
 
@@ -401,8 +431,8 @@ public class DefaultFormView extends FormView {
 
                 panelContainers.get(groupObject).add(currentGroupContainer, version);
             }
-
-            groupPropertyContainers.put(Optional.fromNullable(groupObject), currentGroup, currentGroupContainer);
+            
+            putGroupPropertyContainer(groupObject, currentGroup, currentGroupContainer);
         }
 
         return currentGroupContainer;

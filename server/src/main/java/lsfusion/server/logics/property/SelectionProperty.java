@@ -1,9 +1,6 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.interop.KeyStrokes;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
@@ -17,12 +14,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.Version;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 public class SelectionProperty extends SessionDataProperty {
 
@@ -43,12 +35,12 @@ public class SelectionProperty extends SessionDataProperty {
     @Override
     public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity<?> form, Version version) {
         super.proceedDefaultDraw(entity, form, version);
-        RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(form.genID());
+        RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(form.genID(), version);
         PropertyObjectEntity<ClassPropertyInterface, ?> po = entity.propertyObject;
         filterGroup.addFilter(new RegularFilterEntity(form.genID(),
                 new NotNullFilterEntity((CalcPropertyObjectEntity) po),
                 ServerResourceBundle.getString("logics.property.selected"),
-                KeyStrokes.getSelectionFilterKeyStroke()), false);
+                KeyStrokes.getSelectionFilterKeyStroke()), false, version);
         form.addRegularFilterGroup(filterGroup, version);
 
         ImOrderMap<ClassPropertyInterface, ObjectEntity> objects = po.getMapObjectInstances().toOrderMap();

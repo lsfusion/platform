@@ -11,6 +11,7 @@ import lsfusion.interop.PropertyEditType;
 import lsfusion.interop.form.layout.AbstractForm;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
+import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.*;
@@ -29,6 +30,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+
+import static java.util.Collections.synchronizedMap;
 
 public class FormView implements ServerIdentitySerializable, AbstractForm<ContainerView, ComponentView> {
 
@@ -114,19 +117,19 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     protected PropertyDrawView okButton;
     protected PropertyDrawView closeButton;
 
-    protected transient Map<TreeGroupEntity, TreeGroupView> mtreeGroups = new HashMap<TreeGroupEntity, TreeGroupView>();
+    protected transient Map<TreeGroupEntity, TreeGroupView> mtreeGroups = synchronizedMap(new HashMap<TreeGroupEntity, TreeGroupView>());
     public TreeGroupView get(TreeGroupEntity treeGroup) { return mtreeGroups.get(treeGroup); }
 
-    protected transient Map<GroupObjectEntity, GroupObjectView> mgroupObjects = new HashMap<GroupObjectEntity, GroupObjectView>();
+    protected transient Map<GroupObjectEntity, GroupObjectView> mgroupObjects = synchronizedMap(new HashMap<GroupObjectEntity, GroupObjectView>());
     public GroupObjectView get(GroupObjectEntity groupObject) { return mgroupObjects.get(groupObject); }
 
-    protected transient Map<ObjectEntity, ObjectView> mobjects = new HashMap<ObjectEntity, ObjectView>();
+    protected transient Map<ObjectEntity, ObjectView> mobjects = synchronizedMap(new HashMap<ObjectEntity, ObjectView>());
     public ObjectView get(ObjectEntity object) { return mobjects.get(object); }
 
-    protected transient Map<PropertyDrawEntity, PropertyDrawView> mproperties = new HashMap<PropertyDrawEntity, PropertyDrawView>();
+    protected transient Map<PropertyDrawEntity, PropertyDrawView> mproperties = synchronizedMap(new HashMap<PropertyDrawEntity, PropertyDrawView>());
     public PropertyDrawView get(PropertyDrawEntity property) { return mproperties.get(property); }
 
-    protected transient Map<RegularFilterGroupEntity, RegularFilterGroupView> mfilters = new HashMap<RegularFilterGroupEntity, RegularFilterGroupView>();
+    protected transient Map<RegularFilterGroupEntity, RegularFilterGroupView> mfilters = synchronizedMap(new HashMap<RegularFilterGroupEntity, RegularFilterGroupView>());
     public RegularFilterGroupView get(RegularFilterGroupEntity filterGroup) { return mfilters.get(filterGroup); }
 
     public FormView() {
@@ -246,7 +249,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     }
 
     private RegularFilterGroupView addRegularFilterGroupBase(RegularFilterGroupEntity filterGroup, Version version) {
-        RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
+        RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup, version);
         regularFilters.add(filterGroupView, version);
         addRegularFilterGroupView(filterGroupView);
         return filterGroupView;
@@ -254,6 +257,11 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     public RegularFilterGroupView addRegularFilterGroup(RegularFilterGroupEntity filterGroupEntity, Version version) {
         return addRegularFilterGroupBase(filterGroupEntity, version);
+    }
+    
+    public RegularFilterView addRegularFilter(RegularFilterGroupEntity filterGroup, RegularFilterEntity filter, Version version) {
+        RegularFilterGroupView filterGroupView = get(filterGroup);
+        return filterGroupView.addFilter(filter, version);
     }
 
     public void fillComponentMaps() {

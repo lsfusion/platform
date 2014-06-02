@@ -460,30 +460,50 @@ public class ScriptingFormEntity {
         }
     }
     
-    public void addScriptedRegularFilterGroup(String sid, List<String> captions, List<String> keystrokes, List<LP> properties, List<List<String>> mappings, List<Boolean> defaults, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        assert captions.size() == mappings.size() && keystrokes.size() == mappings.size() && properties.size() == mappings.size();
-
-        RegularFilterGroupEntity regularFilterGroup = new RegularFilterGroupEntity(form.genID());
-        regularFilterGroup.setSID(sid);
-
-        for (int i = 0; i < properties.size(); i++) {
-            String caption = captions.get(i);
-            KeyStroke keyStroke = KeyStroke.getKeyStroke(keystrokes.get(i));
-            Boolean setDefault = defaults.get(i);
-
-            if (keyStroke == null) {
-                LM.getErrLog().emitWrongKeyStrokeFormat(LM.getParser(), keystrokes.get(i));
-            }
-
-            checkPropertyParameters(properties.get(i), getMappingObjectsArray(mappings.get(i)));
-
-            regularFilterGroup.addFilter(
-                    new RegularFilterEntity(form.genID(), new NotNullFilterEntity(form.addPropertyObject((LCP) properties.get(i), getMappingObjectsArray(mappings.get(i))), true), caption, keyStroke),
-                    setDefault
-            );
+    public void addScriptedRegularFilterGroup(String sid, List<RegularFilterInfo> filters, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        if (form.getNFRegularFilterGroup(sid, version) != null) {
+            LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "filter group", sid);
         }
 
+        RegularFilterGroupEntity regularFilterGroup = new RegularFilterGroupEntity(form.genID(), version);
+        regularFilterGroup.setSID(sid);
+
+        addRegularFilters(regularFilterGroup, filters, version, false);
+
         form.addRegularFilterGroup(regularFilterGroup, version);
+    }
+
+    public void extendScriptedRegularFilterGroup(String sid, List<RegularFilterInfo> filters, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        RegularFilterGroupEntity filterGroup = form.getNFRegularFilterGroup(sid, version);
+        if (filterGroup == null) {
+            LM.getErrLog().emitFilterGroupNotFoundError(LM.getParser(), sid);
+        }
+        
+        addRegularFilters(filterGroup, filters, version, true);
+    }
+
+    public void addRegularFilters(RegularFilterGroupEntity filterGroup, List<RegularFilterInfo> filters, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
+        for (RegularFilterInfo info : filters) {
+            String caption = info.caption;
+            KeyStroke keyStroke = KeyStroke.getKeyStroke(info.keystroke);
+            boolean isDefault = info.isDefault;
+
+            if (keyStroke == null) {
+                LM.getErrLog().emitWrongKeyStrokeFormat(LM.getParser(), info.keystroke);
+            }
+
+            List<String> mapping = info.mapping;
+            LP property = info.property;
+
+            checkPropertyParameters(property, getMappingObjectsArray(mapping));
+
+            RegularFilterEntity filter = new RegularFilterEntity(form.genID(), new NotNullFilterEntity(form.addPropertyObject((LCP) property, getMappingObjectsArray(mapping)), true), caption, keyStroke);
+            if (extend) {
+                form.addRegularFilter(filterGroup, filter, isDefault, version);
+            } else {
+                filterGroup.addFilter(filter, isDefault, version);
+            }
+        }
     }
 
     public ActionPropertyObjectEntity getActionPropertyObject(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
@@ -575,5 +595,21 @@ public class ScriptingFormEntity {
             typedObjects.add(LM.new TypedParameter(classes.get(i), objNames.get(i)));
         }
         return typedObjects;
+    }
+    
+    public static class RegularFilterInfo {
+        String caption;
+        String keystroke;
+        LP property;
+        List<String> mapping;
+        boolean isDefault;
+
+        public RegularFilterInfo(String caption, String keystroke, LP property, List<String> mapping, boolean isDefault) {
+            this.caption = caption;
+            this.keystroke = keystroke;
+            this.property = property;
+            this.mapping = mapping;
+            this.isDefault = isDefault;
+        }
     }
 }

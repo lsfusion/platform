@@ -275,7 +275,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         //устанавливаем фильтры и порядки по умолчанию...
         for (RegularFilterGroupInstance filterGroup : regularFilterGroups) {
-            int defaultInd = filterGroup.entity.defaultFilterIndex;
+            int defaultInd = filterGroup.entity.getDefault();
             if (defaultInd >= 0 && defaultInd < filterGroup.filters.size()) {
                 setRegularFilter(filterGroup, filterGroup.filters.get(defaultInd));
             }

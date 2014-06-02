@@ -97,7 +97,7 @@ public class FormGroupHierarchyCreator {
         }
 
         for (RegularFilterGroupEntity filterGroup : form.getRegularFilterGroupsIt()) {
-            for (RegularFilterEntity filter : filterGroup.filters) {
+            for (RegularFilterEntity filter : filterGroup.getFiltersList()) {
                 addDependencies(graph, getGroupsByObjects(filter.filter.getObjects()), true);
             }
         }

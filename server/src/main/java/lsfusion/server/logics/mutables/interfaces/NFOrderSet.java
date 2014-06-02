@@ -1,6 +1,5 @@
 package lsfusion.server.logics.mutables.interfaces;
 
-import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.logics.mutables.FindIndex;
 import lsfusion.server.logics.mutables.Version;
@@ -24,6 +23,9 @@ public interface NFOrderSet<T> extends NFSet<T>, NFList<T> {
 
     }
 */
+    int size(Version version);
+
     ImOrderSet<T> getNFOrderSet(Version version);
+
     ImOrderSet<T> getOrderSet();
 }

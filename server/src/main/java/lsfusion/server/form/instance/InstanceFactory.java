@@ -187,7 +187,7 @@ public class InstanceFactory {
 
         RegularFilterGroupInstance group = new RegularFilterGroupInstance(entity);
 
-        for (RegularFilterEntity filter : entity.filters) {
+        for (RegularFilterEntity filter : entity.getFiltersList()) {
             group.addFilter(getInstance(filter));
         }
 

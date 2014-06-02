@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.mutables.FindIndex;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
-import org.apache.poi.hssf.record.formula.functions.T;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -101,6 +100,11 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
 
     public ImOrderSet<T> getOrderSet() {
         return SetFact.fromJavaOrderSet(list);
+    }
+
+    @Override
+    public int size(Version version) {
+        return list.size();
     }
 
     public void addIfNotExistsToThenLast(T element, T to, boolean isRightNeighbour, Version version) {
