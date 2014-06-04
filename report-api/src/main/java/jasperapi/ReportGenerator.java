@@ -7,9 +7,9 @@ import lsfusion.interop.form.ReportConstants;
 import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
-import net.sf.jasperreports.engine.export.JExcelApiExporter;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
+import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 
 import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.Sides;
@@ -401,7 +401,7 @@ public class ReportGenerator {
     }
 
     private static File exportToExcel(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, new JExcelApiExporter(), "xls");
+        return exportToFile(generationData, new JRXlsxExporter(), "xlsx");
     }
     
     private static File exportToPdf(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
