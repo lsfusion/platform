@@ -20,6 +20,7 @@ import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.sql.SQLException;
@@ -30,6 +31,8 @@ import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstance<T>> {
+    private static final Logger systemLogger = Logger.getLogger("SystemLogger");
+    
     private final F form;
     private final FormView richDesign;
 
@@ -271,6 +274,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             }
             return designs;
         } catch (Exception e) {
+            systemLogger.error("Error loading custom report design: ", e);
             return null;
         }
     }
