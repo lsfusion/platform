@@ -196,6 +196,19 @@ public class TableLinearContainerView extends GAbstractContainerView {
 
     @Override
     public Dimension getPreferredSize(Map<GContainer, GAbstractContainerView> containerViews) {
-        return getChildrenStackSize(containerViews, vertical);
+        Dimension result = getChildrenStackSize(containerViews, vertical);
+        int delta = 0;
+        if (endFillAdded) {
+            delta++;
+        }
+        if (startFillAdded) {
+            delta++;
+        }
+        if (vertical) {
+            result.height += delta;
+        } else {
+            result.width += delta;
+        }
+        return result;
     }
 }
