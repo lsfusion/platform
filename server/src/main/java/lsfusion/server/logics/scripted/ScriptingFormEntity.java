@@ -578,6 +578,10 @@ public class ScriptingFormEntity {
         form.autoRefresh = autoRefresh;
     }
 
+    public void setKeepSessionProperties(boolean keepSessionProperties) {
+        form.keepSessionProperties = keepSessionProperties;
+    }
+
     private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass valueClass = LM.findClassByCompoundName(className);
         if (!(valueClass instanceof CustomClass)) {

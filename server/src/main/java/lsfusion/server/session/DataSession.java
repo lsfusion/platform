@@ -1,6 +1,8 @@
 package lsfusion.server.session;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Maps;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -92,8 +94,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return getChangedProps(SetFact.fromJavaSet(add), SetFact.fromJavaSet(remove), SetFact.fromJavaSet(usedOldClasses), SetFact.fromJavaSet(usedNewClasses), SetFact.fromJavaSet(data.keySet()));
     }
     
-    public Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> getDataChanges() {
-        return data;
+    public Map<SessionDataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> getSessionDataChanges() {
+        return (Map)Maps.filterKeys(data, new Predicate<DataProperty>() {
+            @Override
+            public boolean apply(DataProperty input) {
+                return input instanceof SessionDataProperty;
+            }
+        });
     }
 
     private class DataModifier extends SessionModifier {
@@ -1827,7 +1834,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return isInTransaction;
     }
 
-    public void cancel() throws SQLException {
+    @Override
+    public void cancel(ImSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
         if(isInSessionEvent()) {
             inSessionEvent = false;
         }
@@ -1837,7 +1845,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return;
         }
 
-        restart(true, SetFact.<SessionDataProperty>EMPTY());
+        restart(true, keep);
     }
 
     private void rollbackApply() throws SQLException {

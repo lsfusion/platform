@@ -77,10 +77,8 @@ public class ApplyActionProperty extends KeepContextActionProperty {
     private ImSet<SessionDataProperty> getKeepProperties(DataSession session) throws SQLException, SQLHandledException {
         if (keepAllSessionProperties) {
             MExclSet<SessionDataProperty> mProps = SetFact.mExclSet();
-            for (DataProperty prop : session.getDataChanges().keySet()) {
-                if (prop instanceof SessionDataProperty) {
-                    mProps.exclAdd((SessionDataProperty) prop);
-                }
+            for (SessionDataProperty prop : session.getSessionDataChanges().keySet()) {
+                mProps.exclAdd(prop);
             }
             return mProps.immutable();
         } else {

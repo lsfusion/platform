@@ -1151,8 +1151,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return true;
     }
 
-    public void cancel() throws SQLException, SQLHandledException {
-        session.cancel();
+    @Override
+    public void cancel(ImSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
+        session.cancel(keep);
 
         // пробежим по всем объектам
         for (ObjectInstance object : getObjects())
@@ -2042,13 +2043,29 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formApply(UserInteraction interaction) throws SQLException, SQLHandledException {
-        apply(BL, interaction);
+        apply(BL, null, interaction, null, getKeepSessionProperties());
+    }
+
+    private ImSet<SessionDataProperty> getKeepSessionProperties() {
+        ImSet<SessionDataProperty> keepProperties;
+        if (entity.keepSessionProperties) {
+            MExclSet<SessionDataProperty> mKeepProps = SetFact.mExclSet();
+            for (SessionDataProperty prop : session.getSessionDataChanges().keySet()) {
+                if (prop != DataSession.isDataChanged) {
+                    mKeepProps.exclAdd(prop);
+                }
+            }
+            keepProperties = mKeepProps.immutable();
+        } else {
+            keepProperties = SetFact.EMPTY();
+        }
+        return keepProperties;
     }
 
     public void formCancel(UserInteraction interfaction) throws SQLException, SQLHandledException {
         int result = (Integer) interfaction.requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.undo.changes")));
         if (result == JOptionPane.YES_OPTION) {
-            cancel();
+            cancel(getKeepSessionProperties());
         }
     }
 

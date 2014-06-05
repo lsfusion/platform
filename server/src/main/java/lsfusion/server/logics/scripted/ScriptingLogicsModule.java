@@ -467,11 +467,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         addAbstractGroup(groupName, caption, parentGroup);
     }
 
-    public ScriptingFormEntity createScriptedForm(String formName, String caption, String title, String icon) throws ScriptingErrorLog.SemanticErrorException {
+    public ScriptingFormEntity createScriptedForm(String formName, String caption, String title, String icon,
+                                                  ModalityType modalityType, int autoRefresh, boolean keepSessionProperties) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ", " + title + ");");
         checkDuplicateNavigatorElement(formName);
         caption = (caption == null ? formName : caption);
-        return new ScriptingFormEntity(this, new FormEntity(formName, caption, title, icon, getVersion()));
+        
+        ScriptingFormEntity form = new ScriptingFormEntity(this, new FormEntity(formName, caption, title, icon, getVersion()));
+        form.setModalityType(modalityType);
+        form.setAutoRefresh(autoRefresh);
+        form.setKeepSessionProperties(keepSessionProperties);
+        
+        return form;
     }
 
     public ScriptingFormView createScriptedFormView(String formName, String caption, boolean applyDefault) throws ScriptingErrorLog.SemanticErrorException {

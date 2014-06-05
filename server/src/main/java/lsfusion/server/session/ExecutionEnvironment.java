@@ -75,9 +75,13 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         return apply(BL, update, interaction, null, SetFact.<SessionDataProperty>EMPTY());
     }
 
-    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException;
+    public void cancel() throws SQLException, SQLHandledException {
+        cancel(SetFact.<SessionDataProperty>EMPTY());
+    }
 
-    public abstract void cancel() throws SQLException, SQLHandledException;
+    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException;
+    
+    public abstract void cancel(ImSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
 
     public ObjectValue getLastUserInput() {
         return lastUserInput;

@@ -391,20 +391,20 @@ formDeclaration returns [ScriptingFormEntity form]
 @init {
 	ModalityType modalityType = null;
 	int autoRefresh = 0;
+	boolean keepSessionProperties = false;
 }
 @after {
 	if (inPropParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, $title.val, $path.val);
-		$form.setModalityType(modalityType);
-		$form.setAutoRefresh(autoRefresh);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, $title.val, $img.val, modalityType, autoRefresh, keepSessionProperties);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
 		('TITLE' title=stringLiteral)?
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
-		('IMAGE' path=stringLiteral)?
+		('IMAGE' img=stringLiteral)?
 		('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })?
+		('KEEPSESSIONPROPERTIES' { keepSessionProperties = true; })?
 	;
 
 extendingFormDeclaration returns [ScriptingFormEntity form]

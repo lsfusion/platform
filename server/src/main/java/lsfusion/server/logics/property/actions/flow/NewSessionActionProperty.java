@@ -63,10 +63,8 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
             DataSession session = context.getSession();
 
             MExclSet<SessionDataProperty> mMigrateProps = SetFact.mExclSet();
-            for (DataProperty changedProp : session.getDataChanges().keySet()) {
-                if (changedProp instanceof SessionDataProperty) {
-                    mMigrateProps.exclAdd((SessionDataProperty) changedProp);
-                }
+            for (SessionDataProperty changedProp : session.getSessionDataChanges().keySet()) {
+                mMigrateProps.exclAdd(changedProp);
             }
 
             return mMigrateProps.immutable();
@@ -111,12 +109,8 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
     private void migrateProperties(DataSession migrateFrom, DataSession migrateTo) throws SQLException, SQLHandledException {
         if (migrateAllSessionProperties) {
-            for (Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : migrateFrom.getDataChanges().entrySet()) {
-                DataProperty prop = e.getKey();
-                if (prop instanceof SessionDataProperty) {
-                    SinglePropertyTableUsage<ClassPropertyInterface> usage = e.getValue();
-                    migrateTo.change(prop, SinglePropertyTableUsage.getChange(usage));
-                }
+            for (Map.Entry<SessionDataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : migrateFrom.getSessionDataChanges().entrySet()) {
+                migrateTo.change(e.getKey(), SinglePropertyTableUsage.getChange(e.getValue()));
             }
         } else {
             int migrateCount = migrateSessionProperties.size();
