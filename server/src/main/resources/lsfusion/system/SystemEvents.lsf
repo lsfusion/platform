@@ -30,7 +30,7 @@ CLASS ConnectionStatus 'Статус подключения' {
 }
 FORM connectionStatuses
     OBJECTS s = ConnectionStatus
-    PROPERTIES(s) staticCaption
+    PROPERTIES(s) READONLY staticCaption
     DIALOG ConnectionStatus OBJECT s
 ;
 
@@ -89,13 +89,13 @@ userLoginConnectionSession 'Логин пользователя' = userLoginConn
 FORM connections 'Журнал подключений'
 
     OBJECTS c=Connection
-    PROPERTIES (c) hostnameComputerConnection, remoteAddressConnection, userLoginConnection, nameConnectionStatusConnection,
-                   connectTimeConnection, disconnectTimeConnection
+    PROPERTIES (c) READONLY hostnameComputerConnection, remoteAddressConnection, userLoginConnection, nameConnectionStatusConnection,
+                            connectTimeConnection, disconnectTimeConnection
 
     OBJECTS n=NavigatorElement
-    PROPERTIES (n) captionNavigatorElement, sidNavigatorElement
+    PROPERTIES (n) READONLY captionNavigatorElement, sidNavigatorElement
 
-    PROPERTIES (c, n) connectionFormCount
+    PROPERTIES (c, n) READONLY connectionFormCount
 
     OBJECTS s=Session
     PROPERTIES (s) READONLY captionNavigatorElementSession, nameUserSession, dateTimeSession
@@ -155,8 +155,8 @@ FORM changes 'Журнал изменений'
 
     OBJECTS s=Session
     PROPERTIES (s) READONLY captionNavigatorElementSession, hostnameComputerConnectionSession,
-    userLoginConnectionSession, quantityAddedClassesSession, quantityRemovedClassesSession,
-    quantityChangedClassesSession, changesSession FORCE PANEL, dateTimeSession
+                            userLoginConnectionSession, quantityAddedClassesSession, quantityRemovedClassesSession,
+                            quantityChangedClassesSession, gChanges = changesSession, dateTimeSession, pChanges = changesSession FORCE PANEL
     FILTERGROUP filtersChange
                     FILTER 'Только изменения пользователей' 'F8' userLoginConnectionSession(s) DEFAULT
 ;
@@ -170,7 +170,7 @@ EXTEND DESIGN changes {
                 type = CONTAINERV;
                 fill = 1;
 
-                ADD PROPERTY(changesSession(s)) {
+                ADD PROPERTY(pChanges) {
                     fill = 0.5;
                     preferredSize = ( -1, 200);
                     panelLabelAbove = TRUE;
