@@ -173,12 +173,13 @@ public class RmiQueue {
         }
     }
 
-    private void flushCompletedRequestsNow(boolean recordThrowable) {
+    private void flushCompletedRequestsNow(boolean rethrowThrowables) {
         while (!rmiFutures.isEmpty() && rmiFutures.element().isDone()) {
             try {
                 execNextFutureCallback();
             } catch (Throwable t) {
-                if (recordThrowable) {
+                //если последний в очереди, то выбрасываем наверх в любом случае
+                if (rmiFutures.isEmpty() || rethrowThrowables) {
                     if (t instanceof ServerException || t instanceof ExecutionException) {
                         t = t.getCause();
                     }
