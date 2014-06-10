@@ -34,7 +34,7 @@ public class Words {
 
     static {
         decimalPostfix.put(("EUR"), new String[]{"евро ", "евро ", "евро "});
-        decimalPostfix.put(("USD"), new String[]{"доллар ", "доллара ", "долларов"});
+        decimalPostfix.put(("USD"), new String[]{"доллар США ", "доллара США ", "долларов США "});
         decimalPostfix.put(("RUB"), new String[]{"рубль ", "рубля ", "рублей "});
         decimalPostfix.put(("BLR"), new String[]{"белорусский рубль ", "белорусских рубля ", "белорусских рублей "});
         decimalPostfix.put(("ton"), new String[]{"тонна ", "тонны ", "тонн "});
