@@ -27,8 +27,8 @@ incrementValueNumerator 'Увеличить значение' = ACTION (numerato
     IF curValueNumerator(numerator) >= maxValueNumerator(numerator) THEN
         MESSAGE 'Счетчик нумератора достиг максимального значения. Обратитесь к администратору.'
     ELSE {
-        ASSIGN curValueNumerator(numerator) <- curValueNumerator(numerator) + 1;
-        EXEC apply();
+        curValueNumerator(numerator) <- curValueNumerator(numerator) + 1;
+        apply();
     };
 };
 
@@ -49,7 +49,7 @@ FORM numerator 'Нумератор'
 FORM numerators 'Нумераторы'
     OBJECTS n = Numerator
     PROPERTIES(n) READONLY nameNumerator, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
-    PROPERTIES(n)          ADDFORM, EDITFORM, DELETE
+    PROPERTIES(n)          ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
 
     DIALOG Numerator OBJECT n
 ;
@@ -57,7 +57,7 @@ FORM numerators 'Нумераторы'
 FORM defaultNumerators 'Нумераторы'
     OBJECTS n = Numerator
     PROPERTIES(n) READONLY nameNumerator, seriesNumerator, minValueNumerator, maxValueNumerator, stringLengthNumerator, curValueNumerator, curStringValueNumerator
-    PROPERTIES(n)          ADDFORM, EDITFORM, DELETE
+    PROPERTIES(n)          ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
 ;
 
 DESIGN defaultNumerators FROM DEFAULT {
@@ -191,13 +191,13 @@ META defineNumeratedDefault (object1, object2, property, caption, series)
 
     loadDefaultNumerators() += ACTION () {
         FOR ADDOBJ n = Numerator DO {
-            ASSIGN nameNumerator(n) <- caption;
-            ASSIGN seriesNumerator(n) <- series;
-            ASSIGN minValueNumerator(n) <- 1L;
-            ASSIGN maxValueNumerator(n) <- 99999L;
-            ASSIGN stringLengthNumerator(n) <- 5;
+            nameNumerator(n) <- caption;
+            seriesNumerator(n) <- series;
+            minValueNumerator(n) <- 1L;
+            maxValueNumerator(n) <- 99999L;
+            stringLengthNumerator(n) <- 5;
 
-            ASSIGN defaultNumerator###object1###object2() <- n;
+            defaultNumerator###object1###object2() <- n;
         }
     };
 
