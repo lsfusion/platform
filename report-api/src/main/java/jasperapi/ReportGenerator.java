@@ -400,7 +400,7 @@ public class ReportGenerator {
         }
     }
 
-    private static File exportToExcel(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
+    public static File exportToExcel(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
         return exportToFile(generationData, new JRXlsxExporter(), "xlsx");
     }
     
