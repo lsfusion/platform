@@ -12,18 +12,18 @@ stringEqualsAll(string) = string == STRING[3]('Все');
 
 isWordInCSV = FORMULA INTEGER 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE NULL END';
 
-istartsWith = FORMULA INTEGER 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN 1 ELSE NULL END';
-startsWith = FORMULA INTEGER 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN 1 ELSE NULL END';
+istartsWith = FORMULA INTEGER PG 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN 1 ELSE NULL END' MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
+startsWith = FORMULA INTEGER PG 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN 1 ELSE NULL END' MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
 
-isISubstring = FORMULA INTEGER 'CASE WHEN (($1) ILIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END'; 
-isSubstring = FORMULA INTEGER 'CASE WHEN (($1) LIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END';
+isISubstring = FORMULA INTEGER PG 'CASE WHEN (($1) ILIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END' MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END'; 
+isSubstring = FORMULA INTEGER PG 'CASE WHEN (($1) LIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END' MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END';
 
 replace = FORMULA 'replace($1,$2,$3)';
 
-charLength = FORMULA INTEGER 'char_length($1)';
+charLength = FORMULA INTEGER PG 'char_length($1)' MS 'len($1)';
 
-substr = FORMULA TEXT 'substr($1, $2, $3)';
-substrFrom = FORMULA TEXT 'substr($1, $2)'; 
+substr = FORMULA TEXT 'substring($1, $2, $3)';
+substrFrom = FORMULA TEXT 'substring($1, $2)'; 
 
 left = FORMULA TEXT 'left($1,$2)';
 right = FORMULA TEXT 'right($1,$2)';
@@ -31,24 +31,24 @@ right = FORMULA TEXT 'right($1,$2)';
 // --------------------------------------------- Работа с числами --------------------------------- //
 
 floor = FORMULA 'floor($1)';
-ceil = FORMULA 'ceil($1)';
+ceil = FORMULA 'ceiling($1)';
 min = FORMULA '($1+$2-ABS($1-$2))/2';
 
 sqr = FORMULA '($1)*($1)';
 sqrt = FORMULA 'sqrt($1)';
 percent = FORMULA '(($1)*($2)/100)';
 share = FORMULA '(($1)*100/($2))';
-round = FORMULA 'round(CAST(($1) as numeric),$2)';
+round = FORMULA PG 'round(CAST(($1) as numeric),$2)' MS 'round(CAST(($1) as numeric(38,19)),$2)';
 delta = FORMULA 'abs(($1)-($2))';
 
-divideInteger = FORMULA INTEGER 'CAST(CAST(trunc($1) AS integer)/CAST(trunc($2) as integer) as integer)';
+divideInteger = FORMULA INTEGER PG 'CAST(CAST(trunc($1) AS integer)/CAST(trunc($2) as integer) as integer)' MS 'CAST(CAST($1 AS integer)/CAST($2 as integer) as integer)';
 divideIntegerNeg = FORMULA INTEGER 'CASE WHEN CAST(($1) AS integer)<0 THEN -CAST(((-CAST(($1) as integer)-1)/CAST(($2) as integer)) as integer) ELSE CAST(CAST(($1) as integer)/CAST(($2) as integer) as integer) END';
 divideIntegerRnd = FORMULA INTEGER 'CAST(round(($1)/($2),0) as integer)';
 
 iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER STEP i==$i+1 AND i<=to CYCLES IMPOSSIBLE;
 count(i, count) = iterate(i, 1, count);
 
-toInteger (i) = FORMULA INTEGER 'convert_to_integer($1)';
+toInteger (i) = FORMULA INTEGER PG 'convert_to_integer($1)' MS 'dbo.convert_to_integer($1)';
 
 // --------------------------------------------- Округления --------------------------------- //
 roundM1 (number) = round(number, -1);
