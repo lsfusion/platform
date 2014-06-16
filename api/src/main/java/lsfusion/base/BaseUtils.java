@@ -2320,4 +2320,8 @@ public class BaseUtils {
         }
         return result.toString();
     }
+    
+    public static boolean hasRightSpace(String string) {
+        return BaseUtils.rtrim(string).length() != string.length();
+    }
 }

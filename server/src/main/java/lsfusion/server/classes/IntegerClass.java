@@ -62,6 +62,11 @@ public class IntegerClass extends IntegralClass<Integer> {
         return writer + ".Write(" + value + ");";
     }
 
+    @Override
+    public int getBaseDotNetSize() {
+        return 4;
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getIntegerSQL();
     }

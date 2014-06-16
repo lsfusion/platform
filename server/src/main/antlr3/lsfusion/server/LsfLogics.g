@@ -43,6 +43,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 	import lsfusion.server.logics.property.CaseUnionProperty;
 	import lsfusion.server.logics.property.IncrementType;
+	import lsfusion.server.data.expr.formula.SQLSyntaxType;
 	
 	import javax.mail.Message;
 
@@ -1475,6 +1476,13 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	: 	'CLASS' '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
+formulaPropertySyntaxType returns [SQLSyntaxType type = null]
+    : ('PG' { $type = SQLSyntaxType.POSTGRES; } | 'MS' { $type = SQLSyntaxType.MSSQL; })? 
+;
+formulaPropertySyntax returns [List<SQLSyntaxType> types = new ArrayList<SQLSyntaxType>(), List<String> strings = new ArrayList<String>()]
+    :
+    (type=formulaPropertySyntaxType { $types.add($type.type); } formulaText=stringLiteral { $strings.add($formulaText.val); })+
+;
 
 formulaPropertyDefinition returns [LP property, List<AndClassSet> signature]
 @init {
@@ -1483,14 +1491,14 @@ formulaPropertyDefinition returns [LP property, List<AndClassSet> signature]
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedSFProp(className, $formulaText.val, hasNotNull);
+		$property = self.addScriptedSFProp(className, $synt.types, $synt.strings, hasNotNull);
 		$signature = Collections.<AndClassSet>nCopies($property.listInterfaces.size(), null);
 	}
 }
 	:	'FORMULA'
 	    ('NULL' { hasNotNull = true; })?
-		(clsName=classId { className = $clsName.sid; })? 
-		formulaText=stringLiteral
+		(clsName=classId { className = $clsName.sid; })?
+		synt = formulaPropertySyntax
 	;
 
 filterPropertyDefinition returns [LP property, List<AndClassSet> signature]

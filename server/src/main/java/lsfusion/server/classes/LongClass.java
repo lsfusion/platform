@@ -70,6 +70,11 @@ public class LongClass extends IntegralClass<Long> {
         return writer + ".Write(" + value + ");";
     }
 
+    @Override
+    public int getBaseDotNetSize() {
+        return 8;
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getLongSQL();
     }

@@ -3,6 +3,7 @@ package lsfusion.server.data;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.query.TypeFunc;
 import lsfusion.server.data.type.ArrayClass;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
@@ -18,5 +19,7 @@ public interface TypePool {
 
     void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) throws SQLException;
 
+    void ensureTypeFunc(Pair<TypeFunc, Type> tf) throws SQLException;
+    
     void ensureArrayClass(ArrayClass arrayClass) throws SQLException;
 }

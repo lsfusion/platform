@@ -32,7 +32,7 @@ onStarted = ABSTRACT ACTION LIST ();
 
 upper = FORMULA 'upper($1)';
 
-subtractInteger = FORMULA INTEGER '(($1)-($2))';
+subtractInteger(dateFrom, dateTo) = [= FORMULA INTEGER PG '(($1)-($2))' MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
 
 formApply 'Сохранить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty';
 formCancel 'Отменить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty';

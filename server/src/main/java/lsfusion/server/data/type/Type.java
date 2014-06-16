@@ -25,13 +25,15 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     public Object getInfiniteValue(boolean min);
 
-    Object castValue(Object object, Type type);
-    String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv);
+    Object castValue(Object object, Type type, SQLSyntax syntax);
+    String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv); // как правило нужен, чтобы указать СУБД класс, а не реально прокастить 
+    String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom);
 
     String getDB(SQLSyntax syntax, TypeEnvironment typeEnv);
     String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv); // for ms sql
     String getDotNetRead(String reader); // for ms sql
     String getDotNetWrite(String writer, String value); // for ms sql
+    int getDotNetSize(); // for ms sql
     int getSQL(SQLSyntax syntax);
 
     boolean isSafeString(Object value);

@@ -20,10 +20,7 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.Time;
 import lsfusion.server.data.Union;
 import lsfusion.server.data.expr.StringAggUnionProperty;
-import lsfusion.server.data.expr.formula.DivideFormulaImpl;
-import lsfusion.server.data.expr.formula.MultiplyFormulaImpl;
-import lsfusion.server.data.expr.formula.SubtractFormulaImpl;
-import lsfusion.server.data.expr.formula.SumFormulaImpl;
+import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.Type;
@@ -835,27 +832,23 @@ public abstract class LogicsModule {
         return addSFProp(name, formula, null, paramCount);
     }
 
-    protected LCP addSFProp(String formula, int paramCount) {
-        return addSFProp(formula, paramCount, false);
-    }
-
-    protected LCP addSFProp(String formula, int paramCount, boolean hasNotNull) {
+    protected LCP addSFProp(CustomFormulaSyntax formula, int paramCount, boolean hasNotNull) {
         return addSFProp(formula, (DataClass) null, paramCount, hasNotNull);
     }
 
     protected LCP addSFProp(String formula, DataClass value, int paramCount) {
-        return addSFProp( formula, value, paramCount, false);
+        return addSFProp( new CustomFormulaSyntax(formula), value, paramCount, false);
     }
 
-    protected LCP addSFProp(String formula, DataClass value, int paramCount, boolean hasNotNull) {
+    protected LCP addSFProp(CustomFormulaSyntax formula, DataClass value, int paramCount, boolean hasNotNull) {
         return addSFProp(genSID(), formula, value, paramCount, hasNotNull);
     }
 
     protected LCP addSFProp(String name, String formula, DataClass value, int paramCount) {
-        return addSFProp(name, formula, value, paramCount, false);
+        return addSFProp(name, new CustomFormulaSyntax(formula), value, paramCount, false);
     }
     
-    protected LCP addSFProp(String name, String formula, DataClass value, int paramCount, boolean hasNotNull) {
+    protected LCP addSFProp(String name, CustomFormulaSyntax formula, DataClass value, int paramCount, boolean hasNotNull) {
         return addProperty(null, new LCP<StringFormulaProperty.Interface>(new StringFormulaProperty(name, value, formula, paramCount, hasNotNull)));
     }
 

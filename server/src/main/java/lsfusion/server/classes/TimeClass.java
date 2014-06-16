@@ -70,6 +70,10 @@ public class TimeClass extends DataClass<Time> {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public int getBaseDotNetSize() {
+        throw new UnsupportedOperationException();
+    }
 
     public int getSQL(SQLSyntax syntax) {
         return syntax.getTimeSQL();

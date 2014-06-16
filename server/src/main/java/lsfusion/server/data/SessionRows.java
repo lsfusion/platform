@@ -63,7 +63,7 @@ public class SessionRows extends SessionData<SessionRows> {
     public Join<PropertyField> join(ImMap<KeyField, ? extends Expr> joinImplement) {
         return new SessionJoin(joinImplement) {
             public Expr getExpr(PropertyField property) {
-                CaseExprInterface cases = Expr.newCases(true);
+                CaseExprInterface cases = Expr.newCases(true, rows.size());
                 for(int i=0,size=rows.size();i<size;i++)
                     cases.add(CompareWhere.compareValues(joinImplement,rows.getKey(i)),rows.getValue(i).get(property).getExpr());
                 return cases.getFinal();

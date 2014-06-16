@@ -34,13 +34,13 @@ public class MaxFormulaImpl extends AbstractFormulaImpl implements FormulaUnionI
         ExecuteEnvironment env = source.getEnv();
         boolean noMaxImplicitCast = syntax.noMaxImplicitCast();
 
-        String result = type.getCast(source.getSource(0), syntax, env); // чтобы когда NULL'ы тип правильно определило
+        String result = type.getCast(source.getSource(0), syntax, env, source.getType(0)); // чтобы когда NULL'ы тип правильно определило
 
         for (int i = 1; i < exprCount; i++) {
             String exprSource = source.getSource(i);
             if(noMaxImplicitCast)
-                exprSource = type.getCast(exprSource, syntax, env);
-            result = syntax.getMaxMin(!isMin, result , exprSource);
+                exprSource = type.getCast(exprSource, syntax, env, source.getType(i));
+            result = syntax.getMaxMin(!isMin, result , exprSource, type, env);
         }
         return result;
     }

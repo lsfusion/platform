@@ -20,4 +20,6 @@ public interface TypeEnvironment {
     void addNeedSafeCast(Type type);
 
     void addNeedAggOrder(GroupType groupType, ImList<Type> types);
+
+    void addNeedTypeFunc(TypeFunc groupType, Type type);
 }

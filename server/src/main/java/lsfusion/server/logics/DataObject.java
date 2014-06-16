@@ -12,6 +12,7 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.data.Field;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
@@ -20,7 +21,9 @@ import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -255,5 +258,9 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     @Override
     public AndClassSet getAndClassSet() {
         return objectClass;
+    }
+
+    public ParseInterface getParse(Field field, SQLSyntax syntax) {
+        return new TypeObject(this, field, syntax);
     }
 }

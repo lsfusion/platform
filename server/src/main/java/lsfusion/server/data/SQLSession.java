@@ -36,7 +36,6 @@ import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 
 import java.io.BufferedWriter;
@@ -147,8 +146,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private void needPrivate() throws SQLException { // получает unique connection
         assertLock();
-        if(privateConnection ==null)
+        if(privateConnection ==null) {
+            assert transactionTables.isEmpty();
             privateConnection = connectionPool.getPrivate(this);
+        }
     }
 
     private void tryCommon(OperationOwner owner) throws SQLException { // пытается вернуться к
@@ -257,6 +258,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     public void startTransaction(int isolationLevel, OperationOwner owner) throws SQLException, SQLHandledException {
         lockWrite(owner);
+        
+        assert isInTransaction() || transactionTables.isEmpty();
         try {
             if(Settings.get().isApplyVolatileStats())
                 pushVolatileStats(null, owner);
@@ -323,12 +326,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                         for(int i=0;i<transTablesCount;i++) {
                             //                dropTemporaryTableFromDB(transactionTable);
 
-                            String transactionTable = SQLTemporaryPool.getTableName(i+transactionCounter);
+                            String transactionTable = privateConnection.temporary.getTableName(i+transactionCounter);
 
                             ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES");
 //                            returnUsed(transactionTable, sessionTablesMap);
                             WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
-//                            fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + this + " " + ExceptionUtils.getStackTrace());                            
+//                            fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + SQLSession.this + " " + ExceptionUtils.getStackTrace());                            
 //                            
 //                            if(Settings.get().isEnableHacks())
 //                                sessionTablesStackReturned.put(transactionTable, ExceptionUtils.getStackTrace());
@@ -348,6 +351,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             problemInTransaction = null;
         }
 
+//        fifo.add("RBACK"  + getCurrentTimeStamp() + " " + this + " " + ExceptionUtils.getStackTrace());
+
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
                 endTransaction(owner);
@@ -365,6 +370,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
     public void commitTransaction(OperationOwner owner) throws SQLException {
         privateConnection.sql.commit();
+//        fifo.add("CMT"  + getCurrentTimeStamp() + " " + this);
+
         endTransaction(owner);
     }
 
@@ -527,8 +534,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     public void modifyColumn(Table table, Field field, Type oldType) throws SQLException {
         ExecuteEnvironment env = new ExecuteEnvironment();
-        executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.getName(syntax) + " TYPE " +
-                field.type.getDB(syntax, env) + " " + syntax.typeConvertSuffix(oldType, field.type, field.getName(syntax), env), env);
+        executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.getName(syntax) + " " + syntax.getTypeChange(oldType, field.type, field.getName(syntax), env));
     }
 
     public void packTable(Table table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
@@ -595,7 +601,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
             } catch (Throwable t) {
                 returnTemporaryTable(table, owner, opOwner, t instanceof SQLTimeoutException); // вернем таблицу, если не смогли ее заполнить, truncate при timeoutе потому как в остальных случаях и так должна быть пустая (строго говоря с timeout'ом это тоже перестраховка) 
-                try { ServerLoggers.assertLog(problemInTransaction != null || getCount(table, opOwner) == 0, "TEMPORARY TABLE AFTER FILL NOT EMPTY"); } catch (Throwable i) { ServerLoggers.sqlSuppLog(i); }
+                try { ServerLoggers.assertLog(problemInTransaction != null || getSessionCount(table, opOwner) == 0, "TEMPORARY TABLE AFTER FILL NOT EMPTY"); } catch (Throwable i) { ServerLoggers.sqlSuppLog(i); }
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
             } finally {
                 if(isNew.result && isInTransaction()) { // пометим как transaction
@@ -628,7 +634,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             if (force || tableOwner == null) {
 //                    dropTemporaryTableFromDB(entry.getKey());
 //                fifo.add("RU " + getCurrentTimeStamp() + " " + force + " " + entry.getKey() + " " + privateConnection.temporary + " " + (tableOwner == null ? TableOwner.none : tableOwner) + " " + opOwner + " " + this + " " + ExceptionUtils.getStackTrace());
-                truncate(entry.getKey(), opOwner, (tableOwner == null ? TableOwner.none : tableOwner));
+                truncateSession(entry.getKey(), opOwner, (tableOwner == null ? TableOwner.none : tableOwner));
                 iterator.remove();
             }
         }
@@ -658,7 +664,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             if(truncate) {
                 runSuppressed(new SQLRunnable() {
                     public void run() throws SQLException {
-                        truncate(table, opOwner, owner);
+                        truncateSession(table, opOwner, owner);
                     }
                 }, firstException);
                 if(firstException.result != null) {
@@ -746,27 +752,45 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             }
         }
     }
+
+    private AtomicInteger noQueryLimit = new AtomicInteger(0);
+
+    public void pushNoQueryLimit() {
+        noQueryLimit.getAndIncrement();
+    }
+
+    public void popNoQueryLimit() {
+        noQueryLimit.decrementAndGet();
+    }
     
+    public boolean isNoQueryLimit() {
+        return noQueryLimit.get() > 0;
+    }
+
     private AtomicInteger volatileStats = new AtomicInteger(0);
     
     public boolean isVolatileStats() {
         return volatileStats.get() > 0;
     }
-    
+
     public void pushVolatileStats(Connection connection, OperationOwner owner) throws SQLException {
         if(syntax.supportsVolatileStats())
             if(volatileStats.getAndIncrement() == 0) {
-                lockRead(owner);
-                temporaryTablesLock.lock();
-                try {
-                    needPrivate();
-                } finally {
-                    temporaryTablesLock.unlock();
-                    unlockRead();
-                }
+                envNeedPrivate(owner);
 
                 executeDDL("SET enable_nestloop=off", owner);
             }
+    }
+
+    private void envNeedPrivate(OperationOwner owner) throws SQLException {
+        lockRead(owner);
+        temporaryTablesLock.lock();
+        try {
+            needPrivate();
+        } finally {
+            temporaryTablesLock.unlock();
+            unlockRead();
+        }
     }
 
     public void popVolatileStats(Connection connection, OperationOwner opOwner) throws SQLException {
@@ -775,15 +799,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 if(problemInTransaction == null)
                     executeDDL("SET enable_nestloop=on", opOwner);
 
-                lockRead(opOwner);
-                temporaryTablesLock.lock();
-                try {
-                    tryCommon(opOwner);
-                } finally {
-                    temporaryTablesLock.unlock();
-                    unlockRead();
-                }
+                envTryCommon(opOwner);
             }
+    }
+
+    private void envTryCommon(OperationOwner opOwner) throws SQLException {
+        lockRead(opOwner);
+        temporaryTablesLock.lock();
+        try {
+            tryCommon(opOwner);
+        } finally {
+            temporaryTablesLock.unlock();
+            unlockRead();
+        }
     }
 
     private AtomicInteger noHandled = new AtomicInteger(0);
@@ -991,6 +1019,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         SQLException e = (SQLException)t;            
         if(message == null)
             message = "PREPARING STATEMENT";
+        
+//        fifo.add("E"  + getCurrentTimeStamp() + " " + this + " " + e.getStackTrace());
             
         boolean inTransaction = isInTransaction();
         if(inTransaction)
@@ -1229,8 +1259,24 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return Runtime.getRuntime().maxMemory() / Settings.get().getQueryRowCountOptDivider(); // 0.05
     }
     
+    public void debugExecute(String select) throws SQLException {
+        ExConnection connection = getConnection();
+        Statement statement = connection.sql.createStatement();
+        try {
+            statement.execute(select);
+        } finally {
+            statement.close(); 
+        }
+    }
+
+    public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(String select, OperationOwner owner, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, QueryExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders) throws SQLException, SQLHandledException {
+        ReadAllResultHandler<K, V> result = new ReadAllResultHandler<K, V>();
+        executeSelect(select, owner, env, paramObjects, queryExecEnv, transactTimeout, keyNames, keyReaders, propertyNames, propertyReaders, result);
+        return result.terminate();
+    }
+
     @Message("message.sql.execute")
-    public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(@ParamMessage String select, OperationOwner owner, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, QueryExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders) throws SQLException, SQLHandledException {
+    public <K,V> void executeSelect(@ParamMessage String select, OperationOwner owner, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, QueryExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
         QueryExecuteInfo execInfo = lockQueryExec(queryExecEnv, transactTimeout, owner);
         queryExecEnv.beforeConnection(this, execInfo);
 
@@ -1254,7 +1300,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
         long runTime = 0;
         PreparedStatement statement = null;
-        MOrderExclMap<ImMap<K,Object>,ImMap<V,Object>> mExecResult = null;
 
         Result<Throwable> firstException = new Result<Throwable>();
         try {
@@ -1265,7 +1310,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             if(outStatement)
                 System.out.println(statement.toString());
-            mExecResult = MapFact.mOrderExclMap();
 
             queryExecEnv.beforeStatement(statement, this, execInfo);
 
@@ -1277,12 +1321,23 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             long adjLimit = 0;
             long rowCount = 0;
             int rowSize = 0;
+            boolean isNoQueryLimit = isNoQueryLimit();
                                     
             try {
+                handler.start();
+                
                 while(result.next()) {
-                    if(rowCount++ > pessLimit) {
+                    ImValueMap<K, Object> mRowKeys = keyNames.mapItValues(); // потому как exception есть
+                    for(int i=0,size=keyNames.size();i<size;i++)
+                        mRowKeys.mapValue(i, keyReaders.get(keyNames.getKey(i)).read(result, syntax, keyNames.getValue(i)));
+                    ImValueMap<V, Object> mRowProperties = propertyNames.mapItValues(); // потому как exception есть
+                    for(int i=0,size=propertyNames.size();i<size;i++)
+                        mRowProperties.mapValue(i, propertyReaders.get(propertyNames.getKey(i)).read(result, syntax, propertyNames.getValue(i)));
+                    handler.proceed(mRowKeys.immutableValue(), mRowProperties.immutableValue());
+                    
+                    if(!isNoQueryLimit && rowCount++ > pessLimit) {
                         if(adjLimit == 0) {
-                            rowSize = calculateRowSize(keyReaders, propertyReaders, mExecResult);
+                            rowSize = calculateRowSize(keyReaders, propertyReaders, handler.getPrevResults());
                             adjLimit = BaseUtils.max(getMemoryLimit() / rowSize, pessLimit);
                         }
                         if(rowCount > adjLimit) {
@@ -1292,15 +1347,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                             throw new SQLTooLargeQueryException(rowCount, adjLimit, rowSize);
                         }
                     }
-                        
-                    ImValueMap<K, Object> rowKeys = keyNames.mapItValues(); // потому как exception есть
-                    for(int i=0,size=keyNames.size();i<size;i++)
-                        rowKeys.mapValue(i, keyReaders.get(keyNames.getKey(i)).read(result, syntax, keyNames.getValue(i)));
-                    ImValueMap<V, Object> rowProperties = propertyNames.mapItValues(); // потому как exception есть
-                    for(int i=0,size=propertyNames.size();i<size;i++)
-                        rowProperties.mapValue(i, propertyReaders.get(propertyNames.getKey(i)).read(result, syntax, propertyNames.getValue(i)));
-                    mExecResult.exclAdd(rowKeys.immutableValue(), rowProperties.immutableValue());
                 }
+                
+                handler.finish();
             } finally {
                 result.close();
             }
@@ -1312,8 +1361,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         afterExStatementExecute(firstException, select, owner, env, queryExecEnv, execInfo, connection, runTime, returnStatement, statement);
 
         finishHandledExceptions(firstException);
-        
-        return mExecResult.immutableOrder();
     }
     
     private <K> boolean hasUnlimited(ImMap<K, ? extends Reader> keyReaders) {
@@ -1354,8 +1401,53 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return rowSize;
     }
 
-    public void insertBatchRecords(String table, ImOrderSet<KeyField> keys, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, OperationOwner opOwner, TableOwner tableOwner) throws SQLException {
+    private static final Parser<Object, Object> dataParser = new Parser<Object, Object>() {
+
+        public ParseInterface getParse(Object key, Field field, SQLSyntax syntax) {
+            return new TypeObject(key, field.type, syntax, true);
+        }
+
+        public ParseInterface getKeyParse(Object key, KeyField field, SQLSyntax syntax) {
+            return getParse(key, field, syntax);
+        }
+
+        public ParseInterface getPropParse(Object prop, PropertyField field, SQLSyntax syntax) {
+            if(prop == null)
+                return new AbstractParseInterface.Null(field.type);
+            else
+                return getParse(prop, field, syntax);
+        }
+    };
+            
+    public void insertBatchRecords(GlobalTable table, ImMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> rows, OperationOwner opOwner) throws SQLException {
+        if(rows.isEmpty())
+            return;
+
+        insertBatchRecords(table.getName(syntax), table.keys, rows, dataParser, opOwner);
+    }
+
+    private static final Parser<DataObject, ObjectValue> sessionParser = new Parser<DataObject, ObjectValue>() {
+        public ParseInterface getKeyParse(DataObject key, KeyField field, SQLSyntax syntax) {
+            return key.getParse(field, syntax);
+        }
+
+        public ParseInterface getPropParse(ObjectValue prop, PropertyField field, SQLSyntax syntax) {
+            return prop.getParse(field, syntax);
+        }
+    };
+    
+    public void insertSessionBatchRecords(String table, ImOrderSet<KeyField> keys, ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, OperationOwner opOwner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
+
+        insertBatchRecords(syntax.getSessionTableName(table), keys, rows, sessionParser, opOwner);
+    }
+    
+    private static interface Parser<K, V> {
+        ParseInterface getKeyParse(K key, KeyField field, SQLSyntax syntax);
+        ParseInterface getPropParse(V prop, PropertyField field, SQLSyntax syntax);
+    } 
+
+    public <K, V> void insertBatchRecords(String table, ImOrderSet<KeyField> keys, ImMap<ImMap<KeyField, K>, ImMap<PropertyField, V>> rows, Parser<K, V> parser, OperationOwner opOwner) throws SQLException {
         
         lockRead(opOwner);
 
@@ -1378,7 +1470,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             valueString = "0";
         }
 
-        String command = "INSERT INTO " + syntax.getSessionTableName(table) + " (" + insertString + ") VALUES (" + valueString + ")";
+        String command = "INSERT INTO " + table + " (" + insertString + ") VALUES (" + valueString + ")";
         PreparedStatement statement = null;
 
         Result<Throwable> firstException = new Result<Throwable>();
@@ -1391,15 +1483,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             
             for(int i=0,size=rows.size();i<size;i++) {
                 ParamNum paramNum = new ParamNum();
-                for(KeyField key : keys)
-                    new TypeObject(rows.getKey(i).get(key), key).writeParam(statement, paramNum, syntax, env);
-                for(PropertyField property : properties) {
-                    ObjectValue propValue = rows.getValue(i).get(property);
-                    if(propValue instanceof NullValue)
-                        property.type.writeNullParam(statement, paramNum, syntax, env);
-                    else
-                        new TypeObject((DataObject) propValue, property).writeParam(statement, paramNum, syntax, env);
-                }
+                ImMap<KeyField, K> rowKey = rows.getKey(i);
+                for(KeyField key : keys) // чтобы сохранить порядок
+                    parser.getKeyParse(rowKey.get(key), key, syntax).writeParam(statement, paramNum, syntax, env);
+                ImMap<PropertyField, V> rowValue = rows.getValue(i);
+                for(PropertyField property : properties) // чтобы сохранить порядок
+                    parser.getPropParse(rowValue.get(property), property, syntax).writeParam(statement, paramNum, syntax, env);
                 statement.addBatch();
             }
 
@@ -1434,7 +1523,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             else {
                 String prm = "qxprm" + (paramNum++) + "nx";
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + prm;
-                params.exclAdd(prm, new TypeObject(keyValue, key));
+                params.exclAdd(prm, new TypeObject(keyValue, key, syntax));
             }
         }
 
@@ -1447,7 +1536,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             else {
                 String prm = "qxprm" + (paramNum++) + "nx";
                 valueString = (valueString.length() == 0 ? "" : valueString + ',') + prm;
-                params.exclAdd(prm, new TypeObject((DataObject) fieldValue, property));
+                params.exclAdd(prm, new TypeObject((DataObject) fieldValue, property, syntax));
             }
         }
 
@@ -1554,20 +1643,36 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 execute(this, owner).singleValue().get("result");
     }
 
-    public void truncate(String table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
+    public void truncate(GlobalTable table, OperationOwner owner) throws SQLException {
+        truncate(table.getName(syntax), owner);
+    }
+    
+    public void truncateSession(String table, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         checkTableOwner(table, tableOwner);
-        
+
+        truncate(syntax.getSessionTableName(table), owner);
+    }
+
+    public void truncate(String table, OperationOwner owner) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         if(problemInTransaction == null) {
-            executeDDL("TRUNCATE TABLE " + syntax.getSessionTableName(table), ExecuteEnvironment.NOREADONLY, owner); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
+            executeDDL("TRUNCATE TABLE " + table, ExecuteEnvironment.NOREADONLY, owner); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
 //            executeDML("DELETE FROM " + syntax.getSessionTableName(table), owner, tableOwner);
         }
+    }
+
+    public int getSessionCount(String table, OperationOwner opOwner) throws SQLException {
+        return getCount(syntax.getSessionTableName(table), opOwner);
+    }
+
+    public int getCount(Table table, OperationOwner opOwner) throws SQLException {
+        return getCount(table.getName(syntax), opOwner);
     }
 
     public int getCount(String table, OperationOwner opOwner) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         try {
-            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + syntax.getSessionTableName(table), opOwner, ExecuteEnvironment.EMPTY, MapFact.<String, ParseInterface>EMPTY(), QueryExecuteEnvironment.DEFAULT, 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance), MapFact.<Object, String>EMPTYREV(), MapFact.<Object, Reader>EMPTY()).singleKey().singleValue();
+            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, ExecuteEnvironment.EMPTY, MapFact.<String, ParseInterface>EMPTY(), QueryExecuteEnvironment.DEFAULT, 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance), MapFact.<Object, String>EMPTYREV(), MapFact.<Object, Reader>EMPTY()).singleKey().singleValue();
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -1628,7 +1733,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             String fieldName = field.getName(syntax);
             mReadProps.exclAdd(getCntDist(field.getName()), syntax.getCountDistinct(fieldName));
             mReadProps.exclAdd(getCnt(field.getName()), syntax.getCount(fieldName));
-            field.type.readDeconc(syntax.getAnyValueFunc() + "(" + fieldName + ")", fieldName, mReadProps, syntax, env);
+            field.type.readDeconc(syntax.getAnyValueFunc() + "(" + fieldName + ")", field.getName(), mReadProps, syntax, env);
         }
         ImMap<String, String> readProps = mReadProps.immutable();
 

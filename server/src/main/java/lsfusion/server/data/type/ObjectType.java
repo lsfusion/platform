@@ -65,6 +65,9 @@ public class ObjectType extends AbstractType<Integer> {
         return idClass.getDotNetWrite(writer, value);
     }
 
+    public int getBaseDotNetSize() {
+        return idClass.getBaseDotNetSize();
+    }
 
     public int getSQL(SQLSyntax syntax) {
         return idClass.getSQL(syntax);
@@ -115,8 +118,8 @@ public class ObjectType extends AbstractType<Integer> {
             return baseClass.unknown;
 
         QueryBuilder<Object,String> query = new QueryBuilder<Object,String>(MapFact.<Object, KeyExpr>EMPTYREV());
-        CaseExprInterface mCases = Expr.newCases(true); // именно так а не через classExpr и т.п. чтобы не соптимизировалось, и не убрало вообще запрос к таблице
         ImRevMap<ClassField,ObjectValueClassSet> readTables = objectClassSet.getTables();
+        CaseExprInterface mCases = Expr.newCases(true, readTables.size()); // именно так а не через classExpr и т.п. чтобы не соптимизировалось, и не убрало вообще запрос к таблице
         for(int i=0,size=readTables.size();i<size;i++) {
             Expr expr = readTables.getKey(i).getStoredExpr(new ValueExpr(value, readTables.getValue(i).getSetConcreteChildren().get(0)));
             mCases.add(expr.getWhere(), expr);

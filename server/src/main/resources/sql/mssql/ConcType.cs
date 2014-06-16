@@ -27,14 +27,14 @@ using System.Text;
 
 [Serializable]
 [Microsoft.SqlServer.Server.SqlUserDefinedType(Format.UserDefined,
-     IsByteOrdered=true, MaxByteSize=8000)]
+     IsByteOrdered=true, MaxByteSize=${maxbyte.size})]
 public struct ${type.name} : INullable, IComparable, IBinarySerialize
 {
     private bool is_Null;
     ${declare.fields}
     
     public ${type.name}(${declare.prms}) {
-        is_Null = false; 
+        is_Null = ${check.isnull};            
         ${assign.fields}
     }
     

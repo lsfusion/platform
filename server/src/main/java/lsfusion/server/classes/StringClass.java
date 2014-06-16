@@ -50,10 +50,22 @@ public class StringClass extends DataClass {
     }
 
     @Override
-    public Object castValue(Object object, Type typeFrom) {
+    public Object castValue(Object object, Type typeFrom, SQLSyntax syntax) {
         if(!blankPadded && typeFrom instanceof StringClass && ((StringClass)typeFrom).blankPadded)
             return BaseUtils.rtrim((String)object);
-        return super.castValue(object, typeFrom);
+        return super.castValue(object, typeFrom, syntax);
+    }
+    
+    public String getRTrim(String value) {
+        assert blankPadded;
+        return "RTRIM(" + value + ")";
+    }
+
+    @Override
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
+        if(!blankPadded && typeFrom!= null && syntax.doesNotTrimWhenCastToVarChar() && typeFrom instanceof StringClass && ((StringClass)typeFrom).blankPadded) // тут по
+            return ((StringClass)typeFrom).getRTrim("CAST(" + value + " AS " + getDB(syntax, typeEnv) + ")");
+        return super.getCast(value, syntax, typeEnv, typeFrom);
     }
 
     @Override
@@ -141,6 +153,13 @@ public class StringClass extends DataClass {
         return writer + ".Write(" + value + ");";
     }
 
+    @Override
+    public int getBaseDotNetSize() {
+        if(length.isUnlimited())
+            return 400;
+        return length.getValue() * 4 + 5;
+    }
+
     public int getSQL(SQLSyntax syntax) {
         boolean isUnlimited = length.isUnlimited();
         if(blankPadded) {
@@ -223,7 +242,7 @@ public class StringClass extends DataClass {
     public StringClass extend(int times) {
         if(length.isUnlimited())
             return this;
-        return get(blankPadded, caseInsensitive, rich, new ExtInt(length.getValue() * times));
+        return get(blankPadded, caseInsensitive, rich, new ExtInt(BaseUtils.min(length.getValue() * times, 4000)));
     }
 
     public String toString() {

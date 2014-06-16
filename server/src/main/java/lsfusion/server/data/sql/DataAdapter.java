@@ -13,11 +13,9 @@ import lsfusion.server.data.AbstractConnectionPool;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.TypePool;
+import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.query.CompileOrder;
-import lsfusion.server.data.query.ExecuteEnvironment;
-import lsfusion.server.data.query.Query;
-import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.query.*;
 import lsfusion.server.data.type.*;
 import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.log4j.Logger;
@@ -215,7 +213,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     }
 
     public boolean useFJ() {
-        return true;
+        return false;
     }
 
     public boolean orderUnion() {
@@ -254,8 +252,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "CURRENT_TIMESTAMP";
     }
 
-    public String typeConvertSuffix(Type oldType, Type newType, String name, TypeEnvironment typeEnv) {
-        return "";
+    public String getTypeChange(Type oldType, Type type, String name, ExecuteEnvironment env) {
+        throw new UnsupportedOperationException();
     }
 
     public String getInsensitiveLike() {
@@ -311,8 +309,16 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return result;
     }
 
-    public static String genConcTypeName(ConcatenateType type) {
+    public String getConcTypeName(ConcatenateType type) {
         return "T" + genTypePostfix(type.getTypes(), type.getDesc());
+    }
+
+    public String getIIF(String ifWhere, String trueExpr, String falseExpr) {
+        return "CASE WHEN " + ifWhere + " THEN " + trueExpr + " ELSE " + falseExpr + " END";
+    }
+
+    public String getAndExpr(String where, String expr, Type type, TypeEnvironment typeEnv) {
+        return getIIF(where, expr, SQLSyntax.NULL);
     }
 
     public static String genNRowName(ImList<Type> types) {
@@ -341,6 +347,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         }
 
         public void addNeedAggOrder(GroupType groupType, ImList<Type> types) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void addNeedTypeFunc(TypeFunc typeFunc, Type type) {
             throw new UnsupportedOperationException();
         }
 
@@ -373,6 +383,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     protected void executeEnsure(String command) throws SQLException {
         Statement statement = ensureConnection.createStatement();
+//        statement.setQueryTimeout(1);
         try {
             statement.execute(command);
         } catch(SQLException e) {
@@ -384,6 +395,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     protected void executeEnsureParams(String command, ImList<TypeObject> params) throws SQLException {
         PreparedStatement statement = ensureConnection.prepareStatement(command);
+//        statement.setQueryTimeout(1);
         SQLSession.ParamNum paramNum = new SQLSession.ParamNum();
         for(TypeObject param : params)
             param.writeParam(statement, paramNum, this, ExecuteEnvironment.EMPTY);
@@ -417,7 +429,6 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     protected static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
 
-    protected String safeCastString;
 
     public synchronized void ensureRecursion(Object ot) throws SQLException {
         throw new UnsupportedOperationException();
@@ -430,6 +441,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public static String genSafeCastName(Type type) {
         return "scast_" + type.getSID();
     }
+
+    protected String safeCastString;
 
     private LRUSVSMap<Type, Boolean> ensuredSafeCasts = new LRUSVSMap<Type, Boolean>(LRUUtil.G2);
 
@@ -448,8 +461,15 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
         ensuredSafeCasts.put(type, true);
     }
+    
+    public String getSafeCastNameFnc(Type type) {
+        return genSafeCastName(type);
+    }
 
     public void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) throws SQLException {
+    }
+
+    public void ensureTypeFunc(Pair<TypeFunc, Type> tf) throws SQLException {
     }
 
     public boolean isDeadLock(SQLException e) {
@@ -465,11 +485,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     }
 
     public boolean isTimeout(SQLException e) {
-        throw new UnsupportedOperationException();
+        return false;
     }
 
-    public String getRandomName() {
-        return "random";
+    public String getRandom() {
+        return "random()";
     }
 
     public boolean isTransactionCanceled(SQLException e) {
@@ -477,7 +497,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     }
 
     public boolean isConnectionClosed(SQLException e) {
-        throw new UnsupportedOperationException();
+        return false;
     }
 
     public boolean hasJDBCTimeoutMultiThreadProblem() {
@@ -599,6 +619,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         throw new UnsupportedOperationException();
     }
 
+    public boolean doesNotTrimWhenCastToVarChar() {
+        throw new UnsupportedOperationException();
+    }
+
     public boolean hasGroupByConstantProblem() {
         return false;
     }
@@ -607,11 +631,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "ALTER TABLE " + table + " RENAME " + columnName + " TO " + newColumnName;
     }
 
-    public String getMaxMin(boolean max, String expr1, String expr2) {
+    public String getMaxMin(boolean max, String expr1, String expr2, Type type, TypeEnvironment typeEnv) {
         throw new UnsupportedOperationException();
     }
 
-    public String getNotZero(String expr) {
+    public String getNotZero(String expr, Type type, TypeEnvironment typeEnv) {
         throw new UnsupportedOperationException();
     }
 
@@ -627,11 +651,31 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return false;
     }
 
+    public boolean supportsNoCount() {
+        return false;
+    }
+
     public String getVolatileStats(boolean on) {
         throw new UnsupportedOperationException();
     }
 
     public String getChangeColumnType() {
         return "";
+    }
+
+    public SQLSyntaxType getSyntaxType() {
+        throw new UnsupportedOperationException();
+    }
+
+    public Date fixDate(Date value) {
+        return value;
+    }
+
+    public Timestamp fixDateTime(Timestamp value) {
+        return value;
+    }
+
+    public boolean hasAggConcProblem() {
+        return false;
     }
 }

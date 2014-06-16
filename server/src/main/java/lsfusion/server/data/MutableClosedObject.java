@@ -3,6 +3,7 @@ package lsfusion.base;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.AssertSynchronized;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 // local (not remote) object with SQL resources 

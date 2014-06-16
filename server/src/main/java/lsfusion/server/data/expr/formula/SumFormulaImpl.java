@@ -56,15 +56,15 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
             Type type = conversion.getType(type1, type2);
             if (type != null) {
                 if (!(type1 instanceof StringClass)) {
-                    src1 = type.getCast(src1, syntax, env);
+                    src1 = type.getCast(src1, syntax, env); // ,type1 последний параметр не надо, так как rtrim в любом случае будет
                 } else if (((StringClass)type1).blankPadded) {
-                    src1 = "rtrim(" + src1 + ")";
+                    src1 = ((StringClass)type1).getRTrim(src1);
                 }
 
                 if (!(type2 instanceof StringClass)) {
                     src2 = type.getCast(src2, syntax, env);
                 } else if (((StringClass)type2).blankPadded) {
-                    src2 = "rtrim(" + src2 + ")";
+                    src2 = ((StringClass)type2).getRTrim(src2);
                 }
 
                 return type.getCast("(" + src1 + " " + syntax.getStringConcatenate() + " " + src2 + ")", syntax, env);

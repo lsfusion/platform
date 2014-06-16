@@ -15,14 +15,18 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.Field;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.SessionTable;
+import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.CompileOrder;
+import lsfusion.server.data.query.ExecuteEnvironment;
 import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.query.TypeFunc;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.type.Reader;
 import lsfusion.server.logics.BusinessLogics;
@@ -30,12 +34,19 @@ import org.apache.commons.exec.*;
 
 import java.io.*;
 import java.sql.*;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.*;
 
 public class MSSQLDataAdapter extends DataAdapter {
 
     public MSSQLDataAdapter(String database, String server, String userID, String password, String instance) throws Exception, SQLException, InstantiationException, IllegalAccessException {
         super(database, server, instance, userID, password, null, false);
+    }
+
+    @Override
+    public boolean hasDriverCompositeProblem() {
+        return true;
     }
 
     @Override
@@ -59,14 +70,17 @@ public class MSSQLDataAdapter extends DataAdapter {
         return tableString + setString + " FROM " + fromString + whereString;
     }
 
+    // в jtds драйвере есть непонятный баг, когда при многопоточной генерации чеков теряются временные таблицы 
     public String getClassName() {
-        return "net.sourceforge.jtds.jdbc.Driver";
+//        return "net.sourceforge.jtds.jdbc.Driver";
+        return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     }
 
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server + ";instance=" + instance + ";User=" + userID + ";Password=" + password);
+//        return DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server + ";instance=" + instance + ";User=" + userID + ";Password=" + password);
+        return DriverManager.getConnection("jdbc:sqlserver://"+ server + ";instance=" + instance + ";user=" + userID + ";password=" + password);
     }
-
+    
     public void ensureDB(boolean cleanDB) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
         //namedPipe=true;
@@ -121,7 +135,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
 
     public String getCreateSessionTable(String tableName, String declareString) {
-        return "CREATE TABLE #"+ tableName +" ("+ declareString + ")";
+        return "CREATE TABLE " + getSessionTableName(tableName) +" ("+ declareString + ")";
     }
     
     private final static String declareFieldsConc = "private ${field.type} _${field.name};";
@@ -160,6 +174,8 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
     private ImMap<GroupType, GroupAggParse> groupAggOrderStrings;
 
+    private ImMap<TypeFunc, String> typeFuncStrings;
+
     private String compilerExe;
     @Override
     protected void ensureSystemFuncs() throws IOException, SQLException {
@@ -173,10 +189,29 @@ public class MSSQLDataAdapter extends DataAdapter {
         groupAggOrderStrings = MapFact.toMap(
                 GroupType.STRING_AGG, new GroupAggParse(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/StringAgg.cs")), new String[]{ null, null, "ov"}),
                 GroupType.LAST, new GroupAggParse(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/LastValue.cs")), new String[]{ "lastValue", "lastOrder"}));
+        typeFuncStrings = MapFact.toMap(
+                TypeFunc.NOTZERO, IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/notzero.sc")),
+                TypeFunc.MAX, IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/maxf.sc")),
+                TypeFunc.MIN, IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/minf.sc")),
+                TypeFunc.ANDEXPR, IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/andexpr.sc"))
+        );
 
-        executeEnsure(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/aggf.sc" )));
+        String command = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/aggf.sc"));
+        String separator = System.getProperty("line.separator");
+        for(String single : command.split(separator + "GO" + separator))
+            executeEnsure(single);
+        
+        ensureDTL(new Pair<String, String>("LSFUtils", IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/Utils.cs"))), false, ListFact.<Type>EMPTY());
+
+        ensureConcType(ConcatenateType.get(new Type[]{DateClass.instance, ObjectType.instance}));
 
         recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/recursion.sc"));
+        safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/safecast.sc"));
+    }
+
+    @Override
+    public String getSafeCastNameFnc(Type type) {
+        return "dbo." + super.getSafeCastNameFnc(type);
     }
 
     @Override
@@ -185,7 +220,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
 
     public String getSessionTableName(String tableName) {
-        return "#"+ tableName;
+        return "#" + tableName;
     }
 
     public boolean isNullSafe() {
@@ -238,7 +273,7 @@ public class MSSQLDataAdapter extends DataAdapter {
 
     @Override
     public String getDateTimeType() {
-        return "datetime";
+        return "datetime"; // return "datetime2"; правильнее было бы datetime2, но нет mapping'а на .net'ский тип 
     }
 
     @Override
@@ -257,13 +292,36 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String getMaxMin(boolean max, String expr1, String expr2) {
-        return "CASE WHEN " + expr1 + (max?">":"<") + expr2 + " THEN " + expr1 + " ELSE " + expr2 + " END";
+    public String getMaxMin(boolean max, String expr1, String expr2, Type type, TypeEnvironment typeEnv) {
+        if(!Settings.get().isUseMSSQLFuncWrapper())
+            return "CASE WHEN " + expr1 + (max?">":"<") + expr2 + " THEN " + expr1 + " ELSE COALESCE(" + expr2 + "," + expr1 + ") END";
+
+        TypeFunc typeFunc = max ? TypeFunc.MAX : TypeFunc.MIN;
+        typeEnv.addNeedTypeFunc(typeFunc, type);
+        return "dbo." + getTypeFuncName(typeFunc, type) + "(" + expr1 + "," + expr2 + ")";
     }
 
     @Override
-    public String getNotZero(String expr) {
-        return "CASE WHEN ABS(" + expr + ")>0.0005 THEN " + expr + " ELSE NULL END";
+    public String getNotZero(String expr, Type type, TypeEnvironment typeEnv) {
+        if(!Settings.get().isUseMSSQLFuncWrapper())
+            return "CASE WHEN ABS(" + expr + ")>0.0005 THEN " + expr + " ELSE NULL END";
+        
+        typeEnv.addNeedTypeFunc(TypeFunc.NOTZERO, type);
+        return "dbo." + getTypeFuncName(TypeFunc.NOTZERO, type) + "(" + expr + ")";
+    }
+
+    @Override
+    public String getAndExpr(String where, String expr, Type type, TypeEnvironment typeEnv) {
+        if(!Settings.get().isUseMSSQLFuncWrapper())
+            return super.getAndExpr(where, expr, type, typeEnv);
+            
+        typeEnv.addNeedTypeFunc(TypeFunc.ANDEXPR, type);
+        return "dbo." + getTypeFuncName(TypeFunc.ANDEXPR, type) + "(CASE WHEN " + where + " THEN 1 ELSE 0 END," + expr + ")";
+    }
+
+    @Override
+    public SQLSyntaxType getSyntaxType() {
+        return SQLSyntaxType.MSSQL;
     }
 
     public void useDLL(){
@@ -326,7 +384,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String getOrderGroupAgg(GroupType groupType, ImList<String> exprs, ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv) {
+    public String getOrderGroupAgg(GroupType groupType, ImList<String> exprs, final ImList<ClassReader> readers, ImOrderMap<String, CompileOrder> orders, TypeEnvironment typeEnv) {
         ImOrderMap<String, CompileOrder> filterOrders = orders.filterOrderValuesMap(new SFunctionSet<CompileOrder>() {
             public boolean contains(CompileOrder element) {
                 return element.reader instanceof Type;
@@ -359,7 +417,15 @@ public class MSSQLDataAdapter extends DataAdapter {
         ImList<Type> fixedTypes;
         if(groupType == GroupType.STRING_AGG) { // будем считать что все implicit прокастится
             assert exprs.size() == 2;
-            fixedTypes = ListFact.<Type>toList(StringClass.getv(ExtInt.UNLIMITED), StringClass.getv(ExtInt.UNLIMITED));
+            StringClass textClass = StringClass.getv(ExtInt.UNLIMITED);
+            fixedTypes = ListFact.<Type>toList(textClass, textClass);
+            exprs = exprs.mapListValues(new GetIndexValue<String, String>() {
+                public String getMapValue(int i, String value) {
+                    ClassReader reader = readers.get(i);
+                    if(reader instanceof StringClass && ((StringClass)reader).blankPadded)
+                        return ((StringClass)reader).getRTrim(value);
+                    return value;
+                }});
         } else {
             fixedTypes = readers.mapListValues(new GetValue<Type, ClassReader>() {
                 public Type getMapValue(ClassReader value) {
@@ -374,6 +440,11 @@ public class MSSQLDataAdapter extends DataAdapter {
         typeEnv.addNeedAggOrder(groupType, fixedTypes);
 
         return "dbo." + getOrderGroupAggName(groupType, fixedTypes) + "(" + exprs.toString(",") + "," + orderSource + ")";
+    }
+
+    @Override
+    public String getTypeChange(Type oldType, Type type, String name, ExecuteEnvironment env) {
+        return type.getDB(this, env);
     }
 
     protected MAddExclMap<Pair<GroupType, ImList<Type>>, Boolean> ensuredGroupAggOrders = MapFact.mAddExclMap();
@@ -394,12 +465,13 @@ public class MSSQLDataAdapter extends DataAdapter {
         StringBuilder read = new StringBuilder();
         StringBuilder write = new StringBuilder();
         for(int i=0,size=types.size();i<size;i++) {
-            String name;
-            if(i==size-1)
-                name = "order";
-            else
-                name = "value" + (i==0?"":i);
             Type type = types.get(i);
+            String name;
+            if(i==size-1) {
+                name = "order";
+                properties.put("order.size", "" + type.getDotNetSize());
+            } else
+                name = "value" + (i==0?"":i);
             String serField = parse.serFields[i];
 
             String dotNetType = type.getDotNetType(this, recTypes);
@@ -414,6 +486,43 @@ public class MSSQLDataAdapter extends DataAdapter {
         ensureDTL(new Pair<String, String>(aggName, stringResolver.replacePlaceholders(parse.code, properties)), false, types);
 
         ensuredGroupAggOrders.exclAdd(groupAggOrder, true);
+    }
+
+    protected MAddExclMap<Pair<TypeFunc, Type>, Boolean> ensuredTypeFuncs = MapFact.mAddExclMap();
+    
+    private static String getTypeFuncName(TypeFunc typeFunc, Type type) {
+        String prefix;
+        switch (typeFunc) {
+            case NOTZERO:
+                prefix = "notZero";
+                break;
+            case MAX:
+                prefix = "MAXF";
+                break;
+            case MIN:
+                prefix = "MINF";
+                break;
+            case ANDEXPR:
+                prefix = "and";
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+        return prefix + "_" + type.getSID();        
+    }
+
+    public synchronized void ensureTypeFunc(Pair<TypeFunc, Type> tf) throws SQLException {
+        Boolean ensured = ensuredTypeFuncs.get(tf);
+        if(ensured != null)
+            return;
+
+        Properties properties = new Properties();
+        properties.put("param.sqltype", tf.second.getDB(this, recTypes));
+        String typeFuncName = getTypeFuncName(tf.first, tf.second);
+        properties.put("fnc.name", typeFuncName);
+        executeEnsure(stringResolver.replacePlaceholders(typeFuncStrings.get(tf.first), properties));
+        
+        ensuredTypeFuncs.exclAdd(tf, true);
     }
 
     private String getSQLType(Type type) {
@@ -449,7 +558,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     @Override
     public String getNotSafeConcatenateSource(ConcatenateType type, ImList<String> exprs, TypeEnvironment typeEnv) {
         typeEnv.addNeedType(type);
-        return "dbo." + genConcTypeName(type) + "(" + exprs.toString(",") + ")";
+        return "dbo." + getConcTypeName(type) + "(" + exprs.toString(",") + ")";
     }
 
     @Override
@@ -469,9 +578,11 @@ public class MSSQLDataAdapter extends DataAdapter {
         if(usedRecursion) {
             ImOrderSet<Field> fields = struct.getFields();
             String varTable = "@" + tableName;
+            envString.append("SET NOCOUNT ON" + '\n');
             envString.append("DECLARE " + varTable + " AS " + struct.getDB(this, recTypes) + '\n');
             String fst = fields.toString(Field.nameGetter(this), ",");
             envString.append("INSERT INTO " + varTable + " (" + fst + ") SELECT " + fst + " FROM " + table + '\n');
+            envString.append("SET NOCOUNT OFF" + '\n');
             return varTable;
         }
         return table;
@@ -506,6 +617,7 @@ public class MSSQLDataAdapter extends DataAdapter {
         String declarePrms = "";
         String declareSqlPrms = "";
         String passPrms = "";
+        String checkIsNull = "false";
         ImList<Type> types = concType.getTypes();
         boolean[] desc = concType.getDesc();
         StringBuilder read = new StringBuilder();
@@ -520,6 +632,8 @@ public class MSSQLDataAdapter extends DataAdapter {
             properties.put("field.number", ""+i);
             properties.put("field.sqltype", getSQLType(type));
             properties.put("field.desc", desc[i] ? "-":"");
+            if(i==0)
+                checkIsNull = fieldName + ".IsNull"; 
             
             declareFields =  (declareFields.length() == 0 ? "" : declareFields + '\n') + stringResolver.replacePlaceholders(declareFieldsConc, properties);
             appendFields = (appendFields.length() == 0 ? "" : appendFields + appendSepConc + '\n') + stringResolver.replacePlaceholders(appendFieldsConc, properties);
@@ -539,6 +653,7 @@ public class MSSQLDataAdapter extends DataAdapter {
 
         Properties properties = new Properties();
         properties.put("declare.fields", declareFields);
+        properties.put("check.isnull", checkIsNull);
         properties.put("append.fields", appendFields);
         properties.put("parse.fields", parseFields);
         properties.put("declare.props", declareProps);
@@ -553,13 +668,19 @@ public class MSSQLDataAdapter extends DataAdapter {
         properties.put("ser.read", read.toString());
         properties.put("ser.write", write.toString());
 
-        String typeName = genConcTypeName(concType);
+        String typeName = getConcTypeName(concType);
         properties.put("type.name", typeName);
+        properties.put("maxbyte.size", ""+concType.getDotNetSize());
 
         return new Pair<String, String>(typeName, stringResolver.replacePlaceholders(concTypeString, properties));
     }
 
-//    public void ensureDTLFromResource(String resource) throws IOException, SQLException {
+    @Override
+    public String getConcTypeName(ConcatenateType type) {
+        return dataBase + "_" + genTypePostfix(type.getTypes(), type.getDesc());
+    }
+
+    //    public void ensureDTLFromResource(String resource) throws IOException, SQLException {
 //        ensureDTL(resource, IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/mssql/" + resource + ".cs")), false);
 //    }
     
@@ -629,7 +750,12 @@ public class MSSQLDataAdapter extends DataAdapter {
                 executeEnsure(stringResolver.replacePlaceholders(create, properties));
         }
     }
-    
+
+    @Override
+    public String getIIF(String ifWhere, String trueExpr, String falseExpr) {
+        return "IIF(" + ifWhere + "," + trueExpr + "," + falseExpr + ")"; // есть ограничение на 10 вложенных case'ов
+    }
+
     private void writeIntLE(DataOutputStream out, int v) throws IOException {
         out.write((v >>>  0) & 0xFF);
         out.write((v >>>  8) & 0xFF);
@@ -676,7 +802,7 @@ public class MSSQLDataAdapter extends DataAdapter {
         return "nchar(" + length + ")";
     }
     public int getStringSQL() {
-        return Types.NCHAR;
+        return Types.CHAR; // Types.NCHAR jtds не знает
     }
 
     @Override
@@ -685,7 +811,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
     @Override
     public int getVarStringSQL() {
-        return Types.NVARCHAR;
+        return Types.VARCHAR;  // Types.NVARCHAR jtds не знает
     }
 
     @Override
@@ -695,7 +821,7 @@ public class MSSQLDataAdapter extends DataAdapter {
 
     @Override
     public int getTextSQL() {
-        return Types.NVARCHAR;
+        return Types.VARCHAR;  // Types.NVARCHAR jtds не знает
     }
 
     @Override
@@ -875,6 +1001,11 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
 
     @Override
+    public boolean doesNotTrimWhenCastToVarChar() {
+        return true;
+    }
+
+    @Override
     public boolean hasGroupByConstantProblem() {
         return true;
     }
@@ -913,7 +1044,7 @@ public class MSSQLDataAdapter extends DataAdapter {
 
     @Override
     public boolean isUpdateConflict(SQLException e) {
-        return e.getSQLState().equals("S0005");
+        return e.getSQLState().equals("S0005") || e.getSQLState().equals("S0001") || e.getSQLState().equals("S0002");
     }
 
     @Override
@@ -928,5 +1059,38 @@ public class MSSQLDataAdapter extends DataAdapter {
 
     public String getDateTime() {
         return "GETDATE()";
+    }
+
+    @Override
+    public String getRandom() {
+        return "dbo.RandFromInt(dbo.currentTransID())";
+    }
+
+    private static Date minDate;
+    private static Timestamp minTimestamp;
+    {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.set(1753, Calendar.JANUARY, 1);
+        minDate = new Date(cal.getTimeInMillis());
+        minTimestamp = new Timestamp(cal.getTimeInMillis());
+    }
+
+    @Override
+    public Date fixDate(Date value) {
+        if(value.compareTo(minDate) < 0)
+            return minDate;
+        return value;
+    }
+
+    @Override
+    public Timestamp fixDateTime(Timestamp value) {
+        if(value.compareTo(minTimestamp) < 0)
+            return minTimestamp;
+        return value;
+    }
+
+    @Override
+    public boolean supportsNoCount() {
+        return true;
     }
 }

@@ -9,6 +9,8 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.Log4jWriter;
+import lsfusion.server.data.expr.formula.SQLSyntaxType;
+import lsfusion.server.data.query.ExecuteEnvironment;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.*;
 import lsfusion.server.logics.BusinessLogics;
@@ -66,7 +68,6 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public void ensureDB(boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException {
-        ensureLogLevel(1);
 
         Connection connect = null;
         while(connect == null) {
@@ -201,8 +202,9 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String typeConvertSuffix(Type oldType, Type newType, String name, TypeEnvironment typeEnv) {
-        return "USING " + name + "::" + newType.getDB(this, typeEnv);
+    public String getTypeChange(Type oldType, Type type, String name, ExecuteEnvironment env) {
+        String newType = type.getDB(this, env);
+        return "TYPE " + newType + " USING " + name + "::" + newType;
     }
 
     @Override
@@ -417,13 +419,18 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String getMaxMin(boolean max, String expr1, String expr2) {
+    public String getMaxMin(boolean max, String expr1, String expr2, Type type, TypeEnvironment typeEnv) {
         return (max?"MAX":"MIN") + "(" + expr1 + "," + expr2 + ")";
     }
 
     @Override
-    public String getNotZero(String expr) {
+    public String getNotZero(String expr, Type type, TypeEnvironment typeEnv) {
         return "notZero(" + expr + ")";
+    }
+
+    @Override
+    public SQLSyntaxType getSyntaxType() {
+        return SQLSyntaxType.POSTGRES;
     }
 
     @Override
@@ -464,14 +471,14 @@ public class PostgreDataAdapter extends DataAdapter {
         for (int i=0,size=types.size();i<size;i++)
             declare = (declare.length() ==0 ? "" : declare + ",") + ConcatenateType.getFieldName(i) + " " + types.get(i).getDB(this, recTypes);
 
-        String typeName = genConcTypeName(concType);
+        String typeName = getConcTypeName(concType);
         executeEnsure("CREATE TYPE " + typeName + " AS (" + declare + ")");
 
         // создаем cast'ы всем concatenate типам
         for(int i=0,size=ensuredConcTypes.size();i<size;i++) {
             ConcatenateType ensuredType = ensuredConcTypes.getKey(i);
             if(concType.getCompatible(ensuredType)!=null) {
-                String ensuredName = genConcTypeName(ensuredType);
+                String ensuredName = getConcTypeName(ensuredType);
                 executeEnsure("DROP CAST IF EXISTS (" + typeName + " AS " + ensuredName + ")");
                 executeEnsure("CREATE CAST (" + typeName + " AS " + ensuredName + ") WITH INOUT AS IMPLICIT"); // в обе стороны так как containsAll в DataClass по прежнему не направленный
                 executeEnsure("DROP CAST IF EXISTS (" + ensuredName + " AS " + typeName + ")");
@@ -529,6 +536,11 @@ public class PostgreDataAdapter extends DataAdapter {
         return element + " = ANY(" + array + ")";
     }
 
+    @Override
+    public boolean doesNotTrimWhenCastToVarChar() {
+        return true;
+    }
+
     public String getArrayType(ArrayClass arrayClass, TypeEnvironment typeEnv) {
         return arrayClass.getArrayType().getDB(this, typeEnv) + "[]";
     }
@@ -570,5 +582,10 @@ public class PostgreDataAdapter extends DataAdapter {
         executeEnsure(stringResolver.replacePlaceholders(recursionString, properties));
 
         ensuredRecursion.put(object, true);
+    }
+
+    @Override
+    public boolean hasAggConcProblem() {
+        return true;
     }
 }

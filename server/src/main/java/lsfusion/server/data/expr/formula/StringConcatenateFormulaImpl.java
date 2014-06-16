@@ -18,9 +18,9 @@ public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
         Type exprType = source.getType(i);
         String exprSource = source.getSource(i);
         if (exprType instanceof StringClass && ((StringClass)exprType).blankPadded) {
-            exprSource = "rtrim(" + exprSource + ")";
+            exprSource = ((StringClass)exprType).getRTrim(exprSource);
         } else {
-            exprSource = selfType.getCast(exprSource, source.getSyntax(), source.getEnv());
+            exprSource = selfType.getCast(exprSource, source.getSyntax(), source.getEnv(), exprType);
         }
         return exprSource;
     }

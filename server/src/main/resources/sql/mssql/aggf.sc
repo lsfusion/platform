@@ -1,8 +1,18 @@
 
+IF OBJECT_ID('STRINGC', 'FN') IS NOT NULL DROP FUNCTION STRINGC
+
+GO
+
 CREATE FUNCTION STRINGC(@prm1 nvarchar(max), @prm2 nvarchar(max) , @sep nvarchar(max)) RETURNS nvarchar(max) AS
 BEGIN
         RETURN CASE WHEN @prm1 IS NOT NULL THEN @prm1 + (CASE WHEN @prm2 IS NOT NULL THEN @sep + @prm2 ELSE '' END) ELSE @prm2 END
 END
+
+GO
+
+IF OBJECT_ID('convert_to_integer', 'FN') IS NOT NULL DROP FUNCTION convert_to_integer
+
+GO
 
 CREATE FUNCTION convert_to_integer(@prm1 nvarchar(max)) RETURNS numeric(38,19) AS
 BEGIN
@@ -15,10 +25,22 @@ BEGIN
 	RETURN @result
 END
 
+GO
+
+IF OBJECT_ID('convert_numeric_to_string', 'FN') IS NOT NULL DROP FUNCTION convert_numeric_to_string
+
+GO
+
 CREATE FUNCTION convert_numeric_to_string(@prm1 numeric(38,19)) RETURNS nvarchar(max) AS
 BEGIN
 	RETURN FORMAT(@prm1, 'g38')
 END
+
+GO
+
+IF OBJECT_ID('completeBarcode', 'FN') IS NOT NULL DROP FUNCTION completeBarcode
+
+GO
 
 CREATE FUNCTION completeBarcode(@prm1 nvarchar(max)) RETURNS nvarchar(max) AS
 BEGIN
@@ -52,3 +74,13 @@ BEGIN
 	RETURN CONCAT(@prm1, CAST(@checkDigit AS VARCHAR(1)))
 END
 
+GO
+
+IF OBJECT_ID('currentTransID', 'FN') IS NOT NULL DROP FUNCTION currentTransID
+
+GO
+
+CREATE FUNCTION currentTransID() RETURNS int AS
+BEGIN
+	RETURN(SELECT transaction_id FROM sys.dm_tran_current_transaction)
+END

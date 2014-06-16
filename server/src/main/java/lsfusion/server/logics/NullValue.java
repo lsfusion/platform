@@ -7,14 +7,22 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.Field;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapValuesTranslate;
+import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.session.SessionChanges;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class NullValue extends ObjectValue<NullValue> {
 
@@ -87,5 +95,40 @@ public class NullValue extends ObjectValue<NullValue> {
 
     public <K> ClassWhere<K> getClassWhere(K key) {
         return ClassWhere.FALSE();
+    }
+
+    private static class Parse implements ParseInterface {
+        
+        private final Type type;
+
+        private Parse(Type type) {
+            this.type = type;
+        }
+
+        public boolean isSafeString() {
+            return true;
+        }
+
+        public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
+            return SQLSyntax.NULL;
+        }
+
+        public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax, TypeEnvironment env) throws SQLException {
+            type.writeNullParam(statement, paramNum, syntax, env);
+        }
+
+        public boolean isSafeType() {
+            return false;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public void checkSessionTable(SQLSession sql) {
+        }
+    }
+    public ParseInterface getParse(Field field, SQLSyntax syntax) {
+        return new Parse(field.type);
     }
 }

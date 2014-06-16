@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
+import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.CompileOrder;
@@ -12,7 +13,6 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.ConcatenateType;
-import lsfusion.server.data.type.Reader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.property.*;
@@ -111,16 +111,16 @@ public enum GroupType implements AggrType {
         switch (this) {
             case MAX:
                 assert exprs.size()==1 && orders.size()==0;
-                return (type instanceof ConcatenateType ? "MAXC" : "MAX") + "(" + exprs.get(0) + ")";
+                return (type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MAXC" : "MAX") + "(" + exprs.get(0) + ")";
             case MIN:
                 assert exprs.size()==1 && orders.size()==0;
-                return (type instanceof ConcatenateType ? "MINC" : "MIN") + "(" + exprs.get(0) + ")";
+                return (type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MINC" : "MIN") + "(" + exprs.get(0) + ")";
             case ANY:
                 assert exprs.size()==1 && orders.size()==0;
                 return syntax.getAnyValueFunc() + "(" + exprs.get(0) + ")";
             case SUM:
                 assert exprs.size()==1 && orders.size()==0;
-                return syntax.getNotZero("SUM(" + exprs.get(0) + ")");
+                return syntax.getNotZero("SUM(" + exprs.get(0) + ")", type, typeEnv);
             case STRING_AGG:
                 assert exprs.size()==2;
                 return type.getCast(syntax.getOrderGroupAgg(this, exprs, exprReaders, orders, typeEnv), syntax, typeEnv); // тут точная ширина не нужна главное чтобы не больше
@@ -145,7 +145,8 @@ public enum GroupType implements AggrType {
     public Type getType(Type exprType) {
         if(this==STRING_AGG)
             return ((StringClass)exprType).extend(10);
-        else
-            return exprType;
+        assert this != SUM || exprType instanceof IntegralClass; 
+        
+        return exprType;
     }
 }

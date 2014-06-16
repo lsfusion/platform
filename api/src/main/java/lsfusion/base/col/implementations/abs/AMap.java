@@ -334,6 +334,9 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
 
     public <EK extends K> ImMap<EK, V> filterIncl(ImSet<? extends EK> keys) {
         assert keys().containsAll(keys);
+        if(keys.size() == size())
+            return (ImMap<EK, V>) this;
+        
         return ((ImSet<EK>)keys).mapValues(BaseUtils.<GetValue<V, EK>>immutableCast(fnGetValue()));
     }
 

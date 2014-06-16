@@ -209,7 +209,7 @@ public class IfExpr extends Expr {
         if (compile instanceof ToString)
             return "IF(" + ifWhere.getSource(compile) + "," + trueExpr.getSource(compile) + "," + falseExpr.getSource(compile) + ")";
 
-        return "CASE WHEN " + ifWhere.getSource(compile) + " THEN " + trueExpr.getSource(compile) + " ELSE " + falseExpr.getSource(compile) + " END";
+        return compile.syntax.getIIF(ifWhere.getSource(compile), trueExpr.getSource(compile), falseExpr.getSource(compile));
     }
 
     public void fillJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {

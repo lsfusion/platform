@@ -6,7 +6,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-class MySQLDataAdapter extends DataAdapter {
+public class MySQLDataAdapter extends DataAdapter {
 
     MySQLDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws Exception, SQLException, InstantiationException, IllegalAccessException {
         super(iDataBase, iServer, null, iUserID, iPassword, null, false);

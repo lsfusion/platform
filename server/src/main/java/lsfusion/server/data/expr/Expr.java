@@ -49,10 +49,10 @@ import java.util.Set;
 
 abstract public class Expr extends AbstractSourceJoin<Expr> {
 
-    public static final boolean useCases = false;
-    public static final Expr NULL = useCases?new CaseExpr(new ExprCaseList(SetFact.<ExprCase>EMPTY())):NullExpr.instance;
-    public static CaseExprInterface newCases(boolean exclusive) {
-        if(useCases || exclusive)
+    public static int useCasesCount = Integer.MAX_VALUE;
+    public static final Expr NULL = useCasesCount == 0?new CaseExpr(new ExprCaseList(SetFact.<ExprCase>EMPTY())):NullExpr.instance;
+    public static CaseExprInterface newCases(boolean exclusive, int size) {
+        if(size >= useCasesCount || exclusive)
             return new MExprCaseList(exclusive);
         else
             return new MIfCases();
@@ -156,7 +156,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         return ifElse(where, Expr.NULL);
     }
     public Expr ifElse(Where where, Expr elseExpr) {
-        if(Expr.useCases) {
+        if(Expr.useCasesCount <= 2) {
             MExprCaseList mCases = new MExprCaseList(false);
             mCases.add(where,this);
             mCases.add(Where.TRUE,elseExpr);

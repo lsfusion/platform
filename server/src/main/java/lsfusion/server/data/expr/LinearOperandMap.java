@@ -5,9 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.data.expr.formula.AbstractFormulaImpl;
-import lsfusion.server.data.expr.formula.ListExprSource;
 import lsfusion.server.data.expr.formula.SelfListExprType;
-import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.expr.formula.conversion.CompatibleTypeConversion;
@@ -48,7 +46,7 @@ public class LinearOperandMap extends WrapMap<Expr,Integer> {
             else
                 linearWhere = linearWhere.or(operand.getKey().getWhere());*/
         }
-        return compile.syntax.getNotZero(source);//"(CASE WHEN " + linearWhere.getSource(compile) + (orderWhere.size()==0?"":" OR "+BaseUtils.toString(orderWhere," OR ")) + " THEN " + (source.length()==0?"0":source) + " ELSE " + SQLSyntax.NULL + " END)";
+        return compile.syntax.getNotZero(source, getType(), compile.env);//"(CASE WHEN " + linearWhere.getSource(compile) + (orderWhere.size()==0?"":" OR "+BaseUtils.toString(orderWhere," OR ")) + " THEN " + (source.length()==0?"0":source) + " ELSE " + SQLSyntax.NULL + " END)";
     }
 
     public String toString() {

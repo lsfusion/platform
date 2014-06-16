@@ -50,7 +50,7 @@ public class QueryTranslator extends TwinImmutableObject {
     }
 
     public <K> ImOrderMap<Expr, K> translate(ImOrderMap<? extends Expr, K> map) {
-        return ((ImOrderMap<Expr, K>)map).mapOrderKeys(this.<Expr>TRANS());
+        return ((ImOrderMap<Expr, K>)map).mapMergeOrderKeys(this.<Expr>TRANS());
     }
 
     public ImList<Expr> translate(ImList<? extends Expr> list) {

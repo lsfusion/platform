@@ -72,12 +72,12 @@ public class ConcatenateType extends AbstractType<Object[]> {
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
         typeEnv.addNeedType(this);
-        return DataAdapter.genConcTypeName(this);
+        return syntax.getConcTypeName(this);
     }
 
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
         typeEnv.addNeedType(this);
-        return DataAdapter.genConcTypeName(this);
+        return syntax.getConcTypeName(this);
     }
 
     public String getDotNetRead(String reader) {
@@ -86,6 +86,12 @@ public class ConcatenateType extends AbstractType<Object[]> {
 
     public String getDotNetWrite(String writer, String value) {
         throw new UnsupportedOperationException();
+    }
+    public int getBaseDotNetSize() {
+        int result = 0;
+        for(Type t : types)
+            result += t.getDotNetSize();
+        return result;
     }
 
     public boolean isSafeString(Object value) {
@@ -253,10 +259,10 @@ public class ConcatenateType extends AbstractType<Object[]> {
         String source = syntax.getNotSafeConcatenateSource(this, exprs, typeEnv);
 
         if(exprs.size()>0)
-            source =  "CASE WHEN " + exprs.toString(new GetValue<String, String>() {
+            source =  syntax.getAndExpr(exprs.toString(new GetValue<String, String>() {
                 public String getMapValue(String value) {
                     return value + " IS NOT NULL";
-                }}, " AND ") + " THEN " + source + " ELSE NULL END";
+                }}, " AND "), source, this, typeEnv);
         return source;
     }
 

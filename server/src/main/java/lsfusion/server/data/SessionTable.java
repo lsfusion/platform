@@ -76,7 +76,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         // прочитаем классы
         return session.createTemporaryTable(keys, properties, rows.size(), new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
-                session.insertBatchRecords(name, keys, rows, opOwner, owner);
+                session.insertSessionBatchRecords(name, keys, rows, opOwner, owner);
                 return null;
             }
         }, SessionRows.getClasses(properties, rows), owner, opOwner);
@@ -604,7 +604,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         
         dbSql.startTransaction(DBManager.DEBUG_TIL, OperationOwner.unknown);
         dbSql.ensureTable(this);
-        dbSql.insertBatchRecords(getName(sql.syntax), keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass, OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
+        dbSql.insertSessionBatchRecords(getName(sql.syntax), keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass, OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
         dbSql.commitTransaction();
         
         dbSql.close(OperationOwner.unknown);

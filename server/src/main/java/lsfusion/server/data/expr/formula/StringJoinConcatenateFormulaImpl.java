@@ -2,6 +2,7 @@ package lsfusion.server.data.expr.formula;
 
 import lsfusion.server.data.type.Type;
 
+// obsolete - вместо SumFormulaImpl
 public class StringJoinConcatenateFormulaImpl extends StringConcatenateFormulaImpl implements FormulaJoinImpl {
 
     public StringJoinConcatenateFormulaImpl(String separator, Boolean forceCaseInsensitivity) {
@@ -11,7 +12,7 @@ public class StringJoinConcatenateFormulaImpl extends StringConcatenateFormulaIm
     public String getSource(ExprSource source) {
         Type type = getType(source);
 
-        String separator = " || '" + this.separator + "' || ";
+        String separator = " " + source.getSyntax().getStringConcatenate() + " '" + this.separator + "' " + source.getSyntax().getStringConcatenate() + " ";
         StringBuilder builder = new StringBuilder();
         builder.append("(");
         for (int i = 0, size = source.getExprCount(); i < size; i++) {

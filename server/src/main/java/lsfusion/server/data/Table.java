@@ -12,10 +12,7 @@ import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.ParamLazy;
 import lsfusion.server.caches.TwinLazy;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.classes.BaseClass;
-import lsfusion.server.classes.ConcreteClass;
-import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
@@ -44,6 +41,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.session.DataSession;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -227,6 +225,20 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         query.addProperties(tableJoin.getExprs());
         query.and(tableJoin.getWhere());
         return query.executeClasses(session, baseClass, owner);
+    }
+
+    public void readData(SQLSession session, BaseClass baseClass, OperationOwner owner, boolean noFilesAndLogs, ResultHandler<KeyField, PropertyField> result) throws SQLException, SQLHandledException {
+        QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
+        lsfusion.server.data.query.Join<PropertyField> tableJoin = join(query.getMapExprs());
+        ImMap<PropertyField, Expr> exprs = tableJoin.getExprs();
+        if(noFilesAndLogs)
+            exprs = exprs.filterFn(new SFunctionSet<PropertyField>() {
+                public boolean contains(PropertyField element) {
+                    return !(element.type instanceof FileClass || element.getName().contains("_LG_"));
+                }});
+        query.addProperties(exprs);
+        query.and(tableJoin.getWhere());
+        query.getQuery().executeSQL(session, MapFact.<PropertyField, Boolean>EMPTYORDER(), 0, DataSession.emptyEnv(owner), result);
     }
 
     private static <T extends Field> ImSet<T> splitData(ImSet<T> fields, Result<ImMap<T, DataClass>> dataClasses) {

@@ -152,7 +152,7 @@ using Microsoft.SqlServer.Server;
         {
             if (r == null) throw new ArgumentNullException("r");
             intermediateResult = new SortedDictionary<${order.type}, StringBuilder>();
-            for(int i=0, size = r.ReadInt32(); i < size; i++) {
+            while(r.ReadBoolean()) {
                 ${order.type} ov;
                 ${ser.read}
                 intermediateResult.Add(ov, new StringBuilder(r.ReadString()));                
@@ -163,12 +163,18 @@ using Microsoft.SqlServer.Server;
         public void Write(BinaryWriter w)
         {
             if (w == null) throw new ArgumentNullException("w");
-            w.Write(intermediateResult.Count);
+            int size = 5;
             foreach( KeyValuePair<${order.type}, StringBuilder> kvp in intermediateResult ) {
+                string vs = kvp.Value.ToString();
+                size += ${order.size} + (vs.Length * 4 + 5) + 1; 
+                if(size>=8000)
+                    break;
+                w.Write(true);
                 ${order.type} ov = kvp.Key;
                 ${ser.write}
-                w.Write(kvp.Value.ToString());
+                w.Write(vs);
             }
+            w.Write(false); // terminate
             w.Write(lastSepLength);
         }
     }

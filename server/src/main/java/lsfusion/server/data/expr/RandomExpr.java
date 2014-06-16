@@ -3,7 +3,6 @@ package lsfusion.server.data.expr;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.DoubleClass;
-import lsfusion.server.data.Time;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
@@ -30,9 +29,9 @@ public class RandomExpr extends StaticExpr<DoubleClass> {
     protected int hash(HashContext hashContext) {
         return 3821;
     }
-
+    
     public String getSource(CompileSource compile) {
-        return compile.syntax.getRandomName() + "()";
+        return compile.syntax.getRandom();
     }
 
 }

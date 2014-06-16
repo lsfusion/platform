@@ -198,7 +198,7 @@ public class Settings {
 
     private int dialogTransactionTimeout = 5000;
 
-    private boolean disableExplicitVolatileStats = false;
+    private String disableExplicitVolatileStats = "";
     private int tooMuchAttempts = 15;
     private boolean enableAdjustSelectivity = false; // включает повышение selectivity при volatile stats для операторов >, пока были непостоянные случаи, поэтому выключен
 
@@ -877,11 +877,11 @@ public class Settings {
         this.dialogTransactionTimeout = dialogTransactionTimeout;
     }
 
-    public boolean isDisableExplicitVolatileStats() {
+    public String getDisableExplicitVolatileStats() {
         return disableExplicitVolatileStats;
     }
 
-    public void setDisableExplicitVolatileStats(boolean disableExplicitVolatileStats) {
+    public void setDisableExplicitVolatileStats(String disableExplicitVolatileStats) {
         this.disableExplicitVolatileStats = disableExplicitVolatileStats;
     }
 
@@ -1053,5 +1053,35 @@ public class Settings {
 
     public void setEnableAdjustSelectivity(boolean enableAdjustSelectivity) {
         this.enableAdjustSelectivity = enableAdjustSelectivity;
+    }
+    
+    private boolean useMSSQLFuncWrapper = false; // в ms sql оборачивать CASE WHEN'ы (в основном CASE WHEN ... NULL END) в функции из-за проблем со статистикой в SQL Server <= 2012 
+
+    public boolean isUseMSSQLFuncWrapper() {
+        return useMSSQLFuncWrapper;
+    }
+
+    public void setUseMSSQLFuncWrapper(boolean useMSSQLFuncWrapper) {
+        this.useMSSQLFuncWrapper = useMSSQLFuncWrapper;
+    }
+    
+    private String logTimeFilter = "";
+
+    public String getLogTimeFilter() {
+        return logTimeFilter;
+    }
+
+    public void setLogTimeFilter(String logTimeFilter) {
+        this.logTimeFilter = logTimeFilter;
+    }
+    
+    private int logTimeThreshold = 60;
+
+    public int getLogTimeThreshold() {
+        return logTimeThreshold;
+    }
+
+    public void setLogTimeThreshold(int logTimeThreshold) {
+        this.logTimeThreshold = logTimeThreshold;
     }
 }

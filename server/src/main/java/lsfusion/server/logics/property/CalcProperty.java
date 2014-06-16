@@ -158,7 +158,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     // по выражениям проверяет
     public <P extends PropertyInterface> boolean intersectFull(CalcProperty<P> property, ImMap<P, T> map) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
-        return !getExpr(mapKeys).getWhere().and(property.getExpr(map.join(mapKeys)).getWhere()).not().checkTrue();
+        return !calculateClassExpr(mapKeys, defaultPrevSameClasses).getWhere().and(property.calculateClassExpr(map.join(mapKeys), defaultPrevSameClasses).getWhere()).not().checkTrue();
     }
 
     protected CalcProperty(String sID, String caption, ImOrderSet<T> interfaces) {
@@ -293,6 +293,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     // есть assertion, что не должен возвращать изменение null -> null, то есть или старое или новое не null, для подр. см usage
     @LogTime
+    @ThisMessage
     public PropertyChange<T> getIncrementChange(Modifier modifier) throws SQLException, SQLHandledException {
         return getIncrementChange(modifier.getPropertyChanges());
     }
@@ -525,6 +526,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     protected abstract Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere);
+
+    public Expr calculateClassExpr(ImMap<T, ? extends Expr> joinImplement, PrevClasses prevSameClasses) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
+        return calculateExpr(joinImplement, prevSameClasses.getCalc(), PropertyChanges.EMPTY, null);
+    }
 
     public static <T extends PropertyInterface> ImMap<T, Expr> getJoinValues(ImMap<T, ? extends Expr> joinImplement) {
         return ((ImMap<T, Expr>)joinImplement).filterFnValues(new SFunctionSet<Expr>() {

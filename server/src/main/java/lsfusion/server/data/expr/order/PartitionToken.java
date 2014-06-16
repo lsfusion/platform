@@ -32,7 +32,7 @@ public abstract class PartitionToken {
         return (ImSet<PartitionCalc>)next;
     }
 
-    public abstract String getSource(ImMap<PartitionToken, String> sources, SQLSyntax syntax, Type resultType, TypeEnvironment typeEnv);
+    public abstract String getSource(ImMap<PartitionToken, String> sources, SQLSyntax syntax);
 
     public abstract int getLevel();
 }

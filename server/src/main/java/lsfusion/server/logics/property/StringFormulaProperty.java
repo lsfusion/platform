@@ -7,13 +7,14 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.session.PropertyChanges;
 
 public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaProperty.Interface> {
 
-    private final String formula;
+    private final CustomFormulaSyntax formula;
     private final boolean hasNotNull; 
 
     public static class Interface extends PropertyInterface {
@@ -41,8 +42,8 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         throw new RuntimeException("not found");
     }
 
-    public StringFormulaProperty(String sID, DataClass valueClass, String formula, int paramCount, boolean hasNotNull) {
-        super(sID,formula,getInterfaces(paramCount),valueClass);
+    public StringFormulaProperty(String sID, DataClass valueClass, CustomFormulaSyntax formula, int paramCount, boolean hasNotNull) {
+        super(sID,formula.getDefaultSyntax(),getInterfaces(paramCount),valueClass);
         this.formula = formula;
         this.hasNotNull = hasNotNull;
 

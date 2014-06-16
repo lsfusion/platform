@@ -33,6 +33,21 @@ public class SQLTemporaryPool {
     public boolean isEmpty() {
         return tables.isEmpty();
     }
+    
+    public void checkAliveTables(SQLSession session, Map<String, WeakReference<TableOwner>> used) throws SQLException {
+        try {
+            System.out.println("START " + SQLSession.getCurrentTimeStamp() + " " + session);
+            for(Map.Entry<FieldStruct, Set<String>> table : tables.entrySet())
+                for(String tab : table.getValue()) {
+//                    if(!used.containsKey(tab)) {
+                        System.out.println("CHECK "  + SQLSession.getCurrentTimeStamp() + " " + tab + " " + session);
+                        session.debugExecute("INSERT INTO " + session.syntax.getSessionTableName(tab) + " SELECT * FROM " + session.syntax.getSessionTableName(tab) + " WHERE 1 > 2");
+                    }
+            System.out.println("FINISHED " + SQLSession.getCurrentTimeStamp() + " " + session);
+        } catch (SQLException e) {
+            e = e;
+        }
+    }
 
     @AssertSynchronized
     public String getTable(SQLSession session, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, Map<String, WeakReference<TableOwner>> used, Result<Boolean> isNew, TableOwner owner, OperationOwner opOwner) throws SQLException { //, Map<String, String> usedStacks
@@ -47,10 +62,11 @@ public class SQLTemporaryPool {
         for(String matchTable : matchTables) // ищем нужную таблицу
             if(!used.containsKey(matchTable)) { // если не используется
 //                session.truncate(matchTable); // удаляем старые данные
-                if(session.getCount(matchTable, opOwner) != 0) {
-                    ServerLoggers.assertLog(false, "TEMPORARY TABLE NOT EMPTY");
-                    session.truncate(matchTable, opOwner, TableOwner.none);
-                }
+//                if(session.getCount(matchTable, opOwner) != 0) {
+//                    ServerLoggers.assertLog(false, "TEMPORARY TABLE NOT EMPTY");
+//                    session.truncateSession(matchTable, opOwner, TableOwner.none);
+//                }
+                assert session.getSessionCount(matchTable, opOwner) == 0;
                 assert !used.containsKey(matchTable);
                 used.put(matchTable, new WeakReference<TableOwner>(owner));
 //                SQLSession.addUsed(matchTable, owner, used, usedStacks);
@@ -72,8 +88,8 @@ public class SQLTemporaryPool {
         structs.put(table, fieldStruct);
         return table;
     }
-    
-    public static String getTableName(int count) {
+
+    public String getTableName(int count) {
         return "t_" + count;
     }
 

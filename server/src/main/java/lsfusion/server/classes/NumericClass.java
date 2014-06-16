@@ -78,6 +78,11 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return writer + ".Write(" + value + ");";
     }
 
+    @Override
+    public int getBaseDotNetSize() {
+        return 16;
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getNumericSQL();
     }

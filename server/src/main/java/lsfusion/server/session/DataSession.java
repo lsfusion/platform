@@ -20,10 +20,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.Compare;
 import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.server.Message;
-import lsfusion.server.ParamMessage;
-import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
+import lsfusion.server.*;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.UpClassSet;
@@ -853,8 +850,24 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @LogTime
-    private void executeSessionEvent(ExecutionEnvironment env, ActionProperty<?> action) throws SQLException, SQLHandledException {
+    @ThisMessage
+    private void executeSessionEvent(ExecutionEnvironment env, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
         action.execute(env);
+    }
+
+    @LogTime
+    @ThisMessage
+    private boolean executeGlobalEvent(BusinessLogics BL, @ParamMessage Object property, @ParamMessage String progress) throws SQLException, SQLHandledException {
+        if(property instanceof ActionPropertyValueImplement) {
+            startPendingSingles(((ActionPropertyValueImplement) property).property);
+            ((ActionPropertyValueImplement)property).execute(this);
+            if(!isInTransaction()) // если ушли из транзакции вываливаемся
+                return false;
+            flushPendingSingles(BL);
+        } else // постоянно-хранимые свойства
+            readStored((CalcProperty<PropertyInterface>) property, BL);
+
+        return true;
     }
 
     private OverrideSessionModifier resolveModifier = null;
@@ -1489,16 +1502,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, UpdateCurrentClasses update, ImSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         ImOrderSet<Object> execActions = SetFact.addOrderExcl(actions, BL.getAppliedProperties(this));
-        for (Object property : execActions) {
-//            ServerLoggers.systemLogger.info(execActions.indexOf(property) + " of " + execActions.size() + " " + property);
-            if(property instanceof ActionPropertyValueImplement) {
-                startPendingSingles(((ActionPropertyValueImplement) property).property);
-                ((ActionPropertyValueImplement)property).execute(this);
-                if(!isInTransaction()) // если ушли из транзакции вываливаемся
-                    return false;
-                flushPendingSingles(BL);
-            } else // постоянно-хранимые свойства
-                readStored((CalcProperty<PropertyInterface>) property, BL);
+        for (int i=0,size=execActions.size();i<size;i++) {
+            if (!executeGlobalEvent(BL, execActions.get(i), i + " of " + size)) 
+                return false;
         }
 
         if (applyFilter == ApplyFilter.ONLYCHECK) {
@@ -1963,12 +1969,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return changeTable;
     }
 
-    public void pushVolatileStats() throws SQLException {
-        sql.pushVolatileStats(null, getOwner());
+    private boolean pushed = false;
+    public void pushVolatileStats(String id) throws SQLException {
+        if(pushed = !id.matches(Settings.get().getDisableExplicitVolatileStats()))
+            sql.pushVolatileStats(null, getOwner());
     }
 
     public void popVolatileStats() throws SQLException {
-        sql.popVolatileStats(null, getOwner());
+        if(pushed)
+            sql.popVolatileStats(null, getOwner());
     }
 
     @Override

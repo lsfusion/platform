@@ -56,6 +56,11 @@ public abstract class FileClass extends DataClass<byte[]> {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public int getBaseDotNetSize() {
+        throw new UnsupportedOperationException();
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getByteArraySQL();
     }

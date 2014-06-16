@@ -1,5 +1,6 @@
 package lsfusion.server.data;
 
+import lsfusion.server.Settings;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -53,20 +54,21 @@ public class SQLSessionLoggerAspect {
 
         if (loggingEnabled) {
             long runTime = System.nanoTime() - startTime;
-            if(runTime > breakPointTime * 1000000) {
-                sqlLogger.debug("WARNING TIME");
-                runningWarningTotal += runTime;
-            }
             if(queryString.length() > breakPointLength)
                 sqlLogger.debug("WARNING LENGTH");
             runningTotal += runTime;
             runningCount += 1;
-            queryString = "[length " + queryString.length() + "] " + queryString;
-            if(result instanceof ImOrderMap) // cheat, но чисто для логинга
-                queryString = "[rows " + ((ImOrderMap)result).size() + "] " + queryString;
-            if(result instanceof Integer) // cheat, но чисто для логинга
-                queryString = "[rows " + result + "] " + queryString;
-            sqlLogger.info(String.format("Executed query (time: %1$d ms., running total: %3$d, running warn: %4$d, running count: %5$d): %2$s", runTime/1000000, queryString, runningTotal/1000000, runningWarningTotal/1000000, runningCount));
+
+            if(runTime > Settings.get().getLogTimeThreshold() * 1000000) {
+                runningWarningTotal += runTime;
+
+                queryString = "[length " + queryString.length() + "] " + queryString;
+                if (result instanceof ImOrderMap) // cheat, но чисто для логинга
+                    queryString = "[rows " + ((ImOrderMap) result).size() + "] " + queryString;
+                if (result instanceof Integer) // cheat, но чисто для логинга
+                    queryString = "[rows " + result + "] " + queryString;
+                sqlLogger.info(String.format("Executed query (time: %1$d ms., running total: %3$d, running warn: %4$d, running count: %5$d): %2$s", runTime / 1000000, queryString, runningTotal / 1000000, runningWarningTotal / 1000000, runningCount));
+            }
         }
 
         return result;

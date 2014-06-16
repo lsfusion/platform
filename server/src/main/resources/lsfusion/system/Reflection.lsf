@@ -138,7 +138,7 @@ propertyTableColumn 'Свойство' (tableColumn) = propertySID(sidTableColum
 namePropertyTableColumn 'Заголовок свойства' (tableColumn) = captionProperty (propertyTableColumn(tableColumn));
 quantityTableColumn 'Количество разновидностей' = DATA INTEGER (TableColumn);
 notNullQuantityTableColumn 'Количество не null значений' = DATA INTEGER (TableColumn);
-toNumeric15p2 = FORMULA NUMERIC[15,2] 'CAST($1 AS numeric(15,2))';
+toNumeric15p2(w) = NUMERIC[15,2](w);
 
 percentNotNullTableColumn 'Не null, %' (tableColumn) = IF rowsTable (tableTableColumn(tableColumn)) == 0
                                                           THEN 100.00
@@ -146,6 +146,7 @@ percentNotNullTableColumn 'Не null, %' (tableColumn) = IF rowsTable (tableTabl
 sparseColumnsTable 'Количество разреженных колонок' (table) = GROUP SUM 1 BY tableTableColumn(tableColumn) IF percentNotNullTableColumn(tableColumn) < 50;
 
 recalculateAggregationTableColumn 'Пересчитать аггрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty';
+checkAggregationTableColumn 'Проверить аггрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableColumnActionProperty';
 dropDropColumn 'Окончательно удалить колонку' = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty';
 
 recalculateStats 'Пересчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateStatsActionProperty';
@@ -194,7 +195,7 @@ FORM physicalModel 'Таблицы'
     OBJECTS tc=TableColumn
     PROPERTIES(tc) READONLY sidTableColumn, namePropertyTableColumn, quantityTableColumn, notNullQuantityTableColumn,
                    percentNotNullTableColumn
-    PROPERTIES(tc) recalculateAggregationTableColumn
+    PROPERTIES(tc) recalculateAggregationTableColumn, checkAggregationTableColumn
 
     OBJECTS dc=DropColumn
     PROPERTIES(dc) READONLY sidTableDropColumn, sidDropColumn, timeDropColumn, revisionDropColumn

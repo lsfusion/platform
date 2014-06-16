@@ -60,6 +60,10 @@ public class SystemClass extends DataClass<Integer> {
         return writer + ".Write(" + value + ");";
     }
 
+    @Override
+    public int getBaseDotNetSize() {
+        return 4;
+    }
 
     public int getSQL(SQLSyntax syntax) {
         return syntax.getIntegerSQL();

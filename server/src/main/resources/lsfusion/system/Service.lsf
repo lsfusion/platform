@@ -17,10 +17,31 @@ getVMInfo 'Данные виртуальной машины' = ACTION CUSTOM 'ls
 toggleExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleExplainAnalyzeModeActionProperty';
 toggleExplainMode 'Выводить в лог EXPLAIN запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleExplainModeActionProperty';
 toggleVolatileStats 'Не использовать nested loop' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleVolatileStatsActionProperty';
-toggleSQLLoggerDebugMode 'Выводить в лог доп.информацию' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleSQLLoggerDebugModeActionProperty';
+toggleSQLLoggerDebugMode 'Выводить в лог SQL запросы' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleSQLLoggerDebugModeActionProperty';
 toggleRemoteLoggerDebugMode 'Выводить в лог действия пользователей' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleRemoteLoggerDebugModeActionProperty';
 
 singleTransaction 'Перерасчет одной транзакцией' = DATA BOOLEAN ();
+
+CLASS DBType {
+    POSTGRE 'Postgre',
+    MSSQL 'MS SQL'
+}
+uploadType 'Тип базы' = DATA DBType ();
+uploadStaticNameType = staticName(uploadType()); 
+uploadStaticCaptionType 'Тип базы' = staticCaption(uploadType()); 
+uploadHost 'Имя сервера' = DATA VARSTRING[100] ();
+uploadUser 'Пользователь' = DATA VARSTRING[100] ();
+uploadPassword 'Пароль' = DATA VARSTRING[100] ();
+uploadInstance 'Имя сервера БД' = DATA VARSTRING[100] ();
+onStarted() += ACTION {
+    uploadType() <- DBType.MSSQL;
+    uploadHost() <- 'localhost';
+    uploadUser() <- 'sa';
+    uploadPassword() <- '11111';
+    uploadInstance() <- 'SQLEXPRESS';
+}
+uploadDB 'Имя базы' = DATA VARSTRING[100] (); 
+uploadToDBAction 'Загрузить' = ACTION CUSTOM 'lsfusion.server.logics.service.UploadToDBActionProperty';
 
 setRepeatableReadTILMode 'Включить SERIALIZABLE' = ACTION CUSTOM 'lsfusion.server.logics.service.SetRepeatableReadTILModeActionProperty' (BOOLEAN);
 TILMode 'Включен SERIALIZABLE' = DATA BOOLEAN ();
@@ -67,7 +88,7 @@ FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
                  restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, checkClassesAction, 
-                 recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, 
+                 recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
                  vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, dropLRU, makeHeapDump, 
                  toggleExplainAnalyzeMode, toggleExplainMode, toggleVolatileStats,
                  toggleSQLLoggerDebugMode, toggleRemoteLoggerDebugMode, TILMode, reupdateMode, singleTransaction,
@@ -111,6 +132,16 @@ DESIGN admin FROM DEFAULT {
             ADD PROPERTY(checkClassesAction());
             ADD PROPERTY(checkAggregationsAction());
         }
+        NEW upload {
+            caption = 'Загрузить в другую базу';
+            ADD PROPERTY(uploadStaticCaptionType());
+            ADD PROPERTY(uploadHost());
+            ADD PROPERTY(uploadUser());
+            ADD PROPERTY(uploadPassword());
+            ADD PROPERTY(uploadInstance());
+            ADD PROPERTY(uploadDB());
+            ADD PROPERTY(uploadToDBAction());
+        }
         NEW database {
             caption = 'База данных';
             ADD PROPERTY(packAction());
@@ -144,7 +175,7 @@ DESIGN admin FROM DEFAULT {
     ADD functions.box;
 }
 
-NAVIGATOR {
+NAVIGATOR { 
     configuration {
         ADD Service.admin;
     }

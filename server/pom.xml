@@ -90,9 +90,13 @@
             <artifactId>ojdbc14</artifactId>
             <version>11.2.0.4</version>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>net.sourceforge.jtds</groupId>-->
+            <!--<artifactId>jtds</artifactId>-->
+        <!--</dependency>-->
         <dependency>
-            <groupId>net.sourceforge.jtds</groupId>
-            <artifactId>jtds</artifactId>
+            <groupId>com.microsoft</groupId>
+            <artifactId>mssql</artifactId>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>

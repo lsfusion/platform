@@ -7,9 +7,11 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.AbstractValuesContext;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.Field;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.instance.*;
@@ -86,4 +88,6 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     public abstract boolean isNull();
 
     public abstract <K> ClassWhere<K> getClassWhere(K key);
+    
+    public abstract ParseInterface getParse(Field field, SQLSyntax syntax);
 }

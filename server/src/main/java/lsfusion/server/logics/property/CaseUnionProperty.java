@@ -165,7 +165,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                         value.property.mapExpr(joinImplement, calcType, propChanges, changedWhere));
             }});
 
-        CaseExprInterface exprCases = Expr.newCases(isExclusive);
+        CaseExprInterface exprCases = Expr.newCases(isExclusive, caseExprs.size());
         for(Pair<Expr, Expr> caseExpr : caseExprs)
             exprCases.add(caseExpr.first.getWhere(), caseExpr.second);
         return exprCases.getFinal();
@@ -190,12 +190,13 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                         new Pair<Expr, Where>(propCase.property.mapExpr(joinImplement, propChanges, changedExprCase), changedExprCase.toWhere()));
             }});
 
-        CaseExprInterface exprCases = Expr.newCases(isExclusive);
+        int size=cases.size();
+        CaseExprInterface exprCases = Expr.newCases(isExclusive, isExclusive ? size + 1 : size * 2);
 
         Where changedUpWheres = Where.FALSE; // для не exclusive
         Where changedAllWhere = Where.FALSE; // для exclusive
         Where nullWhere = Where.FALSE; // для exclusive
-        for(int i=0,size=cases.size();i<size;i++) {
+        for(int i=0;i<size;i++) {
             Pair<Pair<Expr, Where>, Pair<Expr, Where>> pCaseExpr = caseExprs.get(i);
             Where caseWhere = pCaseExpr.first.first.getWhere();
             Where changedWhereCase = pCaseExpr.first.second;

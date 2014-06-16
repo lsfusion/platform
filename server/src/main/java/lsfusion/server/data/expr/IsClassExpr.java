@@ -80,6 +80,11 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         MLinearOperandMap mLinear = null;
         MList<Expr> mAgg =  null;
 
+        ImMap<Integer, ImSet<ClassField>> group = classTables.group(new BaseUtils.Group<Integer, ClassField>() {
+            public Integer group(ClassField key) {
+                return orderClassTables.indexOf(key) % threshold;
+            }});
+
         switch (type) {
             case SUMCONSISTENT:
                 mLinear = new MLinearOperandMap();
@@ -88,13 +93,8 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
                 mAgg = ListFact.mList();
                 break;
             default:
-                mCases = Expr.newCases(true);
+                mCases = Expr.newCases(true, group.size());
         }
-
-        ImMap<Integer, ImSet<ClassField>> group = classTables.group(new BaseUtils.Group<Integer, ClassField>() {
-            public Integer group(ClassField key) {
-                return orderClassTables.indexOf(key) % threshold;
-            }});
 
 //        IsClassWhere[] classWheres = new IsClassWhere[group.size()];
         for(int i=0,size=group.size();i<size;i++) {

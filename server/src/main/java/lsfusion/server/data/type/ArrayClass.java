@@ -41,7 +41,10 @@ public class ArrayClass<T> extends DataClass<T[]> {
     public String getDotNetWrite(String writer, String value) {
         throw new UnsupportedOperationException();
     }
-    
+    public int getBaseDotNetSize() {
+        throw new UnsupportedOperationException();
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return Types.ARRAY;
     }

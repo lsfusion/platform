@@ -14,6 +14,7 @@ import lsfusion.base.identity.DefaultSIDGenerator;
 import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.*;
+import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.logics.property.*;
@@ -376,7 +377,7 @@ public class DerivedProperty {
         final ImRevMap<T, JoinProperty.Interface> joinMap = interfaces.mapRevValues(JoinProperty.genInterface);
         ImRevMap<JoinProperty.Interface, T> revJoinMap = joinMap.reverse();
 
-        final StringFormulaProperty implement = new StringFormulaProperty(genID(),valueClass,formula,params.size(), false);
+        final StringFormulaProperty implement = new StringFormulaProperty(genID(),valueClass,new CustomFormulaSyntax(formula),params.size(), false);
         ImMap<StringFormulaProperty.Interface,CalcPropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = 
                 ((ImList<CalcPropertyInterfaceImplement<T>>)params).mapListKeyValues(new GetIndex<StringFormulaProperty.Interface>() {
                     public StringFormulaProperty.Interface getMapValue(int i) {

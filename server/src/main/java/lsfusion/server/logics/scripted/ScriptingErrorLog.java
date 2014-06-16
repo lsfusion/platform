@@ -1,5 +1,6 @@
 package lsfusion.server.logics.scripted;
 
+import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LP;
 import org.antlr.runtime.BaseRecognizer;
@@ -189,6 +190,10 @@ public class ScriptingErrorLog {
             errText += ", last parameter is $" + String.valueOf(paramCount);
         }
         emitSimpleError(parser, errText);
+    }
+
+    public void emitSyntaxTypes(ScriptParser parser, SQLSyntaxType type) throws SemanticErrorException {
+        emitSimpleError(parser, "two implementations for syntax " + (type == null ? "DEFAULT" : type));
     }
 
     public void emitParamClassRedefinitionError(ScriptParser parser, String paramName) throws SemanticErrorException {

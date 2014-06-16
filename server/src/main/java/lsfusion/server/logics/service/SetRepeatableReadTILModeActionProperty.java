@@ -1,5 +1,6 @@
 package lsfusion.server.logics.service;
 
+import com.microsoft.sqlserver.jdbc.SQLServerConnection;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DBManager;
@@ -7,7 +8,7 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import net.sourceforge.jtds.jdbc.ConnectionJDBC2;
+//import net.sourceforge.jtds.jdbc.ConnectionJDBC2;
 
 import java.sql.Connection;
 import java.sql.SQLException;

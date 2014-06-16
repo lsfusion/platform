@@ -67,10 +67,6 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return calculateExpr(joinImplement, CalcType.EXPR, PropertyChanges.EMPTY, null);
     }
 
-    public Expr calculateClassExpr(ImMap<T, ? extends Expr> joinImplement, PrevClasses prevSameClasses) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
-        return calculateExpr(joinImplement, prevSameClasses.getCalc(), PropertyChanges.EMPTY, null);
-    }
-
     public Expr calculateStatExpr(ImMap<T, ? extends Expr> joinImplement) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
         return calculateExpr(joinImplement, CalcType.STAT, PropertyChanges.EMPTY, null);
     }

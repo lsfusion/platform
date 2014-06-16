@@ -74,6 +74,10 @@ public class LogicalClass extends DataClass<Boolean> {
         return writer + ".Write(" + value + ");";
     }
 
+    @Override
+    public int getBaseDotNetSize() {
+        return 4;
+    }
 
     public int getSQL(SQLSyntax syntax) {
         return syntax.getBitSQL();

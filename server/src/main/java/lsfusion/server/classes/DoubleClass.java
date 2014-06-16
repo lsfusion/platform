@@ -59,6 +59,10 @@ public class DoubleClass extends IntegralClass<Double> {
         return writer + ".Write(" + value + ");";
     }
 
+    public int getBaseDotNetSize() {
+        return 8;
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getDoubleSQL();
     }

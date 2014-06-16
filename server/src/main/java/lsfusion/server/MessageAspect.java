@@ -1,5 +1,8 @@
 package lsfusion.server;
 
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.mutable.MList;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -21,26 +24,13 @@ public class MessageAspect {
         Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
         Object[] args = thisJoinPoint.getArgs();
 
-        List<Object> stringParams = new ArrayList<Object>();
-
-        for(Annotation annotation : method.getAnnotations())
-            if(annotation instanceof ThisMessage) {
-                stringParams.add(thisJoinPoint.getThis());
-            }
-
-        Annotation[][] paramAnnotations = method.getParameterAnnotations();
-        for(int i=0;i<paramAnnotations.length;i++)
-            for(Annotation paramAnnotation : paramAnnotations[i])
-                if(paramAnnotation instanceof ParamMessage) {
-                    stringParams.add(args[i]);
-                    break;
-                }
+        ImList<String> stringParams = getArgs(thisJoinPoint, method, args);
 
         for(Annotation annotation : method.getAnnotations())
             if(annotation instanceof Message) {
                 String message = ServerResourceBundle.getString(((Message) annotation).value());
                 if(stringParams.size() > 0)
-                    message = message + " : " + BaseUtils.toString(stringParams, ",");
+                    message = message + " : " + stringParams.toString(",");
                 Object result = null;
                 ThreadLocalContext.pushActionMessage(message);
                 try {
@@ -51,6 +41,24 @@ public class MessageAspect {
                 return result;
             }
         throw new RuntimeException("wrong aspect");
+    }
+
+    public static ImList<String> getArgs(ProceedingJoinPoint thisJoinPoint, Method method, Object[] args) {
+        MList<String> stringParams = ListFact.mList();
+
+        for(Annotation annotation : method.getAnnotations())
+            if(annotation instanceof ThisMessage) {
+                stringParams.add(thisJoinPoint.getThis().toString());
+            }
+
+        Annotation[][] paramAnnotations = method.getParameterAnnotations();
+        for(int i=0;i<paramAnnotations.length;i++)
+            for(Annotation paramAnnotation : paramAnnotations[i])
+                if(paramAnnotation instanceof ParamMessage) {
+                    stringParams.add(args[i].toString());
+                    break;
+                }
+        return stringParams.immutableList();
     }
 
 }

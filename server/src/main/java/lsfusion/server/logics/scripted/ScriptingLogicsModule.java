@@ -10,6 +10,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -26,6 +27,8 @@ import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.UpClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.Union;
+import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
+import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.ConcatenateType;
@@ -1863,16 +1866,31 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addDCCProp(index - 1), Arrays.asList(ccProp));
     }
 
-    public LCP addScriptedSFProp(String typeName, String formulaText, boolean hasNotNull) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedSFProp(" + typeName + ", " + formulaText + ");");
-        Set<Integer> params = findFormulaParameters(formulaText);
+    public LCP addScriptedSFProp(String typeName, List<SQLSyntaxType> types, List<String> sources, boolean hasNotNull) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedSFProp(" + typeName + ", " + sources + ");");
+        Set<Integer> params = findFormulaParameters(sources.get(0));
+        
         checkFormulaParameters(params);
+        checkDefaultFormula(types, sources);
+        
+        assert types.size() == sources.size();
+        String defaultFormula = "";
+        MExclMap<SQLSyntaxType, String> mSyntaxes = MapFact.mExclMap();
+        for(int i=0;i<types.size();i++) {
+            SQLSyntaxType type = types.get(i);
+            String source = transformFormulaText(sources.get(i));
+            if(type == null)
+                defaultFormula = source; 
+            else 
+                mSyntaxes.exclAdd(type, source);
+        }
+        CustomFormulaSyntax formula = new CustomFormulaSyntax(defaultFormula, mSyntaxes.immutable());
         if (typeName != null) {
             ValueClass cls = findClassByCompoundName(typeName);
             checkFormulaClass(cls);
-            return addSFProp(transformFormulaText(formulaText), (DataClass) cls, params.size(), hasNotNull);
+            return addSFProp(formula, (DataClass) cls, params.size(), hasNotNull);
         } else {
-            return addSFProp(transformFormulaText(formulaText), params.size(), hasNotNull);
+            return addSFProp(formula, params.size(), hasNotNull);
         }
     }
 
@@ -2146,7 +2164,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         assert pointPos > 0;
 
         String className = name.substring(0, pointPos);
-        String instanceName = name.substring(pointPos+1);
+        String instanceName = name.substring(pointPos + 1);
         LCP resultProp = null;
 
         ValueClass cls = findClassByCompoundName(className);
@@ -2750,6 +2768,16 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkChangeClassActionClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof ConcreteCustomClass)) {
             errLog.emitChangeClassActionClassError(parser);
+        }
+    }
+
+    private void checkDefaultFormula(List<SQLSyntaxType> types, List<String> sources) throws ScriptingErrorLog.SemanticErrorException {
+        Set<SQLSyntaxType> foundTypes = new HashSet<SQLSyntaxType>();
+        for (int i=0 ; i < types.size(); i++) {
+            SQLSyntaxType type = types.get(i);
+            if (foundTypes.contains(type)) {
+                errLog.emitSyntaxTypes(parser, type);
+            }
         }
     }
 

@@ -12,9 +12,13 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
+import lsfusion.server.ParamMessage;
+import lsfusion.server.ServerLoggers;
+import lsfusion.server.ThisMessage;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.LogTime;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -154,7 +158,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                     if(addObject!=null)
                         newValues = MapFact.addExcl(newValues, addObject, context.addObject((ConcreteCustomClass) addClass));
                     
-                    FlowResult actionResult = execute(context, action, newValues, mapInterfaces);
+                    FlowResult actionResult = executeFor(context, newValues);
                     if (actionResult != FlowResult.FINISH) {
                         if (actionResult != FlowResult.BREAK) {
                             result = actionResult;
@@ -172,6 +176,12 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         }
 
         return result;
+    }
+
+    @LogTime
+    @ThisMessage
+    private FlowResult executeFor(ExecutionContext<PropertyInterface> context, @ParamMessage ImMap<I, ObjectValue> newValues) throws SQLException, SQLHandledException {
+        return execute(context, action, newValues, mapInterfaces);
     }
 
     private ImOrderSet<ImMap<I, DataObject>> readRows(final ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends Expr> innerExprs) throws SQLException, SQLHandledException {

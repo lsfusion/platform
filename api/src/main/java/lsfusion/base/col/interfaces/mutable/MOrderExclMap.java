@@ -9,6 +9,7 @@ public interface MOrderExclMap<K, V> {
     ImOrderMap<K, V> immutableOrder();
 
     V get(K key);
+    int size();
     
     ImOrderMap<K, V> immutableOrderCopy();
 }

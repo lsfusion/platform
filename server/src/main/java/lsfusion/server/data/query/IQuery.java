@@ -9,10 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Message;
 import lsfusion.server.caches.AbstractInnerContext;
 import lsfusion.server.classes.BaseClass;
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.QueryEnvironment;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
@@ -63,9 +60,15 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
 
     public abstract ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders);
 
-    @Message("message.query.execute")
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return compile(session.syntax, orders, selectTop).execute(session, env);
+        ReadAllResultHandler<K, V> result = new ReadAllResultHandler<K, V>();
+        executeSQL(session, orders, selectTop, env, result);
+        return result.terminate();
+    }
+
+    @Message("message.query.execute")
+    public void executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env, ResultHandler<K, V> result) throws SQLException, SQLHandledException {
+        compile(session.syntax, orders, selectTop).execute(session, env, result);
     }
 
     public abstract <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps);

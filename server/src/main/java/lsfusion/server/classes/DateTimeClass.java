@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.server.data.type.Type;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import lsfusion.base.DateConverter;
 import lsfusion.base.ExtInt;
@@ -77,6 +78,10 @@ public class DateTimeClass extends DataClass<Timestamp> {
         return writer + ".Write(" +value + ".ToBinary());";
     }
 
+    public int getBaseDotNetSize() {
+        return 8;
+    }
+
     public int getSQL(SQLSyntax syntax) {
         return syntax.getDateTimeSQL();
     }
@@ -141,5 +146,10 @@ public class DateTimeClass extends DataClass<Timestamp> {
     @Override
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
+    }
+
+    @Override
+    public Object castValue(Object object, Type typeFrom, SQLSyntax syntax) {
+        return syntax.fixDateTime((Timestamp) object);
     }
 }

@@ -116,7 +116,6 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, boolean exactJavaClass, LCP deleteLP) {
-        boolean disableVolatileStats = Settings.get().isDisableExplicitVolatileStats();
 
         ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
@@ -142,14 +141,12 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
         try {
             DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
+            session.pushVolatileStats("RM_NE");
 
             IntegrationService service = new IntegrationService(session, table, asList(keyNavigatorElement), propsNavigatorElement, deletes);
             service.synchronize(true, false);
 
-            if(!disableVolatileStats)
-                session.popVolatileStats();
+            session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -158,7 +155,6 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     public void synchronizeParents() {
-        boolean disableVolatileStats = Settings.get().isDisableExplicitVolatileStats();
 
         ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportField parentSidField = new ImportField(reflectionLM.navigatorElementSIDClass);
@@ -174,14 +170,12 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable table = new ImportTable(asList(sidField, parentSidField, numberField), dataParents);
         try {
             DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
+            session.pushVolatileStats("RM_PT");
 
             IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
             service.synchronize(true, false);
 
-            if(!disableVolatileStats)
-                session.popVolatileStats();
+            session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -228,7 +222,6 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     public void synchronizePropertyDraws() {
-        boolean disableVolatileStats = Settings.get().isDisableExplicitVolatileStats();
 
         List<List<Object>> dataPropertyDraws = new ArrayList<List<Object>>();
         for (FormEntity formElement : businessLogics.getFormEntities()) {
@@ -262,14 +255,12 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
         try {
             DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
+            session.pushVolatileStats("RM_PD");
 
             IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw, keyGroupObject), propsPropertyDraw, deletes);
             service.synchronize(true, false);
 
-            if(!disableVolatileStats)
-                session.popVolatileStats();
+            session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -278,7 +269,6 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     public void synchronizeGroupObjects() {
-        boolean disableVolatileStats = Settings.get().isDisableExplicitVolatileStats();
 
         List<List<Object>> dataGroupObjectList = new ArrayList<List<Object>>();
         for (FormEntity<?> formElement : businessLogics.getFormEntities()) { //formSID - sidGroupObject
@@ -307,14 +297,12 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
         try {
             DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
+            session.pushVolatileStats("RM_GO");
 
             IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyGroupObject), propsGroupObject, deletes);
             service.synchronize(true, false);
 
-            if(!disableVolatileStats)
-                session.popVolatileStats();
+            session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -332,7 +320,6 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     public void synchronizePropertyEntities() {
-        boolean disableVolatileStats = Settings.get().isDisableExplicitVolatileStats();
 
         ImportField sidPropertyField = new ImportField(reflectionLM.propertySIDValueClass);
         ImportField captionPropertyField = new ImportField(reflectionLM.propertyCaptionValueClass);
@@ -399,14 +386,12 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                     classPropertyField, complexityPropertyField), dataProperty);
 
             DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
+            session.pushVolatileStats("RM_PE");
 
             IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties, deletes);
             service.synchronize(true, false);
 
-            if(!disableVolatileStats)
-                session.popVolatileStats();
+            session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -415,7 +400,6 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     public void synchronizePropertyParents() {
-        boolean disableVolatileStats = Settings.get().isDisableExplicitVolatileStats();
 
         ImportField sidPropertyField = new ImportField(reflectionLM.propertySIDValueClass);
         ImportField numberPropertyField = new ImportField(reflectionLM.numberProperty);
@@ -437,14 +421,12 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
         try {
             DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
+            session.pushVolatileStats("RM_PP");
 
             IntegrationService service = new IntegrationService(session, table, asList(keyProperty, keyParent), properties);
             service.synchronize(true, false);
 
-            if(!disableVolatileStats)
-                session.popVolatileStats();
+            session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -453,7 +435,6 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     public void synchronizeGroupProperties() {
-        boolean disableVolatileStats = Settings.get().isDisableExplicitVolatileStats();
 
         ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
@@ -493,17 +474,15 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
         try {
             DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
-
+            session.pushVolatileStats("RM_GP");
+            
             IntegrationService service = new IntegrationService(session, table, asList(key), props, deletes);
             service.synchronize(true, false);
 
             service = new IntegrationService(session, table2, asList(key, key2), props2);
             service.synchronize(true, false);
 
-            if(!disableVolatileStats)
-                session.popVolatileStats();
+            session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {
@@ -535,7 +514,6 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     public void synchronizeTables() {
-        boolean disableVolatileStats = Settings.get().isDisableExplicitVolatileStats();
 
         ImportField tableSidField = new ImportField(reflectionLM.sidTable);
         ImportField tableKeySidField = new ImportField(reflectionLM.sidTableKey);
@@ -590,8 +568,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
         try {
             DataSession session = createSession();
-            if(!disableVolatileStats)
-                session.pushVolatileStats();
+            session.pushVolatileStats("RM_TE");
 
             IntegrationService service = new IntegrationService(session, table, asList(tableKey), properties, delete);
             service.synchronize(true, false);
@@ -602,8 +579,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             service = new IntegrationService(session, tableColumns, asList(tableColumnKey), propertiesColumns, deleteColumns);
             service.synchronize(true, false);
 
-            if(!disableVolatileStats)
-                session.popVolatileStats();
+            session.popVolatileStats();
             session.apply(businessLogics);
             session.close();
         } catch (Exception e) {

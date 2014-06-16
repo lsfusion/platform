@@ -3,14 +3,14 @@ package lsfusion.server.data.sql;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.data.SessionTable;
+import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.CompileOrder;
+import lsfusion.server.data.query.ExecuteEnvironment;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.*;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public interface SQLSyntax {
 
@@ -106,7 +106,6 @@ public interface SQLSyntax {
     String getMinute();
     String getEpoch();
     String getDateTime();
-    String typeConvertSuffix(Type oldType, Type newType, String name, TypeEnvironment typeEnv);
 
     String getInsensitiveLike();
 
@@ -133,7 +132,7 @@ public interface SQLSyntax {
 
     boolean isConnectionClosed(SQLException e);
     
-    String getRandomName();
+    String getRandom();
 
     boolean hasJDBCTimeoutMultiThreadProblem();
 
@@ -161,13 +160,14 @@ public interface SQLSyntax {
 
     String getAnyValueFunc();
     String getLastFunc();
-    String getMaxMin(boolean max, String expr1, String expr2);
-    String getNotZero(String expr);
+    String getMaxMin(boolean max, String expr1, String expr2, Type type, TypeEnvironment typeEnv);
+    String getNotZero(String expr, Type type, TypeEnvironment typeEnv);
 
     boolean supportsAnalyzeSessionTable();
     String getAnalyzeSessionTable(String tableName);
 
     boolean supportsVolatileStats();
+    boolean supportsNoCount();
     String getVolatileStats(boolean on);
 
     String getChangeColumnType();
@@ -203,4 +203,24 @@ public interface SQLSyntax {
     String getInArray(String element, String array);
 
     boolean hasGroupByConstantProblem();
+
+    SQLSyntaxType getSyntaxType();
+
+    String getSafeCastNameFnc(Type type);
+
+    Date fixDate(Date value);
+
+    Timestamp fixDateTime(Timestamp value);
+
+    boolean hasAggConcProblem();
+
+    String getConcTypeName(ConcatenateType type);
+
+    String getIIF(String ifWhere, String trueExpr, String falseExpr);
+
+    String getAndExpr(String where, String expr, Type type, TypeEnvironment typeEnv);
+
+    boolean doesNotTrimWhenCastToVarChar();
+
+    String getTypeChange(Type oldType, Type type, String name, ExecuteEnvironment env);
 }

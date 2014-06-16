@@ -1,7 +1,6 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.*;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMap;
@@ -21,21 +20,17 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.TimeExpr;
 import lsfusion.server.data.expr.ValueExpr;
-import lsfusion.server.data.expr.formula.CastFormulaImpl;
-import lsfusion.server.data.expr.formula.FormulaExpr;
+import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.where.CaseExprInterface;
-import lsfusion.server.data.query.ExecuteEnvironment;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.query.QueryExecuteEnvironment;
 import lsfusion.server.data.sql.DataAdapter;
+import lsfusion.server.data.sql.MSSQLDataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
-import lsfusion.server.data.type.Reader;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.navigator.*;
 import lsfusion.server.lifecycle.LifecycleAdapter;
@@ -46,6 +41,7 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionCreator;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -154,6 +150,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         this.LM = businessLogics.LM;
         this.reflectionLM = businessLogics.reflectionLM;
         try {
+            if(adapter.getSyntaxType() == SQLSyntaxType.MSSQL)
+                Expr.useCasesCount = 5;
+            
             systemLogger.info("Synchronizing DB.");
             sourceHashChanged = synchronizeDB();
         } catch (Exception e) {
@@ -304,6 +303,67 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         } catch (Exception e) {
             logger.error("Error reading computer: ", e);
             throw new RuntimeException(e);
+        }
+    }
+
+    public void uploadToDB(SQLSession sql, boolean isolatedTransactions) throws SQLException, SQLHandledException {
+        try {
+            uploadToDB(sql, isolatedTransactions, new MSSQLDataAdapter("mothercare", "localhost", "sa", "11111", "SQLEXPRESS"));
+        } catch (Exception e) {
+            throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
+        }
+    }
+
+    public void uploadToDB(SQLSession sql, boolean isolatedTransactions, final DataAdapter adapter) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
+        final OperationOwner owner = OperationOwner.unknown;
+        final SQLSession sqlFrom = new SQLSession(adapter);
+
+        sql.pushNoQueryLimit();
+        try {
+            ImSet<GlobalTable> tables = SetFact.addExcl(LM.tableFactory.getImplementTables(), IDTable.instance);
+            final int size = tables.size();
+            for (int i = 0; i < size; i++) {
+                final GlobalTable implementTable = tables.get(i);
+                final int fi = i;
+                run(sql, isolatedTransactions, new RunService() {
+                    @Override
+                    public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                        uploadTableToDB(sql, implementTable, fi + "/" + size, sqlFrom, owner);
+                    }
+                });
+            }
+        } finally {
+            sql.popNoQueryLimit();
+        }
+    }
+
+    @Message("logics.upload.db")
+    private void uploadTableToDB(SQLSession sql, final @ParamMessage GlobalTable implementTable, @ParamMessage String progress, final SQLSession sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
+        sqlTo.truncate(implementTable, owner);
+        
+        try {
+            final Result<Integer> proceeded = new Result<Integer>(0);
+            final int total = sql.getCount(implementTable, owner);
+            ResultHandler<KeyField, PropertyField> reader = new ReadBatchResultHandler<KeyField, PropertyField>(10000) {
+                public void start() {
+                    ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
+                }
+
+                public void proceedBatch(ImOrderMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> batch) throws SQLException {
+                    sqlTo.insertBatchRecords(implementTable, batch.getMap(), owner);
+                    proceeded.set(proceeded.result + batch.size());
+                    ThreadLocalContext.popActionMessage();
+                    ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
+                }
+
+                public void finish() throws SQLException {
+                    ThreadLocalContext.popActionMessage();
+                    super.finish();
+                }
+            };
+            implementTable.readData(sql, LM.baseClass, owner, true, reader);
+        } finally {
+            ThreadLocalContext.popActionMessage();
         }
     }
 
@@ -511,8 +571,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<KeyField, PropertyField>(table);
                 Expr keyExpr = copyObjects.getMapExprs().singleValue();
                 Where moveWhere = Where.FALSE;
-                CaseExprInterface mExpr = Expr.newCases(true);
                 ImMap<String, ImSet<Integer>> copyFrom = toCopy.getValue(i);
+                CaseExprInterface mExpr = Expr.newCases(true, copyFrom.size());
                 MSet<String> mCopyFromTables = SetFact.mSetMax(copyFrom.size());
                 for (int j = 0, sizeJ = copyFrom.size(); j < sizeJ; j++) {
                     DBStoredProperty oldClassProp = oldDBStructure.getProperty(copyFrom.getKey(j));
@@ -670,10 +730,32 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     public String checkAggregations(SQLSession session) throws SQLException, SQLHandledException {
-        String message = "";
-        for (AggregateProperty property : businessLogics.getAggregateStoredProperties())
-            message += property.checkAggregation(session, LM.baseClass);
-        return message;
+        List<AggregateProperty> checkProperties = businessLogics.getAggregateStoredProperties();
+
+        final Result<Integer> proceeded = new Result<Integer>(0);
+        int total = checkProperties.size();
+        ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
+        try {
+            String message = "";
+            for (AggregateProperty property : checkProperties) {
+                message += property.checkAggregation(session, LM.baseClass);
+
+                proceeded.set(proceeded.result + 1);
+                ThreadLocalContext.popActionMessage();
+                ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
+            }
+            return message;
+        } finally {
+            ThreadLocalContext.popActionMessage();
+        }
+    }
+
+    public String checkAggregationTableColumn(SQLSession session, String propertySID) throws SQLException, SQLHandledException {
+        for (CalcProperty property : businessLogics.getAggregateStoredProperties())
+            if (property.getSID().equals(propertySID)) {
+                return ((AggregateProperty) property).checkAggregation(session, LM.baseClass);
+            }
+        return null; 
     }
 
     public void recalculateAggregations(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
@@ -726,14 +808,26 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         } else
             run.run(session);
     }
-    public void recalculateAggregations(SQLSession session, List<AggregateProperty> recalculateProperties, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        for (final AggregateProperty property : recalculateProperties)
-            run(session, isolatedTransaction, new RunService() {
-                public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    property.recalculateAggregation(sql, LM.baseClass);
-                }});    
-    }
+    public void recalculateAggregations(SQLSession session, final List<AggregateProperty> recalculateProperties, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        final Result<Integer> proceeded = new Result<Integer>(0);
+        final int total = recalculateProperties.size();
+        ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
+        try {
+            for (final AggregateProperty property : recalculateProperties)
+                run(session, isolatedTransaction, new RunService() {
+                    public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                        property.recalculateAggregation(sql, LM.baseClass);
 
+                        proceeded.set(proceeded.result + 1);
+                        ThreadLocalContext.popActionMessage();
+                        ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
+                    }
+                });
+        } finally {
+            ThreadLocalContext.popActionMessage();
+        }
+    }
+        
     public void recalculateAggregationTableColumn(SQLSession session, String propertySID, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         for (CalcProperty property : businessLogics.getAggregateStoredProperties())
             if (property.getSID().equals(propertySID)) {

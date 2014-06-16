@@ -43,7 +43,8 @@
         <jgoodies.looks.version>2.4.1</jgoodies.looks.version>
         <jgoodies.common.version>1.2.0</jgoodies.common.version>
         <jssc.version>0.8</jssc.version>
-        <jtds.version>1.2.4</jtds.version>
+        <!--<jtds.version>1.2.4</jtds.version>-->
+        <mssql.version>4.0</mssql.version>
         <javax.mail.version>1.4</javax.mail.version>
         <blocking.map.version>1.0-patched</blocking.map.version>
         <antlr.version>3.3</antlr.version>
@@ -724,10 +725,15 @@
                 <artifactId>jssc</artifactId>
                 <version>${jssc.version}</version>
             </dependency>
+            <!--<dependency>-->
+                <!--<groupId>net.sourceforge.jtds</groupId>-->
+                <!--<artifactId>jtds</artifactId>-->
+                <!--<version>${jtds.version}</version>-->
+            <!--</dependency>-->
             <dependency>
-                <groupId>net.sourceforge.jtds</groupId>
-                <artifactId>jtds</artifactId>
-                <version>${jtds.version}</version>
+                <groupId>com.microsoft</groupId>
+                <artifactId>mssql</artifactId>
+                <version>${mssql.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.mail</groupId>

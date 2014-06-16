@@ -2,6 +2,7 @@ package lsfusion.server.data.expr.formula;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
 import java.util.regex.Matcher;
@@ -12,7 +13,7 @@ import static lsfusion.base.BaseUtils.nullHash;
 
 public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoinImpl {
 
-    public final String formula;
+    public final CustomFormulaSyntax formula;
 
     public final Pattern paramsPattern;
     public ImMap<String, Integer> mapParams;
@@ -25,7 +26,7 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
         return hasNotNull;
     }
 
-    public CustomFormulaImpl(String formula, ImMap<String, Integer> mapParams, FormulaClass valueClass, boolean hasNotNull) {
+    public CustomFormulaImpl(CustomFormulaSyntax formula, ImMap<String, Integer> mapParams, FormulaClass valueClass, boolean hasNotNull) {
         this.formula = formula;
         this.mapParams = mapParams;
         this.valueClass = valueClass;
@@ -42,7 +43,8 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
             }
         });
 
-        Matcher m = paramsPattern.matcher(formula);
+        SQLSyntax syntax = source.getSyntax();
+        Matcher m = paramsPattern.matcher(formula.getFormula(syntax.getSyntaxType()));
         StringBuffer result = new StringBuffer("(");
         while (m.find()) {
             String param = m.group();
@@ -51,9 +53,7 @@ public class CustomFormulaImpl extends AbstractFormulaImpl implements FormulaJoi
         m.appendTail(result);
         result.append(")");
 
-        String sourceString = result.toString();
-        sourceString = sourceString.replace("||", source.getSyntax().getStringConcatenate()); // используется в BaseLogicsModule.toDateTime, StringAggUnionProperty тоже
-        return "("+sourceString+")"; // type.getCast(sourceString, compile.syntax, false)
+        return "("+ result.toString() +")"; // type.getCast(sourceString, compile.syntax, false)
     }
 
     @Override

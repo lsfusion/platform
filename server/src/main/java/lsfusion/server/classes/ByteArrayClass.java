@@ -7,7 +7,7 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.ServerResourceBundle;
-import net.sourceforge.jtds.jdbc.BlobImpl;
+//import net.sourceforge.jtds.jdbc.BlobImpl;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -60,6 +60,9 @@ public class ByteArrayClass extends DataClass<byte[]> {
     public String getDotNetWrite(String writer, String value) {
         throw new UnsupportedOperationException();
     }
+    public int getBaseDotNetSize() {
+        throw new UnsupportedOperationException();
+    }
 
     public int getSQL(SQLSyntax syntax) {
         return syntax.getByteArraySQL();
@@ -74,12 +77,12 @@ public class ByteArrayClass extends DataClass<byte[]> {
     }
 
     public byte[] read(Object value) {
-        if(value instanceof BlobImpl)
+/*        if(value instanceof BlobImpl)
             try {
                 return ((BlobImpl)value).getBytes(1, (int) ((BlobImpl)value).length());
             } catch (SQLException e) {
                 throw Throwables.propagate(e);
-            }
+            }*/
         return (byte[])value;
     }
 

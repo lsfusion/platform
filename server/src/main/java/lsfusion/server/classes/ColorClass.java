@@ -52,6 +52,9 @@ public class ColorClass extends DataClass<Color> {
     public String getDotNetWrite(String writer, String value) {
         return writer + ".Write(" + value + ");";
     }
+    public int getBaseDotNetSize() {
+        return 4;
+    }
 
     @Override
     public int getSQL(SQLSyntax syntax) {

@@ -19,10 +19,7 @@ import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.layout.ContainerType;
-import lsfusion.server.Message;
-import lsfusion.server.ParamMessage;
-import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
+import lsfusion.server.*;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
@@ -806,6 +803,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
     
     @LogTime
+    @ThisMessage
     public void executeEditAction(PropertyDrawInstance property, String editActionSID, ImMap<ObjectInstance, DataObject> keys, ObjectValue pushChange, DataObject pushAdd, boolean pushConfirm) throws SQLException, SQLHandledException {
         ActionPropertyObjectInstance editAction = property.getEditAction(editActionSID, instanceFactory, entity);
 
@@ -1418,6 +1416,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     @Message("message.form.end.apply")
     @LogTime
+    @ThisMessage
     @AssertSynchronized
     public FormChanges endApply() throws SQLException, SQLHandledException {
 

@@ -35,6 +35,8 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
     private ImSet<Type> safeCastTypes;
     private ImSet<Pair<GroupType, ImList<Type>>> groupAggOrders;
 
+    private ImSet<Pair<TypeFunc, Type>> typeFuncs;
+
     private ImSet<ArrayClass> arrayClasses;
 
     public boolean hasRecursion() {
@@ -56,6 +58,7 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         
         groupAggOrders = SetFact.EMPTY();
         arrayClasses = SetFact.EMPTY();
+        typeFuncs = SetFact.EMPTY();
     }
 
     public void add(ExecuteEnvironment environment) {
@@ -69,6 +72,7 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         
         groupAggOrders = groupAggOrders.merge(environment.groupAggOrders);
         arrayClasses = arrayClasses.merge(environment.arrayClasses);
+        typeFuncs = typeFuncs.merge(environment.typeFuncs);
     }
 
     public void addNoReadOnly() {
@@ -107,6 +111,10 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         groupAggOrders = groupAggOrders.merge(new Pair<GroupType, ImList<Type>>(groupType, types));
     }
 
+    public void addNeedTypeFunc(TypeFunc typeFunc, Type type) {
+        typeFuncs = typeFuncs.merge(new Pair<TypeFunc, Type>(typeFunc, type));
+    }
+
     public void before(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
         for(ConcatenateType concType : concTypes)
             sqlSession.typePool.ensureConcType(concType);
@@ -118,6 +126,8 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
             sqlSession.typePool.ensureSafeCast(type);
         for(Pair<GroupType, ImList<Type>> gaOrder : groupAggOrders)
             sqlSession.typePool.ensureGroupAggOrder(gaOrder);
+        for(Pair<TypeFunc, Type> tf : typeFuncs)
+            sqlSession.typePool.ensureTypeFunc(tf);
 
         if(noReadOnly)
             sqlSession.pushNoReadOnly(connection.sql);

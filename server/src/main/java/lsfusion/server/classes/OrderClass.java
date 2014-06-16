@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.formula.ExprSource;
 import lsfusion.server.data.expr.formula.ExprType;
-import lsfusion.server.data.expr.formula.FormulaImpl;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.query.CompileOrder;
 import lsfusion.server.data.query.TypeEnvironment;
@@ -67,19 +66,20 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
             return source.getSource(0);
 
         MList<String> mExprs = ListFact.mList(source.getExprCount());
-        String resultSource = "";
+        MList<String> mResultSources = ListFact.mList(source.getExprCount());
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
             Type exprType = types.get(i);
             String exprSource = source.getSource(i);
-            resultSource = (resultSource.length()==0 ? "" : resultSource + "," ) + "COALESCE(" + exprSource + "," + exprType.getString(exprType.getInfiniteValue(true), source.getSyntax()) + ")";
+            mResultSources.add("COALESCE(" + exprSource + "," + exprType.getString(exprType.getInfiniteValue(true), source.getSyntax()) + ")");
             mExprs.add(exprSource);
         }
-        resultSource = ConcatenateType.get(types.toArray(new Type[types.size()])).getCast("ROW(" + resultSource + ")", source.getSyntax(), source.getEnv());
+        ConcatenateType resultType = ConcatenateType.get(types.toArray(new Type[types.size()]));
+        String resultSource = source.getSyntax().getNotSafeConcatenateSource(resultType, mResultSources.immutableList(), source.getEnv());
 
-        return "CASE WHEN " + mExprs.immutableList().toString(new GetValue<String, String>() {
+        return source.getSyntax().getAndExpr(mExprs.immutableList().toString(new GetValue<String, String>() {
             public String getMapValue(String value) {
                 return value + " IS NOT NULL";
-            }}, " OR ") + " THEN " + resultSource + " ELSE NULL END";
+            }}, " OR "), resultSource, resultType, source.getEnv());
     }
 
     public ImOrderMap<String, CompileOrder> getCompileOrders(String source, final CompileOrder order) {
@@ -146,6 +146,10 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public int getBaseDotNetSize() {
+        throw new UnsupportedOperationException();
+    }
 
     public int getSQL(SQLSyntax syntax) {
         throw new UnsupportedOperationException();
