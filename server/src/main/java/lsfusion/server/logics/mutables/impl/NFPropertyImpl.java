@@ -6,13 +6,25 @@ import lsfusion.server.logics.mutables.interfaces.NFDefault;
 import lsfusion.server.logics.mutables.interfaces.NFList;
 import lsfusion.server.logics.mutables.interfaces.NFProperty;
 
-public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFProperty<K> {
+import java.lang.ref.WeakReference;
+
+    public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFProperty<K> {
 
     public NFPropertyImpl() {
     }
 
-    public NFPropertyImpl(boolean allowVersionFinalRead) {
+    private WeakReference<Object> debugInfo;
+    protected String getDebugInfo() {
+        Object obj;
+        if(debugInfo != null && (obj = debugInfo.get()) != null)
+            return obj.toString();
+        return super.getDebugInfo();
+    }
+
+    public NFPropertyImpl(boolean allowVersionFinalRead, Object debugInfo) {
         super(allowVersionFinalRead);
+        if(debugInfo != null)
+            this.debugInfo = new WeakReference<Object>(debugInfo);        
     }
 
     public NFPropertyImpl(K changes) {

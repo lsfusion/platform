@@ -10,9 +10,13 @@ import java.util.TreeMap;
 public abstract class NFImpl<M, F> extends MutableObject {
 
     private Object changes;
+    protected String getDebugInfo() {
+        return null;
+    }
     protected M getChanges() {
         if(checkFinal(changes)) {
-            ServerLoggers.assertLog(false, "NF COLLECTION RESTARTED");
+            String debugInfo = getDebugInfo();
+            ServerLoggers.assertLog(false, "NF COLLECTION RESTARTED" + (debugInfo !=null ? " " + debugInfo : ""));
             changes = prevChanges;
         }
         return (M)changes;

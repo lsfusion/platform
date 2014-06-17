@@ -86,7 +86,10 @@ public class NFFact {
     }
 
     public static <K> NFProperty<K> property(boolean allowVersionFinalRead) {
-        return new NFPropertyImpl<K>(allowVersionFinalRead);
+        return property(allowVersionFinalRead, null);
+    }
+    public static <K> NFProperty<K> property(boolean allowVersionFinalRead, Object debugInfo) {
+        return new NFPropertyImpl<K>(allowVersionFinalRead, debugInfo);
     }
 
     public static <K> NFProperty<K> finalProperty(K key) {

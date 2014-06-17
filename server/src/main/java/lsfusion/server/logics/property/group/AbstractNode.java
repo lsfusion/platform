@@ -12,11 +12,12 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyClassImplement;
 import lsfusion.server.logics.property.ValueClassWrapper;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 public abstract class AbstractNode extends ImmutableObject {
 
-    NFProperty<AbstractGroup> parent = NFFact.property(true);
+    NFProperty<AbstractGroup> parent = NFFact.property(true, this);
     public AbstractGroup getParent() { return parent.get(); }
     public AbstractGroup getNFParent(Version version) { return parent.getNF(version); }
 
