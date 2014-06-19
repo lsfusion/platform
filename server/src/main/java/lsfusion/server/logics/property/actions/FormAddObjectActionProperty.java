@@ -7,7 +7,10 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
+import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 
@@ -29,5 +32,12 @@ public class FormAddObjectActionProperty extends AddObjectActionProperty<Propert
         assert where==null;
 
         context.addFormObject(objectEntity, readClass);
+    }
+
+    @Override
+    public void proceedDefaultDraw(PropertyDrawEntity<PropertyInterface> entity, FormEntity<?> form, Version version) {
+        super.proceedDefaultDraw(entity, form, version);
+        
+        entity.toDraw = objectEntity.groupTo; 
     }
 }

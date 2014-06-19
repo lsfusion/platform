@@ -306,14 +306,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    public void uploadToDB(SQLSession sql, boolean isolatedTransactions) throws SQLException, SQLHandledException {
-        try {
-            uploadToDB(sql, isolatedTransactions, new MSSQLDataAdapter("mothercare", "localhost", "sa", "11111", "SQLEXPRESS"));
-        } catch (Exception e) {
-            throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
-        }
-    }
-
     public void uploadToDB(SQLSession sql, boolean isolatedTransactions, final DataAdapter adapter) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         final OperationOwner owner = OperationOwner.unknown;
         final SQLSession sqlFrom = new SQLSession(adapter);

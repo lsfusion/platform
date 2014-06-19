@@ -320,7 +320,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public ObjectEntity getNFObject(ValueClass cls, Version version) {
-        for (GroupObjectEntity group : getNFGroupsIt(version)) {
+        for (GroupObjectEntity group : getNFGroupsListIt(version)) { // для детерменированности
             for (ObjectEntity object : group.getObjects()) {
                 if (cls.equals(object.baseClass)) {
                     return object;
