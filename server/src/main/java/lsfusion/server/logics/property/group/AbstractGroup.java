@@ -31,6 +31,11 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
     private int ID;
     private String sID;
 
+    @Override
+    public String toString() {
+        return caption == null ? super.toString() : caption; 
+    }
+
     public AbstractGroup(String sID, int iID, String caption) {
         this.sID = sID;
         this.caption = caption;
