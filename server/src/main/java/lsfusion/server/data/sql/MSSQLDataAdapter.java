@@ -746,6 +746,12 @@ public class MSSQLDataAdapter extends DataAdapter {
                     "FROM  ? " +
                     "WITH permission_set = Safe;", ListFact.singleton(new TypeObject(compiled, ByteArrayClass.instance)));
 
+            if(i==0) {
+                executeEnsure("DECLARE @prev varbinary(max);\n" +
+                        "SET @prev = (SELECT content FROM " + dataBase + ".sys.assembly_files WHERE name = '" + assemblyName + "');\n" +
+                        "ALTER ASSEMBLY [" + assemblyName + "] FROM @prev;");
+            }
+
             for (String create : creates)
                 executeEnsure(stringResolver.replacePlaceholders(create, properties));
         }
