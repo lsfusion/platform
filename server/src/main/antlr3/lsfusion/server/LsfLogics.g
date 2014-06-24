@@ -3406,6 +3406,7 @@ modalityTypeLiteral returns [ModalityType val]
 	|	'MODAL' { $val = ModalityType.MODAL; }
 	|	'DOCKEDMODAL' { $val = ModalityType.DOCKED_MODAL; }
 	|	'FULLSCREEN' { $val = ModalityType.FULLSCREEN_MODAL; }
+	|	'DIALOG' { $val = ModalityType.DIALOG_MODAL; }
 	;
 	
 formPrintTypeLiteral returns [FormPrintType val]
