@@ -781,6 +781,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if (news != null) {
             news.drop(sql, getOwner());
             news = null;
+            add.clear();
+            remove.clear();
+            usedOldClasses.clear();
+            usedNewClasses.clear();
+            singleAdd.clear();
+            singleRemove.clear();
+            newClasses.clear();
         }
     }
 
