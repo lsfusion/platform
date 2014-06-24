@@ -47,7 +47,7 @@ public class LogicsInstanceContext extends AbstractContext {
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, UpdateCurrentClasses outerUpdateCurrentClasses, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
         DataObject serverComputer = logicsInstance.getDbManager().getServerComputerObject();
         return new FormInstance(formEntity,
-                                logicsInstance, session, SecurityManager.serverSecurityPolicy, null, null,
+                                logicsInstance, sessionScope.createSession(session), SecurityManager.serverSecurityPolicy, null, null,
                                 serverComputer,
                                 null, mapObjects, outerUpdateCurrentClasses, isModal, sessionScope,
                                 checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);

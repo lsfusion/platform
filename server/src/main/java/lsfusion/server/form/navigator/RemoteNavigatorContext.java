@@ -53,7 +53,7 @@ public class RemoteNavigatorContext extends AbstractContext {
     @Override
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, UpdateCurrentClasses outerUpdateCurrentClasses, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
         return new FormInstance(formEntity, navigator.logicsInstance,
-                                sessionScope.isNewSession() ? session.createSession() : session,
+                                sessionScope.createSession(session),
                                 navigator.securityPolicy, navigator, navigator,
                                 navigator.getComputer(), navigator.getConnection(), mapObjects, outerUpdateCurrentClasses, isModal,
                                 sessionScope,

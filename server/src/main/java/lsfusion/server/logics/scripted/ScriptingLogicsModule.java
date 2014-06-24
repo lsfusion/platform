@@ -1317,7 +1317,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (newSession) {
-            listLP = addNewSessionAProp(null, genSID(), "", listLP, doApply, singleApply, migrateAllSessionProps, mMigrateProps.immutable(), isNested);
+            listLP = addNewSessionAProp(null, genSID(), "", listLP, doApply, isNested, singleApply, migrateAllSessionProps, mMigrateProps.immutable());
         }
 
         if (newThread) {
@@ -1379,18 +1379,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(prop, usedParams);
     }
 
-    public LP addScriptedAddFormAction(String className, boolean session) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedAddFormAction(" + className + ", " + session + ");");
+    public LP addScriptedAddFormAction(String className, FormSessionScope scope) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedAddFormAction(" + className + ", " + scope + ");");
         ValueClass cls = findClassByCompoundName(className);
         checkAddActionsClass(cls);
-        return getScriptAddFormAction((CustomClass) cls, session);
+        return getScriptAddFormAction((CustomClass) cls, scope);
     }
 
-    public LP addScriptedEditFormAction(String className, boolean session) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedEditFormAction(" + className + ", " + session + ");");
+    public LP addScriptedEditFormAction(String className, FormSessionScope scope) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedEditFormAction(" + className + ", " + scope + ");");
         ValueClass cls = findClassByCompoundName(className);
         checkAddActionsClass(cls);
-        return getScriptEditFormAction((CustomClass) cls, session);
+        return getScriptEditFormAction((CustomClass) cls, scope);
     }
 
     public LPWithParams addScriptedConfirmProp(LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {

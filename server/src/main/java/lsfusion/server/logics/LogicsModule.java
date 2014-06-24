@@ -557,14 +557,12 @@ public abstract class LogicsModule {
 
     // ------------------- Data Multi File action ----------------- //
 
-    protected LAP addDMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession) {
-        return addDMFAProp(group, sID, caption, form, objectsToSet, null, newSession);
+    protected LAP addDMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, FormSessionScope scope) {
+        return addDMFAProp(group, sID, caption, form, objectsToSet, null, scope);
     }
 
-    protected LAP addDMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean newSession) {
-        return addFAProp(group, sID, caption, form, objectsToSet, startAction,
-                newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION,
-                ModalityType.DOCKED_MODAL, false);
+    protected LAP addDMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope scope) {
+        return addFAProp(group, sID, caption, form, objectsToSet, startAction, scope, ModalityType.DOCKED_MODAL, false);
     }
 
     // ------------------- File action ----------------- //
@@ -767,14 +765,13 @@ public abstract class LogicsModule {
     
     // ------------------- NEWSESSION ----------------- //
 
-    protected LAP addNewSessionAProp(AbstractGroup group, String name, String caption, LAP action, boolean doApply, boolean singleApply) {
-        return addNewSessionAProp(group, name, caption, action, doApply, singleApply, false, SetFact.<SessionDataProperty>EMPTY(), false);
+    protected LAP addNewSessionAProp(AbstractGroup group, String name, String caption, LAP action, boolean doApply, boolean singleApply, boolean isNested) {
+        return addNewSessionAProp(group, name, caption, action, doApply, isNested, singleApply, false, SetFact.<SessionDataProperty>EMPTY());
     }
     
     protected LAP addNewSessionAProp(AbstractGroup group, String name, String caption,
-                                     LAP action, boolean doApply, boolean singleApply,
-                                     boolean migrateAllSessionProps, ImSet<SessionDataProperty> migrateSessionProps,
-                                     boolean isNested) {
+                                     LAP action, boolean doApply, boolean isNested, boolean singleApply,
+                                     boolean migrateAllSessionProps, ImSet<SessionDataProperty> migrateSessionProps) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
@@ -1577,21 +1574,21 @@ public abstract class LogicsModule {
 
     // ---------------------- Add Form ---------------------- //
 
-    public LAP getScriptAddFormAction(CustomClass cls, boolean session) {
+    public LAP getScriptAddFormAction(CustomClass cls, FormSessionScope scope) {
         ClassFormEntity form = cls.getEditForm(baseLM, getVersion());
 
         LAP property = addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.add"),
                 form.form, new ObjectEntity[] {},
-                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), !session);
-        setAddFormActionProperties(property, form, session);
+                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope);
+        setAddFormActionProperties(property, form, scope);
         return property;
     }
 
-    public LAP getAddFormAction(CustomClass cls, boolean oldSession, Version version) {
-        return baseLM.getAddFormAction(cls, oldSession, version);
+    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, Version version) {
+        return baseLM.getAddFormAction(cls, scope, version);
     }
 
-    protected void setAddFormActionProperties(LAP property, ClassFormEntity form, boolean oldSession) {
+    protected void setAddFormActionProperties(LAP property, ClassFormEntity form, FormSessionScope scope) {
         property.setImage("add.png");
         property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
@@ -1602,22 +1599,22 @@ public abstract class LogicsModule {
         // todo : так не очень правильно делать - получается, что мы добавляем к Immutable объекту FormActionProperty ссылки на ObjectEntity
         FormActionProperty formAction = (FormActionProperty)property.property;
         formAction.seekOnOk.add(form.object);
-        if (oldSession) {
+        if (!scope.isNewSession()) {
             formAction.closeAction = form.form.addPropertyObject(getDeleteAction((CustomClass)form.object.baseClass, true), form.object);
         }
     }
 
     // ---------------------- Edit Form ---------------------- //
 
-    public LAP getScriptEditFormAction(CustomClass cls, boolean oldSession) {
+    public LAP getScriptEditFormAction(CustomClass cls, FormSessionScope scope) {
         ClassFormEntity form = cls.getEditForm(baseLM, getVersion());
-        LAP property = addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.edit"), form.form, new ObjectEntity[]{form.object}, !oldSession);
+        LAP property = addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.edit"), form.form, new ObjectEntity[]{form.object}, scope);
         setEditFormActionProperties(property);
         return property;
     }
 
-    public LAP getEditFormAction(CustomClass cls, boolean oldSession, Version version) {
-        return baseLM.getEditFormAction(cls, oldSession, version);
+    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, Version version) {
+        return baseLM.getEditFormAction(cls, scope, version);
     }
 
     protected void setEditFormActionProperties(LAP property) {
@@ -1972,26 +1969,26 @@ public abstract class LogicsModule {
     }
 
     public void addFormActions(FormEntity form, ObjectEntity object) {
-        addFormActions(form, object, false);
+        addFormActions(form, object, FormSessionScope.NEWSESSION);
     }
 
-    public void addFormActions(FormEntity form, ObjectEntity object, boolean session) {
+    public void addFormActions(FormEntity form, ObjectEntity object, FormSessionScope scope) {
         Version version = getVersion();
-        addAddFormAction(form, object, session, version);
-        addEditFormAction(form, object, session, version);
+        addAddFormAction(form, object, scope, version);
+        addEditFormAction(form, object, scope, version);
         form.addPropertyDraw(getDeleteAction((CustomClass) object.baseClass, false), version, object);
     }
 
-    public PropertyDrawEntity addAddFormAction(FormEntity form, ObjectEntity object, boolean session, Version version) {
-        LAP addForm = getAddFormAction((CustomClass)object.baseClass, session, version);
+    public PropertyDrawEntity addAddFormAction(FormEntity form, ObjectEntity object, FormSessionScope scope, Version version) {
+        LAP addForm = getAddFormAction((CustomClass)object.baseClass, scope, version);
         PropertyDrawEntity actionAddPropertyDraw = form.addPropertyDraw(addForm, version);
         actionAddPropertyDraw.toDraw = object.groupTo;
 
         return actionAddPropertyDraw;
     }
 
-    public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object, boolean session, Version version) {
-        return form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass, session, version), version, object);
+    public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object, FormSessionScope scope, Version version) {
+        return form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass, scope, version), version, object);
     }
 
     public PropertyDrawEntity addFormDeleteAction(FormEntity form, ObjectEntity object, boolean oldSession, Version version) {

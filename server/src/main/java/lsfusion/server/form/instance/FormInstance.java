@@ -1209,7 +1209,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         UpdateCurrentClasses update = CompoundUpdateCurrentClasses.merge(outerUpdate, outerUpdateCurrentClasses);
 
         return new FormInstance<T>(form, logicsInstance,
-                sessionScope.isNewSession() ? session.createSession() : session,
+                sessionScope.createSession(session),
                 securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, instanceFactory.connection, mapObjects,
                 update, isModal,
                 sessionScope,
@@ -2069,7 +2069,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formClose(UserInteraction interaction) throws SQLException, SQLHandledException {
-        if (sessionScope.isManageSession() && session.hasStoredChanges()) {
+        if (sessionScope.isManageSession() && session.isStoredDataChanged()) {
             int result = (Integer) interaction.requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.close.form")));
             if (result != JOptionPane.YES_OPTION) {
                 return;

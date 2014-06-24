@@ -21,6 +21,7 @@ import lsfusion.server.form.entity.ClassFormEntity;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyFormEntity;
+import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.form.window.NavigatorWindow;
@@ -804,7 +805,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         LAP res = addChangeClassAProp(oldSession ? sid : genSID(), baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
         if (!oldSession) {
-            res = (LAP) addNewSessionAProp(null, sid, res.property.caption, res, true, false);
+            res = addNewSessionAProp(null, sid, res.property.caption, res, true, false, false);
             res.setAskConfirm(true);
         }
         setDeleteActionOptions(res);
@@ -812,28 +813,30 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityStrongLazy
-    public LAP getAddFormAction(ClassFormEntity form, CustomClass cls, boolean oldSession) {
+    public LAP getAddFormAction(ClassFormEntity form, CustomClass cls, FormSessionScope scope) {
         return addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
                 form.form, new ObjectEntity[]{},
-                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), !oldSession);
+                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope);
     }
-    public LAP getAddFormAction(CustomClass cls, boolean oldSession, Version version) {
+    
+    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, Version version) {
         ClassFormEntity form = cls.getEditForm(baseLM, version);
 
-        LAP property = getAddFormAction(form, cls, oldSession);
-        setAddFormActionProperties(property, form, oldSession);
+        LAP property = getAddFormAction(form, cls, scope);
+        setAddFormActionProperties(property, form, scope);
         return property;
     }
 
     @IdentityStrongLazy
-    public LAP getEditFormAction(ClassFormEntity form, boolean oldSession) {
+    public LAP getEditFormAction(ClassFormEntity form, FormSessionScope scope) {
         return addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.edit"),
-                form.form, new ObjectEntity[]{form.object}, !oldSession);        
+                form.form, new ObjectEntity[]{form.object}, scope);        
     }
-    public LAP getEditFormAction(CustomClass cls, boolean oldSession, Version version) {
+    
+    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, Version version) {
         ClassFormEntity form = cls.getEditForm(baseLM, version);
 
-        LAP property = getEditFormAction(form, oldSession);
+        LAP property = getEditFormAction(form, scope);
         setEditFormActionProperties(property);
         return property;
     }

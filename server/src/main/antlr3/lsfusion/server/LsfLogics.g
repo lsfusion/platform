@@ -707,11 +707,13 @@ formPropertyUsage returns [PropertyUsage propUsage]
 	|	cid='SELECTION'	        { $propUsage = new PropertyUsage($cid.text); }
 	|	cid='ADDOBJ'	        { $propUsage = new PropertyUsage($cid.text); }
 	|	cid='ADDFORM'	        { $propUsage = new PropertyUsage($cid.text); }
+	|	cid='ADDNESTEDFORM'	    { $propUsage = new PropertyUsage($cid.text); }
 	|	cid='ADDSESSIONFORM'	{ $propUsage = new PropertyUsage($cid.text); }
 	|	cid='EDITFORM'	        { $propUsage = new PropertyUsage($cid.text); }
+	|	cid='EDITNESTEDFORM'	{ $propUsage = new PropertyUsage($cid.text); }
 	|	cid='EDITSESSIONFORM'	{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='DELETE'		{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='DELETESESSION'	{ $propUsage = new PropertyUsage($cid.text); }
+	|	cid='DELETE'		    { $propUsage = new PropertyUsage($cid.text); }
+	|	cid='DELETESESSION'	    { $propUsage = new PropertyUsage($cid.text); }
 	;
 
 
@@ -1932,28 +1934,36 @@ customActionPropertyDefinitionBody returns [LP property, List<AndClassSet> signa
 
 addFormActionPropertyDefinitionBody returns [LP property, List<AndClassSet> signature]
 @init {
-	boolean session = false;	
+	FormSessionScope scope = FormSessionScope.NEWSESSION;	
 }
 @after {
 	if (inPropParseState()) {
 		$signature = new ArrayList<AndClassSet>(); 
-		$property = self.addScriptedAddFormAction($cls.sid, session);	
+		$property = self.addScriptedAddFormAction($cls.sid, scope);	
 	}
 }
-	:	'ADDFORM' ('SESSION' { session = true; })? cls=classId
+	:	'ADDFORM'
+	    (   'SESSION' { scope = FormSessionScope.OLDSESSION; }
+	    |   'NESTED'  { scope = FormSessionScope.NESTEDSESSION; }
+        )?
+        cls=classId
 	;
 
 editFormActionPropertyDefinitionBody returns [LP property, List<AndClassSet> signature]
 @init {
-	boolean session = false;	
+	FormSessionScope scope = FormSessionScope.NEWSESSION;	
 }
 @after {
 	if (inPropParseState()) {
 		$signature = self.createClassSetsFromClassNames(Collections.singletonList($cls.sid)); 
-		$property = self.addScriptedEditFormAction($cls.sid, session);	
+		$property = self.addScriptedEditFormAction($cls.sid, scope);	
 	}
 }
-	:	'EDITFORM' ('SESSION' { session = true; })? cls=classId
+	:	'EDITFORM'
+	    (   'SESSION' { scope = FormSessionScope.OLDSESSION; }
+	    |   'NESTED'  { scope = FormSessionScope.NESTEDSESSION; }
+        )?
+        cls=classId
 	;
 
 addObjectActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]
@@ -3413,6 +3423,7 @@ formPrintTypeLiteral returns [FormPrintType val]
 formSessionScopeLiteral returns [FormSessionScope val]
 	:	'OLDSESSION' { $val = FormSessionScope.OLDSESSION; }
 	|	'NEWSESSION' { $val = FormSessionScope.NEWSESSION; }
+	|	'NESTEDSESSION' { $val = FormSessionScope.NESTEDSESSION; }
 	|	'MANAGESESSION' { $val = FormSessionScope.MANAGESESSION; }
 	;
 

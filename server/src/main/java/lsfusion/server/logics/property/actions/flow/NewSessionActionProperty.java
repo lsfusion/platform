@@ -82,7 +82,11 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
         DataSession newSession = session.createSession();
 
-        migrateProperties(session, newSession);
+        if (isNested) {
+            newSession.setParentSession(session);
+        } else {
+            migrateSessionProperties(session, newSession);
+        }
 
         return context.override(newSession);
     }
@@ -94,7 +98,9 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
 
     protected void afterAspect(FlowResult result, ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
         if (!context.getSession().isInTransaction()) {
-            migrateProperties(innerContext.getSession(), context.getSession());
+            if (!isNested) {
+                migrateSessionProperties(innerContext.getSession(), context.getSession());
+            }
         }
 
         if (doApply) {
@@ -107,7 +113,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         }
     }
 
-    private void migrateProperties(DataSession migrateFrom, DataSession migrateTo) throws SQLException, SQLHandledException {
+    private void migrateSessionProperties(DataSession migrateFrom, DataSession migrateTo) throws SQLException, SQLHandledException {
         if (migrateAllSessionProperties) {
             for (Map.Entry<SessionDataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : migrateFrom.getSessionDataChanges().entrySet()) {
                 migrateTo.change(e.getKey(), SinglePropertyTableUsage.getChange(e.getValue()));

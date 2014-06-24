@@ -18,6 +18,7 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.NotNullFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
+import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -33,6 +34,9 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.server.form.instance.FormSessionScope.NESTEDSESSION;
+import static lsfusion.server.form.instance.FormSessionScope.NEWSESSION;
+import static lsfusion.server.form.instance.FormSessionScope.OLDSESSION;
 
 /**
  * User: DAle
@@ -235,12 +239,12 @@ public class ScriptingFormEntity {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                 LAP<?> addObjAction = LM.getAddObjectAction(form, obj);
                 property = form.addPropertyDraw(addObjAction, version);
-            } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM")) {
+            } else if (propertyName.equals("ADDFORM") || propertyName.equals("ADDSESSIONFORM") || propertyName.equals("ADDNESTEDFORM")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.addAddFormAction(form, obj, propertyName.equals("ADDSESSIONFORM"), version);
-            } else if (propertyName.equals("EDITFORM") || propertyName.equals("EDITSESSIONFORM")) {
+                property = LM.addAddFormAction(form, obj, getAddFormActionScope(propertyName), version);
+            } else if (propertyName.equals("EDITFORM") || propertyName.equals("EDITSESSIONFORM") || propertyName.equals("EDITNESTEDFORM")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
-                property = LM.addEditFormAction(form, obj, propertyName.equals("EDITSESSIONFORM"), version);
+                property = LM.addEditFormAction(form, obj, getEditFormActionScope(propertyName), version);
             } else if (propertyName.equals("DELETE") || propertyName.equals("DELETESESSION")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                 property = LM.addFormDeleteAction(form, obj, propertyName.equals("DELETESESSION"), version);
@@ -260,6 +264,28 @@ public class ScriptingFormEntity {
 
             setPropertyDrawAlias(alias, property, version);
         }
+    }
+
+    private static FormSessionScope getAddFormActionScope(String name) {
+        if ("ADDFORM".equals(name)) {
+            return NEWSESSION;
+        } else if ("ADDSESSIONFORM".equals(name)) {
+            return OLDSESSION;
+        } else if ("ADDNESTEDFORM".equals(name)) {
+            return NESTEDSESSION;
+        }
+        throw new IllegalStateException("incorrect EDITFORM action name");
+    }
+
+    private static FormSessionScope getEditFormActionScope(String name) {
+        if ("EDITFORM".equals(name)) {
+            return NEWSESSION;
+        } else if ("EDITSESSIONFORM".equals(name)) {
+            return OLDSESSION;
+        } else if ("EDITNESTEDFORM".equals(name)) {
+            return NESTEDSESSION;
+        }
+        throw new IllegalStateException("incorrect EDITFORM action name");
     }
 
     private void checkSingleParam(int size) throws ScriptingErrorLog.SemanticErrorException {
