@@ -103,7 +103,7 @@
 
         <!-- Repositories properties -->
         <lsfusion.releases.repo>http://lsfusion.ru/nexus/content/repositories/releases</lsfusion.releases.repo>
-        <lsfusion.thirdparty.repo>http://lsfusion.ru/nexus/content/repositories/thirdparty</lsfusion.thirdparty.repo>
+        <lsfusion.public.repo>http://lsfusion.ru/nexus/content/groups/public</lsfusion.public.repo>
         <lsfusion.snapshots.repo>http://lsfusion.ru/nexus/content/repositories/snapshots</lsfusion.snapshots.repo>
     </properties>
 
@@ -120,9 +120,9 @@
             </releases>
         </repository>
         <repository>
-            <id>lsfusion.thirdparty</id>
-            <name>lsFusion ThirdParty Releases Repository</name>
-            <url>${lsfusion.thirdparty.repo}</url>
+            <id>lsfusion.public</id>
+            <name>lsFusion Public Repository</name>
+            <url>${lsfusion.public.repo}</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
