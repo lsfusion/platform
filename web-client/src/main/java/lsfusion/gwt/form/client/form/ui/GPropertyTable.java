@@ -1,6 +1,9 @@
 package lsfusion.gwt.form.client.form.ui;
 
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.cellview.client.Column;
@@ -19,6 +22,7 @@ import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 
 import java.util.List;
 
+import static com.google.gwt.dom.client.BrowserEvents.CONTEXTMENU;
 import static lsfusion.gwt.base.client.GwtClientUtils.removeAllChildren;
 import static lsfusion.gwt.base.client.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.cellview.client.cell.Cell.Context;
@@ -81,7 +85,7 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
             if (cellEditor != null) {
                 cellEditor.onBrowserEvent(context, cellParent, rowValue, event);
             } else {
-                if (BrowserEvents.CONTEXTMENU.equals(event.getType())) {
+                if (CONTEXTMENU.equals(event.getType())) {
                     stopPropagation(event);
                     contextMenuPopup.show(getSelectedProperty(), event.getClientX(), event.getClientY(), new GPropertyContextMenuPopup.ItemSelectionListener() {
                         @Override

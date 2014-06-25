@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import static com.google.gwt.dom.client.BrowserEvents.DBLCLICK;
+import static com.google.gwt.dom.client.BrowserEvents.CLICK;
 import static lsfusion.gwt.form.shared.view.GKeyStroke.*;
 
 public class GEditBindingMap implements Serializable {
@@ -46,7 +46,7 @@ public class GEditBindingMap implements Serializable {
         if (event instanceof NativeEditEvent) {
             NativeEvent nativeEvent = ((NativeEditEvent) event).getNativeEvent();
             String eventType = nativeEvent.getType();
-            if (DBLCLICK.equals(eventType)) {
+            if (CLICK.equals(eventType)) {
                 return mouseBinding;
             } else if (isPossibleEditKeyEvent(nativeEvent)) {
                 String actionSID = getKeyAction(getKeyStroke(nativeEvent));

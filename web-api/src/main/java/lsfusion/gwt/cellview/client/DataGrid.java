@@ -2334,6 +2334,8 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
 
                     // Update the column index.
                     display.setKeyboardSelectedColumn(col, true);
+                    
+                    handledEvent(event);
                 } else if (stealFocus) {
                     display.setFocus(stealFocus);
                 }

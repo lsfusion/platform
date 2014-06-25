@@ -22,7 +22,7 @@ public class GridEditableCell extends AbstractCell<Object> {
     }
 
     public GridEditableCell(GPropertyTable table, boolean cellTypeCanChange) {
-        super(DBLCLICK, KEYDOWN, KEYPRESS, BLUR, CONTEXTMENU);
+        super(CLICK, KEYDOWN, KEYPRESS, BLUR, CONTEXTMENU);
         this.table = table;
         this.cellTypeCanChange = cellTypeCanChange;
     }
