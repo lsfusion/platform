@@ -109,9 +109,9 @@
 
     <repositories>
         <repository>
-            <id>lsfusion</id>
-            <name>lsFusion Releases Repository</name>
-            <url>${lsfusion.releases.repo}</url>
+            <id>lsfusion.public</id>
+            <name>lsFusion Public Repository</name>
+            <url>${lsfusion.public.repo}</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -120,9 +120,9 @@
             </releases>
         </repository>
         <repository>
-            <id>lsfusion.public</id>
-            <name>lsFusion Public Repository</name>
-            <url>${lsfusion.public.repo}</url>
+            <id>lsfusion</id>
+            <name>lsFusion Releases Repository</name>
+            <url>${lsfusion.releases.repo}</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
