@@ -294,10 +294,10 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
                 String finishResult = afterFinishLogSession.applyMessage(businessLogics);
                 if (finishResult != null)
-                    logger.error("Error while saving scheduler task result : " + finishResult);
+                    logger.error("Error while saving scheduler task result " + lap.property.caption + " : " + finishResult);
                 return applyResult == null;
             } catch (Exception e) {
-                logger.error("Error while running scheduler task (in executeLAP()) :", e);
+                logger.error("Error while running scheduler task (in executeLAP()) " + lap.property.caption + " : ", e);
 
                 businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
                 businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);

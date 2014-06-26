@@ -8,7 +8,7 @@ CLASS SchedulerStartType 'Отсчёт времени' {
     afterFinish 'От окончания предыдущего'
 }
 
-FORM schedulerStartTypes
+FORM schedulerStartTypes 'Способ отсчета времени'
     OBJECTS s = SchedulerStartType
     PROPERTIES(s) READONLY staticCaption
     DIALOG SchedulerStartType OBJECT s
