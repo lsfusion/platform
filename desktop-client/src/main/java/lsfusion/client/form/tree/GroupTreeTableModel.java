@@ -206,7 +206,10 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
         }
     }
 
-    void synchronize(TreeGroupNode parent, ClientGroupObject syncGroup, Map<ClientGroupObjectValue, List<ClientGroupObjectValue>> tree, Map<ClientGroupObjectValue, Boolean> expandables) {
+    void synchronize(TreeGroupNode parent,
+                     ClientGroupObject syncGroup,
+                     Map<ClientGroupObjectValue, List<ClientGroupObjectValue>> tree,
+                     Map<ClientGroupObjectValue, Boolean> expandables) {
         List<ClientGroupObjectValue> syncChilds = tree.get(parent.key);
         if (syncChilds == null) {
             syncChilds = new ArrayList<ClientGroupObjectValue>();

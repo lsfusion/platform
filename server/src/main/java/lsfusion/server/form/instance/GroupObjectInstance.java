@@ -26,6 +26,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.where.ifs.IfExpr;
 import lsfusion.server.data.query.MapKeysInterface;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.type.Type;
@@ -499,7 +500,15 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             expandWhere = expandWhere.and(nullWhere).or(getExpandWhere(MapFact.override(mapKeys, parentExprs))); // если есть parent, то те, чей parent равен null или expanded
 
             mPropertyExprs.exclAddAll(parentExprs);
+
             mPropertyExprs.exclAdd("expandable", GroupExpr.create(parentExprs, ValueExpr.TRUE, GroupType.ANY, mapKeys.filter(parentExprs.keys())));
+            if (treeGroup != null) {
+                GroupObjectInstance subGroup = treeGroup.getDownTreeGroup(this);
+                if (subGroup != null) {
+                    //если не последняя группа
+                    mPropertyExprs.exclAdd("expandable2", subGroup.getHasSubElementsExpr(mapKeys, modifier, reallyChanged));
+                }
+            }
         }
 
         ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx(new GetExValue<Expr, OrderInstance, SQLException, SQLHandledException>() {
@@ -510,6 +519,33 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
         return new Query<ObjectInstance, Object>(mapKeys, mPropertyExprs.immutable(), getWhere(mapKeys, modifier, reallyChanged).and(expandWhere)).
                     executeClasses(session, env, baseClass, orderExprs);
+    }
+
+    private Expr getHasSubElementsExpr(final ImRevMap<ObjectInstance, KeyExpr> outerMapKeys, final Modifier modifier, final ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
+
+        Where subGroupWhere = Where.TRUE;
+
+        if (parent != null) {
+            ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx(new GetExValue<Expr, CalcPropertyObjectInstance, SQLException, SQLHandledException>() {
+                public Expr getMapValue(CalcPropertyObjectInstance value) throws SQLException, SQLHandledException {
+                    return value.getExpr(mapKeys, modifier);
+                }
+            });
+
+            Where nullWhere = Where.FALSE;
+            for (Expr parentExpr : parentExprs.valueIt()) {
+                nullWhere = nullWhere.or(parentExpr.getWhere().not());
+            }
+            subGroupWhere = subGroupWhere.and(nullWhere);
+        }
+
+        subGroupWhere = subGroupWhere.and(getWhere(mapKeys, modifier, reallyChanged));
+
+        Expr validSubElementExpr = IfExpr.create(subGroupWhere, ValueExpr.TRUE, ValueExpr.NULL);
+
+        final ImMap<ObjectInstance, KeyExpr> upKeys = mapKeys.remove(objects);
+        return GroupExpr.create(upKeys, validSubElementExpr, GroupType.ANY, outerMapKeys);
     }
 
     public void change(SessionChanges session, ImMap<ObjectInstance, DataObject> value, FormInstance eventForm) throws SQLException, SQLHandledException {
@@ -748,34 +784,43 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
                     ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>> treeElements = executeTree(sql, env, modifier, baseClass, reallyChanged);
 
-                    ImList<ImMap<ObjectInstance, DataObject>> expandParents = treeElements.mapListValues(new GetValue<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>>() {
-                        @Override
-                        public ImMap<ObjectInstance, DataObject> getMapValue(ImMap<Object, ObjectValue> value) {
-                            return immutableCast(
-                                    value.filterFn(new GetKeyValue<Boolean, Object, ObjectValue>() {
-                                        @Override
-                                        public Boolean getMapValue(Object key, ObjectValue value) {
-                                            return key instanceof ObjectInstance && value instanceof DataObject;
-                                        }
-                                    }));
-                        }
-                    });
+                    ImList<ImMap<ObjectInstance, DataObject>> expandParents = treeElements.mapListValues(
+                            new GetValue<ImMap<ObjectInstance, DataObject>, ImMap<Object, ObjectValue>>() {
+                                @Override
+                                public ImMap<ObjectInstance, DataObject> getMapValue(ImMap<Object, ObjectValue> value) {
+                                    return immutableCast(
+                                            value.filterFn(
+                                                    new GetKeyValue<Boolean, Object, ObjectValue>() {
+                                                        @Override
+                                                        public Boolean getMapValue(Object key, ObjectValue value) {
+                                                            return key instanceof ObjectInstance && value instanceof DataObject;
+                                                        }
+                                                    }));
+                                }
+                            });
                     keys = treeElements.mapOrderValues(new GetStaticValue<ImMap<OrderInstance, ObjectValue>>() {
                         public ImMap<OrderInstance, ObjectValue> getMapValue() {
                             return MapFact.EMPTY();
                         }});
 
-                    ImOrderMap<ImMap<ObjectInstance, DataObject>, Boolean> groupExpandables = treeElements.filterOrderValuesMap(new SFunctionSet<ImMap<Object, ObjectValue>>() {
-                        @Override
-                        public boolean contains(ImMap<Object, ObjectValue> element) {
-                            return element.containsKey("expandable");
-                        }
-                    }).mapOrderValues(new GetValue<Boolean, ImMap<Object, ObjectValue>>() {
-                        @Override
-                        public Boolean getMapValue(ImMap<Object, ObjectValue> value) {
-                            return value.get("expandable") instanceof DataObject;
-                        }
-                    });
+                    ImOrderMap<ImMap<ObjectInstance, DataObject>, Boolean> groupExpandables =
+                            treeElements
+                                    .filterOrderValuesMap(
+                                            new SFunctionSet<ImMap<Object, ObjectValue>>() {
+                                                @Override
+                                                public boolean contains(ImMap<Object, ObjectValue> element) {
+                                                    return element.containsKey("expandable") || element.containsKey("expandable2");
+                                                }
+                                            })
+                                    .mapOrderValues(
+                                            new GetValue<Boolean, ImMap<Object, ObjectValue>>() {
+                                                @Override
+                                                public Boolean getMapValue(ImMap<Object, ObjectValue> value) {
+                                                    ObjectValue expandable1 = value.get("expandable");
+                                                    ObjectValue expandable2 = value.get("expandable2");
+                                                    return expandable1 instanceof DataObject || expandable2 instanceof DataObject;
+                                                }
+                                            });
 
                     result.expandables.exclAdd(this, groupExpandables.getMap());
                     result.parentObjects.exclAdd(this, expandParents);

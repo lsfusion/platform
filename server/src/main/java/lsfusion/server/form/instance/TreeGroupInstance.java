@@ -27,6 +27,11 @@ public class TreeGroupInstance {
     public ImOrderSet<GroupObjectInstance> getDownTreeGroups(GroupObjectInstance group) {
         return getUpTreeGroups(groups.reverseOrder(), group, false).reverseOrder();
     }
+    
+    public GroupObjectInstance getDownTreeGroup(GroupObjectInstance group) {
+        ImOrderSet<GroupObjectInstance> downTreeGroups = getDownTreeGroups(group);
+        return downTreeGroups.isEmpty() ? null : downTreeGroups.last();
+    }
 
     @IdentityLazy
     public GroupObjectInstance getUpTreeGroup(GroupObjectInstance group) {
