@@ -150,6 +150,8 @@ public class EmailReceiver {
 
     public List<List<List<Object>>> downloadEmailList() throws MessagingException, SQLException, IOException {
 
+        System.setProperty("mail.mime.base64.ignoreerrors", "true");
+        
         List<List<Object>> dataEmails = new ArrayList<List<Object>>();
         List<List<Object>> dataAttachments = new ArrayList<List<Object>>();
         Session emailSession = Session.getDefaultInstance(mailProps);
