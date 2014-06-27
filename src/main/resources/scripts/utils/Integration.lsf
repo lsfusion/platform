@@ -19,7 +19,7 @@ END
 
 META defineExternalizableAbstract (object, type, prefix)
     prefix###id###object 'Внешний код' = ABSTRACT type (###object) PERSISTENT INDEXED MINCHARWIDTH 10 PREFCHARWIDTH 15;
-    prefix###object##Id (object) = GROUP AGGR object BY prefix###id###object (object);
+    prefix###object##Id (id) = GROUP AGGR object BY prefix###id###object (object);
 END
 
 EXTEND FORM options PROPERTIES() showIDs;

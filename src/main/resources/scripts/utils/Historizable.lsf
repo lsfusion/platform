@@ -63,37 +63,37 @@ END
 
 // ---------------------------------- Свойство объект-дата для (пример, стат.класса)------------------------------------------ //
 
-META defineHistorizableCustom(property, caption, type, typeIdentity, object, objectIdentity, group)
-    data###property##Date caption = DATA type (###object, DATE);
-    data###typeIdentity###property##Date caption (object, date) = typeIdentity(data###property##Date(object, date)) IN group;
+META defineHistorizableCustom(property, caption, type, typeIdentity, classIdentity, object, objectIdentity, group)
+    data###property###object##Date caption = DATA type (###object, DATE);
+    data###typeIdentity###classIdentity###property###object##Date caption (object, date) = typeIdentity###classIdentity(data###property###object##Date(object, date)) IN group;
 
-    date###property##Date (object, date) = GROUP MAX dateIn IF data###property##Date(object, dateIn) AND dateIn <= date BY object, date;
+    date###property###object##Date (object, date) = GROUP MAX dateIn IF data###property###object##Date(object, dateIn) AND dateIn <= date BY object, date;
 
-    property##Date caption (object, date) = data###property##Date(object, date###property##Date(object, date)) IN group;
+    property###object##Date caption (object, date) = data###property###object##Date(object, date###property###object##Date(object, date)) IN group;
 
-    property caption (object) = property##Date(object, currentDate());
-    typeIdentity###property caption (object) = typeIdentity(property(object)) IN group;
+    property###object caption (object) = property###object##Date(object, currentDate());
+    typeIdentity###classIdentity###property###object caption (object) = typeIdentity###classIdentity(property###object(object)) IN group;
 
-    FORM add###property caption
+    FORM add###property###object caption
         OBJECTS a=###object FIXED PANEL, d=DATE FIXED PANEL
-        PROPERTIES objectIdentity(a) READONLY, OBJVALUE(d), data###typeIdentity###property##Date(a, d)
+        PROPERTIES objectIdentity(a) READONLY, OBJVALUE(d), data###typeIdentity###classIdentity###property###object##Date(a, d)
     ;
-    DESIGN add###property FROM DEFAULT {
+    DESIGN add###property###object FROM DEFAULT {
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
     }
 
-    add###property 'Добавить' (object) = ACTION FORM add###property OBJECTS a = object MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property###object 'Добавить' (object) = ACTION FORM add###property###object OBJECTS a = object MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
-    FORM dialog###property caption
+    FORM dialog###property###object caption
         OBJECTS a=###object FIXED PANEL, d=DATE
-        PROPERTIES objectIdentity(a) READONLY, add###property(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeIdentity###property##Date(a, d)
-        FILTERS data###property##Date(a, d)
+        PROPERTIES objectIdentity(a) READONLY, add###property###object(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeIdentity###classIdentity###property###object##Date(a, d)
+        FILTERS data###property###object##Date(a, d)
     ;
-    DESIGN dialog###property FROM DEFAULT {
+    DESIGN dialog###property###object FROM DEFAULT {
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
     }
 
-    dialog###property caption (object) = ACTION FORM dialog###property OBJECTS a = object MODAL SHORTCUT typeIdentity###property ASONCHANGE typeIdentity###property;
+    dialog###property###object caption (object) = ACTION FORM dialog###property###object OBJECTS a = object MODAL SHORTCUT typeIdentity###classIdentity###property###object ASONCHANGE typeIdentity###classIdentity###property###object;
 END
 
 // ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
