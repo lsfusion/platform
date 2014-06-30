@@ -67,9 +67,10 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, classIdenti
     data###property###object##Date caption = DATA type (###object, DATE);
     data###typeIdentity###classIdentity###property###object##Date caption (object, date) = typeIdentity###classIdentity(data###property###object##Date(object, date)) IN group;
 
-    date###property###object##Date (object, date) = GROUP MAX dateIn IF data###property###object##Date(object, dateIn) AND dateIn <= date BY object, date;
-
-    property###object##Date caption (object, date) = data###property###object##Date(object, date###property###object##Date(object, date)) IN group;
+    property###object##Date caption (object, date) = GROUP LAST  data###property###object##Date(object, dateIn)
+                                                           BY    object, date
+                                                           ORDER dateIn
+                                                           WHERE data###property###object##Date(object, dateIn) AND dateIn <= (date AS DATE) IN group;
 
     property###object caption (object) = property###object##Date(object, currentDate());
     typeIdentity###classIdentity###property###object caption (object) = typeIdentity###classIdentity(property###object(object)) IN group;
@@ -100,9 +101,12 @@ END
 META defineHistorizable(property, caption, type, object1, object1Identity, object2, object2Identity, group)
     data###property###object1###object2##Date caption = DATA type (###object1, ###object2, DATE) IN group;
 
-    date###property###object1###object2##Date (object1, object2, date) = GROUP MAX dateIn IF data###property###object1###object2##Date(object1, object2, dateIn) AND dateIn <= date BY object1, object2, date;
+    property###object1###object2##Date caption (object1, object2, date) = 
+        GROUP LAST  data###property###object1###object2##Date(object1, object2, dateIn)
+              BY    object1, object2, date
+              ORDER dateIn
+              WHERE data###property###object1###object2##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) IN group;
 
-    property###object1###object2##Date caption (object1, object2, date) = data###property###object1###object2##Date(object1, object2, date###property###object1###object2##Date(object1, object2, date));
     over###property###object1###object2##Date caption = OVERRIDE property###object1###object2##Date(object1, object2, date), data###property###object1###object2##Date(object1, object2, date);
 
     property###object1###object2 caption (object1, object2) = property###object1###object2##Date(object1, object2, currentDate()) IN group;
@@ -130,217 +134,4 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
 
     dialog###property###object1###object2 caption (object1, object2) = ACTION FORM dialog###property###object1###object2 OBJECTS a = object1, b = object2 MODAL SHORTCUT property###object1###object2 ASONCHANGE property###object1###object2;
     overDialog###property###object1###object2##Date caption (object1, object2) = ACTION FORM dialog###property###object1###object2 OBJECTS a = object1, b = object2 MODAL SHORTCUT over###property###object1###object2##Date;
-END
-// ----------------------------------- Свойство объект1-объект2-дата ------------------------------------------ //
-
-META defineHistorizableHeader(property, caption, type, typeIdentity, typeName, object1, object2, fixedCharWidth, group)
-    data###property##Date caption = DATA type (###object1, ###object2, DATE);
-    data###typeName###property##Date caption (object1, object2, date) = typeIdentity(data###property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
-
-    date###property##Date (object1, object2, date) = GROUP MAX dateIn IF data###property##Date(object1, object2, dateIn) AND dateIn <= date BY object1, object2, date;
-END
-
-META defineHistorizableFooter(property, caption, typeIdentity, typeName, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
-    typeName###property##Date caption (object1, object2, date) = typeIdentity(property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
-
-    over###property##Date caption = OVERRIDE property##Date(object1, object2, date), data###property##Date(object1, object2, date);
-
-    over###typeName###property##Date caption (object1, object2, date) = typeIdentity(over###property##Date(object1, object2, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
-
-    property caption (object1, object2) = property##Date(object1, object2, currentDate());
-    typeName###property caption (object1, object2) = typeIdentity(property(object1, object2)) FIXEDCHARWIDTH fixedCharWidth IN group;
-
-    FORM add###property caption
-        OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, d=DATE FIXED PANEL
-        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, OBJVALUE(d), data###typeName###property##Date(a, b, d)
-    ;
-    DESIGN add###property FROM DEFAULT {
-        PROPERTY(object1Identity(a)) { focusable = FALSE; }
-        PROPERTY(object2Identity(b)) { focusable = FALSE; }
-    }
-
-    add###property 'Добавить' (object1, object2) = ACTION FORM add###property OBJECTS a = object1, b = object2 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
-
-    FORM dialog###property caption
-        OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, d=DATE
-        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, add###property(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeName###property##Date(a, b, d)
-        FILTERS data###property##Date(a, b, d)
-    ;
-    DESIGN dialog###property FROM DEFAULT {
-        PROPERTY(object1Identity(a)) { focusable = FALSE; }
-        PROPERTY(object2Identity(b)) { focusable = FALSE; }
-    }
-
-    dialog###property caption (object1, object2) = ACTION FORM dialog###property OBJECTS a = object1, b = object2 MODAL SHORTCUT typeName###property ASONCHANGE typeName###property;
-    overDialog###property##Date caption (object1, object2) = ACTION FORM dialog###property OBJECTS a = object1, b = object2 MODAL SHORTCUT over###typeName###property##Date;
-END
-
-META defineHistorizableCustom(property, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
-    @defineHistorizableCustom(property, caption, type, typeIdentity, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group);
-END
-
-META defineHistorizableCustom(property, caption, type, typeIdentity, typeName, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
-    @defineHistorizableHeader(property, caption, type, typeIdentity, typeName, object1, object2, fixedCharWidth, group);
-    property##Date caption (object1, object2, date) =
-         GROUP LAST data###property##Date(object1, object2, dateIn)
-               BY object1, object2, date
-               ORDER dateIn
-               WHERE data###property##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) COMPLEX;
-    @defineHistorizableFooter(property, caption, typeIdentity, typeName, object1, object1Identity, object2, object2Identity, fixedCharWidth, group);
-END
-
-META defineHistorizableCustomDefault(property, defaultProperty, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group)
-    @defineHistorizableHeader(property, caption, type, typeIdentity, typeIdentity, object1, object2, fixedCharWidth, group);
-    property##Date caption (object1, object2, date) = OVERRIDE (defaultProperty(object1, object2) IF date IS DATE), data###property##Date(object1, object2, date###property##Date(object1, object2, date));
-    @defineHistorizableFooter(property, caption, typeIdentity, typeIdentity, object1, object1Identity, object2, object2Identity, fixedCharWidth, group);
-END
-
-// ----------------------------------- Свойство объект1-объект2-объект3-дата------------------------------------------ //
-META defineHistorizable(property, caption, type, object1, object1Identity, object2, object2Identity, object3, object3Identity, group)
-    data###property##Date caption = DATA type (###object1, ###object2, ###object3, DATE) IN group;
-
-    date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn IF data###property##Date(object1, object2, object3, dateIn) AND dateIn <= date BY object1, object2, object3, date;
-
-    property##Date caption (object1, object2, object3, date) = data###property##Date(object1, object2, object3, date###property##Date(object1, object2, object3, date));
-    over###property##Date caption = OVERRIDE property##Date(object1, object2, object3, date), data###property##Date(object1, object2, object3, date);
-
-    property caption (object1, object2, object3) = property##Date(object1, object2, object3, currentDate()) IN group;
-
-    FORM add###property caption
-        OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, c=###object3  FIXED PANEL, d=DATE FIXED PANEL
-        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, OBJVALUE(d), data###property##Date(a, b, c, d)
-    ;
-    DESIGN add###property FROM DEFAULT {
-        PROPERTY(object1Identity(a)) { focusable = FALSE; }
-        PROPERTY(object2Identity(b)) { focusable = FALSE; }
-        PROPERTY(object3Identity(c)) { focusable = FALSE; }
-    }
-
-    add###property 'Добавить' (object1, object2, object3) = ACTION FORM add###property OBJECTS a = object1, b = object2, c = object3 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
-
-    FORM dialog###property caption
-        OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, c=###object3 FIXED PANEL, d=DATE
-        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, add###property(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property##Date(a, b, c, d)
-        FILTERS data###property##Date(a, b, c, d)
-    ;
-    DESIGN dialog###property FROM DEFAULT {
-        PROPERTY(object1Identity(a)) { focusable = FALSE; }
-        PROPERTY(object2Identity(b)) { focusable = FALSE; }
-        PROPERTY(object3Identity(c)) { focusable = FALSE; }
-    }
-
-    dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT property ASONCHANGE property;
-    overDialog###property##Date caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT over###property##Date;
-END
-// -------------------- Свойство объект1-объект2-объект3-дата ---------------------------- //
-
-META defineHistorizableCustomDefault(property, defaultProperty, caption, type, typeIdentity, object1, object1Identity, object2, object2Identity, object3, object3Identity, fixedCharWidth, group)
-    data###property##Date caption = DATA type (###object1, ###object2, ###object3, DATE);
-    data###typeIdentity###property##Date caption (object1, object2, object3, date) = typeIdentity(data###property##Date(object1, object2, object3, date)) IN group;
-
-    date###property##Date (object1, object2, object3, date) = GROUP MAX dateIn IF data###property##Date(object1, object2, object3, dateIn) AND dateIn <= date BY object1, object2, object3, date;
-
-    property##Date caption (object1, object2, object3, date) = OVERRIDE defaultProperty(object1, object2, object3) IF date IS DATE,
-                                                                        data###property##Date(object1, object2, object3, date###property##Date(object1, object2, object3, date));
-    over###property##Date caption = OVERRIDE property##Date(object1, object2, object3, date),
-                                             data###property##Date(object1, object2, object3, date);
-    over###typeIdentity###property##Date caption (object1, object2, object3, date) = typeIdentity(over###property##Date(object1, object2, object3, date)) FIXEDCHARWIDTH fixedCharWidth IN group;
-
-    property caption (object1, object2, object3) = property##Date(object1, object2, object3, currentDate());
-    typeIdentity###property caption (object1, object2, object3) = typeIdentity(property(object1, object2, object3)) FIXEDCHARWIDTH fixedCharWidth IN group;
-
-    FORM add###property caption
-    OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, c=###object3 FIXED PANEL, d=DATE FIXED PANEL
-    PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, OBJVALUE(d), data###typeIdentity###property##Date(a, b, c, d);
-    DESIGN add###property FROM DEFAULT {
-        PROPERTY(object1Identity(a)) { focusable = FALSE; }
-        PROPERTY(object2Identity(b)) { focusable = FALSE; }
-        PROPERTY(object3Identity(c)) { focusable = FALSE; }
-    }
-
-    add###property 'Добавить' (object1, object2, object3) = ACTION FORM add###property OBJECTS a = object1, b = object2, c = object3 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
-
-    FORM dialog###property caption
-    OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, c=###object3 FIXED PANEL, d=DATE
-    PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, object3Identity(c) READONLY, add###property(a, b, c) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeIdentity###property##Date(a, b, c, d)
-    FILTERS data###property##Date(a, b, c, d);
-    DESIGN dialog###property FROM DEFAULT {
-        PROPERTY(object1Identity(a)) { focusable = FALSE; }
-        PROPERTY(object2Identity(b)) { focusable = FALSE; }
-        PROPERTY(object3Identity(c)) { focusable = FALSE; }
-    }
-
-    dialog###property caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT typeIdentity###property ASONCHANGE typeIdentity###property;
-    over###dialog###property##Date caption (object1, object2, object3) = ACTION FORM dialog###property OBJECTS a = object1, b = object2, c = object3 MODAL SHORTCUT over###typeIdentity###property##Date;
-END
-
-// ----------------------------------- Historizable Ledger -------------------------------------- //
-
-META defineHistorizableLedger(property, caption, type, key0, key1)
-    @defineHistorizableLedger(property, caption, type, key0, ###key0, key1, ###key1);
-END
-
-META defineHistorizableLedger(property, caption, type, key0, key0Class, key1, key1Class)
-    dateTime###property##Ledger 'Дата/время' (ledger) = ABSTRACT DATETIME (###property##Ledger) PERSISTENT INDEXED;
-    date###property##Ledger 'Дата' (ledger) = toDate(dateTime###property##Ledger(ledger)) PERSISTENT;
-
-    isPosted###property##Ledger 'Проведен' (ledger) = ABSTRACT BOOLEAN (###property##Ledger) PERSISTENT;
-    skip###property##Ledger 'Не изменять значение' (ledger) = ABSTRACT BOOLEAN (###property##Ledger) PERSISTENT;
-
-    active###property##Ledger 'Активен' (ledger) = isPosted###property##Ledger(ledger) AND NOT skip###property##Ledger(ledger) PERSISTENT;
-
-    key0###property##Ledger (ledger) = ABSTRACT key0Class (###property##Ledger) PERSISTENT INDEXED;
-
-    key1###property##Ledger (ledger) = ABSTRACT key1Class (###property##Ledger) PERSISTENT INDEXED;
-
-    description###property##Ledger 'Описание' (ledger) = ABSTRACT VARSTRING[200] (###property##Ledger) PERSISTENT;
-
-    property###property##Ledger caption (ledger) = ABSTRACT type (###property##Ledger) PERSISTENT;
-
-    orderT###property##Ledger = STRUCT(dateTime###property##Ledger(ledger), ledger) IF active###property##Ledger(ledger) PERSISTENT INDEXED;
-
-    concatLedgerB###property###key0###key1##DateTime (key0, key1, dateTime) =
-        GROUP MAX orderT###property##Ledger(ledger) IF dateTime###property##Ledger(ledger) < dateTime
-              BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), dateTime;
-
-    ledgerB###property###key0###key1##DateTime (key0, key1, dateTime) = concatLedgerB###property###key0###key1##DateTime(key0, key1, dateTime)[2];
-
-    concatLedgerA###property###key0###key1##DateTime (key0, key1, dateTime) =
-        GROUP MAX orderT###property##Ledger(ledger) IF dateTime###property##Ledger(ledger) <= dateTime
-              BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), dateTime;
-
-    ledgerA###property###key0###key1##DateTime (key0, key1, dateTime) = concatLedgerA###property###key0###key1##DateTime(key0, key1, dateTime)[2];
-
-    concatLedgerCurrent###property###key0###key1 (key0, key1) = GROUP MAX orderT###property##Ledger(ledger) BY key0###property##Ledger(ledger), key1###property##Ledger(ledger);
-
-    property##B###key0###key1##DateTime caption##' (до)' (key0, key1, dateTime) = property###property##Ledger(ledgerB###property###key0###key1##DateTime(key0, key1, dateTime));
-    property##A###key0###key1##DateTime caption##' (после)' (key0, key1, dateTime) = property###property##Ledger(ledgerA###property###key0###key1##DateTime(key0, key1, dateTime));
-
-    concatLedgerB###property###key0###key1##Date (key0, key1, date) =
-        GROUP MAX orderT###property##Ledger(ledger) IF date###property##Ledger(ledger) < date
-              BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), date;
-
-    ledgerB###property###key0###key1##Date (key0, key1, date) = concatLedgerB###property###key0###key1##Date(key0, key1, date)[2];
-
-    concatLedgerA###property###key0###key1##Date (key0, key1, date) =
-        GROUP MAX orderT###property##Ledger(ledger) IF date###property##Ledger(ledger) <= date
-              BY key0###property##Ledger(ledger), key1###property##Ledger(ledger), date;
-
-    ledgerA###property###key0###key1##Date (key0, key1, date) = concatLedgerA###property###key0###key1##Date(key0, key1, date)[2];
-
-    property##B###key0###key1##Date caption##' (до)' (key0, key1, date) = property###property##Ledger(ledgerB###property###key0###key1##Date(key0, key1, date));
-    property##A###key0###key1##Date caption##' (после)' (key0, key1, date) = property###property##Ledger(ledgerA###property###key0###key1##Date(key0, key1, date));
-
-    currentLedger###property###key0###key1 (key0, key1) = concatLedgerCurrent###property###key0###key1(key0, key1)[2];
-    current###property###key0###key1 caption (key0, key1) = property###property##Ledger(currentLedger###property###key0###key1(key0, key1)) PERSISTENT;
-END
-
-META implementHistorizableLedger(property, key0, key1, concrete, key0Prop, key1Prop, propertyProp)
-    EXTEND CLASS concrete##Detail : ###property##Ledger;
-    dateTime###property##Ledger (ledger) += dateTime###concrete##Detail(ledger);
-    isPosted###property##Ledger (ledger) += isPosted###concrete##Detail(ledger);
-    key0###property##Ledger (ledger) += key0Prop###concrete##Detail(ledger);
-    key1###property##Ledger (ledger) += key1Prop###concrete##Detail(ledger);
-    description###property##Ledger (ledger) += description###concrete##Detail(ledger);
-    property###property##Ledger (ledger) += propertyProp###concrete##Detail(ledger);
 END
