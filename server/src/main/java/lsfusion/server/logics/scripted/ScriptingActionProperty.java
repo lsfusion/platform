@@ -42,9 +42,12 @@ public abstract class ScriptingActionProperty extends UserActionProperty {
         return (LCP<?>) getLP(name);
     }
 
-    protected LCP<?>[] getLCPs(String... name) throws ScriptingErrorLog.SemanticErrorException {
-        dfd
-        return (LCP<?>) getLP(name);
+    protected LCP<?>[] getLCPs(String... names) throws ScriptingErrorLog.SemanticErrorException {
+        LCP<?>[] result = new LCP[names.length]
+        for (int i = 0; i < names.length; i++) {
+            result[i] = getLCP(names[i]);
+        }
+        return result;
     }
 
     protected LAP<?> getLAP(String name) throws ScriptingErrorLog.SemanticErrorException {
