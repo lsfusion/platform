@@ -194,6 +194,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
                 for (GroupObjectInstance group : groups) {
                     if (group.propertyBackground != null) {
+                        // todo [dale]: Тут стремный вызов getSID, теоретически этот SID может пересечься с именами других propertyDraw
                         propertyList.add(new Pair<String, PropertyReaderInstance>(group.propertyBackground.property.getSID(), group.rowBackgroundReader));
                     }
                 }

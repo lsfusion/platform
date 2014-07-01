@@ -35,6 +35,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP parentProperty;
     public LCP numberProperty;
     public LCP SIDProperty;
+    public LCP canonicalNameProperty;
     public LCP loggableProperty;
     public LCP userLoggableProperty;
     public LCP storedProperty;
@@ -44,7 +45,10 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP classProperty;
     public LCP complexityProperty;
     public LCP captionProperty;
+    public LCP tableSIDProperty;
     public LCP propertySID;
+    public LCP propertyCanonicalName;
+    public LCP propertyTableSID;
 
     public LCP sidNavigatorElement;
     public LCP numberNavigatorElement;
@@ -111,7 +115,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP nameTableKey;
     public LCP quantityTableKey;
     public LCP tableTableColumn;
+    public LCP propertyTableColumn;
     public LCP sidTableColumn;
+    public LCP longSIDTableColumn;
     public LCP tableColumnSID;
 
     public LCP quantityTableColumn;
@@ -129,8 +135,10 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public final StringClass navigatorElementSIDClass = StringClass.get(50);
     public final StringClass navigatorElementCaptionClass = StringClass.get(250);
     public final StringClass propertySIDValueClass = StringClass.get(100);
+    public final StringClass propertyCanonicalNameValueClass = StringClass.get(512);
     public final StringClass propertyCaptionValueClass = StringClass.get(250);
     public final StringClass propertySignatureValueClass = StringClass.get(100);
+    public final StringClass propertyTableValueClass = StringClass.get(100); 
     public final LogicalClass propertyLoggableValueClass = LogicalClass.instance;
     public final LogicalClass propertyStoredValueClass = LogicalClass.instance;
     public final LogicalClass propertyIsSetNotNullValueClass = LogicalClass.instance;
@@ -173,8 +181,10 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         // Свойства
         parentProperty = getLCPByOldName("parentProperty");
+        tableSIDProperty = getLCPByOldName("tableSIDProperty");
         numberProperty = getLCPByOldName("numberProperty");
         SIDProperty = getLCPByOldName("SIDProperty");
+        canonicalNameProperty = getLCPByOldName("canonicalNameProperty");
         loggableProperty = getLCPByOldName("loggableProperty");
         userLoggableProperty = getLCPByOldName("userLoggableProperty");
         storedProperty = getLCPByOldName("storedProperty");
@@ -185,6 +195,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         complexityProperty = getLCPByOldName("complexityProperty");
         captionProperty = getLCPByOldName("captionProperty");
         propertySID = getLCPByOldName("propertySID");
+        propertyCanonicalName = getLCPByOldName("propertyCanonicalName");
+        propertyTableSID = getLCPByOldName("propertyTableSID");
 
         // ------- Логика представлений --------- //
 
@@ -279,10 +291,12 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         // Колонки таблиц
         tableTableColumn = getLCPByOldName("tableTableColumn");
+        propertyTableColumn = getLCPByOldName("propertyTableColumn");
 
         sidTableColumn = getLCPByOldName("sidTableColumn");
-        tableColumnSID = getLCPByOldName("tableColumnSID");
-
+        longSIDTableColumn = getLCPByOldName("longSIDTableColumn");
+        tableColumnSID = getLCPByOldName("tableColumnSID");    
+        
         quantityTableColumn = getLCPByOldName("quantityTableColumn");
         notNullQuantityTableColumn = getLCPByOldName("notNullQuantityTableColumn");
 

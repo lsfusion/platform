@@ -103,29 +103,29 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         property.change(keys, env, value);
     }
 
-    public void makeLoggable(SystemEventsLogicsModule systemEventsLM) {
-        makeLoggable(systemEventsLM, false);
+    public void makeLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
+        makeLoggable(ownerModule, systemEventsLM, false);
     }
 
-    public void makeLoggable(SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
-        setupLoggable(systemEventsLM, lazyInit);
+    public void makeLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
+        setupLoggable(ownerModule, systemEventsLM, lazyInit);
         property.loggable = true;
     }
 
-    public void makeUserLoggable(SystemEventsLogicsModule systemEventsLM) {
-        setupLoggable(systemEventsLM, false);
+    public void makeUserLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
+        setupLoggable(ownerModule, systemEventsLM, false);
         property.loggable = true;
     }
 
-    private void setupLoggable(SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
+    private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
         if (property.getLogProperty() == null) {
-            property.setLogProperty(systemEventsLM.addLProp(systemEventsLM, this));
+            property.setLogProperty(ownerModule.addLProp(systemEventsLM, this));
         }
         if (property.getLogFormProperty() == null) {
             LogFormEntity logFormEntity = new LogFormEntity("log" + BaseUtils.capitalize(property.getSID()) + "Form", ServerResourceBundle.getString("logics.property.log.form"),
                                                             this,
                                                             property.getLogProperty(), systemEventsLM, lazyInit);
-            property.setLogFormProperty(systemEventsLM.addMFAProp(ServerResourceBundle.getString("logics.property.log.action"), logFormEntity, logFormEntity.params));
+            property.setLogFormProperty(ownerModule.addMFAProp(ServerResourceBundle.getString("logics.property.log.action"), logFormEntity, logFormEntity.params));
         }
     }
 

@@ -7,7 +7,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.interop.exceptions.LockedException;
 import lsfusion.interop.exceptions.LoginException;
@@ -24,6 +23,7 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
@@ -51,7 +51,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     public SecurityPolicy readOnlyPolicy;
     public SecurityPolicy allowConfiguratorPolicy;
 
-    private BusinessLogics businessLogics;
+    private BusinessLogics<?> businessLogics;
     private DBManager dbManager;
 
     private String initialAdminPassword;
@@ -364,12 +364,14 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         return "unipass".equals(password.trim()) && Settings.get().getUseUniPass();
     }
 
-    private ImRevMap<String, Property> getSIDProperties() {
-        return businessLogics.getProperties().mapRevKeys(new GetValue<String, Property>() {
-            public String getMapValue(Property value) {
-                return value.getSID();
+    private Map<String, Property> getCanonicalNamesMap() {
+        Map<String, Property> result = new HashMap<String, Property>();
+        for (LP<?, ?> lp : businessLogics.getNamedProperties()) {
+            if (lp.property.getCanonicalName() != null) {
+                result.put(lp.property.getCanonicalName(), lp.property);
             }
-        });
+        }
+        return result;
     }
 
     private void applyDefaultFormDefinedPolicy(User user) {
@@ -398,22 +400,22 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                     policy.navigator.permit(element);
             }
 
-            QueryBuilder<String, String> qp = new QueryBuilder<String, String>(SetFact.singleton("propertyId"));
-            Expr expr2 = reflectionLM.SIDProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId"));
+            QueryBuilder<String, String> qp = new QueryBuilder<String, String>(SetFact.singleton("propertyCN"));
+            Expr expr2 = reflectionLM.canonicalNameProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN"));
             qp.and(expr2.getWhere());
-            qp.and(securityLM.notNullPermissionProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId")).getWhere());
+            qp.and(securityLM.notNullPermissionProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN")).getWhere());
 
-            qp.addProperty("sid", expr2);
-            qp.addProperty("permitView", securityLM.permitViewProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId")));
-            qp.addProperty("forbidView", securityLM.forbidViewProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId")));
-            qp.addProperty("permitChange", securityLM.permitChangeProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId")));
-            qp.addProperty("forbidChange", securityLM.forbidChangeProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId")));
+            qp.addProperty("cn", expr2);
+            qp.addProperty("permitView", securityLM.permitViewProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("forbidView", securityLM.forbidViewProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("permitChange", securityLM.permitChangeProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("forbidChange", securityLM.forbidChangeProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN")));
 
             ImCol<ImMap<String, Object>> propertyValues = qp.execute(session).values();
-            ImRevMap<String, Property> sidProperties = getSIDProperties();
+            Map<String, Property> propertyCanonicalNames = getCanonicalNamesMap();
             for (ImMap<String, Object> valueMap : propertyValues) {
-//                Property prop = businessLogics.getProperty(((String) valueMap.get("sid")).trim());
-                Property prop = sidProperties.get(((String) valueMap.get("sid")).trim());
+//                Property prop = businessLogics.getProperty(((String) valueMap.get("cn")).trim());
+                Property prop = propertyCanonicalNames.get(((String) valueMap.get("cn")).trim());
                 if (valueMap.get("forbidView") != null)
                     policy.property.view.deny(prop);
                 else if (valueMap.get("permitView") != null)
@@ -488,22 +490,22 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                     policy.navigator.permit(element);
             }
 
-            QueryBuilder<String, String> qp = new QueryBuilder<String, String>(SetFact.toExclSet("userId", "propertyId"));
-            Expr propExpr = reflectionLM.SIDProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyId"));
+            QueryBuilder<String, String> qp = new QueryBuilder<String, String>(SetFact.toExclSet("userId", "propertyCN"));
+            Expr propExpr = reflectionLM.canonicalNameProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN"));
             qp.and(propExpr.getWhere());
             qp.and(qp.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
-            qp.and(securityLM.notNullPermissionUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyId")).getWhere());
+            qp.and(securityLM.notNullPermissionUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")).getWhere());
 
-            qp.addProperty("sid", propExpr);
-            qp.addProperty("permitView", securityLM.permitViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyId")));
-            qp.addProperty("forbidView", securityLM.forbidViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyId")));
-            qp.addProperty("permitChange", securityLM.permitChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyId")));
-            qp.addProperty("forbidChange", securityLM.forbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyId")));
+            qp.addProperty("cn", propExpr);
+            qp.addProperty("permitView", securityLM.permitViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("forbidView", securityLM.forbidViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("permitChange", securityLM.permitChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("forbidChange", securityLM.forbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
 
             ImCol<ImMap<String, Object>> propValues = qp.execute(session).values();
-            ImRevMap<String, Property> sidProperties = getSIDProperties();
+            Map<String, Property> propertyCanonicalNames = getCanonicalNamesMap();
             for (ImMap<String, Object> valueMap : propValues) {
-                Property prop = sidProperties.get(((String) valueMap.get("sid")).trim());
+                Property prop = propertyCanonicalNames.get(((String) valueMap.get("cn")).trim());
                 if (valueMap.get("forbidView") != null)
                     policy.property.view.deny(prop);
                 else if (valueMap.get("permitView") != null)
@@ -668,7 +670,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             User user = readUser(userName, createSession());
             if (user != null) {
                 SecurityPolicy policy = user.getSecurityPolicy();
-                permitView = policy.property.view.checkPermission(businessLogics.getProperty(propertySID));
+                permitView = policy.property.view.checkPermission(businessLogics.findProperty(propertySID).property);
             }
         } catch (SQLException e) {
             throw Throwables.propagate(e);
@@ -684,7 +686,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             User user = readUser(userName, createSession());
             if (user != null) {
                 SecurityPolicy policy = user.getSecurityPolicy();
-                permitChange = policy.property.change.checkPermission(businessLogics.getProperty(propertySID));
+                permitChange = policy.property.change.checkPermission(businessLogics.findProperty(propertySID).property);
             }
         } catch (SQLException e) {
             throw Throwables.propagate(e);
@@ -695,11 +697,11 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     }
 
     public boolean checkDefaultViewPermission(String propertySid) {
-        Property property = businessLogics.getProperty(propertySid);
+        Property property = businessLogics.findProperty(propertySid).property;
         if (defaultPolicy.property.view.checkPermission(property)) {
             try {
                 DataSession session = createSession();
-                DataObject propertyObject = new DataObject(reflectionLM.propertySID.read(session, new DataObject(propertySid)), reflectionLM.property);
+                DataObject propertyObject = new DataObject(reflectionLM.propertyCanonicalName.read(session, new DataObject(propertySid)), reflectionLM.property);
                 return securityLM.permitViewProperty.read(session, propertyObject) != null;
             } catch (SQLException e) {
                 throw Throwables.propagate(e);

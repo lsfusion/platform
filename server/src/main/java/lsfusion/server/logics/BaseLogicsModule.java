@@ -145,11 +145,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     public TableFactory tableFactory;
 
-    public NFOrderSet<LP> lproperties = NFFact.simpleOrderSet();
-    public Iterable<LP> getLPropertiesIt() {
-        return lproperties.getIt();
-    }
-
     // счетчик идентификаторов
     static private IDGenerator idGenerator = new DefaultIDGenerator();
 
@@ -216,18 +211,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return propertySidPolicy;
     }
     
-    public LP getLP(String sID) {
-        objectValue.getProperty(sID);
-        selection.getProperty(sID);
-
-        for (LP lp : getLPropertiesIt()) {
-            if (lp.property.getSID().equals(sID)) {
-                return lp;
-            }
-        }
-        return null;
-    }
-
     @Override
     public void initClasses() throws RecognitionException {
         baseClass = addBaseClass(transformNameToSID("Object"), getString("logics.object"));
@@ -387,7 +370,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     <T extends LP<?, ?>> void registerProperty(T lp, Version version) {
-        lproperties.add(lp, version);     // todo [dale]: нужно?
         lp.property.ID = idGenerator.idShift();
     }
 
@@ -447,20 +429,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         @Override
         protected boolean isInInterface(ImSet<ValueClassWrapper> classes) {
             return classes.size() >= 1;
-        }
-
-        @Override
-        public Property getProperty(String sid) {
-            if (sid.startsWith(prefix)) {
-                String[] sids = sid.substring(prefix.length()).split("\\|");
-                ValueClass[] valueClasses = new ValueClass[sids.length];
-                for (int i = 0; i < sids.length; i++) {
-                    valueClasses[i] = findValueClass(sids[i]);
-                    assert valueClasses[i] != null;
-                }
-                return getProperty(valueClasses, getVersion());
-            }
-            return null;
         }
 
         @Override
@@ -538,16 +506,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         protected Class<?> getPropertyClass() {
             return ObjectValueProperty.class;
-        }
-
-        @Override
-        public Property getProperty(String sid) {
-            if (sid.startsWith(prefix)) {
-                ValueClass valueClass = findValueClass(sid.substring(prefix.length()));
-                assert valueClass != null;
-                return getProperty(new ValueClass[]{valueClass}, getVersion());
-            }
-            return null;
         }
 
         @Override
@@ -788,56 +746,5 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityStrongLazy
     public <T extends PropertyInterface> LCP addClassProp(LCP<T> lp) {
         return mapLProp(null, false, lp.property.getClassProperty().cloneProp(), lp);
-    }
-
-    @Override
-    @IdentityStrongLazy
-    public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
-        String sid = "addObject" + "_" + BaseUtils.capitalize(cls.getSID()) +
-                                   "_" + BaseUtils.capitalize(formEntity.getSID()) +
-                                   "_" + BaseUtils.capitalize(obj.getSID());
-        return addAProp(new FormAddObjectActionProperty(sid, cls, obj));
-    }
-
-    @IdentityStrongLazy
-    public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
-        String sid = "delete" + (oldSession ? "Session" : "") + "_" + BaseUtils.capitalize(cls.getSID());
-
-        LAP res = addChangeClassAProp(oldSession ? sid : genSID(), baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
-        if (!oldSession) {
-            res = addNewSessionAProp(null, sid, res.property.caption, res, true, false, false);
-            res.setAskConfirm(true);
-        }
-        setDeleteActionOptions(res);
-        return res;
-    }
-
-    @IdentityStrongLazy
-    public LAP getAddFormAction(ClassFormEntity form, CustomClass cls, FormSessionScope scope) {
-        return addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
-                form.form, new ObjectEntity[]{},
-                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope);
-    }
-    
-    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, Version version) {
-        ClassFormEntity form = cls.getEditForm(baseLM, version);
-
-        LAP property = getAddFormAction(form, cls, scope);
-        setAddFormActionProperties(property, form, scope);
-        return property;
-    }
-
-    @IdentityStrongLazy
-    public LAP getEditFormAction(ClassFormEntity form, FormSessionScope scope) {
-        return addDMFAProp(null, genSID(), ServerResourceBundle.getString("logics.edit"),
-                form.form, new ObjectEntity[]{form.object}, scope);        
-    }
-    
-    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, Version version) {
-        ClassFormEntity form = cls.getEditForm(baseLM, version);
-
-        LAP property = getEditFormAction(form, scope);
-        setEditFormActionProperties(property);
-        return property;
     }
 }

@@ -22,7 +22,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP orderScheduledTaskDetail;
     public LCP scheduledTaskScheduledTaskDetail;
 
-    public LCP SIDPropertyScheduledTaskDetail;
+    public LCP canonicalNamePropertyScheduledTaskDetail;
     
     public LCP resultScheduledTaskLog;
     public LCP propertyScheduledTaskLog;
@@ -58,7 +58,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
         orderScheduledTaskDetail = getLCPByOldName("orderScheduledTaskDetail");
         scheduledTaskScheduledTaskDetail = getLCPByOldName("scheduledTaskScheduledTaskDetail");
 
-        SIDPropertyScheduledTaskDetail = getLCPByOldName("SIDPropertyScheduledTaskDetail");
+        canonicalNamePropertyScheduledTaskDetail = getLCPByOldName("canonicalNamePropertyScheduledTaskDetail");
         
         resultScheduledTaskLog = getLCPByOldName("resultScheduledTaskLog");
         propertyScheduledTaskLog = getLCPByOldName("propertyScheduledTaskLog");

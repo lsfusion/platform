@@ -43,7 +43,7 @@ propertyRename
 	:	'PROPERTY' 
 		(	r=sidRename { self.addPropertySIDChange($script::version, $r.from, $r.to); }
 		|	oldName=compoundID '[' oldClasses=classList ']' '->' newName=compoundID ('[' newClasses=classList ']' { newCls = $newClasses.classes; })?
-			{ self.addPropertySIDChange($script::version, $oldName.sid, $oldClasses.classes, $newName.sid, newCls); }
+			{ self.addPropertyCNChange($script::version, $oldName.sid, $oldClasses.classes, $newName.sid, newCls); }
 		) 
 	;
 	

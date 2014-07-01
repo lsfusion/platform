@@ -85,13 +85,13 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
     }
 
     @IdentityLazy
-    public ImMap<String, Integer> getIndexedPropChildren() { // оптимизация
-        MExclMap<String, Integer> mResult = MapFact.mExclMap();
+    public ImMap<Property, Integer> getIndexedPropChildren() { // оптимизация
+        MExclMap<Property, Integer> mResult = MapFact.mExclMap();
         int count = 0;
         for(AbstractNode child : getChildrenListIt()) {
             count++;
             if(child instanceof Property)
-                mResult.exclAdd(((Property)child).getSID(), count);
+                mResult.exclAdd((Property)child, count);
         }
         return mResult.immutable();
     }
@@ -139,16 +139,6 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
             }
         }
         return result;
-    }
-
-    public Property getProperty(String sid) {
-        for (AbstractNode child : getChildrenIt()) {
-            Property property = child.getProperty(sid);
-            if (property != null) {
-                return property;
-            }
-        }
-        return null;
     }
 
     public ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface, Version version) {

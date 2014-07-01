@@ -35,6 +35,7 @@ TABLE property (Property);
 parentProperty 'Родит. группа' = DATA PropertyGroup (Property);
 numberProperty 'Номер' = DATA INTEGER (Property);
 SIDProperty 'Код свойства' = DATA VARSTRING[100] (Property) IN base;
+canonicalNameProperty 'Имя свойства' = DATA VARSTRING[512] (Property) IN base;
 loggableProperty 'Логируется' = DATA BOOLEAN (Property);
 userLoggableProperty 'Логируется пользователем' = DATA BOOLEAN (Property);
 storedProperty 'Постоянно хранимое' = DATA BOOLEAN (Property);
@@ -44,7 +45,11 @@ returnProperty 'Возвращаемый класс' = DATA VARSTRING[100] (Prop
 classProperty 'Класс свойства' = DATA VARSTRING[100] (Property);
 complexityProperty 'Сложность свойства' = DATA LONG (Property);
 captionProperty 'Заголовок' = DATA VARSTRING[250] (Property) IN base;
-propertySID 'Свойство' (sid) = GROUP AGGR property BY SIDProperty(property) WHERE property IS Property;
+tableSIDProperty 'Таблица' = DATA VARSTRING[100] (Property);
+
+propertySID 'Свойство' (sid) = GROUP NAGGR property BY SIDProperty(property) WHERE property IS Property; // todo [dale]: временно, нужно для миграции на 15 версию БД
+propertyCanonicalName 'Свойство' (cn) = GROUP AGGR property BY canonicalNameProperty(property) WHERE property IS Property;
+propertyTableSID 'Свойство' = GROUP AGGR property BY tableSIDProperty(property), SIDProperty(property) WHERE storedProperty(property);
 
 CLASS PropertyDraw 'Свойство на форме';
 
@@ -133,9 +138,12 @@ TABLE tableColumn (TableColumn);
 
 tableTableColumn 'Таблица' = DATA Table(TableColumn);
 sidTableColumn 'Имя колонки' = DATA VARSTRING[100] (TableColumn);
-tableColumnSID 'Колонка' = GROUP AGGR tableColumn BY sidTableColumn(tableColumn) WHERE tableColumn IS TableColumn;
-propertyTableColumn 'Свойство' (tableColumn) = propertySID(sidTableColumn(tableColumn));
-namePropertyTableColumn 'Заголовок свойства' (tableColumn) = captionProperty (propertyTableColumn(tableColumn));
+
+longSIDTableColumn(tableColumn) = sidTable(tableTableColumn(tableColumn)) + '.' + sidTableColumn(tableColumn);
+tableColumnSID 'Колонка' = GROUP AGGR tableColumn BY longSIDTableColumn(tableColumn) WHERE tableColumn IS TableColumn; 
+propertyTableColumn 'Свойство' (tableColumn) = propertyTableSID(sidTable(tableTableColumn(tableColumn)), sidTableColumn(tableColumn));
+captionTableColumn 'Заголовок свойства' (tableColumn) = captionProperty(propertyTableColumn(tableColumn));
+canonicalNameTableColumn 'Каноническое имя свойства' (tableColumn) = canonicalNameProperty(propertyTableColumn(tableColumn));
 quantityTableColumn 'Количество разновидностей' = DATA INTEGER (TableColumn);
 notNullQuantityTableColumn 'Количество не null значений' = DATA INTEGER (TableColumn);
 toNumeric15p2(w) = NUMERIC[15,2](w);
@@ -193,7 +201,7 @@ FORM physicalModel 'Таблицы'
     PROPERTIES(tk) READONLY classTableKey, nameTableKey, quantityTableKey
 
     OBJECTS tc=TableColumn
-    PROPERTIES(tc) READONLY sidTableColumn, namePropertyTableColumn, quantityTableColumn, notNullQuantityTableColumn,
+    PROPERTIES(tc) READONLY sidTableColumn, captionTableColumn, canonicalNameTableColumn, propertyTableColumn, quantityTableColumn, notNullQuantityTableColumn,
                    percentNotNullTableColumn
     PROPERTIES(tc) recalculateAggregationTableColumn, checkAggregationTableColumn
 
@@ -297,11 +305,11 @@ dumbPropertyGroup (pg) = ' ' IF pg IS PropertyGroup;
 
 FORM properties 'Свойства'
     OBJECTS p=Property
-    PROPERTIES(p) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
+    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty, SIDProperty, tableSIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     TREE treePropertiesObject tps=PropertyGroup PARENT parentPropertyGroup, ps=Property
     PROPERTIES(tps) READONLY captionPropertyGroup, SIDPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, parentPropertyGroup, numberPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup
-    PROPERTIES(ps) READONLY captionProperty, SIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
+    PROPERTIES(ps) READONLY captionProperty, canonicalNameProperty, SIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     ORDER BY numberProperty(p)
     ORDER BY numberPropertyGroup(tps)

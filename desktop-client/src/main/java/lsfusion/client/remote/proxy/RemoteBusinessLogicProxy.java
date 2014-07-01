@@ -123,9 +123,9 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         logRemoteMethodEndVoidCall("remindPassword");
     }
 
-    public byte[] readFile(String sid, String... params) throws RemoteException {
+    public byte[] readFile(String canonicalName, String... params) throws RemoteException {
         logRemoteMethodStartCall("readFile");
-        byte[] result = target.readFile(sid, params);
+        byte[] result = target.readFile(canonicalName, params);
         logRemoteMethodEndVoidCall("readFile");
         return result;
     }

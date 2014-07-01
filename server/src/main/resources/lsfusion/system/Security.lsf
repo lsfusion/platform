@@ -263,17 +263,17 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES(ur, f) permitUserRoleNavigatorElement, forbidUserRoleNavigatorElement, defaultNumberUserRoleNavigatorElement
 
     OBJECTS pr=Property
-    PROPERTIES(pr) captionProperty, SIDProperty
+    PROPERTIES(pr) captionProperty, canonicalNameProperty
     PROPERTIES(ur, pr) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
-    ORDER BY SIDProperty(pr)
+    ORDER BY canonicalNameProperty(pr)
 
     OBJECTS df=NavigatorElement
     PROPERTIES(df) READONLY captionNavigatorElement, sidNavigatorElement
     PROPERTIES(df) numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement, permitExportNavigatorElement
-    ORDER BY SIDProperty(pr)
+    ORDER BY canonicalNameProperty(pr)
 
     OBJECTS dpr=Property
-    PROPERTIES(dpr) captionProperty, SIDProperty, permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty
+    PROPERTIES(dpr) captionProperty, canonicalNameProperty, permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty
 
     TREE treeFormObject tf = NavigatorElement PARENT parentNavigatorElement
     PROPERTIES(tf) READONLY captionNavigatorElement, sidNavigatorElement
@@ -284,7 +284,7 @@ FORM securityPolicy 'Политика безопасности'
     TREE treePropertyObject tprs = PropertyGroup PARENT parentPropertyGroup, prs = Property
     PROPERTIES(tprs) captionPropertyGroup, SIDPropertyGroup, numberPropertyGroup
     ORDER BY numberPropertyGroup(tprs)
-    PROPERTIES(prs) captionProperty, SIDProperty, numberProperty
+    PROPERTIES(prs) captionProperty, canonicalNameProperty, numberProperty
     PROPERTIES(ur, prs) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
     PROPERTIES(ur, tprs) permitViewUserRolePropertyGroup, forbidViewUserRolePropertyGroup, permitChangeUserRolePropertyGroup, forbidChangeUserRolePropertyGroup
     ORDER BY numberProperty(prs)
@@ -298,7 +298,7 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES (tdprs) captionPropertyGroup, SIDPropertyGroup, numberPropertyGroup, permitViewPropertyGroup, forbidViewPropertyGroup, permitChangePropertyGroup, forbidChangePropertyGroup
     ORDER BY numberPropertyGroup(tdprs)
 
-    PROPERTIES (dprs)  captionProperty,      SIDProperty,      numberProperty,      permitViewProperty,          forbidViewProperty,          permitChangeProperty,          forbidChangeProperty
+    PROPERTIES (dprs)  captionProperty, canonicalNameProperty,      numberProperty,      permitViewProperty,          forbidViewProperty,          permitChangeProperty,          forbidChangeProperty
     ORDER BY numberProperty(dprs)
 
     PROPERTIES(ur, p) orderUserRolePolicy COLUMNS (ur) HEADER sidUserRole(ur)
@@ -381,7 +381,7 @@ FORM userRoles 'Роли'
 
 FORM propertyPolicy 'Политика безопасности для свойства'
     OBJECTS p=Property FIXED PANEL, ur=UserRole
-    PROPERTIES(p) READONLY captionProperty, SIDProperty
+    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty
     PROPERTIES(ur) READONLY nameUserRole, sidUserRole
     PROPERTIES(p) permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty, userLoggableProperty, isSetNotNullProperty
     PROPERTIES(ur, p) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
@@ -392,7 +392,7 @@ EXTEND DESIGN propertyPolicy {
         type = CONTAINERH;
         caption = 'Свойства';
         ADD PROPERTY(captionProperty(p));
-        ADD PROPERTY(SIDProperty(p));
+        ADD PROPERTY(canonicalNameProperty(p));
     }
     NEW permission {
         type = CONTAINERH;

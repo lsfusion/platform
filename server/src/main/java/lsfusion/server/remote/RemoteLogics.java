@@ -354,8 +354,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public byte[] readFile(String sid, String... params) throws RemoteException {
-        LCP<PropertyInterface> property = businessLogics.getLCP(sid);
+    public byte[] readFile(String canonicalName, String... params) throws RemoteException {
+        LCP<PropertyInterface> property = (LCP) businessLogics.findProperty(canonicalName);
         if (property != null) {
             if (!(property.property.getType() instanceof FileClass)) {
                 throw new RuntimeException("Property type is distinct from FileClass");
@@ -384,8 +384,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public void runAction(String sid, String... params) throws RemoteException {
-        LAP property = businessLogics.getLAP(sid);
+    public void runAction(String canonicalName, String... params) throws RemoteException {
+        LAP property = (LAP) businessLogics.findProperty(canonicalName);
         if (property != null) {
             try {
                 DataSession session = createSession();

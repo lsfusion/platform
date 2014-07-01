@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -33,15 +34,16 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.navigator.*;
+import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionCreator;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -61,6 +63,7 @@ import java.sql.Savepoint;
 import java.sql.Timestamp;
 import java.util.*;
 
+import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -75,6 +78,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     };
 
+    private TreeMap<DBVersion, List<SIDChange>> propertyCNChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
     private TreeMap<DBVersion, List<SIDChange>> propertySIDChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
     private TreeMap<DBVersion, List<SIDChange>> classSIDChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
     private TreeMap<DBVersion, List<SIDChange>> tableSIDChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
@@ -306,6 +310,75 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
+    private String getDroppedTablesString(OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
+        String droppedTables = "";
+        for (Table table : oldDBStructure.tables.keySet()) {
+            if (newDBStructure.getTable(table.getName()) == null) {
+                ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
+                Expr expr = GroupExpr.create(MapFact.<KeyField, KeyExpr>EMPTY(), new ValueExpr(new DataObject(1)), table.join(mapKeys).getWhere(), GroupType.SUM, MapFact.<KeyField, Expr>EMPTY());
+                ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> resultMap = new Query<Object, String>(MapFact.<Object, KeyExpr>EMPTYREV(), expr, "value").execute(createSession());
+                if (!(resultMap instanceof EmptyOrderMap)) {
+                    if (!droppedTables.equals("")) {
+                        droppedTables += ", ";
+                    }
+                    droppedTables += table;
+                }
+            }
+        }
+        return droppedTables;
+    }
+    
+    // Удаляем несуществующие индексы и убираем из newDBStructure не изменившиеся индексы
+    // Делаем это до применения migration script, то есть не пытаемся сохранить все возможные индексы по максимуму
+    private void checkIndices(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
+        for (Map.Entry<Table, Map<List<String>, Boolean>> oldTableIndices : oldDBStructure.tables.entrySet()) {
+            Table oldTable = oldTableIndices.getKey();
+            Table newTable = newDBStructure.getTable(oldTableIndices.getKey().getName());
+            Map<List<Field>, Boolean> newTableIndices = null; Map<List<String>, Pair<Boolean, List<Field>>> newTableIndicesNames = null;
+            if(newTable != null) {
+                newTableIndices = newDBStructure.tables.get(newTable);
+                newTableIndicesNames = new HashMap<List<String>, Pair<Boolean, List<Field>>>();
+                for (Map.Entry<List<Field>, Boolean> entry : newTableIndices.entrySet()) {
+                    List<String> names = new ArrayList<String>();
+                    for (Field field : entry.getKey())
+                        names.add(field.getName());
+                    newTableIndicesNames.put(names, new Pair<Boolean, List<Field>>(entry.getValue(), entry.getKey()));
+                }
+            }
+
+            for (Map.Entry<List<String>, Boolean> oldIndex : oldTableIndices.getValue().entrySet()) {
+                List<String> oldIndexKeys = oldIndex.getKey();
+                boolean oldOrder = oldIndex.getValue();
+                boolean drop = (newTable == null); // ушла таблица
+                if (!drop) {
+                    Pair<Boolean, List<Field>> newOrder = newTableIndicesNames.get(oldIndexKeys);
+                    if (newOrder != null && newOrder.first.equals(oldOrder)) {
+                        newTableIndices.remove(newOrder.second); // не трогаем индекс
+                    } else {
+                        drop = true;
+                    }
+                }
+                if (drop) {
+                    // В структуре некоторых баз было ошибочное имя одного из индексов 
+                    if (oldDBStructure.version >= 15 || !oldTable.getName().equals("Machinery_machineryPriceTransactionBarcode")) {
+                        sql.dropIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
+                    }
+                }
+            }
+        }
+    }
+    
+    private void checkUniqueSID(NewDBStructure struct) {
+        Map<Pair<String, String>, DBStoredProperty> sids = new HashMap<Pair<String, String>, DBStoredProperty>();
+        for (DBStoredProperty property : struct.storedProperties) {
+            Pair<String, String> key = new Pair<String, String>(property.getSID(), property.getTable().getName());
+            if (sids.containsKey(key)) {
+                systemLogger.error(String.format("Equal sid '%s' in table '%s': %s and %s", key.first, key.second, sids.get(key).getCanonicalName(), property.getCanonicalName()));
+            }
+            sids.put(key, property);
+         }
+    }
+
     public void uploadToDB(SQLSession sql, boolean isolatedTransactions, final DataAdapter adapter) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         final OperationOwner owner = OperationOwner.unknown;
         final SQLSession sqlFrom = new SQLSession(adapter);
@@ -332,7 +405,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     @Message("logics.upload.db")
     private void uploadTableToDB(SQLSession sql, final @ParamMessage GlobalTable implementTable, @ParamMessage String progress, final SQLSession sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
         sqlTo.truncate(implementTable, owner);
-        
+
         try {
             final Result<Integer> proceeded = new Result<Integer>(0);
             final int total = sql.getCount(implementTable, owner);
@@ -395,60 +468,26 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             DBVersion newDBVersion = getCurrentDBVersion(oldDBStructure.dbVersion);
             NewDBStructure newDBStructure = new NewDBStructure(newDBVersion);
+            
+            checkUniqueSID(newDBStructure);
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
             newDBStructure.write(outDB, hashModules);
 
-            // проверка, не удалятся ли старые таблицы
-            String droppedTables = "";
-            if (denyDropTables) {
-                for (Table table : oldDBStructure.tables.keySet()) {                    
-                    if (newDBStructure.getTable(table.getName()) == null) {
-                        ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
-                        Expr expr = GroupExpr.create(MapFact.<KeyField, KeyExpr>EMPTY(), new ValueExpr(new DataObject(1)), table.join(mapKeys).getWhere(), GroupType.SUM, MapFact.<KeyField, Expr>EMPTY());
-                        ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> resultMap = new Query<Object, String>(MapFact.<Object, KeyExpr>EMPTYREV(), expr, "value").execute(createSession());
-                        if (!(resultMap instanceof EmptyOrderMap))
-                            droppedTables += table + ", ";
-                    }
-                }
-                if (!droppedTables.isEmpty())
-                    throw new RuntimeException("Dropped tables: " + droppedTables.substring(0, droppedTables.length() - 2));
-            }
-      
-            for (Map.Entry<Table, Map<List<String>, Boolean>> oldTableIndices : oldDBStructure.tables.entrySet()) {
-                Table oldTable = oldTableIndices.getKey();
-                Table newTable = newDBStructure.getTable(oldTableIndices.getKey().getName());
-                Map<List<Field>, Boolean> newTableIndices = null; Map<List<String>, Pair<Boolean, List<Field>>> newTableIndicesNames = null;
-                if(newTable != null) {
-                    newTableIndices = newDBStructure.tables.get(newTable);
-                    newTableIndicesNames = new HashMap<List<String>, Pair<Boolean, List<Field>>>();
-                    for (Map.Entry<List<Field>, Boolean> entry : newTableIndices.entrySet()) {
-                        List<String> names = new ArrayList<String>();
-                        for (Field field : entry.getKey())
-                            names.add(field.getName());
-                        newTableIndicesNames.put(names, new Pair<Boolean, List<Field>>(entry.getValue(), entry.getKey()));
-                    }
-                }
-
-                for (Map.Entry<List<String>, Boolean> oldIndex : oldTableIndices.getValue().entrySet()) {
-                    List<String> oldIndexKeys = oldIndex.getKey();
-                    boolean oldOrder = oldIndex.getValue();
-                    boolean drop = (newTable == null); // ушла таблица
-                    if (!drop) {
-                        Pair<Boolean, List<Field>> newOrder = newTableIndicesNames.get(oldIndexKeys);
-                        if (newOrder != null && newOrder.first.equals(oldOrder)) {
-                            newTableIndices.remove(newOrder.second); // не трогаем индекс
-                        } else {
-                            drop = true;
-                        }
-                    }
-                    if (drop) {                                       
-                        sql.dropIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
-                    }
-                }
-            }
-
+            checkIndices(sql, oldDBStructure, newDBStructure);
+            
             systemLogger.info("Applying migration script");
+            if (oldDBStructure.version < 15) {
+                convertDBStructureToVersion15(oldDBStructure, newDBStructure, sql);
+            }
             alterateDBStructure(oldDBStructure, sql);
+
+            // проверка, не удалятся ли старые таблицы
+            if (denyDropTables) {
+                String droppedTables = getDroppedTablesString(oldDBStructure, newDBStructure);
+                if (!droppedTables.isEmpty()) {
+                    throw new RuntimeException("Dropped tables: " + droppedTables);
+                }
+            }
 
             // добавим таблицы которых не было
             systemLogger.info("Creating tables");
@@ -484,7 +523,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 for (Iterator<DBStoredProperty> is = restNewDBStored.iterator(); is.hasNext(); ) {
                     DBStoredProperty newProperty = is.next();
 
-                    if (newProperty.sID.equals(oldProperty.sID)) {
+                    if (newProperty.getSID().equals(oldProperty.getSID())) {
                         MExclMap<KeyField, PropertyInterface> mFoundInterfaces = MapFact.mExclMapMax(newProperty.property.interfaces.size());
                         for (PropertyInterface propertyInterface : newProperty.property.interfaces) {
                             KeyField mapKeyField = oldProperty.mapKeys.get(propertyInterface.ID);
@@ -501,11 +540,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
                                 systemLogger.info(getString("logics.info.property.is.transferred.from.table.to.table", newProperty.property.field, newProperty.property.caption, oldProperty.tableName, newProperty.tableName));
                                 newProperty.property.mapTable.table.moveColumn(sql, newProperty.property.field, oldTable,
-                                        foundInterfaces.join((ImMap<PropertyInterface, KeyField>) newProperty.property.mapTable.mapKeys), oldTable.findProperty(oldProperty.sID));
+                                        foundInterfaces.join((ImMap<PropertyInterface, KeyField>) newProperty.property.mapTable.mapKeys), oldTable.findProperty(oldProperty.getSID()));
                                 systemLogger.info("Done");
                                 moved = true;
                             } else { // надо проверить что тип не изменился
-                                Type oldType = oldTable.findProperty(oldProperty.sID).type;
+                                Type oldType = oldTable.findProperty(oldProperty.getSID()).type;
                                 if (oldDBStructure.version < 12 && newProperty.property.field.type instanceof ConcatenateType) { // вряд ли сможем конвертить пересоздадим
                                     sql.dropColumn(newTable, newProperty.property.field);
                                     sql.addColumn(newTable, newProperty.property.field);
@@ -522,19 +561,19 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 }
                 if (!keep) {
                     if (oldProperty.isDataProperty && !moved) {
-                        String newName = oldProperty.sID + "_deleted";
+                        String newName = "_DELETED_" + oldProperty.getSID();
                         Connection connection = sql.getConnection().sql;
                         Savepoint savepoint = connection.setSavepoint();
                         try {
                             savepoint = connection.setSavepoint();
-                            sql.renameColumn(oldProperty.getTableName(syntax), oldProperty.sID, newName);
+                            sql.renameColumn(oldProperty.getTableName(syntax), oldProperty.getSID(), newName);
                             columnsToDrop.put(newName, oldProperty.tableName);
-                        } catch (PSQLException e) { // колонка с новым именем (с '_deleted') уже существует
+                        } catch (PSQLException e) { // колонка с новым именем уже существует
                             connection.rollback(savepoint);
-                            mDropColumns.exclAdd(new Pair<String, String>(oldTable.getName(syntax), oldProperty.sID));
+                            mDropColumns.exclAdd(new Pair<String, String>(oldTable.getName(syntax), oldProperty.getSID()));
                         }
                     } else
-                        mDropColumns.exclAdd(new Pair<String, String>(oldTable.getName(syntax), oldProperty.sID));
+                        mDropColumns.exclAdd(new Pair<String, String>(oldTable.getName(syntax), oldProperty.getSID()));
                 }
             }
 
@@ -571,12 +610,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     Table oldTable = oldDBStructure.getTable(oldClassProp.tableName);
                     mCopyFromTables.add(oldClassProp.tableName);
 
-                    Expr oldExpr = oldTable.join(MapFact.singleton(oldTable.getTableKeys().single(), keyExpr)).getExpr(oldTable.findProperty(oldClassProp.sID));
+                    Expr oldExpr = oldTable.join(MapFact.singleton(oldTable.getTableKeys().single(), keyExpr)).getExpr(oldTable.findProperty(oldClassProp.getSID()));
                     for (int prevID : copyFrom.getValue(j))
                         moveWhere = moveWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
                     mExpr.add(moveWhere, oldExpr);
                 }
-                copyObjects.addProperty(table.findProperty(classProp.sID), mExpr.getFinal());
+                copyObjects.addProperty(table.findProperty(classProp.getSID()), mExpr.getFinal());
                 copyObjects.and(moveWhere);
 
                 systemLogger.info(getString("logics.info.objects.are.transferred.from.tables.to.table", classProp.tableName, mCopyFromTables.immutable().toString()));
@@ -590,7 +629,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 QueryBuilder<KeyField, PropertyField> dropClassObjects = new QueryBuilder<KeyField, PropertyField>(table);
                 Where moveWhere = Where.FALSE;
 
-                PropertyField oldField = table.findProperty(classProp.sID);
+                PropertyField oldField = table.findProperty(classProp.getSID());
                 Expr oldExpr = table.join(dropClassObjects.getMapExprs()).getExpr(oldField);
                 for (int prevID : toClean.getValue(i))
                     moveWhere = moveWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
@@ -675,6 +714,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             reflectionLM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
             reflectionLM.revisionDropColumn.change(getRevision(), session, object);
         }
+        if (oldDBStructure.version < 15) {
+            convertReflectionPropertyTableToVersion15(session);
+        }
         session.apply(businessLogics);
         session.close();
 
@@ -683,6 +725,122 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return sourceHashChanged;
     }
 
+    private String trimTo63(String id) {
+        if (id.length() > 63) {
+            id = id.substring(0, 63);
+        }
+        return id;
+    }
+        
+    
+    // Нужен пока для перехода на новую версию базы (version=15)
+    private void convertDBStructureToVersion15(OldDBStructure oldDBStructure, NewDBStructure newDBStructure, SQLSession sql) throws SQLException {
+        Map<String, String> propertySIDChanges = getChangesAfter(oldDBStructure.dbVersion, this.propertySIDChanges);
+        SQLSyntax syntax = adapter;
+        Map<String, String> convertSIDChanges = new HashMap<String, String>();
+
+        // сначала проверим старые переименования
+        for (Map.Entry<String, String> entry : propertySIDChanges.entrySet()) {
+            boolean found = false;
+            for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
+                if (entry.getKey().equals(oldProperty.getSID())) {
+                    convertSIDChanges.put(entry.getKey(), entry.getValue());
+                    oldProperty.setSID(entry.getValue());
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                systemLogger.warn("Property " + entry.getKey() + " was not found for renaming to " + entry.getValue());
+            }
+        }
+
+        Map<String, String> propertyCNChanges = getChangesAfter(oldDBStructure.dbVersion, this.propertyCNChanges);
+        OldSIDPolicy oldPolicy = new OldSIDPolicy();
+        for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
+            boolean found = false;
+            for (DBStoredProperty newProperty : newDBStructure.storedProperties) {
+                String newPropertyCN = newProperty.getCanonicalName();
+                for (Map.Entry<String, String> change : propertyCNChanges.entrySet()) {
+                    if (newPropertyCN.equals(change.getValue())) {
+                        newPropertyCN = change.getKey();
+                        break;
+                    }
+                }
+
+                if (oldProperty.getSID().equals(oldPolicy.transformCanonicalNameToSID(newPropertyCN))) {
+                    String oldSID = oldProperty.getSID();
+                    String newSID = LM.getSIDPolicy().transformCanonicalNameToSID(newPropertyCN);
+
+                    for (Map.Entry<String, String> change : convertSIDChanges.entrySet()) {
+                        if (oldProperty.getSID().equals(change.getValue())) {
+                            oldSID = change.getKey();
+                            break;
+                        }
+                    }
+                    convertSIDChanges.put(oldSID, newSID);
+                    found = true;
+                    oldSID = trimTo63(oldSID);
+                    
+                    if (!oldSID.equals(newSID)) {
+                        systemLogger.info("Renaming column from " + oldSID + " to " + newSID + " in table " + oldProperty.tableName);
+                        sql.renameColumn(oldProperty.getTableName(syntax), oldSID, newSID);
+                    }
+                    oldProperty.setCanonicalName(newPropertyCN);
+                    break;
+                }
+            }
+            if (!found) {
+                systemLogger.warn("Property " + oldProperty.getSID() + " was not converted to new database format!");
+            }
+        }
+
+        for (DBConcreteClass cls : oldDBStructure.concreteClasses) {
+            cls.sDataPropID = trimTo63(cls.sDataPropID);
+        }
+        
+        for (Table table : oldDBStructure.tables.keySet()) {
+            for (PropertyField field : table.properties) {
+                if (convertSIDChanges.containsKey(field.getName())) {
+                    field.setName(convertSIDChanges.get(field.getName()));
+                }
+            }
+        }
+    }
+
+    private void convertReflectionPropertyTableToVersion15(DataSession session) {
+        ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
+        ImportField sidPropertyField = new ImportField(reflectionLM.propertySIDValueClass);
+
+        ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertySID.getMapping(sidPropertyField));
+
+        try {
+            List<List<Object>> dataProperty = new ArrayList<List<Object>>();
+            OldSIDPolicy oldPolicy = new OldSIDPolicy();
+            for (LP<?, ?> lp : businessLogics.getNamedProperties()) {
+                Property<?> property = lp.property;
+                if (property.getCanonicalName() != null) {
+                    String oldSID = oldPolicy.transformCanonicalNameToSID(property.getCanonicalName());
+                    dataProperty.add(asList((Object) oldSID, property.getCanonicalName()));
+                }
+            }
+
+            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+            properties.add(new ImportProperty(sidPropertyField, reflectionLM.SIDProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(canonicalNamePropertyField, reflectionLM.canonicalNameProperty.getMapping(keyProperty)));
+
+            List<ImportDelete> deletes = new ArrayList<ImportDelete>();
+            deletes.add(new ImportDelete(keyProperty, LM.is(reflectionLM.property).getMapping(keyProperty), false));
+
+            ImportTable table = new ImportTable(asList(sidPropertyField, canonicalNamePropertyField), dataProperty);
+
+            IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties, deletes);
+            service.synchronize(true, false);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    
     private void fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         DataSession session = createSession(OperationOwner.unknown); // по сути вложенная транзакция
 
@@ -883,38 +1041,43 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private void alterateDBStructure(OldDBStructure data, SQLSession sql) throws SQLException {
-        Map<String, String> propertyChanges = getChangesAfter(data.dbVersion, propertySIDChanges);
-        Map<String, String> tableChanges = getChangesAfter(data.dbVersion, tableSIDChanges);
-        Map<String, String> classChanges = getChangesAfter(data.dbVersion, classSIDChanges);
-        
+    // Не разбирается с индексами. Было решено, что сохранять индексы необязательно.
+    private void alterateDBStructure(OldDBStructure oldData, SQLSession sql) throws SQLException {
+        Map<String, String> propertyChanges = getChangesAfter(oldData.dbVersion, propertyCNChanges);
+        Map<String, String> tableChanges = getChangesAfter(oldData.dbVersion, tableSIDChanges);
+        Map<String, String> classChanges = getChangesAfter(oldData.dbVersion, classSIDChanges);
+
+        Map<String, String> propertySIDChanges = new HashMap<String, String>();
         SQLSyntax syntax = adapter;
 
         for (Map.Entry<String, String> entry : propertyChanges.entrySet()) {
-            DBStoredProperty oldProperty = null;
-            for (DBStoredProperty property : data.storedProperties)
-                if (entry.getKey().equals(property.sID)) {
-                    oldProperty = property;
+            boolean found = false;
+            for (DBStoredProperty oldProperty : oldData.storedProperties) {
+                if (entry.getKey().equals(oldProperty.getCanonicalName())) {
+                    String newSID = LM.getSIDPolicy().transformCanonicalNameToSID(entry.getValue());
+                    systemLogger.info("Renaming column from " + oldProperty.getSID() + " to " + newSID + " in table " + oldProperty.tableName);
+                    sql.renameColumn(oldProperty.getTableName(syntax), oldProperty.getSID(), newSID);
+                    propertySIDChanges.put(oldProperty.getSID(), newSID);
+                    oldProperty.setCanonicalName(entry.getValue());
+                    found = true;
                     break;
                 }
-            if (oldProperty != null) {
-                String newSID = entry.getValue();
-                systemLogger.info("Renaming column from " + oldProperty.sID + " to " + newSID + " in table " + oldProperty.tableName);
-                sql.renameColumn(oldProperty.getTableName(syntax), oldProperty.sID, newSID);
-                oldProperty.sID = newSID;
+            }
+            if (!found) {
+                systemLogger.warn("Property " + entry.getKey() + " was not found for renaming to " + entry.getValue());
             }
         }
 
-        for (DBStoredProperty oldProperty : data.storedProperties) {
+        for (DBStoredProperty oldProperty : oldData.storedProperties) {
             if (tableChanges.containsKey(oldProperty.tableName)) {
                 oldProperty.tableName = tableChanges.get(oldProperty.tableName);
             }
         }
 
-        for (Table table : data.tables.keySet()) {
+        for (Table table : oldData.tables.keySet()) {
             for (PropertyField field : table.properties) {
-                if (propertyChanges.containsKey(field.getName())) {
-                    field.setName(propertyChanges.get(field.getName()));
+                if (propertySIDChanges.containsKey(field.getName())) {
+                    field.setName(propertySIDChanges.get(field.getName()));
                 }
             }
 
@@ -926,7 +1089,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
         }
 
-        for (DBConcreteClass oldClass : data.concreteClasses) {
+        for (DBConcreteClass oldClass : oldData.concreteClasses) {
             if(classChanges.containsKey(oldClass.sID)) {
                 oldClass.sID = classChanges.get(oldClass.sID);
             }
@@ -937,6 +1100,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         DBVersion curVersion = oldVersion;
         if (!propertySIDChanges.isEmpty() && curVersion.compare(propertySIDChanges.lastKey()) < 0) {
             curVersion = propertySIDChanges.lastKey();
+        }
+        if (!propertyCNChanges.isEmpty() && curVersion.compare(propertyCNChanges.lastKey()) < 0) {
+            curVersion = propertyCNChanges.lastKey();
         }
         if (!classSIDChanges.isEmpty() && curVersion.compare(classSIDChanges.lastKey()) < 0) {
             curVersion = classSIDChanges.lastKey();
@@ -958,28 +1124,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         sidChanges.get(dbVersion).add(new SIDChange(oldSID, newSID));
     }
 
-    private String createSignatureStr(List<String> classNames) {
-        StringBuilder signature = new StringBuilder();
-        signature.append("[");
-        for (int i = 0; i < classNames.size(); i++) {
-            if (i > 0) {
-                signature.append(",");
-            }
-            signature.append(classNames.get(i));
-        }
-        signature.append("]");
-        return signature.toString();
-    }
-    
-    public void addPropertySIDChange(String version, String oldName, List<String> oldClasses, String newName, List<String> newClasses) {
-        String oldSignature = createSignatureStr(oldClasses);
-        String newSignature = ""; 
+    public void addPropertyCNChange(String version, String oldName, List<String> oldClasses, String newName, List<String> newClasses) {
+        String oldSignature = PropertyCanonicalNameUtils.createSignatureStr(oldClasses);
+        String newSignature = oldSignature;
         if (newClasses != null) {
-            newSignature = createSignatureStr(newClasses);
+            newSignature = PropertyCanonicalNameUtils.createSignatureStr(newClasses);
         } 
-        String oldSID = LM.getSIDPolicy().transformCanonicalNameToSID(oldName + oldSignature);
-        String newSID = LM.getSIDPolicy().transformCanonicalNameToSID(newName + newSignature);
-        addSIDChange(propertySIDChanges, version, oldSID, newSID);
+        addSIDChange(propertyCNChanges, version, oldName + oldSignature, newName + newSignature);
     }   
     
     public void addPropertySIDChange(String version, String oldSID, String newSID) {
@@ -1008,7 +1159,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
         return userSID;
     }
-    
+
     private Map<String, String> getChangesAfter(DBVersion versionAfter, TreeMap<DBVersion, List<SIDChange>> allChanges) {
         Map<String, String> resultChanges = new OrderedMap<String, String>();
 
@@ -1020,12 +1171,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 for (SIDChange change : versionChanges) {
                     if (versionChangesMap.containsKey(change.oldSID)) {
                         throw new RuntimeException(String.format("Renaming '%s' twice in version %s.", change.oldSID, changesEntry.getKey()));
-                    } else if (resultChanges.containsKey(change.oldSID)) {
-                        throw new RuntimeException(String.format("Renaming '%s' twice.", change.oldSID)); // todo [dale]: временно
                     }
                     versionChangesMap.put(change.oldSID, change.newSID);
                 }
 
+                // Если в текущей версии есть переименование a -> b, а в предыдущих версиях есть c -> a, то заменяем c -> a на c -> b
                 for (Map.Entry<String, String> currentChanges : resultChanges.entrySet()) {
                     String renameTo = currentChanges.getValue();
                     if (versionChangesMap.containsKey(renameTo)) {
@@ -1034,8 +1184,15 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     }
                 }
 
-                resultChanges.putAll(versionChangesMap);
+                // Добавляем оставшиеся (которые не получилось добавить к старым цепочкам) переименования из текущей версии в общий результат
+                for (Map.Entry<String, String> change : versionChangesMap.entrySet()) {
+                    if (resultChanges.containsKey(change.getKey())) {
+                        throw new RuntimeException(String.format("Renaming '%s' twice", change.getKey()));
+                    }
+                    resultChanges.put(change.getKey(), change.getValue());
+                }
 
+                // Проверяем, чтобы не было нескольких переименований в одно и то же
                 Set<String> renameToSIDs = new HashSet<String>();
                 for (String renameTo : resultChanges.values()) {
                     if (renameToSIDs.contains(renameTo)) {
@@ -1180,7 +1337,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     private class DBStoredProperty {
-        public String sID;
+        private String sID;
+        private String canonicalName;
+
         public Boolean isDataProperty;
         public String tableName;
         
@@ -1196,11 +1355,15 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         @Override
         public String toString() {
-            return sID + ' ' + tableName;
+            return getSID() + ' ' + tableName;
         }
 
         public DBStoredProperty(CalcProperty<?> property) {
-            this.sID = property.getSID();
+            if (property.getCanonicalName() == null) {
+                this.setSID(property.getSID());
+            } else {
+                this.setCanonicalName(property.getCanonicalName());
+            }
             this.isDataProperty = property instanceof DataProperty;
             this.tableName = property.mapTable.table.getName();
             mapKeys = ((CalcProperty<PropertyInterface>)property).mapTable.mapKeys.mapKeys(new GetValue<Integer, PropertyInterface>() {
@@ -1210,11 +1373,34 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             this.property = property;
         }
 
-        public DBStoredProperty(String sID, Boolean isDataProperty, String tableName, ImMap<Integer, KeyField> mapKeys) {
-            this.sID = sID;
+        public DBStoredProperty(String canonicalName, String sID, Boolean isDataProperty, String tableName, ImMap<Integer, KeyField> mapKeys) {
+            this.setCanonicalName(canonicalName);
+            if (canonicalName == null) {
+                this.setSID(sID);
+            }
             this.isDataProperty = isDataProperty;
             this.tableName = tableName;
             this.mapKeys = mapKeys;
+        }
+
+        public String getSID() {
+            return sID;
+        }
+
+        public void setSID(String sID) {
+            assert getCanonicalName() == null;
+            this.sID = sID;
+        }
+
+        public String getCanonicalName() {
+            return canonicalName;
+        }
+
+        public void setCanonicalName(String canonicalName) {
+            this.canonicalName = canonicalName;
+            if (canonicalName != null) {
+                this.sID = LM.getSIDPolicy().transformCanonicalNameToSID(canonicalName);
+            }
         }
     }
 
@@ -1273,7 +1459,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         public DBStoredProperty getProperty(String name) {
             for (DBStoredProperty prop : storedProperties) {
-                if (prop.sID.equals(name)) {
+                if (prop.getSID().equals(name)) {
                     return prop;
                 }
             }
@@ -1284,7 +1470,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public NewDBStructure(DBVersion dbVersion) {
-            version = 14;
+            version = 15;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {
@@ -1317,6 +1503,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             for (CalcProperty<?> property : businessLogics.getStoredProperties()) {
                 storedProperties.add(new DBStoredProperty(property));
+                assert property.getCanonicalName() != null;
             }
 
             for (ConcreteCustomClass customClass : businessLogics.getConcreteCustomClasses()) {
@@ -1353,7 +1540,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             outDB.writeInt(storedProperties.size());
             for (DBStoredProperty property : storedProperties) {
-                outDB.writeUTF(property.sID);
+                outDB.writeUTF(property.getCanonicalName());
                 outDB.writeBoolean(property.isDataProperty);
                 outDB.writeUTF(property.tableName);
                 for (int i=0,size=property.mapKeys.size();i<size;i++) {
@@ -1407,7 +1594,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
                 int prevStoredNum = inputDB.readInt();
                 for (int i = 0; i < prevStoredNum; i++) {
-                    String sID = inputDB.readUTF();
+                    String sID = null;
+                    String canonicalName = null;
+                    if (version >= 15) {
+                        canonicalName = inputDB.readUTF();
+                    } else {
+                        sID = inputDB.readUTF();
+                    }
                     boolean isDataProperty = true;
                     if (version >= 0) {
                         isDataProperty = inputDB.readBoolean();
@@ -1418,7 +1611,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     for (int j = 0; j < prevTable.getTableKeys().size(); j++) {
                         mMapKeys.exclAdd(inputDB.readInt(), prevTable.findKey(inputDB.readUTF()));
                     }
-                    storedProperties.add(new DBStoredProperty(sID, isDataProperty, tableName, mMapKeys.immutable()));
+                    storedProperties.add(new DBStoredProperty(canonicalName, sID, isDataProperty, tableName, mMapKeys.immutable()));
                 }
 
                 if(version > 4) {
@@ -1430,7 +1623,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     PropertyField classField = new PropertyField("class", ObjectType.instance);
                     SerializedTable objectTable = new SerializedTable("objects", SetFact.singletonOrder(objectKey), SetFact.singleton(classField), LM.baseClass);
                     tables.put(objectTable, new HashMap<List<String>, Boolean>());
-                    storedProperties.add(new DBStoredProperty("class", false, "objects", MapFact.singleton(0, objectKey))); // в map'е все равно что будет
+                    storedProperties.add(new DBStoredProperty(null, "class", false, "objects", MapFact.singleton(0, objectKey))); // в map'е все равно что будет
 
                     QueryBuilder<String, String> allClassesQuery = new QueryBuilder<String, String>(SetFact.singleton("key"));
                     Expr key = allClassesQuery.getMapExprs().singleValue();

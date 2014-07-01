@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.Pair;
@@ -92,19 +93,6 @@ public abstract class LogicsModule {
     /// Добавляется к SID объектов модуля: классам, группам, свойствам...
     public abstract String getNamePrefix();
 
-    public String transformSIDToName(String sid) {
-        String modulePrefix = getNamePrefix();
-        if (modulePrefix == null) {
-            return sid;
-        }
-
-        if (sid == null || !sid.startsWith(modulePrefix)) {
-            throw new IllegalArgumentException("SID must not be null and begin with name prefix");
-        }
-
-        return sid.substring(modulePrefix.length() + 1);
-    }
-
     // Используется для всех элементов системы кроме свойств и действий
     public String transformNameToSID(String name) {
         return transformNameToSID(getNamePrefix(), name);
@@ -129,7 +117,6 @@ public abstract class LogicsModule {
 
     public final Map<LP<?, ?>, List<AndClassSet>> propClasses = new HashMap<LP<?, ?>, List<AndClassSet>>();
     
-    private final Map<String, List<String>> propNamedParams = new HashMap<String, List<String>>();
     private final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<Pair<String, Integer>, MetaCodeFragment>();
 
     protected LogicsModule() {}
@@ -171,7 +158,7 @@ public abstract class LogicsModule {
         List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
         for (List<LP<?, ?>> namedLPs : namedModuleProperties.values()) {
             for (LP<?, ?> property : namedLPs) {
-                String actualName = property.property.getOldName() == null ? property.property.getName() : property.property.getOldName(); 
+                String actualName = property.property.getName(); 
                 if (name.equals(actualName)) {
                     result.add(property);                        
                 }
@@ -276,15 +263,6 @@ public abstract class LogicsModule {
 
     public AbstractWindow getWindowBySID(String sid) {
         return windows.get(sid);
-    }
-
-    public List<String> getNamedParams(String sID) {
-        return propNamedParams.get(sID);
-    }
-
-    protected void addNamedParams(String sID, List<String> namedParams) {
-        assert !propNamedParams.containsKey(sID);
-        propNamedParams.put(sID, namedParams);
     }
 
     public MetaCodeFragment getMetaCodeFragmentByName(String name, int paramCnt) {
@@ -515,7 +493,9 @@ public abstract class LogicsModule {
         }
 
         // выполняем само создание свойства
-        LCP derDataProp = addDProp(group, name, persistent, caption, valueClass, overrideClasses(commonClasses, overrideClasses));
+        StoredDataProperty dataProperty = new StoredDataProperty(name, caption, overrideClasses(commonClasses, overrideClasses), valueClass);
+        LCP derDataProp = addProperty(group, persistent, new LCP<ClassPropertyInterface>(dataProperty));
+
         if (forced)
             derDataProp.setEventChangeSet(defaultChanged, whereNum, derivedProp, params);
         else
@@ -1342,10 +1322,33 @@ public abstract class LogicsModule {
     }
 
     // ------------------- Loggable ----------------- //
-
-    public LCP addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp, ValueClass... classes) {
-        return addDCProp(baseLM.privateGroup, "LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log") + " " + lp.property, 1, lp,
-                add(new Object[]{true}, add(getParams(lp), add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, add(directLI(lp), classes)))));
+    // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (можно брать из канонического имени), 
+    // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
+    public LCP addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp) {
+        assert lp.property.getName() != null;
+        String name = "";
+        if (lp.property.getCanonicalName() != null) {
+            PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(null, lp.property.getCanonicalName());
+            try {
+                String namespace = parser.getNamespace();
+                name = PropertyCanonicalNameUtils.logPropPrefix + namespace + "_" + lp.property.getName();
+            } catch (PropertyCanonicalNameParser.CNParseException e) {
+                Throwables.propagate(e);
+            }
+        } else {
+            name = PropertyCanonicalNameUtils.logPropPrefix + lp.property.getName();
+        }
+        
+        List<AndClassSet> signature = new ArrayList<AndClassSet>();
+        for (ValueClass cls : lp.getInterfaceClasses()) {
+            signature.add(cls.getUpSet());
+        }
+        signature.add(systemEventsLM.currentSession.property.getValueClass().getUpSet());
+        LCP result = addDCProp(baseLM.privateGroup, name, ServerResourceBundle.getString("logics.log") + " " + lp.property, 1, lp,
+                add(new Object[]{true}, add(getParams(lp), add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)))));
+        result.property.setCanonicalName(PropertyCanonicalNameUtils.createName(getNamespace(), name, signature), baseLM.getSIDPolicy());
+        ((StoredDataProperty)result.property).markStored(baseLM.tableFactory);
+        return result;
     }
 
     // ------------------- UNION SUM ----------------- //
@@ -1554,17 +1557,31 @@ public abstract class LogicsModule {
     public LAP getAddObjectAction(FormEntity formEntity, ObjectEntity obj) {
         return getAddObjectAction((CustomClass) obj.baseClass, formEntity, obj);
     }
-
+    
+    @IdentityStrongLazy
     public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
-        return baseLM.getAddObjectAction(cls, formEntity, obj);
+        String name = "_ADDOBJ" + "_" + cls.getSID() + "_" + formEntity.getSID() + "_" + obj.getSID();
+        LAP result = addAProp(new FormAddObjectActionProperty(name, cls, obj));
+        result.property.setCanonicalName(PropertyCanonicalNameUtils.createName(getNamespace(), name, cls.getUpSet()), baseLM.getSIDPolicy());
+        return result;
     }
 
     // ---------------------- Delete Object ---------------------- //
 
+    @IdentityStrongLazy
     public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
-        return baseLM.getDeleteAction(cls, oldSession);
-    }
+        String name = "_DELETE" + (oldSession ? "SESSION" : "") + "_" + cls.getSID();
 
+        LAP res = addChangeClassAProp(oldSession ? name : genSID(), baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
+        if (!oldSession) {
+            res = addNewSessionAProp(null, name, res.property.caption, res, true, false, false);
+            res.setAskConfirm(true);
+        }
+        setDeleteActionOptions(res);
+        res.property.setCanonicalName(PropertyCanonicalNameUtils.createName(getNamespace(), name, cls.getUpSet()), baseLM.getSIDPolicy());
+        return res;
+    }
+    
     protected void setDeleteActionOptions(LAP property) {
         property.setImage("delete.png");
         property.setShouldBeLast(true);
@@ -1584,10 +1601,6 @@ public abstract class LogicsModule {
         return property;
     }
 
-    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, Version version) {
-        return baseLM.getAddFormAction(cls, scope, version);
-    }
-
     protected void setAddFormActionProperties(LAP property, ClassFormEntity form, FormSessionScope scope) {
         property.setImage("add.png");
         property.setShouldBeLast(true);
@@ -1604,6 +1617,23 @@ public abstract class LogicsModule {
         }
     }
 
+    @IdentityStrongLazy
+    public LAP getAddFormAction(ClassFormEntity form, CustomClass cls, FormSessionScope scope) {
+        String name = "_ADDFORM" + scope + "_" + form.form.getSID() + "_" + cls.getSID();
+        LAP result = addDMFAProp(null, name, ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
+                form.form, new ObjectEntity[]{},
+                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope);
+        result.property.setCanonicalName(PropertyCanonicalNameUtils.createName(getNamespace(), name, new ArrayList<AndClassSet>()), baseLM.getSIDPolicy());
+        return result;
+    }
+    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, Version version) {
+        ClassFormEntity form = cls.getEditForm(baseLM, version);
+
+        LAP property = getAddFormAction(form, cls, scope);
+        setAddFormActionProperties(property, form, scope);
+        return property;
+    }
+
     // ---------------------- Edit Form ---------------------- //
 
     public LAP getScriptEditFormAction(CustomClass cls, FormSessionScope scope) {
@@ -1613,8 +1643,20 @@ public abstract class LogicsModule {
         return property;
     }
 
+    @IdentityStrongLazy
+    public LAP getEditFormAction(ClassFormEntity form, FormSessionScope scope) {
+        String name = "_EDITFORM" + scope + "_" + form.form.getSID();   
+        LAP result = addDMFAProp(null, name, ServerResourceBundle.getString("logics.edit"),
+                form.form, new ObjectEntity[]{form.object}, scope);
+        result.property.setCanonicalName(PropertyCanonicalNameUtils.createName(getNamespace(), name, form.object.baseClass.getUpSet()), baseLM.getSIDPolicy());
+        return result;
+    }
     public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, Version version) {
-        return baseLM.getEditFormAction(cls, scope, version);
+        ClassFormEntity form = cls.getEditForm(baseLM, version);
+
+        LAP property = getEditFormAction(form, scope);
+        setEditFormActionProperties(property);
+        return property;
     }
 
     protected void setEditFormActionProperties(LAP property) {
@@ -1656,10 +1698,7 @@ public abstract class LogicsModule {
     }
 
     protected <T extends LP<?, ?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
-        setPropertySID(lp, lp.property.getSID(), lp.property.getOldName(), true);
-        if (group != null && group != baseLM.privateGroup || persistent) {
-            lp.property.freezeSID();
-        }
+        setGeneratedPropertySID(lp, lp.property.getSID());
         addModuleLP(lp);
         baseLM.registerProperty(lp, getVersion());
         addPropertyToGroup(lp.property, group);
@@ -1670,14 +1709,23 @@ public abstract class LogicsModule {
         return lp;
     }
 
-    protected <T extends LP<?, ?>> void setPropertySID(T lp, String name, String oldName, boolean generated) {
+    // todo [dale]: Все это теперь временно, надо рефакторить. 
+    protected <T extends LP<?, ?>> void setGeneratedPropertySID(T lp, String name) {
         String oldSID = lp.property.getSID();
-        lp.property.setName(name, generated);
-        String newSID = baseLM.getSIDPolicy().createSID(getNamePrefix(), name, null, oldName);
-        baseLM.changeSID(generated, oldSID, newSID);
+        lp.property.setName(name, true);
+        String newSID = baseLM.getSIDPolicy().createSID(getNamespace(), name, Collections.<AndClassSet>nCopies(lp.listInterfaces.size(), null));
+        baseLM.changeSID(true, oldSID, newSID);
         lp.property.setSID(newSID);
     }
 
+    protected <T extends LP<?, ?>> void setPropertySID(T lp, String name, List<AndClassSet> classes) {
+        String oldSID = lp.property.getSID();
+        lp.property.setName(name, false);
+        String newSID = baseLM.getSIDPolicy().createSID(getNamespace(), name, classes);
+        baseLM.changeSID(false, oldSID, newSID);
+        lp.property.setSID(newSID);
+    }
+    
     public void addIndex(LCP<?>... lps) {
         ThreadLocalContext.getDbManager().addIndex(lps);
     }
@@ -1885,7 +1933,7 @@ public abstract class LogicsModule {
 
     protected void makeUserLoggable(SystemEventsLogicsModule systemEventsLM, LCP... lps) {
         for (LCP lp : lps)
-            lp.makeUserLoggable(systemEventsLM);
+            lp.makeUserLoggable(this, systemEventsLM);
     }
 
     public LCP not() {
@@ -1912,6 +1960,7 @@ public abstract class LogicsModule {
     protected NavigatorElement addNavigatorElement(NavigatorElement parent, String name, String caption) {
         return addNavigatorElement(parent, name, caption, null);
     }
+    
 
     protected NavigatorElement addNavigatorElement(NavigatorElement parent, String name, String caption, String icon) {
         NavigatorElement elem = new NavigatorElement(parent, transformNameToSID(name), caption, icon, getVersion());
@@ -2011,8 +2060,8 @@ public abstract class LogicsModule {
         this.requiredModules = requiredModules;
     }
 
-    public List<LP> getNamedProperties() {
-        List<LP> properties = new ArrayList<LP>();
+    public List<LP<?, ?>> getNamedProperties() {
+        List<LP<?, ?>> properties = new ArrayList<LP<?, ?>>();
         for (List<LP<?, ?>> propList : namedModuleProperties.values()) {
             properties.addAll(propList);    
         }
@@ -2038,7 +2087,7 @@ public abstract class LogicsModule {
             List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
             for (List<LP<?, ?>> lps : module.getNamedModuleProperties().values()) {
                 for (LP<?, ?> lp : lps) {
-                    String actualName = BaseUtils.nvl(lp.property.getOldName(), lp.property.getName());
+                    String actualName = lp.property.getName();
                     if (simpleName.equals(actualName)) {
                         result.add(lp);
                     }

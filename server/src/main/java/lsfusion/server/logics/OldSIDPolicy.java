@@ -18,7 +18,7 @@ import java.util.List;
 
 public class OldSIDPolicy implements PropertySIDPolicy {
     @Override
-    public String createSID(String namespaceName, String name, List<AndClassSet> signature, String oldName) {
+    public String createSID(String namespaceName, String name, List<AndClassSet> signature) {
         if (namespaceName == null) {
             return name;
         } else {

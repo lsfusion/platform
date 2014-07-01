@@ -236,17 +236,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return null;
     }
 
-    public Property getProperty(String sid) {
-        return LM.rootGroup.getProperty(sid);
-    }
-
     protected <T extends LogicsModule> T addModule(T module) {
         logicModules.add(module);
         return module;
     }
 
     public void createModules() throws IOException {
-        LM = addModule(new BaseLogicsModule(this, new OldSIDPolicy()));
+        LM = addModule(new BaseLogicsModule(this, new DefaultSIDPolicy(63)));
         serviceLM = addModule(new ServiceLogicsModule(this, LM));
         reflectionLM = addModule(new ReflectionLogicsModule(this, LM));
         contactLM = addModule(new ContactLogicsModule(this, LM));
@@ -557,9 +553,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             ImSet<ConcreteCustomClass> set = groupTables.getValue(i);
 
             ObjectValueClassSet classSet = OrObjectClassSet.fromSetConcreteChildren(set);
-            ClassDataProperty dataProperty = new ClassDataProperty("_CLASS_" + table.getName(), classSet.toString(), classSet);
+            ClassDataProperty dataProperty = new ClassDataProperty(PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), classSet.toString(), classSet);
             LM.addProperty(null, new LCP<ClassPropertyInterface>(dataProperty));
             dataProperty.markStored(LM.tableFactory, table);
+            dataProperty.setCanonicalName(PropertyCanonicalNameUtils.createName(LM.getNamespace(), PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<AndClassSet>singletonList(classSet)));
 
             for(ConcreteCustomClass customClass : set)
                 customClass.dataProperty = dataProperty;
@@ -612,12 +609,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = keys.singleValue();
         QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
-        query.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(key));
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
         query.and(reflectionLM.userLoggableProperty.getExpr(key).getWhere());
         ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
-            LM.makeUserLoggable(systemEventsLM, getLCP(values.get("SIDProperty").toString().trim()));
+            LM.makeUserLoggable(systemEventsLM, (LCP) findProperty(values.get("CNProperty").toString().trim()));
         }
     }
 
@@ -627,12 +624,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         ImRevMap<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = keys.singleValue();
         QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
-        query.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(key));
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
         query.and(reflectionLM.isSetNotNullProperty.getExpr(key).getWhere());
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
-            LCP<?> prop = getLCP(values.get("SIDProperty").toString().trim());
+            LCP<?> prop = (LCP) findProperty(values.get("CNProperty").toString().trim());
             prop.property.setNotNull = true;
             LM.setNotNull(prop, PropertyFollows.RESOLVE_NOTHING);
         }
@@ -661,13 +658,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             ImRevMap<String, KeyExpr> newKeys2 = MapFact.toRevMap("property", propertyExpr2, "notification", notificationExpr2);
 
             QueryBuilder<String, String> query2 = new QueryBuilder<String, String>(newKeys2);
-            query2.addProperty("SIDProperty", reflectionLM.SIDProperty.getExpr(propertyExpr2));
+            query2.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(propertyExpr2));
             query2.and(emailLM.inNotificationProperty.getExpr(notificationExpr2, propertyExpr2).getWhere());
             query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
             ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result2 = query2.execute(sql, OperationOwner.unknown);
             List<LCP> listInNotificationProperty = new ArrayList();
             for (int j=0,size2=result2.size();j<size2;j++) {
-                listInNotificationProperty.add(getLCP(result2.getValue(i).get("SIDProperty").toString().trim()));
+                listInNotificationProperty.add((LCP) findProperty(result2.getValue(i).get("CNProperty").toString().trim()));
             }
             ImMap<Object, Object> rowValue = result.getValue(i);
 
@@ -711,7 +708,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
 
             //добавляем в контекстное меню пункт для показа формы
-            String actionSID = formActionProperty.getSID();
+            String actionSID = property.getCanonicalName();
+            assert actionSID != null;
             property.setContextMenuAction(actionSID, formActionProperty.caption);
             property.setEditAction(actionSID, formActionProperty.getImplement(property.getOrderInterfaces()));
         }
@@ -723,17 +721,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropBySID, Property property) {
-        String propertySID = property.getSID();
-        String setupPolicyActionSID = "propertyPolicySetup_" + propertySID;
-        if (!LM.isGeneratedSID(propertySID)) {
-            LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, setupPolicyActionSID, getString("logics.property.propertypolicy.action"),
-                    setupPolicyForPropBySID, LM.addCProp(StringClass.get(propertySID.length()), propertySID));
-
+    public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropByCN, Property property) {
+        String propertyCN = property.getCanonicalName();
+        if (propertyCN != null) {
+            PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, propertyCN);
+            String setupPolicyActionName = PropertyCanonicalNameUtils.policyPropPrefix + property.getName(); // todo [dale]: узнать как используется этот sid
+            LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, setupPolicyActionName, getString("logics.property.propertypolicy.action"),
+                    setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), propertyCN));
+            
             ActionProperty setupPolicyAction = setupPolicyLAP.property;
+            try {
+                setupPolicyAction.setCanonicalName(PropertyCanonicalNameUtils.createName(LM.getNamespace(), setupPolicyActionName, parser.getSignature()), LM.getSIDPolicy());
+            } catch (PropertyCanonicalNameParser.CNParseException e) {
+                Throwables.propagate(e);
+            }
             setupPolicyAction.checkReadOnly = false;
-            property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
-            property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
+            String actionCN = setupPolicyAction.getCanonicalName();
+            property.setContextMenuAction(actionCN, setupPolicyAction.caption);
+            property.setEditAction(actionCN, setupPolicyAction.getImplement());
         }
     }
 
@@ -755,8 +760,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return getOrderProperties().getSet();
     }
 
-    public List<LP> getNamedProperties() {
-        List<LP> namedProperties = new ArrayList<LP>();
+    public List<LP<?, ?>> getNamedProperties() {
+        List<LP<?, ?>> namedProperties = new ArrayList<LP<?, ?>>();
         for (LogicsModule module : logicModules) {
             namedProperties.addAll(module.getNamedProperties());
         }
@@ -1290,14 +1295,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
     
-    public LCP getLCP(String sID) {
-        return (LCP) LM.getLP(sID);
-    }
-
-    public LAP getLAP(String sID) {
-        return (LAP) LM.getLP(sID);
-    }
-
     public LP findProperty(String canonicalName) {
         PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, canonicalName);
         try {

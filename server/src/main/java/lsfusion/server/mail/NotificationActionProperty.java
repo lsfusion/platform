@@ -90,13 +90,15 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
                     recipientEmails.put(email.trim(), Message.RecipientType.BCC);
             }
 
+        // todo [dale]: Теперь передаваться будет не sid свойства, а каноническое имя, которое может содержать символы: '.' ',' '{' '}' '[' ']' '(' ')'
+        // Поэтому код ниже надо как-то менять 
         Pattern p = Pattern.compile("\\{(.*?)\\((.*?)\\)\\}");
         Matcher m = p.matcher(textNotification);
         String currentText = textNotification;
         while (m.find()) {
-            String propertySID = m.group(1);
+            String propertyCanonicalName = m.group(1);
             int interfacesCount = m.group(2).split(",").length;
-            LCP replaceProperty = context.getBL().getLCP(propertySID.trim());
+            LCP replaceProperty = (LCP) context.getBL().findProperty(propertyCanonicalName.trim());
             Object replacePropertyValue;
             if (!"".equals(m.group(2))) {
                 ObjectValue[] objects = new ObjectValue[interfacesCount];

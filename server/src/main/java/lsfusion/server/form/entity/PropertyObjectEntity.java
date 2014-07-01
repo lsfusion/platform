@@ -101,8 +101,7 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         String propertySID = inStream.readUTF();
-
-        property = (T) pool.context.BL.getProperty(propertySID);
+        property = (T) pool.context.BL.findProperty(propertySID).property;
 
         int size = inStream.readInt();
         MExclMap<P,PropertyObjectInterfaceEntity> mMapping = MapFact.mExclMap(size);

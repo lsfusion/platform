@@ -27,8 +27,6 @@ public abstract class AbstractNode extends ImmutableObject {
 
     public abstract ImOrderSet<Property> getProperties();
 
-    public abstract Property getProperty(String sid);
-
     public abstract ImList<PropertyClassImplement> getProperties(ImCol<ImSet<ValueClassWrapper>> classLists, boolean anyInInterface, Version version);
 
     public abstract List<AbstractGroup> fillGroups(List<AbstractGroup> groupsList);

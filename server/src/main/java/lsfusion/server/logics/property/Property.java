@@ -30,6 +30,7 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
+import lsfusion.server.logics.PropertySIDPolicy;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.Version;
@@ -58,7 +59,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public int ID = 0;
     private String sID;
     private String name;
-    private String oldName;
+    private String canonicalName;
     private boolean notGenerated;
 
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
@@ -220,18 +221,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return sID;
     }
 
-    private boolean canChangeSID = true;
-
     public void setSID(String sID) {
-        if (canChangeSID) {
-            this.sID = sID;
-        } else {
-            throw new RuntimeException(String.format("Can't change property SID [%s] after freezing", sID));
-        }
-    }
-
-    public void freezeSID() {     // todo [dale]: Отрефакторить установку SID
-        canChangeSID = false;
+        this.sID = sID;
     }
 
     public String getName() {
@@ -243,14 +234,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         this.notGenerated = !generated;
     }
 
-    public void setOldName(String name) {
-        oldName = name;
-    }
-    
-    public String getOldName() {
-        return oldName;
-    }
-    
     public boolean cached = false;
 
     public void setMouseAction(String actionSID) {
@@ -418,11 +401,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     
     protected abstract PropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping);
 
-    @Override
-    public Property getProperty(String sid) {
-        return this.getSID().equals(sid) ? this : null;
-    }
-
     public T getInterfaceById(int iID) {
         for (T inter : interfaces) {
             if (inter.getID() == iID) {
@@ -508,4 +486,18 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Property showDep; // assert что не null когда events не isEmpty
+
+    public String getCanonicalName() {
+        return canonicalName;
+    }
+
+    public void setCanonicalName(String canonicalName) {
+        assert this.canonicalName == null; 
+        this.canonicalName = canonicalName;
+    }
+    
+    public void setCanonicalName(String canonicalName, PropertySIDPolicy policy) {
+        setCanonicalName(canonicalName);
+        setSID(policy.transformCanonicalNameToSID(canonicalName));
+    } 
 }

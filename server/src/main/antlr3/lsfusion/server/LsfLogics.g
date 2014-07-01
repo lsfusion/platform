@@ -1593,7 +1593,6 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 		|	s=notNullSetting { notNullResolve = $s.toResolve; notNullEvent = $s.event; }
 		|	onEditEventSetting [property, context]
 		|	eventIdSetting [property]
-		|	oldNameSetting[property]	// temporary option 
 		)*
 	;
 
@@ -1788,15 +1787,6 @@ eventIdSetting [LP property]
 	}
 }
 	:	'EVENTID' id=stringLiteral
-	;
-
-oldNameSetting[LP property]
-@after {
-	if (inPropParseState()) {
-		self.setPropertyOldName(property, $name.text);
-	}
-}
-	:	'OLDNAME' name=ID
 	;
 
 ////////////////////////////////////////////////////////////////////////////////

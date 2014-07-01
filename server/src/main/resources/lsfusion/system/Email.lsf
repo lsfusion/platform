@@ -151,8 +151,8 @@ FORM mail 'Почта'
         
     PROPERTIES(n, p) inNotificationProperty
     PROPERTIES(n) subjectNotification, textNotification FORCE PANEL, emailFromNotification, emailToNotification, emailToCCNotification, emailToBCNotification, isEventNotification, ADDOBJ
-    PROPERTIES(p) READONLY captionProperty, SIDProperty
-    ORDER BY SIDProperty(p)
+    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty
+    ORDER BY canonicalNameProperty(p)
         
     FILTERGROUP emailFilter
         FILTER 'Только отмеченные' 'F9' inNotificationProperty(n, p)

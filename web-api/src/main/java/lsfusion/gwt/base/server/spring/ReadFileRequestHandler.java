@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
+// todo [dale]: Теперь получение свойства осуществляется через каноническое имя, которое содержит различные спецсимволы
+// возможно этот код нужно изменить
+
 public class ReadFileRequestHandler implements HttpRequestHandler {
     private static final String SID_PARAM = "sid";
     private static final String PARAMS_PARAM = "p";

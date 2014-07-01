@@ -42,7 +42,7 @@ orderScheduledTaskDetail 'Порядок' = DATA INTEGER (ScheduledTaskDetail);
 scheduledTaskScheduledTaskDetail = DATA ScheduledTask (ScheduledTaskDetail) NOT NULL DELETE;
 propertyScheduledTaskDetail = DATA Property (ScheduledTaskDetail);
 captionPropertyScheduledTaskDetail 'Свойство' (scheduledTaskDetail) = captionProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
-SIDPropertyScheduledTaskDetail 'Код свойства' (scheduledTaskDetail) = SIDProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
+canonicalNamePropertyScheduledTaskDetail 'Код свойства' (scheduledTaskDetail) = canonicalNameProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
 classPropertyScheduledTaskDetail 'Класс свойства' (scheduledTaskDetail) = classProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
 returnPropertyScheduledTaskDetail 'Возвращаемый класс' (scheduledTaskDetail) = returnProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
 signaturePropertyScheduledTaskDetail 'Сигнатура' (scheduledTaskDetail) = signatureProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
@@ -83,7 +83,7 @@ FORM scheduledTask 'Планировщик'
          
     OBJECTS td=ScheduledTaskDetail
     PROPERTIES (td) activeScheduledTaskDetail, orderScheduledTaskDetail, captionPropertyScheduledTaskDetail, 
-                    SIDPropertyScheduledTaskDetail, classPropertyScheduledTaskDetail, returnPropertyScheduledTaskDetail
+                    canonicalNamePropertyScheduledTaskDetail, classPropertyScheduledTaskDetail, returnPropertyScheduledTaskDetail
     PROPERTIES (td) ADDOBJ, DELETESESSION
     
     OBJECTS tl=ScheduledTaskLog
@@ -122,7 +122,7 @@ EXTEND DESIGN scheduledTask {
 
 FORM scheduledTaskProperties 'Свойства'
     OBJECTS p = Property
-    PROPERTIES(p) READONLY captionProperty, SIDProperty, classProperty, returnProperty
+    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty, classProperty, returnProperty
     FILTERS signatureProperty(p) == '',
             returnProperty(p) == 'ActionClass'
     DIALOG Property OBJECT p

@@ -725,13 +725,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<String> paramNames = getParamNamesFromTypedParams(params);
         checkDistinctParameters(paramNames);
         checkNamedParams(property, paramNames);
-
+        
         // Если объявление имеет вид f(x, y) = g(x, y), то нужно дополнительно обернуть свойство g в join
         if (property.property.getSID().equals(lastOpimizedJPropSID)) {
             property = addJProp("", (LCP) property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
         }
-        changePropertyName(property, name); // должно идти первым
+        changePropertyName(property, name, signature); // должно идти первым
 
+        propClasses.put(property, signature);
+        property.property.setCanonicalName(PropertyCanonicalNameUtils.createName(getNamespace(), name, signature));
+        
         AbstractGroup group = (groupName == null ? null : findGroupByCompoundName(groupName));
         property.property.caption = (caption == null ? name : caption);
         addPropertyToGroup(property.property, group);
@@ -770,8 +773,6 @@ public class ScriptingLogicsModule extends LogicsModule {
                 checkClassWhere((LCP) property, name);
             }
         }
-        addNamedParams(property.property.getSID(), paramNames);
-        propClasses.put(property, signature);
     }
 
     private void showAlwaysNullErrors() throws ScriptingErrorLog.SemanticErrorException {
@@ -858,7 +859,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void makeLoggable(LP property, Boolean isLoggable) {
         if (isLoggable != null && isLoggable && property != null)
-            ((LCP)property).makeLoggable(BL.systemEventsLM);
+            ((LCP)property).makeLoggable(this, BL.systemEventsLM);
     }
 
     public void setEchoSymbols(LP property) {
@@ -879,24 +880,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.property.eventID = id;
     }
 
-    public void setPropertyOldName(LP property, String oldName) {
-        property.property.setOldName(oldName); 
-    }
-    
-    private <T extends LP> void changePropertyName(T lp, String name) {
+    private <T extends LP> void changePropertyName(T lp, String name, List<AndClassSet> signature) {
         removeModuleLP(lp);
-        setPropertySID(lp, name, lp.property.getOldName(), false);
-        lp.property.freezeSID();
+        setPropertySID(lp, name, signature);
         addModuleLP(lp);
     }
 
     // Для local свойств будем устанавливать сгенерированные автоматически sid для того, чтобы они были уникальными
-    private <T extends LP> void changeLocalPropertyName(T lp, String name) {
+    private <T extends LP> void changeLocalPropertyName(T lp, String name, List<AndClassSet> signature) {
         removeModuleLP(lp);
         String oldSID = lp.property.getSID();
-        setPropertySID(lp, name, lp.property.getOldName(), false);
+        setPropertySID(lp, name, signature);
         lp.property.setSID("local" + oldSID);
-        lp.property.freezeSID();
         addModuleLP(lp);
     }
     
@@ -1352,7 +1347,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //        checkDuplicateProperty(name, paramClasses);
 
         LCP res = addScriptedDProp(returnClassName, paramClassNames, true, false);
-        changeLocalPropertyName(res, name);
+        changeLocalPropertyName(res, name, paramClasses);
         List<AndClassSet> outParams = createClassSetsFromClassNames(paramClassNames);
         propClasses.put(res, outParams);
         return res;
@@ -2389,7 +2384,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         for (PropertyUsage propUsage : propUsages) {
             LCP lp = (LCP) findLPByPropertyUsage(propUsage);
-            lp.makeLoggable(BL.systemEventsLM);
+            lp.makeLoggable(this, BL.systemEventsLM);
         }
     }
 

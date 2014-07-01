@@ -39,9 +39,6 @@ public class PropertyCanonicalNameParser {
     private int len;
     private final String CPREFIX = ClassCanonicalNameUtils.ConcatenateClassNamePrefix + ClassCanonicalNameUtils.ConcatenateClassNameLBracket;
     
-    public final String UNKNOWNCLASS = "?";
-
-    
     public PropertyCanonicalNameParser(BusinessLogics BL, String canonicalName) {
         assert canonicalName != null;
         this.canonicalName = canonicalName.replaceAll(" ", "");
@@ -117,8 +114,8 @@ public class PropertyCanonicalNameParser {
     private List<AndClassSet> parseAndClassSetList(boolean isSignature) {
         List<AndClassSet> result = new ArrayList<AndClassSet>();
         while (pos < len) {
-            if (isSignature && isNext(UNKNOWNCLASS)) {
-                checkNext(UNKNOWNCLASS);
+            if (isSignature && isNext(PropertyCanonicalNameUtils.UNKNOWNCLASS)) {
+                checkNext(PropertyCanonicalNameUtils.UNKNOWNCLASS);
                 result.add(null);
             } else {
                 result.add(parseAndClassSet());

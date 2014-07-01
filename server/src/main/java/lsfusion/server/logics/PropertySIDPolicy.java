@@ -12,7 +12,7 @@ import java.util.List;
  */
 
 public interface PropertySIDPolicy {
-    String createSID(String namespaceName, String name, List<AndClassSet> signature, String oldName);
+    String createSID(String namespaceName, String name, List<AndClassSet> signature);
     
     String transformCanonicalNameToSID(String canonicalName);
     

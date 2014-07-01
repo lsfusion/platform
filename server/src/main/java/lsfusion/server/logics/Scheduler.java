@@ -200,7 +200,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTaskDetail", scheduledTaskDetailExpr);
 
             QueryBuilder<Object, Object> scheduledTaskDetailQuery = new QueryBuilder<Object, Object>(scheduledTaskDetailKeys);
-            scheduledTaskDetailQuery.addProperty("SIDPropertyScheduledTaskDetail", businessLogics.schedulerLM.SIDPropertyScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
+            scheduledTaskDetailQuery.addProperty("canonicalNamePropertyScheduledTaskDetail", businessLogics.schedulerLM.canonicalNamePropertyScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
             scheduledTaskDetailQuery.addProperty("orderScheduledTaskDetail", businessLogics.schedulerLM.orderScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
             scheduledTaskDetailQuery.and(businessLogics.schedulerLM.activeScheduledTaskDetail.getExpr(scheduledTaskDetailExpr).getWhere());
             scheduledTaskDetailQuery.and(businessLogics.schedulerLM.scheduledTaskScheduledTaskDetail.getExpr(scheduledTaskDetailExpr).compare(currentScheduledTaskObject, Compare.EQUALS));
@@ -209,14 +209,14 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session);
             int defaultOrder = propertyResult.size() + 100;
             for (ImMap<Object, Object> propertyValues : propertyResult.valueIt()) {
-                String sidProperty = (String) propertyValues.get("SIDPropertyScheduledTaskDetail");
+                String canonicalName = (String) propertyValues.get("canonicalNamePropertyScheduledTaskDetail");
                 Integer orderProperty = (Integer) propertyValues.get("orderScheduledTaskDetail");
-                if (sidProperty != null) {
+                if (canonicalName != null) {
                     if (orderProperty == null) {
                         orderProperty = defaultOrder;
                         defaultOrder++;
                     }
-                    LAP lap = businessLogics.getLAP(sidProperty.trim());
+                    LAP lap = (LAP) businessLogics.findProperty(canonicalName.trim());
                     propertySIDMap.put(orderProperty, lap);
                 }
             }
