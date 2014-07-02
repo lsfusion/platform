@@ -35,14 +35,14 @@ public class CalculatePathActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
 
-            LCP<PropertyInterface> isPOI = (LCP<PropertyInterface>) LM.is(LM.getClassByName("POI"));
+            LCP<PropertyInterface> isPOI = (LCP<PropertyInterface>) is(getClass("POI"));
             ImRevMap<PropertyInterface, KeyExpr> keys = isPOI.getMapKeys();
             QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
-            query.addProperty("latitude", LM.getLCPByOldName("latitudePOI").getExpr(keys.singleValue()));
-            query.addProperty("longitude", LM.getLCPByOldName("longitudePOI").getExpr(keys.singleValue()));
-            query.addProperty("numberPathPOI", LM.getLCPByOldName("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()));
+            query.addProperty("latitude", getLCP("latitudePOI").getExpr(keys.singleValue()));
+            query.addProperty("longitude", getLCP("longitudePOI").getExpr(keys.singleValue()));
+            query.addProperty("numberPathPOI", getLCP("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()));
             query.and(isPOI.property.getExpr(keys).getWhere());
-            query.and(LM.getLCPByOldName("inPathPOI").getExpr(context.getModifier(), keys.singleValue()).getWhere());
+            query.and(getLCP("inPathPOI").getExpr(context.getModifier(), keys.singleValue()).getWhere());
             ImOrderMap<ImMap<PropertyInterface, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(context.getSession());
             String url = "http://maps.googleapis.com/maps/api/distancematrix/json?";
 

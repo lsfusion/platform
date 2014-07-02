@@ -44,10 +44,10 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
             if (templateObject != null) {
 
-                Object fileObject = LM.findLCPByCompoundOldName("fileTemplate").read(context, templateObject);
+                Object fileObject = getLCP("fileTemplate").read(context, templateObject);
                 if (fileObject != null) {
 
-                    DataObject excelObject = new DataObject(LM.findLCPByCompoundOldName("fileTemplate").read(context, templateObject), ExcelClass.get(false, false));
+                    DataObject excelObject = new DataObject(getLCP("fileTemplate").read(context, templateObject), ExcelClass.get(false, false));
                     Map<String, String> templateEntriesMap = new HashMap<String, String>();
 
                     KeyExpr templateEntryExpr = new KeyExpr("TemplateEntry");
@@ -95,7 +95,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     wb.write(outputStream);
 
-                    LM.findLCPByCompoundOldName("resultTemplate").change(outputStream.toByteArray(), context);
+                    getLCP("resultTemplate").change(outputStream.toByteArray(), context);
                 }
             }
 

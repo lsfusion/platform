@@ -64,7 +64,7 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
 
             session.apply(context);
 
-            LM.findLAPByCompoundOldName("formRefresh").execute(context);
+            getLAP("formRefresh").execute(context);
 
         } catch (Exception e) {
             throw Throwables.propagate(e);
