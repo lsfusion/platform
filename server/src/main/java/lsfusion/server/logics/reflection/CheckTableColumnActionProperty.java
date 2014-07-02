@@ -6,6 +6,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ReflectionLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -31,12 +32,13 @@ public class CheckTableColumnActionProperty extends ScriptingActionProperty {
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         DataObject tableColumnObject = context.getDataKeyValue(tableColumnInterface);
-        final String propertySID = (String) context.getBL().reflectionLM.sidTableColumn.read(context, tableColumnObject);
+        final ObjectValue propertyObject = context.getBL().reflectionLM.propertyTableColumn.readClasses(context, tableColumnObject);
+        final String propertyCanonicalName = (String) context.getBL().reflectionLM.canonicalNameProperty.read(context, propertyObject);
 
         final Result<String> message = new Result<String>();
         ServiceDBActionProperty.run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                message.set(context.getDbManager().checkAggregationTableColumn(session, propertySID.trim()));
+                message.set(context.getDbManager().checkAggregationTableColumn(session, propertyCanonicalName.trim()));
             }
         });
 

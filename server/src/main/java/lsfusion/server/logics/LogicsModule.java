@@ -1328,9 +1328,8 @@ public abstract class LogicsModule {
         assert lp.property.getName() != null;
         String name = "";
         if (lp.property.getCanonicalName() != null) {
-            PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(null, lp.property.getCanonicalName());
             try {
-                String namespace = parser.getNamespace();
+                String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
                 name = PropertyCanonicalNameUtils.logPropPrefix + namespace + "_" + lp.property.getName();
             } catch (PropertyCanonicalNameParser.CNParseException e) {
                 Throwables.propagate(e);
@@ -1484,15 +1483,37 @@ public abstract class LogicsModule {
             throw new UnsupportedOperationException();
     }
 
+    private String nameForDrillDownAction(CalcProperty property) {
+        String name = "";
+        if (property.getCanonicalName() != null) {
+            try {
+                name = PropertyCanonicalNameUtils.drillDownPrefix + PropertyCanonicalNameParser.getNamespace(property.getCanonicalName()) + "_" + property.getName();
+            } catch (PropertyCanonicalNameParser.CNParseException e) {
+                Throwables.propagate(e);
+            }
+        } else {
+            name = genSID();
+        }
+        return name;
+    } 
+    
     public LAP<?> addDDAProp(CalcProperty property) {
+        String name = nameForDrillDownAction(property);
         DrillDownFormEntity drillDownFormEntity = property.createDrillDownForm(this);
-        String drillDownActionSID = baseLM.isGeneratedSID(property.getSID()) ? genSID() : "drillDownAction_" + property.getSID();
-        return addMFAProp(baseLM.drillDownGroup, drillDownActionSID, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());        
+        LAP result = addMFAProp(baseLM.drillDownGroup, name, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
+        if (property.getCanonicalName() != null) {
+            List<AndClassSet> signature = new ArrayList<AndClassSet>();
+            for (ObjectEntity obj : drillDownFormEntity.paramObjects) {
+                signature.add(obj.getAndClassSet());
+            }
+            result.property.setCanonicalName(PropertyCanonicalNameUtils.createName(getNamespace(), name, signature));
+        }
+        return result;        
     }
 
     public LAP<?> addLazyAProp(CalcProperty property) {
-        String sid = baseLM.isGeneratedSID(property.getSID()) ? genSID() : "lazyAction_" + property.getSID();
-        return addAProp(null, new LazyActionProperty(sid, getString("logics.property.drilldown.action"), property));
+        String name = nameForDrillDownAction(property);
+        return addAProp(null, new LazyActionProperty(name, getString("logics.property.drilldown.action"), property));
     }
 
     public SessionDataProperty getAddedObjectProperty() {

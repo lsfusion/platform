@@ -46,6 +46,10 @@ public class PropertyCanonicalNameParser {
     }
 
     public String getNamespace() throws CNParseException {
+        return getNamespace(canonicalName);
+    }
+
+    public static String getNamespace(String canonicalName) throws CNParseException {
         int pointIndex = canonicalName.indexOf('.');
         if (pointIndex < 0) {
             throw new CNParseException("Отсутствует имя пространства имен");
@@ -53,9 +57,13 @@ public class PropertyCanonicalNameParser {
         String namespaceName = canonicalName.substring(0, pointIndex);
         return checkID(namespaceName);
     }
-
+    
     public String getName() throws CNParseException {
-        getNamespace(); // проверим валидность пространства имен
+        return getName(canonicalName);
+    }
+
+    public static String getName(String canonicalName) throws CNParseException {
+        getNamespace(canonicalName); // проверим валидность пространства имен
         int pointIndex = canonicalName.indexOf('.');
         int bracketIndex = canonicalName.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
 
@@ -67,7 +75,7 @@ public class PropertyCanonicalNameParser {
         }
         return checkID(name);
     }
-
+    
     public List<AndClassSet> getSignature() throws CNParseException {
         int bracketPos = canonicalName.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
         if (bracketPos >= 0) {
@@ -104,7 +112,7 @@ public class PropertyCanonicalNameParser {
         }
     }
 
-    private String checkID(final String str) throws CNParseException {
+    private static String checkID(final String str) throws CNParseException {
         if (!str.matches("[a-zA-Z0-9_]+")) {
             throw new CNParseException("Идентификатор содержит запрещенные символы");
         }

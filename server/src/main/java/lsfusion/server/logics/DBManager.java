@@ -900,9 +900,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    public String checkAggregationTableColumn(SQLSession session, String propertySID) throws SQLException, SQLHandledException {
+    public String checkAggregationTableColumn(SQLSession session, String propertyCanonicalName) throws SQLException, SQLHandledException {
         for (CalcProperty property : businessLogics.getAggregateStoredProperties())
-            if (property.getSID().equals(propertySID)) {
+            if (propertyCanonicalName.equals(property.getCanonicalName())) {
                 return ((AggregateProperty) property).checkAggregation(session, LM.baseClass);
             }
         return null; 
@@ -978,9 +978,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
         
-    public void recalculateAggregationTableColumn(SQLSession session, String propertySID, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+    public void recalculateAggregationTableColumn(SQLSession session, String propertyCanonicalName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         for (CalcProperty property : businessLogics.getAggregateStoredProperties())
-            if (property.getSID().equals(propertySID)) {
+            if (propertyCanonicalName.equals(property.getCanonicalName())) {
                 final AggregateProperty aggregateProperty = (AggregateProperty) property;
                 run(session, isolatedTransaction, new RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
