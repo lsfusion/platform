@@ -6,6 +6,7 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.UserActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -15,6 +16,14 @@ import java.sql.SQLException;
 
 public abstract class ScriptingActionProperty extends UserActionProperty {
     protected ScriptingLogicsModule LM;
+    
+    protected LCP<?> is(ValueClass valueClass) {
+        return LM.is(valueClass);
+    }
+
+    protected LCP<?> object(ValueClass valueClass) {
+        return LM.object(valueClass);
+    }
 
     public ScriptingActionProperty(ScriptingLogicsModule LM) {
         this(LM, new ValueClass[]{});

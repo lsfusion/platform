@@ -38,7 +38,7 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
 
         try {
 
-            ObjectValue accountObject = LM.findLCPByCompoundOldName("defaultInboxAccount").readClasses(context);
+            ObjectValue accountObject = getLCP("defaultInboxAccount").readClasses(context);
             if (accountObject instanceof NullValue) {
                 logError(context, getString("mail.default.email.not.specified"));
                 return;
