@@ -144,7 +144,7 @@ FORM mail 'Почта'
                     
     OBJECTS ae=AttachmentEmail
     
-    PROPERTIES(ae) importedAttachmentEmail, nameAttachmentEmail READONLY, lastErrorAttachmentEmail SHOWIF notImportedAttachmentEmail, openFileAttachmentEmail
+    PROPERTIES(ae) importedAttachmentEmail, nameAttachmentEmail READONLY, lastErrorAttachmentEmail SHOWIF notImportedAttachmentEmail(ae), openFileAttachmentEmail
     FILTERS emailAttachmentEmail(ae)==e
     
     OBJECTS n=Notification
