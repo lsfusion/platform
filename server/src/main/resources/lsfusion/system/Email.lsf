@@ -112,6 +112,7 @@ attachmentEmailIdEmail (id, email) = GROUP AGGR attachment BY idAttachmentEmail 
 nameAttachmentEmail 'Имя файла' = DATA VARSTRING[255] (AttachmentEmail);
 fileAttachmentEmail 'Файл' = DATA CUSTOMFILE (AttachmentEmail);
 openFileAttachmentEmail 'Файл' (attachmentEmail) = ACTION OPENFILE fileAttachmentEmail(attachmentEmail);
+lastErrorAttachmentEmail 'Последняя ошибка при импорте файла' = DATA TEXT (AttachmentEmail);
 
 FORM remindUserPass 'Напоминание пароля'
 
@@ -143,7 +144,7 @@ FORM mail 'Почта'
                     
     OBJECTS ae=AttachmentEmail
     
-    PROPERTIES(ae) importedAttachmentEmail, nameAttachmentEmail READONLY, openFileAttachmentEmail
+    PROPERTIES(ae) importedAttachmentEmail, nameAttachmentEmail READONLY, lastErrorAttachmentEmail SHOWIF notImportedAttachmentEmail, openFileAttachmentEmail
     FILTERS emailAttachmentEmail(ae)==e
     
     OBJECTS n=Notification
