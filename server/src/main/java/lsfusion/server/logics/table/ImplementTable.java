@@ -295,7 +295,7 @@ public class ImplementTable extends GlobalTable {
                 mNotNulls.exclAdd(property, readCount(session, join.getExpr(property).getWhere()));
             ImMap<Object, Object> notNulls = mNotNulls.immutable();
             for (PropertyField property : properties) {
-                DataObject propertyObject = (DataObject) reflectionLM.tableColumnSID.readClasses(session, new DataObject(getName()), new DataObject(property.getName()));
+                DataObject propertyObject = (DataObject) reflectionLM.tableColumnSID.readClasses(session, new DataObject(getName() + "." + property.getName()));
                 int notNull = (Integer) BaseUtils.nvl(notNulls.get(property), 0);
                 reflectionLM.notNullQuantityTableColumn.change(notNull, session, propertyObject);
             }

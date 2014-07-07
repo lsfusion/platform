@@ -110,7 +110,7 @@ CREATE FUNCTION jumpworkdays(@inputCountry int, @inputDate date, @inputQuantity 
 			DELETE FROM @daysOff
 			INSERT INTO @daysOff(d, rn) SELECT TOP (@bufferSize) key1, ROW_NUMBER() OVER (ORDER BY CASE WHEN @forward = 1 THEN key1 END ASC, CASE WHEN @forward = 0 THEN key1 END DESC) AS rn FROM Country_countrydate 
 			WHERE key0 = @inputCountry
-			AND Country_isdayoffcountrydate = 1 
+			AND Country_isdayoffcountrydate_country_date = 1 
 			AND ((@forward = 1 AND key1 > @lastOff) OR (@forward = 0 AND key1 < @lastOff)) 
 			ORDER BY CASE WHEN @forward = 1 THEN key1 END ASC, CASE WHEN @forward = 0 THEN key1 END DESC
 
