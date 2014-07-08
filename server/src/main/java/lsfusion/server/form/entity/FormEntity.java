@@ -1,5 +1,6 @@
 package lsfusion.server.form.entity;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -37,6 +38,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.NewSessionActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
@@ -191,16 +193,20 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
         policy = baseLM.getSIDPolicy();
-        
-        printActionPropertyDraw = addPropertyDraw(baseLM.getFormPrint(), version);
-        editActionPropertyDraw = addPropertyDraw(baseLM.getFormEdit(), version);
-        xlsActionPropertyDraw = addPropertyDraw(baseLM.getFormXls(), version);
-        refreshActionPropertyDraw = addPropertyDraw(baseLM.getFormRefresh(), version);
-        applyActionPropertyDraw = addPropertyDraw(baseLM.getFormApply(), version);
-        cancelActionPropertyDraw = addPropertyDraw(baseLM.getFormCancel(), version);
-        okActionPropertyDraw = addPropertyDraw(baseLM.getFormOk(), version);
-        closeActionPropertyDraw = addPropertyDraw(baseLM.getFormClose(), version);
-        dropActionPropertyDraw = addPropertyDraw(baseLM.getFormDrop(), version);
+
+        try {
+            printActionPropertyDraw = addPropertyDraw(baseLM.getFormPrint(), version);
+            editActionPropertyDraw = addPropertyDraw(baseLM.getFormEdit(), version);
+            xlsActionPropertyDraw = addPropertyDraw(baseLM.getFormXls(), version);
+            refreshActionPropertyDraw = addPropertyDraw(baseLM.getFormRefresh(), version);
+            applyActionPropertyDraw = addPropertyDraw(baseLM.getFormApply(), version);
+            cancelActionPropertyDraw = addPropertyDraw(baseLM.getFormCancel(), version);
+            okActionPropertyDraw = addPropertyDraw(baseLM.getFormOk(), version);
+            closeActionPropertyDraw = addPropertyDraw(baseLM.getFormClose(), version);
+            dropActionPropertyDraw = addPropertyDraw(baseLM.getFormDrop(), version);
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
 
         addActionsOnEvent(FormEventType.QUERYOK, true, version, (ActionPropertyObjectEntity)okActionPropertyDraw.propertyObject);
         addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, (ActionPropertyObjectEntity)closeActionPropertyDraw.propertyObject);

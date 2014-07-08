@@ -92,7 +92,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
         disableAccount = findLCPByCompoundOldName("disableAccount");
 
-        emailUserPassUser = getLAPByOldName("emailUserPassUser");      
+        emailUserPassUser = findLAPByCompoundOldName("emailUserPassUser");      
         
         // Уведомления
         isEventNotification = findLCPByCompoundOldName("isEventNotification");

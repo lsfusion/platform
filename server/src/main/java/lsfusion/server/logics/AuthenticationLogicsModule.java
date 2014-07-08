@@ -89,7 +89,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         serverLDAP = findLCPByCompoundOldName("serverLDAP");
         portLDAP =  findLCPByCompoundOldName("portLDAP");
 
-        generateLoginPassword = getLAPByOldName("generateLoginPassword");
+        generateLoginPassword = findLAPByCompoundOldName("generateLoginPassword");
 
 
     }

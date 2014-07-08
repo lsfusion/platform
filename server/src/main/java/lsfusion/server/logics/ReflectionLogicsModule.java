@@ -300,7 +300,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         quantityTableColumn = findLCPByCompoundOldName("quantityTableColumn");
         notNullQuantityTableColumn = findLCPByCompoundOldName("notNullQuantityTableColumn");
 
-        recalculateAggregationTableColumn = getLAPByOldName("recalculateAggregationTableColumn");
+        recalculateAggregationTableColumn = findLAPByCompoundOldName("recalculateAggregationTableColumn");
 
         // Удаленные колонки
         sidTableDropColumn = findLCPByCompoundOldName("sidTableDropColumn");
@@ -311,7 +311,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         timeDropColumn = findLCPByCompoundOldName("timeDropColumn");
         revisionDropColumn = findLCPByCompoundOldName("revisionDropColumn");
 
-        dropDropColumn = getLAPByOldName("dropDropColumn");
+        dropDropColumn = findLAPByCompoundOldName("dropDropColumn");
         //dropDropColumn.setEventAction(this, IncrementType.DROP, false, is(dropColumn), 1); // event, который при удалении колонки из системы удаляет ее из базы
     }
 }
