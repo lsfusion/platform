@@ -194,19 +194,15 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         policy = baseLM.getSIDPolicy();
 
-        try {
-            printActionPropertyDraw = addPropertyDraw(baseLM.getFormPrint(), version);
-            editActionPropertyDraw = addPropertyDraw(baseLM.getFormEdit(), version);
-            xlsActionPropertyDraw = addPropertyDraw(baseLM.getFormXls(), version);
-            refreshActionPropertyDraw = addPropertyDraw(baseLM.getFormRefresh(), version);
-            applyActionPropertyDraw = addPropertyDraw(baseLM.getFormApply(), version);
-            cancelActionPropertyDraw = addPropertyDraw(baseLM.getFormCancel(), version);
-            okActionPropertyDraw = addPropertyDraw(baseLM.getFormOk(), version);
-            closeActionPropertyDraw = addPropertyDraw(baseLM.getFormClose(), version);
-            dropActionPropertyDraw = addPropertyDraw(baseLM.getFormDrop(), version);
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw Throwables.propagate(e);
-        }
+        printActionPropertyDraw = addPropertyDraw(baseLM.getFormPrint(), version);
+        editActionPropertyDraw = addPropertyDraw(baseLM.getFormEdit(), version);
+        xlsActionPropertyDraw = addPropertyDraw(baseLM.getFormXls(), version);
+        refreshActionPropertyDraw = addPropertyDraw(baseLM.getFormRefresh(), version);
+        applyActionPropertyDraw = addPropertyDraw(baseLM.getFormApply(), version);
+        cancelActionPropertyDraw = addPropertyDraw(baseLM.getFormCancel(), version);
+        okActionPropertyDraw = addPropertyDraw(baseLM.getFormOk(), version);
+        closeActionPropertyDraw = addPropertyDraw(baseLM.getFormClose(), version);
+        dropActionPropertyDraw = addPropertyDraw(baseLM.getFormDrop(), version);
 
         addActionsOnEvent(FormEventType.QUERYOK, true, version, (ActionPropertyObjectEntity)okActionPropertyDraw.propertyObject);
         addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, (ActionPropertyObjectEntity)closeActionPropertyDraw.propertyObject);

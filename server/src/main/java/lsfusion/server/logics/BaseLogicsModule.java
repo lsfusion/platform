@@ -159,48 +159,48 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     @IdentityLazy
-    public LAP getFormPrint() throws ScriptingErrorLog.SemanticErrorException {
-        return formPrint = findLAPByCompoundOldName("formPrint");
+    public LAP getFormPrint() {
+        return formPrint = getLAPByOldName("formPrint");
     }
 
     @IdentityLazy
-    public LAP getFormEdit() throws ScriptingErrorLog.SemanticErrorException {
-        return formEdit = findLAPByCompoundOldName("formEdit");
+    public LAP getFormEdit() {
+        return formEdit = getLAPByOldName("formEdit");
     }
 
     @IdentityLazy
-    public LAP getFormXls() throws ScriptingErrorLog.SemanticErrorException {
-        return formXls = findLAPByCompoundOldName("formXls");
+    public LAP getFormXls() {
+        return formXls = getLAPByOldName("formXls");
     }
 
     @IdentityLazy
-    public LAP getFormDrop() throws ScriptingErrorLog.SemanticErrorException {
-        return formDrop = findLAPByCompoundOldName("formDrop");
+    public LAP getFormDrop() {
+        return formDrop = getLAPByOldName("formDrop");
     }
 
     @IdentityLazy
-    public LAP getFormRefresh() throws ScriptingErrorLog.SemanticErrorException {
-        return formRefresh = findLAPByCompoundOldName("formRefresh");
+    public LAP getFormRefresh() {
+        return formRefresh = getLAPByOldName("formRefresh");
     }
 
     @IdentityLazy
-    public LAP getFormApply() throws ScriptingErrorLog.SemanticErrorException {
-        return formApply = findLAPByCompoundOldName("formApply");
+    public LAP getFormApply() {
+        return formApply = getLAPByOldName("formApply");
     }
 
     @IdentityLazy
-    public LAP getFormCancel() throws ScriptingErrorLog.SemanticErrorException {
-        return formCancel = findLAPByCompoundOldName("formCancel");
+    public LAP getFormCancel() {
+        return formCancel = getLAPByOldName("formCancel");
     }
 
     @IdentityLazy
-    public LAP getFormOk() throws ScriptingErrorLog.SemanticErrorException {
-        return formOk = findLAPByCompoundOldName("formOk");
+    public LAP getFormOk() {
+        return formOk = getLAPByOldName("formOk");
     }
 
     @IdentityLazy
-    public LAP getFormClose() throws ScriptingErrorLog.SemanticErrorException {
-        return formClose = findLAPByCompoundOldName("formClose");
+    public LAP getFormClose() {
+        return formClose = getLAPByOldName("formClose");
     }
 
     public PropertySIDPolicy getSIDPolicy() {
