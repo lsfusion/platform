@@ -97,7 +97,7 @@ public abstract class GroupModuleTask extends GroupProgramTask {
             if (isGraph) {
                 reqModules = SetFact.fromJavaSet(key.getRequiredModules()).mapSetValues(new GetValue<LogicsModule, String>() {
                     public LogicsModule getMapValue(String value) {
-                        return BL.getModule(value);
+                        return BL.getSysModule(value);
                     }
                 });
             } else {

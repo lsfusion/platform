@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -17,6 +18,7 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NotNullKeyExpr;
+import lsfusion.server.data.expr.StringAggUnionProperty;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
@@ -100,7 +102,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
             session.popVolatileStats(null, OperationOwner.unknown);
         }
     }
-
+    
+    // до сих пор есть проблема что если ABSTRACT A, и единственный B extends A то в зависимости от порядка может выбираться или A или B, решается например опцией mergeUpClassSets, но там другие проблемы, см. использование   
     @IdentityLazy
     public ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses) {
         if(type == ClassType.ASSERTFULL) {

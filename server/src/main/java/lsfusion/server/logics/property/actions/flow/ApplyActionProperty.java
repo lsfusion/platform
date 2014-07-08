@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.flow;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -11,8 +12,10 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -31,9 +34,17 @@ public class ApplyActionProperty extends KeepContextActionProperty {
         this.keepSessionProperties = keepSessionProperties;
 
         this.action = action.map(getMapInterfaces(innerInterfaces).reverse());
-        this.canceled = LM.getLCPByOldName("canceled").property;
+        this.canceled = getCanceled(LM).property;
         
         finalizeInit();
+    }
+    
+    private LCP<?> getCanceled(BaseLogicsModule lm) {
+        try {
+            return lm.findLCPByCompoundOldName("canceled");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override

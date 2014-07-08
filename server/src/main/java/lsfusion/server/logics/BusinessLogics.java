@@ -181,7 +181,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public LogicsModule getModule(String name) {
+    public ScriptingLogicsModule getModule(String name) {
+        return (ScriptingLogicsModule) getSysModule(name);
+    }
+    
+    public LogicsModule getSysModule(String name) {
         return nameToModule.get(name);
     }
 

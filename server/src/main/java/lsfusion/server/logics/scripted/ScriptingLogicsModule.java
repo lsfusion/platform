@@ -212,7 +212,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     protected LogicsModule findModule(String name) throws ScriptingErrorLog.SemanticErrorException {
-        LogicsModule module = BL.getModule(name);
+        LogicsModule module = BL.getSysModule(name);
         checkModule(module, name);
         return module;
     }
@@ -1176,7 +1176,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             eaProp.setFromAddressAccount(allImplements.get(i++));
         } else {
             // по умолчанию используем стандартный fromAddressAccount
-            eaProp.setFromAddressAccount(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.getLCPByOldName("fromAddressDefaultNotificationAccount").property));
+            eaProp.setFromAddressAccount(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.findLCPByCompoundOldName("fromAddressDefaultNotificationAccount").property));
         }
         eaProp.setSubject(allImplements.get(i++));
 
@@ -3006,7 +3006,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         for (String moduleName : requiredModules) {
-            checkModule(BL.getModule(moduleName), moduleName);
+            checkModule(BL.getSysModule(moduleName), moduleName);
         }
 
         Set<String> prioritySet = new HashSet<String>();
@@ -3044,7 +3044,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             namespaceToModules.get(namespaceName).add(module);
         }
         for (String requiredModuleName : module.getRequiredModules()) {
-            LogicsModule requiredModule = BL.getModule(requiredModuleName);
+            LogicsModule requiredModule = BL.getSysModule(requiredModuleName);
             assert requiredModule != null;
             if (!visitedModules.contains(requiredModule)) {
                 initNamespacesToModules(requiredModule, visitedModules);

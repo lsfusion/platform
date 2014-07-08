@@ -234,7 +234,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         if(noFilesAndLogs)
             exprs = exprs.filterFn(new SFunctionSet<PropertyField>() {
                 public boolean contains(PropertyField element) {
-                    return !(element.type instanceof FileClass || element.getName().contains("_LG_"));
+                    return !(element.type instanceof FileClass || element.getName().contains("_LG_") || element.getName().contains("_LOG_"));
                 }});
         query.addProperties(exprs);
         query.and(tableJoin.getWhere());

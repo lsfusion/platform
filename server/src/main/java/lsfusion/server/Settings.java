@@ -182,7 +182,7 @@ public class Settings {
 
     private int reserveIDStep = 50; // по сколько ID'ков будут резервировать себе сервера приложений у сервера БД
 
-    private boolean mergeUpClassSets = false;
+    private boolean mergeUpClassSets = false; // проблема в том что с false детерменированность не гарантирована
 
     private int queryPrepareLength = 1000; // длина запроса, при которой необходимо pool'ить preparedStatement'ы
 

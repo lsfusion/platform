@@ -12,6 +12,7 @@ import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.group.AbstractGroup;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.mail.AttachmentFormat;
 import lsfusion.server.mail.SendEmailActionProperty;
@@ -75,38 +76,38 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         // ------- Управление почтой ------ //
 
         // Настройки почтового сервера
-        defaultInboxAccount = getLCPByOldName("defaultInboxAccount");
+        defaultInboxAccount = findLCPByCompoundOldName("defaultInboxAccount");
         
-        nameEncryptedConnectionTypeAccount = getLCPByOldName("nameEncryptedConnectionTypeAccount");
+        nameEncryptedConnectionTypeAccount = findLCPByCompoundOldName("nameEncryptedConnectionTypeAccount");
 
-        smtpHostAccount = getLCPByOldName("smtpHostAccount");
-        smtpPortAccount = getLCPByOldName("smtpPortAccount");
-        receiveHostAccount = getLCPByOldName("receiveHostAccount");
+        smtpHostAccount = findLCPByCompoundOldName("smtpHostAccount");
+        smtpPortAccount = findLCPByCompoundOldName("smtpPortAccount");
+        receiveHostAccount = findLCPByCompoundOldName("receiveHostAccount");
 
-        nameAccount = getLCPByOldName("nameAccount");
-        passwordAccount = getLCPByOldName("passwordAccount");
-        nameReceiveAccountTypeAccount = getLCPByOldName("nameReceiveAccountTypeAccount");
-        deleteMessagesAccount = getLCPByOldName("deleteMessagesAccount");
-        blindCarbonCopyAccount = getLCPByOldName("blindCarbonCopyAccount");
+        nameAccount = findLCPByCompoundOldName("nameAccount");
+        passwordAccount = findLCPByCompoundOldName("passwordAccount");
+        nameReceiveAccountTypeAccount = findLCPByCompoundOldName("nameReceiveAccountTypeAccount");
+        deleteMessagesAccount = findLCPByCompoundOldName("deleteMessagesAccount");
+        blindCarbonCopyAccount = findLCPByCompoundOldName("blindCarbonCopyAccount");
 
-        disableAccount = getLCPByOldName("disableAccount");
+        disableAccount = findLCPByCompoundOldName("disableAccount");
 
         emailUserPassUser = getLAPByOldName("emailUserPassUser");      
         
         // Уведомления
-        isEventNotification = getLCPByOldName("isEventNotification");
-        emailFromNotification = getLCPByOldName("emailFromNotification");
-        emailToNotification = getLCPByOldName("emailToNotification");
-        emailToCCNotification = getLCPByOldName("emailToCCNotification");
-        emailToBCNotification = getLCPByOldName("emailToBCNotification");
-        textNotification = getLCPByOldName("textNotification");
-        subjectNotification = getLCPByOldName("subjectNotification");
-        inNotificationProperty = getLCPByOldName("inNotificationProperty");
+        isEventNotification = findLCPByCompoundOldName("isEventNotification");
+        emailFromNotification = findLCPByCompoundOldName("emailFromNotification");
+        emailToNotification = findLCPByCompoundOldName("emailToNotification");
+        emailToCCNotification = findLCPByCompoundOldName("emailToCCNotification");
+        emailToBCNotification = findLCPByCompoundOldName("emailToBCNotification");
+        textNotification = findLCPByCompoundOldName("textNotification");
+        subjectNotification = findLCPByCompoundOldName("subjectNotification");
+        inNotificationProperty = findLCPByCompoundOldName("inNotificationProperty");
 
-        fromAddressAccount = getLCPByOldName("fromAddressAccount");
+        fromAddressAccount = findLCPByCompoundOldName("fromAddressAccount");
     }
 
-    public LAP addEAProp(ValueClass... params) {
+    public LAP addEAProp(ValueClass... params) throws ScriptingErrorLog.SemanticErrorException {
         return addEAProp((String) null, params);
     }
 
@@ -114,8 +115,8 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         return addEAProp(null, fromAddressAccount, blindCarbonCopyAccount, params);
     }
 
-    public LAP addEAProp(String subject, ValueClass... params) {
-        return addEAProp(subject, getLCPByOldName("fromAddressAccount"), blindCarbonCopyAccount, params);
+    public LAP addEAProp(String subject, ValueClass... params) throws ScriptingErrorLog.SemanticErrorException {
+        return addEAProp(subject, findLCPByCompoundOldName("fromAddressAccount"), blindCarbonCopyAccount, params);
     }
 
     public LAP addEAProp(LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {

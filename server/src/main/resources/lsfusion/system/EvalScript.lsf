@@ -1,0 +1,113 @@
+MODULE EvalScript;
+
+REQUIRE System, Time, Utils;
+
+NAMESPACE System;
+
+scriptStorage 'Скрипт' () = DATA TEXT ();
+
+scriptExecution 'Выполнить скрипт' () = ACTION EVAL scriptStorage();
+
+actionBodyExecution 'Выполнить действие' () = ACTION EVAL CONCAT ' ', 'run() = ACTION {', scriptStorage(), ';\n};';
+formExecution 'Показать форму' () = ACTION EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = ACTION FORM form;';
+
+CLASS Script 'Скрипт';
+TABLE script(Script);
+
+nameScript 'Наименование' = DATA VARSTRING[100] (Script);
+textScript 'Текст' = DATA TEXT (Script);
+countTextScript() = GROUP MAX script IF textScript(script) == scriptStorage(); 
+dateTimeScript 'Дата запуска' = DATA DATETIME (Script);
+
+updateScriptStorage(script) = ACTION {
+    scriptStorage() <- textScript(script);
+}
+
+FORM chooseScriptName 'Сохранить как'
+    OBJECTS name = STRING[100] FIXED PANEL
+    PROPERTIES valueName = OBJVALUE(name)
+;
+
+EXTEND DESIGN chooseScriptName {
+    main{
+        caption = 'Сохранить как';
+        PROPERTY(valueName){
+            caption = 'Наименование';
+            font = 'Tahoma 24';
+        }
+    REMOVE leftControls;
+    REMOVE PROPERTY(formRefresh());
+    }
+}
+
+saveAsScriptAction 'Сохранить как' = ACTION () {
+    FORM chooseScriptName MODAL;
+    IF formResult() == FormResult.ok THEN {
+        FOR ADDOBJ s = Script DO {
+        nameScript(s) <- chosenString('name');
+        textScript(s) <- scriptStorage();
+        dateTimeScript(s) <- currentDateTime();
+        }
+    }
+}
+
+saveScriptAction 'Сохранить' = ACTION (script) {
+    textScript(script) <- scriptStorage();
+    dateTimeScript(script) <- currentDateTime();
+}
+
+FORM script 'Скрипт'
+    OBJECTS s=Script FIXED PANEL
+    PROPERTIES(s) nameScript SELECTOR EVENTS ON CHANGE s updateScriptStorage(s) 
+    PROPERTIES() scriptStorage,
+                 scriptExecution, actionBodyExecution, formExecution, saveAsScriptAction
+    PROPERTIES(s) saveScriptAction             
+;
+
+DESIGN script FROM DEFAULT {
+    NEW script {
+        caption = 'Сохранённые скрипты';
+        type = CONTAINERH;
+        ADD PROPERTY(nameScript(s)) { font = 'bold 24'; alignment = STRETCH; }
+        ADD PROPERTY(saveScriptAction(s)) { font = 'bold 24'; alignment = STRETCH; }
+        ADD PROPERTY(saveAsScriptAction()) { font = 'bold 24'; alignment = STRETCH; }
+    }
+    ADD PROPERTY(scriptStorage()) {
+        panelLabelAbove = TRUE;    
+        fill = 1;
+    }
+    NEW run {
+        caption = 'Запуск';
+        type = CONTAINERH;
+        ADD PROPERTY(scriptExecution()) { font = 'bold 24'; }
+        ADD PROPERTY(actionBodyExecution()) { font = 'bold 24'; }
+        ADD PROPERTY(formExecution()) { font = 'bold 24'; }
+    }
+    ADD functions.box;
+}
+
+FORM scriptLog 'Скрипт'
+    OBJECTS s = Script FIXED PANEL
+    PROPERTIES(s) nameScript, textScript, dateTimeScript
+
+    EDIT Script OBJECT s
+;
+
+FORM scriptsLog 'Скрипты'
+    
+    OBJECTS s=Script
+    PROPERTIES(s) nameScript, textScript READONLY, dateTimeScript READONLY 
+    PROPERTIES(s) DELETE FORCE PANEL TOOLBAR
+    ORDER BY dateTimeScript(s) DESC
+
+    FILTERGROUP user FILTER 'Только пользовательские' 'F9' nameScript(s)
+
+    DIALOG Script OBJECT s
+;
+
+NAVIGATOR {
+    configuration {
+        ADD script;
+    }
+}
+

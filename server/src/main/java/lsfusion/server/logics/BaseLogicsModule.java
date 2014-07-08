@@ -301,7 +301,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         // через JOIN (не операторы)
 
-        canceled = getLCPByOldName("canceled");
+        canceled = findLCPByCompoundOldName("canceled");
 
         apply = getLAPByOldName("apply");
         cancel = getLAPByOldName("cancel");
@@ -310,39 +310,39 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
 
         // Обработка строк
-        upper = getLCPByOldName("upper");
+        upper = findLCPByCompoundOldName("upper");
 
         // Операции с целыми числами
-        subtractInteger = getLCPByOldName("subtractInteger");
+        subtractInteger = findLCPByCompoundOldName("subtractInteger");
 
         seek = getLAPByOldName("seek");
         
-        addedObject = getLCPByOldName("addedObject");
-        confirmed = getLCPByOldName("confirmed");
-        requestCanceled = getLCPByOldName("requestCanceled");
-        formResultProp = getLCPByOldName("formResult");
+        addedObject = findLCPByCompoundOldName("addedObject");
+        confirmed = findLCPByCompoundOldName("confirmed");
+        requestCanceled = findLCPByCompoundOldName("requestCanceled");
+        formResultProp = findLCPByCompoundOldName("formResult");
 
         sleep = getLAPByOldName("sleep");
         applyOnlyWithoutRecalc = getLAPByOldName("applyOnlyWithoutRecalc");
         applyAll = getLAPByOldName("applyAll");
 
-        staticName = getLCPByOldName("staticName");
-        staticCaption = getLCPByOldName("staticCaption");
+        staticName = findLCPByCompoundOldName("staticName");
+        staticCaption = findLCPByCompoundOldName("staticCaption");
         ((CalcProperty)staticCaption.property).aggProp = true;
 
-        objectClassName = getLCPByOldName("objectClassName");
-        statCustomObjectClass = getLCPByOldName("statCustomObjectClass");
+        objectClassName = findLCPByCompoundOldName("objectClassName");
+        statCustomObjectClass = findLCPByCompoundOldName("statCustomObjectClass");
         
         // Настройка отчетов
-        reportRowHeight = getLCPByOldName("reportRowHeight");
-        reportCharWidth = getLCPByOldName("reportCharWidth");
-        reportToStretch = getLCPByOldName("reportToStretch");
+        reportRowHeight = findLCPByCompoundOldName("reportRowHeight");
+        reportCharWidth = findLCPByCompoundOldName("reportCharWidth");
+        reportToStretch = findLCPByCompoundOldName("reportToStretch");
         
         // Настройка форм
-        defaultBackgroundColor = getLCPByOldName("defaultBackgroundColor");
-        defaultOverrideBackgroundColor = getLCPByOldName("defaultOverrideBackgroundColor");
-        defaultForegroundColor = getLCPByOldName("defaultForegroundColor");
-        defaultOverrideForegroundColor = getLCPByOldName("defaultOverrideForegroundColor");
+        defaultBackgroundColor = findLCPByCompoundOldName("defaultBackgroundColor");
+        defaultOverrideBackgroundColor = findLCPByCompoundOldName("defaultOverrideBackgroundColor");
+        defaultForegroundColor = findLCPByCompoundOldName("defaultForegroundColor");
+        defaultOverrideForegroundColor = findLCPByCompoundOldName("defaultOverrideForegroundColor");
 
         initNavigators();
     }

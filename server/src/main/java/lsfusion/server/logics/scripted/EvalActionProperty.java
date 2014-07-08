@@ -7,10 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
@@ -57,10 +54,10 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
         return "UNIQUE" + counter.incrementAndGet() + "NSNAME";
     }
 
-    private String wrapScript(BusinessLogics<?> BL, String script) {
+    private String wrapScript(BusinessLogics<?> BL, String script, String name) {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("MODULE ");
-        strBuilder.append(getUniqueName());
+        strBuilder.append(name);
         strBuilder.append("; ");
         strBuilder.append("REQUIRE ");
         boolean isFirst = true;
@@ -80,8 +77,11 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         BusinessLogics BL = context.getBL();
 
+        ScriptingLogicsModule evalLM = BL.getModule("EvalScript");
+        
         String script = getScript(context);
-        ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(BL, script));
+        String name = getUniqueName();  
+        ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(BL, script, name));
         module.order = BL.getOrderedModules().size() + 1;
         module.visible = FullFunctionSet.<Version>instance();
         String errString = "";
@@ -93,14 +93,15 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
 
             errString = module.getErrorsDescription();
 
-            LAP<?> runAction = module.getLAPByOldName("run");
+            String runName = name + ".run";
+            LAP<?> runAction = module.getLAPByOldName(runName);
             if (runAction != null && errString.isEmpty()) {
-                String textScript = (String) module.findLCPByCompoundOldName("scriptStorage").read(context);
-                if (module.findLCPByCompoundOldName("countTextScript").read(context) == null) {
+                String textScript = (String) evalLM.findLCPByCompoundOldName("scriptStorage").read(context);
+                if (evalLM.findLCPByCompoundOldName("countTextScript").read(context) == null) {
                     DataSession session = context.createSession();
-                    DataObject scriptObject = session.addObject((ConcreteCustomClass) module.findClassByCompoundName("Script"));
-                    module.findLCPByCompoundOldName("textScript").change(textScript, session, scriptObject);
-                    module.findLCPByCompoundOldName("dateTimeScript").change(new Timestamp(Calendar.getInstance().getTime().getTime()), session, scriptObject);
+                    DataObject scriptObject = session.addObject((ConcreteCustomClass) evalLM.findClassByCompoundName("Script"));
+                    evalLM.findLCPByCompoundOldName("textScript").change(textScript, session, scriptObject);
+                    evalLM.findLCPByCompoundOldName("dateTimeScript").change(new Timestamp(Calendar.getInstance().getTime().getTime()), session, scriptObject);
                     session.apply(context);
                 }
                 runAction.execute(context);

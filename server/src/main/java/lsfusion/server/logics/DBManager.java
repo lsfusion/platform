@@ -992,7 +992,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private void checkModules(OldDBStructure dbStructure) {
         String droppedModules = "";
         for (String moduleName : dbStructure.modulesList)
-            if (businessLogics.getModule(moduleName) == null) {
+            if (businessLogics.getSysModule(moduleName) == null) {
                 systemLogger.info("Module " + moduleName + " has been dropped");
                 droppedModules += moduleName + ", ";
             }
