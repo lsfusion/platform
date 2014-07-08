@@ -82,40 +82,40 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         super.initProperties();
 
         // Подключения к серверу
-        computerConnection = getLCPByOldName("computerConnection");
-        remoteAddressConnection = getLCPByOldName("remoteAddressConnection");
-        userConnection = getLCPByOldName("userConnection");
-        userLoginConnection = getLCPByOldName("userLoginConnection");
-        connectionStatusConnection = (LCP<PropertyInterface>) getLCPByOldName("connectionStatusConnection");
+        computerConnection = findLCPByCompoundOldName("computerConnection");
+        remoteAddressConnection = findLCPByCompoundOldName("remoteAddressConnection");
+        userConnection = findLCPByCompoundOldName("userConnection");
+        userLoginConnection = findLCPByCompoundOldName("userLoginConnection");
+        connectionStatusConnection = (LCP<PropertyInterface>) findLCPByCompoundOldName("connectionStatusConnection");
 
-        connectTimeConnection = getLCPByOldName("connectTimeConnection");
+        connectTimeConnection = findLCPByCompoundOldName("connectTimeConnection");
         disconnectConnection = getLAPByOldName("disconnectConnection");
-        addIfAProp(baseGroup, "Отключить", true, getLCPByOldName("disconnectTimeConnection"), 1, disconnectConnection, 1);
+        addIfAProp(baseGroup, "Отключить", true, findLCPByCompoundOldName("disconnectTimeConnection"), 1, disconnectConnection, 1);
 
         // Логирование старта сервера
-        computerLaunch = getLCPByOldName("computerLaunch");
-        timeLaunch = getLCPByOldName("timeLaunch");
-        revisionLaunch = getLCPByOldName("revisionLaunch");
+        computerLaunch = findLCPByCompoundOldName("computerLaunch");
+        timeLaunch = findLCPByCompoundOldName("timeLaunch");
+        revisionLaunch = findLCPByCompoundOldName("revisionLaunch");
 
         // Ошибки выполнения
-        messageException = getLCPByOldName("messageException");
-        dateException = getLCPByOldName("dateException");
-        erTraceException = getLCPByOldName("erTraceException");
-        typeException =  getLCPByOldName("typeException");
-        clientClientException = getLCPByOldName("clientClientException");
-        loginClientException = getLCPByOldName("loginClientException");
+        messageException = findLCPByCompoundOldName("messageException");
+        dateException = findLCPByCompoundOldName("dateException");
+        erTraceException = findLCPByCompoundOldName("erTraceException");
+        typeException =  findLCPByCompoundOldName("typeException");
+        clientClientException = findLCPByCompoundOldName("clientClientException");
+        loginClientException = findLCPByCompoundOldName("loginClientException");
 
         // Открытые формы во время подключения
-        connectionFormCount = getLCPByOldName("connectionFormCount");
+        connectionFormCount = findLCPByCompoundOldName("connectionFormCount");
 
         // Сессия
-        currentSession = getLCPByOldName("currentSession");
-        connectionSession = getLCPByOldName("connectionSession");
-        navigatorElementSession = getLCPByOldName("navigatorElementSession");
-        quantityAddedClassesSession = getLCPByOldName("quantityAddedClassesSession");
-        quantityRemovedClassesSession = getLCPByOldName("quantityRemovedClassesSession");
-        quantityChangedClassesSession = getLCPByOldName("quantityChangedClassesSession");
-        changesSession = getLCPByOldName("changesSession");
+        currentSession = findLCPByCompoundOldName("currentSession");
+        connectionSession = findLCPByCompoundOldName("connectionSession");
+        navigatorElementSession = findLCPByCompoundOldName("navigatorElementSession");
+        quantityAddedClassesSession = findLCPByCompoundOldName("quantityAddedClassesSession");
+        quantityRemovedClassesSession = findLCPByCompoundOldName("quantityRemovedClassesSession");
+        quantityChangedClassesSession = findLCPByCompoundOldName("quantityChangedClassesSession");
+        changesSession = findLCPByCompoundOldName("changesSession");
 //        baseLM.objectClassName.makeLoggable(this, true);
     }
 

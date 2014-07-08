@@ -49,22 +49,22 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public void initProperties() throws RecognitionException {
         super.initProperties();
 
-        runAtStartScheduledTask = getLCPByOldName("runAtStartScheduledTask");
-        startDateScheduledTask = getLCPByOldName("startDateScheduledTask");
-        periodScheduledTask = getLCPByOldName("periodScheduledTask");
-        schedulerStartTypeScheduledTask = getLCPByOldName("schedulerStartTypeScheduledTask");
-        activeScheduledTask = getLCPByOldName("activeScheduledTask");
-        activeScheduledTaskDetail = getLCPByOldName("activeScheduledTaskDetail");
-        orderScheduledTaskDetail = getLCPByOldName("orderScheduledTaskDetail");
-        scheduledTaskScheduledTaskDetail = getLCPByOldName("scheduledTaskScheduledTaskDetail");
+        runAtStartScheduledTask = findLCPByCompoundOldName("runAtStartScheduledTask");
+        startDateScheduledTask = findLCPByCompoundOldName("startDateScheduledTask");
+        periodScheduledTask = findLCPByCompoundOldName("periodScheduledTask");
+        schedulerStartTypeScheduledTask = findLCPByCompoundOldName("schedulerStartTypeScheduledTask");
+        activeScheduledTask = findLCPByCompoundOldName("activeScheduledTask");
+        activeScheduledTaskDetail = findLCPByCompoundOldName("activeScheduledTaskDetail");
+        orderScheduledTaskDetail = findLCPByCompoundOldName("orderScheduledTaskDetail");
+        scheduledTaskScheduledTaskDetail = findLCPByCompoundOldName("scheduledTaskScheduledTaskDetail");
 
-        canonicalNamePropertyScheduledTaskDetail = getLCPByOldName("canonicalNamePropertyScheduledTaskDetail");
+        canonicalNamePropertyScheduledTaskDetail = findLCPByCompoundOldName("canonicalNamePropertyScheduledTaskDetail");
         
-        resultScheduledTaskLog = getLCPByOldName("resultScheduledTaskLog");
-        propertyScheduledTaskLog = getLCPByOldName("propertyScheduledTaskLog");
-        dateScheduledTaskLog = getLCPByOldName("dateScheduledTaskLog");
-        scheduledTaskScheduledTaskLog = getLCPByOldName("scheduledTaskScheduledTaskLog");
-        scheduledTaskLogScheduledClientTaskLog = getLCPByOldName("scheduledTaskLogScheduledClientTaskLog");
-        messageScheduledClientTaskLog = getLCPByOldName("messageScheduledClientTaskLog");
+        resultScheduledTaskLog = findLCPByCompoundOldName("resultScheduledTaskLog");
+        propertyScheduledTaskLog = findLCPByCompoundOldName("propertyScheduledTaskLog");
+        dateScheduledTaskLog = findLCPByCompoundOldName("dateScheduledTaskLog");
+        scheduledTaskScheduledTaskLog = findLCPByCompoundOldName("scheduledTaskScheduledTaskLog");
+        scheduledTaskLogScheduledClientTaskLog = findLCPByCompoundOldName("scheduledTaskLogScheduledClientTaskLog");
+        messageScheduledClientTaskLog = findLCPByCompoundOldName("messageScheduledClientTaskLog");
     }
 }

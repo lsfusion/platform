@@ -80,68 +80,68 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public void initProperties() throws RecognitionException {
         super.initProperties();
         // ---- Роли
-        sidUserRole = getLCPByOldName("sidUserRole");
-        nameUserRole = getLCPByOldName("nameUserRole");
-        userRoleSID = getLCPByOldName("userRoleSID");
-        sidMainRoleCustomUser = getLCPByOldName("sidMainRoleCustomUser");
-        nameMainRoleUser = getLCPByOldName("nameMainRoleUser");
+        sidUserRole = findLCPByCompoundOldName("sidUserRole");
+        nameUserRole = findLCPByCompoundOldName("nameUserRole");
+        userRoleSID = findLCPByCompoundOldName("userRoleSID");
+        sidMainRoleCustomUser = findLCPByCompoundOldName("sidMainRoleCustomUser");
+        nameMainRoleUser = findLCPByCompoundOldName("nameMainRoleUser");
 
         // Список ролей для пользователей
-        mainRoleCustomUser = getLCPByOldName("mainRoleCustomUser");
-        inMainRoleCustomUser = getLCPByOldName("inMainRoleCustomUser");
+        mainRoleCustomUser = findLCPByCompoundOldName("mainRoleCustomUser");
+        inMainRoleCustomUser = findLCPByCompoundOldName("inMainRoleCustomUser");
 
         // ------------------------ Политика безопасности ------------------ //
-        namePolicy = getLCPByOldName("namePolicy");
-        policyName = getLCPByOldName("policyName");
-        descriptionPolicy = getLCPByOldName("descriptionPolicy");
-        orderUserPolicy = getLCPByOldName("orderUserPolicy");
+        namePolicy = findLCPByCompoundOldName("namePolicy");
+        policyName = findLCPByCompoundOldName("policyName");
+        descriptionPolicy = findLCPByCompoundOldName("descriptionPolicy");
+        orderUserPolicy = findLCPByCompoundOldName("orderUserPolicy");
 
         // ---- Политики для доменной логики
 
         // -- Глобальные разрешения для всех ролей
-        permitViewProperty = getLCPByOldName("permitViewProperty");
-        forbidViewProperty = getLCPByOldName("forbidViewProperty");
-        permitChangeProperty = getLCPByOldName("permitChangeProperty");
-        forbidChangeProperty = getLCPByOldName("forbidChangeProperty");
-        notNullPermissionProperty = getLCPByOldName("notNullPermissionProperty");
+        permitViewProperty = findLCPByCompoundOldName("permitViewProperty");
+        forbidViewProperty = findLCPByCompoundOldName("forbidViewProperty");
+        permitChangeProperty = findLCPByCompoundOldName("permitChangeProperty");
+        forbidChangeProperty = findLCPByCompoundOldName("forbidChangeProperty");
+        notNullPermissionProperty = findLCPByCompoundOldName("notNullPermissionProperty");
 
         // -- Разрешения для каждой роли
 
         // Разрешения для всех свойств
-        permitViewAllPropertyUser = getLCPByOldName("permitViewAllPropertyUser");
-        forbidViewAllPropertyUser = getLCPByOldName("forbidViewAllPropertyUser");
-        permitChangeAllPropertyUser = getLCPByOldName("permitChangeAllPropertyUser");
-        forbidChangeAllPropertyRole = getLCPByOldName("forbidChangeAllPropertyRole");
+        permitViewAllPropertyUser = findLCPByCompoundOldName("permitViewAllPropertyUser");
+        forbidViewAllPropertyUser = findLCPByCompoundOldName("forbidViewAllPropertyUser");
+        permitChangeAllPropertyUser = findLCPByCompoundOldName("permitChangeAllPropertyUser");
+        forbidChangeAllPropertyRole = findLCPByCompoundOldName("forbidChangeAllPropertyRole");
 
         // Разрешения для каждого свойства
-        permitViewUserProperty = getLCPByOldName("permitViewUserProperty");
-        forbidViewUserProperty = getLCPByOldName("forbidViewUserProperty");
-        permitChangeUserProperty = getLCPByOldName("permitChangeUserProperty");
-        forbidChangeUserProperty = getLCPByOldName("forbidChangeUserProperty");
+        permitViewUserProperty = findLCPByCompoundOldName("permitViewUserProperty");
+        forbidViewUserProperty = findLCPByCompoundOldName("forbidViewUserProperty");
+        permitChangeUserProperty = findLCPByCompoundOldName("permitChangeUserProperty");
+        forbidChangeUserProperty = findLCPByCompoundOldName("forbidChangeUserProperty");
 
-        notNullPermissionUserProperty = getLCPByOldName("notNullPermissionUserProperty");
+        notNullPermissionUserProperty = findLCPByCompoundOldName("notNullPermissionUserProperty");
         // ---- Политики для логики представлений
 
         // Открытие форм по умолчанию
-        defaultNumberUserNavigatorElement = getLCPByOldName("defaultNumberUserNavigatorElement");
-        defaultFormsUser = getLCPByOldName("defaultFormsUser");
+        defaultNumberUserNavigatorElement = findLCPByCompoundOldName("defaultNumberUserNavigatorElement");
+        defaultFormsUser = findLCPByCompoundOldName("defaultFormsUser");
 
         // -- Глобальные разрешения для всех ролей
-        permitNavigatorElement = getLCPByOldName("permitNavigatorElement");
-        forbidNavigatorElement = getLCPByOldName("forbidNavigatorElement");
-        permitExportNavigatorElement = getLCPByOldName("permitExportNavigatorElement");
+        permitNavigatorElement = findLCPByCompoundOldName("permitNavigatorElement");
+        forbidNavigatorElement = findLCPByCompoundOldName("forbidNavigatorElement");
+        permitExportNavigatorElement = findLCPByCompoundOldName("permitExportNavigatorElement");
         
         // -- Разрешения для каждой роли
 
         // Разрешения для всех элементов
-        permitAllFormsUser = getLCPByOldName("permitAllFormsUser");
-        forbidAllFormsUser = getLCPByOldName("forbidAllFormsUser");
+        permitAllFormsUser = findLCPByCompoundOldName("permitAllFormsUser");
+        forbidAllFormsUser = findLCPByCompoundOldName("forbidAllFormsUser");
         
         // Разрешения для каждого элемента
-        permitUserNavigatorElement = getLCPByOldName("permitUserNavigatorElement");
-        forbidUserNavigatorElement = getLCPByOldName("forbidUserNavigatorElement");
+        permitUserNavigatorElement = findLCPByCompoundOldName("permitUserNavigatorElement");
+        forbidUserNavigatorElement = findLCPByCompoundOldName("forbidUserNavigatorElement");
 
-        transactTimeoutUser = getLCPByOldName("transactTimeoutUser");
+        transactTimeoutUser = findLCPByCompoundOldName("transactTimeoutUser");
 
         propertyPolicyForm = (FormEntity) getNavigatorElement("propertyPolicy");
     }

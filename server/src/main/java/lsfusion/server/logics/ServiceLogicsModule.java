@@ -41,6 +41,6 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         analyzeDBAction = getLAPByOldName("analyzeDBAction");
         packAction = getLAPByOldName("packAction");
         serviceDBAction = getLAPByOldName("serviceDBAction");
-        singleTransaction = getLCPByOldName("singleTransaction");
+        singleTransaction = findLCPByCompoundOldName("singleTransaction");
     }
 }
