@@ -229,6 +229,7 @@ public class ReportDesignGenerator {
                 }
             }
 
+            // todo [dale]: Здесь создается ReportDrawField для propertyBackground свойства, нет проверок на уникальность имени получившегося Field, может нам вообще не нужен этот функционал? 
             String backgroundPropertySID = null;
             if (backgroundProp != null) {
                 ReportDrawField reportField = new ReportDrawField(backgroundProp.property.getSID(), "", charWidth);

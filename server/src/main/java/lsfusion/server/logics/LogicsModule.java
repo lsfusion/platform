@@ -44,10 +44,7 @@ import lsfusion.server.logics.property.actions.flow.*;
 import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
-import lsfusion.server.logics.scripted.EvalActionProperty;
-import lsfusion.server.logics.scripted.LazyActionProperty;
-import lsfusion.server.logics.scripted.MetaCodeFragment;
-import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.scripted.*;
 import lsfusion.server.logics.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
@@ -109,16 +106,18 @@ public abstract class LogicsModule {
     public BaseLogicsModule<?> baseLM;
 
     protected Map<String, List<LP<?,?>>> namedModuleProperties = new HashMap<String, List<LP<?, ?>>>();
-    private final Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
-    private final Map<String, CustomClass> moduleClasses = new HashMap<String, CustomClass>();
-    private final Map<String, AbstractWindow> windows = new HashMap<String, AbstractWindow>();
+    protected final Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
+    protected final Map<String, CustomClass> moduleClasses = new HashMap<String, CustomClass>();
+    protected final Map<String, AbstractWindow> windows = new HashMap<String, AbstractWindow>();
     public final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
-    private final Map<String, ImplementTable> moduleTables = new HashMap<String, ImplementTable>();
+    protected final Map<String, ImplementTable> moduleTables = new HashMap<String, ImplementTable>();
 
     public final Map<LP<?, ?>, List<AndClassSet>> propClasses = new HashMap<LP<?, ?>, List<AndClassSet>>();
     
-    private final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<Pair<String, Integer>, MetaCodeFragment>();
+    protected final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<Pair<String, Integer>, MetaCodeFragment>();
 
+    protected Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<String, List<LogicsModule>>();
+    
     protected LogicsModule() {}
 
     public LogicsModule(String name) {
@@ -138,6 +137,7 @@ public abstract class LogicsModule {
     private String name;
     private String namespace;
     private Set<String> requiredModules;
+    private List<String> namespacePriority;
 
     public String getName() {
         return name;
@@ -154,7 +154,7 @@ public abstract class LogicsModule {
         return result;
     }    
 
-    public LP<?, ?> getLPByOldName(String name) {
+    protected LP<?, ?> getLPByOldName(String name) {
         List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
         for (List<LP<?, ?>> namedLPs : namedModuleProperties.values()) {
             for (LP<?, ?> property : namedLPs) {
@@ -207,7 +207,7 @@ public abstract class LogicsModule {
         }
     }
 
-    public AbstractGroup getGroupBySID(String sid) {
+    protected AbstractGroup getGroupBySID(String sid) {
         return moduleGroups.get(sid);
     }
 
@@ -220,7 +220,7 @@ public abstract class LogicsModule {
         moduleGroups.put(group.getSID(), group);
     }
 
-    public CustomClass getClassBySID(String sid) {
+    protected CustomClass getClassBySID(String sid) {
         return moduleClasses.get(sid);
     }
 
@@ -233,11 +233,11 @@ public abstract class LogicsModule {
         moduleClasses.put(valueClass.getSID(), valueClass);
     }
 
-    public ImplementTable getTableBySID(String sid) {
+    protected ImplementTable getTableBySID(String sid) {
         return moduleTables.get(sid);
     }
 
-    public ImplementTable getTableByName(String name) {
+    public ImplementTable getTable(String name) {
         return getTableBySID(transformNameToSID(name));
     }
 
@@ -257,15 +257,15 @@ public abstract class LogicsModule {
         return addWindow(window);
     }
 
-    public AbstractWindow getWindowByName(String name) {
+    public AbstractWindow getWindow(String name) {
         return getWindowBySID(transformNameToSID(name));
     }
 
-    public AbstractWindow getWindowBySID(String sid) {
+    protected AbstractWindow getWindowBySID(String sid) {
         return windows.get(sid);
     }
 
-    public MetaCodeFragment getMetaCodeFragmentByName(String name, int paramCnt) {
+    public MetaCodeFragment getMetaCodeFragment(String name, int paramCnt) {
         return getMetaCodeFragmentBySID(transformNameToSID(name), paramCnt);
     }
 
@@ -2004,11 +2004,11 @@ public abstract class LogicsModule {
         return navigatorAction;
     }
 
-    public NavigatorElement getNavigatorElementBySID(String sid) {
+    protected NavigatorElement getNavigatorElementBySID(String sid) {
         return moduleNavigators.get(sid);
     }
 
-    public NavigatorElement getNavigatorElementByName(String name) {
+    public NavigatorElement getNavigatorElement(String name) {
         return getNavigatorElementBySID(transformNameToSID(name));
     }
 
@@ -2079,6 +2079,14 @@ public abstract class LogicsModule {
 
     public void setRequiredModules(Set<String> requiredModules) {
         this.requiredModules = requiredModules;
+    }
+
+    public List<String> getNamespacePriority() {
+        return namespacePriority;
+    }
+
+    public void setNamespacePriority(List<String> namespacePriority) {
+        this.namespacePriority = namespacePriority;
     }
 
     public List<LP<?, ?>> getNamedProperties() {
@@ -2202,7 +2210,7 @@ public abstract class LogicsModule {
     public static class NavigatorElementNameModuleFinder implements ModuleFinder<NavigatorElement, Object> {
         @Override
         public List<NavigatorElement> resolveInModule(LogicsModule module, String simpleName, Object param) {
-            NavigatorElement ne = module.getNavigatorElementByName(simpleName); 
+            NavigatorElement ne = module.getNavigatorElement(simpleName); 
             return ne == null ? new ArrayList<NavigatorElement>() : Collections.singletonList(ne);
         }
     }                                           
@@ -2210,7 +2218,7 @@ public abstract class LogicsModule {
     public static class WindowNameModuleFinder implements ModuleFinder<AbstractWindow, Object> {
         @Override
         public List<AbstractWindow> resolveInModule(LogicsModule module, String simpleName, Object param) {
-            AbstractWindow wnd = module.getWindowByName(simpleName); 
+            AbstractWindow wnd = module.getWindow(simpleName); 
             return wnd == null ? new ArrayList<AbstractWindow>() : Collections.singletonList(wnd);
         }
     }
@@ -2218,7 +2226,7 @@ public abstract class LogicsModule {
     public static class MetaCodeNameModuleFinder implements ModuleFinder<MetaCodeFragment, Integer> {
         @Override
         public List<MetaCodeFragment> resolveInModule(LogicsModule module, String simpleName, Integer paramCnt) {
-            MetaCodeFragment code = module.getMetaCodeFragmentByName(simpleName, paramCnt); 
+            MetaCodeFragment code = module.getMetaCodeFragment(simpleName, paramCnt); 
             return code == null ? new ArrayList<MetaCodeFragment>() : Collections.singletonList(code);
         }
     }
@@ -2226,7 +2234,7 @@ public abstract class LogicsModule {
     public static class TableNameModuleFinder implements ModuleFinder<ImplementTable, Object> {
         @Override
         public List<ImplementTable> resolveInModule(LogicsModule module, String simpleName, Object param) {
-            ImplementTable table = module.getTableByName(simpleName); 
+            ImplementTable table = module.getTable(simpleName); 
             return table == null ? new ArrayList<ImplementTable>() : Collections.singletonList(table);
         }
     }

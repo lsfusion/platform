@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.ArIndexedSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -7,6 +8,8 @@ import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.UpClassSet;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +22,39 @@ import java.util.regex.Pattern;
  */
 
 public class PropertyCanonicalNameParser {
+    public interface CustomClassFinder {
+        CustomClass findClass(String name);        
+    }
+    
+    static public class BLCustomClassFinder implements CustomClassFinder {
+        private BusinessLogics BL;
+        public BLCustomClassFinder(BusinessLogics BL) {
+            this.BL = BL;
+        }
+            
+        @Override
+        public CustomClass findClass(String name) {
+            return BL.findClass(name);
+        }
+    }
+
+    static public class ModuleCustomClassFinder implements CustomClassFinder {
+        private ScriptingLogicsModule module;
+        public ModuleCustomClassFinder(ScriptingLogicsModule module) {
+            this.module = module;
+        }
+
+        @Override
+        public CustomClass findClass(String name) {
+            try {
+                return (CustomClass) module.findClassByCompoundName(name);
+            } catch (ScriptingErrorLog.SemanticErrorException e) {
+                Throwables.propagate(e);
+            }
+            return null;
+        }
+    }
+    
     private static class CNParseInnerException extends RuntimeException {
         public CNParseInnerException(String msg) {
             super(msg);
@@ -31,18 +67,27 @@ public class PropertyCanonicalNameParser {
         }
     }
 
-    private final BusinessLogics BL;
+    private CustomClassFinder classFinder;
     private final String canonicalName;
 
     private int pos;
     private String parseText;
     private int len;
     private final String CPREFIX = ClassCanonicalNameUtils.ConcatenateClassNamePrefix + ClassCanonicalNameUtils.ConcatenateClassNameLBracket;
-    
+
     public PropertyCanonicalNameParser(BusinessLogics BL, String canonicalName) {
+        this(canonicalName, new BLCustomClassFinder(BL));
+    }
+
+    public PropertyCanonicalNameParser(ScriptingLogicsModule module, String canonicalName) {
+        this(canonicalName, new ModuleCustomClassFinder(module));
+    }
+
+    public PropertyCanonicalNameParser(String canonicalName, CustomClassFinder finder) {
         assert canonicalName != null;
+        assert finder != null;
         this.canonicalName = canonicalName.replaceAll(" ", "");
-        this.BL = BL;
+        this.classFinder = finder;
     }
 
     public String getNamespace() throws CNParseException {
@@ -215,7 +260,7 @@ public class PropertyCanonicalNameParser {
     }
 
     private CustomClass findCustomClass(String name) {
-        CustomClass cls = BL.findClass(name);
+        CustomClass cls = classFinder.findClass(name);
         if (cls == null) {
             throw new CNParseInnerException("Пользовательский класс " + name + " не найден");
         }

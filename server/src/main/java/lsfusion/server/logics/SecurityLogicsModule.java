@@ -143,6 +143,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
 
         transactTimeoutUser = getLCPByOldName("transactTimeoutUser");
 
-        propertyPolicyForm = (FormEntity) getNavigatorElementByName("propertyPolicy");
+        propertyPolicyForm = (FormEntity) getNavigatorElement("propertyPolicy");
     }
 }

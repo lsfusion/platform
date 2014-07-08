@@ -1,6 +1,5 @@
 package lsfusion.server.logics;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -17,11 +16,9 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
-import lsfusion.server.form.entity.ClassFormEntity;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyFormEntity;
-import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.form.window.NavigatorWindow;
@@ -33,9 +30,7 @@ import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.SIDHandler;
 import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
 import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
 import lsfusion.server.logics.property.actions.flow.ReturnActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -572,11 +567,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         // Окна
         windows = new Windows();
-        windows.root = (ToolBarNavigatorWindow) getWindowByName("root");
+        windows.root = (ToolBarNavigatorWindow) getWindow("root");
 
-        windows.toolbar = (NavigatorWindow) getWindowByName("toolbar");
+        windows.toolbar = (NavigatorWindow) getWindow("toolbar");
 
-        windows.tree = (NavigatorWindow) getWindowByName("tree");
+        windows.tree = (NavigatorWindow) getWindow("tree");
 
         windows.forms = addWindow("forms", new AbstractWindow(null, getString("logics.window.forms"), 20, 20, 80, 79));
 
@@ -587,17 +582,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         // todo : перенести во внутренний класс Navigator, как в Windows
         // Навигатор
-        root = getNavigatorElementByName("root");
+        root = getNavigatorElement("root");
 
-        administration = getNavigatorElementByName("administration");
+        administration = getNavigatorElement("administration");
 
-        application = getNavigatorElementByName("application");
+        application = getNavigatorElement("application");
 
-        configuration = getNavigatorElementByName("configuration");
+        configuration = getNavigatorElement("configuration");
 
-        systemEvents = getNavigatorElementByName("systemEvents");
+        systemEvents = getNavigatorElement("systemEvents");
 
-        objects = getNavigatorElementByName("objects");
+        objects = getNavigatorElement("objects");
     }
 
     public void initClassForms() {

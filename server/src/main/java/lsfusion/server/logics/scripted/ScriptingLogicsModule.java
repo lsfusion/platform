@@ -110,15 +110,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     private String code = null;
     private String filename = null;
     private String path = null;
-    private List<String> namespacePriority;
     private final ScriptingErrorLog errLog;
     private ScriptParser parser;
     private List<String> warningList = new ArrayList<String>();
     private Map<Property, String> alwaysNullProperties = new HashMap<Property, String>();
 
     private String lastOpimizedJPropSID = null;
-
-    private Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<String, List<LogicsModule>>();
 
     public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, LOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER, FIRST}
@@ -431,7 +428,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return (FormEntity) navigator;
     }
 
-    public List<FormEntity> findFormsByCompoundName(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
+    private List<FormEntity> findFormsByCompoundName(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
         List<FormEntity> forms = new ArrayList<FormEntity>();
         for (String name : names) {
             forms.add(findFormByCompoundName(name));
@@ -3100,7 +3097,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         setModuleName(name);
         setNamespace(namespace == null ? name : namespace);
         setRequiredModules(new HashSet<String>(requiredModules));
-        this.namespacePriority = namespacePriority;
+        setNamespacePriority(namespacePriority);
     }
 
     public void initAliases() {
@@ -3225,7 +3222,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             } else {
                 List<String> namespaces = new ArrayList<String>();
                 namespaces.add(getNamespace());
-                namespaces.addAll(namespacePriority);
+                namespaces.addAll(getNamespacePriority());
                 result = findInRequiredModules(name, param, namespaces);
             }
             return result;
