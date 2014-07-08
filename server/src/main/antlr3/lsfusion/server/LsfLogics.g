@@ -1534,10 +1534,13 @@ typePropertyDefinition returns [LP property]
 
 
 propertyUsage returns [PropertyUsage propUsage]  
-@after {
-	$propUsage = new PropertyUsage($pname.name, $cidList.ids);
+@init {
+	List<String> classList = null;
 }
-	:	pname=propertyName ('[' cidList=classIdList ']')? 
+@after {
+	$propUsage = new PropertyUsage($pname.name, classList);
+}
+	:	pname=propertyName ('[' cidList=signatureClassList ']' { classList = $cidList.ids; })? 
 	;
 
 inlineProperty returns [LP property]
@@ -3150,8 +3153,23 @@ nonEmptyClassIdList returns [List<String> ids]
 @init {
 	ids = new ArrayList<String>();
 }
-	:		firstClassName=classId { ids.add($firstClassName.sid); }
-			(',' className=classId { ids.add($className.sid); })*
+	:	firstClassName=classId { ids.add($firstClassName.sid); }
+		(',' className=classId { ids.add($className.sid); })*
+	;
+
+signatureClassList returns [List<String> ids]
+@init {
+	ids = new ArrayList<String>();
+}
+	:	(neList=nonEmptySignatureClassList { ids = $neList.ids; })?
+	;
+
+nonEmptySignatureClassList returns [List<String> ids]
+@init {
+	ids = new ArrayList<String>();
+}
+	:	firstClassName=signatureClass { ids.add($firstClassName.sid); }
+		(',' className=signatureClass { ids.add($className.sid); })*
 	;
 
 typedParameterList returns [List<TypedParameter> params]
@@ -3268,6 +3286,15 @@ literal returns [LP property]
 classId returns [String sid]
 	:	id=compoundID { $sid = $id.sid; }
 	|	pid=PRIMITIVE_TYPE { $sid = $pid.text; }
+	;
+
+signatureClass returns [String sid]
+	:	cid=classId { $sid = $cid.sid; }
+	|	uc=unknownClass { $sid = $uc.text; }	
+	; 
+
+unknownClass 
+	:	'?'
 	;
 
 typeId returns [String sid]

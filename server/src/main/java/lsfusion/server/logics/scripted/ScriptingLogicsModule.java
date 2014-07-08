@@ -899,8 +899,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         List<AndClassSet> classes = new ArrayList<AndClassSet>();
         for (String className : usage.classNames) {
-            ValueClass cls = findClassByCompoundName(className);
-            classes.add(cls == null ? null : cls.getUpSet());
+            if (className.equals(PropertyCanonicalNameUtils.UNKNOWNCLASS)) {
+                classes.add(null);
+            } else {
+                ValueClass cls = findClassByCompoundName(className);
+                classes.add(cls.getUpSet());
+            }
         }
         return classes;
     }
