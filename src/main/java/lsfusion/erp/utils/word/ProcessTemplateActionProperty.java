@@ -34,7 +34,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface templateInterface;
 
     public ProcessTemplateActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{LM.getClassByName("Template")});
+        super(LM, new ValueClass[]{LM.getClass("Template")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         templateInterface = i.next();
