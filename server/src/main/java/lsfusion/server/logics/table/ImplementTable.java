@@ -324,7 +324,7 @@ public class ImplementTable extends GlobalTable {
             PropertyField prop = properties.get(i);
             Stat distinctStat;
             Stat notNullStat;
-            if(propStats.containsKey(prop.getName())) {
+            if(propStats.containsKey(getName() + "." + prop.getName())) {
                 Pair<Integer, Integer> propStat = propStats.get(getName() + "." + prop.getName());
                 distinctStat = new Stat(BaseUtils.nvl(propStat.first, 0));
                 notNullStat = new Stat(BaseUtils.nvl(propStat.second, 0));
