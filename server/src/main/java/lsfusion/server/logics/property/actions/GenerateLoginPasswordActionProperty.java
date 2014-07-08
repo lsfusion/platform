@@ -27,7 +27,7 @@ public class GenerateLoginPasswordActionProperty extends ScriptingActionProperty
     private final ClassPropertyInterface customUserInterface;
 
     public GenerateLoginPasswordActionProperty(AuthenticationLogicsModule lm) throws ScriptingErrorLog.SemanticErrorException {
-        super(lm, new ValueClass[]{lm.getClassByName("CustomUser")});
+        super(lm, new ValueClass[]{lm.getClass("CustomUser")});
 
         try {
             this.email = getLCP("Contact.emailContact");

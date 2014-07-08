@@ -213,7 +213,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         
         super.initClasses();
 
-        formResult = (ConcreteCustomClass) getClassByName("FormResult");
+        formResult = (ConcreteCustomClass) getClass("FormResult");
     }
 
     @Override
@@ -222,28 +222,28 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         Version version = getVersion();
 
-        rootGroup = getGroupByName("root");
+        rootGroup = getGroup("root");
         rootGroup.changeChildrenToSimple(version);
         rootGroup.createContainer = false;
 
-        publicGroup = getGroupByName("public");
+        publicGroup = getGroup("public");
         publicGroup.createContainer = false;
 
-        privateGroup = getGroupByName("private");
+        privateGroup = getGroup("private");
         privateGroup.changeChildrenToSimple(version); 
         privateGroup.createContainer = false;
 
-        baseGroup = getGroupByName("base");
+        baseGroup = getGroup("base");
         baseGroup.createContainer = false;
 
-        recognizeGroup = getGroupByName("recognize");
+        recognizeGroup = getGroup("recognize");
         recognizeGroup.createContainer = false;
 
-        drillDownGroup = getGroupByName("drillDown");
+        drillDownGroup = getGroup("drillDown");
         drillDownGroup.changeChildrenToSimple(version);
         drillDownGroup.createContainer = false;
 
-        propertyPolicyGroup = getGroupByName("propertyPolicy");
+        propertyPolicyGroup = getGroup("propertyPolicy");
         propertyPolicyGroup.changeChildrenToSimple(version);
         propertyPolicyGroup.createContainer = false;
     }

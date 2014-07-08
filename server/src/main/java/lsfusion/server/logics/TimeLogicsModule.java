@@ -51,8 +51,8 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
 
         super.initProperties();
 
-        month = (ConcreteCustomClass) getClassByName("Month");
-        DOW = (ConcreteCustomClass) getClassByName("DOW");
+        month = (ConcreteCustomClass) getClass("Month");
+        DOW = (ConcreteCustomClass) getClass("DOW");
 
         extractYear = findLCPByCompoundOldName("extractYear");
         currentDate = findLCPByCompoundOldName("currentDate");

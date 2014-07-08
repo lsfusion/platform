@@ -16,7 +16,7 @@ import java.sql.SQLException;
 public class DisconnectActionProperty extends ScriptingActionProperty {
 
     public DisconnectActionProperty(SystemEventsLogicsModule lm) {
-        super(lm, new ValueClass[] {lm.getClassByName("Connection")});
+        super(lm, new ValueClass[] {lm.getClass("Connection")});
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

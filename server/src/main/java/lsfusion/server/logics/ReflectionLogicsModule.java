@@ -151,18 +151,18 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     @Override
     public void initClasses() throws RecognitionException {
         super.initClasses();
-        propertyGroup = (ConcreteCustomClass) getClassByName("PropertyGroup");
-        navigatorElement = (ConcreteCustomClass) getClassByName("NavigatorElement");
-        navigatorAction = (ConcreteCustomClass) getClassByName("NavigatorAction");
-        form = (ConcreteCustomClass) getClassByName("Form");
-        propertyDraw = (ConcreteCustomClass) getClassByName("PropertyDraw");
-        propertyDrawShowStatus = (ConcreteCustomClass) getClassByName("PropertyDrawShowStatus");
-        table = (ConcreteCustomClass) getClassByName("Table");
-        tableKey = (ConcreteCustomClass) getClassByName("TableKey");
-        tableColumn = (ConcreteCustomClass) getClassByName("TableColumn");
-        dropColumn = (ConcreteCustomClass) getClassByName("DropColumn");
-        property = (ConcreteCustomClass) getClassByName("Property");
-        groupObject = (ConcreteCustomClass) getClassByName("GroupObject");
+        propertyGroup = (ConcreteCustomClass) getClass("PropertyGroup");
+        navigatorElement = (ConcreteCustomClass) getClass("NavigatorElement");
+        navigatorAction = (ConcreteCustomClass) getClass("NavigatorAction");
+        form = (ConcreteCustomClass) getClass("Form");
+        propertyDraw = (ConcreteCustomClass) getClass("PropertyDraw");
+        propertyDrawShowStatus = (ConcreteCustomClass) getClass("PropertyDrawShowStatus");
+        table = (ConcreteCustomClass) getClass("Table");
+        tableKey = (ConcreteCustomClass) getClass("TableKey");
+        tableColumn = (ConcreteCustomClass) getClass("TableColumn");
+        dropColumn = (ConcreteCustomClass) getClass("DropColumn");
+        property = (ConcreteCustomClass) getClass("Property");
+        groupObject = (ConcreteCustomClass) getClass("GroupObject");
     }
 
     @Override

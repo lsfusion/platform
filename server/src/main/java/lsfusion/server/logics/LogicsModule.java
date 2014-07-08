@@ -211,7 +211,7 @@ public abstract class LogicsModule {
         return moduleGroups.get(sid);
     }
 
-    public AbstractGroup getGroupByName(String name) {
+    public AbstractGroup getGroup(String name) {
         return getGroupBySID(transformNameToSID(name));
     }
 
@@ -224,7 +224,7 @@ public abstract class LogicsModule {
         return moduleClasses.get(sid);
     }
 
-    public CustomClass getClassByName(String name) {
+    public CustomClass getClass(String name) {
         return getClassBySID(transformNameToSID(name));
     }
 
@@ -2058,7 +2058,7 @@ public abstract class LogicsModule {
     }
 
     public PropertyDrawEntity addEditFormAction(FormEntity form, ObjectEntity object, FormSessionScope scope, Version version) {
-        return form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass, scope, version), version, object);
+        return form.addPropertyDraw(getEditFormAction((CustomClass) object.baseClass, scope, version), version, object);
     }
 
     public PropertyDrawEntity addFormDeleteAction(FormEntity form, ObjectEntity object, boolean oldSession, Version version) {
@@ -2202,7 +2202,7 @@ public abstract class LogicsModule {
     public static class GroupNameModuleFinder implements ModuleFinder<AbstractGroup, Object> {
         @Override
         public List<AbstractGroup> resolveInModule(LogicsModule module, String simpleName, Object param) {
-            AbstractGroup group = module.getGroupByName(simpleName); 
+            AbstractGroup group = module.getGroup(simpleName); 
             return group == null ? new ArrayList<AbstractGroup>() : Collections.singletonList(group);
         }
     }
@@ -2242,7 +2242,7 @@ public abstract class LogicsModule {
     public static class ClassNameModuleFinder implements ModuleFinder<CustomClass, Object> {
         @Override
         public List<CustomClass> resolveInModule(LogicsModule module, String simpleName, Object param) {
-            CustomClass cls = module.getClassByName(simpleName);             
+            CustomClass cls = module.getClass(simpleName);             
             return cls == null ? new ArrayList<CustomClass>() : Collections.singletonList(cls);
         }
     }

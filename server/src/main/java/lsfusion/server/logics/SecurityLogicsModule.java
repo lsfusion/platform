@@ -72,8 +72,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     @Override
     public void initClasses() throws RecognitionException {
         super.initClasses();
-        userRole = (ConcreteCustomClass) getClassByName("UserRole");
-        policy = (ConcreteCustomClass) getClassByName("Policy");
+        userRole = (ConcreteCustomClass) getClass("UserRole");
+        policy = (ConcreteCustomClass) getClass("Policy");
     }
 
     @Override

@@ -66,7 +66,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     @Override
     public void initClasses() throws RecognitionException {
         super.initClasses();
-        notification = (ConcreteCustomClass) getClassByName("Notification");
+        notification = (ConcreteCustomClass) getClass("Notification");
     }
 
     @Override

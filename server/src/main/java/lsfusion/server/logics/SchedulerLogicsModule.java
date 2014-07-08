@@ -40,9 +40,9 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public void initClasses() throws RecognitionException {
         super.initClasses();
 
-        scheduledTask = (ConcreteCustomClass) getClassByName("ScheduledTask");
-        scheduledTaskLog = (ConcreteCustomClass) getClassByName("ScheduledTaskLog");
-        scheduledClientTaskLog = (ConcreteCustomClass) getClassByName("ScheduledClientTaskLog");
+        scheduledTask = (ConcreteCustomClass) getClass("ScheduledTask");
+        scheduledTaskLog = (ConcreteCustomClass) getClass("ScheduledTaskLog");
+        scheduledClientTaskLog = (ConcreteCustomClass) getClass("ScheduledClientTaskLog");
     }
 
     @Override
