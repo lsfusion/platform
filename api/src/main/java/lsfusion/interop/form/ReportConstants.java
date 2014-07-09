@@ -12,6 +12,7 @@ public class ReportConstants {
     public static final String reportSuffix = "_report";
     public static final String paramsSuffix = "_params";
 
-    public static final String captionSuffix = "(caption)";
-    public static final String footerSuffix = "(footer)";
+    public static final String objectSuffix = ".object";
+    public static final String headerSuffix = ".header";
+    public static final String footerSuffix = ".footer";
 }

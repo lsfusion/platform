@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static lsfusion.interop.form.ReportConstants.footerSuffix;
+import static lsfusion.interop.form.ReportConstants.headerSuffix;
+
 /**
  * User: DAle
  * Date: 16.09.2010
@@ -165,6 +168,7 @@ public class ReportGenerator {
         return (Map<String, JasperDesign>) objStream.readObject();
     }
 
+    //corresponding serialization is in lsfusion.server.remote.FormReportManager.getReportSourcesByteArray()
     public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files) throws IOException, ClassNotFoundException {
         SourcesGenerationOutput output = new SourcesGenerationOutput();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(generationData.reportSourceData));
@@ -189,10 +193,10 @@ public class ReportGenerator {
             for (int j = 0; j < valuesCnt; j++) {
                 List<Object> values = new ArrayList<Object>();
                 String dataFieldId = fieldId;
-                if (fieldId.endsWith(ReportConstants.captionSuffix)) {
-                    dataFieldId = fieldId.substring(0, fieldId.length() - ReportConstants.captionSuffix.length());
-                } else if (fieldId.endsWith(ReportConstants.footerSuffix)) {
-                    dataFieldId = fieldId.substring(0, fieldId.length() - ReportConstants.footerSuffix.length());
+                if (fieldId.endsWith(headerSuffix)) {
+                    dataFieldId = fieldId.substring(0, fieldId.length() - headerSuffix.length());
+                } else if (fieldId.endsWith(footerSuffix)) {
+                    dataFieldId = fieldId.substring(0, fieldId.length() - footerSuffix.length());
                 }
                 int objCnt = output.compositeFieldsObjects.get(dataFieldId).size();
                 for (int k = 0; k < objCnt; k++) {
@@ -312,10 +316,10 @@ public class ReportGenerator {
 
         if (id != null) {
             String dataId = id;
-            if (id.endsWith(ReportConstants.captionSuffix)) {
-                dataId = id.substring(0, id.length() - ReportConstants.captionSuffix.length());
-            } else if (id.endsWith(ReportConstants.footerSuffix)) {
-                dataId = id.substring(0, id.length() - ReportConstants.footerSuffix.length());
+            if (id.endsWith(headerSuffix)) {
+                dataId = id.substring(0, id.length() - headerSuffix.length());
+            } else if (id.endsWith(footerSuffix)) {
+                dataId = id.substring(0, id.length() - footerSuffix.length());
             }
             if (compositeColumnValues.containsKey(dataId)) {
                 toDelete.add(textField);

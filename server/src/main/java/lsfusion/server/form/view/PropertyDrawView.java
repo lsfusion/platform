@@ -135,7 +135,7 @@ public class PropertyDrawView extends ComponentView {
 
         // определяем класс заголовка
         if (reportField.hasCaptionProperty) {
-            ReportDrawField captionField = new ReportDrawField(getSID() + ReportConstants.captionSuffix, "", charWidth);
+            ReportDrawField captionField = new ReportDrawField(getSID() + ReportConstants.headerSuffix, "", charWidth);
             entity.propertyCaption.property.getType().fillReportDrawField(captionField);
             reportField.captionClass = captionField.valueClass;
         } else {

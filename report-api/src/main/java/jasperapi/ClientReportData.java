@@ -5,7 +5,6 @@ import lsfusion.base.ByteArray;
 import lsfusion.base.DateConverter;
 import lsfusion.base.Pair;
 import lsfusion.interop.form.PropertyReadType;
-import lsfusion.interop.form.ReportConstants;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
@@ -14,8 +13,10 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.*;
 
+import static lsfusion.interop.form.ReportConstants.*;
+
 public class ClientReportData implements JRDataSource {
-    final List<String> objectNames = new ArrayList<String>();
+    private final List<String> objectNames = new ArrayList<String>();
     private final List<String> propertyNames = new ArrayList<String>();  // todo [dale]: не обеспечивается уникальность имен
     private final Map<String, Integer> objects = new HashMap<String,Integer>();
     private final Map<String, Pair<Integer, Integer>> properties = new HashMap<String, Pair<Integer, Integer>>();
@@ -51,9 +52,9 @@ public class ClientReportData implements JRDataSource {
                 String name = inStream.readUTF();
                 int type = inStream.readInt();
                 if (type == PropertyReadType.CAPTION) {
-                    name += ReportConstants.captionSuffix;
+                    name += headerSuffix;
                 } else if (type == PropertyReadType.FOOTER) {
-                    name += ReportConstants.footerSuffix;
+                    name += footerSuffix;
                 }
                 propertyNames.add(name);
                 properties.put(name, new Pair<Integer, Integer>(type, inStream.readInt()));
@@ -78,10 +79,6 @@ public class ClientReportData implements JRDataSource {
         iterator = keyRows.listIterator();
 
         this.files = files;
-    }
-
-    public Map<String, Integer> getObjects() {
-        return objects;
     }
 
     public List<String> getPropertyNames() {
@@ -140,8 +137,10 @@ public class ClientReportData implements JRDataSource {
     public Object getFieldValue(JRField jrField) throws JRException {
 
         String fieldName = jrField.getName();
+        
         Object value = null;
-        Integer objectID = objects.get(fieldName);
+        
+        Integer objectID = getObjectIdByFieldName(fieldName);
         if (objectID != null) {
             value = currentKeyRow.get(objectID);
         } else {
@@ -154,10 +153,10 @@ public class ClientReportData implements JRDataSource {
                 String realFieldName = extractData.second;
                 if (index != -1) {
                     String dataFieldName = realFieldName;
-                    if (realFieldName.endsWith(ReportConstants.captionSuffix)) {
-                        dataFieldName = realFieldName.substring(0, realFieldName.length() - ReportConstants.captionSuffix.length());
-                    } else if (realFieldName.endsWith(ReportConstants.footerSuffix)) {
-                        dataFieldName = realFieldName.substring(0, realFieldName.length() - ReportConstants.footerSuffix.length());
+                    if (realFieldName.endsWith(headerSuffix)) {
+                        dataFieldName = realFieldName.substring(0, realFieldName.length() - headerSuffix.length());
+                    } else if (realFieldName.endsWith(footerSuffix)) {
+                        dataFieldName = realFieldName.substring(0, realFieldName.length() - footerSuffix.length());
                     }
                     value = getCompositeFieldValue(dataFieldName, realFieldName, index);
                 }
@@ -194,6 +193,15 @@ public class ClientReportData implements JRDataSource {
         return value;
     }
 
+    private Integer getObjectIdByFieldName(String fieldName) {
+        if (fieldName != null && fieldName.endsWith(objectSuffix)) {
+            String objectName = fieldName.substring(0, fieldName.length() - objectSuffix.length());
+            return objects.get(objectName);
+        }
+        
+        return null;
+    }
+
     private Object getCompositeFieldValue(String dataFieldName, String realFieldName, int index) {
         List<Object> row = new ArrayList<Object>(Collections.nCopies(compositeFieldsObjects.get(dataFieldName).size(), null));
 
@@ -220,6 +228,10 @@ public class ClientReportData implements JRDataSource {
 
     public Object getKeyValueByIndex(int index) {
         return currentKeyRow.get(objects.get(objectNames.get(index)));
+    }
+    
+    public int geyObjectsCount() {
+        return objectNames.size();
     }
 
     private Pair<Integer, String> extractFieldData(String id) {

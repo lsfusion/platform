@@ -309,7 +309,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 resultData.columnObjects.put(property.getsID(), GroupObjectInstance.getOrderObjects(columnGroupObjects).toJavaList());
                 resultData.data.put(property.getsID(), data);
                 if (property.propertyCaption != null) {
-                    resultData.data.put(property.getsID() + ReportConstants.captionSuffix, captionData);
+                    resultData.data.put(property.getsID() + ReportConstants.headerSuffix, captionData);
                 }
                 if (property.propertyFooter != null) {
                     resultData.data.put(property.getsID() + ReportConstants.footerSuffix, footerData);

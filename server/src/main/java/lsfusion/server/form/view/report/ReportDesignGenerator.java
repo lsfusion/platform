@@ -33,6 +33,9 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
+import static lsfusion.interop.form.ReportConstants.footerSuffix;
+import static lsfusion.interop.form.ReportConstants.headerSuffix;
+import static lsfusion.interop.form.ReportConstants.objectSuffix;
 import static lsfusion.server.form.entity.GroupObjectHierarchy.ReportNode;
 
 /**
@@ -220,11 +223,11 @@ public class ReportDesignGenerator {
             for (ReportDrawField field : drawFields) {
                 hasColumnGroupProperty = hasColumnGroupProperty || field.hasColumnGroupObjects;
                 if (field.hasCaptionProperty) {
-                    String fieldId = field.sID + ReportConstants.captionSuffix;
+                    String fieldId = field.sID + headerSuffix;
                     addDesignField(design, fieldId, field.captionClass.getName());
                 }
                 if (field.hasFooterProperty) {
-                    String fieldId = field.sID + ReportConstants.footerSuffix;
+                    String fieldId = field.sID + footerSuffix;
                     addDesignField(design, fieldId, field.footerClass.getName());
                 }
             }
@@ -310,7 +313,7 @@ public class ReportDesignGenerator {
             }
 
             for (ObjectView view : groupView) {
-                ReportDrawField objField = new ReportDrawField(view.entity.getSID(), "", charWidth);
+                ReportDrawField objField = new ReportDrawField(view.entity.getSID() + objectSuffix, "", charWidth);
                 view.entity.baseClass.getType().fillReportDrawField(objField);
                 addDesignField(design, objField);
             }
@@ -324,7 +327,7 @@ public class ReportDesignGenerator {
     private void addReportFieldToLayout(ReportLayout layout, ReportDrawField reportField, JRDesignStyle captionStyle, JRDesignStyle style) {
         String designCaptionText;
         if (reportField.hasCaptionProperty) {
-            designCaptionText = ReportUtils.createFieldString(reportField.sID + ReportConstants.captionSuffix);
+            designCaptionText = ReportUtils.createFieldString(reportField.sID + headerSuffix);
         } else {
             designCaptionText = '"' + reportField.caption + '"';
         }
@@ -352,7 +355,7 @@ public class ReportDesignGenerator {
 
         String groupString = "";
         for (ObjectView object : group) {
-            groupString = (groupString.length()==0?"":groupString+"+\" \"+")+"String.valueOf($F{"+object.entity.getSID()+"})";
+            groupString = (groupString.length()==0?"":groupString+"+\" \"+")+"String.valueOf($F{"+object.entity.getSID()+".object})";
         }
         JRDesignExpression groupExpr = ReportUtils.createExpression(groupString, java.lang.String.class);
         designGroup.setExpression(groupExpr);

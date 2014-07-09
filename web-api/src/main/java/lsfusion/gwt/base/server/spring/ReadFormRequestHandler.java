@@ -166,7 +166,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             Map<Pair<Integer, Integer>, Object> values = reportData.getRows().get(keys);
 
             for (String property : reportData.getPropertyNames()) {
-                if (!usedProperties.contains(property) && !property.endsWith(ReportConstants.captionSuffix)) {
+                if (!usedProperties.contains(property) && !property.endsWith(ReportConstants.headerSuffix)) {
                     if (reportData.getCompositeColumnObjects().containsKey(property)) {
                         for (List<Object> columnKeys : reportData.getCompositeColumnValues().get(property)) {
                             List<Integer> columnObjects = reportData.getCompositeColumnObjects().get(property);
@@ -181,8 +181,8 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
                             }
 
                             xsw.writeCharacters(indent + "\t");
-                            if (reportData.getPropertyNames().contains(property + ReportConstants.captionSuffix)) {
-                                xsw.writeStartElement(String.valueOf(reportData.getCompositeObjectValues().get(property + ReportConstants.captionSuffix).get(cKeys)));
+                            if (reportData.getPropertyNames().contains(property + ReportConstants.headerSuffix)) {
+                                xsw.writeStartElement(String.valueOf(reportData.getCompositeObjectValues().get(property + ReportConstants.headerSuffix).get(cKeys)));
                             } else {
                                 xsw.writeStartElement(property);
                             }
