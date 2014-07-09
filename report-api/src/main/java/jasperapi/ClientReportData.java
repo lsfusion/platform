@@ -230,7 +230,7 @@ public class ClientReportData implements JRDataSource {
         return currentKeyRow.get(objects.get(objectNames.get(index)));
     }
     
-    public int geyObjectsCount() {
+    public int getObjectsCount() {
         return objectNames.size();
     }
 
