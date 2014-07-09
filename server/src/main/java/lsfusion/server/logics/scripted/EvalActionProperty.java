@@ -94,7 +94,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
             errString = module.getErrorsDescription();
 
             String runName = name + ".run";
-            LAP<?> runAction = module.getLAPByOldName(runName);
+            LAP<?> runAction = module.findLAPByCompoundOldName(runName);
             if (runAction != null && errString.isEmpty()) {
                 String textScript = (String) evalLM.findLCPByCompoundOldName("scriptStorage").read(context);
                 if (evalLM.findLCPByCompoundOldName("countTextScript").read(context) == null) {
