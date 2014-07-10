@@ -54,16 +54,16 @@ public class GetActiveBlocksPostgreSQLActionProperty extends ScriptingActionProp
 
         DataSession session = context.getSession();
 
-        Integer previousCount = (Integer) getLCP("previousCountActiveBlock").read(session);
+        Integer previousCount = (Integer) findProperty("previousCountActiveBlock").read(session);
         previousCount = previousCount == null ? 0 : previousCount;
 
         for (int i = 0; i < previousCount; i++) {
             DataObject currentObject = new DataObject(i);
-            getLCP("typeLockedObjectActiveBlock").change((Object) null, session, currentObject);
-            getLCP("idLockedObjectActiveBlock").change((Object) null, session, currentObject);
-            getLCP("processIdActiveBlock").change((Object) null, session, currentObject);
-            getLCP("modeActiveBlock").change((Object) null, session, currentObject);
-            getLCP("grantedActiveBlock").change((Object) null, session, currentObject);
+            findProperty("typeLockedObjectActiveBlock").change((Object) null, session, currentObject);
+            findProperty("idLockedObjectActiveBlock").change((Object) null, session, currentObject);
+            findProperty("processIdActiveBlock").change((Object) null, session, currentObject);
+            findProperty("modeActiveBlock").change((Object) null, session, currentObject);
+            findProperty("grantedActiveBlock").change((Object) null, session, currentObject);
         }
 
         String originalQuery = "SELECT relation::regclass, * FROM pg_locks";  
@@ -117,20 +117,20 @@ public class GetActiveBlocksPostgreSQLActionProperty extends ScriptingActionProp
             Boolean granted = (Boolean) entry.get("granted");
             
             if (type != null && type.equals("transactionid"))
-                getLCP("idLockedObjectActiveBlock").change(transactionID, session, currentObject);
+                findProperty("idLockedObjectActiveBlock").change(transactionID, session, currentObject);
             else if (type != null && type.equals("virtualxid"))
-                getLCP("idLockedObjectActiveBlock").change(virtualxID, session, currentObject);
+                findProperty("idLockedObjectActiveBlock").change(virtualxID, session, currentObject);
             else if (type != null && type.equals("relation"))
-                getLCP("idLockedObjectActiveBlock").change(relationID, session, currentObject);
+                findProperty("idLockedObjectActiveBlock").change(relationID, session, currentObject);
 
-            getLCP("processIdActiveBlock").change(processId, session, currentObject);
-            getLCP("modeActiveBlock").change(mode, session, currentObject);
-            getLCP("typeLockedObjectActiveBlock").change(lockedType, session, currentObject);
-            getLCP("grantedActiveBlock").change(granted, session, currentObject);
+            findProperty("processIdActiveBlock").change(processId, session, currentObject);
+            findProperty("modeActiveBlock").change(mode, session, currentObject);
+            findProperty("typeLockedObjectActiveBlock").change(lockedType, session, currentObject);
+            findProperty("grantedActiveBlock").change(granted, session, currentObject);
             
             i++;
         }
-        getLCP("previousCountActiveBlock").change(i, session);
+        findProperty("previousCountActiveBlock").change(i, session);
     }
 
     protected String trim(String input) {

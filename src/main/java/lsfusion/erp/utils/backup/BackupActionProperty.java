@@ -47,9 +47,9 @@ public class BackupActionProperty extends ScriptingActionProperty {
             ImRevMap<Object, KeyExpr> tableKeys = MapFact.<Object, KeyExpr>singletonRev("Table", tableExpr);
 
             QueryBuilder<Object, Object> tableQuery = new QueryBuilder<Object, Object>(tableKeys);
-            tableQuery.addProperty("sidTable", getLCP("sidTable").getExpr(context.getModifier(), tableExpr));
+            tableQuery.addProperty("sidTable", findProperty("sidTable").getExpr(context.getModifier(), tableExpr));
 
-            tableQuery.and(getLCP("excludeTable").getExpr(context.getModifier(), tableExpr).getWhere());
+            tableQuery.and(findProperty("excludeTable").getExpr(context.getModifier(), tableExpr).getWhere());
 
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> tableResult = tableQuery.execute(context.getSession());
 
@@ -66,27 +66,27 @@ public class BackupActionProperty extends ScriptingActionProperty {
                 String backupFileLogPath = backupFilePath + ".log";
                 String backupFileExtension = backupFilePath.substring(backupFilePath.lastIndexOf("."), backupFilePath.length());
 
-                DataObject backupObject = session.addObject((ConcreteCustomClass) getClass("Backup"));
-                getLCP("dateBackup").change(new java.sql.Date(currentTime), session, backupObject);
-                getLCP("timeBackup").change(new java.sql.Time(currentTime), session, backupObject);
-                getLCP("fileBackup").change(backupFilePath, session, backupObject);
-                getLCP("nameBackup").change(backupFileName + backupFileExtension, session, backupObject);
-                getLCP("fileLogBackup").change(backupFileLogPath, session, backupObject);
+                DataObject backupObject = session.addObject((ConcreteCustomClass) findClass("Backup"));
+                findProperty("dateBackup").change(new java.sql.Date(currentTime), session, backupObject);
+                findProperty("timeBackup").change(new java.sql.Time(currentTime), session, backupObject);
+                findProperty("fileBackup").change(backupFilePath, session, backupObject);
+                findProperty("nameBackup").change(backupFileName + backupFileExtension, session, backupObject);
+                findProperty("fileLogBackup").change(backupFileLogPath, session, backupObject);
 
-                getLCP("logBackup").change(readFileToString(backupFileLogPath), session, backupObject);
+                findProperty("logBackup").change(readFileToString(backupFileLogPath), session, backupObject);
 
                 for (String excludeTable : excludeTables) {
-                    ObjectValue tableObject = getLCP("tableSID").readClasses(session, new DataObject(excludeTable));
+                    ObjectValue tableObject = findProperty("tableSID").readClasses(session, new DataObject(excludeTable));
                     if (tableObject instanceof DataObject)
-                        getLCP("excludeBackupTable").change(true, session, backupObject, (DataObject) tableObject);
+                        findProperty("excludeBackupTable").change(true, session, backupObject, (DataObject) tableObject);
                 }
 
                 session.apply(context);
 
-                getLCP("backupFilePath").change(backupFilePath, context.getSession());
-                getLCP("backupFileName").change(backupFileName + backupFileExtension, context.getSession());
+                findProperty("backupFilePath").change(backupFilePath, context.getSession());
+                findProperty("backupFileName").change(backupFileName + backupFileExtension, context.getSession());
 
-                getLAP("formRefresh").execute(context);
+                findAction("formRefresh").execute(context);
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -96,7 +96,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
     @Override
     public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         try {
-            return getChangeProps((CalcProperty) getLCP("dateBackup").property, (CalcProperty) getLCP("timeBackup").property);
+            return getChangeProps((CalcProperty) findProperty("dateBackup").property, (CalcProperty) findProperty("timeBackup").property);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             return null;
         }

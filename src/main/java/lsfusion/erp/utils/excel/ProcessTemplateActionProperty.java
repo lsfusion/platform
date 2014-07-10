@@ -29,7 +29,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface templateInterface;
 
     public ProcessTemplateActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{LM.getClass("Template")});
+        super(LM, new ValueClass[]{LM.findClass("Template")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         templateInterface = i.next();
@@ -44,20 +44,20 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
             if (templateObject != null) {
 
-                Object fileObject = getLCP("fileTemplate").read(context, templateObject);
+                Object fileObject = findProperty("fileTemplate").read(context, templateObject);
                 if (fileObject != null) {
 
-                    DataObject excelObject = new DataObject(getLCP("fileTemplate").read(context, templateObject), ExcelClass.get(false, false));
+                    DataObject excelObject = new DataObject(findProperty("fileTemplate").read(context, templateObject), ExcelClass.get(false, false));
                     Map<String, String> templateEntriesMap = new HashMap<String, String>();
 
                     KeyExpr templateEntryExpr = new KeyExpr("TemplateEntry");
                     ImRevMap<Object, KeyExpr> templateEntryKeys = MapFact.singletonRev((Object) "TemplateEntry", templateEntryExpr);
 
                     QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<Object, Object>(templateEntryKeys);
-                    templateEntryQuery.addProperty("keyTemplateEntry", getLCP("keyTemplateEntry").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("valueTemplateEntry", getLCP("valueTemplateEntry").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("keyTemplateEntry", findProperty("keyTemplateEntry").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("valueTemplateEntry", findProperty("valueTemplateEntry").getExpr(context.getModifier(), templateEntryExpr));
 
-                    templateEntryQuery.and(getLCP("templateTemplateEntry").getExpr(context.getModifier(), templateEntryQuery.getMapExprs().get("TemplateEntry")).compare(templateObject.getExpr(), Compare.EQUALS));
+                    templateEntryQuery.and(findProperty("templateTemplateEntry").getExpr(context.getModifier(), templateEntryQuery.getMapExprs().get("TemplateEntry")).compare(templateObject.getExpr(), Compare.EQUALS));
 
                     ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> templateEntryResult = templateEntryQuery.execute(context);
 
@@ -95,7 +95,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     wb.write(outputStream);
 
-                    getLCP("resultTemplate").change(outputStream.toByteArray(), context);
+                    findProperty("resultTemplate").change(outputStream.toByteArray(), context);
                 }
             }
 

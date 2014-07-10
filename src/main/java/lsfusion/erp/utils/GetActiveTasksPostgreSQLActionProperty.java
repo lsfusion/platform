@@ -55,16 +55,16 @@ public class GetActiveTasksPostgreSQLActionProperty extends ScriptingActionPrope
 
         DataSession session = context.getSession();
 
-        Integer previousCount = (Integer) getLCP("previousCountActiveTask").read(session);
+        Integer previousCount = (Integer) findProperty("previousCountActiveTask").read(session);
         previousCount = previousCount == null ? 0 : previousCount;
 
         for (int i = 0; i < previousCount; i++) {
             DataObject currentObject = new DataObject(i);
-            getLCP("idActiveTask").change((Object) null, session, currentObject);
-            getLCP("queryActiveTask").change((Object) null, session, currentObject);
-            getLCP("userActiveTask").change((Object) null, session, currentObject);
-            getLCP("addressUserActiveTask").change((Object) null, session, currentObject);
-            getLCP("dateTimeActiveTask").change((Object) null, session, currentObject);
+            findProperty("idActiveTask").change((Object) null, session, currentObject);
+            findProperty("queryActiveTask").change((Object) null, session, currentObject);
+            findProperty("userActiveTask").change((Object) null, session, currentObject);
+            findProperty("addressUserActiveTask").change((Object) null, session, currentObject);
+            findProperty("dateTimeActiveTask").change((Object) null, session, currentObject);
         }
 
         String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s' AND state!='idle'", context.getBL().getDataBaseName());
@@ -110,15 +110,15 @@ public class GetActiveTasksPostgreSQLActionProperty extends ScriptingActionPrope
             Timestamp dateTime = (Timestamp) entry.get("query_start");
             if (!query.equals(originalQuery)) {
 
-                getLCP("idActiveTask").change(processId, session, currentObject);
-                getLCP("queryActiveTask").change(query, session, currentObject);
-                getLCP("userActiveTask").change(userActiveTask, session, currentObject);
-                getLCP("addressUserActiveTask").change(address, session, currentObject);
-                getLCP("dateTimeActiveTask").change(dateTime, session, currentObject);
+                findProperty("idActiveTask").change(processId, session, currentObject);
+                findProperty("queryActiveTask").change(query, session, currentObject);
+                findProperty("userActiveTask").change(userActiveTask, session, currentObject);
+                findProperty("addressUserActiveTask").change(address, session, currentObject);
+                findProperty("dateTimeActiveTask").change(dateTime, session, currentObject);
                 i++;
             }
         }
-        getLCP("previousCountActiveTask").change(i, session);
+        findProperty("previousCountActiveTask").change(i, session);
     }
 
     protected String trim(String input) {

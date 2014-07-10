@@ -24,7 +24,7 @@ public class ShowOnMapActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface addressInterface;
 
     public ShowOnMapActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{DoubleClass.instance, DoubleClass.instance, LM.findClassByCompoundName("MapProvider"), StringClass.get(100)});
+        super(LM, new ValueClass[]{DoubleClass.instance, DoubleClass.instance, LM.findClass("MapProvider"), StringClass.get(100)});
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         latitudeInterface = i.next();
@@ -41,7 +41,7 @@ public class ShowOnMapActionProperty extends ScriptingActionProperty {
             DataObject addressMap = context.getDataKeyValue(addressInterface);
 
             if (latitude.object != null && longitude.object != null) {
-                String url =  ((String)getLCP("staticName").read(context, mapProvider)).contains("yandex")  ?
+                String url =  ((String) findProperty("staticName").read(context, mapProvider)).contains("yandex")  ?
                         ("http://maps.yandex.ru/?"+ "text=" + addressMap.object.toString().trim().replace(" ","%20").replace(",", "%2C") + "&ll=" + longitude.object + "+%2C" + latitude.object + "&z=17") :
                         ("http://maps.google.com/?q=loc:" + latitude.object + "+" + longitude.object);
 

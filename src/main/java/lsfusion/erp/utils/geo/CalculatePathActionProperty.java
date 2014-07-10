@@ -35,14 +35,14 @@ public class CalculatePathActionProperty extends ScriptingActionProperty {
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
 
-            LCP<PropertyInterface> isPOI = (LCP<PropertyInterface>) is(getClass("POI"));
+            LCP<PropertyInterface> isPOI = (LCP<PropertyInterface>) is(findClass("POI"));
             ImRevMap<PropertyInterface, KeyExpr> keys = isPOI.getMapKeys();
             QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
-            query.addProperty("latitude", getLCP("latitudePOI").getExpr(keys.singleValue()));
-            query.addProperty("longitude", getLCP("longitudePOI").getExpr(keys.singleValue()));
-            query.addProperty("numberPathPOI", getLCP("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()));
+            query.addProperty("latitude", findProperty("latitudePOI").getExpr(keys.singleValue()));
+            query.addProperty("longitude", findProperty("longitudePOI").getExpr(keys.singleValue()));
+            query.addProperty("numberPathPOI", findProperty("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()));
             query.and(isPOI.property.getExpr(keys).getWhere());
-            query.and(getLCP("inPathPOI").getExpr(context.getModifier(), keys.singleValue()).getWhere());
+            query.and(findProperty("inPathPOI").getExpr(context.getModifier(), keys.singleValue()).getWhere());
             ImOrderMap<ImMap<PropertyInterface, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(context.getSession());
             String url = "http://maps.googleapis.com/maps/api/distancematrix/json?";
 
@@ -51,7 +51,7 @@ public class CalculatePathActionProperty extends ScriptingActionProperty {
             int index = 1;
 
             boolean coordinatesFlag = true;
-            Object startPathPOI = getLCP("startPathPOI").read(context.getSession().sql, context.getModifier(), context.getQueryEnv());
+            Object startPathPOI = findProperty("startPathPOI").read(context.getSession().sql, context.getModifier(), context.getQueryEnv());
             if (startPathPOI != null) {
                 Map<Integer, DataObject> poiMap = new HashMap<Integer, DataObject>();
                 Map<DataObject, String> poiLatLongMap = new HashMap<DataObject, String>();
@@ -120,7 +120,7 @@ public class CalculatePathActionProperty extends ScriptingActionProperty {
                                 if ((order - previous) > 1)
                                     offset += order - previous - 1;
                                 previous = order;
-                                getLCP("numberPathPOI").change(order - offset, context.getSession(), POI);
+                                findProperty("numberPathPOI").change(order - offset, context.getSession(), POI);
                             }
                         }
                     }

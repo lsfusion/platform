@@ -18,8 +18,8 @@ public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface dictionaryInterface;
     public final ClassPropertyInterface termInterface;
 
-    public TranslateDictionaryActionProperty(ScriptingLogicsModule LM) {
-        super(LM, LM.getClass("Dictionary"), StringClass.text);
+    public TranslateDictionaryActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, LM.findClass("Dictionary"), StringClass.text);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         dictionaryInterface = i.next();
@@ -35,9 +35,9 @@ public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
 
             if (dictionaryObject != null && termObject != null) {
 
-                Boolean insensitive = getLCP("insensitiveDictionary").read(context.getSession(), dictionaryObject) != null;
-                LCP insensitiveLP = getLCP("insensitiveTranslationDictionaryEntryDictionaryTerm");
-                LCP sensitiveLP = getLCP("translationDictionaryEntryDictionaryTerm");
+                Boolean insensitive = findProperty("insensitiveDictionary").read(context.getSession(), dictionaryObject) != null;
+                LCP insensitiveLP = findProperty("insensitiveTranslationDictionaryEntryDictionaryTerm");
+                LCP sensitiveLP = findProperty("translationDictionaryEntryDictionaryTerm");
 
                 String source = (String) termObject.object;
                 if (insensitive)
@@ -83,7 +83,7 @@ public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
                             }
                         }
                     }
-                    getLCP("translationResult").change(result, context);
+                    findProperty("translationResult").change(result, context);
                 }
             }
         } catch (ScriptingErrorLog.SemanticErrorException ignored) {

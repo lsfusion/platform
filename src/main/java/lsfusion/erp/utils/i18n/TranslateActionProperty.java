@@ -28,7 +28,7 @@ public class TranslateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface languageToInterface;
 
     public TranslateActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, StringClass.text, LM.getClass("Language"), LM.getClass("Language"));
+        super(LM, StringClass.text, LM.findClass("Language"), LM.findClass("Language"));
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         translationInterface = i.next();
@@ -48,8 +48,8 @@ public class TranslateActionProperty extends ScriptingActionProperty {
 
             if (languageFromObject != null && languageToObject != null && translationEntry != null) {
 
-                String languageFrom = (String) getLCP("localeLanguage").read(session, languageFromObject);
-                String languageTo = (String) getLCP("localeLanguage").read(session, languageToObject);
+                String languageFrom = (String) findProperty("localeLanguage").read(session, languageFromObject);
+                String languageTo = (String) findProperty("localeLanguage").read(session, languageToObject);
 
                 if(languageFrom != null && languageTo != null) {
                     String url = "http://translate.google.com/translate_a/t?client=x&text=" + URLEncoder.encode(((String) translationEntry.object).trim(), "UTF-8") + "&sl=" + languageFrom.trim() + "&tl=" + languageTo.trim();
@@ -74,7 +74,7 @@ public class TranslateActionProperty extends ScriptingActionProperty {
                             result += m.group(1).replace("\\n", "\n");
                         }
                     }
-                    getLCP("translationResult").change(result, session);
+                    findProperty("translationResult").change(result, session);
                 }
             }
 

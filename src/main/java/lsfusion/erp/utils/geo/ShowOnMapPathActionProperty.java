@@ -31,16 +31,16 @@ public class ShowOnMapPathActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            LCP<PropertyInterface> isPOI = (LCP<PropertyInterface>) is(getClass("POI"));
+            LCP<PropertyInterface> isPOI = (LCP<PropertyInterface>) is(findClass("POI"));
             ImRevMap<PropertyInterface, KeyExpr> keys = isPOI.getMapKeys();
             QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
-            query.addProperty("latitude", getLCP("latitudePOI").getExpr(keys.singleValue()));
-            query.addProperty("longitude", getLCP("longitudePOI").getExpr(keys.singleValue()));
-            query.addProperty("numberPathPOI", getLCP("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()));
-            query.addProperty("namePOI", getLCP("namePOI").getExpr(keys.singleValue()));
-            query.addProperty("descriptionPathPOI", getLCP("descriptionPathPOI").getExpr(context.getModifier(), keys.singleValue()));
+            query.addProperty("latitude", findProperty("latitudePOI").getExpr(keys.singleValue()));
+            query.addProperty("longitude", findProperty("longitudePOI").getExpr(keys.singleValue()));
+            query.addProperty("numberPathPOI", findProperty("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()));
+            query.addProperty("namePOI", findProperty("namePOI").getExpr(keys.singleValue()));
+            query.addProperty("descriptionPathPOI", findProperty("descriptionPathPOI").getExpr(context.getModifier(), keys.singleValue()));
             query.and(isPOI.property.getExpr(keys).getWhere());
-            query.and(getLCP("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()).getWhere());
+            query.and(findProperty("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()).getWhere());
             ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(context, MapFact.singletonOrder((Object) "numberPathPOI", false));
             String uri = "http://maps.google.com/?";
             int index = 1;

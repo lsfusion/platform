@@ -42,16 +42,16 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
         ThreadMXBean thMxB = ManagementFactory.getThreadMXBean();
         
         ThreadInfo[] threadsInfo = thMxB.dumpAllThreads(true, false);
-            Integer previousCount = (Integer) getLCP("previousCountActiveJavaThread").read(session);
+            Integer previousCount = (Integer) findProperty("previousCountActiveJavaThread").read(session);
         previousCount = previousCount == null ? 0 : previousCount;
 
         for (int i = 0; i < previousCount; i++) {
             DataObject currentObject = new DataObject(i);
-            getLCP("idActiveJavaThread").change((Object) null, session, currentObject);
-            getLCP("stackTraceActiveJavaThread").change((Object) null, session, currentObject);
-            getLCP("nameActiveJavaThread").change((Object) null, session, currentObject);
-            getLCP("statusActiveJavaThread").change((Object) null, session, currentObject);
-            getLCP("lockNameActiveJavaThread").change((Object) null, session, currentObject);
+            findProperty("idActiveJavaThread").change((Object) null, session, currentObject);
+            findProperty("stackTraceActiveJavaThread").change((Object) null, session, currentObject);
+            findProperty("nameActiveJavaThread").change((Object) null, session, currentObject);
+            findProperty("statusActiveJavaThread").change((Object) null, session, currentObject);
+            findProperty("lockNameActiveJavaThread").change((Object) null, session, currentObject);
         }        
         int max = 0;
         for(ThreadInfo threadInfo : threadsInfo) {
@@ -63,15 +63,15 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
             String name = threadInfo.getThreadName();
             String lockName = threadInfo.getLockName();
             
-            getLCP("idActiveJavaThread").change(id, session, currentObject);
-            getLCP("stackTraceActiveJavaThread").change(stackTrace, session, currentObject);
-            getLCP("nameActiveJavaThread").change(name, session, currentObject);
-            getLCP("statusActiveJavaThread").change(status, session, currentObject);
-            getLCP("lockNameActiveJavaThread").change(lockName, session, currentObject);
+            findProperty("idActiveJavaThread").change(id, session, currentObject);
+            findProperty("stackTraceActiveJavaThread").change(stackTrace, session, currentObject);
+            findProperty("nameActiveJavaThread").change(name, session, currentObject);
+            findProperty("statusActiveJavaThread").change(status, session, currentObject);
+            findProperty("lockNameActiveJavaThread").change(lockName, session, currentObject);
             if(id>max)
                 max = id;
         }        
-        getLCP("previousCountActiveJavaThread").change(max, session);
+        findProperty("previousCountActiveJavaThread").change(max, session);
     }
 
     private String stackTraceToString(StackTraceElement[] stackTrace) {

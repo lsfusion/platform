@@ -40,10 +40,10 @@ public class CancelActiveTaskPostgreSQLActionProperty extends ScriptingActionPro
     private void getActiveTasksFromDatabase(ExecutionContext context) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
 
         DataObject currentObject = context.getDataKeyValue(integerInterface);
-        Integer pid = (Integer) getLCP("idActiveTask").read(context, currentObject);
+        Integer pid = (Integer) findProperty("idActiveTask").read(context, currentObject);
         context.getSession().sql.executeDDL(String.format("SELECT pg_cancel_backend(%s)", pid));
         
-        getLAP("getActiveTasksPostgreSQLAction").execute(context);
+        findAction("getActiveTasksPostgreSQLAction").execute(context);
 
     }
 }

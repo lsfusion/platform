@@ -29,7 +29,7 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
     private final ClassPropertyInterface mapProviderInterface;
 
     public GetCoordinatesAddressActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{StringClass.get(255), LM.findClassByCompoundName("MapProvider")});
+        super(LM, new ValueClass[]{StringClass.get(255), LM.findClass("MapProvider")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         POIInterface = i.next();
@@ -47,7 +47,7 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
             String address = (String) fullAddress.object;
             if (address != null) {
 
-                if (((String)getLCP("staticName").read(session, mapProvider)).contains("yandex")) {
+                if (((String) findProperty("staticName").read(session, mapProvider)).contains("yandex")) {
 
                     String url = "http://geocode-maps.yandex.ru/1.x/?geocode=" + address.trim().replace(" ", "+") + "&results=1&format=json";
 
@@ -75,8 +75,8 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
                     }
                 }
 
-                getLCP("readLatitude").change(latitude, session);
-                getLCP("readLongitude").change(longitude, session);
+                findProperty("readLatitude").change(latitude, session);
+                findProperty("readLongitude").change(longitude, session);
             }
         } catch (MalformedURLException ignored) {
         } catch (IOException ignored) {

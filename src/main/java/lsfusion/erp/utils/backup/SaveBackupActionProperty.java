@@ -21,7 +21,7 @@ public class SaveBackupActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface backupInterface;
 
     public SaveBackupActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{LM.findClassByCompoundName("Backup")});
+        super(LM, new ValueClass[]{LM.findClass("Backup")});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         backupInterface = i.next();
@@ -32,9 +32,9 @@ public class SaveBackupActionProperty extends ScriptingActionProperty {
 
             DataObject backupObject = context.getDataKeyValue(backupInterface);
 
-            String fileBackup = ((String) getLCP("fileBackup").read(context.getSession(), backupObject));
-            String fileBackupName = ((String) getLCP("nameBackup").read(context.getSession(), backupObject));
-            boolean fileDeletedBackup = getLCP("fileDeletedBackup").read(context.getSession(), backupObject) != null;
+            String fileBackup = ((String) findProperty("fileBackup").read(context.getSession(), backupObject));
+            String fileBackupName = ((String) findProperty("nameBackup").read(context.getSession(), backupObject));
+            boolean fileDeletedBackup = findProperty("fileDeletedBackup").read(context.getSession(), backupObject) != null;
             if (fileBackup != null && !fileDeletedBackup) {
                 assert fileBackupName != null;
                 File file = new File(fileBackup.trim());

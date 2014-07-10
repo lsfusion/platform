@@ -18,7 +18,7 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface backupInterface;
 
     public DeleteBackupActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LM.findClassByCompoundName("Backup"));
+        super(LM, LM.findClass("Backup"));
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         backupInterface = i.next();
@@ -30,19 +30,19 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
             DataSession session = context.createSession();
             DataObject backupObject = context.getDataKeyValue(backupInterface);
 
-            String backupFilePath = (String) getLCP("fileBackup").read(session, backupObject);
-            String backupLogFilePath = (String) getLCP("fileLogBackup").read(session, backupObject);
+            String backupFilePath = (String) findProperty("fileBackup").read(session, backupObject);
+            String backupLogFilePath = (String) findProperty("fileLogBackup").read(session, backupObject);
             File f = new File(backupFilePath);
             File fLog = new File(backupLogFilePath);
             if (fLog.exists()) {
                 fLog.delete();
             }
             if ((f.exists() && f.delete()) || !f.exists()) {
-                getLCP("fileDeletedBackup").change(true, session, backupObject);
+                findProperty("fileDeletedBackup").change(true, session, backupObject);
             }
             session.apply(context);
 
-            getLAP("formRefresh").execute(context);
+            findAction("formRefresh").execute(context);
             
         } catch (Exception e) {
             Throwables.propagate(e);
