@@ -122,25 +122,6 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST, NAGGR}
 
-    private static Map<String, DataClass> primitiveTypeAliases = new HashMap<String, DataClass>() {{
-        put("INTEGER", IntegerClass.instance);
-        put("DOUBLE", DoubleClass.instance);
-        put("LONG", LongClass.instance);
-        put("DATE", DateClass.instance);
-        put("BOOLEAN", LogicalClass.instance);
-        put("DATETIME", DateTimeClass.instance);
-        put("TEXT", StringClass.text);
-        put("RICHTEXT", StringClass.richText);
-        put("TIME", TimeClass.instance);
-        put("YEAR", YearClass.instance);
-        put("WORDFILE", WordClass.get(false, false));
-        put("IMAGEFILE", ImageClass.get(false, false));
-        put("PDFFILE", PDFClass.get(false, false));
-        put("CUSTOMFILE", DynamicFormatFileClass.get(false, false));
-        put("EXCELFILE", ExcelClass.get(false, false));
-        put("COLOR", ColorClass.instance);
-    }};
-
     private ScriptingLogicsModule(BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
         setBaseLogicsModule(baseModule);
         this.BL = BL;
@@ -239,34 +220,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         return b.toString();
     }
 
-    static public DataClass getPredefinedClass(String name) {
-        if (primitiveTypeAliases.containsKey(name)) {
-            return primitiveTypeAliases.get(name);
-        } else if (name.startsWith("STRING[")) {
-            name = name.substring("STRING[".length(), name.length() - 1);
-            return StringClass.get(new ExtInt(Integer.parseInt(name)));
-        } else if (name.startsWith("ISTRING[")) {
-            name = name.substring("ISTRING[".length(), name.length() - 1);
-            return StringClass.geti(new ExtInt(Integer.parseInt(name)));
-        } else if (name.startsWith("VARSTRING[")) {
-            name = name.substring("VARSTRING[".length(), name.length() - 1);
-            return StringClass.getv(new ExtInt(Integer.parseInt(name)));
-        } else if (name.startsWith("VARISTRING[")) {
-            name = name.substring("VARISTRING[".length(), name.length() - 1);
-            return StringClass.getvi(new ExtInt(Integer.parseInt(name)));
-        } else if (name.startsWith("NUMERIC[")) {
-            String length = name.substring("NUMERIC[".length(), name.indexOf(","));
-            String precision = name.substring(name.indexOf(",") + 1, name.length() - 1);
-            return NumericClass.get(Integer.parseInt(length), Integer.parseInt(precision));
-        }
-        return null;
-    }
-
     private Type getPredefinedType(String name) {
         if ("OBJECT".equals(name)) {
             return ObjectType.instance;
         } else {
-            return getPredefinedClass(name);
+            return ClassCanonicalNameUtils.getScriptedDataClass(name); 
         }
     }
 
@@ -310,8 +268,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new MappedProperty(property, getMappingObjectsArray(form, mapping));
     }
 
-    public ValueClass findClassByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
-        ValueClass valueClass = getPredefinedClass(name);
+    public ValueClass findClass(String name) throws ScriptingErrorLog.SemanticErrorException {
+        ValueClass valueClass = ClassCanonicalNameUtils.getScriptedDataClass(name);
         if (valueClass == null) {
             valueClass = classResolver.resolve(name);
         }
@@ -335,7 +293,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             parents = new CustomClass[parentNames.size()];
             for (int i = 0; i < parentNames.size(); i++) {
                 String parentName = parentNames.get(i);
-                parents[i] = (CustomClass) findClassByCompoundName(parentName);
+                parents[i] = (CustomClass) findClass(parentName);
             }
         }
 
@@ -355,7 +313,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         Version version = getVersion();
 
         scriptLogger.info("extendClass(" + className + ", " + instNames + ", " + instCaptions + ", " + parentNames + ");");
-        CustomClass cls = (CustomClass) findClassByCompoundName(className);
+        CustomClass cls = (CustomClass) findClass(className);
         boolean isAbstract = cls instanceof AbstractCustomClass;
 
         List<String> names = instNames;
@@ -370,7 +328,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkClassParents(parentNames);
 
         for (String parentName : parentNames) {
-            CustomClass parentClass = (CustomClass) findClassByCompoundName(parentName);
+            CustomClass parentClass = (CustomClass) findClass(parentName);
             if (cls.containsNFParents(parentClass, version)) {
                 errLog.emitDuplicateClassParentError(parser, parentName);
             }
@@ -378,23 +336,28 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public AbstractGroup findGroupByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+    public AbstractGroup findGroup(String name) throws ScriptingErrorLog.SemanticErrorException {
         AbstractGroup group = groupResolver.resolve(name);
         checkGroup(group, name);
         return group;
     }
 
-    public LAP<?> findLAPByCompoundOldName(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return (LAP<?>) findLPByCompoundOldName(name);
+    public LAP<?> findAction(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return (LAP<?>) findLP(name);
     }
 
-    public LCP<?> findLCPByCompoundOldName(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return (LCP<?>) findLPByCompoundOldName(name);
+    public LCP<?> findProperty(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return (LCP<?>) findLP(name);
     }
 
-    public LP<?, ?> findLPByCompoundOldName(String name) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?, ?> property = lpOldResolver.resolve(name);
-        checkProperty(property, name);
+    private LP<?, ?> findLP(String name) throws ScriptingErrorLog.SemanticErrorException {
+        PropertyUsageParser parser = new PropertyUsageParser(this, name);
+        LP<?, ?> property = null;
+        try {
+            property = findLPByNameAndClasses(parser.getCompoundName(), parser.getSignature());
+        } catch (AbstractPropertyNameParser.ParseException e) {
+            Throwables.propagate(e);
+        }
         return property;
     }
 
@@ -416,44 +379,44 @@ public class ScriptingLogicsModule extends LogicsModule {
         return  findLPByNameAndClasses(pUsage.name, getParamClasses(pUsage));
     }
     
-    public AbstractWindow findWindowByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+    public AbstractWindow findWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
         AbstractWindow window = windowResolver.resolve(name);
         checkWindow(window, name);
         return window;
     }
 
-    public FormEntity findFormByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+    public FormEntity findForm(String name) throws ScriptingErrorLog.SemanticErrorException {
         NavigatorElement navigator = navigatorResolver.resolve(name);
         checkForm(navigator, name);
         return (FormEntity) navigator;
     }
 
-    private List<FormEntity> findFormsByCompoundName(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
+    private List<FormEntity> findForms(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
         List<FormEntity> forms = new ArrayList<FormEntity>();
         for (String name : names) {
-            forms.add(findFormByCompoundName(name));
+            forms.add(findForm(name));
         }
         return forms;
     }
 
     public Event createScriptedEvent(BaseEvent base, List<String> formIds, List<PropertyUsage> afterIds) throws ScriptingErrorLog.SemanticErrorException {
-        return new Event(base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<FormEntity>(findFormsByCompoundName(formIds)))) : SessionEnvEvent.ALWAYS, afterIds == null? null : SetFact.fromJavaSet(findPropsByPropertyUsages(afterIds)));
+        return new Event(base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<FormEntity>(findForms(formIds)))) : SessionEnvEvent.ALWAYS, afterIds == null? null : SetFact.fromJavaSet(findPropsByPropertyUsages(afterIds)));
     }
 
-    public MetaCodeFragment findMetaCodeFragmentByCompoundName(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
+    public MetaCodeFragment findMetaCodeFragment(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
         CompoundNameResolver<MetaCodeFragment, Integer> resolver = new CompoundNameResolver<MetaCodeFragment, Integer>(new MetaCodeNameModuleFinder());
         MetaCodeFragment code = resolver.resolve(name, paramCnt);
         checkMetaCodeFragment(code, name);
         return code;
     }
 
-    public NavigatorElement findNavigatorElementByName(String name) throws ScriptingErrorLog.SemanticErrorException {
+    public NavigatorElement findNavigatorElement(String name) throws ScriptingErrorLog.SemanticErrorException {
         NavigatorElement element = navigatorResolver.resolve(name);
         checkNavigatorElement(element, name);
         return element;
     }
 
-    public ImplementTable findTableByCompoundName(String name) throws ScriptingErrorLog.SemanticErrorException {
+    public ImplementTable findTable(String name) throws ScriptingErrorLog.SemanticErrorException {
         ImplementTable table = tableResolver.resolve(name);
         checkTable(table, name);
         return table;
@@ -463,7 +426,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedGroup(" + groupName + ", " + (captionStr==null ? "" : captionStr) + ", " + (parentName == null ? "null" : parentName) + ");");
         checkDuplicateGroup(groupName);
         String caption = (captionStr == null ? groupName : captionStr);
-        AbstractGroup parentGroup = (parentName == null ? null : findGroupByCompoundName(parentName));
+        AbstractGroup parentGroup = (parentName == null ? null : findGroup(parentName));
         addAbstractGroup(groupName, caption, parentGroup);
     }
 
@@ -486,7 +449,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         scriptLogger.info("createScriptedFormView(" + formName + ", " + applyDefault + ");");
 
-        FormEntity form = findFormByCompoundName(formName);
+        FormEntity form = findForm(formName);
         FormView formView = applyDefault ? new DefaultFormView(form, version) : new FormView(form, version);
         ScriptingFormView scriptingView = new ScriptingFormView(formView, this);
         if (caption != null) {
@@ -502,7 +465,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         Version version = getVersion();
 
         scriptLogger.info("getDesignForExtending(" + formName + ");");
-        FormEntity form = findFormByCompoundName(formName);
+        FormEntity form = findForm(formName);
         return new ScriptingFormView(form.getNFRichDesign(version), this);
     }
 
@@ -512,17 +475,17 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity getFormForExtending(String name) throws ScriptingErrorLog.SemanticErrorException {
-        FormEntity form = findFormByCompoundName(name);
+        FormEntity form = findForm(name);
         return new ScriptingFormEntity(this, form);
     }
 
     public LCP addScriptedDProp(String returnClass, List<String> paramClasses, boolean sessionProp, boolean innerProp) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedDProp(" + returnClass + ", " + paramClasses + ", " + innerProp + ");");
 
-        ValueClass value = findClassByCompoundName(returnClass);
+        ValueClass value = findClass(returnClass);
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
-            params[i] = findClassByCompoundName(paramClasses.get(i));
+            params[i] = findClass(paramClasses.get(i));
         }
 
         if (sessionProp) {
@@ -540,10 +503,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LP<?, ?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, List<String> paramClasses, boolean isExclusive, boolean isChecked) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedAbstractProp(" + type + ", " + returnClass + ", " + paramClasses + ", " + isExclusive + ", " + isChecked + ");");
 
-        ValueClass value = findClassByCompoundName(returnClass);
+        ValueClass value = findClass(returnClass);
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
-            params[i] = findClassByCompoundName(paramClasses.get(i));
+            params[i] = findClass(paramClasses.get(i));
         }
         return addAUProp(null, genSID(), false, isExclusive, isChecked, type, "", value, params);
     }
@@ -552,7 +515,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedAbstractActionProp(" + type + ", " + paramClasses + ", " + isExclusive + ", " + isChecked + ");");
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
-            params[i] = findClassByCompoundName(paramClasses.get(i));
+            params[i] = findClass(paramClasses.get(i));
         }
         if (type == ListCaseActionProperty.AbstractType.LIST) {
             return addAbstractListAProp(isChecked, params);
@@ -619,7 +582,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public List<AndClassSet> createClassSetsFromClassNames(List<String> classNames) throws ScriptingErrorLog.SemanticErrorException {
         List<AndClassSet> params = new ArrayList<AndClassSet>();
         for (String className : classNames) {
-            ValueClass cls = findClassByCompoundName(className);
+            ValueClass cls = findClass(className);
             params.add(cls.getUpSet());
         }
         return params;
@@ -732,13 +695,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         propClasses.put(property, signature);
         property.property.setCanonicalName(PropertyCanonicalNameUtils.createName(getNamespace(), name, signature));
         
-        AbstractGroup group = (groupName == null ? null : findGroupByCompoundName(groupName));
+        AbstractGroup group = (groupName == null ? null : findGroup(groupName));
         property.property.caption = (caption == null ? name : caption);
         addPropertyToGroup(property.property, group);
 
         ImplementTable targetTable = null;
         if (tableName != null) {
-            targetTable = findTableByCompoundName(tableName);
+            targetTable = findTable(tableName);
             if (!targetTable.equalClasses(((LCP<?>)property).property.getInterfaceClasses(ClassType.ASSERTFULL))) {
                 // todo : проверка неправильная - должна быть на ClassWhere
                 //errLog.emitWrongClassesForTable(parser, name, tableName);
@@ -902,7 +865,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (className.equals(PropertyCanonicalNameUtils.UNKNOWNCLASS)) {
                 classes.add(null);
             } else {
-                ValueClass cls = findClassByCompoundName(className);
+                ValueClass cls = findClass(className);
                 classes.add(cls.getUpSet());
             }
         }
@@ -1176,7 +1139,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             eaProp.setFromAddressAccount(allImplements.get(i++));
         } else {
             // по умолчанию используем стандартный fromAddressAccount
-            eaProp.setFromAddressAccount(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.findLCPByCompoundOldName("fromAddressDefaultNotificationAccount").property));
+            eaProp.setFromAddressAccount(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.findProperty("fromAddressDefaultNotificationAccount").property));
         }
         eaProp.setSubject(allImplements.get(i++));
 
@@ -1187,7 +1150,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (int j = 0; j < forms.size(); ++j) {
             String formName = forms.get(j);
             FormStorageType formType = formTypes.get(j);
-            FormEntity form = findFormByCompoundName(formName);
+            FormEntity form = findForm(formName);
 
             Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements = new HashMap<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>();
             for (Map.Entry<String, LPWithParams> entry : mapObjects.get(j).entrySet()) {
@@ -1258,7 +1221,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedCastProp(String typeName, LPWithParams prop) throws ScriptingErrorLog.SemanticErrorException {
-        ValueClass cls = findClassByCompoundName(typeName);
+        ValueClass cls = findClass(typeName);
 
         //cls всегда будет DataClass из-за грамматики
         assert cls instanceof DataClass;
@@ -1343,7 +1306,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LCP addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames) throws ScriptingErrorLog.SemanticErrorException {
         List<AndClassSet> paramClasses = new ArrayList<AndClassSet>();
         for (String className : paramClassNames) {
-            paramClasses.add(findClassByCompoundName(className).getUpSet());
+            paramClasses.add(findClass(className).getUpSet());
         }
 //        checkDuplicateProperty(name, paramClasses);
 
@@ -1377,14 +1340,14 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LP addScriptedAddFormAction(String className, FormSessionScope scope) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedAddFormAction(" + className + ", " + scope + ");");
-        ValueClass cls = findClassByCompoundName(className);
+        ValueClass cls = findClass(className);
         checkAddActionsClass(cls);
         return getScriptAddFormAction((CustomClass) cls, scope);
     }
 
     public LP addScriptedEditFormAction(String className, FormSessionScope scope) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedEditFormAction(" + className + ", " + scope + ");");
-        ValueClass cls = findClassByCompoundName(className);
+        ValueClass cls = findClass(className);
         checkAddActionsClass(cls);
         return getScriptEditFormAction((CustomClass) cls, scope);
     }
@@ -1419,7 +1382,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         String formName = name.substring(0, pointPos);
         String objectName = name.substring(pointPos+1);
 
-        FormEntity form = findFormByCompoundName(formName);
+        FormEntity form = findForm(formName);
         if(form == null) {
             errLog.emitNotFoundError(parser, "form", formName);
         }
@@ -1484,7 +1447,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedAddObjProp(List<TypedParameter> context, String className, PropertyUsage toPropUsage, List<LPWithParams> toPropMapping, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedAddObjProp(" + className + ", " + toPropUsage + ", " + toPropMapping + ", " + whereProperty + ");");
-        ValueClass cls = findClassByCompoundName(className);
+        ValueClass cls = findClass(className);
         checkAddActionsClass(cls);
         checkAddObjTOParams(context.size(), toPropMapping);
 
@@ -1519,7 +1482,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedChangeClassAProp(int oldContextSize, List<TypedParameter> newContext, LPWithParams param, String className, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
-        ValueClass cls = findClassByCompoundName(className);
+        ValueClass cls = findClass(className);
         checkChangeClassActionClass(cls);
         return addScriptedChangeClassAProp(oldContextSize, newContext, param, (ConcreteCustomClass) cls, whereProperty);
     }
@@ -1693,7 +1656,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         allCreationParams.addAll(noInline);
 
         LP result = addForAProp(null, genSID(), "", !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(),
-                                addClassName != null ? (CustomClass) findClassByCompoundName(addClassName) : null, condition != null, noInline.size(), forceInline, getParamsPlainList(allCreationParams).toArray());
+                                addClassName != null ? (CustomClass) findClass(addClassName) : null, condition != null, noInline.size(), forceInline, getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
     }
 
@@ -1882,7 +1845,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         CustomFormulaSyntax formula = new CustomFormulaSyntax(defaultFormula, mSyntaxes.immutable());
         if (typeName != null) {
-            ValueClass cls = findClassByCompoundName(typeName);
+            ValueClass cls = findClass(typeName);
             checkFormulaClass(cls);
             return addSFProp(formula, (DataClass) cls, params.size(), hasNotNull);
         } else {
@@ -2071,7 +2034,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             checkCalculationProperty(contextProperty.property);
         }
 
-        FormEntity form = findFormByCompoundName(formName);
+        FormEntity form = findForm(formName);
 
         ObjectEntity[] objects = new ObjectEntity[objectNames.size()];
         for (int i = 0; i < objectNames.size(); i++) {
@@ -2125,7 +2088,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void runMetaCode(String name, List<String> params, int lineNumber) throws RecognitionException {
-        MetaCodeFragment metaCode = findMetaCodeFragmentByCompoundName(name, params.size());
+        MetaCodeFragment metaCode = findMetaCodeFragment(name, params.size());
         checkMetaCodeParamCount(metaCode, params.size());
 
         String code = metaCode.getCode(params);
@@ -2163,7 +2126,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         String instanceName = name.substring(pointPos + 1);
         LCP resultProp = null;
 
-        ValueClass cls = findClassByCompoundName(className);
+        ValueClass cls = findClass(className);
         if (cls instanceof ConcreteCustomClass) {
             ConcreteCustomClass concreteClass = (ConcreteCustomClass) cls;
             if (concreteClass.hasNFStaticObject(instanceName, version)) {
@@ -2185,7 +2148,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         String objectName = name.substring(pointPos+1);
         LCP resultProp = null;
 
-        FormEntity form = findFormByCompoundName(formName);
+        FormEntity form = findForm(formName);
 
         GroupObjectEntity groupObject = form.getNFGroupObject(objectName, getVersion());
         if (groupObject != null) {
@@ -2206,9 +2169,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LCP addScriptedTypeProp(String className, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addTypeProp(" + className + ", " + (bIs ? "IS" : "AS") + ");");
         if (bIs) {
-            return is(findClassByCompoundName(className));
+            return is(findClass(className));
         } else {
-            return object(findClassByCompoundName(className));
+            return object(findClass(className));
         }
     }
 
@@ -2358,7 +2321,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         ValueClass[] classes = new ValueClass[classIds.size()];
         for (int i = 0; i < classIds.size(); i++) {
-            classes[i] = findClassByCompoundName(classIds.get(i));
+            classes[i] = findClass(classIds.get(i));
         }
         addTable(name, classes);
     }
@@ -2499,7 +2462,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
 
     public void hideWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
-        findWindowByCompoundName(name).visible = false;
+        findWindow(name).visible = false;
     }
 
     public NavigatorElement createScriptedNavigatorElement(String name, String caption, NavigatorElement<?> parentElement, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName, PropertyUsage actionUsage, String icon) throws ScriptingErrorLog.SemanticErrorException {
@@ -2574,7 +2537,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void setNavigatorElementWindow(NavigatorElement element, String windowName) throws ScriptingErrorLog.SemanticErrorException {
         assert element != null && windowName != null;
 
-        AbstractWindow window = findWindowByCompoundName(windowName);
+        AbstractWindow window = findWindow(windowName);
         if (window == null) {
             errLog.emitWindowNotFoundError(parser, windowName);
         }
@@ -2737,7 +2700,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkClassParents(List<String> parents) throws ScriptingErrorLog.SemanticErrorException {
         Set<ValueClass> parentsSet = new HashSet<ValueClass>();
         for (String parentName : parents) {
-            ValueClass valueClass = findClassByCompoundName(parentName);
+            ValueClass valueClass = findClass(parentName);
             if (!(valueClass instanceof CustomClass)) {
                 errLog.emitBuiltInClassAsParentError(parser, parentName);
             }
@@ -3150,7 +3113,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         public TypedParameter(String cName, String pName) throws ScriptingErrorLog.SemanticErrorException {
             if (cName != null) {
-                cls = findClassByCompoundName(cName);
+                cls = findClass(cName);
             } else {
                 cls = null;
             }                                

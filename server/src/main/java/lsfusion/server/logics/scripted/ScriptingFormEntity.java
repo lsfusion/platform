@@ -65,7 +65,7 @@ public class ScriptingFormEntity {
 
             for (int j = 0; j < groupObject.objects.size(); j++) {
                 String className = groupObject.classes.get(j);
-                ValueClass cls = LM.findClassByCompoundName(groupObject.classes.get(j));
+                ValueClass cls = LM.findClass(groupObject.classes.get(j));
                 String objectName = nvl(groupObject.objects.get(j), className);
                 String objectCaption = nvl(groupObject.captions.get(j), cls.getCaption());
 
@@ -609,7 +609,7 @@ public class ScriptingFormEntity {
     }
 
     private CustomClass findCustomClassForFormSetup(String className) throws ScriptingErrorLog.SemanticErrorException {
-        ValueClass valueClass = LM.findClassByCompoundName(className);
+        ValueClass valueClass = LM.findClass(className);
         if (!(valueClass instanceof CustomClass)) {
             LM.getErrLog().emitBuiltInClassFormSetupError(LM.getParser(), className);
         }

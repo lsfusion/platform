@@ -10,13 +10,14 @@ import lsfusion.server.logics.SystemEventsLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 
 import java.sql.SQLException;
 
 public class DisconnectActionProperty extends ScriptingActionProperty {
 
-    public DisconnectActionProperty(SystemEventsLogicsModule lm) {
-        super(lm, new ValueClass[] {lm.getClass("Connection")});
+    public DisconnectActionProperty(SystemEventsLogicsModule lm) throws ScriptingErrorLog.SemanticErrorException {
+        super(lm, new ValueClass[] {lm.findClass("Connection")});
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

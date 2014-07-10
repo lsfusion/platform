@@ -1,6 +1,5 @@
 package lsfusion.server.logics.service;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
@@ -10,7 +9,6 @@ import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.MSSQLDataAdapter;
 import lsfusion.server.data.sql.PostgreDataAdapter;
 import lsfusion.server.logics.ServiceLogicsModule;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -30,12 +28,12 @@ public class UploadToDBActionProperty extends ScriptingActionProperty {
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
-            String type = (String) getLCP("uploadStaticNameType").read(context);
-            String host = (String) getLCP("uploadHost").read(context);
-            String user = (String) getLCP("uploadUser").read(context);
-            String password = (String) getLCP("uploadPassword").read(context);
-            String db = (String) getLCP("uploadDB").read(context);
-            String instance = (String) getLCP("uploadInstance").read(context);
+            String type = (String) findProperty("uploadStaticNameType").read(context);
+            String host = (String) findProperty("uploadHost").read(context);
+            String user = (String) findProperty("uploadUser").read(context);
+            String password = (String) findProperty("uploadPassword").read(context);
+            String db = (String) findProperty("uploadDB").read(context);
+            String instance = (String) findProperty("uploadInstance").read(context);
     
             final DataAdapter adapter;
             try {

@@ -25,13 +25,13 @@ public class ReadValueReflectionSettingActionProperty extends ScriptingActionPro
 
         try {
 
-            String nameReflectionSetting = (String) getLCP("nameReflectionSetting").read(context);
+            String nameReflectionSetting = (String) findProperty("nameReflectionSetting").read(context);
 
             if (nameReflectionSetting != null) {
                 String valueReflectionSetting = BeanUtils.getProperty(Settings.get(), nameReflectionSetting);
 
                 if (valueReflectionSetting != null) {
-                    getLCP("valueReflectionSetting").change(String.valueOf(valueReflectionSetting), context);
+                    findProperty("valueReflectionSetting").change(String.valueOf(valueReflectionSetting), context);
                 }
 
             }
@@ -43,7 +43,7 @@ public class ReadValueReflectionSettingActionProperty extends ScriptingActionPro
             throw Throwables.propagate(e);
         } catch (NoSuchMethodException e) {
             try {
-                getLCP("valueReflectionSetting").change((Object) null, context);
+                findProperty("valueReflectionSetting").change((Object) null, context);
             } catch (ScriptingErrorLog.SemanticErrorException ignore) {
             }
         } catch (InvocationTargetException e) {

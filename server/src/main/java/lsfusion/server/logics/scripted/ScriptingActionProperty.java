@@ -5,8 +5,6 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.UserActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -43,36 +41,32 @@ public abstract class ScriptingActionProperty extends UserActionProperty {
         this.LM = LM;
     }
 
-    protected LP<?, ?> getLP(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return LM.findLPByCompoundOldName(name);
+    protected LCP<?> findProperty(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return LM.findProperty(name);
     }
 
-    protected LCP<?> getLCP(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return (LCP<?>) getLP(name);
-    }
-
-    protected LCP<?>[] getLCPs(String... names) throws ScriptingErrorLog.SemanticErrorException {
+    protected LCP<?>[] findProperties(String... names) throws ScriptingErrorLog.SemanticErrorException {
         LCP<?>[] result = new LCP[names.length];
         for (int i = 0; i < names.length; i++) {
-            result[i] = getLCP(names[i]);
+            result[i] = findProperty(names[i]);
         }
         return result;
     }
 
-    protected LAP<?> getLAP(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return (LAP <?>) getLP(name);
+    protected LAP<?> findAction(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return LM.findAction(name);
     }
 
-    protected ValueClass getClass(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return LM.findClassByCompoundName(name);
+    protected ValueClass findClass(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return LM.findClass(name);
     }
 
-    protected AbstractGroup getGroup(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return LM.findGroupByCompoundName(name);
+    protected AbstractGroup findGroup(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return LM.findGroup(name);
     }
 
-    protected FormEntity getForm(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return LM.findFormByCompoundName(name);
+    protected FormEntity findForm(String name) throws ScriptingErrorLog.SemanticErrorException {
+        return LM.findForm(name);
     }
 
     protected boolean applySession(ExecutionContext context, DataSession session) throws SQLException, SQLHandledException {

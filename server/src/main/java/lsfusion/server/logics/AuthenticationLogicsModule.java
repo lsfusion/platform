@@ -52,10 +52,10 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public void initClasses() throws RecognitionException {
         super.initClasses();
 
-        computer = (ConcreteCustomClass) getClass("Computer");
-        user = (AbstractCustomClass) getClass("User");
-        systemUser = (ConcreteCustomClass) getClass("SystemUser");
-        customUser = (ConcreteCustomClass) getClass("CustomUser");
+        computer = (ConcreteCustomClass) findClass("Computer");
+        user = (AbstractCustomClass) findClass("User");
+        systemUser = (ConcreteCustomClass) findClass("SystemUser");
+        customUser = (ConcreteCustomClass) findClass("CustomUser");
     }
 
     @Override
@@ -66,30 +66,30 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         super.initProperties();
 
-        currentUserName = findLCPByCompoundOldName("currentUserName");
+        currentUserName = findProperty("currentUserName");
 
         // Компьютер
-        hostnameComputer = findLCPByCompoundOldName("hostnameComputer");
-        scannerComPortComputer = findLCPByCompoundOldName("scannerComPortComputer");
-        scannerSingleReadComputer = findLCPByCompoundOldName("scannerSingleReadComputer");
+        hostnameComputer = findProperty("hostnameComputer");
+        scannerComPortComputer = findProperty("scannerComPortComputer");
+        scannerSingleReadComputer = findProperty("scannerSingleReadComputer");
 
-        hostnameCurrentComputer = findLCPByCompoundOldName("hostnameCurrentComputer");
+        hostnameCurrentComputer = findProperty("hostnameCurrentComputer");
 
-        isLockedCustomUser = findLCPByCompoundOldName("isLockedCustomUser");
+        isLockedCustomUser = findProperty("isLockedCustomUser");
 
-        loginCustomUser = findLCPByCompoundOldName("loginCustomUser");
-        customUserLogin = findLCPByCompoundOldName("customUserLogin");
+        loginCustomUser = findProperty("loginCustomUser");
+        customUserLogin = findProperty("customUserLogin");
 
-        sha256PasswordCustomUser = findLCPByCompoundOldName("sha256PasswordCustomUser");
+        sha256PasswordCustomUser = findProperty("sha256PasswordCustomUser");
         sha256PasswordCustomUser.setEchoSymbols(true);
 
-        calculatedHash = findLCPByCompoundOldName("calculatedHash");
+        calculatedHash = findProperty("calculatedHash");
 
-        useLDAP = findLCPByCompoundOldName("useLDAP");
-        serverLDAP = findLCPByCompoundOldName("serverLDAP");
-        portLDAP =  findLCPByCompoundOldName("portLDAP");
+        useLDAP = findProperty("useLDAP");
+        serverLDAP = findProperty("serverLDAP");
+        portLDAP =  findProperty("portLDAP");
 
-        generateLoginPassword = findLAPByCompoundOldName("generateLoginPassword");
+        generateLoginPassword = findAction("generateLoginPassword");
 
 
     }

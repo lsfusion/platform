@@ -27,15 +27,15 @@ public class GenerateLoginPasswordActionProperty extends ScriptingActionProperty
     private final ClassPropertyInterface customUserInterface;
 
     public GenerateLoginPasswordActionProperty(AuthenticationLogicsModule lm) throws ScriptingErrorLog.SemanticErrorException {
-        super(lm, new ValueClass[]{lm.getClass("CustomUser")});
+        super(lm, lm.findClass("CustomUser"));
 
         try {
-            this.email = getLCP("Contact.emailContact");
+            this.email = findProperty("Contact.emailContact");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new RuntimeException(e);
         }
-        this.loginCustomUser = getLCP("loginCustomUser");
-        this.sha256PasswordCustomUser = getLCP("sha256PasswordCustomUser");
+        this.loginCustomUser = findProperty("loginCustomUser");
+        this.sha256PasswordCustomUser = findProperty("sha256PasswordCustomUser");
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         customUserInterface = i.next();

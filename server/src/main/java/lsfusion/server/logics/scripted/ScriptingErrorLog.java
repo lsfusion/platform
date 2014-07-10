@@ -54,7 +54,7 @@ public class ScriptingErrorLog {
     }
 
     public static String getErrorMessage(BaseRecognizer parser, String oldMsg, RecognitionException e) {
-        return /*BaseRecognizer.getRuleInvocationStack(e, parser.getClass().getName()) + " " + */ oldMsg;
+        return /*BaseRecognizer.getRuleInvocationStack(e, parser.findClass().getName()) + " " + */ oldMsg;
     }
 
     public String getRecognitionErrorText(ScriptParser parser, String errorType, String msg, RecognitionException e) {

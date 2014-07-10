@@ -69,12 +69,12 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public void initClasses() throws RecognitionException {
         super.initClasses();
 
-        clientException = (ConcreteCustomClass) getClass("ClientException");
-        serverException = (ConcreteCustomClass) getClass("ServerException");
-        launch = (ConcreteCustomClass) getClass("Launch");
-        connection = (ConcreteCustomClass) getClass("Connection");
-        connectionStatus = (ConcreteCustomClass) getClass("ConnectionStatus");
-        session = (ConcreteCustomClass) getClass("Session");
+        clientException = (ConcreteCustomClass) findClass("ClientException");
+        serverException = (ConcreteCustomClass) findClass("ServerException");
+        launch = (ConcreteCustomClass) findClass("Launch");
+        connection = (ConcreteCustomClass) findClass("Connection");
+        connectionStatus = (ConcreteCustomClass) findClass("ConnectionStatus");
+        session = (ConcreteCustomClass) findClass("Session");
     }
 
     @Override
@@ -82,40 +82,40 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         super.initProperties();
 
         // Подключения к серверу
-        computerConnection = findLCPByCompoundOldName("computerConnection");
-        remoteAddressConnection = findLCPByCompoundOldName("remoteAddressConnection");
-        userConnection = findLCPByCompoundOldName("userConnection");
-        userLoginConnection = findLCPByCompoundOldName("userLoginConnection");
-        connectionStatusConnection = (LCP<PropertyInterface>) findLCPByCompoundOldName("connectionStatusConnection");
+        computerConnection = findProperty("computerConnection");
+        remoteAddressConnection = findProperty("remoteAddressConnection");
+        userConnection = findProperty("userConnection");
+        userLoginConnection = findProperty("userLoginConnection");
+        connectionStatusConnection = (LCP<PropertyInterface>) findProperty("connectionStatusConnection");
 
-        connectTimeConnection = findLCPByCompoundOldName("connectTimeConnection");
-        disconnectConnection = findLAPByCompoundOldName("disconnectConnection");
-        addIfAProp(baseGroup, "Отключить", true, findLCPByCompoundOldName("disconnectTimeConnection"), 1, disconnectConnection, 1);
+        connectTimeConnection = findProperty("connectTimeConnection");
+        disconnectConnection = findAction("disconnectConnection");
+        addIfAProp(baseGroup, "Отключить", true, findProperty("disconnectTimeConnection"), 1, disconnectConnection, 1);
 
         // Логирование старта сервера
-        computerLaunch = findLCPByCompoundOldName("computerLaunch");
-        timeLaunch = findLCPByCompoundOldName("timeLaunch");
-        revisionLaunch = findLCPByCompoundOldName("revisionLaunch");
+        computerLaunch = findProperty("computerLaunch");
+        timeLaunch = findProperty("timeLaunch");
+        revisionLaunch = findProperty("revisionLaunch");
 
         // Ошибки выполнения
-        messageException = findLCPByCompoundOldName("messageException");
-        dateException = findLCPByCompoundOldName("dateException");
-        erTraceException = findLCPByCompoundOldName("erTraceException");
-        typeException =  findLCPByCompoundOldName("typeException");
-        clientClientException = findLCPByCompoundOldName("clientClientException");
-        loginClientException = findLCPByCompoundOldName("loginClientException");
+        messageException = findProperty("messageException");
+        dateException = findProperty("dateException");
+        erTraceException = findProperty("erTraceException");
+        typeException =  findProperty("typeException");
+        clientClientException = findProperty("clientClientException");
+        loginClientException = findProperty("loginClientException");
 
         // Открытые формы во время подключения
-        connectionFormCount = findLCPByCompoundOldName("connectionFormCount");
+        connectionFormCount = findProperty("connectionFormCount");
 
         // Сессия
-        currentSession = findLCPByCompoundOldName("currentSession");
-        connectionSession = findLCPByCompoundOldName("connectionSession");
-        navigatorElementSession = findLCPByCompoundOldName("navigatorElementSession");
-        quantityAddedClassesSession = findLCPByCompoundOldName("quantityAddedClassesSession");
-        quantityRemovedClassesSession = findLCPByCompoundOldName("quantityRemovedClassesSession");
-        quantityChangedClassesSession = findLCPByCompoundOldName("quantityChangedClassesSession");
-        changesSession = findLCPByCompoundOldName("changesSession");
+        currentSession = findProperty("currentSession");
+        connectionSession = findProperty("connectionSession");
+        navigatorElementSession = findProperty("navigatorElementSession");
+        quantityAddedClassesSession = findProperty("quantityAddedClassesSession");
+        quantityRemovedClassesSession = findProperty("quantityRemovedClassesSession");
+        quantityChangedClassesSession = findProperty("quantityChangedClassesSession");
+        changesSession = findProperty("changesSession");
 //        baseLM.objectClassName.makeLoggable(this, true);
     }
 

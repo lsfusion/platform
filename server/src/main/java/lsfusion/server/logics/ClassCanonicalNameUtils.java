@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import lsfusion.base.ExtInt;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
@@ -66,11 +67,11 @@ public final class ClassCanonicalNameUtils {
     public static DataClass defaultStringClassObj = StringClass.text;
     public static DataClass defaultNumericClassObj = NumericClass.get(5, 2);
     
-    public static DataClass getDataClass(String name) {
-        return dataClassNames.get(name); 
+    public static DataClass getCanonicalNameDataClass(String name) {
+        return canonicalDataClassNames.get(name); 
     }
     
-    private static Map<String, DataClass> dataClassNames = new HashMap<String, DataClass>() {{
+    private static Map<String, DataClass> canonicalDataClassNames = new HashMap<String, DataClass>() {{
         put("INTEGER", IntegerClass.instance);
         put("DOUBLE", DoubleClass.instance);
         put("LONG", LongClass.instance);
@@ -88,4 +89,50 @@ public final class ClassCanonicalNameUtils {
         put("STRING", defaultStringClassObj);
         put("NUMERIC", defaultNumericClassObj);
     }};
+
+    public static DataClass getScriptedDataClass(String name) {
+        assert !name.contains(" ");
+        if (scriptedSimpleDataClassNames.containsKey(name)) {
+            return scriptedSimpleDataClassNames.get(name);
+        } else if (name.matches("^((STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])|(VARSTRING\\[\\d+\\])|(VARISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\]))$")) {
+            if (name.startsWith("STRING[")) {
+                name = name.substring("STRING[".length(), name.length() - 1);
+                return StringClass.get(new ExtInt(Integer.parseInt(name)));
+            } else if (name.startsWith("ISTRING[")) {
+                name = name.substring("ISTRING[".length(), name.length() - 1);
+                return StringClass.geti(new ExtInt(Integer.parseInt(name)));
+            } else if (name.startsWith("VARSTRING[")) {
+                name = name.substring("VARSTRING[".length(), name.length() - 1);
+                return StringClass.getv(new ExtInt(Integer.parseInt(name)));
+            } else if (name.startsWith("VARISTRING[")) {
+                name = name.substring("VARISTRING[".length(), name.length() - 1);
+                return StringClass.getvi(new ExtInt(Integer.parseInt(name)));
+            } else if (name.startsWith("NUMERIC[")) {
+                String length = name.substring("NUMERIC[".length(), name.indexOf(","));
+                String precision = name.substring(name.indexOf(",") + 1, name.length() - 1);
+                return NumericClass.get(Integer.parseInt(length), Integer.parseInt(precision));
+            }            
+        }
+        return null;
+    }
+    
+    private static Map<String, DataClass> scriptedSimpleDataClassNames = new HashMap<String, DataClass>() {{
+        put("INTEGER", IntegerClass.instance);
+        put("DOUBLE", DoubleClass.instance);
+        put("LONG", LongClass.instance);
+        put("BOOLEAN", LogicalClass.instance);
+        put("DATE", DateClass.instance);
+        put("DATETIME", DateTimeClass.instance);
+        put("TIME", TimeClass.instance);
+        put("YEAR", YearClass.instance);
+        put("WORDFILE", WordClass.get(false, false));
+        put("IMAGEFILE", ImageClass.get(false, false));
+        put("PDFFILE", PDFClass.get(false, false));
+        put("CUSTOMFILE", DynamicFormatFileClass.get(false, false));
+        put("EXCELFILE", ExcelClass.get(false, false));
+        put("COLOR", ColorClass.instance);
+        put("TEXT", StringClass.text);
+        put("RICHTEXT", StringClass.richText);
+    }};
+
 }

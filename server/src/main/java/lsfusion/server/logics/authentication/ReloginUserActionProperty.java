@@ -15,7 +15,7 @@ import java.sql.SQLException;
 public class ReloginUserActionProperty extends ScriptingActionProperty {
 
     public ReloginUserActionProperty(AuthenticationLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, "reloginUser", new ValueClass[]{LM.findClassByCompoundName("CustomUser")});
+        super(LM, "reloginUser", new ValueClass[]{LM.findClass("CustomUser")});
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

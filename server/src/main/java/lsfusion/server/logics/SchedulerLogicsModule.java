@@ -40,31 +40,31 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public void initClasses() throws RecognitionException {
         super.initClasses();
 
-        scheduledTask = (ConcreteCustomClass) getClass("ScheduledTask");
-        scheduledTaskLog = (ConcreteCustomClass) getClass("ScheduledTaskLog");
-        scheduledClientTaskLog = (ConcreteCustomClass) getClass("ScheduledClientTaskLog");
+        scheduledTask = (ConcreteCustomClass) findClass("ScheduledTask");
+        scheduledTaskLog = (ConcreteCustomClass) findClass("ScheduledTaskLog");
+        scheduledClientTaskLog = (ConcreteCustomClass) findClass("ScheduledClientTaskLog");
     }
 
     @Override
     public void initProperties() throws RecognitionException {
         super.initProperties();
 
-        runAtStartScheduledTask = findLCPByCompoundOldName("runAtStartScheduledTask");
-        startDateScheduledTask = findLCPByCompoundOldName("startDateScheduledTask");
-        periodScheduledTask = findLCPByCompoundOldName("periodScheduledTask");
-        schedulerStartTypeScheduledTask = findLCPByCompoundOldName("schedulerStartTypeScheduledTask");
-        activeScheduledTask = findLCPByCompoundOldName("activeScheduledTask");
-        activeScheduledTaskDetail = findLCPByCompoundOldName("activeScheduledTaskDetail");
-        orderScheduledTaskDetail = findLCPByCompoundOldName("orderScheduledTaskDetail");
-        scheduledTaskScheduledTaskDetail = findLCPByCompoundOldName("scheduledTaskScheduledTaskDetail");
+        runAtStartScheduledTask = findProperty("runAtStartScheduledTask");
+        startDateScheduledTask = findProperty("startDateScheduledTask");
+        periodScheduledTask = findProperty("periodScheduledTask");
+        schedulerStartTypeScheduledTask = findProperty("schedulerStartTypeScheduledTask");
+        activeScheduledTask = findProperty("activeScheduledTask");
+        activeScheduledTaskDetail = findProperty("activeScheduledTaskDetail");
+        orderScheduledTaskDetail = findProperty("orderScheduledTaskDetail");
+        scheduledTaskScheduledTaskDetail = findProperty("scheduledTaskScheduledTaskDetail");
 
-        canonicalNamePropertyScheduledTaskDetail = findLCPByCompoundOldName("canonicalNamePropertyScheduledTaskDetail");
+        canonicalNamePropertyScheduledTaskDetail = findProperty("canonicalNamePropertyScheduledTaskDetail");
         
-        resultScheduledTaskLog = findLCPByCompoundOldName("resultScheduledTaskLog");
-        propertyScheduledTaskLog = findLCPByCompoundOldName("propertyScheduledTaskLog");
-        dateScheduledTaskLog = findLCPByCompoundOldName("dateScheduledTaskLog");
-        scheduledTaskScheduledTaskLog = findLCPByCompoundOldName("scheduledTaskScheduledTaskLog");
-        scheduledTaskLogScheduledClientTaskLog = findLCPByCompoundOldName("scheduledTaskLogScheduledClientTaskLog");
-        messageScheduledClientTaskLog = findLCPByCompoundOldName("messageScheduledClientTaskLog");
+        resultScheduledTaskLog = findProperty("resultScheduledTaskLog");
+        propertyScheduledTaskLog = findProperty("propertyScheduledTaskLog");
+        dateScheduledTaskLog = findProperty("dateScheduledTaskLog");
+        scheduledTaskScheduledTaskLog = findProperty("scheduledTaskScheduledTaskLog");
+        scheduledTaskLogScheduledClientTaskLog = findProperty("scheduledTaskLogScheduledClientTaskLog");
+        messageScheduledClientTaskLog = findProperty("messageScheduledClientTaskLog");
     }
 }

@@ -736,7 +736,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             ActionProperty setupPolicyAction = setupPolicyLAP.property;
             try {
                 setupPolicyAction.setCanonicalName(PropertyCanonicalNameUtils.createName(LM.getNamespace(), setupPolicyActionName, parser.getSignature()), LM.getSIDPolicy());
-            } catch (PropertyCanonicalNameParser.CNParseException e) {
+            } catch (PropertyCanonicalNameParser.ParseException e) {
                 Throwables.propagate(e);
             }
             setupPolicyAction.checkReadOnly = false;
@@ -1294,7 +1294,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             System.out.print('"' + testCase + "\": " + (res == null ? "null" : res.toString()));
             testCase = testCase.replaceAll(" ", "");
             System.out.println(" -> " + DefaultSIDPolicy.staticTransformCanonicalNameToSID(testCase));
-        } catch (PropertyCanonicalNameParser.CNParseException e) {
+        } catch (PropertyCanonicalNameParser.ParseException e) {
             System.out.println('"' + testCase + "\": error (" + e.getMessage() + ")");
         }
     }
@@ -1306,7 +1306,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             String name = parser.getName();
             List<AndClassSet> signature = parser.getSignature();
             return findProperty(namespaceName, name, signature);
-        } catch (PropertyCanonicalNameParser.CNParseException e) {
+        } catch (PropertyCanonicalNameParser.ParseException e) {
             return null;
         }
     }

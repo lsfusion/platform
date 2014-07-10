@@ -529,7 +529,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             ObjectValue defaultForms = securityLM.defaultFormsUser.readClasses(session, user);
             if (defaultForms instanceof NullValue) return DefaultFormsType.NONE;
             else {
-                String name = (String) LM.findLCPByCompoundOldName("staticName").read(session, defaultForms);
+                String name = (String) LM.findProperty("staticName").read(session, defaultForms);
                 if (name.contains("default"))
                     return DefaultFormsType.DEFAULT;
                 else if (name.contains("restore"))

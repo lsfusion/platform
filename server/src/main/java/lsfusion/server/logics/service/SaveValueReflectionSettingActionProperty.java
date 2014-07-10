@@ -25,8 +25,8 @@ public class SaveValueReflectionSettingActionProperty extends ScriptingActionPro
 
         try {
 
-            String nameReflectionSetting = (String) getLCP("nameReflectionSetting").read(context);
-            String newValue = (String) getLCP("valueReflectionSetting").read(context);
+            String nameReflectionSetting = (String) findProperty("nameReflectionSetting").read(context);
+            String newValue = (String) findProperty("valueReflectionSetting").read(context);
 
             if(nameReflectionSetting != null && newValue != null) {
                 

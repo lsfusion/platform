@@ -154,7 +154,7 @@ public abstract class LogicsModule {
         return result;
     }    
 
-    protected LP<?, ?> getLPByOldName(String name) {
+    protected LP<?, ?> getLPByName(String name) {
         List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
         for (List<LP<?, ?>> namedLPs : namedModuleProperties.values()) {
             for (LP<?, ?> property : namedLPs) {
@@ -173,12 +173,8 @@ public abstract class LogicsModule {
         return allLP != null ? allLP : new ArrayList<LP<?, ?>>(); 
     }
     
-    public LCP<?> getLCPByOldName(String name) {
-        return (LCP<?>) getLPByOldName(name);
-    }
-
-    public LAP<?> getLAPByOldName(String name) {
-        return (LAP<?>) getLPByOldName(name);
+    protected LCP<?> getLCPByName(String name) {
+        return (LCP<?>) getLPByName(name);
     }
 
     public Map<String, List<LP<?,?>>> getNamedModuleProperties() {
@@ -1331,7 +1327,7 @@ public abstract class LogicsModule {
             try {
                 String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
                 name = PropertyCanonicalNameUtils.logPropPrefix + namespace + "_" + lp.property.getName();
-            } catch (PropertyCanonicalNameParser.CNParseException e) {
+            } catch (PropertyCanonicalNameParser.ParseException e) {
                 Throwables.propagate(e);
             }
         } else {
@@ -1488,7 +1484,7 @@ public abstract class LogicsModule {
         if (property.getCanonicalName() != null) {
             try {
                 name = PropertyCanonicalNameUtils.drillDownPrefix + PropertyCanonicalNameParser.getNamespace(property.getCanonicalName()) + "_" + property.getName();
-            } catch (PropertyCanonicalNameParser.CNParseException e) {
+            } catch (PropertyCanonicalNameParser.ParseException e) {
                 Throwables.propagate(e);
             }
         } else {
@@ -1542,23 +1538,23 @@ public abstract class LogicsModule {
 
     public AnyValuePropertyHolder addAnyValuePropertyHolder(String sidPrefix, String captionPrefix, ValueClass... classes) {
         return new AnyValuePropertyHolder(
-                getLCPByOldName(sidPrefix + "Object"),
-                getLCPByOldName(sidPrefix + "String"),
-                getLCPByOldName(sidPrefix + "Integer"),
-                getLCPByOldName(sidPrefix + "Long"),
-                getLCPByOldName(sidPrefix + "Double"),
-                getLCPByOldName(sidPrefix + "Numeric"),
-                getLCPByOldName(sidPrefix + "Year"),
-                getLCPByOldName(sidPrefix + "DateTime"),
-                getLCPByOldName(sidPrefix + "Logical"),
-                getLCPByOldName(sidPrefix + "Date"),           
-                getLCPByOldName(sidPrefix + "Time"),
-                getLCPByOldName(sidPrefix + "Color"),
-                getLCPByOldName(sidPrefix + "WordFile"),
-                getLCPByOldName(sidPrefix + "ImageFile"),
-                getLCPByOldName(sidPrefix + "PdfFile"),
-                getLCPByOldName(sidPrefix + "CustomFile"),
-                getLCPByOldName(sidPrefix + "ExcelFile")
+                getLCPByName(sidPrefix + "Object"),
+                getLCPByName(sidPrefix + "String"),
+                getLCPByName(sidPrefix + "Integer"),
+                getLCPByName(sidPrefix + "Long"),
+                getLCPByName(sidPrefix + "Double"),
+                getLCPByName(sidPrefix + "Numeric"),
+                getLCPByName(sidPrefix + "Year"),
+                getLCPByName(sidPrefix + "DateTime"),
+                getLCPByName(sidPrefix + "Logical"),
+                getLCPByName(sidPrefix + "Date"),           
+                getLCPByName(sidPrefix + "Time"),
+                getLCPByName(sidPrefix + "Color"),
+                getLCPByName(sidPrefix + "WordFile"),
+                getLCPByName(sidPrefix + "ImageFile"),
+                getLCPByName(sidPrefix + "PdfFile"),
+                getLCPByName(sidPrefix + "CustomFile"),
+                getLCPByName(sidPrefix + "ExcelFile")
         );
     }
 

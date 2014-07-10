@@ -41,7 +41,7 @@ public class ApplyActionProperty extends KeepContextActionProperty {
     
     private LCP<?> getCanceled(BaseLogicsModule lm) {
         try {
-            return lm.findLCPByCompoundOldName("canceled");
+            return lm.findProperty("canceled");
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

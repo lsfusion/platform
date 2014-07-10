@@ -1081,7 +1081,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             }
         } else {
             assert grouping.propertyGroupings != null;
-            groupingObject = dataSession.addObject((ConcreteCustomClass) BL.reflectionLM.findClassByCompoundName("FormGrouping"));
+            groupingObject = dataSession.addObject((ConcreteCustomClass) BL.reflectionLM.findClass("FormGrouping"));
             BL.reflectionLM.groupObjectFormGrouping.change(groupObjectObject.getValue(), dataSession, groupingObject);
             BL.reflectionLM.nameFormGrouping.change(grouping.name, dataSession, groupingObject);
         }

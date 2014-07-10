@@ -66,7 +66,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     @Override
     public void initClasses() throws RecognitionException {
         super.initClasses();
-        notification = (ConcreteCustomClass) getClass("Notification");
+        notification = (ConcreteCustomClass) findClass("Notification");
     }
 
     @Override
@@ -76,35 +76,35 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         // ------- Управление почтой ------ //
 
         // Настройки почтового сервера
-        defaultInboxAccount = findLCPByCompoundOldName("defaultInboxAccount");
+        defaultInboxAccount = findProperty("defaultInboxAccount");
         
-        nameEncryptedConnectionTypeAccount = findLCPByCompoundOldName("nameEncryptedConnectionTypeAccount");
+        nameEncryptedConnectionTypeAccount = findProperty("nameEncryptedConnectionTypeAccount");
 
-        smtpHostAccount = findLCPByCompoundOldName("smtpHostAccount");
-        smtpPortAccount = findLCPByCompoundOldName("smtpPortAccount");
-        receiveHostAccount = findLCPByCompoundOldName("receiveHostAccount");
+        smtpHostAccount = findProperty("smtpHostAccount");
+        smtpPortAccount = findProperty("smtpPortAccount");
+        receiveHostAccount = findProperty("receiveHostAccount");
 
-        nameAccount = findLCPByCompoundOldName("nameAccount");
-        passwordAccount = findLCPByCompoundOldName("passwordAccount");
-        nameReceiveAccountTypeAccount = findLCPByCompoundOldName("nameReceiveAccountTypeAccount");
-        deleteMessagesAccount = findLCPByCompoundOldName("deleteMessagesAccount");
-        blindCarbonCopyAccount = findLCPByCompoundOldName("blindCarbonCopyAccount");
+        nameAccount = findProperty("nameAccount");
+        passwordAccount = findProperty("passwordAccount");
+        nameReceiveAccountTypeAccount = findProperty("nameReceiveAccountTypeAccount");
+        deleteMessagesAccount = findProperty("deleteMessagesAccount");
+        blindCarbonCopyAccount = findProperty("blindCarbonCopyAccount");
 
-        disableAccount = findLCPByCompoundOldName("disableAccount");
+        disableAccount = findProperty("disableAccount");
 
-        emailUserPassUser = findLAPByCompoundOldName("emailUserPassUser");      
+        emailUserPassUser = findAction("emailUserPassUser");      
         
         // Уведомления
-        isEventNotification = findLCPByCompoundOldName("isEventNotification");
-        emailFromNotification = findLCPByCompoundOldName("emailFromNotification");
-        emailToNotification = findLCPByCompoundOldName("emailToNotification");
-        emailToCCNotification = findLCPByCompoundOldName("emailToCCNotification");
-        emailToBCNotification = findLCPByCompoundOldName("emailToBCNotification");
-        textNotification = findLCPByCompoundOldName("textNotification");
-        subjectNotification = findLCPByCompoundOldName("subjectNotification");
-        inNotificationProperty = findLCPByCompoundOldName("inNotificationProperty");
+        isEventNotification = findProperty("isEventNotification");
+        emailFromNotification = findProperty("emailFromNotification");
+        emailToNotification = findProperty("emailToNotification");
+        emailToCCNotification = findProperty("emailToCCNotification");
+        emailToBCNotification = findProperty("emailToBCNotification");
+        textNotification = findProperty("textNotification");
+        subjectNotification = findProperty("subjectNotification");
+        inNotificationProperty = findProperty("inNotificationProperty");
 
-        fromAddressAccount = findLCPByCompoundOldName("fromAddressAccount");
+        fromAddressAccount = findProperty("fromAddressAccount");
     }
 
     public LAP addEAProp(ValueClass... params) throws ScriptingErrorLog.SemanticErrorException {
@@ -116,7 +116,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     }
 
     public LAP addEAProp(String subject, ValueClass... params) throws ScriptingErrorLog.SemanticErrorException {
-        return addEAProp(subject, findLCPByCompoundOldName("fromAddressAccount"), blindCarbonCopyAccount, params);
+        return addEAProp(subject, findProperty("fromAddressAccount"), blindCarbonCopyAccount, params);
     }
 
     public LAP addEAProp(LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {

@@ -2,7 +2,6 @@ package lsfusion.server.logics.scripted;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.FullFunctionSet;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ConcreteCustomClass;
@@ -94,14 +93,14 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
             errString = module.getErrorsDescription();
 
             String runName = name + ".run";
-            LAP<?> runAction = module.findLAPByCompoundOldName(runName);
+            LAP<?> runAction = module.findAction(runName);
             if (runAction != null && errString.isEmpty()) {
-                String textScript = (String) evalLM.findLCPByCompoundOldName("scriptStorage").read(context);
-                if (evalLM.findLCPByCompoundOldName("countTextScript").read(context) == null) {
+                String textScript = (String) evalLM.findProperty("scriptStorage").read(context);
+                if (evalLM.findProperty("countTextScript").read(context) == null) {
                     DataSession session = context.createSession();
-                    DataObject scriptObject = session.addObject((ConcreteCustomClass) evalLM.findClassByCompoundName("Script"));
-                    evalLM.findLCPByCompoundOldName("textScript").change(textScript, session, scriptObject);
-                    evalLM.findLCPByCompoundOldName("dateTimeScript").change(new Timestamp(Calendar.getInstance().getTime().getTime()), session, scriptObject);
+                    DataObject scriptObject = session.addObject((ConcreteCustomClass) evalLM.findClass("Script"));
+                    evalLM.findProperty("textScript").change(textScript, session, scriptObject);
+                    evalLM.findProperty("dateTimeScript").change(new Timestamp(Calendar.getInstance().getTime().getTime()), session, scriptObject);
                     session.apply(context);
                 }
                 runAction.execute(context);

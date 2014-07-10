@@ -35,12 +35,12 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
         super.initProperties();
         // Управление сервером базы данных
-        checkAggregationsAction = findLAPByCompoundOldName("checkAggregationsAction");
-        recalculateAction = findLAPByCompoundOldName("recalculateAction");
-        recalculateFollowsAction = findLAPByCompoundOldName("recalculateFollowsAction");
-        analyzeDBAction = findLAPByCompoundOldName("analyzeDBAction");
-        packAction = findLAPByCompoundOldName("packAction");
-        serviceDBAction = findLAPByCompoundOldName("serviceDBAction");
-        singleTransaction = findLCPByCompoundOldName("singleTransaction");
+        checkAggregationsAction = findAction("checkAggregationsAction");
+        recalculateAction = findAction("recalculateAction");
+        recalculateFollowsAction = findAction("recalculateFollowsAction");
+        analyzeDBAction = findAction("analyzeDBAction");
+        packAction = findAction("packAction");
+        serviceDBAction = findAction("serviceDBAction");
+        singleTransaction = findProperty("singleTransaction");
     }
 }

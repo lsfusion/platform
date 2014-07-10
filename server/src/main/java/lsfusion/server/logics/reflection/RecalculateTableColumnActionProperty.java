@@ -10,6 +10,7 @@ import lsfusion.server.logics.ReflectionLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.service.RunService;
 import lsfusion.server.logics.service.ServiceDBActionProperty;
 
@@ -22,8 +23,8 @@ public class RecalculateTableColumnActionProperty extends ScriptingActionPropert
 
     private final ClassPropertyInterface tableColumnInterface;
 
-    public RecalculateTableColumnActionProperty(ReflectionLogicsModule LM) {
-        super(LM, new ValueClass[]{LM.getClass("TableColumn")});
+    public RecalculateTableColumnActionProperty(ReflectionLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, LM.findClass("TableColumn"));
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         tableColumnInterface = i.next();
     }

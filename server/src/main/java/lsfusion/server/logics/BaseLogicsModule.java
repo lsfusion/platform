@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -160,47 +161,92 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @IdentityLazy
     public LAP getFormPrint() {
-        return formPrint = getLAPByOldName("formPrint");
+        try {
+            return formPrint = findAction("formPrint");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
     @IdentityLazy
     public LAP getFormEdit() {
-        return formEdit = getLAPByOldName("formEdit");
+        try {
+            return formEdit = findAction("formEdit");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
     @IdentityLazy
     public LAP getFormXls() {
-        return formXls = getLAPByOldName("formXls");
+        try {
+            return formXls = findAction("formXls");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
     @IdentityLazy
     public LAP getFormDrop() {
-        return formDrop = getLAPByOldName("formDrop");
+        try {
+            return formDrop = findAction("formDrop");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
     @IdentityLazy
     public LAP getFormRefresh() {
-        return formRefresh = getLAPByOldName("formRefresh");
+        try {
+            return formRefresh = findAction("formRefresh");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
     @IdentityLazy
     public LAP getFormApply() {
-        return formApply = getLAPByOldName("formApply");
+        try {
+            return formApply = findAction("formApply");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
     @IdentityLazy
     public LAP getFormCancel() {
-        return formCancel = getLAPByOldName("formCancel");
+        try {
+            return formCancel = findAction("formCancel");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
     @IdentityLazy
     public LAP getFormOk() {
-        return formOk = getLAPByOldName("formOk");
+        try {
+            return formOk = findAction("formOk");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
     @IdentityLazy
     public LAP getFormClose() {
-        return formClose = getLAPByOldName("formClose");
+        try {
+            return formClose = findAction("formClose");
+        } catch (ScriptingErrorLog.SemanticErrorException e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
     public PropertySIDPolicy getSIDPolicy() {
@@ -213,7 +259,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         
         super.initClasses();
 
-        formResult = (ConcreteCustomClass) getClass("FormResult");
+        formResult = (ConcreteCustomClass) findClass("FormResult");
     }
 
     @Override
@@ -222,28 +268,28 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         Version version = getVersion();
 
-        rootGroup = getGroup("root");
+        rootGroup = findGroup("root");
         rootGroup.changeChildrenToSimple(version);
         rootGroup.createContainer = false;
 
-        publicGroup = getGroup("public");
+        publicGroup = findGroup("public");
         publicGroup.createContainer = false;
 
-        privateGroup = getGroup("private");
+        privateGroup = findGroup("private");
         privateGroup.changeChildrenToSimple(version); 
         privateGroup.createContainer = false;
 
-        baseGroup = getGroup("base");
+        baseGroup = findGroup("base");
         baseGroup.createContainer = false;
 
-        recognizeGroup = getGroup("recognize");
+        recognizeGroup = findGroup("recognize");
         recognizeGroup.createContainer = false;
 
-        drillDownGroup = getGroup("drillDown");
+        drillDownGroup = findGroup("drillDown");
         drillDownGroup.changeChildrenToSimple(version);
         drillDownGroup.createContainer = false;
 
-        propertyPolicyGroup = getGroup("propertyPolicy");
+        propertyPolicyGroup = findGroup("propertyPolicy");
         propertyPolicyGroup.changeChildrenToSimple(version);
         propertyPolicyGroup.createContainer = false;
     }
@@ -302,48 +348,48 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         // через JOIN (не операторы)
 
-        canceled = findLCPByCompoundOldName("canceled");
+        canceled = findProperty("canceled");
 
-        apply = findLAPByCompoundOldName("apply");
-        cancel = findLAPByCompoundOldName("cancel");
+        apply = findAction("apply");
+        cancel = findAction("cancel");
 
-        onStarted = findLAPByCompoundOldName("onStarted");
+        onStarted = findAction("onStarted");
 
 
         // Обработка строк
-        upper = findLCPByCompoundOldName("upper");
+        upper = findProperty("upper");
 
         // Операции с целыми числами
-        subtractInteger = findLCPByCompoundOldName("subtractInteger");
+        subtractInteger = findProperty("subtractInteger");
 
-        seek = findLAPByCompoundOldName("seek");
+        seek = findAction("seek");
         
-        addedObject = findLCPByCompoundOldName("addedObject");
-        confirmed = findLCPByCompoundOldName("confirmed");
-        requestCanceled = findLCPByCompoundOldName("requestCanceled");
-        formResultProp = findLCPByCompoundOldName("formResult");
+        addedObject = findProperty("addedObject");
+        confirmed = findProperty("confirmed");
+        requestCanceled = findProperty("requestCanceled");
+        formResultProp = findProperty("formResult");
 
-        sleep = findLAPByCompoundOldName("sleep");
-        applyOnlyWithoutRecalc = findLAPByCompoundOldName("applyOnlyWithoutRecalc");
-        applyAll = findLAPByCompoundOldName("applyAll");
+        sleep = findAction("sleep");
+        applyOnlyWithoutRecalc = findAction("applyOnlyWithoutRecalc");
+        applyAll = findAction("applyAll");
 
-        staticName = findLCPByCompoundOldName("staticName");
-        staticCaption = findLCPByCompoundOldName("staticCaption");
+        staticName = findProperty("staticName");
+        staticCaption = findProperty("staticCaption");
         ((CalcProperty)staticCaption.property).aggProp = true;
 
-        objectClassName = findLCPByCompoundOldName("objectClassName");
-        statCustomObjectClass = findLCPByCompoundOldName("statCustomObjectClass");
+        objectClassName = findProperty("objectClassName");
+        statCustomObjectClass = findProperty("statCustomObjectClass");
         
         // Настройка отчетов
-        reportRowHeight = findLCPByCompoundOldName("reportRowHeight");
-        reportCharWidth = findLCPByCompoundOldName("reportCharWidth");
-        reportToStretch = findLCPByCompoundOldName("reportToStretch");
+        reportRowHeight = findProperty("reportRowHeight");
+        reportCharWidth = findProperty("reportCharWidth");
+        reportToStretch = findProperty("reportToStretch");
         
         // Настройка форм
-        defaultBackgroundColor = findLCPByCompoundOldName("defaultBackgroundColor");
-        defaultOverrideBackgroundColor = findLCPByCompoundOldName("defaultOverrideBackgroundColor");
-        defaultForegroundColor = findLCPByCompoundOldName("defaultForegroundColor");
-        defaultOverrideForegroundColor = findLCPByCompoundOldName("defaultOverrideForegroundColor");
+        defaultBackgroundColor = findProperty("defaultBackgroundColor");
+        defaultOverrideBackgroundColor = findProperty("defaultOverrideBackgroundColor");
+        defaultForegroundColor = findProperty("defaultForegroundColor");
+        defaultOverrideForegroundColor = findProperty("defaultOverrideForegroundColor");
 
         initNavigators();
     }
@@ -564,15 +610,15 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     public FormEntity<T> objectForm;
 
-    private void initNavigators() {
+    private void initNavigators() throws ScriptingErrorLog.SemanticErrorException {
 
         // Окна
         windows = new Windows();
-        windows.root = (ToolBarNavigatorWindow) getWindow("root");
+        windows.root = (ToolBarNavigatorWindow) findWindow("root");
 
-        windows.toolbar = (NavigatorWindow) getWindow("toolbar");
+        windows.toolbar = (NavigatorWindow) findWindow("toolbar");
 
-        windows.tree = (NavigatorWindow) getWindow("tree");
+        windows.tree = (NavigatorWindow) findWindow("tree");
 
         windows.forms = addWindow("forms", new AbstractWindow(null, getString("logics.window.forms"), 20, 20, 80, 79));
 
@@ -583,17 +629,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
         // todo : перенести во внутренний класс Navigator, как в Windows
         // Навигатор
-        root = getNavigatorElement("root");
+        root = findNavigatorElement("root");
 
-        administration = getNavigatorElement("administration");
+        administration = findNavigatorElement("administration");
 
-        application = getNavigatorElement("application");
+        application = findNavigatorElement("application");
 
-        configuration = getNavigatorElement("configuration");
+        configuration = findNavigatorElement("configuration");
 
-        systemEvents = getNavigatorElement("systemEvents");
+        systemEvents = findNavigatorElement("systemEvents");
 
-        objects = getNavigatorElement("objects");
+        objects = findNavigatorElement("objects");
     }
 
     public void initClassForms() {

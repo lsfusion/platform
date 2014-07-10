@@ -184,7 +184,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
         daemonTasksExecutor = Executors.newScheduledThreadPool(3, new DaemonThreadFactory("scheduler-daemon"));
 
-        Object afterFinish = ((ConcreteCustomClass) businessLogics.schedulerLM.findClassByCompoundName("SchedulerStartType")).getDataObject("afterFinish").object;
+        Object afterFinish = ((ConcreteCustomClass) businessLogics.schedulerLM.findClass("SchedulerStartType")).getDataObject("afterFinish").object;
 
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> scheduledTaskResult = scheduledTaskQuery.execute(session);
         for (int i = 0, size = scheduledTaskResult.size(); i < size; i++) {
