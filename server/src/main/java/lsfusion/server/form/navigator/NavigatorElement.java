@@ -230,4 +230,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         return new NavigatorElement(sID, caption);
     }
 
+   public boolean needsToBeSynchronized() {
+        return true;
+    }
 }

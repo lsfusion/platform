@@ -160,4 +160,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
         sID = pool.readString(inStream);
     }
+
+    public void finalizeAroundInit() {
+        container.finalizeChanges();
+    }
 }

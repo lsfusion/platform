@@ -1495,7 +1495,7 @@ public abstract class LogicsModule {
     
     public LAP<?> addDDAProp(CalcProperty property) {
         String name = nameForDrillDownAction(property);
-        DrillDownFormEntity drillDownFormEntity = property.createDrillDownForm(this);
+        DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this);
         LAP result = addMFAProp(baseLM.drillDownGroup, name, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
         if (property.getCanonicalName() != null) {
             List<AndClassSet> signature = new ArrayList<AndClassSet>();

@@ -130,4 +130,7 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
     public ImOrderSet<T> getNFOrderSet(Version version) {
         throw new UnsupportedOperationException();
     }
+
+    public void finalizeChanges() {
+    }
 }

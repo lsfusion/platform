@@ -1126,6 +1126,26 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             drawComponent = formView.get(property);
         return drawComponent.getTabContainer();
     }
+
+    public void finalizeAroundInit() {
+                        
+        groups.finalizeChanges();
+        treeGroups.finalizeChanges();
+        propertyDraws.finalizeChanges();
+        fixedFilters.finalizeChanges();
+        eventActions.finalizeChanges();
+        defaultOrders.finalizeChanges();
+        fixedOrders.finalizeChanges();
+        
+        hintsIncrementTable.finalizeChanges();
+        hintsNoUpdate.finalizeChanges();
+        
+        for(RegularFilterGroupEntity regularFilterGroup : getRegularFilterGroupsIt())
+            regularFilterGroup.finalizeAroundInit();
+        
+        getRichDesign().finalizeAroundInit();
+    }
+
     public static class ComponentSet extends AddSet<ComponentView, ComponentSet> {
 
         public ComponentSet() {

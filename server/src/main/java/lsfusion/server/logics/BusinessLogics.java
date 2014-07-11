@@ -1389,17 +1389,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         System.out.println(result);
     }
 
-    Collection<FormEntity> getFormEntities(){
-        Collection<FormEntity> result = new ArrayList<FormEntity>();
+    public ImSet<FormEntity> getFormEntities(){
+        MExclSet<FormEntity> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : logicModules) {
             for(NavigatorElement entry : logicsModule.moduleNavigators.values())
                 if(entry instanceof FormEntity)
-                    result.add((FormEntity) entry);
+                    mResult.exclAdd((FormEntity) entry);
         }
-        return result;
+        return mResult.immutable();
     }
 
-    Collection<NavigatorElement> getNavigatorElements(){
+    public Collection<NavigatorElement> getNavigatorElements(){
         Collection<NavigatorElement> result = new ArrayList<NavigatorElement>();
         for(LogicsModule logicsModule : logicModules) {
             result.addAll(logicsModule.moduleNavigators.values());

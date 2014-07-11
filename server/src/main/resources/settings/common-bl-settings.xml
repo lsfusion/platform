@@ -372,6 +372,17 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <bean id="finalizeFormsTask" class="lsfusion.server.logics.tasks.impl.FinalizeFormsTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="initClassFormsTask"/> <!-- class forms-->
+                <ref bean="setupDrillDownTask"/> <!-- drilldown forms-->
+                <ref bean="initReflectionEventsTask"/> <!-- log forms-->
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
     <bean id="initIndicesTask" class="lsfusion.server.logics.tasks.impl.InitIndicesTask">
         <property name="dependencies">
             <set>
@@ -387,10 +398,9 @@
             <set>
                 <ref bean="checkAbstractTask"/>
                 <ref bean="getPropertyListTask"/>
-                <ref bean="setupPropertyPolicyFormsTask"/>
                 <ref bean="finalizePropsTask"/>
                 <ref bean="initIndicesTask"/>
-                <ref bean="initClassFormsTask"/>
+                <ref bean="finalizeFormsTask"/>
             </set>
         </property>
     </bean>

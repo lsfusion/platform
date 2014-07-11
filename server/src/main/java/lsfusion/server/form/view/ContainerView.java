@@ -189,4 +189,12 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         columns = inStream.readInt();
         columnLabelsWidth = inStream.readInt();
     }
+
+    @Override
+    public void finalizeAroundInit() {
+        super.finalizeAroundInit();
+        
+        for(ComponentView child : getChildrenIt())
+            child.finalizeAroundInit();
+    }
 }

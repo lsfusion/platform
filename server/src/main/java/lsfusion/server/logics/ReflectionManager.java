@@ -120,7 +120,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
         List<List<Object>> elementsData = new ArrayList<List<Object>>();
         for (NavigatorElement element : businessLogics.getNavigatorElements()) {
-            if (exactJavaClass ? filterJavaClass == element.getClass() : filterJavaClass.isInstance(element)) {
+            if (element.needsToBeSynchronized() && exactJavaClass ? filterJavaClass == element.getClass() : filterJavaClass.isInstance(element)) {
                 elementsData.add(asList((Object) element.getSID(), element.caption));
             }
         }
@@ -220,13 +220,14 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     public void synchronizePropertyDraws() {
 
         List<List<Object>> dataPropertyDraws = new ArrayList<List<Object>>();
-        for (FormEntity formElement : businessLogics.getFormEntities()) {
-            ImList<PropertyDrawEntity> propertyDraws = formElement.getPropertyDrawsList();
-            for (PropertyDrawEntity drawEntity : propertyDraws) {
-                GroupObjectEntity groupObjectEntity = drawEntity.getToDraw(formElement);
-                dataPropertyDraws.add(asList(drawEntity.propertyObject.toString(), drawEntity.getSID(), (Object) formElement.getSID(), groupObjectEntity == null ? null : groupObjectEntity.getSID()));
+        for (FormEntity formElement : businessLogics.getFormEntities()) 
+            if(formElement.needsToBeSynchronized()) {
+                ImList<PropertyDrawEntity> propertyDraws = formElement.getPropertyDrawsList();
+                for (PropertyDrawEntity drawEntity : propertyDraws) {
+                    GroupObjectEntity groupObjectEntity = drawEntity.getToDraw(formElement);
+                    dataPropertyDraws.add(asList(drawEntity.propertyObject.toString(), drawEntity.getSID(), (Object) formElement.getSID(), groupObjectEntity == null ? null : groupObjectEntity.getSID()));
+                }
             }
-        }
 
         ImportField captionPropertyDrawField = new ImportField(reflectionLM.propertyCaptionValueClass);
         ImportField sidPropertyDrawField = new ImportField(reflectionLM.propertySIDValueClass);
@@ -267,14 +268,15 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     public void synchronizeGroupObjects() {
 
         List<List<Object>> dataGroupObjectList = new ArrayList<List<Object>>();
-        for (FormEntity<?> formElement : businessLogics.getFormEntities()) { //formSID - sidGroupObject
-            for (PropertyDrawEntity property : formElement.getPropertyDrawsList()) {
-                GroupObjectEntity groupObjectEntity = property.getToDraw(formElement);
-                if (groupObjectEntity != null)
-                    dataGroupObjectList.add(Arrays.asList((Object) formElement.getSID(),
-                            groupObjectEntity.getSID()));
+        for (FormEntity<?> formElement : businessLogics.getFormEntities()) 
+            if(formElement.needsToBeSynchronized()) { //formSID - sidGroupObject
+                for (PropertyDrawEntity property : formElement.getPropertyDrawsList()) {
+                    GroupObjectEntity groupObjectEntity = property.getToDraw(formElement);
+                    if (groupObjectEntity != null)
+                        dataGroupObjectList.add(Arrays.asList((Object) formElement.getSID(),
+                                groupObjectEntity.getSID()));
+                }
             }
-        }
 
         ImportField sidNavigatorElementField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportField sidGroupObjectField = new ImportField(reflectionLM.propertySIDValueClass);

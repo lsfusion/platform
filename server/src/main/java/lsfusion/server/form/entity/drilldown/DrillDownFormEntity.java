@@ -84,4 +84,9 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
 
         return design;
     }
+
+    @Override
+    public boolean needsToBeSynchronized() {
+        return false;
+    }
 }

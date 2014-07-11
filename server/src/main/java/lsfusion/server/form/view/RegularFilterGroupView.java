@@ -53,4 +53,11 @@ public class RegularFilterGroupView extends ComponentView {
         entity = pool.context.entity.getRegularFilterGroup(ID);
         filters = NFFact.finalOrderSet(pool.<RegularFilterView>deserializeList(inStream));
     }
+
+    @Override
+    public void finalizeAroundInit() {
+        super.finalizeAroundInit();
+        
+        filters.finalizeChanges();
+    }
 }

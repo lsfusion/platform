@@ -96,4 +96,8 @@ public class RegularFilterGroupEntity extends IdentityObject implements ServerId
         return form.getNFApplyObject(groupObjects, version);
     }
 
+    public void finalizeAroundInit() {
+        filters.finalizeChanges();
+        defaultFilterIndex.finalizeChanges();
+    }
 }

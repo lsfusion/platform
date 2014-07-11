@@ -887,4 +887,16 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
         fillComponentMaps();
     }
+
+    public void finalizeAroundInit() {
+        treeGroups.finalizeChanges();
+        groupObjects.finalizeChanges();
+        properties.finalizeChanges();
+        defaultOrders.finalizeChanges();
+        
+        for(RegularFilterGroupView regularFilter : getRegularFiltersIt())
+            regularFilter.finalizeAroundInit();
+                
+        mainContainer.finalizeAroundInit();
+    }
 }

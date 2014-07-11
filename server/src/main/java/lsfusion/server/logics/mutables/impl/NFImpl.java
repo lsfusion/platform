@@ -7,7 +7,7 @@ import lsfusion.server.logics.mutables.Version;
 
 import java.util.TreeMap;
 
-public abstract class NFImpl<M, F> extends MutableObject {
+public abstract class NFImpl<M, F> extends MutableObject implements NF {
 
     private Object changes;
     protected String getDebugInfo() {
@@ -70,5 +70,9 @@ public abstract class NFImpl<M, F> extends MutableObject {
     
     protected void setFinal(F set) {
         changes = set;
+    }
+
+    public void finalizeChanges() {
+        getFinal();
     }
 }

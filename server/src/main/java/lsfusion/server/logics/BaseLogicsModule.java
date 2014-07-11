@@ -404,7 +404,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     @IdentityStrongLazy
     public <P extends PropertyInterface> PropertyFormEntity<T> getLogForm(CalcProperty<P> property) {
-        return new PropertyFormEntity<T>(this, property, recognizeGroup);        
+        PropertyFormEntity<T> form = new PropertyFormEntity<T>(this, property, recognizeGroup);
+        addFormEntity(form);
+        return form;
     }
 
     public static int generateStaticNewID() {
