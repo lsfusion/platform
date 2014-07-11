@@ -2138,7 +2138,7 @@ focusActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic]
 	    (namespacePart=ID '.')? formPart=ID '.'
 	    {   
 	        if (inPropParseState()) {
-	            form = self.findFormByCompoundName(($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text);
+	            form = self.findForm(($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text);
             }
 	    }
 	    prop=formPropertySelector[form]
@@ -2823,7 +2823,7 @@ navigatorElementSelector returns [NavigatorElement element]
 	:	cid=compoundID
 		{
 			if (inPropParseState()) {
-				$element = self.findNavigatorElementByName($cid.sid);
+				$element = self.findNavigatorElement($cid.sid);
 			}
 		}
 	;
