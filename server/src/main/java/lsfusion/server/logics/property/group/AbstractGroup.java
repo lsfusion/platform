@@ -25,7 +25,6 @@ import java.util.List;
 
 public class AbstractGroup extends AbstractNode implements ServerIdentitySerializable {
 
-
     public String caption;
     public boolean createContainer = true;
     private int ID;

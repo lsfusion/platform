@@ -27,7 +27,7 @@ public class NFOrderSetImpl<T> extends NFASetImpl<T, NFOrderSetChange<T>, ImOrde
     }
 
     public ImOrderSet<T> getNF(Version version) {
-        ImOrderSet<T> result = proceedFinal(version);
+        ImOrderSet<T> result = proceedVersionFinal(version);
         if(result!=null)
             return result;
 

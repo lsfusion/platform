@@ -1,7 +1,6 @@
 package lsfusion.server.logics.mutables.impl;
 
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.impl.changes.NFRemove;
@@ -30,7 +29,7 @@ public abstract class NFASetImpl<T, CH extends NFSetChange<T>, R extends Iterabl
     protected abstract ImSet<T> getFinalSet(R fcol);
 
     public ImSet<T> getNFSet(Version version) {
-        R result = proceedFinal(version);
+        R result = proceedVersionFinal(version);
         if(result!=null)
             return getFinalSet(result);
 

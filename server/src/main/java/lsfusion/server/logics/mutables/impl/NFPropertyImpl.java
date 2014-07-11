@@ -36,9 +36,8 @@ import java.lang.ref.WeakReference;
     }
 
     public K getNF(Version version) {
-        K result = proceedFinal(version);
-        if(result!=null)
-            return result;
+        if(checkVersionFinal(version)) // не proceedVersionFinal, так как результат может быть null и его не отличишь
+            return getFinalChanges();
         
         ImList<K> list = getChanges().getNFList(version);
         int last = list.size();

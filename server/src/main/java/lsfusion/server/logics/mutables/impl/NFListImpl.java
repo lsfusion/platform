@@ -23,7 +23,7 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
     }
 
     public ImList<T> getNFList(Version version) {
-        ImList<T> result = proceedFinal(version);
+        ImList<T> result = proceedVersionFinal(version);
         if(result!=null)
             return result;
             
