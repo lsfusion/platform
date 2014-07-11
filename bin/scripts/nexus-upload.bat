@@ -1,20 +1,22 @@
-set BIN_JAR=shef-0.5.jar
-set SRC_JAR=shef-0.5-sources.jar
-set POM=shef-0.5.pom
+set GROUP=bibliothek.gui
+set ARTIFACT=dockingFramesCore
+set VERSION=1.1.2p10f
 
-set GROUP=net.atlanticbb
-set ARTIFACT=shef
-set VERSION=0.5
+set BIN_JAR=dockingFramesCore-1.1.2p10f.jar
+set POM=dockingFramesCore-1.1.2p10f.pom
+set SRC_JAR=dockingFramesCore-1.1.2p10f-sources.jar
+
+set REPO_ID=lsfusion.thirdparty
+set REPO_URL=http://lsfusion.ru/nexus/content/repositories/thirdparty/
 
 if "%SRC_JAR%" == "" (
     @echo "no sources"
 ) else (
-    call mvn deploy:deploy-file -Dfile=%SRC_JAR% -DrepositoryId=lsfusion -Durl=http://lsfusion.ru/nexus/content/repositories/releases/ -DgroupId=%GROUP% -DartifactId=%ARTIFACT% -Dversion=%VERSION% -Dpackaging=jar -Dclassifier=sources
+    call mvn deploy:deploy-file -Dfile=%SRC_JAR% -DrepositoryId=%REPO_ID% -Durl=%REPO_URL% -DgroupId=%GROUP% -DartifactId=%ARTIFACT% -Dversion=%VERSION% -Dpackaging=jar -Dclassifier=sources
 )
 
 if "%POM%" == "" (
-    call mvn deploy:deploy-file -Dfile=%BIN_JAR% -DrepositoryId=lsfusion -Durl=http://lsfusion.ru/nexus/content/repositories/releases/ -DgroupId=%GROUP% -DartifactId=%ARTIFACT% -Dversion=%VERSION% -Dpackaging=jar -DgeneratePom=true
+    call mvn deploy:deploy-file -Dfile=%BIN_JAR% -DrepositoryId=%REPO_ID% -Durl=%REPO_URL% -DgroupId=%GROUP% -DartifactId=%ARTIFACT% -Dversion=%VERSION% -Dpackaging=jar -DgeneratePom=true
 ) else (
-    call mvn deploy:deploy-file -Dfile=%BIN_JAR%  -DpomFile=%POM% -DrepositoryId=lsfusion -Durl=http://lsfusion.ru/nexus/content/repositories/releases/ -DgroupId=%GROUP% -DartifactId=%ARTIFACT% -Dversion=%VERSION% -Dpackaging=jar
+    call mvn deploy:deploy-file -Dfile=%BIN_JAR%  -DpomFile=%POM% -DrepositoryId=%REPO_ID% -Durl=%REPO_URL% -DgroupId=%GROUP% -DartifactId=%ARTIFACT% -Dversion=%VERSION% -Dpackaging=jar
 )
-
