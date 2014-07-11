@@ -70,23 +70,18 @@ public class SQLTemporaryPool {
                 assert !used.containsKey(matchTable);
                 used.put(matchTable, new WeakReference<TableOwner>(owner));
 //                SQLSession.addUsed(matchTable, owner, used, usedStacks);
-                session.unlockTemporary();
                 isNew.set(false);
                 return matchTable;
             }
 
         // если нет, "создаем" таблицу
         String table = getTableName(counter);
-        try {
-            session.createTemporaryTable(table, keys, properties, opOwner);
-            counter++;
-            assert !used.containsKey(table);
-            used.put(table, new WeakReference<TableOwner>(owner));
-            //        SQLSession.addUsed(table, owner, used, usedStacks);
-            matchTables.add(table);
-        } finally {
-            session.unlockTemporary();
-        }
+        session.createTemporaryTable(table, keys, properties, opOwner);
+        counter++;
+        assert !used.containsKey(table);
+        used.put(table, new WeakReference<TableOwner>(owner));
+        //        SQLSession.addUsed(table, owner, used, usedStacks);
+        matchTables.add(table);
         isNew.set(true);
         structs.put(table, fieldStruct);
         return table;

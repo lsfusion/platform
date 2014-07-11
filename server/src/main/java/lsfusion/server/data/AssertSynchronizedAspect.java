@@ -29,7 +29,7 @@ public class AssertSynchronizedAspect {
         if(prevWeakThread != null) { // работает не максимально надежно, но смысл в том что сам exception и так время от времени будет появляться
             Thread prevThread = prevWeakThread.get();
             ServerLoggers.assertLog(false, "ASSERT SYNCHRONIZED " + object + '\n' + 
-                    (prevThread == null? "DEAD" : prevThread.toString() + '\n' + ExceptionUtils.getStackTrace(prevThread.getStackTrace())) + " PREV CURRENT ");
+                    (prevThread == null? "DEAD" : prevThread.toString() + '\n' + ExceptionUtils.getStackTrace(prevThread.getStackTrace())) + " PREV CURRENT " + currentThread + '\n');
         }
         
         try {

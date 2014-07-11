@@ -242,10 +242,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         lock.writeLock().unlock();
     }
     
-    public void unlockTemporary() {
-        temporaryTablesLock.unlock();
-    }
-
     private Integer prevIsolation;
     private long transStartTime;
     public int getSecondsFromTransactStart() {
@@ -595,7 +591,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             Result<Boolean> isNew = new Result<Boolean>();
             // в зависимости от политики или локальный пул (для сессии) или глобальный пул
-            table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, isNew, owner, opOwner); //, sessionTablesStackGot
+            try {
+                table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, isNew, owner, opOwner); //, sessionTablesStackGot
+            } finally {
+                temporaryTablesLock.unlock();
+            }
 //            fifo.add("GET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + owner + " " + opOwner  + " " + this + " " + ExceptionUtils.getStackTrace());
             try {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
