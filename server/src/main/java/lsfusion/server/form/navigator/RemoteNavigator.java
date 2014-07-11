@@ -659,23 +659,22 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         shutdownForms();
         unexport();
         
-        shutdown();
+        shutdown(false);
     }
 
     @Override
     public void unreferenced() {
-        setContextAndShutdown();
-    }
-
-    private synchronized void setContextAndShutdown() {
-        ThreadLocalContext.set(context);
-        shutdown();
+        shutdown(true);
     }
 
     private boolean closed;
-    private synchronized void shutdown() {
+    private synchronized void shutdown(boolean setContext) {
         if(!closed) {
             closed = true;
+            
+            if(setContext)
+                ThreadLocalContext.set(context);
+                
             ServerLoggers.exinfoLog("NAVIGATOR CLOSE " + this + " " + sql);
             try {
                 navigatorManager.navigatorClosed(this);
@@ -691,7 +690,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     protected void finalize() throws Throwable {
         try {
-            setContextAndShutdown();
+            shutdown(true);
         } catch (Throwable ignored) {
         } finally {
             super.finalize();
