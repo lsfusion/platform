@@ -17,7 +17,7 @@ import java.util.List;
 
 public abstract class AbstractNode extends ImmutableObject {
 
-    NFProperty<AbstractGroup> parent = NFFact.property(true, this);
+    NFProperty<AbstractGroup> parent = NFFact.property(true);
     public AbstractGroup getParent() { return parent.get(); }
     public AbstractGroup getNFParent(Version version) { return parent.getNF(version); }
 

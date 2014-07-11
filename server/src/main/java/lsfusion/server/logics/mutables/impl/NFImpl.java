@@ -16,8 +16,9 @@ public abstract class NFImpl<M, F> extends MutableObject {
     protected M getChanges() {
         if(checkFinal(changes)) {
             String debugInfo = getDebugInfo();
-            ServerLoggers.assertLog(false, "NF COLLECTION RESTARTED" + (debugInfo !=null ? " " + debugInfo : ""));
-            changes = prevChanges;
+            throw new RuntimeException("NF COLLECTION RESTARTED" + (debugInfo !=null ? " " + debugInfo : ""));
+//            ServerLoggers.assertLog(false, "NF COLLECTION RESTARTED" + (debugInfo !=null ? " " + debugInfo : ""));
+//            changes = prevChanges;
         }
         return (M)changes;
     }
@@ -50,12 +51,12 @@ public abstract class NFImpl<M, F> extends MutableObject {
     public abstract F getNF(Version version);
     protected abstract boolean checkFinal(Object object);
     
-    Object prevChanges;
+//    Object prevChanges;
     protected F getFinal() {
         if(!checkFinal(changes)) {
             synchronized (this) {
                 if(!checkFinal(changes)) {
-                    prevChanges = changes;
+//                    prevChanges = changes;
                     changes = getNF(Version.LAST);
                 }
             }

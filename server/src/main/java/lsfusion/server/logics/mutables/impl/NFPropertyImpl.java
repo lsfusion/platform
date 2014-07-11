@@ -1,4 +1,4 @@
-    package lsfusion.server.logics.mutables.impl;
+package lsfusion.server.logics.mutables.impl;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.logics.mutables.Version;
@@ -8,7 +8,7 @@ import lsfusion.server.logics.mutables.interfaces.NFProperty;
 
 import java.lang.ref.WeakReference;
 
-    public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFProperty<K> {
+public class NFPropertyImpl<K> extends NFImpl<NFList<K>, K> implements NFProperty<K> {
 
     public NFPropertyImpl() {
     }
