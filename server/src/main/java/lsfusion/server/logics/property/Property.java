@@ -436,11 +436,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public void finalizeAroundInit() {
+        super.finalizeAroundInit();
+        
         editActions = editActions == null ? MapFact.EMPTY() : ((MMap)editActions).immutable();
         keyBindings = keyBindings == null ? MapFact.EMPTY() : ((MMap)keyBindings).immutable();
         contextMenuBindings = contextMenuBindings == null ? MapFact.EMPTYORDER() : ((MOrderMap)contextMenuBindings).immutableOrder();
-        
-        finalizeParent();
     }
 
     public abstract void prereadCaches();
