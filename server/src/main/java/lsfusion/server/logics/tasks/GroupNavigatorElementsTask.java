@@ -8,13 +8,14 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.Property;
 
-public abstract class GroupFormsTask extends GroupSplitTask<FormEntity> {
+public abstract class GroupNavigatorElementsTask extends GroupSplitTask<NavigatorElement> {
 
     @Override
-    protected ImSet<FormEntity> getObjects(BusinessLogics<?> BL) {
-        return BL.getFormEntities();
+    protected ImSet<NavigatorElement> getObjects(BusinessLogics<?> BL) {
+        return BL.getNavigatorElements();
     }
 }

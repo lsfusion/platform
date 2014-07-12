@@ -1128,6 +1128,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void finalizeAroundInit() {
+        super.finalizeAroundInit();
                         
         groups.finalizeChanges();
         treeGroups.finalizeChanges();

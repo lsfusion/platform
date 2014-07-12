@@ -372,7 +372,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="finalizeFormsTask" class="lsfusion.server.logics.tasks.impl.FinalizeFormsTask">
+    <bean id="finalizeFormsTask" class="lsfusion.server.logics.tasks.impl.FinalizeNavigatorElementsTask">
         <property name="dependencies">
             <set>
                 <ref bean="initClassFormsTask"/> <!-- class forms-->

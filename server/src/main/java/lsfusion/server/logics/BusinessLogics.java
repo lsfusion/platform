@@ -1399,12 +1399,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return mResult.immutable();
     }
 
-    public Collection<NavigatorElement> getNavigatorElements(){
-        Collection<NavigatorElement> result = new ArrayList<NavigatorElement>();
+    public ImSet<NavigatorElement> getNavigatorElements(){
+        MExclSet<NavigatorElement> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : logicModules) {
-            result.addAll(logicsModule.moduleNavigators.values());
+            for(NavigatorElement entry : logicsModule.moduleNavigators.values())
+                mResult.exclAdd(entry);            
         }
-        return result;
+        return mResult.immutable();
     }
 
     public FormEntity getFormEntity(String formSID){

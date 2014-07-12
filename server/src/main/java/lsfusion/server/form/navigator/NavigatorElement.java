@@ -233,4 +233,9 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
    public boolean needsToBeSynchronized() {
         return true;
     }
+
+    public void finalizeAroundInit() {
+        parent.finalizeChanges();
+        children.finalizeChanges();
+    }
 }
