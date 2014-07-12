@@ -1046,7 +1046,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         DrillDownFormEntity drillDown = createDrillDownForm(LM);
         if(drillDown != null)
             LM.addFormEntity(drillDown);
-        return null;
+        return drillDown;
     }
 
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
