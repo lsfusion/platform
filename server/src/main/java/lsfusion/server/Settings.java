@@ -988,7 +988,7 @@ public class Settings {
         this.queryRowCountOptDivider = queryRowCountOptDivider;
     }
 
-    private int queryLengthLimit = 1000 * 1000;
+    private int queryLengthLimit = 2000 * 1000;
 
     public int getQueryLengthLimit() {
         return queryLengthLimit;
