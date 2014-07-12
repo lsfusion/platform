@@ -135,4 +135,14 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
         needVerticalScroll = inStream.readBoolean();
     }
+
+    public void finalizeAroundInit() {
+        grid.finalizeAroundInit();
+        showType.finalizeAroundInit();
+        toolbar.finalizeAroundInit();
+        filter.finalizeAroundInit();
+        
+        for(ObjectView object : this) 
+            object.finalizeAroundInit();
+    }
 }

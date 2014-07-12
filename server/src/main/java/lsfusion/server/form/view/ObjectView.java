@@ -63,4 +63,8 @@ public class ObjectView implements ServerIdentitySerializable {
 
         entity = pool.context.entity.getObject(ID);
     }
+
+    public void finalizeAroundInit() {
+        classChooser.finalizeAroundInit();
+    }
 }

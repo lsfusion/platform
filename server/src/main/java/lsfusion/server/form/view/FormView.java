@@ -891,9 +891,18 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     public void finalizeAroundInit() {
         treeGroups.finalizeChanges();
         groupObjects.finalizeChanges();
-        properties.finalizeChanges();
-        defaultOrders.finalizeChanges();
         
+        for(TreeGroupView property : getTreeGroupsIt())
+            property.finalizeAroundInit();
+
+        for(GroupObjectView property : getGroupObjectsIt())
+            property.finalizeAroundInit();
+
+        for(PropertyDrawView property : getPropertiesIt())
+            property.finalizeAroundInit();
+
+        defaultOrders.finalizeChanges();
+
         for(RegularFilterGroupView regularFilter : getRegularFiltersIt())
             regularFilter.finalizeAroundInit();
                 

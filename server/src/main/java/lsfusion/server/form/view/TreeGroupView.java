@@ -75,4 +75,12 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 
         entity = pool.context.entity.getTreeGroup(ID);
     }
+
+    @Override
+    public void finalizeAroundInit() {
+        super.finalizeAroundInit();
+
+        toolbar.finalizeAroundInit();
+        filter.finalizeAroundInit();
+    }
 }
