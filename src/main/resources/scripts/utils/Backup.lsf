@@ -2,10 +2,10 @@ MODULE Backup;
 
 REQUIRE System, Reflection;
 
-makeBackup 'Сделать резервное копирование'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' TOOLBAR;
-saveBackup 'Скачать резервную копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' TOOLBAR;
-deleteBackup 'Удалить резервную копию'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' CONFIRM;
-decimateBackups 'Проредить резервные копии'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DecimateBackupsActionProperty' CONFIRM;
+makeBackup 'Копировать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' TOOLBAR;
+saveBackup 'Скачать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' TOOLBAR;
+deleteBackup 'Удалить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' CONFIRM;
+decimateBackups 'Проредить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DecimateBackupsActionProperty' TOOLBAR CONFIRM;
 
 CLASS Backup 'Резервная копия';
 TABLE backup(Backup);
