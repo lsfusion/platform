@@ -37,6 +37,7 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.LastVersion;
+import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
@@ -1495,7 +1496,7 @@ public abstract class LogicsModule {
     
     public LAP<?> addDDAProp(CalcProperty property) {
         String name = nameForDrillDownAction(property);
-        DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this);
+        DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this, name);
         LAP result = addMFAProp(baseLM.drillDownGroup, name, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
         if (property.getCanonicalName() != null) {
             List<AndClassSet> signature = new ArrayList<AndClassSet>();
@@ -2014,6 +2015,7 @@ public abstract class LogicsModule {
         return form;
     }
 
+    @NFLazy
     protected void addModuleNavigator(NavigatorElement<?> element) {
         assert !moduleNavigators.containsKey(element.getSID());
         moduleNavigators.put(element.getSID(), element);

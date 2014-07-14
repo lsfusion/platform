@@ -435,6 +435,7 @@
     <bean id="syncPropertyDrawsTask" class="lsfusion.server.logics.tasks.impl.SyncPropertyDrawsTask">
         <property name="dependencies">
             <set>
+                <ref bean="syncNavigatorElementsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
@@ -443,6 +444,7 @@
     <bean id="syncParentsTask" class="lsfusion.server.logics.tasks.impl.SyncParentsTask">
         <property name="dependencies">
             <set>
+                <ref bean="syncNavigatorElementsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
@@ -467,6 +469,7 @@
     <bean id="syncGroupObjectsTask" class="lsfusion.server.logics.tasks.impl.SyncGroupObjectsTask">
         <property name="dependencies">
             <set>
+                <ref bean="syncNavigatorElementsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>

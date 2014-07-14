@@ -120,7 +120,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
         List<List<Object>> elementsData = new ArrayList<List<Object>>();
         for (NavigatorElement element : businessLogics.getNavigatorElements()) {
-            if (element.needsToBeSynchronized() && exactJavaClass ? filterJavaClass == element.getClass() : filterJavaClass.isInstance(element)) {
+            if (element.needsToBeSynchronized() && (exactJavaClass ? filterJavaClass == element.getClass() : filterJavaClass.isInstance(element))) {
                 elementsData.add(asList((Object) element.getSID(), element.caption));
             }
         }
@@ -183,10 +183,11 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         Set<String> parentInfo = new HashSet<String>();
         ImSet<NavigatorElement> children = (ImSet<NavigatorElement>) element.getChildren();
         parentInfo.add(element.getSID());
-        for (NavigatorElement child : children) {
-            parentInfo.add(child.getSID());
-            parentInfo.addAll(getElementsWithParent(child));
-        }
+        for (NavigatorElement child : children) 
+            if(child.needsToBeSynchronized()) {
+                parentInfo.add(child.getSID());
+                parentInfo.addAll(getElementsWithParent(child));
+            }
         return parentInfo;
     }
 
@@ -194,13 +195,14 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         List<List<Object>> parentInfo = new ArrayList<List<Object>>();
         ImSet<NavigatorElement> children = (ImSet<NavigatorElement>) element.getChildren();
         int counter = 1;
-        for (NavigatorElement child : children) {
-            parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID(), counter++));
-            parentInfo.addAll(getRelations(child));
-        }
+        for (NavigatorElement child : children) 
+            if(child.needsToBeSynchronized()) {
+                parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID(), counter++));
+                parentInfo.addAll(getRelations(child));
+            }
         counter = 1;
         for(NavigatorElement navigatorElement : businessLogics.getNavigatorElements()) {
-            if(!elementsWithParent.contains(navigatorElement.getSID()))
+            if(navigatorElement.needsToBeSynchronized() && !elementsWithParent.contains(navigatorElement.getSID()))
                 parentInfo.add(BaseUtils.toList((Object) navigatorElement.getSID(), "noParentGroup", counter++));
         }
         return parentInfo;
@@ -210,10 +212,11 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         List<List<Object>> parentInfo = new ArrayList<List<Object>>();
         ImSet<NavigatorElement> children = (ImSet<NavigatorElement>) element.getChildren();
         int counter = 1;
-        for (NavigatorElement child : children) {
-            parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID(), counter++));
-            parentInfo.addAll(getRelations(child));
-        }
+        for (NavigatorElement child : children)
+            if(child.needsToBeSynchronized()) {
+                parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID(), counter++));
+                parentInfo.addAll(getRelations(child));
+            }
         return parentInfo;
     }
 

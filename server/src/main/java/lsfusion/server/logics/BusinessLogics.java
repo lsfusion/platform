@@ -719,12 +719,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private void setupDrillDown(boolean isDebug) {
-        for (Property property : getOrderProperties()) {
-            LM.setupDrillDownProperty(property, isDebug);
-        }
-    }
-
     public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropByCN, Property property) {
         String propertyCN = property.getCanonicalName();
         if (propertyCN != null) {
