@@ -2013,7 +2013,7 @@ public abstract class LogicsModule {
         form.setSID(transformNameToSID(form.getSID()));
         addModuleNavigator(form);
         return form;
-    }
+    } 
 
     @NFLazy
     protected void addModuleNavigator(NavigatorElement<?> element) {

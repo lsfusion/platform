@@ -56,32 +56,73 @@ saveScriptAction 'Сохранить' = ACTION (script) {
     dateTimeScript(script) <- currentDateTime();
 }
 
+// Универсальная таблица для последующего импорта
+CLASS Row 'Ряд';
+TABLE row(Row);
+
+string1Row 'Строка 1' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string2Row 'Строка 2' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string3Row 'Строка 3' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string4Row 'Строка 4' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string5Row 'Строка 5' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string6Row 'Строка 6' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string7Row 'Строка 7' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string8Row 'Строка 8' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string9Row 'Строка 9' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+string10Row 'Строка 10' = DATA VARSTRING[1000] (Row) MINCHARWIDTH 10 PREFCHARWIDTH 20;
+
+numeric1Row 'Число 1' = DATA NUMERIC[20,7] (Row);
+numeric2Row 'Число 2' = DATA NUMERIC[20,7] (Row);
+numeric3Row 'Число 3' = DATA NUMERIC[20,7] (Row);
+numeric4Row 'Число 4' = DATA NUMERIC[20,7] (Row);
+numeric5Row 'Число 5' = DATA NUMERIC[20,7] (Row);
+
+date1Row 'Дата 1' = DATA DATE (Row);
+date2Row 'Дата 2' = DATA DATE (Row);
+date3Row 'Дата 3' = DATA DATE (Row);
+
 FORM script 'Скрипт'
-    OBJECTS s=Script FIXED PANEL
+    OBJECTS s = Script FIXED PANEL
     PROPERTIES(s) nameScript SELECTOR EVENTS ON CHANGE s updateScriptStorage(s) 
     PROPERTIES() scriptStorage,
                  scriptExecution, actionBodyExecution, formExecution, saveAsScriptAction
-    PROPERTIES(s) saveScriptAction             
+    PROPERTIES(s) saveScriptAction
+                 
+    OBJECTS r = Row FIXED GRID
+    PROPERTIES(r) string1Row, string2Row, string3Row, string4Row, string5Row, string6Row, string7Row, string8Row, string9Row, string10Row 
+    PROPERTIES(r) numeric1Row, numeric2Row, numeric3Row, numeric4Row, numeric5Row, date1Row, date2Row, date3Row
+    PROPERTIES(r) ADDOBJ, DELETESESSION
 ;
 
 DESIGN script FROM DEFAULT {
-    NEW script {
-        caption = 'Сохранённые скрипты';
-        type = CONTAINERH;
-        ADD PROPERTY(nameScript(s)) { font = 'bold 24'; alignment = STRETCH; }
-        ADD PROPERTY(saveScriptAction(s)) { font = 'bold 24'; alignment = STRETCH; }
-        ADD PROPERTY(saveAsScriptAction()) { font = 'bold 24'; alignment = STRETCH; }
-    }
-    ADD PROPERTY(scriptStorage()) {
-        panelLabelAbove = TRUE;    
+    NEW pane {
         fill = 1;
-    }
-    NEW run {
-        caption = 'Запуск';
-        type = CONTAINERH;
-        ADD PROPERTY(scriptExecution()) { font = 'bold 24'; }
-        ADD PROPERTY(actionBodyExecution()) { font = 'bold 24'; }
-        ADD PROPERTY(formExecution()) { font = 'bold 24'; }
+        type = TABBED;
+        NEW scriptPane {
+            fill = 1;        
+            caption = 'Скрипт';
+            NEW script {
+                caption = 'Сохранённые скрипты';
+                type = CONTAINERH;
+                ADD PROPERTY(nameScript(s)) { font = 'bold 24'; alignment = STRETCH; }
+                ADD PROPERTY(saveScriptAction(s)) { font = 'bold 24'; alignment = STRETCH; }
+                ADD PROPERTY(saveAsScriptAction()) { font = 'bold 24'; alignment = STRETCH; }
+            }
+            ADD PROPERTY(scriptStorage()) {
+                panelLabelAbove = TRUE;    
+                fill = 1;
+            }
+            NEW run {
+                caption = 'Запуск';
+                type = CONTAINERH;
+                ADD PROPERTY(scriptExecution()) { font = 'bold 24'; }
+                ADD PROPERTY(actionBodyExecution()) { font = 'bold 24'; }
+                ADD PROPERTY(formExecution()) { font = 'bold 24'; }
+            }
+        }
+        ADD r.box {
+            caption = 'Данные';
+        }
     }
     ADD functions.box;
 }

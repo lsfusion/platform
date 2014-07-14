@@ -107,6 +107,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public EmailLogicsModule emailLM;
     public SchedulerLogicsModule schedulerLM;
     public TimeLogicsModule timeLM;
+    public ScriptingLogicsModule evalScriptLM;
 
     protected LogicsInstance logicsInstance;
 
@@ -256,6 +257,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         emailLM = addModule(new EmailLogicsModule(this, LM));
         schedulerLM = addModule(new SchedulerLogicsModule(this, LM));
         timeLM = addModule(new TimeLogicsModule(this, LM));
+        evalScriptLM = addModule(new ScriptingLogicsModule(
+               SchedulerLogicsModule.class.getResourceAsStream("/lsfusion/system/EvalScript.lsf"), 
+               "/lsfusion/system/EvalScript.lsf", LM, this));
     }
 
     protected void addModulesFromResource(List<String> paths, List<String> excludedPaths) throws IOException {
