@@ -30,11 +30,13 @@
 (setupPropertyPolicyFormsTask) <-- (finalizePropsTask)
 (finalizeTask) <-- (initClassFormsTask)
 (finalizeTask) <-- (initIndicesTask)
+(initClassFormsTask) <-- (finalizeFormsTask)
+(setupDrillDownTask) <-- (finalizeFormsTask)
+(initReflectionEventsTask) <-- (finalizeFormsTask)
 (checkAbstractTask) <-- (initBLTask)
 (getPropertyListTask) <-- (initBLTask)
-(setupPropertyPolicyFormsTask) <-- (initBLTask)
 (finalizePropsTask) <-- (initBLTask)
 (initIndicesTask) <-- (initBLTask)
-(initClassFormsTask) <-- (initBLTask)
+(finalizeFormsTask) <-- (initBLTask)
 
 @enduml
