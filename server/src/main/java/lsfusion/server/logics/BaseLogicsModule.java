@@ -459,8 +459,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     public class ObjectValuePropertySet extends MapClassesPropertySet<ValueClass, ObjectValueProperty> {
-        private Map<String, LP> sidToLP = new HashMap<String, LP>();
-        private static final String prefix = "objectValueProperty_";
+        private static final String name = "objectValue";
 
         @Override
         protected boolean isInInterface(ImSet<ValueClassWrapper> classes) {
@@ -487,12 +486,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             assert classes.length == 1;
 
             ValueClass valueClass = classes[0].getBaseClass();
-
-            String sid = prefix + valueClass.getSID();
-            ObjectValueProperty property = new ObjectValueProperty(sid, valueClass);
+            ObjectValueProperty property = new ObjectValueProperty(name, valueClass);
+            property.setName(name, false);
+            property.setCanonicalName(PropertyCanonicalNameUtils.createName(getNamespace(), name, valueClass.getUpSet()), getSIDPolicy());
+            
             LCP prop = new LCP<ClassPropertyInterface>(property);
             registerProperty(prop, version);
-            sidToLP.put(sid, prop);
             setParent(property, version);
             return property;
         }
