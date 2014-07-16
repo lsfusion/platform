@@ -88,12 +88,9 @@ public abstract class LogicsModule {
 
     public String getErrorsDescription() { return "";}
 
-    /// Добавляется к SID объектов модуля: классам, группам, свойствам...
-    public abstract String getNamePrefix();
-
     // Используется для всех элементов системы кроме свойств и действий
     public String transformNameToSID(String name) {
-        return transformNameToSID(getNamePrefix(), name);
+        return transformNameToSID(getNamespace(), name);
     }
 
     public static String transformNameToSID(String modulePrefix, String name) {
