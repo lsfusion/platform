@@ -704,7 +704,6 @@ formPropertyUList returns [List<String> aliases, List<PropertyUsage> properties,
 formPropertyUsage returns [PropertyUsage propUsage]
 	:	pu=propertyUsage        { $propUsage = $pu.propUsage; }
 	|	cid='OBJVALUE'	        { $propUsage = new PropertyUsage($cid.text); }
-	|	cid='SELECTION'	        { $propUsage = new PropertyUsage($cid.text); }
 	|	cid='ADDOBJ'	        { $propUsage = new PropertyUsage($cid.text); }
 	|	cid='ADDFORM'	        { $propUsage = new PropertyUsage($cid.text); }
 	|	cid='ADDNESTEDFORM'	    { $propUsage = new PropertyUsage($cid.text); }

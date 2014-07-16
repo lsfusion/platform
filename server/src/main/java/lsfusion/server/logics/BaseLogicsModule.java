@@ -135,7 +135,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
     public LCP reportRowHeight, reportCharWidth, reportToStretch;
     
-    public SelectionPropertySet selection;
     public ObjectValuePropertySet objectValue;
 
     public AbstractGroup privateGroup;
@@ -313,9 +312,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         flowReturn = addProperty(null, new LAP(new ReturnActionProperty()));
 
         // Множества свойств
-        selection = new SelectionPropertySet();
-        publicGroup.add(selection, version);
-
         objectValue = new ObjectValuePropertySet();
         publicGroup.add(objectValue, version);
 
@@ -462,83 +458,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         protected abstract K createKey(ValueClass[] classes);
     }
 
-    public class SelectionPropertySet extends MapClassesPropertySet<ImMap<ValueClass, Integer>, SelectionProperty> {
-        static private final String prefix = "SelectionProperty_";
-        private MAddExclMap<String, LP> selectionLP = MapFact.mBigStrongMap();
-
-        protected Class<?> getPropertyClass() {
-            return SelectionProperty.class;
-        }
-
-        @Override
-        protected boolean isInInterface(ImSet<ValueClassWrapper> classes) {
-            return classes.size() >= 1;
-        }
-
-        @Override
-        protected ImOrderSet<?> getPropertyInterfaces(SelectionProperty property, ValueClass[] classes) {
-            int intNum = classes.length;
-            PropertyInterface[] interfaces = new PropertyInterface[intNum];
-            boolean[] was = new boolean[intNum];
-            for (ClassPropertyInterface iface : property.interfaces) {
-                for (int i = 0; i < intNum; i++) {
-                    if (!was[i] && iface.interfaceClass == classes[i]) {
-                        interfaces[i] = iface;
-                        was[i] = true;
-                        break;
-                    }
-                }
-            }
-            return SetFact.toOrderExclSet(interfaces);
-        }
-
-        protected ImMap<ValueClass, Integer> createKey(ValueClass[] classes) {
-            MMap<ValueClass, Integer> key = MapFact.mMap(MapFact.<ValueClass>addLinear());
-            for (ValueClass valueClass : classes)
-                key.add(valueClass, 1);
-            return key.immutable();
-        }
-
-        private String getSID(ValueClass[] classes) {
-            String sid = prefix;
-            for (int i = 0; i < classes.length; i++) {
-                sid += classes[i].getSID();
-                if (i + 1 < classes.length) {
-                    sid += '|';
-                }
-            }
-            return sid;
-        }
-
-        protected SelectionProperty createProperty(ValueClass[] classes, Version version) {
-            ValueClass[] classArray = new ValueClass[classes.length];
-            String sid = getSID(classes);
-            for (int i = 0; i < classes.length; i++) {
-                classArray[i] = classes[i];
-            }
-
-            SelectionProperty property = new SelectionProperty(sid, classArray, baseLM);
-            LCP lp = new LCP<ClassPropertyInterface>(property);
-            registerProperty(lp, version);
-            selectionLP.exclAdd(sid, lp);
-            setParent(property, version);
-            return property;
-        }
-
-        public LP getLP(ValueClass[] classes) {
-            String sid = getSID(classes);
-            if (!selectionLP.containsKey(sid)) {
-                createProperty(classes, getVersion());
-            }
-
-            return selectionLP.get(sid);
-        }
-
-        public LP getLP(ObjectEntity object) {
-            return getLP(new ValueClass[]{object.baseClass});
-        }
-    }
-
     public class ObjectValuePropertySet extends MapClassesPropertySet<ValueClass, ObjectValueProperty> {
         private Map<String, LP> sidToLP = new HashMap<String, LP>();
         private static final String prefix = "objectValueProperty_";
@@ -576,14 +495,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             sidToLP.put(sid, prop);
             setParent(property, version);
             return property;
-        }
-
-        public LCP getLP(ValueClass cls) {
-            String sid = prefix + cls.getBaseClass().getSID();
-            if (!sidToLP.containsKey(sid)) {
-                createProperty(new ValueClass[]{cls}, getVersion());
-            }
-            return (LCP) sidToLP.get(sid);
         }
     }
 

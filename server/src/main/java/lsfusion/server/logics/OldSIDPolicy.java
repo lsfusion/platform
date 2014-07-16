@@ -48,7 +48,7 @@ public class OldSIDPolicy implements PropertySIDPolicy {
     
     @Override
     public String createPropertyDrawSID(PropertyObjectEntity<?, ?> property) {
-        if (property.property.getName() == null) {  // Для обратной совместимости. Для OBJVALUE, SELECTION пока берется внутренний SID   
+        if (property.property.getName() == null) {  // Для обратной совместимости. Для OBJVALUE, etc пока берется внутренний SID   
             return property.property.getSID(); 
         } else {
             return createPropertyDrawSID(property.property.getName(), property);

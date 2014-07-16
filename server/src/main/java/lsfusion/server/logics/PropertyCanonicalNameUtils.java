@@ -44,7 +44,7 @@ public final class PropertyCanonicalNameUtils {
                 } else if (cs instanceof NumericClass) {
                     builder.append(commonNumericClassName);
                 } else if (cs != null) {
-                    builder.append(cs.getCanonicalSID());
+                    builder.append(cs.getCanonicalName());
                 } else {
                     builder.append(UNKNOWNCLASS);
                 }

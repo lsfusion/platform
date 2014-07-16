@@ -230,11 +230,6 @@ public class ScriptingFormEntity {
                 property = BaseUtils.<PropertyDrawEntity>single(
                         form.addPropertyDraw(LM.baseLM.objectValue, version, getMappingObjectsArray(mapping))
                 );
-            } else if (propertyName.equals("SELECTION")) {
-                //assertion, что создастся только один PropertyDrawEntity
-                property = BaseUtils.<PropertyDrawEntity>single(
-                        form.addPropertyDraw(LM.baseLM.selection, version, getMappingObjectsArray(mapping))
-                );
             } else if (propertyName.equals("ADDOBJ")) {
                 ObjectEntity obj = getSingleCustomClassMappingObject(propertyName, mapping);
                 LAP<?> addObjAction = LM.getAddObjectAction(form, obj);
