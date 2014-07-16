@@ -124,7 +124,7 @@ public class ConcatenateClassSet implements ConcreteClass, ValueClassSet  { // Ð
     }
     
     @Override
-    public String getCanonicalSID() {
+    public String getCanonicalName() {
         return ClassCanonicalNameUtils.createName(this);
     }
 }

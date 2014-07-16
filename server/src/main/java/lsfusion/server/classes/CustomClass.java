@@ -83,7 +83,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return sID;
     }
     
-    public String getCanonicalSID() {
+    public String getCanonicalName() {
         return getSID().replaceFirst("_", ".");
     }
 

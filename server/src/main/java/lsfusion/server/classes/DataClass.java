@@ -250,7 +250,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     }
     
     @Override
-    public String getCanonicalSID() {
+    public String getCanonicalName() {
         return getSID();
     }
 }

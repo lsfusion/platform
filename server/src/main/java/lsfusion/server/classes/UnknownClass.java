@@ -90,7 +90,7 @@ public class UnknownClass extends ImmutableObject implements FormulaClass, Concr
     }
 
     @Override
-    public String getCanonicalSID() {
+    public String getCanonicalName() {
         return null;
     }
 }

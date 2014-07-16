@@ -60,7 +60,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     private String sID;
     private String name;
     private String canonicalName;
-    private boolean notGenerated;
+    private boolean isInner;
 
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public String caption;
@@ -122,7 +122,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public String toString() {
         String result = caption;
-        if(notGenerated)
+        if(!isInner)
             result = result + " (" + sID + ")";
         return result;
     }
@@ -231,7 +231,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public void setName(String name, boolean generated) {
         this.name = name;
-        this.notGenerated = !generated;
+        this.isInner = generated;
     }
 
     public boolean cached = false;

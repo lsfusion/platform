@@ -211,7 +211,7 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
     }
 
     @Override
-    public String getCanonicalSID() {
+    public String getCanonicalName() {
         return ClassCanonicalNameUtils.createName(this);
     }
 

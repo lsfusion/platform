@@ -31,7 +31,7 @@ public final class ClassCanonicalNameUtils {
         String sid = ConcatenateClassNamePrefix + ConcatenateClassNameLBracket; 
         for (AndClassSet set : classes) {
             sid += (sid.length() > 1 ? "," : "");
-            sid += set.getCanonicalSID();
+            sid += set.getCanonicalName();
         }
         return sid + ConcatenateClassNameRBracket; 
     }
@@ -39,13 +39,13 @@ public final class ClassCanonicalNameUtils {
     // {UpCN, SetCN1, ..., SetCNk}
     public static String createName(OrObjectClassSet cs) {
         if (cs.set.size() == 0) {
-            return cs.up.getCanonicalSID();
+            return cs.up.getCanonicalName();
         } else {
             String sid = OrObjectClassSetNameLBracket; 
-            sid += cs.up.getCanonicalSID();
+            sid += cs.up.getCanonicalName();
             for (int i = 0; i < cs.set.size(); i++) {
                 sid += ",";
-                sid += cs.set.get(i).getCanonicalSID();
+                sid += cs.set.get(i).getCanonicalName();
             }
             return sid + OrObjectClassSetNameRBracket; 
         }
@@ -54,12 +54,12 @@ public final class ClassCanonicalNameUtils {
     // (CN1, ..., CNk) 
     public static String createName(UpClassSet up) {
         if (up.wheres.length == 1) {
-            return up.wheres[0].getCanonicalSID();
+            return up.wheres[0].getCanonicalName();
         }
         String sid = UpClassSetNameLBracket;
         for (CustomClass cls : up.wheres) {
             sid += (sid.length() > 1 ? "," : "");
-            sid += cls.getCanonicalSID();
+            sid += cls.getCanonicalName();
         }
         return sid + UpClassSetNameRBracket;
     }

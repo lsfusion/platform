@@ -153,7 +153,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     }
     
     @Override
-    public String getCanonicalSID() {
+    public String getCanonicalName() {
         String userSID = getSID();
         return userSID.replaceFirst("_", "[").replaceFirst("_", ",") + "]";
     }

@@ -389,7 +389,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     }
 
     @Override
-    public String getCanonicalSID() {
+    public String getCanonicalName() {
         return ClassCanonicalNameUtils.createName(this);
     }
 }
