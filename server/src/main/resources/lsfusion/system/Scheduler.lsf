@@ -26,6 +26,8 @@ CLASS ScheduledTask 'Задание планировщика';
 TABLE scheduledTask (ScheduledTask);
 
 nameScheduledTask 'Имя' = DATA VARSTRING[100] (ScheduledTask);
+scheduledTaskName (name) = GROUP AGGR task BY nameScheduledTask(task) WHERE task IS ScheduledTask;
+
 runAtStartScheduledTask 'Выполнить при старте' = DATA BOOLEAN (ScheduledTask);
 startDateScheduledTask 'Дата начала' = DATA DATETIME (ScheduledTask);
 periodScheduledTask 'Повторять каждые (секунд)' = DATA INTEGER (ScheduledTask);
