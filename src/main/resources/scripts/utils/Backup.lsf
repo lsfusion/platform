@@ -1,6 +1,6 @@
 MODULE Backup;
 
-REQUIRE System, Reflection;
+REQUIRE System, Reflection, SchedulerDefaultData;
 
 makeBackup 'Копировать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' TOOLBAR;
 saveBackup 'Скачать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' TOOLBAR;
@@ -70,5 +70,8 @@ NAVIGATOR {
     }
 }
 
-
-
+loadDefaultScheduledTasks () += ACTION ()  {    
+    loadDefaultScheduledTask ('Резервное копирование', 2014_07_01_01:00, 86400, SchedulerStartType.afterStart);
+    loadDefaultScheduledTaskDetail ('Резервное копирование', 1, 'Backup.makeBackup[]');
+    loadDefaultScheduledTaskDetail ('Резервное копирование', 2, 'Backup.decimateBackups[]');        
+}

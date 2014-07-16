@@ -1,0 +1,33 @@
+MODULE SchedulerDefaultData;
+
+REQUIRE Scheduler, DefaultData;
+
+NAMESPACE Scheduler;
+
+loadDefaultScheduledTasks 'Загрузить стандарные задания планировщика' () = ABSTRACT ACTION LIST () IN loadDefault;
+@implementLoadDefaultData(loadDefaultScheduledTasks);
+
+loadDefaultScheduledTask 'Добавить стандарное задание планировщика' = ACTION (iname, startTime, integer, type) {
+    FOR ADDOBJ s = ScheduledTask DO {
+        nameScheduledTask(s) <- iname;
+        activeScheduledTask(s) <- TRUE ;
+        startDateScheduledTask(s) <- startTime;
+        periodScheduledTask(s) <- integer; 
+        schedulerStartTypeScheduledTask(s) <- type;
+    }
+}
+
+loadDefaultScheduledTaskDetail 'Добавить стандарное задание планировщика (действия)' = ACTION (iname, order, prop) {
+    FOR ADDOBJ d = ScheduledTaskDetail DO {
+        orderScheduledTaskDetail(d) <- order;
+        activeScheduledTaskDetail(d) <- TRUE;
+        propertyScheduledTaskDetail(d) <- propertyCanonicalName(prop);         
+        scheduledTaskScheduledTaskDetail(d) <- scheduledTaskName(iname);
+    }
+}
+
+loadDefaultScheduledTasks () += ACTION ()  {       
+    loadDefaultScheduledTask ('Обслуживание БД', 2014_07_01_03:00, 86400, SchedulerStartType.afterStart);
+    loadDefaultScheduledTaskDetail ('Обслуживание БД', 1, 'Service.serviceDBAction[]');
+    loadDefaultScheduledTaskDetail ('Обслуживание БД', 2, 'Service.vacuumDBAction[]');        
+}
