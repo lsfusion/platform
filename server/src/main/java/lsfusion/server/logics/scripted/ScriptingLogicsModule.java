@@ -3083,11 +3083,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         return errLog.toString();
     }
 
-    @Override
-    public String getNamePrefix() {
-        return getNamespace();
-    }
-
     public static class PropertyUsage {
         public String name;
         public List<String> classNames;
