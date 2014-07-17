@@ -14,11 +14,18 @@ import java.sql.SQLException;
 
 public class MessageActionProperty extends SystemActionProperty {
     protected final String title;
+    private boolean noWait = false;
 
     public <I extends PropertyInterface> MessageActionProperty(String sID, String caption, String title) {
         super(sID, caption, SetFact.singletonOrder(new PropertyInterface()));
 
         this.title = title;
+    }
+
+    public <I extends PropertyInterface> MessageActionProperty(String sID, String caption, String title, boolean noWait) {
+        this(sID, caption, title);
+
+        this.noWait = noWait;
     }
 
     @Override
@@ -34,7 +41,11 @@ public class MessageActionProperty extends SystemActionProperty {
     }
 
     protected void showMessage(ExecutionContext<PropertyInterface> context, Object msgValue) throws SQLException, SQLHandledException {
-        context.requestUserInteraction(new MessageClientAction(String.valueOf(msgValue), title));
+        if (noWait) {
+            context.delayUserInteraction(new MessageClientAction(String.valueOf(msgValue), title));
+        } else {
+            context.requestUserInteraction(new MessageClientAction(String.valueOf(msgValue), title));
+        }
     }
 
     @Override

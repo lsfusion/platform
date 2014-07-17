@@ -2039,12 +2039,17 @@ confirmActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynami
 	;
 		
 messageActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+    boolean noWait = false;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedMessageProp($pe.property);
+		$property = self.addScriptedMessageProp($pe.property, noWait);
 	}
 }
-	:	'MESSAGE' pe=propertyExpression[context, dynamic]
+	:	'MESSAGE'
+	    ('NO WAIT' { noWait = true; } )?
+	    pe=propertyExpression[context, dynamic]
 	;
 
 asyncUpdateActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

@@ -45,7 +45,10 @@ import lsfusion.server.logics.property.actions.flow.*;
 import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
-import lsfusion.server.logics.scripted.*;
+import lsfusion.server.logics.scripted.EvalActionProperty;
+import lsfusion.server.logics.scripted.LazyActionProperty;
+import lsfusion.server.logics.scripted.MetaCodeFragment;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
@@ -1376,17 +1379,17 @@ public abstract class LogicsModule {
 
     // ------------------- MESSAGE ----------------- //
 
-    protected LAP addMAProp(String title, Object... params) {
-        return addMAProp(null, "", title, params);
+    protected LAP addMAProp(String title, boolean noWait, Object... params) {
+        return addMAProp(null, "", title, noWait, params);
     }
 
-    protected LAP addMAProp(AbstractGroup group, String caption, String title, Object... params) {
-        return addJoinAProp(group, genSID(), caption, addMAProp(title), params);
+    protected LAP addMAProp(AbstractGroup group, String caption, String title, boolean noWait, Object... params) {
+        return addJoinAProp(group, genSID(), caption, addMAProp(title, noWait), params);
     }
 
     @IdentityStrongLazy
-    protected LAP addMAProp(String title) {
-        return addProperty(null, new LAP(new MessageActionProperty(genSID(), "Message", title)));
+    protected LAP addMAProp(String title, boolean noWait) {
+        return addProperty(null, new LAP(new MessageActionProperty(genSID(), "Message", title, noWait)));
     }
 
     public LAP addFocusActionProp(int propertyId) {

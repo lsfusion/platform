@@ -82,8 +82,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
-import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.NamespaceElementFinder.FoundItem;
+import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.scripted.AlignmentUtils.*;
 import static lsfusion.server.logics.scripted.ScriptingFormEntity.getPropertyDraw;
 
@@ -1359,10 +1359,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(asyncLAP, msgProp.usedParams);
     }
 
-    public LPWithParams addScriptedMessageProp(LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedMessageProp(LPWithParams msgProp, boolean noWait) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedMessageProp(" + msgProp + ");");
         List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
-        LAP asyncLAP = addMAProp("lsFusion", resultParams.toArray());
+        LAP asyncLAP = addMAProp("lsFusion", noWait, resultParams.toArray());
         return new LPWithParams(asyncLAP, msgProp.usedParams);
     }
 

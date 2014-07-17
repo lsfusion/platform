@@ -3,10 +3,7 @@ package lsfusion.server.remote;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
-import lsfusion.interop.action.AsyncGetRemoteChangesClientAction;
-import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.HideFormClientAction;
-import lsfusion.interop.action.LogMessageClientAction;
+import lsfusion.interop.action.*;
 import lsfusion.interop.form.ServerResponse;
 
 import java.rmi.RemoteException;
@@ -38,6 +35,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
 
     protected List<ClientAction> delayedActions = new ArrayList<ClientAction>();
 
+    protected MessageClientAction delayedMessageAction = null; 
     protected boolean delayedGetRemoteChanges = false;
     protected boolean delayedHideForm = false;
 
@@ -71,6 +69,13 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
             if (!delayedHideForm) {
                 delayedActions.add(action);
                 delayedHideForm = true;
+            }
+        } else if (action instanceof MessageClientAction) {
+            if (delayedMessageAction == null) {
+                delayedActions.add(action);
+                delayedMessageAction = (MessageClientAction) action;
+            } else {
+                delayedMessageAction.message += "\n" + ((MessageClientAction) action).message;
             }
         } else {
             delayedActions.add(action);
