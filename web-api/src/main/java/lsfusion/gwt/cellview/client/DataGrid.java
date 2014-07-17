@@ -619,7 +619,10 @@ public class DataGrid<T> extends Composite implements RequiresResize, HasData<T>
         if (target == getFocusHolderElement()) {
             // forward events bubbled on table container to current cell,
             // but don't forward blur or focus events on the container itself
-            if (!BrowserEvents.BLUR.equals(eventType) && !BrowserEvents.FOCUS.equals(eventType)) {
+            if (!BrowserEvents.BLUR.equals(eventType) &&
+                !BrowserEvents.BLUR.equals(eventType) &&
+                !BrowserEvents.CLICK.equals(eventType) &&
+                !BrowserEvents.DBLCLICK.equals(eventType)) {
                 targetTableSection = tbody;
 
                 targetTableCell = getKeyboardSelectedTableCellElement();
