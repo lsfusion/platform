@@ -34,7 +34,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
             if(groupMapProps.size() > 1)
                 caption = "(" + caption + ")"; 
         } else
-            caption = caption + "(аггр.)";
+            caption = caption + "(агр.)";
         and.property.caption = caption;
         assert groupProps.toSet().containsAll(innerInterfaces.removeIncl(aggrInterface));
         return create(sID, caption, and, groupProps, innerInterfaces, property, aggrInterface, groupProps);

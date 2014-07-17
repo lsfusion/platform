@@ -4,10 +4,10 @@ REQUIRE System, Reflection, Time;
 
 NAMESPACE Service;
 
-checkAggregationsAction 'Проверить аггрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsActionProperty';
+checkAggregationsAction 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsActionProperty';
 checkClassesAction 'Проверить классы' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesActionProperty';
 recalculateClassesAction 'Пересчитать классы' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesActionProperty';
-recalculateAction 'Пересчитать аггрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateActionProperty';
+recalculateAction 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateActionProperty';
 recalculateFollowsAction 'Пересчитать следствия и ограничения' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty';
 analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'lsfusion.server.logics.service.AnalyzeDBActionProperty';
 vacuumDBAction 'Упаковать БД' = ACTION CUSTOM 'lsfusion.server.logics.service.VacuumDBActionProperty';

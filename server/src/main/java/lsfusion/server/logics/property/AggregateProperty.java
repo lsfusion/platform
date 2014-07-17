@@ -42,7 +42,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         super(SID,caption,interfaces);
     }
 
-    // проверяет аггрегацию для отладки
+    // проверяет агрегацию для отладки
     @ThisMessage
     @Message("logics.info.checking.aggregated.property")
     public String checkAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
