@@ -118,11 +118,6 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     mTypes.exclAdd(orderObject, order.getType());
                 }
 
-                if (group.propertyBackground != null) {
-                    Pair<Object, PropertyType> backgroundObject = new Pair<Object, PropertyType>(group.propertyBackground, PropertyType.BACKGROUND);
-                    newQuery.addProperty(backgroundObject, group.propertyBackground.getExpr(newQuery.getMapExprs(), modifier));
-                    mTypes.exclAdd(backgroundObject, group.propertyBackground.getType());
-                }
                 if (!gridGroupsId.contains(group.getID())) {
                     for (ObjectInstance object : group.objects) {
                         newQuery.and(object.getExpr(newQuery.getMapExprs(), modifier).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
@@ -192,13 +187,6 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     }
                 }
 
-                for (GroupObjectInstance group : groups) {
-                    if (group.propertyBackground != null) {
-                        // todo [dale]: Тут стремный вызов getSID, теоретически этот SID может пересечься с именами других propertyDraw
-                        propertyList.add(new Pair<String, PropertyReaderInstance>(group.propertyBackground.property.getSID(), group.rowBackgroundReader));
-                    }
-                }
-
                 ImOrderSet<ObjectInstance> keyList = GroupObjectInstance.getOrderObjects(groups);
                 ReportData data = new ReportData(keyList.toJavaList(), propertyList);
 
@@ -213,12 +201,6 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                         }
                         if (property.propertyFooter != null) {
                             propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.FOOTER)));
-                        }
-                    }
-
-                    for (GroupObjectInstance group : groups) {
-                        if (group.propertyBackground != null) {
-                            propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(group.propertyBackground, PropertyType.BACKGROUND)));
                         }
                     }
 

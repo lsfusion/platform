@@ -148,7 +148,6 @@ public class ReportDesignGenerator {
 
     private List<ReportDrawField> getAllowedGroupDrawFields(GroupObjectEntity group) {
         List<ReportDrawField> fields = new ArrayList<ReportDrawField>();
-        PropertyObjectEntity backgroundProp = group.propertyBackground;
 
         GroupObjectUserPreferences groupObjectPreferences = null;
         if (userPreferences != null) {
@@ -190,7 +189,7 @@ public class ReportDesignGenerator {
                     scale = objects.size();
                 
                 ReportDrawField reportField = prop.first.getReportDrawField(charWidth, scale);
-                if (reportField != null && (backgroundProp == null || backgroundProp.property != prop.first.entity.propertyObject.property)) {
+                if (reportField != null) {
                     Integer widthUser = prop.second == null ? null : prop.second.userWidth;
                     if (widthUser != null) {
                         reportField.setWidthUser(widthUser);
@@ -216,7 +215,6 @@ public class ReportDesignGenerator {
         for (GroupObjectEntity group : groups) {
             boolean hiddenGroup = hiddenGroupsId.contains(group.getID());
             GroupObjectView groupView = formView.getGroupObject(group);
-            PropertyObjectEntity backgroundProp = group.propertyBackground;
 
             boolean hasColumnGroupProperty = false;
             List<ReportDrawField> drawFields = getAllowedGroupDrawFields(group);
@@ -232,15 +230,6 @@ public class ReportDesignGenerator {
                 }
             }
 
-            // todo [dale]: Здесь создается ReportDrawField для propertyBackground свойства, нет проверок на уникальность имени получившегося Field, может нам вообще не нужен этот функционал? 
-            String backgroundPropertySID = null;
-            if (backgroundProp != null) {
-                ReportDrawField reportField = new ReportDrawField(backgroundProp.property.getSID(), "", charWidth);
-                backgroundProp.property.getType().fillReportDrawField(reportField);
-                addDesignField(design, reportField);
-                backgroundPropertySID = reportField.sID;
-            }
-            
             GroupObjectUserPreferences groupPreferences = userPreferences != null ? userPreferences.getUsedPreferences(group.getSID()) : null;
             FontInfo font = groupPreferences != null ? groupPreferences.fontInfo : null;
             if (font == null) {
@@ -290,22 +279,6 @@ public class ReportDesignGenerator {
                 
                 design.addStyle(groupCellStyle);
                 JRDesignStyle groupCaptionStyle = groupCellStyle;
-                if (backgroundPropertySID != null) {
-                    if (detail) {
-                        groupCaptionStyle = (JRDesignStyle) groupCellStyle.clone();
-                        groupCaptionStyle.setName(groupCellStyle.getName() + "_caption");
-                        design.addStyle(groupCaptionStyle);
-                    }
-                    JRDesignConditionalStyle condStyle = new JRDesignConditionalStyle();
-                    condStyle.setParentStyle(groupCellStyle);
-                    Color oldColor = condStyle.getBackcolor();
-                    condStyle.setBackcolor(new Color(oldColor.getRed(), oldColor.getGreen(), 0));
-                    JRDesignExpression expr =
-                            ReportUtils.createExpression("new Boolean($F{" + backgroundPropertySID + "} != null)", java.lang.Boolean.class);
-                    condStyle.setConditionExpression(expr);
-                    groupCellStyle.addConditionalStyle(condStyle);
-                }
-
                 for(ReportDrawField reportField : drawFields) {
                     addReportFieldToLayout(reportLayout, reportField, groupCaptionStyle, groupCellStyle);
                 }
