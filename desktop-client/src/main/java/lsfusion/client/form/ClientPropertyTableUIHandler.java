@@ -34,8 +34,6 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
             return;
         }
 
-        boolean isLeftMouseButton = isLeftMouseButton(e);
-
         if (table.getForm().isEditing()) {
             //в свинге есть определённый баг с системой фокусов...
             //при удалении эдитора из таблицы фокус автотрансферится на следующий компонент nextComp ...
@@ -68,6 +66,10 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
 
         int oldRow = table.getCurrentRow();
 
+        boolean isLeftMouseButton = isLeftMouseButton(e);
+        boolean withCtrl = MouseEvent.getModifiersExText(e.getModifiersEx()).contains("Ctrl");
+        boolean withShift = MouseEvent.getModifiersExText(e.getModifiersEx()).contains("Shift");
+
         boolean toggle = isLeftMouseButton && SwingUtils.isMenuShortcutKeyDown(e);
         boolean extend = isLeftMouseButton && e.isShiftDown();
         table.changeSelection(pressedRow, pressedCol, toggle, extend);
@@ -76,7 +78,7 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
 
         // todo: теперь rowHasFocus не обязательно, работает и без него,
         // todo: поэтому есть возможность корректно реализовать логику editOnSingleClick, если понадобится
-        if (isLeftMouseButton && (rowHasFocus || e.getClickCount() > 1)) {
+        if (isLeftMouseButton && !(withCtrl || withShift) && (rowHasFocus || e.getClickCount() > 1)) {
             if (table.editCellAt(pressedRow, pressedCol, e)) {
                 setDispatchComponent(e);
                 repostEvent(e);

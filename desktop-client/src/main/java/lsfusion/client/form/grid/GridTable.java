@@ -799,6 +799,9 @@ public class GridTable extends ClientPropertyTable {
                 }
                 selectionController.changeSelection(rowIndex, columnIndex, toggle, extend);
             }
+            if (getCurrentRow() == rowIndex) {
+                toggle = false;
+            }
             super.changeSelection(rowIndex, columnIndex, toggle, extend);
             updateSelectionInfo();
             repaint();
