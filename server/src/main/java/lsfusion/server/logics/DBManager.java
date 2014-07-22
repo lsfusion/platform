@@ -29,11 +29,15 @@ import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.sql.DataAdapter;
-import lsfusion.server.data.sql.MSSQLDataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.type.*;
+import lsfusion.server.data.type.ConcatenateType;
+import lsfusion.server.data.type.ObjectType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.navigator.*;
+import lsfusion.server.form.navigator.ComputerController;
+import lsfusion.server.form.navigator.IsServerRestartingController;
+import lsfusion.server.form.navigator.TimeoutController;
+import lsfusion.server.form.navigator.UserController;
 import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -908,8 +912,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return null; 
     }
 
-    public void recalculateAggregations(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        recalculateAggregations(session, businessLogics.getAggregateStoredProperties(), isolatedTransaction);
+    public String recalculateAggregations(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        return recalculateAggregations(session, businessLogics.getAggregateStoredProperties(), isolatedTransaction);
     }
 
     public void ensureLogLevel() {
@@ -958,7 +962,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         } else
             run.run(session);
     }
-    public void recalculateAggregations(SQLSession session, final List<AggregateProperty> recalculateProperties, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+    public String recalculateAggregations(SQLSession session, final List<AggregateProperty> recalculateProperties, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        final List<String> messageList = new ArrayList<String>();
         final Result<Integer> proceeded = new Result<Integer>(0);
         final int total = recalculateProperties.size();
         ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
@@ -966,16 +971,23 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             for (final AggregateProperty property : recalculateProperties)
                 run(session, isolatedTransaction, new RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                        long start = System.currentTimeMillis();
                         property.recalculateAggregation(sql, LM.baseClass);
 
                         proceeded.set(proceeded.result + 1);
                         ThreadLocalContext.popActionMessage();
                         ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
+                        long time = System.currentTimeMillis() - start;
+                        String message = String.format("Recalculate Aggregation: %s, %sms", property.getSID(), time);
+                        systemLogger.info(message);
+                        if(time > 1000)
+                            messageList.add(message);
                     }
                 });
         } finally {
             ThreadLocalContext.popActionMessage();
         }
+        return businessLogics.formatMessageList(messageList);
     }
         
     public void recalculateAggregationTableColumn(SQLSession session, String propertyCanonicalName, boolean isolatedTransaction) throws SQLException, SQLHandledException {

@@ -25,7 +25,9 @@ public class RecalculateClassesActionProperty extends ScriptingActionProperty {
         ServiceDBActionProperty.run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
                 BusinessLogics BL = context.getBL();
-                BL.recalculateClasses(session, isolatedTransaction);
+                String result = BL.recalculateClasses(session, isolatedTransaction);
+                if(result != null)
+                    context.delayUserInterfaction(new MessageClientAction(result, getString("logics.recalculating.data.classes")));
                 context.getDbManager().packTables(session, BL.LM.tableFactory.getImplementTables(), isolatedTransaction);
             }});
 

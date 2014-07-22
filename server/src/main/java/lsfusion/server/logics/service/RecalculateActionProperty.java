@@ -23,7 +23,9 @@ public class RecalculateActionProperty extends ScriptingActionProperty {
 
         ServiceDBActionProperty.run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getDbManager().recalculateAggregations(session, isolatedTransaction);
+                String result = context.getDbManager().recalculateAggregations(session, isolatedTransaction);
+                if(result != null)
+                    context.delayUserInterfaction(new MessageClientAction(result, getString("logics.recalculation.aggregations")));
             }});
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));

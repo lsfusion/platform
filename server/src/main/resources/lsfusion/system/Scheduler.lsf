@@ -63,7 +63,7 @@ CLASS ScheduledClientTaskLog 'Сообщения клиента';
 TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 
 scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog);
-messageScheduledClientTaskLog 'Сообщение'= DATA VARSTRING[200] (ScheduledClientTaskLog);
+messageScheduledClientTaskLog 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
 
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty';
 

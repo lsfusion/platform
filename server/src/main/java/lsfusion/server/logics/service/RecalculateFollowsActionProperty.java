@@ -24,7 +24,9 @@ public class RecalculateFollowsActionProperty extends ScriptingActionProperty {
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ServiceDBActionProperty.runData(context, new RunServiceData() {
             public void run(SessionCreator session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getBL().recalculateFollows(session, isolatedTransaction);
+                String result = context.getBL().recalculateFollows(session, isolatedTransaction);
+                if(result != null)
+                    context.delayUserInterfaction(new MessageClientAction(result, getString("logics.recalculation.follows")));
             }
         });
 

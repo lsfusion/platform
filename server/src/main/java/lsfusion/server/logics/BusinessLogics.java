@@ -1200,18 +1200,37 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public void recalculateFollows(SessionCreator creator, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+    public String recalculateFollows(SessionCreator creator, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        final List<String> messageList = new ArrayList<String>();
         for (Property property : getPropertyList())
             if (property instanceof ActionProperty) {
                 final ActionProperty<?> action = (ActionProperty) property;
                 if (action.hasResolve()) {
+                    long start = System.currentTimeMillis();
                     DBManager.runData(creator, isolatedTransaction, new DBManager.RunServiceData() {
                         public void run(SessionCreator session) throws SQLException, SQLHandledException {
                             ((DataSession)session).resolve(action);
                         }
                     });
+                    long time = System.currentTimeMillis() - start;
+                    String message = String.format("Recalculate Follows: %s, %sms", property.getSID(), time);
+                    systemLogger.info(message);
+                    if(time > 1000)
+                        messageList.add(message);                    
                 }
             }
+        return formatMessageList(messageList);
+    }
+    
+    protected String formatMessageList(List<String> messageList) {
+        if(messageList.isEmpty())
+            return null;
+        else {
+            String result = "";
+            for (String message : messageList)
+                result += message + '\n';
+            return result;
+        }
     }
 
     public String checkClasses(SQLSession session) throws SQLException, SQLHandledException {
@@ -1275,14 +1294,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }});
     }
 
-    public void recalculateClasses(SQLSession session, boolean isolatedTransactions) throws SQLException, SQLHandledException {
+    public String recalculateClasses(SQLSession session, boolean isolatedTransactions) throws SQLException, SQLHandledException {
         recalculateExclusiveness(session, isolatedTransactions);
 
+        final List<String> messageList = new ArrayList<String>();
         for (final CalcProperty property : getStoredDataProperties())
             DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                    long start = System.currentTimeMillis();
                     property.recalculateClasses(sql, LM.baseClass);
-                }});                
+                    long time = System.currentTimeMillis() - start;
+                    String message = String.format("Recalculate Class: %s, %s", property.getSID(), time);
+                    systemLogger.info(message);
+                    if(time > 1000)
+                        messageList.add(message);
+                }});
+        return formatMessageList(messageList);
     }
 
     private void test(String testCase) {

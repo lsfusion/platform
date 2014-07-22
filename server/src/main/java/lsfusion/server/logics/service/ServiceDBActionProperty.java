@@ -25,12 +25,16 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getBL().recalculateClasses(session, isolatedTransaction);
+                String result = context.getBL().recalculateClasses(session, isolatedTransaction);
+                if(result != null)
+                    context.delayUserInterfaction(new MessageClientAction(result, getString("logics.service.db")));
             }});
 
         run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getDbManager().recalculateAggregations(session, isolatedTransaction);
+                String result = context.getDbManager().recalculateAggregations(session, isolatedTransaction);
+                if(result != null)
+                    context.delayUserInterfaction(new MessageClientAction(result, getString("logics.service.db")));
             }});
 
         run(context, new RunService() {
@@ -43,7 +47,9 @@ public class ServiceDBActionProperty extends ScriptingActionProperty {
 
         runData(context, new RunServiceData() {
             public void run(SessionCreator session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getBL().recalculateFollows(session, isolatedTransaction);
+                String result = context.getBL().recalculateFollows(session, isolatedTransaction);
+                if(result != null)
+                    context.delayUserInterfaction(new MessageClientAction(result, getString("logics.service.db")));
             }});
 
         DataSession dataSession = context.getSession();
