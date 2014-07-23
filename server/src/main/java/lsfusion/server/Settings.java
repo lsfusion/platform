@@ -202,6 +202,16 @@ public class Settings {
     private int tooMuchAttempts = 15;
     private boolean enableAdjustSelectivity = false; // включает повышение selectivity при volatile stats для операторов >, пока были непостоянные случаи, поэтому выключен
 
+    private long maxRecalculateTime = 500;//300000; //5 minutes
+
+    public long getMaxRecalculateTime() {
+        return maxRecalculateTime;
+    }
+
+    public void setMaxRecalculateTime(long maxRecalculateTime) {
+        this.maxRecalculateTime = maxRecalculateTime;
+    }
+    
     public static Settings get() {
         return ThreadLocalContext.getSettings();
     }

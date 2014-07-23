@@ -17,6 +17,7 @@ import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
@@ -1202,6 +1203,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public String recalculateFollows(SessionCreator creator, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<String>();
+        final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         for (Property property : getPropertyList())
             if (property instanceof ActionProperty) {
                 final ActionProperty<?> action = (ActionProperty) property;
@@ -1215,7 +1217,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     long time = System.currentTimeMillis() - start;
                     String message = String.format("Recalculate Follows: %s, %sms", property.getSID(), time);
                     systemLogger.info(message);
-                    if(time > 1000)
+                    if(time > maxRecalculateTime)
                         messageList.add(message);                    
                 }
             }
@@ -1298,6 +1300,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         recalculateExclusiveness(session, isolatedTransactions);
 
         final List<String> messageList = new ArrayList<String>();
+        final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         for (final CalcProperty property : getStoredDataProperties())
             DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
@@ -1306,7 +1309,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     long time = System.currentTimeMillis() - start;
                     String message = String.format("Recalculate Class: %s, %s", property.getSID(), time);
                     systemLogger.info(message);
-                    if(time > 1000)
+                    if(time > maxRecalculateTime)
                         messageList.add(message);
                 }});
         return formatMessageList(messageList);

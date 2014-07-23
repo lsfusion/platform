@@ -966,6 +966,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         final List<String> messageList = new ArrayList<String>();
         final Result<Integer> proceeded = new Result<Integer>(0);
         final int total = recalculateProperties.size();
+        final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
         try {
             for (final AggregateProperty property : recalculateProperties)
@@ -980,7 +981,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         long time = System.currentTimeMillis() - start;
                         String message = String.format("Recalculate Aggregation: %s, %sms", property.getSID(), time);
                         systemLogger.info(message);
-                        if(time > 1000)
+                        if(time > maxRecalculateTime)
                             messageList.add(message);
                     }
                 });
