@@ -992,14 +992,44 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
         
     public void recalculateAggregationTableColumn(SQLSession session, String propertyCanonicalName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        for (CalcProperty property : businessLogics.getAggregateStoredProperties())
+        for (AggregateProperty property : businessLogics.getAggregateStoredProperties())
             if (propertyCanonicalName.equals(property.getCanonicalName())) {
-                final AggregateProperty aggregateProperty = (AggregateProperty) property;
-                run(session, isolatedTransaction, new RunService() {
-                    public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                        aggregateProperty.recalculateAggregation(sql, LM.baseClass);
-                    }});
+                runAggregationRecalculation(session, property, isolatedTransaction);
             }
+    }
+    
+    private void runAggregationRecalculation(SQLSession session, final AggregateProperty aggregateProperty, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        run(session, isolatedTransaction, new RunService() {
+            public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                aggregateProperty.recalculateAggregation(sql, LM.baseClass);
+            }});    
+    }
+
+    public void recalculateAggregationWithDependenciesTableColumn(SQLSession session, String propertyCanonicalName, boolean isolatedTransaction, boolean dependents) throws SQLException, SQLHandledException {
+        recalculateAggregationWithDependenciesTableColumn(session, businessLogics.findProperty(propertyCanonicalName).property, isolatedTransaction, new HashSet<CalcProperty>(), dependents);    
+    }
+    
+    private void recalculateAggregationWithDependenciesTableColumn(SQLSession session, Property property, boolean isolatedTransaction, Set<CalcProperty> calculated, boolean dependents) throws SQLException, SQLHandledException {
+        if (!dependents) {
+            for (CalcProperty prop : (Iterable<CalcProperty>) ((CalcProperty) property).getDepends()) {
+                if (prop != property && !calculated.contains(prop)) {
+                    recalculateAggregationWithDependenciesTableColumn(session, prop, isolatedTransaction, calculated, false);
+                }
+            }            
+        }
+        
+        if (property instanceof AggregateProperty && ((AggregateProperty) property).isStored()) {
+            runAggregationRecalculation(session, (AggregateProperty) property, isolatedTransaction);
+            calculated.add((AggregateProperty) property);
+        }
+
+        if (dependents) {
+            for (AggregateProperty prop : businessLogics.getAggregateStoredProperties()) {
+                if (prop != property && !calculated.contains(prop) && CalcProperty.depends(prop, (CalcProperty) property)) {
+                    recalculateAggregationWithDependenciesTableColumn(session, prop, isolatedTransaction, calculated, true);
+                }
+            }
+        }
     }
 
     private void checkModules(OldDBStructure dbStructure) {

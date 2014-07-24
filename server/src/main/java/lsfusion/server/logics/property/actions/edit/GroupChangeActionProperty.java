@@ -49,10 +49,12 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
                 return FlowResult.FINISH;
             context = context.pushUserInput(lastObject);
         }
-        for(ImMap<ObjectInstance, DataObject> row : groupKeys) // бежим по всем
-            if(!BaseUtils.hashEquals(row, context.getKeys())) { // кроме текущего
-                proceed(context.override(MapFact.override(context.getKeys(), context.getObjectInstances().innerJoin(row))));
+        for(ImMap<ObjectInstance, DataObject> row : groupKeys) { // бежим по всем
+            ImMap<PropertyInterface, ObjectValue> override = MapFact.override(context.getKeys(), context.getObjectInstances().innerJoin(row));
+            if (!BaseUtils.hashEquals(override, context.getKeys())) { // кроме текущего
+                proceed(context.override(override));
             }
+        }
 
         return FlowResult.FINISH;
     }
