@@ -1438,7 +1438,7 @@ public abstract class LogicsModule {
         if (property.isNamed()) {
             try {
                 PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(property.getCanonicalName(), baseLM.getClassFinder());
-                name = PropertyCanonicalNameUtils.drillDownPrefix + parser.getNamespace() + "_" + property.getName();
+                String name = PropertyCanonicalNameUtils.drillDownPrefix + parser.getNamespace() + "_" + property.getName();
                 signature.addAll(parser.getSignature());
                 return name;
             } catch (PropertyCanonicalNameParser.ParseException e) {
