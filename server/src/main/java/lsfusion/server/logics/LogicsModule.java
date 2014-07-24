@@ -1434,41 +1434,36 @@ public abstract class LogicsModule {
             throw new UnsupportedOperationException();
     }
 
-    private String nameForDrillDownAction(CalcProperty property) {
-        String name = PropertyCanonicalNameUtils.drillDownPrefix + property.getUniqueSID();
+    private String nameForDrillDownAction(CalcProperty property, List<AndClassSet> signature) {
         if (property.isNamed()) {
             try {
-                name = PropertyCanonicalNameUtils.drillDownPrefix + PropertyCanonicalNameParser.getNamespace(property.getCanonicalName()) + "_" + property.getName();
+                PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(property.getCanonicalName(), baseLM.getClassFinder());
+                name = PropertyCanonicalNameUtils.drillDownPrefix + parser.getNamespace() + "_" + property.getName();
+                signature.addAll(parser.getSignature());
+                return name;
             } catch (PropertyCanonicalNameParser.ParseException e) {
                 Throwables.propagate(e);
             }
-        } 
-        return name;
+        }
+        return PropertyCanonicalNameUtils.drillDownPrefix + property.getUniqueSID();
     } 
     
     public LAP<?> addDDAProp(CalcProperty property) {
-        String name = nameForDrillDownAction(property);
+        List<AndClassSet> signature = new ArrayList<AndClassSet>();
+        String name = nameForDrillDownAction(property, signature);
         DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this, name);
         LAP result = addMFAProp(baseLM.drillDownGroup, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
         if (property.isNamed()) {
-            List<AndClassSet> signature = new ArrayList<AndClassSet>();
-            for (ObjectEntity obj : drillDownFormEntity.paramObjects) {
-                signature.add(obj.getAndClassSet());
-            }
             makePropertyPublic(result, name, signature);
         }
         return result;        
     }
 
     public LAP<?> addLazyAProp(CalcProperty property) {
-        String name = nameForDrillDownAction(property);
-        DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this, name);
         LAP result = addAProp(null, new LazyActionProperty(getString("logics.property.drilldown.action"), property));
         if (property.isNamed()) {
             List<AndClassSet> signature = new ArrayList<AndClassSet>();
-            for (ObjectEntity obj : drillDownFormEntity.paramObjects) {
-                signature.add(obj.getAndClassSet());
-            }
+            String name = nameForDrillDownAction(property, signature);
             makePropertyPublic(result, name, signature);
         }
         return result;

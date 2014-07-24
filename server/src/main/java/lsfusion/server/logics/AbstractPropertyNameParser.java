@@ -24,19 +24,19 @@ public abstract class AbstractPropertyNameParser {
         }
     }
 
-    public interface CustomClassFinder {
+    public interface ClassFinder {
         CustomClass findCustomClass(String name);
         DataClass findDataClass(String name);
     }
 
-    protected final CustomClassFinder classFinder;
+    protected final ClassFinder classFinder;
     protected final String name;
 
     protected int pos;
     protected String parseText;
     protected int len;
     
-    protected AbstractPropertyNameParser(String name, CustomClassFinder finder) {
+    protected AbstractPropertyNameParser(String name, ClassFinder finder) {
         assert name != null;
         assert finder != null;
         this.name = name.replaceAll(" ", "");

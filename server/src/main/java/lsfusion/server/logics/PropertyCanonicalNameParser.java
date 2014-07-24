@@ -17,7 +17,7 @@ import java.util.List;
  */
 
 public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
-    static public class CanonicalNameClassFinder implements CustomClassFinder {
+    static public class CanonicalNameClassFinder implements ClassFinder {
         private BusinessLogics BL;
         public CanonicalNameClassFinder(BusinessLogics BL) {
             this.BL = BL;
@@ -40,7 +40,7 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
         this(canonicalName, new CanonicalNameClassFinder(BL));
     }
 
-    public PropertyCanonicalNameParser(String canonicalName, CustomClassFinder finder) {
+    public PropertyCanonicalNameParser(String canonicalName, ClassFinder finder) {
         super(canonicalName, finder);
     }
 

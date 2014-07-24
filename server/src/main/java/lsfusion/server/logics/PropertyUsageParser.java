@@ -15,7 +15,7 @@ import java.util.List;
  */
 
 public class PropertyUsageParser extends AbstractPropertyNameParser {
-    public static class PropertyUsageClassFinder implements CustomClassFinder {
+    public static class PropertyUsageClassFinder implements ClassFinder {
         private ScriptingLogicsModule module;
         public PropertyUsageClassFinder(ScriptingLogicsModule module) {
             this.module = module;
@@ -41,7 +41,7 @@ public class PropertyUsageParser extends AbstractPropertyNameParser {
         this(name, new PropertyUsageClassFinder(module));
     }
 
-    public PropertyUsageParser(String name, CustomClassFinder finder) {
+    public PropertyUsageParser(String name, ClassFinder finder) {
         super(name, finder);
     }
 

@@ -248,6 +248,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return propertySidPolicy;
     }
     
+    public AbstractPropertyNameParser.ClassFinder getClassFinder() {
+        return new PropertyCanonicalNameParser.CanonicalNameClassFinder(BL);    
+    }
+    
     @Override
     public void initClasses() throws RecognitionException {
         baseClass = addBaseClass(transformNameToSID("Object"), getString("logics.object"));
