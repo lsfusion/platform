@@ -21,8 +21,8 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
     private Long repeat;
     private long delay;
 
-    public <I extends PropertyInterface> NewThreadActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> action, Long repeat, long delay) {
-        super(sID, caption, innerInterfaces, action);
+    public <I extends PropertyInterface> NewThreadActionProperty(String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> action, Long repeat, long delay) {
+        super(caption, innerInterfaces, action);
         this.repeat = repeat;
         this.delay = delay;
     }

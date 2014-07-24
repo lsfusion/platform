@@ -50,8 +50,8 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
     }
 
     // дебилизм из-за конструкторов
-    public ShiftChangeProperty(String sID, String caption, CalcProperty<P> property, CalcPropertyMapImplement<R,P> reverse) {
-        super(sID, caption, getInterfaces(property));
+    public ShiftChangeProperty(String caption, CalcProperty<P> property, CalcPropertyMapImplement<R,P> reverse) {
+        super(caption, getInterfaces(property));
 
         this.property = property;
         this.reverse = reverse;

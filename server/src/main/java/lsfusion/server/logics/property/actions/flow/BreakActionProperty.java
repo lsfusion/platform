@@ -10,7 +10,7 @@ import java.sql.SQLException;
 
 public class BreakActionProperty extends ChangeFlowActionProperty {
     public BreakActionProperty() {
-        super("break", "break");
+        super("break");
 
         finalizeInit();
     }

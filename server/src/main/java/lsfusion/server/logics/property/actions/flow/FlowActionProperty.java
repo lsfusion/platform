@@ -18,8 +18,8 @@ public abstract class FlowActionProperty extends ActionProperty<PropertyInterfac
         return SetFact.toOrderExclSet(size, genInterface);
     }
 
-    protected <I extends PropertyInterface> FlowActionProperty(String sID, String caption, int size) {
-        super(sID, caption, genInterfaces(size));
+    protected <I extends PropertyInterface> FlowActionProperty(String caption, int size) {
+        super(caption, genInterfaces(size));
     }
 
     @Override

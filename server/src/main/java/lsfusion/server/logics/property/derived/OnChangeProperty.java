@@ -106,7 +106,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
     }
 
     public OnChangeProperty(CalcProperty<T> onChange, CalcProperty<P> toChange) {
-        super(onChange.getSID() +"_ONCH_"+ toChange.getSID(),onChange.caption+" по ("+toChange.caption+")", getInterfaces(onChange, toChange), onChange, toChange);
+        super(onChange.caption+" по ("+toChange.caption+")", getInterfaces(onChange, toChange), onChange, toChange);
 
         finalizeInit();
     }

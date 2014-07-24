@@ -14,8 +14,8 @@ import static lsfusion.base.BaseUtils.toCaption;
 public class ConfirmActionProperty extends MessageActionProperty {
     private final LCP<?> confirmedProperty;
 
-    public <I extends PropertyInterface> ConfirmActionProperty(String sID, String caption, String title, LCP confirmedProperty) {
-        super(sID, caption, title);
+    public <I extends PropertyInterface> ConfirmActionProperty(String caption, String title, LCP confirmedProperty) {
+        super(caption, title);
         this.confirmedProperty = confirmedProperty;
     }
 

@@ -19,8 +19,8 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
     public final Interface operator1;
     public final Interface operator2;
 
-    public CompareFormulaProperty(String sID, Compare compare) {
-        super(sID, compare.toString(), getInterfaces(2), LogicalClass.instance);
+    public CompareFormulaProperty(Compare compare) {
+        super(compare.toString(), getInterfaces(2), LogicalClass.instance);
 
         this.compare = compare;
         Iterator<Interface> i = interfaces.iterator();

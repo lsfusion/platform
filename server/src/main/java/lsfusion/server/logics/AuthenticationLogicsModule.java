@@ -2,6 +2,7 @@ package lsfusion.server.logics;
 
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CurrentComputerFormulaProperty;
@@ -11,6 +12,7 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class AuthenticationLogicsModule extends ScriptingLogicsModule{
@@ -61,8 +63,10 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     @Override
     public void initProperties() throws RecognitionException {
         // Текущий пользователь
-        currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty("currentUser", user)));
-        currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty("currentComputer", computer)));
+        currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty(user)));
+        makePropertyPublic(currentUser, "currentUser", new ArrayList<AndClassSet>());
+        currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty(computer)));
+        makePropertyPublic(currentComputer, "currentComputer", new ArrayList<AndClassSet>());
 
         super.initProperties();
 

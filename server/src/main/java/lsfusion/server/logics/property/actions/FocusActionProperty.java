@@ -11,8 +11,7 @@ import java.sql.SQLException;
 public class FocusActionProperty extends SystemExplicitActionProperty {
     private final int propertyId;
 
-    public FocusActionProperty(String sID, int propertyId) {
-        super(sID);
+    public FocusActionProperty(int propertyId) {
         this.propertyId = propertyId;
     }
 

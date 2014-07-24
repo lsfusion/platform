@@ -24,8 +24,8 @@ public class DeconcatenateProperty extends FormulaProperty<DeconcatenateProperty
     final int part;
     final BaseClass baseClass;
 
-    public DeconcatenateProperty(String sID, int part, BaseClass baseClass) {
-        super(sID,"Concatenate "+part, SetFact.singletonOrder(new Interface(0)));
+    public DeconcatenateProperty(int part, BaseClass baseClass) {
+        super("Concatenate "+part, SetFact.singletonOrder(new Interface(0)));
         
         this.part = part;
         this.baseClass = baseClass;

@@ -42,8 +42,8 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         throw new RuntimeException("not found");
     }
 
-    public StringFormulaProperty(String sID, DataClass valueClass, CustomFormulaSyntax formula, int paramCount, boolean hasNotNull) {
-        super(sID,formula.getDefaultSyntax(),getInterfaces(paramCount),valueClass);
+    public StringFormulaProperty(DataClass valueClass, CustomFormulaSyntax formula, int paramCount, boolean hasNotNull) {
+        super(formula.getDefaultSyntax(),getInterfaces(paramCount),valueClass);
         this.formula = formula;
         this.hasNotNull = hasNotNull;
 

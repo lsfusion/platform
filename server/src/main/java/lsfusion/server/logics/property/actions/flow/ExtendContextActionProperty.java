@@ -21,8 +21,8 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
     protected final ImSet<I> innerInterfaces;
     protected final ImRevMap<PropertyInterface, I> mapInterfaces;
 
-    public ExtendContextActionProperty(String sID, String caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces) {
-        super(sID, caption, mapInterfaces.size());
+    public ExtendContextActionProperty(String caption, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces) {
+        super(caption, mapInterfaces.size());
 
         this.innerInterfaces = innerInterfaces;
         this.mapInterfaces = getMapInterfaces(mapInterfaces);

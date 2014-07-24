@@ -34,8 +34,8 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
             }});
     }
 
-    public ConcatenateProperty(String sID, int intNum) {
-        super(sID, "Concatenate " + intNum, getInterfaces(intNum));
+    public ConcatenateProperty(int intNum) {
+        super("Concatenate " + intNum, getInterfaces(intNum));
 
         finalizeInit();
     }

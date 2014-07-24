@@ -23,8 +23,8 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class XorUnionProperty extends IncrementUnionProperty {
 
-    public XorUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands) {
-        super(sID, caption, interfaces);
+    public XorUnionProperty(String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands) {
+        super(caption, interfaces);
         this.operands = operands;
 
         finalizeInit();
@@ -107,7 +107,7 @@ public class XorUnionProperty extends IncrementUnionProperty {
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new XorUnionDrillDownFormEntity(
-                "drillDown" + capitalize(getSID()) + "Form",
+                "drillDown" + capitalize(getUniqueSID()) + "Form",
                 getString("logics.property.drilldown.form.xor.union"), this, LM
         );
     }

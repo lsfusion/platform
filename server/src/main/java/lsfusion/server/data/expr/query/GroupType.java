@@ -20,14 +20,14 @@ import lsfusion.server.logics.property.*;
 public enum GroupType implements AggrType {
     SUM, MAX, MIN, ANY, STRING_AGG, AGGAR_SETADD, LAST;
 
-    public <T extends PropertyInterface> GroupProperty<T> createProperty(String sID, String caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, ImSet<? extends CalcPropertyInterfaceImplement<T>> interfaces) {
+    public <T extends PropertyInterface> GroupProperty<T> createProperty(String caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, ImSet<? extends CalcPropertyInterfaceImplement<T>> interfaces) {
         switch (this) {
             case MAX:
-                return new MaxGroupProperty<T>(sID, caption, innerInterfaces, interfaces, property, false);
+                return new MaxGroupProperty<T>(caption, innerInterfaces, interfaces, property, false);
             case MIN:
-                return new MaxGroupProperty<T>(sID, caption, innerInterfaces, interfaces, property, true);
+                return new MaxGroupProperty<T>(caption, innerInterfaces, interfaces, property, true);
             case SUM:
-                return new SumGroupProperty<T>(sID, caption, innerInterfaces, interfaces, property);
+                return new SumGroupProperty<T>(caption, innerInterfaces, interfaces, property);
         }
         throw new RuntimeException("not supported");
     }

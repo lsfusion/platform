@@ -479,7 +479,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ScriptingFormEntity(this, form);
     }
 
-    public LCP addScriptedDProp(String returnClass, List<String> paramClasses, boolean sessionProp, boolean innerProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LCP addScriptedDProp(String returnClass, List<String> paramClasses, boolean sessionProp, boolean innerProp, boolean isLocal) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedDProp(" + returnClass + ", " + paramClasses + ", " + innerProp + ");");
 
         ValueClass value = findClass(returnClass);
@@ -489,12 +489,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (sessionProp) {
-            return addSDProp(genSID(), "", value, params);
+            return addSDProp("", isLocal, value, params);
         } else {
             if (innerProp) {
-                return addDProp(genSID(), "", value, params);
+                return addDProp("", value, params);
             } else {
-                StoredDataProperty storedProperty = new StoredDataProperty(genSID(), "", params, value);
+                StoredDataProperty storedProperty = new StoredDataProperty("", params, value);
                 return addProperty(null, new LCP<ClassPropertyInterface>(storedProperty));
             }
         }
@@ -508,7 +508,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClass(paramClasses.get(i));
         }
-        return addAUProp(null, genSID(), false, isExclusive, isChecked, type, "", value, params);
+        return addAUProp(null, false, isExclusive, isChecked, type, "", value, params);
     }
 
     public LP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked) throws ScriptingErrorLog.SemanticErrorException {
@@ -678,7 +678,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     } 
     
     public void addSettingsToProperty(LP property, String name, String caption, List<TypedParameter> params, List<AndClassSet> signature, String groupName, boolean isPersistent, boolean isComplex, String tableName, Boolean notNullResolve, Event notNullEvent) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + caption + ", " +
+        scriptLogger.info("addSettingsToProperty(" + property.property.getUniqueSID() + ", " + name + ", " + caption + ", " +
                            params + ", " + groupName + ", " + isPersistent  + ", " + tableName + ");");
         checkDuplicateProperty(name, signature);
        
@@ -687,13 +687,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkNamedParams(property, paramNames);
         
         // Если объявление имеет вид f(x, y) = g(x, y), то нужно дополнительно обернуть свойство g в join
-        if (property.property.getSID().equals(lastOpimizedJPropSID)) {
+        if (property.property.getUniqueSID().equals(lastOpimizedJPropSID)) {
             property = addJProp("", (LCP) property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
         }
-        changePropertyName(property, name, signature); // должно идти первым
 
+        makePropertyPublic(property, name, signature);
         propClasses.put(property, signature);
-        property.property.setCanonicalName(PropertyCanonicalNameUtils.createName(getNamespace(), name, signature));
         
         AbstractGroup group = (groupName == null ? null : findGroup(groupName));
         property.property.caption = (caption == null ? name : caption);
@@ -839,21 +838,6 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void setEventId(LP property, String id) {
         property.property.eventID = id;
     }
-
-    private <T extends LP> void changePropertyName(T lp, String name, List<AndClassSet> signature) {
-        removeModuleLP(lp);
-        setPropertySID(lp, name, signature);
-        addModuleLP(lp);
-    }
-
-    // Для local свойств будем устанавливать сгенерированные автоматически sid для того, чтобы они были уникальными
-    private <T extends LP> void changeLocalPropertyName(T lp, String name, List<AndClassSet> signature) {
-        removeModuleLP(lp);
-        String oldSID = lp.property.getSID();
-        setPropertySID(lp, name, signature);
-        lp.property.setSID("local" + oldSID);
-        addModuleLP(lp);
-    }
     
     private List<AndClassSet> getParamClasses(PropertyUsage usage) throws ScriptingErrorLog.SemanticErrorException {
         if (usage.classNames == null) {
@@ -920,9 +904,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP prop;
         if (isTrivialParamList(resultParams)) {
             prop = mainProp;
-            lastOpimizedJPropSID = mainProp.property.getSID();
+            lastOpimizedJPropSID = mainProp.property.getUniqueSID();
         } else {
-            scriptLogger.info("addScriptedJProp(" + mainProp.property.getSID() + ", " + resultParams + ");");
+            scriptLogger.info("addScriptedJProp(" + mainProp.property.getUniqueSID() + ", " + resultParams + ");");
             prop = addJProp("", (LCP) mainProp, resultParams.toArray());
         }
         return new LPWithParams(prop, mergeAllParams(paramProps));
@@ -1064,7 +1048,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             caseParamProps.add(elseProp);
         }
 
-        LP caseProp = addCaseUProp(null, genSID(), false, "", isExclusive, getParamsPlainList(caseParamProps).toArray());
+        LP caseProp = addCaseUProp(null, false, "", isExclusive, getParamsPlainList(caseParamProps).toArray());
         return new LPWithParams(caseProp, mergeAllParams(caseParamProps));
     }
 
@@ -1129,7 +1113,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImOrderSet<PropertyInterface> tempContext = genInterfaces(getIntNum(allParams));
         ValueClass[] eaClasses = CalcProperty.getCommonClasses(tempContext, readCalcImplements(tempContext, allParams).getCol());
 
-        LAP<ClassPropertyInterface> eaPropLP = BL.emailLM.addEAProp(null, "", "", eaClasses, null, null);
+        LAP<ClassPropertyInterface> eaPropLP = BL.emailLM.addEAProp(null, "", eaClasses, null, null);
         SendEmailActionProperty eaProp = (SendEmailActionProperty) eaPropLP.property;
 
         ImList<CalcPropertyInterfaceImplement<ClassPropertyInterface>> allImplements = readCalcImplements(eaPropLP.listInterfaces, allParams);
@@ -1276,12 +1260,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (newSession) {
-            listLP = addNewSessionAProp(null, genSID(), "", listLP, doApply, isNested, singleApply, migrateAllSessionProps, mMigrateProps.immutable());
+            listLP = addNewSessionAProp(null, "", listLP, doApply, isNested, singleApply, migrateAllSessionProps, mMigrateProps.immutable());
         }
 
         if (newThread) {
             assert newSession;
-            listLP = addNewThreadAProp(null, genSID(), "", listLP, delay, period);
+            listLP = addNewThreadAProp(null, "", listLP, delay, period);
         }
 
         return new LPWithParams(listLP, usedParams);
@@ -1296,24 +1280,23 @@ public class ScriptingLogicsModule extends LogicsModule {
                 errLog.emitRequestUserInputDataTypeError(parser, typeId);
             }
 
-            prop = new LPWithParams(addRequestUserDataAProp(null, genSID(), "", (DataClass) requestValueType), new ArrayList<Integer>());
+            prop = new LPWithParams(addRequestUserDataAProp(null, "", (DataClass) requestValueType), new ArrayList<Integer>());
         } else {
-            prop = new LPWithParams(addRequestUserInputAProp(null, genSID(), "", (LAP<?>) action.property, requestValueType, chosenKey), newArrayList(action.usedParams));
+            prop = new LPWithParams(addRequestUserInputAProp(null, "", (LAP<?>) action.property, requestValueType, chosenKey), newArrayList(action.usedParams));
         }
         return prop;
     }
 
     public LCP addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames) throws ScriptingErrorLog.SemanticErrorException {
-        List<AndClassSet> paramClasses = new ArrayList<AndClassSet>();
+        List<AndClassSet> signature = new ArrayList<AndClassSet>();
         for (String className : paramClassNames) {
-            paramClasses.add(findClass(className).getUpSet());
+            signature.add(findClass(className).getUpSet());
         }
-//        checkDuplicateProperty(name, paramClasses);
+        checkDuplicateProperty(name, signature);
 
-        LCP res = addScriptedDProp(returnClassName, paramClassNames, true, false);
-        changeLocalPropertyName(res, name, paramClasses);
-        List<AndClassSet> outParams = createClassSetsFromClassNames(paramClassNames);
-        propClasses.put(res, outParams);
+        LCP res = addScriptedDProp(returnClassName, paramClassNames, true, false, true);
+        makePropertyPublic(res, name, signature);
+        propClasses.put(res, signature);
         return res;
     }
 
@@ -1334,7 +1317,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<Object> resultParams = getParamsPlainList(properties);
         List<Integer> usedParams = mergeAllParams(properties);
-        LP prop = addJoinAProp(null, genSID(), "", (LAP<?>) mainProp, resultParams.toArray());
+        LP prop = addJoinAProp(null, "", (LAP<?>) mainProp, resultParams.toArray());
         return new LPWithParams(prop, usedParams);
     }
 
@@ -1441,7 +1424,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             paramsList.add(whereProperty);
         }
         List<Object> resultParams = getParamsPlainList(paramsList);
-        LP result = addSetPropertyAProp(null, genSID(), "", resultInterfaces.size(), whereProperty != null, resultParams.toArray());
+        LP result = addSetPropertyAProp(null, "", resultInterfaces.size(), whereProperty != null, resultParams.toArray());
         return new LPWithParams(result, resultInterfaces);
     }
 
@@ -1518,7 +1501,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         List<Object> resultParams = getParamsPlainList(paramsList);
 
-        LAP<?> res = addChangeClassAProp(genSID(), cls, resultInterfaces.size(), changedIndex, contextExtended, whereProperty != null, resultParams.toArray());
+        LAP<?> res = addChangeClassAProp(cls, resultInterfaces.size(), changedIndex, contextExtended, whereProperty != null, resultParams.toArray());
         return new LPWithParams(res,  resultInterfaces);
     }
 
@@ -1549,7 +1532,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             propParams.add(falseAction);
         }
         List<Integer> allParams = mergeAllParams(propParams);
-        LP result = addIfAProp(null, genSID(), "", false, getParamsPlainList(propParams).toArray());
+        LP result = addIfAProp(null, "", false, getParamsPlainList(propParams).toArray());
         return new LPWithParams(result, allParams);
     }
 
@@ -1562,7 +1545,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             propParams.add(finallyAction);
         
         List<Integer> allParams = mergeAllParams(propParams);
-        LP result = addTryAProp(null, genSID(), "", getParamsPlainList(propParams).toArray());
+        LP result = addTryAProp(null, "", getParamsPlainList(propParams).toArray());
         return new LPWithParams(result, allParams);
     }
 
@@ -1607,7 +1590,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             mKeepProps.exclAdd((SessionDataProperty) prop.property);
         }
 
-        LP result = addApplyAProp(null, genSID(), "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null, singleApply, keepAllSessionProps, mKeepProps.immutable());
+        LP result = addApplyAProp(null, "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null, singleApply, keepAllSessionProps, mKeepProps.immutable());
         return new LPWithParams(result, mergeAllParams(propParams));
     }
 
@@ -1655,7 +1638,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         allCreationParams.addAll(noInline);
 
-        LP result = addForAProp(null, genSID(), "", !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(),
+        LP result = addForAProp(null, "", !descending, ordersNotNull, recursive, elseAction != null, usedParams.size(),
                                 addClassName != null ? (CustomClass) findClass(addClassName) : null, condition != null, noInline.size(), forceInline, getParamsPlainList(allCreationParams).toArray());
         return new LPWithParams(result, usedParams);
     }
@@ -1747,17 +1730,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         int groupPropParamCount = mergeAllParams(mergeLists(mainProps, groupProps, orderProps)).size();
         LCP resultProp = null;
         if (type == GroupingType.SUM) {
-            resultProp = addSGProp(null, genSID(), false, false, "", groupPropParamCount, resultParams.toArray());
+            resultProp = addSGProp(null, false, false, "", groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
-            resultProp = addMGProp(null, genSID(), false, "", type == GroupingType.MIN, groupPropParamCount, resultParams.toArray());
+            resultProp = addMGProp(null, false, "", type == GroupingType.MIN, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.CONCAT) {
-            resultProp = addOGProp(null, genSID(), false, "", GroupType.STRING_AGG, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, resultParams.toArray());
+            resultProp = addOGProp(null, false, "", GroupType.STRING_AGG, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
-            resultProp = addAGProp(null, false, genSID(), false, "", type == GroupingType.NAGGR, groupPropParamCount, resultParams.toArray());
+            resultProp = addAGProp(null, false, false, "", type == GroupingType.NAGGR, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
-            resultProp = addCGProp(null, false, genSID(), false, "", null, groupPropParamCount, resultParams.toArray());
+            resultProp = addCGProp(null, false, false, "", null, groupPropParamCount, resultParams.toArray());
         } else if (type == GroupingType.LAST) {
-            resultProp = addOGProp(null, genSID(), false, "", GroupType.LAST, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, resultParams.toArray());
+            resultProp = addOGProp(null, false, "", GroupType.LAST, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, resultParams.toArray());
         }
         return resultProp;
     }
@@ -1800,11 +1783,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Integer> usedParams = mergeAllParams(paramProps);
         LP prop;
         if (partitionType == PartitionType.SUM || partitionType == PartitionType.PREVIOUS) {
-            prop = addOProp(null, genSID(), false, "", partitionType, isAscending, ordersNotNull, useLast, groupPropsCnt, resultParams.toArray());
+            prop = addOProp(null, false, "", partitionType, isAscending, ordersNotNull, useLast, groupPropsCnt, resultParams.toArray());
         } else if (partitionType == PartitionType.DISTR_CUM_PROPORTION) {
-            prop = addPGProp(null, genSID(), false, precision, strict, "", usedParams.size(), isAscending, ordersNotNull, (LCP) ungroupProp, resultParams.toArray());
+            prop = addPGProp(null, false, precision, strict, "", usedParams.size(), isAscending, ordersNotNull, (LCP) ungroupProp, resultParams.toArray());
         } else {
-            prop = addUGProp(null, genSID(), false, strict, "", usedParams.size(), isAscending, ordersNotNull, (LCP) ungroupProp, resultParams.toArray());
+            prop = addUGProp(null, false, strict, "", usedParams.size(), isAscending, ordersNotNull, (LCP) ungroupProp, resultParams.toArray());
         }
         return new LPWithParams(prop, usedParams);
     }
@@ -1901,7 +1884,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         List<Object> resultParams = getParamsPlainList(Arrays.asList(zeroStep, nextStep));
-        LP res = addRProp(null, genSID(), false, "", cycleType, mainParams, MapFact.fromJavaRevMap(mapPrev), resultParams.toArray());
+        LP res = addRProp(null, false, "", cycleType, mainParams, MapFact.fromJavaRevMap(mapPrev), resultParams.toArray());
 
         List<Integer> resUsedParams = new ArrayList<Integer>();
         for (Integer usedParam : usedParams) {
@@ -2051,7 +2034,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  : getPropertyDraw(this, form, PropertyDrawEntity.createSID(initFilterPropertyName, initFilterPropertyMapping), version);
         }
 
-        LAP property = addFAProp(null, genSID(), "", form, objects, null, contextObject,
+        LAP property = addFAProp(null, "", form, objects, null, contextObject,
                                  contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
                                  initFilterProperty,
                                  sessionScope, modalityType, checkOnOk, showDrop, printType);

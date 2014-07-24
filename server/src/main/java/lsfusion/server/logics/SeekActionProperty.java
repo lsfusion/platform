@@ -29,7 +29,7 @@ public class SeekActionProperty extends ScriptingActionProperty {
     }
 
     public SeekActionProperty(ScriptingLogicsModule lm, FormEntity form, ObjectEntity object) {
-        super(lm, "seek_" + form.getSID() + "_" + object.getSID(), "Найти объект (" + object.caption + ")", new ValueClass[]{object.baseClass});
+        super(lm, "Найти объект (" + object.caption + ")", new ValueClass[]{object.baseClass});
 
         this.object = object;
     }

@@ -57,8 +57,8 @@ public class MaxUnionProperty extends IncrementUnionProperty {
         return operands;
     }
 
-    public MaxUnionProperty(boolean isMin, String sID, String caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands) {
-        super(sID, caption, interfaces);
+    public MaxUnionProperty(boolean isMin, String caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands) {
+        super(caption, interfaces);
         this.operands = operands;
         this.isMin = isMin;
 
@@ -73,7 +73,7 @@ public class MaxUnionProperty extends IncrementUnionProperty {
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new MaxUnionDrillDownFormEntity(
-                "drillDown" + capitalize(getSID()) + "Form",
+                "drillDown" + capitalize(getUniqueSID()) + "Form",
                 getString("logics.property.drilldown.form.max.union"), this, LM
         );
     }

@@ -26,8 +26,8 @@ import lsfusion.server.session.PropertyChanges;
 
 public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
-    public IsClassProperty(String sID, String caption, ValueClass valueClass) {
-        super(sID, caption, getInterfaces(new ValueClass[]{valueClass}));
+    public IsClassProperty(String caption, ValueClass valueClass) {
+        super(caption, getInterfaces(new ValueClass[]{valueClass}));
 
         finalizeInit();
     }

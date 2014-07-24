@@ -14,12 +14,12 @@ import lsfusion.server.session.PropertyChanges;
 
 public class SessionDataProperty extends DataProperty {
 
-    public SessionDataProperty(String sID, String caption, ValueClass value) {
-        this(sID, caption, new ValueClass[0], value);
+    public SessionDataProperty(String caption, ValueClass value) {
+        this(caption, new ValueClass[0], value);
     }
 
-    public SessionDataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
-        super(sID, caption, classes, value);
+    public SessionDataProperty(String caption, ValueClass[] classes, ValueClass value) {
+        super(caption, classes, value);
 
         finalizeInit();
     }

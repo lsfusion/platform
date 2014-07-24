@@ -13,8 +13,8 @@ public abstract class CurrentEnvironmentFormulaProperty extends FormulaProperty<
     private final String paramString; 
     private final AndClassSet paramClass;
 
-    public CurrentEnvironmentFormulaProperty(String sID, String caption, String paramString, AndClassSet paramClass) {
-        super(sID, caption, SetFact.<PropertyInterface>EMPTYORDER());
+    public CurrentEnvironmentFormulaProperty(String caption, String paramString, AndClassSet paramClass) {
+        super(caption, SetFact.<PropertyInterface>EMPTYORDER());
         this.paramString = paramString;
         this.paramClass = paramClass;
     }

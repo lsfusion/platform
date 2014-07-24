@@ -28,16 +28,12 @@ public abstract class ScriptingActionProperty extends UserActionProperty {
     }
 
     public ScriptingActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
-        this(LM, LM.genSID(), classes);
-    }
-
-    public ScriptingActionProperty(ScriptingLogicsModule LM, String sID, ValueClass... classes) {
-        super(sID, classes);
+        super(classes);
         this.LM = LM;
     }
 
-    public ScriptingActionProperty(ScriptingLogicsModule LM, String sID, String caption, ValueClass... classes) {
-        super(sID, caption, classes);
+    public ScriptingActionProperty(ScriptingLogicsModule LM, String caption, ValueClass... classes) {
+        super(caption, classes);
         this.LM = LM;
     }
 

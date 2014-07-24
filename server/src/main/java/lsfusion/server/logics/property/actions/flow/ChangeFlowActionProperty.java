@@ -9,8 +9,8 @@ import lsfusion.server.logics.property.derived.DerivedProperty;
 
 public abstract class ChangeFlowActionProperty extends KeepContextActionProperty {
 
-    protected ChangeFlowActionProperty(String sID, String caption) {
-        super(sID, caption, 0);
+    protected ChangeFlowActionProperty(String caption) {
+        super(caption, 0);
     }
 
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {

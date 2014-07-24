@@ -37,13 +37,13 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
 
     protected final ImSet<I> innerInterfaces;
 
-    protected GroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
-        super(sID, caption, getInterfaces(groupInterfaces));
+    protected GroupProperty(String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
+        super(caption, getInterfaces(groupInterfaces));
         this.innerInterfaces = innerInterfaces;
     }
 
-    protected GroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImList<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
-        super(sID, caption, getTempInterfaces(groupInterfaces));
+    protected GroupProperty(String caption, ImSet<I> innerInterfaces, ImList<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
+        super(caption, getTempInterfaces(groupInterfaces));
         this.innerInterfaces = innerInterfaces;
     }
     
@@ -174,7 +174,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new GroupDrillDownFormEntity(
-                "drillDown" + capitalize(getSID()) + "Form",
+                "drillDown" + capitalize(getUniqueSID()) + "Form",
                 getString("logics.property.drilldown.form.group." + getGroupType().name().toLowerCase()), this, LM
         );
     }

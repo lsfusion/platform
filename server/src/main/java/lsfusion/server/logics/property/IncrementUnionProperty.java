@@ -8,8 +8,8 @@ import lsfusion.server.session.PropertyChanges;
 
 public abstract class IncrementUnionProperty extends UnionProperty {
 
-    protected IncrementUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces) {
-        super(sID, caption, interfaces);
+    protected IncrementUnionProperty(String caption, ImOrderSet<Interface> interfaces) {
+        super(caption, interfaces);
     }
 
     protected abstract Expr calculateNewExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere);

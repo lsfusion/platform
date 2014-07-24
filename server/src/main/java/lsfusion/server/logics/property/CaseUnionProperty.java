@@ -34,8 +34,8 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 public class CaseUnionProperty extends IncrementUnionProperty {
 
     // immutable реализация
-    public CaseUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, boolean isExclusive, ImList<Case> cases) {
-        super(sID, caption, interfaces);
+    public CaseUnionProperty(String caption, ImOrderSet<Interface> interfaces, boolean isExclusive, ImList<Case> cases) {
+        super(caption, interfaces);
         this.cases = NFFact.finalList(cases);
         this.isExclusive = isExclusive;
         this.isChecked = false;
@@ -56,22 +56,22 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         }
     }
 
-    public CaseUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses, boolean toReverse) {
-        this(sID, caption, interfaces, false, (toReverse ? operands.reverseList() : operands).mapListValues(new OperandCase(caseClasses)));
+    public CaseUnionProperty(String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses, boolean toReverse) {
+        this(caption, interfaces, false, (toReverse ? operands.reverseList() : operands).mapListValues(new OperandCase(caseClasses)));
     }
 
-    public CaseUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses) {
-        this(sID, caption, interfaces, operands, caseClasses, true);
+    public CaseUnionProperty(String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses) {
+        this(caption, interfaces, operands, caseClasses, true);
     }
 
-    public CaseUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
-        this(sID, caption, interfaces, operands, caseClasses);
+    public CaseUnionProperty(String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
+        this(caption, interfaces, operands, caseClasses);
 
         classValueWhere = new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(interfaceClasses, "value", valueClass), true);
     }
 
-    public CaseUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses) {
-        this(sID, caption, interfaces, true, operands.mapColValues(new OperandCase(caseClasses)).toList());
+    public CaseUnionProperty(String caption, ImOrderSet<Interface> interfaces, ImCol<CalcPropertyInterfaceImplement<Interface>> operands, boolean caseClasses) {
+        this(caption, interfaces, true, operands.mapColValues(new OperandCase(caseClasses)).toList());
     }
 
     public static class Case {
@@ -285,8 +285,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     // для постзадания
-    public CaseUnionProperty(String sID, boolean isExclusive, boolean isChecked, Type type, String caption, ImOrderSet<Interface> interfaces, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
-        super(sID, caption, interfaces);
+    public CaseUnionProperty(boolean isExclusive, boolean isChecked, Type type, String caption, ImOrderSet<Interface> interfaces, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
+        super(caption, interfaces);
 
         this.isExclusive = isExclusive;
         this.isChecked = isChecked;
@@ -411,7 +411,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new CaseUnionDrillDownFormEntity(
-                "drillDown" + capitalize(getSID()) + "Form",
+                "drillDown" + capitalize(getUniqueSID()) + "Form",
                 getString("logics.property.drilldown.form.case.union"), this, LM
         );
     }

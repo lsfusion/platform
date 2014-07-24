@@ -24,7 +24,7 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
     public final PrevScope scope;
 
     public OldProperty(CalcProperty<T> property, PrevScope scope) {
-        super("OLD_" + property.getSID() + "_" + scope.getSID(), property.caption + " (в БД)", property);
+        super(property.caption + " (в БД)", property);
 
         this.scope = scope;
     }
@@ -76,7 +76,7 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new OldDrillDownFormEntity(
-                "drillDown" + capitalize(getSID()) + "Form",
+                "drillDown" + capitalize(getUniqueSID()) + "Form",
                 getString("logics.property.drilldown.form.old"), this, LM
         );
     }

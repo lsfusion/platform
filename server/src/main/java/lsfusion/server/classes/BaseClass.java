@@ -157,7 +157,7 @@ public class BaseClass extends AbstractCustomClass {
 
     @IdentityStrongLazy // equals'а нет
     public ObjectClassProperty getObjectClassProperty() {
-        return new ObjectClassProperty("objectClass", this);
+        return new ObjectClassProperty(this);
     }
 
     public DataObject getDataObject(SQLSession sql, Object value, AndClassSet classSet, OperationOwner owner) throws SQLException, SQLHandledException {
@@ -187,7 +187,7 @@ public class BaseClass extends AbstractCustomClass {
 
     @IdentityStrongLazy // для ID
     public ChangeClassValueActionProperty getChangeClassValueAction() {
-        return new ChangeClassValueActionProperty("CHANGE_CLASS_VALUE", ServerResourceBundle.getString("logics.property.actions.changeclass"), this);
+        return new ChangeClassValueActionProperty(ServerResourceBundle.getString("logics.property.actions.changeclass"), this);
     }
 
     @IdentityLazy

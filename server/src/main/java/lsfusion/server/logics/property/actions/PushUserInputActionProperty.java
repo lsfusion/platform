@@ -16,8 +16,8 @@ public class PushUserInputActionProperty extends AroundAspectActionProperty {
     private final CalcPropertyInterfaceImplement<PropertyInterface> push;
 
     // по аналогии с If
-    public <I extends PropertyInterface> PushUserInputActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, CalcPropertyInterfaceImplement<I> push, ActionPropertyMapImplement<?, I> action) {
-        super(sID, caption, innerInterfaces, action);
+    public <I extends PropertyInterface> PushUserInputActionProperty(String caption, ImOrderSet<I> innerInterfaces, CalcPropertyInterfaceImplement<I> push, ActionPropertyMapImplement<?, I> action) {
+        super(caption, innerInterfaces, action);
 
         ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
         this.push = push.map(mapInterfaces);

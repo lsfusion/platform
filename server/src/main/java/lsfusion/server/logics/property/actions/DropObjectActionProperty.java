@@ -15,7 +15,7 @@ import java.sql.SQLException;
 public class DropObjectActionProperty extends SystemExplicitActionProperty {
 
     public DropObjectActionProperty(ValueClass valueClass) {
-        super("drop" + valueClass.getSID(), ServerResourceBundle.getString("logics.property.actions.drop") + " " + valueClass, new ValueClass[]{valueClass});
+        super(ServerResourceBundle.getString("logics.property.actions.drop") + " " + valueClass, new ValueClass[]{valueClass});
     }
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

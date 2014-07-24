@@ -12,8 +12,8 @@ public abstract class PullChangeProperty<T extends PropertyInterface, P extends 
     protected final CalcProperty<T> onChange;
     public final CalcProperty<P> toChange;
 
-    public PullChangeProperty(String SID, String caption, ImOrderSet<I> interfaces, CalcProperty<T> onChange, CalcProperty<P> toChange) {
-        super(SID, caption, interfaces);
+    public PullChangeProperty(String caption, ImOrderSet<I> interfaces, CalcProperty<T> onChange, CalcProperty<P> toChange) {
+        super(caption, interfaces);
         this.onChange = onChange;
         this.toChange = toChange;
     }

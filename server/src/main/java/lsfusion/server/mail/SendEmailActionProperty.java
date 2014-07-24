@@ -70,8 +70,8 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private final List<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>> mapObjects = new ArrayList<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>>();
     private final List<CalcPropertyInterfaceImplement> attachmentProps = new ArrayList<CalcPropertyInterfaceImplement>();
 
-    public SendEmailActionProperty(String sID, String caption, ValueClass[] classes) {
-        super(sID, caption, classes);
+    public SendEmailActionProperty(String caption, ValueClass[] classes) {
+        super(caption, classes);
 
         askConfirm = true;
         setImage("email.png");

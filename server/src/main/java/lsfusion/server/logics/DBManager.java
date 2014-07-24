@@ -823,7 +823,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             OldSIDPolicy oldPolicy = new OldSIDPolicy();
             for (LP<?, ?> lp : businessLogics.getNamedProperties()) {
                 Property<?> property = lp.property;
-                if (property.getCanonicalName() != null) {
+                if (property.isNamed()) {
                     String oldSID = oldPolicy.transformCanonicalNameToSID(property.getCanonicalName());
                     dataProperty.add(asList((Object) oldSID, property.getCanonicalName()));
                 }
@@ -979,7 +979,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         ThreadLocalContext.popActionMessage();
                         ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
                         long time = System.currentTimeMillis() - start;
-                        String message = String.format("Recalculate Aggregation: %s, %sms", property.getSID(), time);
+                        String message = String.format("Recalculate Aggregation: %s, %sms", property.getUniqueSID(), time);
                         systemLogger.info(message);
                         if(time > maxRecalculateTime)
                             messageList.add(message);
@@ -1402,11 +1402,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
 
         public DBStoredProperty(CalcProperty<?> property) {
-            if (property.getCanonicalName() == null) {
-                this.setSID(property.getSID());
-            } else {
-                this.setCanonicalName(property.getCanonicalName());
-            }
+            assert property.isNamed();
+            this.setCanonicalName(property.getCanonicalName());
             this.isDataProperty = property instanceof DataProperty;
             this.tableName = property.mapTable.table.getName();
             mapKeys = ((CalcProperty<PropertyInterface>)property).mapTable.mapKeys.mapKeys(new GetValue<Integer, PropertyInterface>() {
@@ -1546,7 +1543,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             for (CalcProperty<?> property : businessLogics.getStoredProperties()) {
                 storedProperties.add(new DBStoredProperty(property));
-                assert property.getCanonicalName() != null;
+                assert property.isNamed();
             }
 
             for (ConcreteCustomClass customClass : businessLogics.getConcreteCustomClasses()) {
@@ -1662,6 +1659,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     for(int i = 0; i < prevConcreteNum; i++)
                         concreteClasses.add(new DBConcreteClass(inputDB.readUTF(), inputDB.readUTF(), inputDB.readInt()));
                 } else {
+                    // todo [dale]: Этот кусок сейчас нерабочий из-за создания StoredDataProperty без sid
+                    assert false;
                     KeyField objectKey = new KeyField("object", ObjectType.instance);
                     PropertyField classField = new PropertyField("class", ObjectType.instance);
                     SerializedTable objectTable = new SerializedTable("objects", SetFact.singletonOrder(objectKey), SetFact.singleton(classField), LM.baseClass);
@@ -1675,7 +1674,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
                     ImplementTable table = new ImplementTable("sidClass", LM.baseClass);
 
-                    StoredDataProperty dataProperty = new StoredDataProperty("classSID", "classSID", new ValueClass[] {LM.baseClass}, StringClass.get(250));
+                    StoredDataProperty dataProperty = new StoredDataProperty("classSID", new ValueClass[] {LM.baseClass}, StringClass.get(250));
                     LCP classSID = new LCP<ClassPropertyInterface> (dataProperty);
                     dataProperty.markStored(LM.tableFactory, table);
 

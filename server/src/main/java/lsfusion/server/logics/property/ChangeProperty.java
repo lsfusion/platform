@@ -4,8 +4,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 
 public abstract class ChangeProperty<T extends PropertyInterface> extends AggregateProperty<T> {
 
-    public ChangeProperty(String SID, String caption, ImOrderSet<T> interfaces) {
-        super(SID, caption, interfaces);
+    public ChangeProperty(String caption, ImOrderSet<T> interfaces) {
+        super(caption, interfaces);
     }
 
     protected boolean useSimpleIncrement() {

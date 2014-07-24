@@ -28,8 +28,8 @@ public class FormulaImplProperty extends FormulaProperty<FormulaImplProperty.Int
 
     private final FormulaJoinImpl formula;
 
-    public FormulaImplProperty(String sID, String caption, int intCount, FormulaJoinImpl formula) {
-        super(sID, caption, getInterfaces(intCount));
+    public FormulaImplProperty(String caption, int intCount, FormulaJoinImpl formula) {
+        super(caption, getInterfaces(intCount));
 
         this.formula = formula;
 

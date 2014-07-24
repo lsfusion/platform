@@ -122,7 +122,7 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
             property.setLogProperty(ownerModule.addLProp(systemEventsLM, this));
         }
         if (property.getLogFormProperty() == null) {
-            LogFormEntity logFormEntity = new LogFormEntity("log" + BaseUtils.capitalize(property.getSID()) + "Form", ServerResourceBundle.getString("logics.property.log.form"),
+            LogFormEntity logFormEntity = new LogFormEntity("log" + BaseUtils.capitalize(property.getUniqueSID()) + "Form", ServerResourceBundle.getString("logics.property.log.form"),
                                                             this,
                                                             property.getLogProperty(), systemEventsLM, lazyInit);
             systemEventsLM.addFormEntity(logFormEntity);

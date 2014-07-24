@@ -367,9 +367,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     private Map<String, Property> getCanonicalNamesMap() {
         Map<String, Property> result = new HashMap<String, Property>();
         for (LP<?, ?> lp : businessLogics.getNamedProperties()) {
-            if (lp.property.getCanonicalName() != null) {
-                result.put(lp.property.getCanonicalName(), lp.property);
-            }
+            result.put(lp.property.getCanonicalName(), lp.property);
         }
         return result;
     }

@@ -45,8 +45,8 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
         return getUsedProps(ListFact.fromJavaCol(recipients.keySet()));
     }
 
-    public NotificationActionProperty(String sID, String caption, LCP targetProperty, String subjectNotification, String textNotification, String emailFromNotification, String emailToNotification, String emailToCCNotification, String emailToBCNotification, EmailLogicsModule emailLM) {
-        super(sID, caption, getValueClasses(targetProperty));
+    public NotificationActionProperty(String caption, LCP targetProperty, String subjectNotification, String textNotification, String emailFromNotification, String emailToNotification, String emailToCCNotification, String emailToBCNotification, EmailLogicsModule emailLM) {
+        super(caption, getValueClasses(targetProperty));
 
         this.subjectNotification = subjectNotification;
         this.textNotification = textNotification;
@@ -114,7 +114,7 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
             } else
                 replacePropertyValue = replaceProperty.read(context);
             if (replacePropertyValue != null)
-                currentText = currentText.replace("$P{" + replaceProperty.property.getSID() + "(" + m.group(2) + ")}", replacePropertyValue.toString().trim());
+                currentText = currentText.replace("$P{" + replaceProperty.property.getUniqueSID() + "(" + m.group(2) + ")}", replacePropertyValue.toString().trim());
         }
 
         List<EmailSender.AttachmentProperties> attachmentForms = new ArrayList<EmailSender.AttachmentProperties>();

@@ -10,7 +10,7 @@ import lsfusion.server.session.PropertyChanges;
 public class NullValueProperty extends FormulaProperty<PropertyInterface>{
 
     private NullValueProperty() {
-        super("nullValue", "Значение NULL", SetFact.<PropertyInterface>EMPTYORDER());
+        super("Значение NULL", SetFact.<PropertyInterface>EMPTYORDER());
 
         finalizeInit();
     }

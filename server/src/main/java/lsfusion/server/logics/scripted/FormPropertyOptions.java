@@ -176,11 +176,11 @@ public class FormPropertyOptions {
                 caption = action.property.caption;
             }
             if (isRedundantString(caption)) {
-                caption = action.property.getSID();
+                caption = action.property.getUniqueSID();
             }
 
-            addEditAction(action.property.getSID(), action);
-            addContextMenuBinding(action.property.getSID(), caption);
+            addEditAction(action.property.getUniqueSID(), action);
+            addContextMenuBinding(action.property.getUniqueSID(), caption);
         }
     }
 

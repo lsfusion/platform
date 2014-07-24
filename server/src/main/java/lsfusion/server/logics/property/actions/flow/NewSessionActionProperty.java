@@ -24,11 +24,11 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final boolean isNested;
     private final boolean singleApply;
 
-    public <I extends PropertyInterface> NewSessionActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces,
+    public <I extends PropertyInterface> NewSessionActionProperty(String caption, ImOrderSet<I> innerInterfaces,
                                                                   ActionPropertyMapImplement<?, I> action, boolean doApply, boolean singleApply,
                                                                   boolean migrateAllSessionProperties, ImSet<SessionDataProperty> migrateSessionProperties,
                                                                   boolean isNested) {
-        super(sID, caption, innerInterfaces, action);
+        super(caption, innerInterfaces, action);
 
         this.doApply = doApply;
         this.singleApply = singleApply;

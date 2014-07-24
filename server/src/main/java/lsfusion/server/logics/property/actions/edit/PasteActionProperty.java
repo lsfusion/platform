@@ -20,8 +20,8 @@ import java.sql.SQLException;
 // глобальный action
 public class PasteActionProperty extends AroundAspectActionProperty {
 
-    public <I extends PropertyInterface> PasteActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> changeWYSAction) {
-        super(sID, caption, innerInterfaces, changeWYSAction);
+    public <I extends PropertyInterface> PasteActionProperty(String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> changeWYSAction) {
+        super(caption, innerInterfaces, changeWYSAction);
         
         finalizeInit();
     }

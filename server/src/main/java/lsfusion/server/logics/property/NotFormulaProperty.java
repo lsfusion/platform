@@ -11,7 +11,7 @@ import lsfusion.server.session.PropertyChanges;
 public class NotFormulaProperty extends FormulaProperty<PropertyInterface> {
 
     public NotFormulaProperty() {
-        super("NOT", "Не", SetFact.singletonOrder(new PropertyInterface(0)));
+        super("Не", SetFact.singletonOrder(new PropertyInterface(0)));
     }
 
     public final static NotFormulaProperty instance = new NotFormulaProperty();

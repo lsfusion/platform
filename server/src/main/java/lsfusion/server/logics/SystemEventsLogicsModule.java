@@ -90,7 +90,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
         connectTimeConnection = findProperty("connectTimeConnection");
         disconnectConnection = findAction("disconnectConnection");
-        addIfAProp(baseGroup, "Отключить", true, findProperty("disconnectTimeConnection"), 1, disconnectConnection, 1);
+        //addIfAProp(baseGroup, "Отключить", true, findProperty("disconnectTimeConnection"), 1, disconnectConnection, 1);
 
         // Логирование старта сервера
         computerLaunch = findProperty("computerLaunch");

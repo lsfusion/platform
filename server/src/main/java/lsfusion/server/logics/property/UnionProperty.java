@@ -25,8 +25,8 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
         return SetFact.toOrderExclSet(intNum, genInterface);
     }
 
-    protected UnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces) {
-        super(sID, caption, interfaces);
+    protected UnionProperty(String caption, ImOrderSet<Interface> interfaces) {
+        super(caption, interfaces);
     }
 
     public abstract ImCol<CalcPropertyInterfaceImplement<Interface>> getOperands();

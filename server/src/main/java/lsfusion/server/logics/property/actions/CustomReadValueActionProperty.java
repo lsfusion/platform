@@ -12,8 +12,8 @@ import java.sql.SQLException;
 
 public abstract class CustomReadValueActionProperty extends UserActionProperty {
 
-    protected CustomReadValueActionProperty(String sID, String caption, ValueClass[] classes) {
-        super(sID, caption, classes);
+    protected CustomReadValueActionProperty(String caption, ValueClass[] classes) {
+        super(caption, classes);
     }
 
     @Override

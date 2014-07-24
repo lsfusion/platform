@@ -9,8 +9,8 @@ abstract class ValueFormulaProperty<T extends PropertyInterface> extends Formula
 
     DataClass value; // can be null
 
-    protected ValueFormulaProperty(String sID, String caption, ImOrderSet<T> interfaces, DataClass value) {
-        super(sID, caption, interfaces);
+    protected ValueFormulaProperty(String caption, ImOrderSet<T> interfaces, DataClass value) {
+        super(caption, interfaces);
 
         this.value = value;
     }

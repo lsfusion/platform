@@ -18,8 +18,8 @@ import lsfusion.server.session.PropertyChanges;
 
 public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterface> {
 
-    public ObjectValueProperty(String SID, ValueClass valueClass) {
-        super(SID, ServerResourceBundle.getString("logics.object"), IsClassProperty.getInterfaces(new ValueClass[]{valueClass}));
+    public ObjectValueProperty(ValueClass valueClass) {
+        super(ServerResourceBundle.getString("logics.object"), IsClassProperty.getInterfaces(new ValueClass[]{valueClass}));
 
         finalizeInit();
     }

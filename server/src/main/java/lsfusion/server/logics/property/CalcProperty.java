@@ -161,8 +161,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return !calculateClassExpr(mapKeys, defaultPrevSameClasses).getWhere().and(property.calculateClassExpr(map.join(mapKeys), defaultPrevSameClasses).getWhere()).not().checkTrue();
     }
 
-    protected CalcProperty(String sID, String caption, ImOrderSet<T> interfaces) {
-        super(sID, caption, interfaces);
+    protected CalcProperty(String caption, ImOrderSet<T> interfaces) {
+        super(caption, interfaces);
     }
 
     public void change(ExecutionContext context, Object value) throws SQLException, SQLHandledException {
@@ -265,7 +265,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         public final PropertyField propValue;
 
         public ClassTable(final CalcProperty<P> property, PrevClasses prevSameClasses) {
-            super(property.getSID());
+            super(property.getUniqueSID());
 
             ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues(new GetValue<KeyField, P>() {
                 public KeyField getMapValue(P value) {
@@ -865,7 +865,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
         ImList<ValueClass> listValues = listInterfaces.mapList(interfaceClasses);
-        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<T>("DE" + getSID() + "_" + editActionSID, "sys", this, listInterfaces, listValues, editActionSID, filterProperty);
+        DefaultChangeActionProperty<T> changeActionProperty = new DefaultChangeActionProperty<T>("sys", this, listInterfaces, listValues, editActionSID, filterProperty);
         return changeActionProperty.getImplement(listInterfaces);
     }
 

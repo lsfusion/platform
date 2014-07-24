@@ -12,8 +12,8 @@ public class ValueProperty extends NoIncrementProperty<PropertyInterface> {
     public final Object value;
     public final StaticClass staticClass;
 
-    public ValueProperty(String sID, String caption, Object value, StaticClass staticClass) {
-        super(sID, caption, SetFact.<PropertyInterface>EMPTYORDER());
+    public ValueProperty(String caption, Object value, StaticClass staticClass) {
+        super(caption, SetFact.<PropertyInterface>EMPTYORDER());
         this.value = value;
         this.staticClass = staticClass;
 

@@ -19,16 +19,16 @@ public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         return min?GroupType.MIN:GroupType.MAX;
     }
 
-    public MaxGroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, boolean min) {
-        super(sID, caption, innerInterfaces, groupInterfaces, property);
+    public MaxGroupProperty(String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, boolean min) {
+        super(caption, innerInterfaces, groupInterfaces, property);
 
         this.min = min;
 
         finalizeInit();
     }
 
-    public MaxGroupProperty(String sID, String caption, ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, boolean min) {
-        super(sID, caption, interfaces, property);
+    public MaxGroupProperty(String caption, ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, boolean min) {
+        super(caption, interfaces, property);
 
         this.min = min;
 

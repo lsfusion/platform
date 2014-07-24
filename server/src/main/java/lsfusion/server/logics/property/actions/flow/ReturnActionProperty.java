@@ -10,7 +10,7 @@ import java.sql.SQLException;
 
 public class ReturnActionProperty extends ChangeFlowActionProperty {
     public ReturnActionProperty() {
-        super("return", "return");
+        super("return");
 
         finalizeInit();
     }

@@ -24,7 +24,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
     private final CalcProperty<P> property;
 
     public LogPropertyActionProperty(CalcProperty<P> property) {
-        super("LogProp" + property.getSID(), property.caption, new ValueClass[]{});
+        super(property.caption, new ValueClass[]{});
 
         this.property = property;
     }

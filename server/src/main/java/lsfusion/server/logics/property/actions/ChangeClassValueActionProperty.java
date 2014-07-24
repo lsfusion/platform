@@ -15,8 +15,8 @@ public class ChangeClassValueActionProperty extends SystemExplicitActionProperty
     private ClassPropertyInterface objectInterface;
     private ClassPropertyInterface classInterface;
 
-    public ChangeClassValueActionProperty(String name, String caption, BaseClass baseClass) {
-        super(name, caption, baseClass, baseClass.objectClass);
+    public ChangeClassValueActionProperty(String caption, BaseClass baseClass) {
+        super(caption, baseClass, baseClass.objectClass);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         objectInterface = i.next();

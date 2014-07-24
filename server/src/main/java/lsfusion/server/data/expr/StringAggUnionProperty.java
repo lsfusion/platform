@@ -20,8 +20,8 @@ public class StringAggUnionProperty extends FormulaUnionProperty {
     private final String separator;
     private final ImList<CalcPropertyInterfaceImplement<Interface>> operands;
 
-    public StringAggUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, String separator) {
-        super(sID, caption, interfaces);
+    public StringAggUnionProperty(String caption, ImOrderSet<Interface> interfaces, ImList<CalcPropertyInterfaceImplement<Interface>> operands, String separator) {
+        super(caption, interfaces);
         this.separator = separator;
         this.operands = operands;
 
@@ -46,7 +46,7 @@ public class StringAggUnionProperty extends FormulaUnionProperty {
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new StringAggUnionDrillDownFormEntity(
-                "drillDown" + capitalize(getSID()) + "Form",
+                "drillDown_" + capitalize(getUniqueSID()),
                 getString("logics.property.drilldown.form.agg.union"), this, LM
         );
     }

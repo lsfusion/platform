@@ -57,11 +57,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
-    public static final SessionDataProperty isDialog = new SessionDataProperty("isDialog", "Is dialog", LogicalClass.instance);
-    public static final SessionDataProperty isModal = new SessionDataProperty("isModal", "Is modal", LogicalClass.instance);
-    public static final SessionDataProperty manageSession = new SessionDataProperty("manageSession", "Manage session", LogicalClass.instance);
-    public static final SessionDataProperty isReadOnly = new SessionDataProperty("isReadOnly", "Is read only form", LogicalClass.instance);
-    public static final SessionDataProperty showDrop = new SessionDataProperty("showDrop", "Show drop", LogicalClass.instance);
+    public static final SessionDataProperty isDialog = new SessionDataProperty("Is dialog", LogicalClass.instance);
+    public static final SessionDataProperty isModal = new SessionDataProperty("Is modal", LogicalClass.instance);
+    public static final SessionDataProperty manageSession = new SessionDataProperty("Manage session", LogicalClass.instance);
+    public static final SessionDataProperty isReadOnly = new SessionDataProperty("Is read only form", LogicalClass.instance);
+    public static final SessionDataProperty showDrop = new SessionDataProperty("Show drop", LogicalClass.instance);
 
     public PropertyDrawEntity printActionPropertyDraw;
     public PropertyDrawEntity editActionPropertyDraw;
@@ -618,7 +618,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this, version);
 
-        if (propertyImplement.property.getName() != null) {
+        if (propertyImplement.property.isNamed()) {
             String propertySID = policy.createPropertyDrawSID(propertyImplement);  
             setPropertyDrawSID(newPropertyDraw, propertySID);
         }

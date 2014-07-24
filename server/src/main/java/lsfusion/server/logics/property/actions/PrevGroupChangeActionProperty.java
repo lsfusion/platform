@@ -67,8 +67,8 @@ public class PrevGroupChangeActionProperty<P extends PropertyInterface> extends 
     /**
      * @param mainLP   - свойство, куда будем писать
      */
-    public PrevGroupChangeActionProperty(String sID, String caption, GroupObjectEntity filterGroupObject, LAP<P> mainLP, int[] mainInts, int[] groupInts) {
-        super(sID, caption, getValueClasses(mainLP, mainInts, groupInts, filterGroupObject == null));
+    public PrevGroupChangeActionProperty(String caption, GroupObjectEntity filterGroupObject, LAP<P> mainLP, int[] mainInts, int[] groupInts) {
+        super(caption, getValueClasses(mainLP, mainInts, groupInts, filterGroupObject == null));
 
         TreeSet<Integer> groupIntsSet = new TreeSet<Integer>(toListFromArray(groupInts));
 

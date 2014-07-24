@@ -9,8 +9,8 @@ public abstract class SessionCalcProperty<T extends PropertyInterface> extends S
 
     public final CalcProperty<T> property;
 
-    public SessionCalcProperty(String sID, String caption, CalcProperty<T> property) {
-        super(sID, caption, property.getOrderInterfaces());
+    public SessionCalcProperty(String caption, CalcProperty<T> property) {
+        super(caption, property.getOrderInterfaces());
         this.property = property;
     }
 

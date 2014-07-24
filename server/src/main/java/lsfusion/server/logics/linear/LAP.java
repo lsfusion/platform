@@ -66,12 +66,12 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty) {
-        addToContextMenuFor(mainProperty, property.caption != null ? property.caption : property.getSID());
+        addToContextMenuFor(mainProperty, property.caption != null ? property.caption : property.getUniqueSID());
     }
 
     public <P extends PropertyInterface> void addToContextMenuFor(LP<P, Property<P>> mainProperty, String contextMenuCaption) {
-        setAsEditActionFor(property.getSID(), mainProperty);
-        mainProperty.property.setContextMenuAction(property.getSID(), contextMenuCaption);
+        setAsEditActionFor(property.getUniqueSID(), mainProperty);
+        mainProperty.property.setContextMenuAction(property.getUniqueSID(), contextMenuCaption);
     }
 
     public <P extends PropertyInterface> void setAsEditActionFor(String actionSID, LP<P, Property<P>> mainProperty) {

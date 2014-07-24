@@ -29,11 +29,11 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
     private final ConcreteCustomClass formResultClass;
     private final LCP formResultProperty;
 
-    public <I extends PropertyInterface> RequestUserInputActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> action,
+    public <I extends PropertyInterface> RequestUserInputActionProperty(String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> action,
                                                                         Type requestValueType, String chosenKey,
                                                                         LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty,
                                                                         AnyValuePropertyHolder chosenValueProperty, ConcreteCustomClass formResultClass, LCP formResultProperty) {
-        super(sID, caption, innerInterfaces, action);
+        super(caption, innerInterfaces, action);
 
         this.requestValueType = requestValueType;
         this.chosenKey = chosenKey;

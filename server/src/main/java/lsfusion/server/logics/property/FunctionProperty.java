@@ -9,8 +9,8 @@ import lsfusion.server.session.StructChanges;
 // свойство производное от остальных свойств
 public abstract class FunctionProperty<T extends PropertyInterface> extends AggregateProperty<T> {
 
-    protected FunctionProperty(String sID, String caption, ImOrderSet<T> interfaces) {
-        super(sID, caption, interfaces);
+    protected FunctionProperty(String caption, ImOrderSet<T> interfaces) {
+        super(caption, interfaces);
     }
 
     public static void fillDepends(MSet<CalcProperty> depends, ImCol<? extends CalcPropertyInterfaceImplement> propImplements) {

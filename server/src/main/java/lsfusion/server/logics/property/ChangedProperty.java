@@ -39,7 +39,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     public ChangedProperty(CalcProperty<T> property, IncrementType type, PrevScope scope) {
-        super("CHANGED_" + type + "_" + property.getSID() + "_" + scope.getSID(), property.caption + " (" + type + ")", property);
+        super(property.caption + " (" + type + ")", property);
         this.type = type;
         this.scope = scope;
 
@@ -108,7 +108,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new ChangedDrillDownFormEntity(
-                "drillDown" + capitalize(getSID()) + "Form",
+                "drillDown" + capitalize(getUniqueSID()) + "Form",
                 getString("logics.property.drilldown.form.data"), this, LM
         );
     }

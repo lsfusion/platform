@@ -25,7 +25,7 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
     private final ImSet<CalcPropertyInterfaceImplement<T>> groupProps;
 
     // чисто из-за ограничения конструктора
-    public static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(String sID, String caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
+    public static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(String caption, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> property, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
         CalcPropertyMapImplement<?, T> and = DerivedProperty.createAnd(innerInterfaces, aggrInterface, property);
         if(caption.isEmpty()) {
             ImCol<CalcPropertyMapImplement<?, T>> groupMapProps = CalcPropertyMapImplement.filter(groupProps);
@@ -37,16 +37,16 @@ public class AggregateGroupProperty<T extends PropertyInterface> extends CycleGr
             caption = caption + "(агр.)";
         and.property.caption = caption;
         assert groupProps.toSet().containsAll(innerInterfaces.removeIncl(aggrInterface));
-        return create(sID, caption, and, groupProps, innerInterfaces, property, aggrInterface, groupProps);
+        return create(caption, and, groupProps, innerInterfaces, property, aggrInterface, groupProps);
     }
 
     // чисто для generics
-    private static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(String sID, String caption, CalcPropertyInterfaceImplement<T> and, ImCol<CalcPropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
-        return new AggregateGroupProperty<T>(sID, caption, and, groupInterfaces, innerInterfaces, whereProp, aggrInterface, groupProps);
+    private static <T extends PropertyInterface<T>> AggregateGroupProperty<T> create(String caption, CalcPropertyInterfaceImplement<T> and, ImCol<CalcPropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
+        return new AggregateGroupProperty<T>(caption, and, groupInterfaces, innerInterfaces, whereProp, aggrInterface, groupProps);
     }
 
-    private AggregateGroupProperty(String sID, String caption, CalcPropertyInterfaceImplement<T> and, ImCol<CalcPropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
-        super(sID, caption, innerInterfaces, groupInterfaces, and, null);
+    private AggregateGroupProperty(String caption, CalcPropertyInterfaceImplement<T> and, ImCol<CalcPropertyInterfaceImplement<T>> groupInterfaces, ImSet<T> innerInterfaces, CalcPropertyInterfaceImplement<T> whereProp, T aggrInterface, ImSet<CalcPropertyInterfaceImplement<T>> groupProps) {
+        super(caption, innerInterfaces, groupInterfaces, and, null);
 
         this.whereProp = whereProp;
         this.aggrInterface = aggrInterface;

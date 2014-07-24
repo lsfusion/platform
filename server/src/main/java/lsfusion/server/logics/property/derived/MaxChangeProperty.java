@@ -78,7 +78,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
     }
 
     public MaxChangeProperty(CalcProperty<T> onChange, CalcProperty<P> toChange) {
-        super(onChange.getSID() +"_CH_"+ toChange.getSID(),onChange.caption+" по ("+toChange.caption+")", getInterfaces(toChange), onChange, toChange);
+        super(onChange.caption+" по ("+toChange.caption+")", getInterfaces(toChange), onChange, toChange);
 
         finalizeInit();
     }

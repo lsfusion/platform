@@ -12,8 +12,8 @@ import lsfusion.server.session.PropertyChanges;
 
 public abstract class FormulaUnionProperty extends UnionProperty {
 
-    protected FormulaUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces) {
-        super(sID, caption, interfaces);
+    protected FormulaUnionProperty(String caption, ImOrderSet<Interface> interfaces) {
+        super(caption, interfaces);
     }
 
     @Override

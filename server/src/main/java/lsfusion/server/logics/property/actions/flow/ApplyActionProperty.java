@@ -27,9 +27,9 @@ public class ApplyActionProperty extends KeepContextActionProperty {
     private final ImSet<SessionDataProperty> keepSessionProperties;
 
     public <I extends PropertyInterface> ApplyActionProperty(BaseLogicsModule LM, ActionPropertyMapImplement<?, I> action,
-                                                             String sID, String caption, ImOrderSet<I> innerInterfaces,
+                                                             String caption, ImOrderSet<I> innerInterfaces,
                                                              boolean keepAllSessionProperties, ImSet<SessionDataProperty> keepSessionProperties) {
-        super(sID, caption, innerInterfaces.size());
+        super(caption, innerInterfaces.size());
         this.keepAllSessionProperties = keepAllSessionProperties;
         this.keepSessionProperties = keepSessionProperties;
 

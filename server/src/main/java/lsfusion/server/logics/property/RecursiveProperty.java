@@ -73,8 +73,8 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
         return constraint;
     }
 
-    public RecursiveProperty(String sID, String caption, ImOrderSet<Interface> interfaces, Cycle cycle, ImRevMap<Interface, T> mapInterfaces, ImRevMap<T, T> mapIterate, CalcPropertyMapImplement<?, T> initial, CalcPropertyMapImplement<?, T> step) {
-        super(sID, caption, interfaces);
+    public RecursiveProperty(String caption, ImOrderSet<Interface> interfaces, Cycle cycle, ImRevMap<Interface, T> mapInterfaces, ImRevMap<T, T> mapIterate, CalcPropertyMapImplement<?, T> initial, CalcPropertyMapImplement<?, T> step) {
+        super(caption, interfaces);
         this.mapInterfaces = mapInterfaces;
         this.mapIterate = mapIterate;
         this.cycle = cycle;

@@ -33,8 +33,8 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
     private final ImMap<P, ClassPropertyInterface> mapSource;
     private static AtomicLong counter = new AtomicLong(0);
 
-    public EvalActionProperty(String sID, String caption, LCP<P> source) {
-        super(sID, caption, source.getInterfaceClasses());
+    public EvalActionProperty(String caption, LCP<P> source) {
+        super(caption, source.getInterfaceClasses());
         mapSource = source.listInterfaces.mapSet(getOrderInterfaces());
         this.source = source;
     }

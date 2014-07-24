@@ -76,8 +76,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     //assert getProperties и startAction одинаковой длины
     //startAction привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID,
-                              String caption,
+    public FormActionProperty(String caption,
                               FormEntity form,
                               final ObjectEntity[] objectsToSet,
                               ActionPropertyObjectEntity startAction,
@@ -92,7 +91,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               ObjectEntity contextObject,
                               CalcProperty contextProperty,
                               PropertyDrawEntity initFilterProperty) {
-        super(sID, caption, getValueClasses(objectsToSet, contextProperty));
+        super(caption, getValueClasses(objectsToSet, contextProperty));
 
         this.formResultClass = formResultClass;
         this.formResultProperty = formResultProperty;

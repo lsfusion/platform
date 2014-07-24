@@ -8,12 +8,12 @@ import lsfusion.server.data.expr.formula.StringJoinConcatenateFormulaImpl;
 
 public class StringConcatenateProperty extends FormulaImplProperty {
 
-    public StringConcatenateProperty(String sID, String caption, int intNum, String separator) {
-        this(sID, caption, intNum, separator, false);
+    public StringConcatenateProperty(String caption, int intNum, String separator) {
+        this(caption, intNum, separator, false);
     }
 
-    public StringConcatenateProperty(String sID, String caption, int intNum, String separator, boolean caseInsensitive) {
-        super(sID, caption, intNum, new StringJoinConcatenateFormulaImpl(separator, caseInsensitive));
+    public StringConcatenateProperty(String caption, int intNum, String separator, boolean caseInsensitive) {
+        super(caption, intNum, new StringJoinConcatenateFormulaImpl(separator, caseInsensitive));
     }
 
     @Override

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.ListPermutations;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
@@ -30,7 +31,7 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
-import lsfusion.server.logics.PropertySIDPolicy;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.Version;
@@ -56,12 +57,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return new PropertyInterface(i);
         }};
 
-    public int ID = 0;
+    private int ID = 0;
     private String sID;
     private String name;
     private String canonicalName;
-    private boolean isInner;
 
+    private boolean local = false;
+    
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public String caption;
 
@@ -122,8 +124,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public String toString() {
         String result = caption;
-        if(!isInner)
-            result = result + " (" + sID + ")";
+        if(canonicalName != null)
+            result = result + " (" + canonicalName + ")";
         return result;
     }
 
@@ -193,8 +195,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return interfaceClassWhere.meansCompatible(fullClassWhere);
     }
 
-    public Property(String sID, String caption, ImOrderSet<T> interfaces) {
-        this.setSID(sID);
+    public Property(String caption, ImOrderSet<T> interfaces) {
+        this.ID = BaseLogicsModule.generateStaticNewID();
         this.caption = caption;
         this.interfaces = interfaces.getSet();
         this.orderInterfaces = interfaces;
@@ -221,17 +223,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return sID;
     }
 
-    public void setSID(String sID) {
-        this.sID = sID;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name, boolean generated) {
-        this.name = name;
-        this.isInner = generated;
     }
 
     public boolean cached = false;
@@ -493,13 +486,35 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return canonicalName;
     }
 
-    public void setCanonicalName(String canonicalName) {
-        assert this.canonicalName == null; 
+    public void setCanonicalName(String canonicalName, PropertySIDPolicy policy) {
         this.canonicalName = canonicalName;
+        try {
+            this.name = PropertyCanonicalNameParser.getName(canonicalName);
+        } catch (AbstractPropertyNameParser.ParseException e) {
+            Throwables.propagate(e);
+        }
+        this.sID = policy.transformCanonicalNameToSID(canonicalName);
     }
     
-    public void setCanonicalName(String canonicalName, PropertySIDPolicy policy) {
-        setCanonicalName(canonicalName);
-        setSID(policy.transformCanonicalNameToSID(canonicalName));
-    } 
+    final public boolean isNamed() {
+        return canonicalName != null;
+    }
+    
+    public void setCanonicalName(String namespace, String name, List<AndClassSet> signature, PropertySIDPolicy policy) {
+        this.name = name;
+        this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
+        this.sID = policy.transformCanonicalNameToSID(canonicalName);
+    }
+    
+    public String getUniqueSID() {
+        return canonicalName != null ? canonicalName : ("p" + ID); 
+    }
+
+    public boolean isLocal() {
+        return local;
+    }
+
+    public void setLocal(boolean local) {
+        this.local = local;
+    }
 }

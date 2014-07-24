@@ -33,8 +33,8 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     protected final ImSet<CalcPropertyInterfaceImplement<T>> partitions;
     protected boolean includeLast;
 
-    public PartitionProperty(String sID, String caption, PartitionType partitionType, ImSet<T> innerInterfaces, ImList<CalcPropertyInterfaceImplement<T>> props, ImSet<CalcPropertyInterfaceImplement<T>> partitions, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, boolean includeLast) {
-        super(sID, caption, getInterfaces(innerInterfaces));
+    public PartitionProperty(String caption, PartitionType partitionType, ImSet<T> innerInterfaces, ImList<CalcPropertyInterfaceImplement<T>> props, ImSet<CalcPropertyInterfaceImplement<T>> partitions, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull, boolean includeLast) {
+        super(caption, getInterfaces(innerInterfaces));
         this.innerInterfaces = innerInterfaces;
         this.props = props;
         this.orders = orders;

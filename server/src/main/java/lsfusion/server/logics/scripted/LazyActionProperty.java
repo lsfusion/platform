@@ -17,8 +17,8 @@ public class LazyActionProperty extends SystemExplicitActionProperty {
     private final CalcProperty sourceProperty;
     private LAP evaluatedProperty = null;
        
-    public LazyActionProperty(String sID, String caption, CalcProperty sourceProperty) {
-        super(sID, caption, new LCP(sourceProperty).getInterfaceClasses());
+    public LazyActionProperty(String caption, CalcProperty sourceProperty) {
+        super(caption, new LCP(sourceProperty).getInterfaceClasses());
         this.sourceProperty = sourceProperty;       
     }
 

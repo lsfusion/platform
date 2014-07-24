@@ -45,8 +45,8 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
             }});
     }
 
-    public AndFormulaProperty(String sID, int size) {
-        super(sID, ServerResourceBundle.getString("logics.property.if"), getInterfaces(size));
+    public AndFormulaProperty(int size) {
+        super(ServerResourceBundle.getString("logics.property.if"), getInterfaces(size));
         objectInterface = (ObjectInterface) getOrderInterfaces().get(0);
         andInterfaces = BaseUtils.immutableCast(getOrderInterfaces().subOrder(1, interfaces.size()).getSet());
 

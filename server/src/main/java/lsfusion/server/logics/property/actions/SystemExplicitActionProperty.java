@@ -4,11 +4,11 @@ import lsfusion.server.classes.ValueClass;
 
 public abstract class SystemExplicitActionProperty extends ExplicitActionProperty {
 
-    protected SystemExplicitActionProperty(String sID, ValueClass... classes) {
-        super(sID, classes);
+    protected SystemExplicitActionProperty(ValueClass... classes) {
+        super(classes);
     }
 
-    protected SystemExplicitActionProperty(String sID, String caption, ValueClass... classes) {
-        super(sID, caption, classes);
+    protected SystemExplicitActionProperty(String caption, ValueClass... classes) {
+        super(caption, classes);
     }
 }

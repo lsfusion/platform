@@ -42,12 +42,12 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     private final ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders; // calculate
     private final boolean ordersNotNull;
 
-    public <T extends PropertyInterface> AddObjectActionProperty(String sID, CustomClass valueClass, boolean forceDialog, CalcProperty<T> result) {
-        this(sID, valueClass, forceDialog, SetFact.<I>EMPTY(), SetFact.<I>EMPTYORDER(), null, result!=null ? new CalcPropertyMapImplement<T, I>(result) : null, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false);
+    public <T extends PropertyInterface> AddObjectActionProperty(CustomClass valueClass, boolean forceDialog, CalcProperty<T> result) {
+        this(valueClass, forceDialog, SetFact.<I>EMPTY(), SetFact.<I>EMPTYORDER(), null, result!=null ? new CalcPropertyMapImplement<T, I>(result) : null, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false);
     }
 
-    public AddObjectActionProperty(String sID, CustomClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<T, I> where, CalcPropertyMapImplement<?, I> result, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
-        super(sID, ServerResourceBundle.getString("logics.add"), innerInterfaces, mapInterfaces);
+    public AddObjectActionProperty(CustomClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<T, I> where, CalcPropertyMapImplement<?, I> result, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+        super(ServerResourceBundle.getString("logics.add"), innerInterfaces, mapInterfaces);
         
         this.valueClass = valueClass;
         this.forceDialog = forceDialog;

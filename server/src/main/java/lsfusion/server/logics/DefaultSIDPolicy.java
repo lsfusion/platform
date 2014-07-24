@@ -71,7 +71,7 @@ public class DefaultSIDPolicy implements PropertySIDPolicy {
     
     @Override
     public String createPropertyDrawSID(PropertyObjectEntity<?, ?> property) {
-        assert property.property.getName() != null;
+        assert property.property.isNamed();
         return OldSIDPolicy.createPropertyDrawSID(property.property.getName(), property);
     }
 }

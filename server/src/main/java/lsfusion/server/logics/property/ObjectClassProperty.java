@@ -27,8 +27,8 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
 
     private final BaseClass baseClass;
 
-    public ObjectClassProperty(String SID, BaseClass baseClass) {
-        super(SID, ServerResourceBundle.getString("classes.object.class"), IsClassProperty.getInterfaces(new ValueClass[]{baseClass}));
+    public ObjectClassProperty(BaseClass baseClass) {
+        super(ServerResourceBundle.getString("classes.object.class"), IsClassProperty.getInterfaces(new ValueClass[]{baseClass}));
 
         this.baseClass = baseClass;
 

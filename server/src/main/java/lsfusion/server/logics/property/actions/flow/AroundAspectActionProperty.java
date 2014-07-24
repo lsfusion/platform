@@ -11,8 +11,8 @@ import java.sql.SQLException;
 public abstract class AroundAspectActionProperty extends KeepContextActionProperty {
     protected final ActionPropertyMapImplement<?, PropertyInterface> aspectActionImplement;
 
-    public <P extends PropertyInterface, I extends PropertyInterface> AroundAspectActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<P, I> action) {
-        super(sID, caption, innerInterfaces.size());
+    public <P extends PropertyInterface, I extends PropertyInterface> AroundAspectActionProperty(String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<P, I> action) {
+        super(caption, innerInterfaces.size());
 
         this.aspectActionImplement = action.map(getMapInterfaces(innerInterfaces).reverse());
     }

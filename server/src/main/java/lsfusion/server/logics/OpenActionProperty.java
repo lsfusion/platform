@@ -29,8 +29,8 @@ public class OpenActionProperty extends SystemExplicitActionProperty {
 
     LCP<?> fileProperty;
 
-    OpenActionProperty(String sID, String caption, LCP fileProperty) {
-        super(sID, caption, fileProperty.getInterfaceClasses());
+    OpenActionProperty(String caption, LCP fileProperty) {
+        super(caption, fileProperty.getInterfaceClasses());
 
         this.fileProperty = fileProperty;
     }

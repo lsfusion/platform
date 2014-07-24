@@ -19,7 +19,7 @@ public class ChangeBarcodeActionProperty extends SystemExplicitActionProperty {
     private final CalcProperty barcodePrefix;
 
     public ChangeBarcodeActionProperty(CalcProperty<?> barcode, CalcProperty barcodePrefix) {
-        super("CBAR" + barcode.getSID(), "sys", new ValueClass[]{barcode.getInterfaceClasses(ClassType.ASSERTFULL).singleValue()});
+        super("sys", barcode.getInterfaceClasses(ClassType.ASSERTFULL).singleValue());
         this.barcode = barcode;
         this.barcodePrefix = barcodePrefix;
     }

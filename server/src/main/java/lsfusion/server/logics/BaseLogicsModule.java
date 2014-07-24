@@ -5,20 +5,17 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyFormEntity;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
@@ -26,7 +23,6 @@ import lsfusion.server.form.window.NavigatorWindow;
 import lsfusion.server.form.window.ToolBarNavigatorWindow;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.SIDHandler;
@@ -305,7 +301,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         Version version = getVersion();
 
         objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
-        random = addRMProp("random", "Random");
+        makePropertyPublic(objectClass, "objectClass", Collections.<AndClassSet>nCopies(1, null));
+        random = addRMProp("Random");
+        makePropertyPublic(random, "random", Arrays.<AndClassSet>asList());
 
         // только через операторы 
         flowBreak = addProperty(null, new LAP(new BreakActionProperty()));
@@ -316,24 +314,24 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         publicGroup.add(objectValue, version);
 
         // логические св-ва
-        and1 = addAFProp("and1", false);
+        and1 = addAFProp(false);
         andNot1 = addAFProp(true);
 
         // Сравнения
-        equals2 = addCFProp("equals2", Compare.EQUALS);
+        equals2 = addCFProp(Compare.EQUALS);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
-        greater2 = addCFProp("greater2", Compare.GREATER);
+        greater2 = addCFProp(Compare.GREATER);
         lsoeq2 = addCFProp(Compare.LESS_EQUALS);
         less2 = addCFProp(Compare.LESS);
-        diff2 = addCFProp("diff2", Compare.NOT_EQUALS);
+        diff2 = addCFProp(Compare.NOT_EQUALS);
 
         // Математические операции
-        sum = addSumProp("sum");
-        multiply = addMultProp("multiply");
-        subtract = addSubtractProp("subtract");
-        divide = addDivideProp("divide");
+        sum = addSumProp();
+        multiply = addMultProp();
+        subtract = addSubtractProp();
+        divide = addDivideProp();
 
-        minus = addSFProp("minus", "(-(prm1))", 1);
+        minus = addSFProp("(-(prm1))", 1);
 
         // Константы
         vtrue = addCProp(LogicalClass.instance, true);
@@ -409,10 +407,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return idGenerator.idShift();
     }
 
-    <T extends LP<?, ?>> void registerProperty(T lp, Version version) {
-        lp.property.ID = idGenerator.idShift();
-    }
-
     public abstract class MapClassesPropertySet<K, V extends CalcProperty> extends PropertySet {
         protected final LinkedHashMap<K, V> properties = new LinkedHashMap<K, V>();
 
@@ -486,12 +480,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
             assert classes.length == 1;
 
             ValueClass valueClass = classes[0].getBaseClass();
-            ObjectValueProperty property = new ObjectValueProperty(name, valueClass);
-            property.setName(name, false);
-            property.setCanonicalName(PropertyCanonicalNameUtils.createName(getNamespace(), name, valueClass.getUpSet()), getSIDPolicy());
-            
-            LCP prop = new LCP<ClassPropertyInterface>(property);
-            registerProperty(prop, version);
+            ObjectValueProperty property = new ObjectValueProperty(valueClass);
+            property.setCanonicalName(getNamespace(), name, Arrays.<AndClassSet>asList(valueClass.getUpSet()), getSIDPolicy());
             setParent(property, version);
             return property;
         }
@@ -578,45 +568,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
 
-    private static class IDHandler {
-        int idCounter = 0;
-        Set<String> idSet = new HashSet<String>();
-
-        @NFLazy
-        public boolean isGeneratedSID(String sid) {
-            return idSet.contains(sid) || sid.startsWith(DerivedProperty.ID_PREFIX_GEN);
-        }
-
-        @NFLazy
-        public void changeSID(boolean generated, String oldSID, String newSID) {
-            if (idSet.contains(oldSID)) {
-                idSet.remove(oldSID);
-                if (generated)
-                    idSet.add(newSID);
-            }
-        }
-        
-        @NFLazy
-        public String genSID() {
-            String id = "property" + idCounter++;
-            idSet.add(id);
-            return id;
-        }
-    }
-    private final IDHandler idHandler = new IDHandler();
-    
-    public boolean isGeneratedSID(String sid) {
-        return idHandler.isGeneratedSID(sid);
-    }
-
-    public void changeSID(boolean generated, String oldSID, String newSID) {
-        idHandler.changeSID(generated, oldSID, newSID);
-    }
-
-    public String genSID() {
-        return idHandler.genSID();
-    }
-
     // --------------------------------- Identity Strong Lazy ----------------------------------- //
 
     @Override
@@ -639,14 +590,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @Override
     @IdentityStrongLazy
     protected <T extends PropertyInterface> LCP addCProp(StaticClass valueClass, Object value) {
-        CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp(genSID(), "sys", valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
+        CalcPropertyRevImplement<T, Integer> implement = (CalcPropertyRevImplement<T, Integer>) DerivedProperty.createCProp("sys", valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
         return addProperty(null, false, new LCP<T>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
     }
 
     @Override
     @IdentityStrongLazy
     protected <P extends PropertyInterface> LCP addCastProp(DataClass castClass) {
-        return addProperty(null, new LCP<FormulaImplProperty.Interface>(new FormulaImplProperty(genSID(), "castTo" + castClass.toString(), 1, new CastFormulaImpl(castClass))));
+        return addProperty(null, new LCP<FormulaImplProperty.Interface>(new FormulaImplProperty("castTo" + castClass.toString(), 1, new CastFormulaImpl(castClass))));
     }
 
     @Override

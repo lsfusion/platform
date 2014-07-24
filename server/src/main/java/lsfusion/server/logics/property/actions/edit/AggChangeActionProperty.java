@@ -27,8 +27,8 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
     private final CalcProperty<P> aggProp; // assert что один интерфейс и aggProp
     private final ValueClass aggClass;
 
-    public AggChangeActionProperty(String sID, String caption, ImOrderSet<JoinProperty.Interface> listInterfaces, CalcProperty<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<?, JoinProperty.Interface> changeAction) {
-        super(sID, caption, listInterfaces, changeAction);
+    public AggChangeActionProperty(String caption, ImOrderSet<JoinProperty.Interface> listInterfaces, CalcProperty<P> aggProp, ValueClass aggClass, ActionPropertyMapImplement<?, JoinProperty.Interface> changeAction) {
+        super(caption, listInterfaces, changeAction);
         this.aggProp = aggProp;
         this.aggClass = aggClass;
         

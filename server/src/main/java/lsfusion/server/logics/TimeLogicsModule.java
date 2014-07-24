@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import lsfusion.server.classes.sets.AndClassSet;
 import org.antlr.runtime.RecognitionException;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.data.Time;
@@ -7,6 +8,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -44,10 +46,14 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
     @Override
     public void initProperties() throws RecognitionException {
 
-        currentDateTime = addTProp("currentDateTime", getString("logics.date.current.datetime"), Time.DATETIME);
-        currentMinute = addTProp("currentMinute", getString("logics.date.current.minute"), Time.MINUTE);
-        currentHour = addTProp("currentHour", getString("logics.date.current.hour"), Time.HOUR);
-        currentEpoch = addTProp("currentEpoch", getString("logics.date.current.epoch"), Time.EPOCH);
+        currentDateTime = addTProp(getString("logics.date.current.datetime"), Time.DATETIME);
+        makePropertyPublic(currentDateTime, "currentDateTime", new ArrayList<AndClassSet>());
+        currentMinute = addTProp(getString("logics.date.current.minute"), Time.MINUTE);
+        makePropertyPublic(currentMinute, "currentMinute", new ArrayList<AndClassSet>());
+        currentHour = addTProp(getString("logics.date.current.hour"), Time.HOUR);
+        makePropertyPublic(currentHour, "currentHour", new ArrayList<AndClassSet>());
+        currentEpoch = addTProp(getString("logics.date.current.epoch"), Time.EPOCH);
+        makePropertyPublic(currentEpoch, "currentEpoch", new ArrayList<AndClassSet>());
 
         super.initProperties();
 

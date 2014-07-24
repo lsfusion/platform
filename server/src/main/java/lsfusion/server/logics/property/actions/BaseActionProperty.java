@@ -8,8 +8,8 @@ import lsfusion.server.logics.property.PropertyInterface;
 
 public abstract class BaseActionProperty<P extends PropertyInterface> extends ActionProperty<P> {
 
-    protected BaseActionProperty(String sID, String caption, ImOrderSet<P> interfaces) {
-        super(sID, caption, interfaces);
+    protected BaseActionProperty(String caption, ImOrderSet<P> interfaces) {
+        super(caption, interfaces);
     }
 
     public ImSet<ActionProperty> getDependActions() {

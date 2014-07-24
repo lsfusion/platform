@@ -71,10 +71,6 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
         return getUsedProps(where);
     }
 
-    private static String getSID(ObjectClass valueClass) {
-         return valueClass instanceof UnknownClass ? "delete" : "CHANGE_CLASS" + (valueClass!=null?" "+((CustomClass)valueClass).getSID():"");
-     }
-
     public ImSet<ActionProperty> getDependActions() {
         return SetFact.EMPTY();
     }
@@ -89,11 +85,11 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
 
     public static ChangeClassActionProperty<PropertyInterface, PropertyInterface> create(ObjectClass valueClass, boolean forceDialog, BaseClass baseClass) {
         PropertyInterface propInterface = new PropertyInterface();
-        return new ChangeClassActionProperty<PropertyInterface, PropertyInterface>(getSID(valueClass), valueClass, forceDialog, SetFact.singleton(propInterface), SetFact.singletonOrder(propInterface), propInterface, null, baseClass);
+        return new ChangeClassActionProperty<PropertyInterface, PropertyInterface>(valueClass, forceDialog, SetFact.singleton(propInterface), SetFact.singletonOrder(propInterface), propInterface, null, baseClass);
     }
 
-    public ChangeClassActionProperty(String sID, ObjectClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, I changeInterface, CalcPropertyMapImplement<T, I> where, BaseClass baseClass) {
-         super(sID, ServerResourceBundle.getString(
+    public ChangeClassActionProperty(ObjectClass valueClass, boolean forceDialog, ImSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, I changeInterface, CalcPropertyMapImplement<T, I> where, BaseClass baseClass) {
+         super(ServerResourceBundle.getString(
                  valueClass instanceof UnknownClass ? "logics.property.actions.delete" : "logics.property.actions.changeclass"), innerInterfaces, mapInterfaces);
 
          this.valueClass = valueClass;

@@ -30,16 +30,16 @@ public class ListActionProperty extends ListCaseActionProperty {
     }
 
     // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
-    public <I extends PropertyInterface> ListActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ImList<ActionPropertyMapImplement<?, I>> actions)  {
-        super(sID, caption, false, innerInterfaces);
+    public <I extends PropertyInterface> ListActionProperty(String caption, ImOrderSet<I> innerInterfaces, ImList<ActionPropertyMapImplement<?, I>> actions)  {
+        super(caption, false, innerInterfaces);
 
         this.actions = DerivedProperty.mapActionImplements(getMapInterfaces(innerInterfaces).reverse(), actions);
 
         finalizeInit();
     }
 
-    public <I extends PropertyInterface> ListActionProperty(String sID, String caption, boolean isChecked, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
-        super(sID, caption, false, isChecked, AbstractType.LIST, innerInterfaces, mapClasses);
+    public <I extends PropertyInterface> ListActionProperty(String caption, boolean isChecked, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+        super(caption, false, isChecked, AbstractType.LIST, innerInterfaces, mapClasses);
 
         actions = ListFact.mList();
     }

@@ -18,8 +18,8 @@ import static lsfusion.base.BaseUtils.serializeObject;
 
 public class AsyncUpdateEditValueActionProperty extends SystemActionProperty {
 
-    public AsyncUpdateEditValueActionProperty(String sID, String caption) {
-        super(sID, caption, SetFact.singletonOrder(new PropertyInterface()));
+    public AsyncUpdateEditValueActionProperty(String caption) {
+        super(caption, SetFact.singletonOrder(new PropertyInterface()));
     }
 
     @Override

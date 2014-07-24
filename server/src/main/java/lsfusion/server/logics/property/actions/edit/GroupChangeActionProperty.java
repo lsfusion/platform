@@ -23,8 +23,8 @@ import java.sql.SQLException;
 // групповые изменения (групповая корректировка, paste таблицы, multi cell paste)
 public class GroupChangeActionProperty extends AroundAspectActionProperty {
 
-    public <I extends PropertyInterface> GroupChangeActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> changeAction) {
-        super(sID, caption, innerInterfaces, changeAction);
+    public <I extends PropertyInterface> GroupChangeActionProperty(String caption, ImOrderSet<I> innerInterfaces, ActionPropertyMapImplement<?, I> changeAction) {
+        super(caption, innerInterfaces, changeAction);
         
         finalizeInit();
     }

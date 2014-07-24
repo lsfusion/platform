@@ -70,8 +70,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return rest.isEmpty();
     }
     
-    public JoinProperty(String sID, String caption, ImOrderSet<Interface> interfaces, boolean implementChange, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
-        super(sID, caption, interfaces);
+    public JoinProperty(String caption, ImOrderSet<Interface> interfaces, boolean implementChange, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
+        super(caption, interfaces);
         this.implement = implement;
         this.implementChange = implementChange || isIdentity(this.interfaces, implement);
 
@@ -303,7 +303,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
                 ImOrderSet<Interface> listInterfaces = getOrderInterfaces();
                 AggChangeActionProperty<T> aggChangeActionProperty =
-                        new AggChangeActionProperty<T>("AGGCH" + getSID(), "sys", listInterfaces, aggProp, aggClass, changeActionImplement);
+                        new AggChangeActionProperty<T>("sys", listInterfaces, aggProp, aggClass, changeActionImplement);
                 return aggChangeActionProperty.getImplement(listInterfaces);
             } else {
                 // тут вообще надо что=то типа с join'ить (assertion что filterProperty с одним интерфейсом)
@@ -371,7 +371,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new JoinDrillDownFormEntity(
-                "drillDown" + capitalize(getSID()) + "Form",
+                "drillDown" + capitalize(getUniqueSID()) + "Form",
                 getString("logics.property.drilldown.form.join"), this, LM
         );
     }

@@ -26,12 +26,11 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     protected final CalcPropertyMapImplement<P, I> writeTo; // assert что здесь + в mapInterfaces полный набор ключей
     protected final CalcPropertyMapImplement<?, I> where;
 
-    public SetActionProperty(String sID,
-                             String caption,
+    public SetActionProperty(String caption,
                              ImSet<I> innerInterfaces,
                              ImOrderSet<I> mapInterfaces, CalcPropertyMapImplement<?, I> where, CalcPropertyMapImplement<P, I> writeTo,
                              CalcPropertyInterfaceImplement<I> writeFrom) {
-        super(sID, caption, innerInterfaces, mapInterfaces);
+        super(caption, innerInterfaces, mapInterfaces);
 
         this.writeTo = writeTo;
         this.writeFrom = writeFrom;

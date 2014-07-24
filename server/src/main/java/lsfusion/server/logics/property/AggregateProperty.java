@@ -38,8 +38,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return mapTable!=null && !DataSession.reCalculateAggr; // для тестирования 2-е условие
     }
 
-    protected AggregateProperty(String SID,String caption,ImOrderSet<T> interfaces) {
-        super(SID,caption,interfaces);
+    protected AggregateProperty(String caption,ImOrderSet<T> interfaces) {
+        super(caption,interfaces);
     }
 
     // проверяет агрегацию для отладки

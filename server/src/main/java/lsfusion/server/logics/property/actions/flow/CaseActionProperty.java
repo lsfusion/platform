@@ -27,7 +27,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
 
     private NFList<Case<PropertyInterface>> cases;
 
-    public static <I extends PropertyInterface> ActionProperty createIf(String sID, String caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
+    public static <I extends PropertyInterface> ActionProperty createIf(String caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
         assert trueAction != null;
         if(not) // просто not'им if
             ifProp = DerivedProperty.createNot(ifProp);
@@ -36,7 +36,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
         mCases.add(new Case<I>(ifProp, trueAction));
         if(falseAction != null)
             mCases.add(new Case<I>(DerivedProperty.<I>createTrue(), falseAction));
-        return new CaseActionProperty(sID, caption, false, innerInterfaces, mCases.immutableList());
+        return new CaseActionProperty(caption, false, innerInterfaces, mCases.immutableList());
     }
 
     public static class Case<P extends PropertyInterface> {
@@ -78,8 +78,8 @@ public class CaseActionProperty extends ListCaseActionProperty {
         return cases.getList();
     }
 
-    public <I extends PropertyInterface> CaseActionProperty(String sID, String caption, boolean isExclusive, ImList<ActionPropertyMapImplement> impls, ImOrderSet<I> innerInterfaces) {
-        this(sID, caption, isExclusive, innerInterfaces, impls.<Case<I>>mapListValues(new GetValue<Case<I>, ActionPropertyMapImplement>() {
+    public <I extends PropertyInterface> CaseActionProperty(String caption, boolean isExclusive, ImList<ActionPropertyMapImplement> impls, ImOrderSet<I> innerInterfaces) {
+        this(caption, isExclusive, innerInterfaces, impls.<Case<I>>mapListValues(new GetValue<Case<I>, ActionPropertyMapImplement>() {
             @Override
             public Case<I> getMapValue(ActionPropertyMapImplement value) {
                 return new Case<I>((CalcPropertyMapImplement)value.mapWhereProperty().mapClassProperty(), value);
@@ -87,8 +87,8 @@ public class CaseActionProperty extends ListCaseActionProperty {
         }));
     }
 
-    public <I extends PropertyInterface> CaseActionProperty(String sID, String caption, boolean isExclusive, ImOrderSet<I> innerInterfaces, ImList<Case<I>> cases)  {
-        super(sID, caption, isExclusive, innerInterfaces);
+    public <I extends PropertyInterface> CaseActionProperty(String caption, boolean isExclusive, ImOrderSet<I> innerInterfaces, ImList<Case<I>> cases)  {
+        super(caption, isExclusive, innerInterfaces);
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
         this.cases = NFFact.finalList(cases.mapListValues(new GetValue<Case<PropertyInterface>, Case<I>>() {
@@ -99,8 +99,8 @@ public class CaseActionProperty extends ListCaseActionProperty {
         finalizeInit();
     }
 
-    public <I extends PropertyInterface> CaseActionProperty(String sID, String caption, boolean isExclusive, boolean isChecked, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
-        super(sID, caption, isExclusive, isChecked, type, innerInterfaces, mapClasses);
+    public <I extends PropertyInterface> CaseActionProperty(String caption, boolean isExclusive, boolean isChecked, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+        super(caption, isExclusive, isChecked, type, innerInterfaces, mapClasses);
 
         cases = NFFact.list();
     }

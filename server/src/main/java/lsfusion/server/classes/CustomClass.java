@@ -477,7 +477,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public static IsClassProperty getProperty(ValueClass valueClass) {
-        return new IsClassProperty("cp_" + valueClass.getSID(), valueClass.getCaption() + ServerResourceBundle.getString("logics.pr"), valueClass);
+        return new IsClassProperty(valueClass.getCaption() + ServerResourceBundle.getString("logics.pr"), valueClass);
     }
 
     private IsClassProperty property;

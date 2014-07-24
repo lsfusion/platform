@@ -24,8 +24,8 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
 
     public final ObjectValueClassSet set;
 
-    public ClassDataProperty(String sID, String caption, ObjectValueClassSet set) {
-        super(sID, caption, SetFact.singletonOrder(new ClassPropertyInterface(0, set.getOr().getCommonClass())));
+    public ClassDataProperty(String caption, ObjectValueClassSet set) {
+        super(caption, SetFact.singletonOrder(new ClassPropertyInterface(0, set.getOr().getCommonClass())));
         this.set = set;
     }
 

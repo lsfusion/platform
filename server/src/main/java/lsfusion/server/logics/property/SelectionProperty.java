@@ -21,8 +21,8 @@ public class SelectionProperty extends SessionDataProperty {
     ValueClass[] classes;
     BaseLogicsModule LM;
 
-    public SelectionProperty(String sID, ValueClass[] classes, BaseLogicsModule LM) {
-        super(sID, ServerResourceBundle.getString("logics.property.select"), classes, LogicalClass.instance);
+    public SelectionProperty(ValueClass[] classes, BaseLogicsModule LM) {
+        super(ServerResourceBundle.getString("logics.property.select"), classes, LogicalClass.instance);
         this.classes = classes;
         this.LM = LM;
     }

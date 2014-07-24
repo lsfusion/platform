@@ -38,8 +38,8 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         }
     }
 
-    public DataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
-        super(sID, caption, IsClassProperty.getInterfaces(classes));
+    public DataProperty(String caption, ValueClass[] classes, ValueClass value) {
+        super(caption, IsClassProperty.getInterfaces(classes));
         this.value = value;
     }
 
@@ -206,7 +206,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new DataDrillDownFormEntity(
-                "drillDown" + capitalize(getSID()) + "Form",
+                "drillDown" + capitalize(getUniqueSID()) + "Form",
                 getString("logics.property.drilldown.form.data"), this, LM
         );
     }

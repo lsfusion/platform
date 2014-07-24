@@ -19,8 +19,8 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class SumUnionProperty extends IncrementUnionProperty {
 
-    public SumUnionProperty(String sID, String caption, ImOrderSet<Interface> interfaces, ImMap<CalcPropertyInterfaceImplement<Interface>, Integer> operands) {
-        super(sID, caption, interfaces);
+    public SumUnionProperty(String caption, ImOrderSet<Interface> interfaces, ImMap<CalcPropertyInterfaceImplement<Interface>, Integer> operands) {
+        super(caption, interfaces);
         this.operands = operands;
 
         finalizeInit();
@@ -71,7 +71,7 @@ public class SumUnionProperty extends IncrementUnionProperty {
     @Override
     public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
         return new SumUnionDrillDownFormEntity(
-                "drillDown" + capitalize(getSID()) + "Form",
+                "drillDown" + capitalize(getUniqueSID()) + "Form",
                 getString("logics.property.drilldown.form.sum.union"), this, LM
         );
     }

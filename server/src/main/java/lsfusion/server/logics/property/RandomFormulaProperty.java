@@ -12,8 +12,8 @@ import lsfusion.server.session.PropertyChanges;
 
 public class RandomFormulaProperty extends ValueFormulaProperty<PropertyInterface> {
 
-    public RandomFormulaProperty(String sID, String caption) {
-        super(sID, caption, SetFact.<PropertyInterface>EMPTYORDER(), DoubleClass.instance);
+    public RandomFormulaProperty(String caption) {
+        super(caption, SetFact.<PropertyInterface>EMPTYORDER(), DoubleClass.instance);
 
         finalizeInit();
     }

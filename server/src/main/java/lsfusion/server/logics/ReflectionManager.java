@@ -312,7 +312,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     private boolean needsToBeSynchronized(Property property) {
-        return property.getCanonicalName() != null && (property instanceof ActionProperty || (((CalcProperty)property).isFull() && !(((CalcProperty)property).isEmpty())));
+        return property.isNamed() && (property instanceof ActionProperty || (((CalcProperty)property).isFull() && !(((CalcProperty)property).isEmpty())));
     }
 
     private void synchronizeProperties() {

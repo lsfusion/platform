@@ -562,10 +562,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             ImSet<ConcreteCustomClass> set = groupTables.getValue(i);
 
             ObjectValueClassSet classSet = OrObjectClassSet.fromSetConcreteChildren(set);
-            ClassDataProperty dataProperty = new ClassDataProperty(PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), classSet.toString(), classSet);
+            ClassDataProperty dataProperty = new ClassDataProperty(classSet.toString(), classSet);
+            LCP<ClassPropertyInterface> lp = new LCP<ClassPropertyInterface>(dataProperty);
             LM.addProperty(null, new LCP<ClassPropertyInterface>(dataProperty));
+            LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<AndClassSet>singletonList(classSet));
             dataProperty.markStored(LM.tableFactory, table);
-            dataProperty.setCanonicalName(PropertyCanonicalNameUtils.createName(LM.getNamespace(), PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<AndClassSet>singletonList(classSet)));
 
             for(ConcreteCustomClass customClass : set)
                 customClass.dataProperty = dataProperty;
@@ -685,7 +686,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 String emailTo = rowValue.get("emailTo") == null ? "" : rowValue.get("emailTo").toString().trim();
                 String emailToCC = rowValue.get("emailToCC") == null ? "" : rowValue.get("emailToCC").toString().trim();
                 String emailToBC = rowValue.get("emailToBC") == null ? "" : rowValue.get("emailToBC").toString().trim();
-                LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty(prop.property.getSID() + "emailNotificationProperty", "emailNotificationProperty", prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, emailLM)));
+                LAP emailNotificationProperty = LM.addProperty(LM.actionGroup, new LAP(new NotificationActionProperty("emailNotificationProperty", prop, subject, text, emailFrom, emailTo, emailToCC, emailToBC, emailLM)));
 
                 Integer[] params = new Integer[prop.listInterfaces.size()];
                 for (int j = 0; j < prop.listInterfaces.size(); j++)
@@ -717,31 +718,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
 
             //добавляем в контекстное меню пункт для показа формы
-            String actionSID = property.getCanonicalName();
-            assert actionSID != null;
-            property.setContextMenuAction(actionSID, formActionProperty.caption);
-            property.setEditAction(actionSID, formActionProperty.getImplement(property.getOrderInterfaces()));
+            property.setContextMenuAction(property.getUniqueSID(), formActionProperty.caption);
+            property.setEditAction(property.getUniqueSID(), formActionProperty.getImplement(property.getOrderInterfaces()));
         }
     }
 
     public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropByCN, Property property) {
-        String propertyCN = property.getCanonicalName();
-        if (propertyCN != null) {
+        if (property.isNamed()) {
+            String propertyCN = property.getCanonicalName();
             PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, propertyCN);
-            String setupPolicyActionName = PropertyCanonicalNameUtils.policyPropPrefix + property.getName(); // todo [dale]: узнать как используется этот sid
-            LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, setupPolicyActionName, getString("logics.property.propertypolicy.action"),
+            String setupPolicyActionName = PropertyCanonicalNameUtils.policyPropPrefix + property.getName(); 
+            LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, getString("logics.property.propertypolicy.action"),
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), propertyCN));
             
             ActionProperty setupPolicyAction = setupPolicyLAP.property;
             try {
-                setupPolicyAction.setCanonicalName(PropertyCanonicalNameUtils.createName(LM.getNamespace(), setupPolicyActionName, parser.getSignature()), LM.getSIDPolicy());
+                LM.makePropertyPublic(setupPolicyLAP, setupPolicyActionName, parser.getSignature());
             } catch (PropertyCanonicalNameParser.ParseException e) {
                 Throwables.propagate(e);
             }
             setupPolicyAction.checkReadOnly = false;
-            String actionCN = setupPolicyAction.getCanonicalName();
-            property.setContextMenuAction(actionCN, setupPolicyAction.caption);
-            property.setEditAction(actionCN, setupPolicyAction.getImplement());
+            property.setContextMenuAction(setupPolicyAction.getUniqueSID(), setupPolicyAction.caption);
+            property.setEditAction(setupPolicyAction.getUniqueSID(), setupPolicyAction.getImplement());
         }
     }
 
@@ -1215,7 +1213,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                         }
                     });
                     long time = System.currentTimeMillis() - start;
-                    String message = String.format("Recalculate Follows: %s, %sms", property.getSID(), time);
+                    String message = String.format("Recalculate Follows: %s, %sms", property.getUniqueSID(), time);
                     systemLogger.info(message);
                     if(time > maxRecalculateTime)
                         messageList.add(message);                    
@@ -1307,7 +1305,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     long start = System.currentTimeMillis();
                     property.recalculateClasses(sql, LM.baseClass);
                     long time = System.currentTimeMillis() - start;
-                    String message = String.format("Recalculate Class: %s, %s", property.getSID(), time);
+                    String message = String.format("Recalculate Class: %s, %s", property.getUniqueSID(), time);
                     systemLogger.info(message);
                     if(time > maxRecalculateTime)
                         messageList.add(message);

@@ -11,8 +11,8 @@ import lsfusion.server.session.PropertyChanges;
 public class InfiniteProperty extends NoIncrementProperty<PropertyInterface> {
 
     private final DataClass dataClass;
-    public InfiniteProperty(String sID, String caption, DataClass dataClass) {
-        super(sID, caption, SetFact.<PropertyInterface>EMPTYORDER());
+    public InfiniteProperty(String caption, DataClass dataClass) {
+        super(caption, SetFact.<PropertyInterface>EMPTYORDER());
         this.dataClass = dataClass;
 
         finalizeInit();

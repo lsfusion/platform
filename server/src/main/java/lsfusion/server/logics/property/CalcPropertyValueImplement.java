@@ -20,7 +20,7 @@ public class CalcPropertyValueImplement<P extends PropertyInterface> extends Cal
     }
 
     public int getID() {
-        return property.ID;
+        return property.getID();
     }
 
     public PropertyChange<P> getPropertyChange(Expr expr) throws SQLException {

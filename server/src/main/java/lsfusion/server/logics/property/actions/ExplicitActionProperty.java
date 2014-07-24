@@ -14,12 +14,12 @@ import java.sql.SQLException;
 // с явным задание классов параметров (where определяется этими классами)
 public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPropertyInterface> {
 
-    protected ExplicitActionProperty(String sID, ValueClass... classes) {
-        this(sID, "sys", classes);
+    protected ExplicitActionProperty(ValueClass... classes) {
+        this("sys", classes);
     }
 
-    protected ExplicitActionProperty(String sID, String caption, ValueClass[] classes) {
-        super(sID, caption, IsClassProperty.getInterfaces(classes));
+    protected ExplicitActionProperty(String caption, ValueClass[] classes) {
+        super(caption, IsClassProperty.getInterfaces(classes));
     }
 
     protected abstract void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;

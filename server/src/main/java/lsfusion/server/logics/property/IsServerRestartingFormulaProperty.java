@@ -6,8 +6,8 @@ import lsfusion.server.logics.ServerResourceBundle;
 
 public class IsServerRestartingFormulaProperty extends CurrentEnvironmentFormulaProperty {
 
-    public IsServerRestartingFormulaProperty(String sID) {
-        super(sID, ServerResourceBundle.getString("logics.property.server.reboots"), SQLSession.isServerRestartingParam, LogicalClass.instance);
+    public IsServerRestartingFormulaProperty() {
+        super(ServerResourceBundle.getString("logics.property.server.reboots"), SQLSession.isServerRestartingParam, LogicalClass.instance);
 
         finalizeInit();
     }

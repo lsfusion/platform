@@ -351,7 +351,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     private void serializeIfDeserializable(CalcPropertyObjectEntity<?> propertyObject, ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        assert propertyObject.property.getCanonicalName() != null;
+        assert propertyObject.property.isNamed();
         if (propertyObject != null && pool.context.BL.findProperty(propertyObject.property.getCanonicalName()) == null) {
             propertyObject = null;
         }

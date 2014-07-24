@@ -32,13 +32,13 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
 
     final CalcProperty<P> toChange;
 
-    public CycleGroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, CalcProperty<P> toChange) {
-        super(sID, caption, innerInterfaces, groupInterfaces, property, false);
+    public CycleGroupProperty(String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> property, CalcProperty<P> toChange) {
+        super(caption, innerInterfaces, groupInterfaces, property, false);
         this.toChange = toChange;
     }
 
-    public CycleGroupProperty(String sID, String caption, ImCol<CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, CalcProperty<P> toChange) {
-        super(sID, caption, interfaces, property, false);
+    public CycleGroupProperty(String caption, ImCol<CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, CalcProperty<P> toChange) {
+        super(caption, interfaces, property, false);
         this.toChange = toChange;
     }
 

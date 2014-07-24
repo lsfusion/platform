@@ -24,8 +24,8 @@ public class RequestUserDataActionProperty extends SystemExplicitActionProperty 
         return getChangeProps(requestCanceledProperty.property, requestedValueProperty.getLCP(dataClass).property);
     }
 
-    public RequestUserDataActionProperty(String sID, String caption, DataClass dataClass, LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty) {
-        super(sID, caption);
+    public RequestUserDataActionProperty(String caption, DataClass dataClass, LCP requestCanceledProperty, AnyValuePropertyHolder requestedValueProperty) {
+        super(caption);
 
         this.dataClass = dataClass;
 

@@ -19,8 +19,8 @@ public class LoadActionProperty extends SystemExplicitActionProperty {
 
     LCP<?> fileProperty;
 
-    LoadActionProperty(String sID, String caption, LCP fileProperty) {
-        super(sID, caption, fileProperty.getInterfaceClasses());
+    LoadActionProperty(String caption, LCP fileProperty) {
+        super(caption, fileProperty.getInterfaceClasses());
 
         this.fileProperty = fileProperty;
     }

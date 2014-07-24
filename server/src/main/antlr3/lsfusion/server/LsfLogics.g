@@ -1244,7 +1244,7 @@ dataPropertyDefinition[boolean innerPD] returns [LP property, List<AndClassSet> 
 @after {
 	if (inPropParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, sessionProp, innerPD);
+		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, sessionProp, innerPD, false);
 	}
 }
 	:	'DATA'

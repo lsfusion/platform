@@ -36,16 +36,16 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
         ((CaseUnionProperty) abstractWhere.property).addCase(where.map(abstractMap), action.mapWhereProperty().map(abstractMap), version);
     }
 
-    protected <I extends PropertyInterface> ListCaseActionProperty(String sID, String caption, boolean isExclusive, ImOrderSet<I> innerInterfaces) {
-        super(sID, caption, innerInterfaces.size());
+    protected <I extends PropertyInterface> ListCaseActionProperty(String caption, boolean isExclusive, ImOrderSet<I> innerInterfaces) {
+        super(caption, innerInterfaces.size());
 
         this.abstractWhere = null;
         this.type = null;
         this.isExclusive = isExclusive;
     }
 
-    public <I extends PropertyInterface> ListCaseActionProperty(String sID, String caption, boolean isExclusive, boolean isChecked, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
-        super(sID, caption, innerInterfaces.size());
+    public <I extends PropertyInterface> ListCaseActionProperty(String caption, boolean isExclusive, boolean isChecked, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+        super(caption, innerInterfaces.size());
 
         this.isExclusive = isExclusive;
         this.type = type;
@@ -56,7 +56,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
             case MULTI: caseType = CaseUnionProperty.Type.MULTI; break;
             case LIST: caseType = CaseUnionProperty.Type.VALUE; break;
         }
-        abstractWhere = DerivedProperty.createUnion(getSID() + "_case", isExclusive, isChecked, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
+        abstractWhere = DerivedProperty.createUnion(isExclusive, isChecked, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
     }
 
     protected abstract CalcPropertyMapImplement<?, PropertyInterface> calculateWhereProperty();

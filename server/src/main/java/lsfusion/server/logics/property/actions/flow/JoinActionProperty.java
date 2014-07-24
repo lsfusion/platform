@@ -20,8 +20,8 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
 
     public final ActionPropertyImplement<T, CalcPropertyInterfaceImplement<PropertyInterface>> action; // action + mapping на calculate
 
-    public <I extends PropertyInterface> JoinActionProperty(String sID, String caption, ImOrderSet<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement) {
-        super(sID, caption, listInterfaces.size());
+    public <I extends PropertyInterface> JoinActionProperty(String caption, ImOrderSet<I> listInterfaces, ActionPropertyImplement<T, CalcPropertyInterfaceImplement<I>> implement) {
+        super(caption, listInterfaces.size());
 
         action = DerivedProperty.mapActionImplements(implement, getMapInterfaces(listInterfaces).reverse());
 

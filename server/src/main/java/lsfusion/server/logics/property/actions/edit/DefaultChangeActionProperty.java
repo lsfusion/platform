@@ -32,8 +32,8 @@ public class DefaultChangeActionProperty<P extends PropertyInterface> extends Sy
     private final String editActionSID;
     private final CalcProperty filterProperty;
 
-    public DefaultChangeActionProperty(String sID, String caption, CalcProperty<P> property, ImOrderSet<P> listInterfaces, ImList<ValueClass> valueClasses, String editActionSID, CalcProperty filterProperty) {
-        super(sID, caption, valueClasses.toArray(new ValueClass[valueClasses.size()]));
+    public DefaultChangeActionProperty(String caption, CalcProperty<P> property, ImOrderSet<P> listInterfaces, ImList<ValueClass> valueClasses, String editActionSID, CalcProperty filterProperty) {
+        super(caption, valueClasses.toArray(new ValueClass[valueClasses.size()]));
         
         assert filterProperty==null || filterProperty.interfaces.size()==1;
         assert listInterfaces.size() == property.interfaces.size();

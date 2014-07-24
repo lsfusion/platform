@@ -20,10 +20,10 @@ public class TryActionProperty extends KeepContextActionProperty {
     private final ActionPropertyMapImplement<?, PropertyInterface> finallyAction;
 
 
-    public <I extends PropertyInterface> TryActionProperty(String sID, String caption, ImOrderSet<I> innerInterfaces, 
+    public <I extends PropertyInterface> TryActionProperty(String caption, ImOrderSet<I> innerInterfaces, 
                                                            ActionPropertyMapImplement<?, I> tryAction,
                                                            ActionPropertyMapImplement<?, I> finallyAction) {
-        super(sID, caption, innerInterfaces.size());
+        super(caption, innerInterfaces.size());
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
         this.tryAction = tryAction.map(mapInterfaces);

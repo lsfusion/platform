@@ -17,8 +17,8 @@ import java.sql.SQLException;
 
 public class StoredDataProperty extends DataProperty {
 
-    public StoredDataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
-        super(sID, caption, classes, value);
+    public StoredDataProperty(String caption, ValueClass[] classes, ValueClass value) {
+        super(caption, classes, value);
 
         finalizeInit();
     }

@@ -58,7 +58,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class DataSession extends ExecutionEnvironment implements SessionChanges, SessionCreator {
 
-    public static final SessionDataProperty isDataChanged = new SessionDataProperty("isDataChanged", "Is data changed", LogicalClass.instance);
+    public static final SessionDataProperty isDataChanged = new SessionDataProperty("Is data changed", LogicalClass.instance);
 
     private boolean isStoredDataChanged;
 

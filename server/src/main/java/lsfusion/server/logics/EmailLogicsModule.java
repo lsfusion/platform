@@ -124,10 +124,10 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     }
 
     public LAP addEAProp(String subject, LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {
-        return addEAProp(null, genSID(), "emailContact", subject, fromAddressAccount, blindCarbonCopyAccount, params);
+        return addEAProp(null, "emailContact", subject, fromAddressAccount, blindCarbonCopyAccount, params);
     }
 
-    public LAP addEAProp(AbstractGroup group, String name, String caption, String subject, LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {
+    public LAP addEAProp(AbstractGroup group, String caption, String subject, LCP fromAddressAccount, LCP blindCarbonCopyAccount, ValueClass... params) {
         Object[] fromImplement = new Object[] {fromAddressAccount};
         Object[] subjImplement;
         if (subject != null) {
@@ -142,14 +142,14 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
             subjImplement = new Object[] {params.length};
         }
 
-        LAP eaPropLP = addEAProp(group, name, caption, params, fromImplement, subjImplement);
+        LAP eaPropLP = addEAProp(group, caption, params, fromImplement, subjImplement);
         addEARecipientsType(eaPropLP, Message.RecipientType.BCC, blindCarbonCopyAccount);
 
         return eaPropLP;
     }
 
-    public LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, String name, String caption, ValueClass[] params, Object[] fromAddressAccount, Object[] subject) {
-        SendEmailActionProperty eaProp = new SendEmailActionProperty(name, caption, params);
+    public LAP<ClassPropertyInterface> addEAProp(AbstractGroup group, String caption, ValueClass[] params, Object[] fromAddressAccount, Object[] subject) {
+        SendEmailActionProperty eaProp = new SendEmailActionProperty(caption, params);
         LAP<ClassPropertyInterface> eaPropLP = addProperty(group, new LAP<ClassPropertyInterface>(eaProp));
 
         if (fromAddressAccount != null) {

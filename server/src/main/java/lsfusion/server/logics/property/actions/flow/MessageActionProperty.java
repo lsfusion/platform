@@ -16,14 +16,14 @@ public class MessageActionProperty extends SystemActionProperty {
     protected final String title;
     private boolean noWait = false;
 
-    public <I extends PropertyInterface> MessageActionProperty(String sID, String caption, String title) {
-        super(sID, caption, SetFact.singletonOrder(new PropertyInterface()));
+    public <I extends PropertyInterface> MessageActionProperty(String caption, String title) {
+        super(caption, SetFact.singletonOrder(new PropertyInterface()));
 
         this.title = title;
     }
 
-    public <I extends PropertyInterface> MessageActionProperty(String sID, String caption, String title, boolean noWait) {
-        this(sID, caption, title);
+    public <I extends PropertyInterface> MessageActionProperty(String caption, String title, boolean noWait) {
+        this(caption, title);
 
         this.noWait = noWait;
     }

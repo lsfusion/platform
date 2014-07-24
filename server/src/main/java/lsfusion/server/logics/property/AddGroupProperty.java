@@ -12,18 +12,18 @@ public abstract class AddGroupProperty<I extends PropertyInterface> extends Grou
 
     public final CalcPropertyInterfaceImplement<I> groupProperty;
 
-    protected AddGroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> groupProperty) {
-        super(sID, caption, innerInterfaces, groupInterfaces);
+    protected AddGroupProperty(String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> groupProperty) {
+        super(caption, innerInterfaces, groupInterfaces);
         this.groupProperty = groupProperty;
     }
 
-    protected AddGroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImList<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> groupProperty) {
-        super(sID, caption, innerInterfaces, groupInterfaces);
+    protected AddGroupProperty(String caption, ImSet<I> innerInterfaces, ImList<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, CalcPropertyInterfaceImplement<I> groupProperty) {
+        super(caption, innerInterfaces, groupInterfaces);
         this.groupProperty = groupProperty;
     }
     
-    protected AddGroupProperty(String sID, String caption, ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property) {
-        this(sID, caption, property.interfaces, interfaces, property.getImplement());
+    protected AddGroupProperty(String caption, ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property) {
+        this(caption, property.interfaces, interfaces, property.getImplement());
     }
 
     public ImList<CalcPropertyInterfaceImplement<I>> getProps() {

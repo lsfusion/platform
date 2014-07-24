@@ -4,12 +4,12 @@ import lsfusion.server.classes.ValueClass;
 
 public abstract class AdminActionProperty extends SystemExplicitActionProperty {
 
-    protected AdminActionProperty(String sID, ValueClass... classes) {
-        super(sID, classes);
+    protected AdminActionProperty(ValueClass... classes) {
+        super(classes);
     }
 
-    protected AdminActionProperty(String sID, String caption, ValueClass[] classes) {
-        super(sID, caption, classes);
+    protected AdminActionProperty(String caption, ValueClass[] classes) {
+        super(caption, classes);
     }
 
     @Override

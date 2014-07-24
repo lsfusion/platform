@@ -31,8 +31,8 @@ public class OrderGroupProperty<I extends PropertyInterface> extends GroupProper
         return ordersNotNull;
     }
 
-    public OrderGroupProperty(String sID, String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, ImList<CalcPropertyInterfaceImplement<I>> props, GroupType groupType, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
-        super(sID, caption, innerInterfaces, groupInterfaces);
+    public OrderGroupProperty(String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces, ImList<CalcPropertyInterfaceImplement<I>> props, GroupType groupType, ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> orders, boolean ordersNotNull) {
+        super(caption, innerInterfaces, groupInterfaces);
         this.props = props;
         this.groupType = groupType;
         this.orders = orders;

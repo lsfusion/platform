@@ -32,8 +32,8 @@ import java.sql.SQLException;
 
 public abstract class ActionProperty<P extends PropertyInterface> extends Property<P> {
 
-    public ActionProperty(String sID, String caption, ImOrderSet<P> interfaces) {
-        super(sID, caption, interfaces);
+    public ActionProperty(String caption, ImOrderSet<P> interfaces) {
+        super(caption, interfaces);
     }
 
     public final static AddValue<CalcProperty, Boolean> addValue = new SymmAddValue<CalcProperty, Boolean>() {
@@ -324,7 +324,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         ActionPropertyMapImplement<P, P> changeImplement = getImplement();
         ImOrderSet<P> listInterfaces = getOrderInterfaces();
 
-        GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty("GCH" + getSID(), "sys", listInterfaces, changeImplement);
+        GroupChangeActionProperty groupChangeActionProperty = new GroupChangeActionProperty("sys", listInterfaces, changeImplement);
         return groupChangeActionProperty.getImplement(listInterfaces);
     }
 

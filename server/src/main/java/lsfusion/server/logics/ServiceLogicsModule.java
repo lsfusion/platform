@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import lsfusion.server.classes.sets.AndClassSet;
 import org.antlr.runtime.RecognitionException;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -8,6 +9,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class ServiceLogicsModule extends ScriptingLogicsModule {
 
@@ -32,7 +34,8 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initProperties() throws RecognitionException {
-        isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty("isServerRestarting")));
+        isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty()));
+        makePropertyPublic(isServerRestarting, "isServerRestarting", new ArrayList<AndClassSet>());
         super.initProperties();
         // Управление сервером базы данных
         checkAggregationsAction = findAction("checkAggregationsAction");
