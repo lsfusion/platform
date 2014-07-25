@@ -8,11 +8,13 @@ import java.io.IOException;
 public class FormClientAction extends ExecuteClientAction {
 
     public String formSID;
+    public String canonicalName;
     public RemoteFormInterface remoteForm;
     public ModalityType modalityType;
 
-    public FormClientAction(String formSID, RemoteFormInterface remoteForm, ModalityType modalityType) {
+    public FormClientAction(String canonicalName, String formSID, RemoteFormInterface remoteForm, ModalityType modalityType) {
         this.formSID = formSID;
+        this.canonicalName = canonicalName;
         this.remoteForm = remoteForm;
         this.modalityType = modalityType;
     }

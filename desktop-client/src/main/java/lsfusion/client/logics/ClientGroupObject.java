@@ -121,7 +121,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        banClassView = (List<ClassViewType>) pool.readObject(inStream);
+        banClassView = pool.readObject(inStream);
 
         pool.deserializeCollection(objects, inStream);
 

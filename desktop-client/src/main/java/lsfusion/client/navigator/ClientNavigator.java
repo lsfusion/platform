@@ -1,6 +1,9 @@
 package lsfusion.client.navigator;
 
+import lsfusion.client.dock.ClientFormDockable;
+import lsfusion.client.dock.DockableManager;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import net.sf.jasperreports.engine.JRException;
 
 import java.io.IOException;
 import java.util.Map;
@@ -15,6 +18,15 @@ public abstract class ClientNavigator {
         this.remoteNavigator = remoteNavigator;
         this.rootElement = rootElement;
         this.windows = windows;
+    }
+    
+    public ClientFormDockable createFormDockableByCanonicalName(String canonicalName, DockableManager dockableManager) throws IOException, JRException {
+        ClientNavigatorElement element = rootElement.findElementByCanonicalName(canonicalName);
+        if ((element instanceof ClientNavigatorForm)) {
+            ClientNavigatorForm form = (ClientNavigatorForm) element;
+            return new ClientFormDockable(this, canonicalName, form.getSID(), dockableManager);
+        }
+        return null;
     }
 
     public void openModalForm(ClientNavigatorForm form) throws ClassNotFoundException, IOException {

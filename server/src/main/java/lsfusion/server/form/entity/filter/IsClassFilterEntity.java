@@ -26,20 +26,6 @@ public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFi
     }
 
     @Override
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        super.customSerialize(pool, outStream, serializationType);
-        
-        isClass.serialize(outStream);
-    }
-
-    @Override
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, inStream);
-
-        isClass = pool.context.BL.LM.baseClass.findClassID(inStream.readInt());
-    }
-
-    @Override
     public FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
         return new IsClassFilterEntity<P>(property.getRemappedEntity(oldObject, newObject, instanceFactory), isClass, resolveAdd);
     }

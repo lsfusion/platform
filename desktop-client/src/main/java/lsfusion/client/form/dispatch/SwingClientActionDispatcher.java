@@ -143,7 +143,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         if (modality == ModalityType.DOCKED_MODAL) {
             pauseDispatching();
             beforeShowDockedModalForm();
-            Main.frame.runForm(remoteForm, new MainFrame.FormCloseListener() {
+            Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, new MainFrame.FormCloseListener() {
                 @Override
                 public void formClosed() {
                     afterHideDockedModalForm();
@@ -152,9 +152,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             });
         } else if (modality.isModal()) {
             Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-            new ClientModalForm(action.formSID, owner, remoteForm, modality.isDialog(), editEvent).showDialog(modality.isFullScreen());
+            new ClientModalForm(action.canonicalName, action.formSID, owner, remoteForm, modality.isDialog(), editEvent).showDialog(modality.isFullScreen());
         } else {
-            Main.frame.runForm(remoteForm, null);
+            Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, null);
         }
     }
 

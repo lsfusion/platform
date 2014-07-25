@@ -34,10 +34,7 @@ import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.form.navigator.ComputerController;
-import lsfusion.server.form.navigator.IsServerRestartingController;
-import lsfusion.server.form.navigator.TimeoutController;
-import lsfusion.server.form.navigator.UserController;
+import lsfusion.server.form.navigator.*;
 import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
@@ -721,6 +718,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         if (oldDBStructure.version < 15) {
             convertReflectionPropertyTableToVersion15(session);
         }
+        if (oldDBStructure.version < 16) {
+            convertReflectionPropertyTableToVersion16(session);
+        }
         session.apply(businessLogics);
         session.close();
 
@@ -839,6 +839,40 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             ImportTable table = new ImportTable(asList(sidPropertyField, canonicalNamePropertyField), dataProperty);
 
             IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties, deletes);
+            service.synchronize(true, false);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    
+    private void convertReflectionPropertyTableToVersion16(DataSession session) {
+        ImportField canonicalNameNavigatorElementField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
+        ImportField sidNavigatorElementField = new ImportField(reflectionLM.navigatorElementSIDClass);
+
+        ImportKey<?> keyNavigatorElement = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementSID.getMapping(sidNavigatorElementField));
+
+        try {
+            List<List<Object>> data = new ArrayList<List<Object>>();
+            
+            for (NavigatorElement element : businessLogics.getNavigatorElements()) {
+                if (element.isNamed()) {
+                    String canonicalName = element.getCanonicalName();
+                    String oldSID = canonicalName.replace('.', '_');
+                    
+                    data.add(asList((Object)oldSID, canonicalName));
+                }
+            }
+
+            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+            properties.add(new ImportProperty(sidNavigatorElementField, reflectionLM.sidNavigatorElement.getMapping(keyNavigatorElement)));
+            properties.add(new ImportProperty(canonicalNameNavigatorElementField, reflectionLM.canonicalNameNavigatorElement.getMapping(keyNavigatorElement)));
+
+            List<ImportDelete> deletes = new ArrayList<ImportDelete>();
+            deletes.add(new ImportDelete(keyNavigatorElement, LM.is(reflectionLM.navigatorElement).getMapping(keyNavigatorElement), false));
+
+            ImportTable table = new ImportTable(asList(sidNavigatorElementField, canonicalNameNavigatorElementField), data);
+
+            IntegrationService service = new IntegrationService(session, table, asList(keyNavigatorElement), properties, deletes);
             service.synchronize(true, false);
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -1510,7 +1544,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public NewDBStructure(DBVersion dbVersion) {
-            version = 15;
+            version = 16;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {

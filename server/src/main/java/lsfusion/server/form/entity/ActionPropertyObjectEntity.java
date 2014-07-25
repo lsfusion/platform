@@ -8,9 +8,8 @@ import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.Instantiable;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.serialization.ServerCustomSerializable;
 
-public class ActionPropertyObjectEntity<P extends PropertyInterface> extends PropertyObjectEntity<P, ActionProperty<P>> implements Instantiable<ActionPropertyObjectInstance<P>>, ServerCustomSerializable {
+public class ActionPropertyObjectEntity<P extends PropertyInterface> extends PropertyObjectEntity<P, ActionProperty<P>> implements Instantiable<ActionPropertyObjectInstance<P>> {
 
     public ActionPropertyObjectEntity() {
         //нужен для десериализации

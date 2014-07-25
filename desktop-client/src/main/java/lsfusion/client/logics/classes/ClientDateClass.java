@@ -14,9 +14,7 @@ import java.text.ParseException;
 
 import static lsfusion.base.DateConverter.createDateEditFormat;
 import static lsfusion.base.DateConverter.safeDateToSql;
-import static lsfusion.client.Main.dateEditFormat;
-import static lsfusion.client.Main.dateFormat;
-import static lsfusion.client.Main.wideFormattableDate;
+import static lsfusion.client.Main.*;
 import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 
 public class ClientDateClass extends ClientDataClass implements ClientTypeClass {

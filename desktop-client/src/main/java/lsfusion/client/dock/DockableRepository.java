@@ -1,6 +1,8 @@
 package lsfusion.client.dock;
 
 
+import lsfusion.base.serialization.SerializationUtil;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -15,21 +17,19 @@ public class DockableRepository {
 
     /**
      * Writes the formsList of this repository into <code>out</code>.
-     *
      * @param out the stream to write into
      * @throws IOException if an I/O error occurs
      */
     public void write(DataOutputStream out) throws IOException {
         out.writeInt(formsList.size());
         for (String formID : formsList) {
-            out.writeUTF(formID);
+            SerializationUtil.writeString(out, formID);
         }
     }
 
 
     /**
      * Reads the formsList of this repository from <code>in</code>.
-     *
      * @param in the stream to read from
      * @throws IOException if an I/O error occurs
      */
@@ -37,23 +37,20 @@ public class DockableRepository {
         formsList.clear();
         int n = in.readInt();
         for (int i = 0; i < n; ++i) {
-            formsList.add(in.readUTF());
+            formsList.add(SerializationUtil.readString(in));
         }
     }
 
     /**
      * Adds a formID to the list of formsList.
-     *
      * @param formID the new formID
      */
-
     public void add(String formID) {
         formsList.add(formID);
     }
 
     /**
      * Removes a formID from the list of formsList.
-     *
      * @param formID the formID to remove
      */
     public void remove(String formID) {

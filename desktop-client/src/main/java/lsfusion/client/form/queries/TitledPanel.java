@@ -1,4 +1,4 @@
-package lsfusion.client.descriptor.editor.base;
+package lsfusion.client.form.queries;
 
 import javax.swing.*;
 import java.awt.*;

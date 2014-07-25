@@ -37,7 +37,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String formSID = request.getParameter(FORM_SID_PARAM);
+        String canonicalName = request.getParameter(FORM_SID_PARAM);
         Map<String, String> initialObjects = new HashMap<String, String>();
 
         Enumeration parameterNames = request.getParameterNames();
@@ -56,12 +56,12 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             String exportPassword = context.getInitParameter("serviceUserPassword");
             RemoteNavigatorInterface navigator = bl.createNavigator(true, exportUser, exportPassword, bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", false);
 
-            if (!bl.checkFormExportPermission(formSID)) {
+            if (!bl.checkFormExportPermission(canonicalName)) {
                 blProvider.invalidate();
                 throw new RuntimeException("Невозможно прочитать данные формы: нет прав.");
             }
 
-            RemoteFormInterface form = navigator.createForm(formSID, initialObjects, false, false);
+            RemoteFormInterface form = navigator.createForm(canonicalName, initialObjects, false, false);
             reportData = form.getReportData(-1, -1, null, false, null);
 
         } catch (RemoteException e) {
@@ -74,7 +74,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
         File file = xmlBuilder.build();
         FileInputStream fis = new FileInputStream(file);
         response.setContentType("application/xml");
-        response.addHeader("Content-Disposition", "attachment; filename=" + formSID + ".xml");
+        response.addHeader("Content-Disposition", "attachment; filename=" + canonicalName + ".xml");
         ByteStreams.copy(fis, response.getOutputStream());
         fis.close();
         file.delete();

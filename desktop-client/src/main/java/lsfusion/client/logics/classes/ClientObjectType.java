@@ -1,7 +1,6 @@
 package lsfusion.client.logics.classes;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.Main;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.EditBindingMap;
 import lsfusion.client.form.PropertyEditor;
@@ -27,10 +26,6 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
 
     public ClientTypeClass getTypeClass() {
         return this;
-    }
-
-    public ClientClass getDefaultClass(ClientObjectClass baseClass) {
-        return Main.getBaseClass(); // пока так подебильному
     }
 
     public byte getTypeId() {

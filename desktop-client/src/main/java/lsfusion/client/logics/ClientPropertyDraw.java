@@ -5,7 +5,6 @@ import lsfusion.base.Pair;
 import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.descriptor.PropertyDrawDescriptor;
 import lsfusion.client.form.*;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.logics.classes.ClientClass;
@@ -452,23 +451,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (!isRedundantString(caption))
             return caption + " (" + getID() + ")";
 
-        if (descriptor != null && descriptor.getPropertyObject() != null &&
-                descriptor.getPropertyObject().property.caption != null) {
-            return descriptor.getPropertyObject().property.caption + " (" + getID() + ")";
-        }
-
         return getString("logics.undefined.property");
-    }
-
-    // приходится держать ссылку на Descriptor, чтобы правильно отображать caption в Настройка бизнес-логики
-    private PropertyDrawDescriptor descriptor;
-
-    public void setDescriptor(PropertyDrawDescriptor descriptor) {
-        this.descriptor = descriptor;
-    }
-
-    public PropertyDrawDescriptor getDescriptor() {
-        return descriptor;
     }
 
     public static final String TOOL_TIP_FORMAT =

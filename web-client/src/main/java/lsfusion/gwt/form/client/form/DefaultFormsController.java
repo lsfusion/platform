@@ -55,21 +55,21 @@ public abstract class DefaultFormsController implements FormsController {
                 String formSIDs = GwtClientUtils.getPageParameter("formSID");
                 if (formSIDs != null) {
                     for (String formSID : formSIDs.split(",")) {
-                        openForm(formSID, GModalityType.DOCKED);
+                        openForm(formSID, formSID, GModalityType.DOCKED);
                     }
                 }
             }
         });
     }
 
-    public void openForm(final String formSID, final GModalityType modalityType) {
-        openForm(formSID, modalityType, false);
+    public void openForm(final String canonicalName, final String formSID, final GModalityType modalityType) {
+        openForm(canonicalName, formSID, modalityType, false);
     }
 
-    public void openForm(final String formSID, final GModalityType modalityType, final boolean suppressErrorMessages) {
+    public void openForm(final String canonicalName, final String formSID, final GModalityType modalityType, final boolean suppressErrorMessages) {
         final FormDockable dockable = modalityType.isModalWindow() ? null : addDockable(new FormDockable());
 
-        NavigatorDispatchAsync.Instance.get().execute(new GetForm(formSID, modalityType.isModal(), null), new ErrorHandlingCallback<GetFormResult>() {
+        NavigatorDispatchAsync.Instance.get().execute(new GetForm(canonicalName, formSID, modalityType.isModal(), null), new ErrorHandlingCallback<GetFormResult>() {
             @Override
             public void failure(Throwable caught) {
                 if (dockable != null) {

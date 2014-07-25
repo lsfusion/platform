@@ -44,11 +44,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         return proxy;
     }
 
-    public RemoteFormInterface createPreviewForm(byte[] formState) throws RemoteException {
-        return createForm(getImmutableMethodInvocations(RemoteFormProxy.class),
-                          MethodInvocation.create(this.getClass(), "createPreviewForm", new Object[]{formState}));
-    }
-
     private RemoteFormProxy createForm(List<MethodInvocation> immutableMethods, MethodInvocation creator) throws RemoteException {
 
         Object[] result = createAndExecute(creator, immutableMethods.toArray(new MethodInvocation[immutableMethods.size()]));
@@ -64,14 +59,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         }
 
         return proxy;
-    }
-
-    public byte[] getRichDesignByteArray(String formSID) throws RemoteException {
-        return target.getRichDesignByteArray(formSID);
-    }
-
-    public byte[] getFormEntityByteArray(String formSID) throws RemoteException {
-        return target.getFormEntityByteArray(formSID);
     }
 
     public byte[] getCurrentUserInfoByteArray() throws RemoteException {

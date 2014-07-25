@@ -17,7 +17,6 @@ import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import com.google.common.base.Throwables;
 import lsfusion.base.DefaultFormsType;
 import lsfusion.client.*;
-import lsfusion.client.descriptor.view.LogicsDescriptorView;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.dispatch.ClientNavigatorActionDispatcher;
 import lsfusion.client.logics.DeSerializer;
@@ -66,14 +65,14 @@ public class DockableMainFrame extends MainFrame {
         mainNavigator = new ClientNavigator(remoteNavigator, navigatorData.root, navigatorData.windows) {
             public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
                 try {
-                    dockableManager.openForm(this, element.getSID());
+                    dockableManager.openForm(this, element.getCanonicalName(), element.getSID());
                 } catch (JRException e) {
                     throw new RuntimeException(e);
                 }
             }
 
             public void openModalForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-                dockableManager.openModalForm(element.getSID(), this, element.modalityType.isFullScreen());
+                dockableManager.openModalForm(element.getCanonicalName(), element.getSID(), this, element.modalityType.isFullScreen());
             }
 
             @Override
@@ -146,10 +145,12 @@ public class DockableMainFrame extends MainFrame {
             }
             dockableManager.getForms().clear();
             ClientFormDockable page;
-            for (String formSID : savedForms) {
-                page = dockableManager.openForm(mainNavigator, formSID);
-                if (pageToFocus == null) {
-                    pageToFocus = page;
+            for (String formCanonicalName : savedForms) {
+                if (formCanonicalName != null) {
+                    page = dockableManager.openForm(mainNavigator, formCanonicalName, formCanonicalName);
+                    if (pageToFocus == null) {
+                        pageToFocus = page;
+                    }
                 }
             }
         } catch (Exception e) {
@@ -239,30 +240,28 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(final String reportSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
-        EditReportInvoker editInvoker = new EditReportInvoker() {
+    public void runReport(final String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+        runReport(isModal, generationData, new EditReportInvoker() {
             @Override
             public void invokeEditReport() throws RemoteException {
-                new ClientFormController(reportSID, Main.remoteNavigator.createForm(reportSID, null, false, true), mainNavigator).runEditReport();
+                new ClientFormController(null, formSID, Main.remoteNavigator.createForm(formSID, null, false, true), mainNavigator).runEditReport();
             }
-        };
-
-        runReport(reportSID, isModal, generationData, editInvoker);
+        });
     }
 
     @Override
-    public void runReport(final String reportSID, boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
+    public void runReport(boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         if (isModal) {
             ReportDialog.showReportDialog(generationData, editInvoker);
         } else {
-            dockableManager.openReport(reportSID, generationData, editInvoker);
+            dockableManager.openReport(generationData, editInvoker);
         }
     }
 
     @Override
-    public void runForm(RemoteFormInterface remoteForm, FormCloseListener closeListener) {
+    public void runForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, FormCloseListener closeListener) {
         try {
-            dockableManager.openForm(mainNavigator, remoteForm, closeListener);
+            dockableManager.openForm(mainNavigator, canonicalName, formSID, remoteForm, closeListener);
         } catch (Exception e) {
             Throwables.propagate(e);
         }
@@ -307,7 +306,7 @@ public class DockableMainFrame extends MainFrame {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createFileMenu());
         menuBar.add(createViewMenu());
-        menuBar.add(createOptionsMenu());
+//        menuBar.add(createOptionsMenu());
         menuBar.add(createWindowMenu());
         menuBar.add(createHelpMenu());
         setJMenuBar(menuBar);
@@ -399,37 +398,9 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private JMenu createOptionsMenu() {
-
         JMenu menu = new JMenu(getString("layout.menu.options"));
 
-        final JMenuItem logicsConfigurator = new JMenuItem(getString("layout.menu.options.configurator"));
-        logicsConfigurator.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                if (Main.configurationAccessAllowed) {
-                    openLogicSetupForm();
-                } else {
-                    JOptionPane.showMessageDialog(null, getString("descriptor.view.access.denied"), getString("descriptor.view.error"), JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-
-        menu.add(logicsConfigurator);
-
         return menu;
-    }
-
-    private void openLogicSetupForm() {
-        LogicsDescriptorView view = new LogicsDescriptorView(this, mainNavigator);
-
-        Rectangle bounds = this.getBounds();
-        bounds.x += 20;
-        bounds.y += 20;
-        bounds.width -= 40;
-        bounds.height -= 40;
-        view.setBounds(bounds);
-
-        view.setVisible(true);
     }
 
     private JMenu createHelpMenu() {

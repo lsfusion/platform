@@ -378,24 +378,25 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             DataSession session = createSession();
 
             QueryBuilder<String, String> qf = new QueryBuilder<String, String>(SetFact.singleton("formId"));
-            Expr expr = reflectionLM.sidNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
+            Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
             Expr permitFormExpr = securityLM.permitNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
             Expr forbidFormExpr = securityLM.forbidNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
 
-            qf.and(expr.getWhere());
+            qf.and(nameExpr.getWhere());
             qf.and(permitFormExpr.getWhere().or(forbidFormExpr.getWhere()));
 
-            qf.addProperty("sid", expr);
+            qf.addProperty("canonicalName", nameExpr);
             qf.addProperty("permit", permitFormExpr);
             qf.addProperty("forbid", forbidFormExpr);
 
             ImCol<ImMap<String, Object>> formValues = qf.execute(session).values();
             for (ImMap<String, Object> valueMap : formValues) {
-                NavigatorElement element = LM.root.getNavigatorElement(((String) valueMap.get("sid")).trim());
-                if (valueMap.get("forbid") != null)
+                NavigatorElement element = LM.root.getNavigatorElementByCanonicalName(((String) valueMap.get("canonicalName")).trim());
+                if (valueMap.get("forbid") != null) {
                     policy.navigator.deny(element);
-                else if (valueMap.get("permit") != null)
+                } else if (valueMap.get("permit") != null) {
                     policy.navigator.permit(element);
+                }
             }
 
             QueryBuilder<String, String> qp = new QueryBuilder<String, String>(SetFact.singleton("propertyCN"));
@@ -467,21 +468,21 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
 
             QueryBuilder<String, String> qf = new QueryBuilder<String, String>(SetFact.toExclSet("userId", "formId"));
-            Expr formExpr = reflectionLM.sidNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
+            Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
             Expr permitUserFormExpr = securityLM.permitUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId"));
             Expr forbidUserFormExpr = securityLM.forbidUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId"));
 
-            qf.and(formExpr.getWhere());
+            qf.and(nameExpr.getWhere());
             qf.and(qf.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
             qf.and(permitUserFormExpr.getWhere().or(forbidUserFormExpr.getWhere()));
 
-            qf.addProperty("sid", formExpr);
+            qf.addProperty("canonicalName", nameExpr);
             qf.addProperty("permit", permitUserFormExpr);
             qf.addProperty("forbid", forbidUserFormExpr);
 
             ImCol<ImMap<String, Object>> formValues = qf.execute(session).values();
             for (ImMap<String, Object> valueMap : formValues) {
-                NavigatorElement element = LM.root.getNavigatorElement(((String) valueMap.get("sid")).trim());
+                NavigatorElement element = LM.root.getNavigatorElementByCanonicalName(((String) valueMap.get("canonicalName")).trim());
                 if (valueMap.get("forbid") != null)
                     policy.navigator.deny(element);
                 else if (valueMap.get("permit") != null)
@@ -548,7 +549,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             q.and(expr.getWhere());
             q.and(q.getMapExprs().get("userId").compare(user, Compare.EQUALS));
 
-            q.addProperty("sid", reflectionLM.sidNavigatorElement.getExpr(session.getModifier(), q.getMapExprs().get("formId")));
+            q.addProperty("canonicalName", reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), q.getMapExprs().get("formId")));
             q.addProperty("number", securityLM.defaultNumberUserNavigatorElement.getExpr(session.getModifier(), q.getMapExprs().get("userId"), q.getMapExprs().get("formId")));
 
 
@@ -556,13 +557,13 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             ArrayList<String> result = new ArrayList<String>();
             Map<String, String> sortedValues = new TreeMap<String, String>();
             for (ImMap<String, Object> valueMap : values) {
-                String sid = (String) valueMap.get("sid");
+                String canonicalName = (String) valueMap.get("canonicalName");
                 Integer number = (Integer) valueMap.get("number");
-                sortedValues.put(number.toString() + Character.MIN_VALUE, sid);
+                sortedValues.put(number.toString() + Character.MIN_VALUE, canonicalName);
             }
 
-            for (String sid : sortedValues.values()) {
-                result.add(sid);
+            for (String canonicalName : sortedValues.values()) {
+                result.add(canonicalName);
             }
 
             return result;
@@ -710,10 +711,10 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         return false;
     }
 
-    public boolean checkFormExportPermission(String formSid) {
+    public boolean checkFormExportPermission(String canonicalName) {
         try {
             DataSession session = createSession();
-            Object form = reflectionLM.navigatorElementSID.read(session, new DataObject(formSid));
+            Object form = reflectionLM.navigatorElementCanonicalName.read(session, new DataObject(canonicalName));
             if (form == null) {
                 throw new RuntimeException(getString("form.navigator.form.with.id.not.found"));
             }

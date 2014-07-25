@@ -26,7 +26,7 @@ public class UserPreferencesButton extends ToolbarGridButton {
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    UserPreferencesDialog dialog = new UserPreferencesDialog(Main.frame, table, groupController) {
+                    UserPreferencesDialog dialog = new UserPreferencesDialog(Main.frame, table, groupController, groupController.getForm().hasCanonicalName()) {
                         @Override
                         public void preferencesChanged() {
                             setIcon(table.generalPreferencesSaved() || table.userPreferencesSaved() ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON);

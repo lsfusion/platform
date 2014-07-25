@@ -116,11 +116,6 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         return this;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
-    public ClientClass getDefaultClass(ClientObjectClass baseClass) {
-        return this;
-    }
-
     public ClientTypeClass getTypeClass() {
         return (ClientTypeClass) this;
     }

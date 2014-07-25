@@ -79,24 +79,24 @@ public class DockableManager {
         page.requestFocusInWindow();
     }
 
-    public ClientFormDockable openForm(ClientNavigator navigator, String formSID) throws IOException, ClassNotFoundException, JRException {
-        ClientFormDockable page = new ClientFormDockable(navigator, formSID, this);
+    public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID) throws IOException, ClassNotFoundException, JRException {
+        ClientFormDockable page = new ClientFormDockable(navigator, canonicalName, formSID, this);
         openForm(page);
         return page;
     }
 
-    public ClientFormDockable openForm(ClientNavigator navigator, RemoteFormInterface remoteForm, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
-        ClientFormDockable page = new ClientFormDockable(navigator, remoteForm, this, closeListener);
+    public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
+        ClientFormDockable page = new ClientFormDockable(navigator, canonicalName, formSID, remoteForm, this, closeListener);
         openForm(page);
         return page;
     }
 
-    public void openModalForm(String formSID, ClientNavigator navigator, boolean showFullScreen) throws IOException, ClassNotFoundException {
-        new ClientModalForm(formSID, Main.frame, navigator.remoteNavigator.createForm(formSID, null, true, true)).showDialog(showFullScreen);
+    public void openModalForm(String canonicalName, String formSID, ClientNavigator navigator, boolean showFullScreen) throws IOException, ClassNotFoundException {
+        new ClientModalForm(canonicalName, formSID, Main.frame, navigator.remoteNavigator.createForm(formSID, null, true, true)).showDialog(showFullScreen);
     }
 
-    public void openReport(String reportSID, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
-        openForm(new ClientReportDockable(reportSID, generationData, this, editInvoker));
+    public void openReport(ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
+        openForm(new ClientReportDockable(generationData, this, editInvoker));
     }
 
     public void openReport(File file) throws JRException {
@@ -115,8 +115,16 @@ public class DockableManager {
         }
 
         public ClientDockable read(ClientDockableLayout layout) {
+            if (layout.getCanonicalName() == null) {
+                return null;
+            }
+            
             try {
-                ClientFormDockable page = new ClientFormDockable(mainNavigator, layout.getFormSID(), DockableManager.this);
+                ClientFormDockable page = mainNavigator.createFormDockableByCanonicalName(layout.getCanonicalName(), DockableManager.this);
+                if (page == null) {
+                    return null;
+                }
+                
                 page.addCDockableStateListener(new DockableVisibilityListener());
 
                 return page;
@@ -127,7 +135,7 @@ public class DockableManager {
         }
 
         public ClientDockableLayout write(ClientDockable dockable) {
-            return new ClientDockableLayout(dockable.getFormSID());
+            return new ClientDockableLayout(dockable.getCanonicalName());
         }
 
         public boolean match(ClientDockable dockable, ClientDockableLayout layout) {
@@ -140,12 +148,12 @@ public class DockableManager {
         public void visibilityChanged(CDockable cdockable) {
             ClientDockable dockable = (ClientDockable) cdockable;
 
-            String sid = dockable.getFormSID();
+            String canonicalName = dockable.getCanonicalName();
             if (dockable.isVisible()) {
-                forms.add(sid);
+                forms.add(canonicalName);
             } else {
-                forms.remove(sid);
-                control.removeDockable(dockable) ;
+                forms.remove(canonicalName);
+                control.removeDockable(dockable);
 
                 dockable.onClosed();
             }
@@ -154,7 +162,7 @@ public class DockableManager {
         @Override
         public void maximized(CDockable dockable) {
             if (!internalModeChangeOnSetVisible) {
-                DockableManager.this.mode = !forms.getFormsList().isEmpty() ? ExtendedMode.MAXIMIZED : ExtendedMode.NORMALIZED;
+                DockableManager.this.mode = forms.getFormsList().isEmpty() ? ExtendedMode.NORMALIZED : ExtendedMode.MAXIMIZED;
             }
         }
 

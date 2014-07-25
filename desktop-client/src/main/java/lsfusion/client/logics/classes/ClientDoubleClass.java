@@ -7,7 +7,10 @@ import lsfusion.client.form.editor.DoublePropertyEditor;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.Data;
 
-import java.text.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.text.ParseException;
 
 public class ClientDoubleClass extends ClientIntegralClass implements ClientTypeClass {
 

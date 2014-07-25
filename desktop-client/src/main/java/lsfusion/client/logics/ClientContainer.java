@@ -2,16 +2,11 @@ package lsfusion.client.logics;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.context.ApplicationContext;
-import lsfusion.client.descriptor.CustomConstructible;
-import lsfusion.client.descriptor.editor.ComponentEditor;
-import lsfusion.client.descriptor.nodes.ComponentNode;
-import lsfusion.client.descriptor.nodes.ContainerNode;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.form.layout.AbstractContainer;
 import lsfusion.interop.form.layout.Alignment;
 import lsfusion.interop.form.layout.ContainerType;
 
-import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -20,7 +15,7 @@ import java.util.List;
 
 import static lsfusion.interop.form.layout.ContainerType.*;
 
-public class ClientContainer extends ClientComponent implements AbstractContainer<ClientContainer, ClientComponent>, CustomConstructible {
+public class ClientContainer extends ClientComponent implements AbstractContainer<ClientContainer, ClientComponent> {
 
     private String caption;
     private String description;
@@ -94,11 +89,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
         return result + "[sid:" + getSID() + "]";
     }
 
-    @Override
-    public ComponentNode getNode() {
-        return new ContainerNode(this);
-    }
-
     public void removeFromChildren(ClientComponent component) {
         component.container = null;
         children.remove(component);
@@ -129,11 +119,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
 
     public void moveChild(ClientComponent compFrom, ClientComponent compTo) {
         BaseUtils.moveElement(children, compFrom, compTo);
-    }
-
-    @Override
-    public JComponent getPropertiesEditor() {
-        return new ComponentEditor(this);
     }
 
     public void setCaption(String caption) {
@@ -228,15 +213,6 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
 
     public boolean isFlow() {
         return type == FLOW;
-    }
-
-    @Override
-    public String getSID() {
-        return sID;
-    }
-
-    public void setSID(String sID) {
-        this.sID = sID;
     }
 
     public ClientContainer findContainerBySID(String sID) {

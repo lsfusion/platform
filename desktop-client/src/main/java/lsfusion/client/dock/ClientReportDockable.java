@@ -16,8 +16,8 @@ import java.io.File;
 import java.io.IOException;
 
 public class ClientReportDockable extends ClientDockable {
-    public ClientReportDockable(String reportSID, ReportGenerationData generationData, DockableManager dockableManager, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
-        super(reportSID, dockableManager);
+    public ClientReportDockable(ReportGenerationData generationData, DockableManager dockableManager, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
+        super(null, dockableManager);
 
         try {
             JasperPrint print = new ReportGenerator(generationData).createReport(false, null);
@@ -31,7 +31,7 @@ public class ClientReportDockable extends ClientDockable {
 
     // из файла
     public ClientReportDockable(File file, DockableManager dockableManager) throws JRException {
-        super("", dockableManager);
+        super(null, dockableManager);
         setContent(file.getName(), prepareViewer(new JRViewer((JasperPrint) JRLoader.loadObject(file))));
     }
 

@@ -17,7 +17,7 @@ import java.awt.*;
 // уничтожаемые формы
 abstract class ClientDockable extends DefaultMultipleCDockable {
 
-    private String formSID;
+    private String canonicalName;
 
     private Container contentContainer;
     private LockableUI contentLayerUI;
@@ -26,10 +26,10 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
 
     private final CustomCloseAction closeAction;
 
-    protected ClientDockable(String formSID, DockableManager dockableManager) {
+    protected ClientDockable(String canonicalName, DockableManager dockableManager) {
         super(dockableManager.getDockableFactory());
 
-        this.formSID = formSID;
+        this.canonicalName = canonicalName;
 
         setMinimizable(true);
         setMaximizable(true);
@@ -75,8 +75,8 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
         }
     }
 
-    public String getFormSID() {
-        return formSID;
+    public String getCanonicalName() {
+        return canonicalName;
     }
 
     protected void setContent(String caption, Container contentContainer) {

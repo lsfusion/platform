@@ -79,14 +79,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
-    public byte[] getPropertyObjectsByteArray(byte[] classes, boolean isCompulsory, boolean isAny) throws RemoteException {
-        return target.getPropertyObjectsByteArray(classes, isCompulsory, isAny);
-    }
-
-    public byte[] getBaseClassByteArray() throws RemoteException {
-        return target.getBaseClassByteArray();
-    }
-
     public int generateNewID()  throws RemoteException {
         return target.generateNewID();
     }
@@ -159,9 +151,9 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
-    public boolean checkFormExportPermission(String formSid) throws RemoteException {
+    public boolean checkFormExportPermission(String canonicalName) throws RemoteException {
         logRemoteMethodStartCall("checkFormExportPermission");
-        boolean result = target.checkFormExportPermission(formSid);
+        boolean result = target.checkFormExportPermission(canonicalName);
         logRemoteMethodEndVoidCall("checkFormExportPermission");
         return result;
     }

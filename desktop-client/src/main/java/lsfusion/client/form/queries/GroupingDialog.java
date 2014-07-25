@@ -13,7 +13,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
 import lsfusion.base.Pair;
 import lsfusion.base.SystemUtils;
-import lsfusion.client.descriptor.editor.base.TitledPanel;
 import lsfusion.client.form.ItemAdapter;
 import lsfusion.client.form.grid.GridTable;
 import lsfusion.client.form.grid.GridTableModel;
@@ -81,7 +80,7 @@ public abstract class GroupingDialog extends JDialog {
         }
     };
 
-    public GroupingDialog(Frame owner, final GridTable initialTable, final List<FormGrouping> savedGroupings) throws IOException {
+    public GroupingDialog(Frame owner, final GridTable initialTable, final List<FormGrouping> savedGroupings, boolean canBeSaved) throws IOException {
         super(owner, getString("form.queries.grouping"), true);
         this.initialTable = initialTable;
         this.savedGroupings = savedGroupings;
@@ -296,7 +295,7 @@ public abstract class GroupingDialog extends JDialog {
         savePanel.add(saveButton);
         saveContainer.add(savePanel);
 
-                JPanel managementPanel = new JPanel();
+        JPanel managementPanel = new JPanel();
         managementPanel.setLayout(new BoxLayout(managementPanel, BoxLayout.X_AXIS));
         managementPanel.add(resetAllButton);
         managementPanel.add(Box.createHorizontalStrut(10));
@@ -319,7 +318,9 @@ public abstract class GroupingDialog extends JDialog {
         bottomPanel.setLayout(new BorderLayout());
         bottomPanel.add(labelPanel, BorderLayout.CENTER);
         bottomPanel.add(checkNButtonPanel, BorderLayout.EAST);
-        bottomPanel.add(managementPanel, BorderLayout.WEST);
+        if (canBeSaved) {
+            bottomPanel.add(managementPanel, BorderLayout.WEST);
+        }
 
         JSplitPane westPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, groupScrollPane, valuesChecksPanel);
         westPanel.setContinuousLayout(true);

@@ -110,7 +110,7 @@ public abstract class LogicsModule {
     protected final Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
     protected final Map<String, CustomClass> moduleClasses = new HashMap<String, CustomClass>();
     protected final Map<String, AbstractWindow> windows = new HashMap<String, AbstractWindow>();
-    public final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
+    protected final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
     protected final Map<String, ImplementTable> moduleTables = new HashMap<String, ImplementTable>();
 
     public final Map<LP<?, ?>, List<AndClassSet>> propClasses = new HashMap<LP<?, ?>, List<AndClassSet>>();
@@ -1446,17 +1446,17 @@ public abstract class LogicsModule {
             }
         }
         return PropertyCanonicalNameUtils.drillDownPrefix + property.getUniqueSID();
-    } 
-    
+    }
+
     public LAP<?> addDDAProp(CalcProperty property) {
         List<AndClassSet> signature = new ArrayList<AndClassSet>();
         String name = nameForDrillDownAction(property, signature);
-        DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this, name);
+        DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this, null);
         LAP result = addMFAProp(baseLM.drillDownGroup, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
         if (property.isNamed()) {
             makePropertyPublic(result, name, signature);
         }
-        return result;        
+        return result;
     }
 
     public LAP<?> addLazyAProp(CalcProperty property) {
@@ -1534,9 +1534,11 @@ public abstract class LogicsModule {
     
     @IdentityStrongLazy
     public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
-        String name = "_ADDOBJ" + "_" + cls.getSID() + "_" + formEntity.getSID() + "_" + obj.getSID();
         LAP result = addAProp(new FormAddObjectActionProperty(cls, obj));
-        makePropertyPublic(result, name, cls.getUpSet());
+        if (formEntity.getCanonicalName() != null) {
+            String name = "_ADDOBJ" + "_" + cls.getSID() + "_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
+            makePropertyPublic(result, name, cls.getUpSet());
+        }
         return result;
     }
 
@@ -1592,20 +1594,23 @@ public abstract class LogicsModule {
     }
 
     @IdentityStrongLazy
-    public LAP getAddFormAction(ClassFormEntity form, CustomClass cls, FormSessionScope scope) {
-        String name = "_ADDFORM" + scope + "_" + form.form.getSID() + "_" + cls.getSID();
+    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope) {
+        String name = "_ADDFORM" + scope + "_" + cls.getSID();
+
+        ClassFormEntity form = cls.getEditForm(baseLM, version);
+
         LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
                 form.form, new ObjectEntity[]{},
                 form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope);
         makePropertyPublic(result, name, new ArrayList<AndClassSet>());
+        
+        setAddFormActionProperties(result, form, scope);
+        
         return result;
     }
+    
     public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, Version version) {
-        ClassFormEntity form = cls.getEditForm(baseLM, version);
-
-        LAP property = getAddFormAction(form, cls, scope);
-        setAddFormActionProperties(property, form, scope);
-        return property;
+        return getAddFormAction(cls, scope);
     }
 
     // ---------------------- Edit Form ---------------------- //
@@ -1617,20 +1622,21 @@ public abstract class LogicsModule {
         return property;
     }
 
-    @IdentityStrongLazy
-    public LAP getEditFormAction(ClassFormEntity form, FormSessionScope scope) {
-        String name = "_EDITFORM" + scope + "_" + form.form.getSID();   
-        LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.edit"),
-                form.form, new ObjectEntity[]{form.object}, scope);
-        makePropertyPublic(result, name, form.object.baseClass.getUpSet());
-        return result;
-    }
     public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, Version version) {
-        ClassFormEntity form = cls.getEditForm(baseLM, version);
-
-        LAP property = getEditFormAction(form, scope);
+        LAP property = getEditFormAction(cls, scope);
         setEditFormActionProperties(property);
         return property;
+    }
+
+    @IdentityStrongLazy
+    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope) {
+        ClassFormEntity form = cls.getEditForm(baseLM, version);
+
+        String name = "_EDITFORM" + scope + "_" + cls.getSID();
+        LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.edit"),
+                                 form.form, new ObjectEntity[]{form.object}, scope);
+        makePropertyPublic(result, name, form.object.baseClass.getUpSet());
+        return result;
     }
 
     protected void setEditFormActionProperties(LAP property) {
@@ -1715,17 +1721,17 @@ public abstract class LogicsModule {
         return addProperty(null, new LCP<ClassPropertyInterface>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
     }
     
-    protected LAP addOSAProp(FormEntity form, ObjectEntity object, Object... params) {
-        return addOSAProp(null, "", form, object, params);
+    protected LAP addOSAProp(ObjectEntity object, Object... params) {
+        return addOSAProp(null, "", object, params);
     }
 
-    protected LAP addOSAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity object, Object... params) {
-        return addJoinAProp(group, caption, addOSAProp(form, object), params);
+    protected LAP addOSAProp(AbstractGroup group, String caption, ObjectEntity object, Object... params) {
+        return addJoinAProp(group, caption, addOSAProp(object), params);
     }
 
     @IdentityStrongLazy // для ID
-    public LAP addOSAProp(FormEntity form, ObjectEntity object) {
-        SeekActionProperty seekProperty = new SeekActionProperty((ScriptingLogicsModule)this, form, object);
+    public LAP addOSAProp(ObjectEntity object) {
+        SeekActionProperty seekProperty = new SeekActionProperty((ScriptingLogicsModule)this, object);
         return addProperty(null, new LAP<ClassPropertyInterface>(seekProperty));
     }
 
@@ -1904,53 +1910,46 @@ public abstract class LogicsModule {
     }
 
     protected NavigatorElement addNavigatorElement(String name, String caption, String icon) {
-        return addNavigatorElement(null, name, caption, icon);
-    }
-
-    protected NavigatorElement addNavigatorElement(NavigatorElement parent, String name, String caption) {
-        return addNavigatorElement(parent, name, caption, null);
-    }
-    
-
-    protected NavigatorElement addNavigatorElement(NavigatorElement parent, String name, String caption, String icon) {
-        NavigatorElement elem = new NavigatorElement(parent, transformNameToSID(name), caption, icon, getVersion());
+        String canonicalName = NavigatorElementCanonicalNameUtils.createNavigatorElementCanonicalName(getNamespace(), name);
+        
+        NavigatorElement elem = new NavigatorElement(null, canonicalName, caption, icon, getVersion());
         addModuleNavigator(elem);
         return elem;
     }
 
-    protected NavigatorAction addNavigatorAction(String name, String caption, LAP property, String icon) {
-        return addNavigatorAction(null, name, caption, property, icon);
-    }
+    protected NavigatorAction addNavigatorAction(String name, String caption, LAP<?> property, String icon) {
+        String canonicalName = NavigatorElementCanonicalNameUtils.createNavigatorElementCanonicalName(getNamespace(), name);
 
-    protected NavigatorAction addNavigatorAction(NavigatorElement parent, String name, String caption, LAP property, String icon) {
-        return addNavigatorAction(parent, name, caption, (ActionProperty) property.property, icon);
-    }
-
-    protected NavigatorAction addNavigatorAction(NavigatorElement parent, String name, String caption, ActionProperty property, String icon) {
-        NavigatorAction navigatorAction = new NavigatorAction(parent, transformNameToSID(name), caption, icon, getVersion());
-        navigatorAction.setProperty(property);
+        NavigatorAction navigatorAction = new NavigatorAction(null, canonicalName, caption, icon, getVersion());
+        navigatorAction.setProperty(property.property);
         addModuleNavigator(navigatorAction);
         return navigatorAction;
     }
 
-    protected NavigatorElement getNavigatorElementBySID(String sid) {
-        return moduleNavigators.get(sid);
+    public Collection<NavigatorElement<?>> getModuleNavigators() {
+        return moduleNavigators.values();
     }
 
     public NavigatorElement getNavigatorElement(String name) {
-        return getNavigatorElementBySID(transformNameToSID(name));
+        String canonicalName = NavigatorElementCanonicalNameUtils.createNavigatorElementCanonicalName(getNamespace(), name);
+        return getNavigatorElementByCanonicalName(canonicalName);
+    }
+
+    private NavigatorElement getNavigatorElementByCanonicalName(String canonicalName) {
+        return moduleNavigators.get(canonicalName);
     }
 
     public <T extends FormEntity> T addFormEntity(T form) {
-        form.setSID(transformNameToSID(form.getSID()));
-        addModuleNavigator(form);
+        if (form.isNamed()) {
+            addModuleNavigator(form);
+        }
         return form;
-    } 
-
+    }
+    
     @NFLazy
-    protected void addModuleNavigator(NavigatorElement<?> element) {
-        assert !moduleNavigators.containsKey(element.getSID());
-        moduleNavigators.put(element.getSID(), element);
+    private void addModuleNavigator(NavigatorElement<?> element) {
+        assert !moduleNavigators.containsKey(element.getCanonicalName());
+        moduleNavigators.put(element.getCanonicalName(), element);
     }
 
     public void addObjectActions(FormEntity form, ObjectEntity object) {
@@ -2182,22 +2181,6 @@ public abstract class LogicsModule {
         form.addFixedFilter(filter, getVersion());
     }
 
-    public void addFormGroupObject(FormEntity form, GroupObjectEntity group) {
-        form.addGroupObject(group, getVersion());
-    }
-
-    public ObjectEntity addFormSingleGroupObject(FormEntity form, int ID, String sID, ValueClass baseClass, String caption, Object... groups) {
-        return form.addSingleGroupObject(ID, sID, baseClass, caption, getVersion(), groups);
-    }
-
-    public ObjectEntity addFormSingleGroupObject(FormEntity form, ValueClass baseClass, String caption, Object... groups) {
-        return form.addSingleGroupObject(baseClass, caption, getVersion(), groups);
-    }
-
-    public ObjectEntity addFormSingleGroupObject(FormEntity form, String sID, ValueClass baseClass, String caption, Object... groups) {
-        return form.addSingleGroupObject(sID, baseClass, caption, getVersion(), groups);
-    }
-    
     public RegularFilterGroupEntity newRegularFilterGroupEntity(int id) {
         return new RegularFilterGroupEntity(id, getVersion());
     }
@@ -2206,14 +2189,6 @@ public abstract class LogicsModule {
         return form.addSingleGroupObject(baseClass, getVersion(), groups);
     }
 
-    public ObjectEntity addFormSingleGroupObject(FormEntity form, int ID, ValueClass baseClass, Object... groups) {
-        return form.addSingleGroupObject(ID, baseClass, getVersion(), groups);
-    }
-
-    public ObjectEntity addFormSingleGroupObject(FormEntity form, int ID, String sID, ValueClass baseClass, Object... groups) {
-        return form.addSingleGroupObject(ID, sID, baseClass, getVersion(), groups);
-    }
-    
     public void addFormHintsIncrementTable(FormEntity form, LCP... lps) {
         form.addHintsIncrementTable(getVersion(), lps);
     }

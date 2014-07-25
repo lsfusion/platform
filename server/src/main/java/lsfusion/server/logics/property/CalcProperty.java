@@ -1042,15 +1042,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return false;
     }
 
-    public DrillDownFormEntity getDrillDownForm(LogicsModule LM, String name) {
-        DrillDownFormEntity drillDown = createDrillDownForm(LM);
-        drillDown.setSID(name);
-        if(drillDown != null)
+    public DrillDownFormEntity getDrillDownForm(LogicsModule LM, String canonicalName) {
+        DrillDownFormEntity drillDown = createDrillDownForm(LM, canonicalName);
+        if (drillDown != null) {
             LM.addFormEntity(drillDown);
+        }
         return drillDown;
     }
 
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return null;
     }
 

@@ -1461,7 +1461,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 currentSession.change(applyObject.object, DataSession.this);
                 if (form != null){
                     BL.systemEventsLM.connectionSession.change(form.instanceFactory.connection, (ExecutionEnvironment)DataSession.this, applyObject);
-                    Object ne = BL.reflectionLM.navigatorElementSID.read(form, new DataObject(form.entity.getSID(), StringClass.get(50)));
+                    Object ne = !form.entity.isNamed()
+                                ? null
+                                : BL.reflectionLM.navigatorElementCanonicalName.read(form, new DataObject(form.entity.getCanonicalName(), StringClass.get(50)));
                     if(ne!=null) 
                         BL.systemEventsLM.navigatorElementSession.change(new DataObject(ne, BL.reflectionLM.navigatorElement), (ExecutionEnvironment)DataSession.this, applyObject);
                     BL.systemEventsLM.quantityAddedClassesSession.change(add.size(), DataSession.this, applyObject);

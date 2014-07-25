@@ -23,6 +23,8 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 
     public Boolean needVerticalScroll = true;
 
+    private int ID;
+
     public GroupObjectView() {
     }
 
@@ -45,20 +47,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         showType = new ShowTypeView(idGen.idShift(), this);
         toolbar = new ToolbarView(idGen.idShift());
         filter = new FilterView(idGen.idShift());
-    }
-
-    public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity, GridView grid, ShowTypeView showType, ToolbarView toolbar, FilterView filter) {
-        this.entity = entity;
-
-        for (ObjectEntity object : this.entity.getObjects())
-            add(new ObjectView(idGen, object, this, false));
-
-        this.grid = grid;
-        this.grid.groupObject = this;
-        this.showType = showType;
-        this.showType.groupObject = this;
-        this.toolbar = toolbar;
-        this.filter = filter;
     }
 
     public String getCaption() {
@@ -89,8 +77,6 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public ComponentView getFilter() {
         return filter;
     }
-
-    int ID;
 
     public void setID(int iID) {
         ID = iID;

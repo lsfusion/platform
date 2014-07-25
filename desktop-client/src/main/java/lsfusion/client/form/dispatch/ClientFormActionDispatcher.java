@@ -74,9 +74,9 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
                 ReportGenerator.exportToPdfAndOpen(action.generationData);
             } else {
                 if (action.isDebug) {
-                    Main.frame.runReport(action.reportSID, action.isModal, action.generationData);
+                    Main.frame.runReport(action.formSID, action.isModal, action.generationData);
                 } else {
-                    Main.frame.runReport(action.reportSID, action.isModal, action.generationData, null);
+                    Main.frame.runReport(action.isModal, action.generationData, null);
                 }
             }
         } catch (Exception e) {

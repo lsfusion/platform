@@ -28,8 +28,8 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
     private List<PropertyDrawEntity> detailsProperties;
     private PropertyDrawEntity implPropertyDraw;
 
-    public JoinDrillDownFormEntity(String sID, String caption, JoinProperty<I> property, LogicsModule LM) {
-        super(sID, caption, property, LM);
+    public JoinDrillDownFormEntity(String canonicalName, String caption, JoinProperty<I> property, LogicsModule LM) {
+        super(canonicalName, caption, property, LM);
     }
 
     @Override

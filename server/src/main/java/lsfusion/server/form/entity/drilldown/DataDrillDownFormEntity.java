@@ -23,8 +23,8 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
     private PropertyDrawEntity wherePropertyDraw;
     private PropertyDrawEntity writeFromPropertyDraw;
 
-    public DataDrillDownFormEntity(String sID, String caption, DataProperty property, LogicsModule LM) {
-        super(sID, caption, property, LM);
+    public DataDrillDownFormEntity(String canonicalName, String caption, DataProperty property, LogicsModule LM) {
+        super(canonicalName, caption, property, LM);
     }
 
     @Override

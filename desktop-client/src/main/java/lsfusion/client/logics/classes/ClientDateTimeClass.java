@@ -15,9 +15,7 @@ import java.util.Date;
 
 import static lsfusion.base.DateConverter.createDateTimeEditFormat;
 import static lsfusion.base.DateConverter.dateToStamp;
-import static lsfusion.client.Main.dateTimeEditFormat;
-import static lsfusion.client.Main.dateTimeFormat;
-import static lsfusion.client.Main.wideFormattableDateTime;
+import static lsfusion.client.Main.*;
 import static lsfusion.client.form.EditBindingMap.EditEventFilter;
 
 public class ClientDateTimeClass extends ClientDataClass implements ClientTypeClass {

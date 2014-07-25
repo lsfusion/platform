@@ -258,7 +258,7 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES(p)  namePolicy, descriptionPolicy
 
     OBJECTS f=NavigatorElement
-    PROPERTIES(f) READONLY captionNavigatorElement, sidNavigatorElement
+    PROPERTIES(f) READONLY captionNavigatorElement, canonicalNameNavigatorElement
     PROPERTIES(f) numberNavigatorElement
     PROPERTIES(ur, f) permitUserRoleNavigatorElement, forbidUserRoleNavigatorElement, defaultNumberUserRoleNavigatorElement
 
@@ -268,7 +268,7 @@ FORM securityPolicy 'Политика безопасности'
     ORDER BY canonicalNameProperty(pr)
 
     OBJECTS df=NavigatorElement
-    PROPERTIES(df) READONLY captionNavigatorElement, sidNavigatorElement
+    PROPERTIES(df) READONLY captionNavigatorElement, canonicalNameNavigatorElement
     PROPERTIES(df) numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement, permitExportNavigatorElement
     ORDER BY canonicalNameProperty(pr)
 
@@ -276,7 +276,7 @@ FORM securityPolicy 'Политика безопасности'
     PROPERTIES(dpr) captionProperty, canonicalNameProperty, permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty
 
     TREE treeFormObject tf = NavigatorElement PARENT parentNavigatorElement
-    PROPERTIES(tf) READONLY captionNavigatorElement, sidNavigatorElement
+    PROPERTIES(tf) READONLY captionNavigatorElement, canonicalNameNavigatorElement
     PROPERTIES(tf) numberNavigatorElement
     PROPERTIES(ur, tf) permitUserRoleNavigatorElement, forbidUserRoleNavigatorElement, defaultNumberUserRoleNavigatorElement
     ORDER BY numberNavigatorElement(tf)
@@ -290,7 +290,7 @@ FORM securityPolicy 'Политика безопасности'
     ORDER BY numberProperty(prs)
 
     TREE treeDefaultForm tdf = NavigatorElement PARENT parentNavigatorElement
-    PROPERTIES(tdf) READONLY captionNavigatorElement, sidNavigatorElement
+    PROPERTIES(tdf) READONLY captionNavigatorElement, canonicalNameNavigatorElement
     PROPERTIES(tdf) numberNavigatorElement, permitNavigatorElement, forbidNavigatorElement, permitExportNavigatorElement
     ORDER BY numberNavigatorElement(tdf)
 

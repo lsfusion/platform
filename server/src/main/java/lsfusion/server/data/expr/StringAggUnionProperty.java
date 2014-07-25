@@ -12,7 +12,6 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
 import lsfusion.server.logics.property.FormulaUnionProperty;
 
-import static lsfusion.base.BaseUtils.capitalize;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class StringAggUnionProperty extends FormulaUnionProperty {
@@ -44,10 +43,9 @@ public class StringAggUnionProperty extends FormulaUnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new StringAggUnionDrillDownFormEntity(
-                "drillDown_" + capitalize(getUniqueSID()),
-                getString("logics.property.drilldown.form.agg.union"), this, LM
+                canonicalName, getString("logics.property.drilldown.form.agg.union"), this, LM
         );
     }
 }

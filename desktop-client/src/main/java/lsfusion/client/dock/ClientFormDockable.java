@@ -12,18 +12,14 @@ public class ClientFormDockable extends ClientDockable {
 
     private ClientFormController clientForm;
 
-    public ClientFormDockable(ClientNavigator navigator, String formSID, DockableManager dockableManager) throws IOException, JRException {
-        this(navigator, formSID, navigator.remoteNavigator.createForm(formSID, null, false, true), dockableManager, null);
+    public ClientFormDockable(ClientNavigator navigator, String canonicalName, String formSID, DockableManager dockableManager) throws IOException, JRException {
+        this(navigator, canonicalName, formSID, navigator.remoteNavigator.createForm(formSID, null, false, true), dockableManager, null);
     }
 
-    public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, DockableManager dockableManager, MainFrame.FormCloseListener closeListener) throws IOException, JRException {
-        this(navigator, remoteForm.getFormSID(), remoteForm, dockableManager, closeListener);
-    }
+    public ClientFormDockable(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, DockableManager dockableManager, final MainFrame.FormCloseListener closeListener) throws IOException {
+        super(canonicalName, dockableManager);
 
-    private ClientFormDockable(ClientNavigator navigator, String formSID, RemoteFormInterface remoteForm, DockableManager dockableManager, final MainFrame.FormCloseListener closeListener) throws IOException {
-        super(formSID, dockableManager);
-
-        clientForm = new ClientFormController(formSID, remoteForm, navigator) {
+        clientForm = new ClientFormController(canonicalName, formSID, remoteForm, navigator) {
             @Override
             public void hideForm() {
                 if (closeListener != null) {

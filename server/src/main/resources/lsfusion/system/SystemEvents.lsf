@@ -93,7 +93,7 @@ FORM connections 'Журнал подключений'
                             connectTimeConnection, disconnectTimeConnection
 
     OBJECTS n=NavigatorElement
-    PROPERTIES (n) READONLY captionNavigatorElement, sidNavigatorElement
+    PROPERTIES (n) READONLY captionNavigatorElement, canonicalNameNavigatorElement
 
     PROPERTIES (c, n) READONLY connectionFormCount
 

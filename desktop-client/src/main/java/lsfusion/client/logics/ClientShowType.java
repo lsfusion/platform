@@ -2,10 +2,8 @@ package lsfusion.client.logics;
 
 import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.descriptor.editor.ComponentEditor;
 import lsfusion.client.serialization.ClientSerializationPool;
 
-import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -44,10 +42,4 @@ public class ClientShowType extends ClientComponent {
     public String toString() {
         return getCaption() + " (" + groupObject.toString() + ")" + "[sid:" + getSID() + "]";
     }
-
-    @Override
-    public JComponent getPropertiesEditor() {
-        return new ComponentEditor(this);
-    }
-
 }

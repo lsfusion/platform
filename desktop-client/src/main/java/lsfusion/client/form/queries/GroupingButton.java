@@ -27,7 +27,7 @@ public abstract class GroupingButton extends ToolbarGridButton {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    dialog = new GroupingDialog(Main.frame, grid, readGroupings()) {
+                    dialog = new GroupingDialog(Main.frame, grid, readGroupings(), grid.getForm().hasCanonicalName()) {
 
                         @Override
                         protected void savePressed(FormGrouping grouping) {

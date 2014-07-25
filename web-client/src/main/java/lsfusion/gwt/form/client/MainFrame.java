@@ -176,7 +176,7 @@ public class MainFrame implements EntryPoint {
 
     private void openInitialForms(ArrayList<String> formsSIDs) {
         for (final String formSID : formsSIDs) {
-            formsController.openForm(formSID, GModalityType.DOCKED, true);
+            formsController.openForm(formSID, formSID, GModalityType.DOCKED, true);
         }
     }
 

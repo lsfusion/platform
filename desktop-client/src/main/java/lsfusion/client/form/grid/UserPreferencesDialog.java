@@ -3,8 +3,8 @@ package lsfusion.client.form.grid;
 import lsfusion.base.Pair;
 import lsfusion.client.ArrayListTransferHandler;
 import lsfusion.client.Main;
-import lsfusion.client.descriptor.editor.base.TitledPanel;
 import lsfusion.client.form.GroupObjectController;
+import lsfusion.client.form.queries.TitledPanel;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.FontInfo;
@@ -25,6 +25,7 @@ import java.util.Map;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public abstract class UserPreferencesDialog extends JDialog {
+    
     private GroupObjectController goController;
     private GridTable initialTable;
 
@@ -35,7 +36,7 @@ public abstract class UserPreferencesDialog extends JDialog {
     private JCheckBox isFontItalicCheckBox;
     private JTextField columnCaptionField;
 
-    public UserPreferencesDialog(Frame owner, final GridTable initialTable, GroupObjectController goController) throws IOException {
+    public UserPreferencesDialog(Frame owner, final GridTable initialTable, GroupObjectController goController, final boolean canBeSaved) throws IOException {
         super(owner, getString("form.grid.preferences"), true);
         this.initialTable = initialTable;
         this.goController = goController;
@@ -323,8 +324,9 @@ public abstract class UserPreferencesDialog extends JDialog {
 
         Box settingsAndApplyResetPanel = new Box(BoxLayout.Y_AXIS);
         settingsAndApplyResetPanel.add(fontAndCaptionSettingsPanel);
-        settingsAndApplyResetPanel.add(applyResetButtonsPanel);
-
+        if (canBeSaved) {
+            settingsAndApplyResetPanel.add(applyResetButtonsPanel);
+        }
 
         JButton okButton = new JButton("OK");
         okButton.addActionListener(new ActionListener() {

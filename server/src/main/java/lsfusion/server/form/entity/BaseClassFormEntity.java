@@ -10,8 +10,8 @@ public abstract class BaseClassFormEntity <T extends BusinessLogics<T>> extends 
 
     public final ObjectEntity object;
 
-    protected BaseClassFormEntity(BaseLogicsModule<T> LM, CustomClass cls, String sID, String caption) {
-        super(sID, caption, LM.getVersion());
+    protected BaseClassFormEntity(BaseLogicsModule<T> LM, CustomClass cls, String canonicalName, String caption) {
+        super(canonicalName, caption, LM.getVersion());
         
         Version version = LM.getVersion();
 

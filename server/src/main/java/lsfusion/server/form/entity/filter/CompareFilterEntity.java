@@ -54,17 +54,4 @@ public class CompareFilterEntity<P extends PropertyInterface> extends PropertyFi
     public FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
         return new CompareFilterEntity<P>(property.getRemappedEntity(oldObject, newObject, instanceFactory), compare, value.getRemappedEntity(oldObject, newObject, instanceFactory), resolveAdd);
     }
-
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        super.customSerialize(pool, outStream, serializationType);
-        compare.serialize(outStream);
-        pool.serializeObject(outStream, value);
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        super.customDeserialize(pool, inStream);
-
-        compare = Compare.deserialize(inStream);
-        value = pool.deserializeObject(inStream);
-    }
 }

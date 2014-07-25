@@ -6,9 +6,6 @@ import lsfusion.base.context.ApplicationContextProvider;
 import lsfusion.base.context.Lookup;
 import lsfusion.base.identity.IdentityInterface;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.descriptor.CustomConstructible;
-import lsfusion.client.descriptor.nodes.NodeCreator;
-import lsfusion.client.descriptor.nodes.NullFieldNode;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -88,21 +85,6 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
 
     public void addSubTreeAction(ClientTreeAction... actions) {
         Collections.addAll(subTreeActions, actions);
-    }
-
-    protected void addFieldReferenceNode(Object object, String field, String fieldCaption, Object context, String[] derivedNames, Class[] derivedClasses) {
-        Object value = ReflectionUtils.invokeGetter(object, field);
-        ClientTreeNode newNode;
-        if (value == null) {
-            newNode = new NullFieldNode(fieldCaption);
-        } else if (value instanceof NodeCreator) {
-            newNode = ((NodeCreator) value).createNode(context);
-        } else {
-            return;
-        }
-
-        newNode.addInitializeReferenceActions(object, field, derivedNames, derivedClasses);
-        add(newNode);
     }
 
     public void addInitializeReferenceActions(final Object object, final String field, String[] captions, final Class[] classes) {

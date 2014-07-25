@@ -34,10 +34,12 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     private static final Logger systemLogger = Logger.getLogger("SystemLogger");
     
     private final F form;
+    private final String formSID;
     private final FormView richDesign;
 
     public FormReportManager(F form) {
         this.form = form;
+        formSID = form.entity.getSID().replace('.', '_');
         this.richDesign = form.entity.getRichDesign();
     }
 
@@ -160,20 +162,16 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         }
     }
 
-    public String getFormSID() {
-        return form.entity.getSID();
-    }
-
     private static final String xlsPrefix = "xls_";
-    private static final String tablePrefix = "table";
 
+    private static final String tablePrefix = "table";
     private String getReportPrefix(boolean toExcel, Integer groupId) {
         String prefix = (toExcel ? xlsPrefix : "");
         return prefix + (groupId == null ? "" : tablePrefix + form.getGroupObjectInstance(groupId).getSID() + "_");
     }
 
     private String getDefaultReportSID(boolean toExcel, Integer groupId) {
-        return getReportPrefix(toExcel, groupId) + getFormSID();
+        return getReportPrefix(toExcel, groupId) + formSID;
     }
 
     private String findCustomReportDesignName(String name, String sid) {

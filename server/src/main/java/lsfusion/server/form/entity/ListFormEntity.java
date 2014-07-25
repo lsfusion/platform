@@ -6,15 +6,11 @@ import lsfusion.server.logics.BusinessLogics;
 
 public class ListFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEntity<T> {
 
-    protected ListFormEntity(BaseLogicsModule<T> LM, CustomClass cls, String sID, String caption) {
-        super(LM, cls, sID, caption);
+    public ListFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
+        super(LM, cls, null, cls.caption);
 
         LM.addObjectActions(this, object);
 
         finalizeInit(LM.getVersion());
-    }
-
-    public ListFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
-        this(LM, cls, "listForm_" + cls.getSID(), cls.caption);
     }
 }

@@ -19,10 +19,6 @@ public class CalcPropertyValueImplement<P extends PropertyInterface> extends Cal
         super(property, mapping);
     }
 
-    public int getID() {
-        return property.getID();
-    }
-
     public PropertyChange<P> getPropertyChange(Expr expr) throws SQLException {
         return new PropertyChange<P>(expr, mapping);
     }

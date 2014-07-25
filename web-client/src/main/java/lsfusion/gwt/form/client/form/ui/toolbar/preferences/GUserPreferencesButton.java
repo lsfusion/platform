@@ -9,15 +9,16 @@ import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
 public class GUserPreferencesButton extends GToolbarButton {
     private static final String PREFERENCES_SAVED_ICON = "userPreferencesSaved.png";
     private static final String PREFERENCES_UNSAVED_ICON = "userPreferences.png";
-    
-    public GUserPreferencesDialog dialog;
-    private GGridTable table;
-    private GGroupObjectController groupController;
 
-    public GUserPreferencesButton(GGridTable table, GGroupObjectController groupController) {
+    private final boolean canBeSaved;
+    private final GGridTable table;
+    private final GGroupObjectController groupController;
+    
+    public GUserPreferencesButton(GGridTable table, GGroupObjectController groupController, boolean canBeSaved) {
         super(table.hasUserPreferences() ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON, "");
         this.table = table;
         this.groupController = groupController;
+        this.canBeSaved = canBeSaved;
         updateTooltip();
     }
 
@@ -26,7 +27,7 @@ public class GUserPreferencesButton extends GToolbarButton {
         addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                GUserPreferencesDialog dialog = new GUserPreferencesDialog(table, groupController) {
+                GUserPreferencesDialog dialog = new GUserPreferencesDialog(table, groupController, canBeSaved) {
                     @Override
                     public void preferencesChanged() {
                         updateTooltip();

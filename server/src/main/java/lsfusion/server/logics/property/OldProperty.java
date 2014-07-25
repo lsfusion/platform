@@ -1,12 +1,9 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
-import lsfusion.server.classes.CustomClass;
-import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
@@ -16,7 +13,6 @@ import lsfusion.server.form.entity.drilldown.OldDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.session.PropertyChanges;
 
-import static lsfusion.base.BaseUtils.capitalize;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class OldProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
@@ -74,10 +70,9 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new OldDrillDownFormEntity(
-                "drillDown" + capitalize(getUniqueSID()) + "Form",
-                getString("logics.property.drilldown.form.old"), this, LM
+                canonicalName, getString("logics.property.drilldown.form.old"), this, LM
         );
     }
 

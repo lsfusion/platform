@@ -4,6 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
+import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.FontInfo;
@@ -14,13 +15,15 @@ import lsfusion.server.form.entity.*;
 import lsfusion.server.form.entity.filter.RegularFilterEntity;
 import lsfusion.server.form.entity.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.mutables.*;
+import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.SIDHandler;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderMap;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
-import lsfusion.server.serialization.ServerIdentitySerializable;
+import lsfusion.server.serialization.ServerCustomSerializable;
 import lsfusion.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
@@ -28,15 +31,19 @@ import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.synchronizedMap;
 
-public class FormView implements ServerIdentitySerializable, AbstractForm<ContainerView, ComponentView> {
+public class FormView extends IdentityObject implements ServerCustomSerializable, AbstractForm<ContainerView, ComponentView> {
 
     // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
-    protected IDGenerator idGenerator;
+    protected final IDGenerator idGenerator = new DefaultIDGenerator();
+
+    public FormEntity<?> entity;
 
     public KeyStroke keyStroke = null;
 
@@ -132,18 +139,19 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     protected transient Map<RegularFilterGroupEntity, RegularFilterGroupView> mfilters = synchronizedMap(new HashMap<RegularFilterGroupEntity, RegularFilterGroupView>());
     public RegularFilterGroupView get(RegularFilterGroupEntity filterGroup) { return mfilters.get(filterGroup); }
 
-    public FormView() {
-    }
-    
     public ComponentView findById(int id) {
         return mainContainer.findById(id);
     }
 
-    public FormEntity<?> entity;
+    public FormView() {
+    }
 
     public FormView(FormEntity<?> entity, Version version) {
+        super(0);
+
+        idGenerator.idRegister(0);
+        
         this.entity = entity;
-        this.idGenerator = entity.getIDGenerator();
 
         mainContainer = new ContainerView(idGenerator.idShift());
         setComponentSID(mainContainer, getMainContainerSID());
@@ -296,15 +304,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         dropButton = setupFormButton(entity.dropActionPropertyDraw, "drop", version);
     }
 
-    public int getID() {
-        return entity.getID();
-    }
-
-    int ID;
-    public void setID(int ID) {
-        this.ID = ID;
-    }
-
     public ContainerView createContainer() {
         return createContainer(null);
     }
@@ -319,7 +318,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         container.setDescription(description);
         container.setSID(sID);
         if (sID != null) {
-            addContainerToMapping(container);
+            addComponentToMapping(container);
         }
         return container;
     }
@@ -331,8 +330,10 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
         protected String getSID(ComponentView component) {
             return component.getSID();
-        }};
-    public void addContainerToMapping(ComponentView container) {
+        }
+    };
+    
+    public void addComponentToMapping(ComponentView container) {
         componentSIDHandler.store(container);
     }
 
@@ -789,7 +790,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     protected void setComponentSID(ComponentView component, String sid) {
         component.setSID(sid);
-        addContainerToMapping(component);
+        addComponentToMapping(component);
     }
 
     public ContainerView getContainerBySID(String sid) {

@@ -42,8 +42,8 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     LCP<?> property;
     public boolean lazyInit;
 
-    public LogFormEntity(String sID, String caption, LCP<?> property, LCP<?> logProperty, SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
-        super(sID, caption, systemEventsLM.getVersion());
+    public LogFormEntity(String canonicalName, String caption, LCP<?> property, LCP<?> logProperty, SystemEventsLogicsModule systemEventsLM, boolean lazyInit) {
+        super(canonicalName, caption, systemEventsLM.getVersion());
 
         this.systemEventsLM = systemEventsLM;
         this.logProperty = logProperty;
@@ -55,12 +55,12 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         ValueClass[] classes = getValueClassesList(property);
         entities = new ObjectEntity[classes.length + 1];
 
-        GroupObjectEntity paramsGroup = new GroupObjectEntity(0, "paramsGroup");
+        GroupObjectEntity paramsGroup = new GroupObjectEntity(genID(), "paramsGroup");
         paramsGroup.setSingleClassView(ClassViewType.PANEL);
 
         int index = 1;
         for (ValueClass valueClass : classes) {
-            ObjectEntity obj = new ObjectEntity(index, "param" + index, valueClass, valueClass.getCaption());
+            ObjectEntity obj = new ObjectEntity(genID(), "param" + index, valueClass, valueClass.getCaption());
             entities[index-1] = obj;
             paramsGroup.add(obj);
             index++;
@@ -68,8 +68,8 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
         params = Arrays.copyOf(entities, classes.length);
 
-        GroupObjectEntity logGroup = new GroupObjectEntity(classes.length + 1, "logGroup");
-        objSession = new ObjectEntity(classes.length + 2, "session", systemEventsLM.session, ServerResourceBundle.getString("form.entity.session"));
+        GroupObjectEntity logGroup = new GroupObjectEntity(genID(), "logGroup");
+        objSession = new ObjectEntity(genID(), "session", systemEventsLM.session, ServerResourceBundle.getString("form.entity.session"));
         entities[classes.length] = objSession;
         logGroup.add(objSession);
 

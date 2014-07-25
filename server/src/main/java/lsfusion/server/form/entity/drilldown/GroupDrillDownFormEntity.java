@@ -29,8 +29,8 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
     private PropertyDrawEntity implPropertyDraw;
     private GroupObjectEntity detailsGroup;
 
-    public GroupDrillDownFormEntity(String sID, String caption, GroupProperty<I> property, LogicsModule LM) {
-        super(sID, caption, property, LM);
+    public GroupDrillDownFormEntity(String canonicalName, String caption, GroupProperty<I> property, LogicsModule LM) {
+        super(canonicalName, caption, property, LM);
     }
 
     @Override

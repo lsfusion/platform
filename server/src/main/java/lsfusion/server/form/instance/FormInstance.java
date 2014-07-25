@@ -340,11 +340,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public FormUserPreferences loadUserPreferences() {
+        if (!entity.isNamed()) {
+            return null;
+        }
+        
         List<GroupObjectUserPreferences> goUserPreferences = new ArrayList<GroupObjectUserPreferences>();
         List<GroupObjectUserPreferences> goGeneralPreferences = new ArrayList<GroupObjectUserPreferences>();
         try {
 
-            ObjectValue formValue = BL.reflectionLM.navigatorElementSID.readClasses(session, new DataObject(entity.getSID(), StringClass.get(50)));
+            ObjectValue formValue = BL.reflectionLM.navigatorElementCanonicalName.readClasses(session, new DataObject(entity.getCanonicalName(), StringClass.get(50)));
             if (formValue.isNull())
                 return null;
             DataObject formObject = (DataObject) formValue;
@@ -450,12 +454,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public String saveUserPreferences(GroupObjectUserPreferences preferences, boolean forAllUsers) {
+        if (!entity.isNamed()) {
+            return null;
+        }
+        
         try {
             DataSession dataSession = session.createSession();
             DataObject userObject = dataSession.getDataObject(BL.authenticationLM.user, BL.authenticationLM.currentUser.read(dataSession));
             for (Map.Entry<String, ColumnUserPreferences> entry : preferences.getColumnUserPreferences().entrySet()) {
-                ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementSIDPropertyDraw.readClasses(dataSession,
-                        new DataObject(entity.getSID(), StringClass.get(false, false, 50)),
+                ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementNamePropertyDraw.readClasses(
+                        dataSession,
+                        new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 50)),
                         new DataObject(entry.getKey(), StringClass.get(false, false, 100)));
                 if (propertyDrawObjectValue instanceof DataObject) {
                     DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
@@ -477,10 +486,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, userObject);
                     }
                 } else {
-                    throw new RuntimeException("Объект " + entry.getKey() + " (" + entity.getSID() + ") не найден");
+                    throw new RuntimeException("Объект " + entry.getKey() + " (" + entity.getCanonicalName() + ") не найден");
                 }
             }
-            DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(dataSession, new DataObject(preferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
+            DataObject groupObjectObject = (DataObject) BL.reflectionLM.groupObjectSIDNavigatorElementNameGroupObject.readClasses(dataSession, new DataObject(preferences.groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
             if (forAllUsers) {
                 BL.reflectionLM.hasUserPreferencesGroupObject.change(preferences.hasUserPreferences ? true : null, dataSession, groupObjectObject);
                 BL.reflectionLM.fontSizeGroupObject.change(preferences.fontInfo.fontSize != -1 ? preferences.fontInfo.fontSize : null, dataSession, groupObjectObject);
@@ -1022,9 +1031,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public List<FormGrouping> readGroupings(String groupObjectSID) throws SQLException, SQLHandledException {
+        if (!entity.isNamed()) {
+            return null;
+        }
+        
         Map<String, FormGrouping> groupings = new LinkedHashMap<String, FormGrouping>();
         
-        ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(session, new DataObject(groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
+        ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDNavigatorElementNameGroupObject.readClasses(session, new DataObject(groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
         
         if (groupObjectObjectValue instanceof DataObject) {
             KeyExpr propertyDrawExpr = new KeyExpr("propertyDraw");
@@ -1063,10 +1076,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void saveGrouping(FormGrouping grouping) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+        if (!entity.isNamed()) {
+            return;
+        }
+        
         DataSession dataSession = session.createSession();
-        ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDGroupObjectSIDNavigatorElementGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(50)), new DataObject(entity.getSID(), StringClass.get(50)));
+        ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDNavigatorElementNameGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
         if (!(groupObjectObjectValue instanceof DataObject)) {
-            throw new RuntimeException("Объект " + grouping.groupObjectSID + " (" + entity.getSID() + ") не найден");    
+            throw new RuntimeException("Объект " + grouping.groupObjectSID + " (" + entity.getCanonicalName() + ") не найден");    
         }
         DataObject groupObjectObject = (DataObject) groupObjectObjectValue;
         ObjectValue groupingObjectValue = BL.reflectionLM.formGroupingNameFormGroupingGroupObject.readClasses(dataSession, new DataObject(grouping.name, StringClass.get(100)), groupObjectObject);
@@ -1089,8 +1106,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         BL.reflectionLM.itemQuantityFormGrouping.change(grouping.showItemQuantity, dataSession, groupingObject);
 
         for (FormGrouping.PropertyGrouping propGrouping : grouping.propertyGroupings) {
-            ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementSIDPropertyDraw.readClasses(dataSession,
-                    new DataObject(entity.getSID(), StringClass.get(false, false, 50)),
+            ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementNamePropertyDraw.readClasses(dataSession,
+                    new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 50)),
                     new DataObject(propGrouping.propertySID, StringClass.get(false, false, 100)));
             if (propertyDrawObjectValue instanceof DataObject) {
                 DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
@@ -1099,7 +1116,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 BL.reflectionLM.maxFormGroupingPropertyDraw.change(propGrouping.max, dataSession, groupingObject, propertyDrawObject);
                 BL.reflectionLM.pivotFormGroupingPropertyDraw.change(propGrouping.pivot, dataSession, groupingObject, propertyDrawObject);
             } else {
-                throw new RuntimeException("Свойство " + propGrouping.propertySID + " (" + entity.getSID() + ") не найдено");
+                throw new RuntimeException("Свойство " + propGrouping.propertySID + " (" + entity.getCanonicalName() + ") не найдено");
             }
         }
         dataSession.apply(BL);

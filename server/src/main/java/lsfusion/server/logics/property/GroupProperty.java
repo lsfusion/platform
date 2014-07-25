@@ -21,7 +21,6 @@ import lsfusion.server.form.entity.drilldown.GroupDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.session.PropertyChanges;
 
-import static lsfusion.base.BaseUtils.capitalize;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 abstract public class GroupProperty<I extends PropertyInterface> extends ComplexIncrementProperty<GroupProperty.Interface<I>> {
@@ -172,10 +171,9 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new GroupDrillDownFormEntity(
-                "drillDown" + capitalize(getUniqueSID()) + "Form",
-                getString("logics.property.drilldown.form.group." + getGroupType().name().toLowerCase()), this, LM
+                canonicalName, getString("logics.property.drilldown.form.group." + getGroupType().name().toLowerCase()), this, LM
         );
     }
 

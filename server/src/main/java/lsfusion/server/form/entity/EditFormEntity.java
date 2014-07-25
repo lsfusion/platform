@@ -11,8 +11,8 @@ import lsfusion.server.logics.mutables.Version;
 
 public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEntity<T> {
 
-    protected EditFormEntity(BaseLogicsModule<T> LM, CustomClass cls, String sID, String caption) {
-        super(LM, cls, sID, caption);
+    public EditFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
+        super(LM, cls, null, cls.caption);
 
         object.groupTo.setSingleClassView(ClassViewType.PANEL);
 
@@ -21,10 +21,6 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEn
             objectValue.setEditType(PropertyEditType.READONLY);
 
         finalizeInit(LM.getVersion());
-    }
-
-    public EditFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
-        this(LM, cls, "editForm_" + cls.getSID(), cls.caption);
     }
 
     @Override

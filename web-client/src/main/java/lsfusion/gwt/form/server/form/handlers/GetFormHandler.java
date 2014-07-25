@@ -22,6 +22,8 @@ public class GetFormHandler extends FormActionHandler<GetForm, GetFormResult> {
 
         return new GetFormResult(
                 getFormSessionManager().createForm(
+                        action.canonicalName,
+                        action.sid,
                         servlet.getNavigator().createForm(action.sid, action.initialObjects, action.isModal, true),
                         servlet
                 )

@@ -26,8 +26,8 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
     protected List<PropertyDrawEntity> whereProperties;
     protected PropertyDrawEntity implPropertyDraw;
 
-    public CaseUnionDrillDownFormEntity(String sID, String caption, CaseUnionProperty property, LogicsModule LM) {
-        super(sID, caption, property, LM);
+    public CaseUnionDrillDownFormEntity(String canonicalName, String caption, CaseUnionProperty property, LogicsModule LM) {
+        super(canonicalName, caption, property, LM);
     }
 
     @Override

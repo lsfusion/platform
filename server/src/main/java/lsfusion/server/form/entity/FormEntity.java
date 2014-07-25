@@ -1,16 +1,16 @@
 package lsfusion.server.form.entity;
 
-import com.google.common.base.Throwables;
-import lsfusion.base.*;
+import lsfusion.base.AddSet;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.FunctionSet;
+import lsfusion.base.Subsets;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.LongMutable;
+import lsfusion.base.col.interfaces.mutable.MCol;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.identity.DefaultIDGenerator;
-import lsfusion.base.identity.IDGenerator;
-import lsfusion.base.serialization.CustomSerializable;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FormEventType;
 import lsfusion.interop.ModalityType;
@@ -28,31 +28,33 @@ import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.view.ComponentView;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
-import lsfusion.server.logics.*;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.PropertySIDPolicy;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.mutables.*;
+import lsfusion.server.logics.mutables.FindIndex;
+import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.*;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.NewSessionActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
-import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.serialization.ServerContext;
-import lsfusion.server.serialization.ServerIdentitySerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
 import org.apache.log4j.Logger;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
-public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
+public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
 
     public static final IsFullClientFormulaProperty isFullClient = IsFullClientFormulaProperty.instance;
@@ -161,30 +163,16 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     private PropertySIDPolicy policy;
     
-    @SuppressWarnings("UnusedDeclaration")
-    public FormEntity() {
-    }
-    
-    public void finalizeInit(Version version) {
-//        getNFRichDesign(version);
-        richDesign.set(createDefaultRichDesign(version), version);
+    protected FormEntity(String canonicalName, String caption, Version version) {
+        this(null, canonicalName, caption, null, null, version);
     }
 
-    protected FormEntity(String sID, String caption, Version version) {
-        this(null, sID, caption, null, null, version);
+    public FormEntity(String canonicalName, String caption, String ititle, String icon, Version version) {
+        this(null, canonicalName, caption, ititle, icon, version);
     }
 
-    public FormEntity(NavigatorElement<T> parent, String sID, String caption, Version version) {
-        this(parent, sID, caption, null, null, version);
-        finalizeInit(version);
-    }
-
-    public FormEntity(String sID, String caption, String ititle, String icon, Version version) {
-        this(null, sID, caption, ititle, icon, version);
-    }
-    
-    private FormEntity(NavigatorElement<T> parent, String sID, String caption, String ititle, String icon, Version version) {
-        super(parent, sID, caption, null, version);
+    private FormEntity(NavigatorElement<T> parent, String canonicalName, String caption, String ititle, String icon, Version version) {
+        super(parent, canonicalName, caption, null, version);
         setImage(icon != null ? icon : "/images/form.png");
         logger.debug("Initializing form " + caption + "...");
 
@@ -206,6 +194,16 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         addActionsOnEvent(FormEventType.QUERYOK, true, version, (ActionPropertyObjectEntity)okActionPropertyDraw.propertyObject);
         addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, (ActionPropertyObjectEntity)closeActionPropertyDraw.propertyObject);
+    }
+
+    public void finalizeInit(Version version) {
+//        getNFRichDesign(version);
+        richDesign.set(createDefaultRichDesign(version), version);
+    }
+
+    @Override
+    protected String getAnonymousSIDPrefix() {
+        return FORM_ANONYMOUS_SID_PREFIX;
     }
 
     public void addFixedFilter(FilterEntity filter, Version version) {
@@ -248,15 +246,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return mResult.immutable();
     }
 
-    // счетчик идентификаторов
-    private IDGenerator idGenerator = new DefaultIDGenerator();
-
-    public IDGenerator getIDGenerator() {
-        return idGenerator;
-    }
-
     public int genID() {
-        return idGenerator.idShift();
+        return BaseLogicsModule.generateStaticNewID();
     }
 
     public GroupObjectEntity getGroupObject(int id) {
@@ -392,36 +383,15 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return true;
     }
 
-    public ObjectEntity addSingleGroupObject(ValueClass baseClass, String caption, Version version, Object... groups) {
-        return addSingleGroupObject(genID(), (String) null, baseClass, caption, version, groups);
-    }
-
-    public ObjectEntity addSingleGroupObject(String sID, ValueClass baseClass, String caption, Version version, Object... groups) {
-        return addSingleGroupObject(genID(), sID, baseClass, caption, version, groups);
-    }
-
-    public ObjectEntity addSingleGroupObject(int ID, String sID, ValueClass baseClass, String caption, Version version, Object... groups) {
-
-        GroupObjectEntity groupObject = new GroupObjectEntity(ID, sID);
-        ObjectEntity object = new ObjectEntity(ID, sID, baseClass, caption);
+    public ObjectEntity addSingleGroupObject(ValueClass baseClass, Version version, Object... groups) {
+        GroupObjectEntity groupObject = new GroupObjectEntity(genID());
+        ObjectEntity object = new ObjectEntity(genID(), baseClass, null);
         groupObject.add(object);
         addGroupObject(groupObject, version);
 
         addPropertyDraw(groups, false, version, object);
 
         return object;
-    }
-
-    public ObjectEntity addSingleGroupObject(ValueClass baseClass, Version version, Object... groups) {
-        return addSingleGroupObject(baseClass, null, version, groups);
-    }
-
-    public ObjectEntity addSingleGroupObject(int ID, ValueClass baseClass, Version version, Object... groups) {
-        return addSingleGroupObject(ID, (String) null, baseClass, null, version, groups);
-    }
-
-    public ObjectEntity addSingleGroupObject(int ID, String sID, ValueClass baseClass, Version version, Object... groups) {
-        return addSingleGroupObject(ID, sID, baseClass, null, version, groups);
     }
 
     public TreeGroupEntity addTreeGroupObject(String sID, Version version, GroupObjectEntity... tGroups) {
@@ -444,12 +414,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void addGroupObject(GroupObjectEntity group, Version version) {
-        // регистрируем ID'шники, чтобы случайно не пересеклись заданные вручную и сгенерированные ID'шники
-        idGenerator.idRegister(group.getID());
-        for (ObjectEntity obj : group.getObjects()) {
-            idGenerator.idRegister(obj.getID());
-        }
-
         for (GroupObjectEntity groupOld : getNFGroupsIt(version)) {
             assert group.getID() != groupOld.getID() && !group.getSID().equals(groupOld.getSID());
             for (ObjectEntity obj : group.getObjects()) {
@@ -957,111 +921,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return 0;
     }
 
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.writeString(outStream, caption);
-        pool.writeString(outStream, title);
-        pool.writeString(outStream, sID);
-        outStream.writeUTF(modalityType.name());
-        outStream.writeInt(autoRefresh);
-
-        pool.serializeCollection(outStream, getGroupsList());
-        pool.serializeCollection(outStream, getTreeGroupsList());
-        pool.serializeCollection(outStream, getPropertyDrawsList());
-        pool.serializeCollection(outStream, getFixedFilters());
-        pool.serializeCollection(outStream, getRegularFilterGroupsList());
-
-        pool.serializeObject(outStream, printActionPropertyDraw);
-        pool.serializeObject(outStream, editActionPropertyDraw);
-        pool.serializeObject(outStream, xlsActionPropertyDraw);
-        pool.serializeObject(outStream, dropActionPropertyDraw);
-        pool.serializeObject(outStream, refreshActionPropertyDraw);
-        pool.serializeObject(outStream, applyActionPropertyDraw);
-        pool.serializeObject(outStream, cancelActionPropertyDraw);
-        pool.serializeObject(outStream, okActionPropertyDraw);
-        pool.serializeObject(outStream, closeActionPropertyDraw);
-
-        ImOrderMap<PropertyDrawEntity<?>, Boolean> defaultOrders = getDefaultOrdersList();
-        outStream.writeInt(defaultOrders.size());
-        for (int i=0,size=defaultOrders.size();i<size;i++) {
-            pool.serializeObject(outStream, defaultOrders.getKey(i), serializationType);
-            outStream.writeBoolean(defaultOrders.getValue(i));
-        }
-
-        ImMap<Object, ImList<ActionPropertyObjectEntity<?>>> eventActions = getEventActions();
-        outStream.writeInt(eventActions.size());
-        for (int i=0,size=eventActions.size();i<size;i++) {
-            Object event = eventActions.getKey(i);
-
-            if (event instanceof String) {
-                outStream.writeByte(0);
-                pool.writeString(outStream, (String) event);
-            } else if (event instanceof CustomSerializable) {
-                outStream.writeByte(1);
-                pool.serializeObject(outStream, (CustomSerializable) event);
-            } else {
-                outStream.writeByte(2);
-                pool.writeObject(outStream, event);
-            }
-
-            pool.serializeCollection(outStream, eventActions.getValue(i));
-        }
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        caption = pool.readString(inStream);
-        title = pool.readString(inStream);
-        sID = pool.readString(inStream);
-        modalityType = ModalityType.valueOf(inStream.readUTF());
-        autoRefresh = inStream.readInt();
-
-        groups = NFFact.finalOrderSet(pool.<GroupObjectEntity>deserializeList(inStream));
-        treeGroups = NFFact.finalOrderSet(pool.<TreeGroupEntity>deserializeList(inStream));
-        propertyDraws = NFFact.finalOrderSet(pool.<PropertyDrawEntity<?>>deserializeList(inStream));
-        fixedFilters = NFFact.finalSet(pool.<FilterEntity>deserializeSet(inStream));
-        regularFilterGroups = NFFact.finalOrderSet(pool.<RegularFilterGroupEntity>deserializeList(inStream));
-
-        printActionPropertyDraw = pool.deserializeObject(inStream);
-        editActionPropertyDraw = pool.deserializeObject(inStream);
-        xlsActionPropertyDraw = pool.deserializeObject(inStream);
-        dropActionPropertyDraw = pool.deserializeObject(inStream);
-        refreshActionPropertyDraw = pool.deserializeObject(inStream);
-        applyActionPropertyDraw = pool.deserializeObject(inStream);
-        cancelActionPropertyDraw = pool.deserializeObject(inStream);
-        okActionPropertyDraw = pool.deserializeObject(inStream);
-        closeActionPropertyDraw = pool.deserializeObject(inStream);
-
-        int orderCount = inStream.readInt();
-        MOrderExclMap<PropertyDrawEntity<?>, Boolean> mDefaultOrders = MapFact.mOrderExclMap(orderCount);
-        for (int i = 0; i < orderCount; i++) {
-            PropertyDrawEntity order = pool.deserializeObject(inStream);
-            mDefaultOrders.exclAdd(order, inStream.readBoolean());
-        }
-        defaultOrders = NFFact.finalOrderMap(mDefaultOrders.immutableOrder());
-
-        int length = inStream.readInt();
-        MExclMap<Object, ImList<ActionPropertyObjectEntity<?>>> mEventActions = MapFact.<Object, ImList<ActionPropertyObjectEntity<?>>>mExclMap(length);
-        for (int i = 0; i < length; ++i) {
-            Object event;
-            switch (inStream.readByte()) {
-                case 0 : event = pool.readString(inStream); break;
-                case 1 : event = pool.deserializeObject(inStream); break;
-                default : event = pool.readObject(inStream); break;
-            }
-
-            ImList<ActionPropertyObjectEntity<?>> actions = ListFact.fromJavaList(pool.<ActionPropertyObjectEntity<?>>deserializeList(inStream));
-            mEventActions.exclAdd(event, actions);
-        }
-        eventActions = NFFact.finalMapList(mEventActions.immutable());
-    }
-
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
         outStream.writeUTF(modalityType.name());
-    }
-
-    public void setAddOnTransaction(ObjectEntity entity, LogicsModule lm) {
-        setAddOnEvent(entity, lm, FormEventType.INIT, FormEventType.APPLY, FormEventType.CANCEL);
     }
 
     public void setAddOnEvent(ObjectEntity entity, LogicsModule lm, FormEventType... events) {
@@ -1111,10 +974,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         if(drop)
             eventActions.removeAll(eventObject, version);
         eventActions.addAll(eventObject, Arrays.asList(actions), version);
-    }
-
-    public static FormEntity<?> deserialize(BusinessLogics BL, byte[] formState) {
-        return deserialize(BL, new DataInputStream(new ByteArrayInputStream(formState)));
     }
 
     public ComponentView getDrawTabContainer(PropertyDrawEntity<?> property, boolean grid) {
@@ -1212,17 +1071,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             result = result.addAll(drawContainers);
         }
         return result;
-    }
-
-    public static FormEntity<?> deserialize(BusinessLogics BL, DataInputStream inStream) {
-        try {
-            FormEntity form = new ServerSerializationPool(new ServerContext(BL)).deserializeObject(inStream);
-            form.richDesign = NFFact.finalProperty(new ServerSerializationPool(new ServerContext(BL, form)).deserializeObject(inStream));
-
-            return form;
-        } catch (IOException e) {
-            throw new RuntimeException(ServerResourceBundle.getString("form.entity.error.on.deserialization.form.on.the.server"), e);
-        }
     }
 
     public void setForceViewType(LP property, ClassViewType type) {

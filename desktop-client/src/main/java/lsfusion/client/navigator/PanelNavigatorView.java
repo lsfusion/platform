@@ -1,7 +1,7 @@
 package lsfusion.client.navigator;
 
 import lsfusion.client.FlatRolloverButton;
-import lsfusion.client.descriptor.editor.base.TitledPanel;
+import lsfusion.client.form.queries.TitledPanel;
 import sun.awt.OrientableFlowLayout;
 
 import javax.swing.*;

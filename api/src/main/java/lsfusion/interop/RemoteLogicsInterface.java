@@ -46,18 +46,13 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     boolean checkPropertyChangePermission(String userName, String propertySID) throws RemoteException;
 
-    boolean checkFormExportPermission(String formSid) throws RemoteException;
+    boolean checkFormExportPermission(String canonicalName) throws RemoteException;
 
     int generateID() throws RemoteException;
 
     String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException;
 
     void ping() throws RemoteException;
-
-    // получает имлементации подходящие хотя бы одному из классов или по всем
-    byte[] getPropertyObjectsByteArray(byte[] classes, boolean isCompulsory, boolean isAny) throws RemoteException;
-
-    byte[] getBaseClassByteArray() throws RemoteException;
 
     int generateNewID() throws RemoteException;
 }

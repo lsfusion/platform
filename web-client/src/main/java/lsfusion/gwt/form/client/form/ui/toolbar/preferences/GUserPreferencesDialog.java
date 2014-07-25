@@ -38,8 +38,9 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     private CheckBox boldBox;
     private CheckBox italicBox;
 
-    public GUserPreferencesDialog(GGridTable grid, GGroupObjectController groupController) {
+    public GUserPreferencesDialog(GGridTable grid, GGroupObjectController groupController, boolean canBeSaved) {
         super("Настройка таблицы");
+
         this.groupController = groupController;
 
         this.grid = grid;
@@ -130,11 +131,13 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
             saveResetButtons.add(titledPanel);
         }
 
-        SimplePanel srbContainer = new SimplePanel(saveResetButtons);
-        preferencesPanel.add(srbContainer);
-        preferencesPanel.setCellHorizontalAlignment(srbContainer, HasAlignment.ALIGN_CENTER);
+        if (canBeSaved) {
+            SimplePanel srbContainer = new SimplePanel(saveResetButtons);
+            preferencesPanel.add(srbContainer);
+            preferencesPanel.setCellHorizontalAlignment(srbContainer, HasAlignment.ALIGN_CENTER);
 
-        preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
+            preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
+        }
 
         // ok/cancel buttons
         Button okButton = new Button("OK");

@@ -14,7 +14,6 @@ import lsfusion.server.form.entity.drilldown.SumUnionDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.session.PropertyChanges;
 
-import static lsfusion.base.BaseUtils.capitalize;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class SumUnionProperty extends IncrementUnionProperty {
@@ -69,10 +68,9 @@ public class SumUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new SumUnionDrillDownFormEntity(
-                "drillDown" + capitalize(getUniqueSID()) + "Form",
-                getString("logics.property.drilldown.form.sum.union"), this, LM
+                canonicalName, getString("logics.property.drilldown.form.sum.union"), this, LM
         );
     }
 }

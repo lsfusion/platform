@@ -3,11 +3,10 @@ package lsfusion.server.form.entity;
 import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.Instantiable;
 import lsfusion.server.form.instance.OrderInstance;
-import lsfusion.server.serialization.ServerCustomSerializable;
 
 import java.util.Set;
 
-public interface OrderEntity<T extends OrderInstance> extends Instantiable<T>, ServerCustomSerializable {
+public interface OrderEntity<T extends OrderInstance> extends Instantiable<T> {
     void fillObjects(Set<ObjectEntity> objects);
 
     /**

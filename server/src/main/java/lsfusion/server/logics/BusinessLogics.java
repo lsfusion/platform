@@ -1418,27 +1418,29 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public ImSet<FormEntity> getFormEntities(){
         MExclSet<FormEntity> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : logicModules) {
-            for(NavigatorElement entry : logicsModule.moduleNavigators.values())
+            for(NavigatorElement entry : logicsModule.getModuleNavigators())
                 if(entry instanceof FormEntity)
                     mResult.exclAdd((FormEntity) entry);
         }
         return mResult.immutable();
     }
 
-    public ImSet<NavigatorElement> getNavigatorElements(){
+    public ImSet<NavigatorElement> getNavigatorElements() {
         MExclSet<NavigatorElement> mResult = SetFact.mExclSet();
         for(LogicsModule logicsModule : logicModules) {
-            for(NavigatorElement entry : logicsModule.moduleNavigators.values())
+            for(NavigatorElement entry : logicsModule.getModuleNavigators())
                 mResult.exclAdd(entry);            
         }
         return mResult.immutable();
     }
 
-    public FormEntity getFormEntity(String formSID){
-        for(LogicsModule logicsModule : logicModules) {
-            for(NavigatorElement entry : logicsModule.moduleNavigators.values())
-                if((formSID.equals(entry.getSID()))&& (entry instanceof FormEntity))
-                    return (FormEntity) entry;
+    public FormEntity getFormEntityBySID(String formSID){
+        for (LogicsModule logicsModule : logicModules) {
+            for (NavigatorElement element : logicsModule.getModuleNavigators()) {
+                if ((element instanceof FormEntity) && formSID.equals(element.getSID())) {
+                    return (FormEntity) element;
+                }
+            }
         }
         return null;
     }

@@ -76,6 +76,7 @@ public class ClientFormController implements AsyncListener {
     private final ClientFormActionDispatcher actionDispatcher;
 
     private final String formSID;
+    private final String canonicalName;
 
     private final int ID;
 
@@ -116,14 +117,13 @@ public class ClientFormController implements AsyncListener {
 
     private ScheduledExecutorService autoRefreshScheduler;
 
-    private long lastReceivedResponseIndex = -1;
-
-    public ClientFormController(String formSID, RemoteFormInterface remoteForm, ClientNavigator clientNavigator) {
-        this(formSID, remoteForm, clientNavigator, false, false);
+    public ClientFormController(String canonicalName, String formSID, RemoteFormInterface remoteForm, ClientNavigator clientNavigator) {
+        this(canonicalName, formSID, remoteForm, clientNavigator, false, false);
     }
 
-    public ClientFormController(String iformSID, RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
+    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
         formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
+        canonicalName = icanonicalName;
         isDialog = iisDialog;
         isModal = iisModal;
 
@@ -153,6 +153,10 @@ public class ClientFormController implements AsyncListener {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+    
+    public boolean hasCanonicalName() {
+        return canonicalName != null;
     }
 
     public boolean isModal() {
@@ -1207,7 +1211,7 @@ public class ClientFormController implements AsyncListener {
                 @Override
                 public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
                     if (generationData != null) {
-                        Main.frame.runReport(remoteForm.getFormSID(), false, generationData, isDebug ? editReportInvoker : null);
+                        Main.frame.runReport(false, generationData, isDebug ? editReportInvoker : null);
                     }
                 }
             });
@@ -1277,7 +1281,7 @@ public class ClientFormController implements AsyncListener {
                 @Override
                 public void onResponse(long requstIndex, ReportGenerationData generationData) throws Exception {
                     if (generationData != null) {
-                        Main.frame.runReport("SingleGroupReport_" + remoteForm.getFormSID(), false, generationData, null);
+                        Main.frame.runReport(false, generationData, null);
                     }
                 }
             });

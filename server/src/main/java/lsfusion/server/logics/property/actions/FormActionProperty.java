@@ -169,7 +169,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             if (printType != null) {
                 context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(), printType, SystemProperties.isDebug));
             } else {
-                context.requestUserInteraction(new FormClientAction(form.getSID(), newRemoteForm, modalityType));
+                context.requestUserInteraction(new FormClientAction(form.getCanonicalName(), form.getSID(), newRemoteForm, modalityType));
             }
 
             if (modalityType.isModal()) {

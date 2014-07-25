@@ -34,12 +34,4 @@ public class NotFilterEntity extends FilterEntity {
     public FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
         return new NotFilterEntity(filter.getRemappedFilter(oldObject, newObject, instanceFactory));
     }
-
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeObject(outStream, filter);
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        filter = (FilterEntity) pool.deserializeObject(inStream);
-    }
 }

@@ -11,26 +11,10 @@ public class ServerContext {
     public final FormView view;
     public final SecurityPolicy securityPolicy;
 
-    public ServerContext(BusinessLogics<?> BL) {
-        this(BL, null);
-    }
-
-    public ServerContext(BusinessLogics<?> BL, FormEntity entity) {
-        this(BL, entity, null);
-    }
-
     public ServerContext(SecurityPolicy securityPolicy, FormView view) {
-        this(null, securityPolicy, view.entity, view);
-    }
-
-    public ServerContext(BusinessLogics<?> BL, FormEntity entity, FormView view) {
-        this(BL, null, entity, view);
-    }
-
-    public ServerContext(BusinessLogics<?> BL, SecurityPolicy securityPolicy, FormEntity entity, FormView view) {
-        this.BL = BL;
+        this.BL = null;
         this.securityPolicy = securityPolicy;
-        this.entity = entity;
+        this.entity = view.entity;
         this.view = view;
     }
 }

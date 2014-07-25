@@ -4,10 +4,10 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.OrderedMap;
 import lsfusion.base.context.ApplicationContext;
 import lsfusion.base.context.ApplicationContextHolder;
-import lsfusion.base.identity.IdentityObject;
+import lsfusion.base.context.ContextIdentityObject;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.LogicsSupplier;
-import lsfusion.client.serialization.ClientIdentitySerializable;
+import lsfusion.client.serialization.ClientCustomSerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.form.layout.AbstractForm;
 
@@ -20,9 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClientForm extends IdentityObject implements LogicsSupplier, ClientIdentitySerializable,
-                                                          AbstractForm<ClientContainer, ClientComponent>,
-                                                          ApplicationContextHolder {
+public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
+                                                                 ClientCustomSerializable,
+                                                                 AbstractForm<ClientContainer, ClientComponent>,
+                                                                 ApplicationContextHolder {
 
     public KeyStroke keyStroke = null;
 
@@ -44,32 +45,20 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     public OrderedMap<ClientPropertyDraw, Boolean> defaultOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
     public List<ClientRegularFilterGroup> regularFilterGroups = new ArrayList<ClientRegularFilterGroup>();
 
-    public ClientContainer getMainContainer() {
-        return mainContainer;
-    }
-
-    private ApplicationContext context;
-    public ApplicationContext getContext() {
-        return context;
-    }
-    public void setContext(ApplicationContext context) {
-        this.context = context;
-    }
-
     public ClientForm() {
     }
 
     // этот конструктор используется при создании нового объекта в настройке бизнес-логики
-    public ClientForm(int ID, ApplicationContext context) {
-        super(ID);
-        
-        this.context = context;
-
+    public ClientForm(ApplicationContext context) {
+        super(context);
         mainContainer = new ClientContainer(getContext());
     }
 
-    public List<ClientObject> getObjects() {
+    public ClientContainer getMainContainer() {
+        return mainContainer;
+    }
 
+    public List<ClientObject> getObjects() {
         ArrayList<ClientObject> objects = new ArrayList<ClientObject>();
         for (ClientGroupObject groupObject : groupObjects) {
             for (ClientObject object : groupObject.objects) {
@@ -170,7 +159,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         }
         return caption;
     }
-    
+
     public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders(ClientGroupObject group) {
         OrderedMap<ClientPropertyDraw, Boolean> result = new OrderedMap<ClientPropertyDraw, Boolean>();
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : defaultOrders.entrySet()) {

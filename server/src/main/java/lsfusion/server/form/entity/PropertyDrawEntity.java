@@ -26,20 +26,15 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
-import lsfusion.server.serialization.ServerIdentitySerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static lsfusion.interop.form.ServerResponse.*;
 
-public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance>, ServerIdentitySerializable {
+public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObject implements Instantiable<PropertyDrawInstance> {
 
     private PropertyEditType editType = PropertyEditType.EDITABLE;
 
@@ -312,68 +307,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView defaultView) {
         propertyObject.property.proceedDefaultDesign(propertyView, defaultView);
-    }
-
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeObject(outStream, propertyObject);
-        pool.serializeObject(outStream, toDraw);
-        pool.writeString(outStream, columnsName);
-        pool.serializeCollection(outStream, getColumnGroupObjects().toJavaList());
-
-        //не сериализуем эти property*, если они были созданы без привязки к BL, через DerivedProperty.*
-        //потому что иначе не сможем десериализовать для preview
-        serializeIfDeserializable(propertyCaption, pool, outStream, serializationType);
-        serializeIfDeserializable(propertyShowIf, pool, outStream, serializationType);
-        serializeIfDeserializable(propertyReadOnly, pool, outStream, serializationType);
-        serializeIfDeserializable(propertyFooter, pool, outStream, serializationType);
-        serializeIfDeserializable(propertyBackground, pool, outStream, serializationType);
-        serializeIfDeserializable(propertyForeground, pool, outStream, serializationType);
-
-        outStream.writeBoolean(shouldBeLast);
-
-        outStream.writeBoolean(editType != null);
-        if (editType != null)
-            outStream.writeByte(editType.serialize());
-
-        outStream.writeBoolean(forceViewType != null);
-        if (forceViewType != null)
-            pool.writeString(outStream, forceViewType.name());
-
-        //todo: serialization/deserialzation
-//        pool.writeString(outStream, mouseBinding);
-//        outStream.writeInt(keyBinding == null ? 0 : keyBinding.size());
-//        if (keyBinding != null) {
-//            for (Map.Entry<KeyStroke, String> e : keyBinding.entrySet()) {
-//                pool.writeObject(outStream, e.getKey());
-//                pool.writeString(outStream, e.getValue());
-//            }
-//        }
-    }
-
-    private void serializeIfDeserializable(CalcPropertyObjectEntity<?> propertyObject, ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        assert propertyObject.property.isNamed();
-        if (propertyObject != null && pool.context.BL.findProperty(propertyObject.property.getCanonicalName()) == null) {
-            propertyObject = null;
-        }
-        pool.serializeObject(outStream, propertyObject, serializationType);
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        propertyObject = pool.deserializeObject(inStream);
-        toDraw = pool.deserializeObject(inStream);
-        setColumnGroupObjects(pool.readString(inStream), SetFact.fromJavaOrderSet(pool.<GroupObjectEntity>deserializeList(inStream)));
-        propertyCaption = pool.deserializeObject(inStream);
-        propertyShowIf = pool.deserializeObject(inStream);
-        propertyReadOnly = pool.deserializeObject(inStream);
-        propertyFooter = pool.deserializeObject(inStream);
-        propertyBackground = pool.deserializeObject(inStream);
-        propertyForeground = pool.deserializeObject(inStream);
-
-        shouldBeLast = inStream.readBoolean();
-        if (inStream.readBoolean())
-            editType = PropertyEditType.deserialize(inStream.readByte());
-        if (inStream.readBoolean())
-            forceViewType = ClassViewType.valueOf(pool.readString(inStream));
     }
 
     @Override

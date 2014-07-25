@@ -13,6 +13,8 @@ public class GForm implements Serializable {
     public String sessionID;
 
     public String sID;
+    
+    public String canonicalName;
 
     public String caption;
 
@@ -32,7 +34,7 @@ public class GForm implements Serializable {
     public GFormUserPreferences userPreferences;
 
     public ArrayList<GFont> usedFonts = new ArrayList<GFont>();
-
+    
     public GGroupObject getGroupObject(int id) {
         for (GGroupObject groupObject : groupObjects) {
             if (groupObject.ID == id) {

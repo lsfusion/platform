@@ -163,6 +163,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         hotkeyManager.install(this);
     }
 
+    public boolean hasCanonicalName() {
+        return form.canonicalName != null;
+    }
+
     private void initializeRegularFilters() {
         for (final GRegularFilterGroup filterGroup : form.regularFilterGroups) {
             if (filterGroup.filters.size() == 1) {

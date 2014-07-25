@@ -20,22 +20,15 @@ import lsfusion.server.form.instance.Instantiable;
 import lsfusion.server.logics.property.CalcPropertyRevImplement;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.serialization.ServerIdentitySerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static lsfusion.interop.ClassViewType.*;
 
-public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
+public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance> {
 
     public static int PAGE_SIZE_DEFAULT_VALUE = 50;
-
-    private int ID;
 
     public TreeGroupEntity treeGroup;
 
@@ -51,16 +44,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     }
 
     public GroupObjectEntity(int ID, String sID) {
-        this.ID = ID;
-        this.sID = sID != null ? sID : "groupObj" + ID;
-    }
-
-    public int getID() {
-        return ID;
-    }
-
-    public void setID(int iID) {
-        ID = iID;
+        super(ID, sID != null ? sID : "groupObj" + ID);
     }
 
     public ClassViewType initClassView = GRID;
@@ -96,35 +80,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public GroupObjectInstance getInstance(InstanceFactory instanceFactory) {
         return instanceFactory.getInstance(this);
-    }
-
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeCollection(outStream, getOrderObjects().toJavaList());
-        pool.writeInt(outStream, initClassView.ordinal());
-        pool.writeObject(outStream, banClassView);
-        pool.serializeObject(outStream, treeGroup);
-        pool.serializeObject(outStream, propertyBackground);
-        pool.serializeObject(outStream, propertyForeground);
-        outStream.writeBoolean(isParent != null);
-        if (isParent != null) {
-            pool.serializeMap(outStream, isParent.toJavaMap());
-        }
-        pool.writeObject(outStream, pageSize);
-        pool.serializeObject(outStream, reportPathProp);
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        setObjects(SetFact.fromJavaOrderSet(pool.<ObjectEntity>deserializeList(inStream)));
-        initClassView = ClassViewType.values()[pool.readInt(inStream)];
-        banClassView = pool.readObject(inStream);
-        treeGroup = pool.deserializeObject(inStream);
-        propertyBackground = pool.deserializeObject(inStream);
-        propertyForeground = pool.deserializeObject(inStream);
-        if (inStream.readBoolean()) {
-            isParent = MapFact.fromJavaMap(pool.<ObjectEntity, CalcPropertyObjectEntity<?>>deserializeMap(inStream));
-        }
-        pageSize = pool.readObject(inStream);
-        reportPathProp = pool.deserializeObject(inStream);
     }
 
     public ImMap<ObjectEntity, CalcPropertyObjectEntity<?>> isParent = null;

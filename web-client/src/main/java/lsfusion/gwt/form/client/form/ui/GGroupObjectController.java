@@ -43,8 +43,6 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
             grid = new GGridController(groupObject.grid, formController, this, userPreferences);
             grid.addToLayout(getFormLayout());
 
-            GContainer gridContainer = groupObject.grid.container;
-
             showTypeView = new GShowTypeView(formController, groupObject);
             showTypeView.addToLayout(getFormLayout());
             showTypeView.setBanClassViews(groupObject.banClassView);
@@ -145,7 +143,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
 
         if (groupObject.toolbar.showGridSettings) {
             addToToolbar(GwtClientUtils.createHorizontalStrut(5));
-            addToToolbar(new GUserPreferencesButton(grid.getTable(), this));
+            addToToolbar(new GUserPreferencesButton(grid.getTable(), this, formController.hasCanonicalName()));
         }
     }
 

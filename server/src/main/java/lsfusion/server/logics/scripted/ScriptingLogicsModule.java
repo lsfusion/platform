@@ -435,8 +435,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ", " + title + ");");
         checkDuplicateNavigatorElement(formName);
         caption = (caption == null ? formName : caption);
-        
-        ScriptingFormEntity form = new ScriptingFormEntity(this, new FormEntity(formName, caption, title, icon, getVersion()));
+
+        String canonicalName = NavigatorElementCanonicalNameUtils.createNavigatorElementCanonicalName(getNamespace(), formName);
+
+        ScriptingFormEntity form = new ScriptingFormEntity(this, new FormEntity(canonicalName, caption, title, icon, getVersion()));
         form.setModalityType(modalityType);
         form.setAutoRefresh(autoRefresh);
         form.setKeepSessionProperties(keepSessionProperties);
@@ -1373,7 +1375,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ObjectEntity object = form.getNFObject(objectName, getVersion());
         if (object != null) {
             List<Object> resultParams = getParamsPlainList(singletonList(seekProp));
-            LAP lap = addOSAProp(form, object, resultParams.toArray());
+            LAP lap = addOSAProp(object, resultParams.toArray());
             return new LPWithParams(lap, seekProp.usedParams);
         } else {
             errLog.emitNotFoundError(parser, "оbject", objectName);
@@ -2473,7 +2475,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setupNavigatorElement(NavigatorElement<?> element, String caption, NavigatorElement<?> parentElement, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("setupNavigatorElement(" + element.getSID() + ", " + caption + ", " + parentElement + ", " + pos + ", " + anchorElement + ", " + windowName + ");");
+        scriptLogger.info("setupNavigatorElement(" + element.getCanonicalName() + ", " + caption + ", " + parentElement + ", " + pos + ", " + anchorElement + ", " + windowName + ");");
 
         assert element != null;
 
@@ -2494,11 +2496,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         Version version = getVersion();
         
         if (anchorElement != null && !parentElement.equals(anchorElement.getNFParent(version))) {
-            errLog.emitIllegalInsertBeforeAfterComponentElement(parser, element.getSID(), parentElement.getSID(), anchorElement.getSID());
+            errLog.emitIllegalInsertBeforeAfterComponentElement(parser, element.getCanonicalName(), parentElement.getCanonicalName(), anchorElement.getCanonicalName());
         }
 
         if (element.isAncestorOf(parentElement, version)) {
-            errLog.emitIllegalMoveNavigatorToSubnavigator(parser, element.getSID(), parentElement.getSID());
+            errLog.emitIllegalMoveNavigatorToSubnavigator(parser, element.getCanonicalName(), parentElement.getCanonicalName());
         }
 
         switch (pos) {

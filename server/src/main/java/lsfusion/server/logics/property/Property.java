@@ -38,20 +38,15 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
-import lsfusion.server.serialization.ServerIdentitySerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
 
 import javax.swing.*;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.List;
 
 import static lsfusion.interop.form.ServerResponse.*;
 
-public abstract class Property<T extends PropertyInterface> extends AbstractNode implements ServerIdentitySerializable {
+public abstract class Property<T extends PropertyInterface> extends AbstractNode {
     public static final GetIndex<PropertyInterface> genInterface = new GetIndex<PropertyInterface>() {
         public PropertyInterface getMapValue(int i) {
             return new PropertyInterface(i);
@@ -137,8 +132,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return ID;
     }
 
-    public void setID(int iID) {
-        ID = iID;
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public LP getLogFormProperty() {
@@ -402,19 +397,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         }
 
         return null;
-    }
-
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        outStream.writeUTF(getSID());
-        outStream.writeUTF(caption);
-        outStream.writeBoolean(isField());
-
-        pool.serializeCollection(outStream, getOrderInterfaces().toJavaList());
-        pool.serializeObject(outStream, getParent());
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        //десериализация не нужна, т.к. вместо создания объекта, происходит поиск в BL
     }
 
     @Override

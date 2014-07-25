@@ -41,8 +41,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 
-import static lsfusion.base.BaseUtils.capitalize;
-import static lsfusion.base.BaseUtils.join;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementProperty<JoinProperty.Interface> {
@@ -369,10 +367,9 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new JoinDrillDownFormEntity(
-                "drillDown" + capitalize(getUniqueSID()) + "Form",
-                getString("logics.property.drilldown.form.join"), this, LM
+                canonicalName, getString("logics.property.drilldown.form.join"), this, LM
         );
     }
 

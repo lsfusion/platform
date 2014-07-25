@@ -2,38 +2,42 @@ package lsfusion.client.dock;
 
 import bibliothek.gui.dock.common.MultipleCDockableLayout;
 import bibliothek.util.xml.XElement;
+import lsfusion.base.serialization.SerializationUtil;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ClientDockableLayout implements MultipleCDockableLayout {
-    private String formSID;
+    private String canonicalName;
 
     public ClientDockableLayout() {
     }
 
-    public ClientDockableLayout(String formSID) {
-        this.formSID = formSID;
+    public ClientDockableLayout(String canonicalName) {
+        this.canonicalName = canonicalName;
     }
 
-    public String getFormSID() {
-        return formSID;
+    public String getCanonicalName() {
+        return canonicalName;
     }
 
     public void readStream(DataInputStream in) throws IOException {
-        formSID = in.readUTF();
+        canonicalName = SerializationUtil.readString(in);
     }
 
     public void writeStream(DataOutputStream out) throws IOException {
-        out.writeUTF(formSID);
+        SerializationUtil.writeString(out, canonicalName);
     }
 
     public void readXML(XElement element) {
-        formSID = element.getString();
+        canonicalName = element.getString();
+        if (canonicalName.isEmpty()) {
+            canonicalName = null;
+        }
     }
 
     public void writeXML(XElement element) {
-        element.setString(formSID);
+        element.setString(canonicalName == null ? "" : canonicalName);
     }
 }

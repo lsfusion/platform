@@ -9,6 +9,7 @@ import java.util.Set;
 
 public class GNavigatorElement implements Serializable {
     public String sid;
+    public String canonicalName;
     public String caption;
     public ImageDescription icon;
 

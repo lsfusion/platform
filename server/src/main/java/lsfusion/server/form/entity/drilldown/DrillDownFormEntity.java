@@ -27,8 +27,8 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends Property
     public final ImMap<I, ObjectEntity> interfaceObjects;
     public final ObjectEntity[] paramObjects;
 
-    public DrillDownFormEntity(String sID, String caption, P property, LogicsModule LM) {
-        super(sID, caption, LM.getVersion());
+    public DrillDownFormEntity(String canonicalName, String caption, P property, LogicsModule LM) {
+        super(canonicalName, caption, LM.getVersion());
 
         this.property = property;
         this.LM = LM;

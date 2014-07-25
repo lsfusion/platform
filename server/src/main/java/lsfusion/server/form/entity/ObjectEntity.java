@@ -6,7 +6,6 @@ import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.ServerResourceBundle;
@@ -14,15 +13,10 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.actions.ChangeReadObjectActionProperty;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
-import lsfusion.server.serialization.ServerIdentitySerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.Set;
 
-public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity, ServerIdentitySerializable {
+public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity {
 
     public GroupObjectEntity groupTo;
 
@@ -59,16 +53,6 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     public void fillObjects(Set<ObjectEntity> objects) {
         objects.add(this);
-    }
-
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeObject(outStream, groupTo);
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        groupTo = (GroupObjectEntity) pool.deserializeObject(inStream);
-        baseClass = TypeSerializer.deserializeValueClass(pool.context.BL, inStream);
-        caption = pool.readString(inStream);
     }
 
     public PropertyObjectInterfaceEntity getRemappedEntity(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {

@@ -1,14 +1,8 @@
 package lsfusion.server.remote;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Subsets;
-import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.event.IDaemonTask;
@@ -22,7 +16,6 @@ import lsfusion.server.Settings;
 import lsfusion.server.classes.*;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.form.navigator.RemoteNavigator;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.lifecycle.LifecycleListener;
@@ -30,18 +23,17 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.property.*;
-import lsfusion.server.serialization.ServerSerializationPool;
+import lsfusion.server.logics.property.ClassType;
+import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import java.io.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -202,93 +194,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return BaseLogicsModule.generateStaticNewID();
     }
 
-    public byte[] getBaseClassByteArray() throws RemoteException {
-        try {
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            DataOutputStream dataStream = new DataOutputStream(outStream);
-            baseLM.baseClass.serialize(dataStream);
-            return outStream.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public byte[] getPropertyObjectsByteArray(byte[] byteClasses, boolean isCompulsory, boolean isAny) {
-        try {
-            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(byteClasses));
-
-            Map<Integer, Integer> groupMap = new HashMap<Integer, Integer>();
-            MExclMap<ValueClassWrapper, Integer> mClasses = MapFact.mExclMap();
-            int size = inStream.readInt();
-            for (int i = 0; i < size; i++) {
-                Integer ID = inStream.readInt();
-                ValueClass valueClass = TypeSerializer.deserializeValueClass(businessLogics, inStream);
-                mClasses.exclAdd(new ValueClassWrapper(valueClass), ID);
-
-                int groupId = inStream.readInt();
-                if (groupId >= 0) {
-                    groupMap.put(ID, groupId);
-                }
-            }
-
-            ArrayList<Property> result = new ArrayList<Property>();
-            ArrayList<ArrayList<Integer>> idResult = new ArrayList<ArrayList<Integer>>();
-
-            addProperties(mClasses.immutable(), groupMap, result, idResult, isCompulsory, isAny);
-
-            List<Property> newResult = BaseUtils.filterList(result, businessLogics.getProperties());
-
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-
-            DataOutputStream dataStream = new DataOutputStream(outStream);
-
-            ServerSerializationPool pool = new ServerSerializationPool();
-
-            dataStream.writeInt(result.size());
-            int num = 0;
-            for (Property<?> property : newResult) {
-                pool.serializeObject(dataStream, property);
-                Iterator<Integer> it = idResult.get(num++).iterator();
-                for (PropertyInterface propertyInterface : property.interfaces) {
-                    pool.serializeObject(dataStream, propertyInterface);
-                    dataStream.writeInt(it.next());
-                }
-            }
-
-            return outStream.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    <T extends PropertyInterface> void addProperties(ImMap<ValueClassWrapper, Integer> classes, Map<Integer, Integer> groupMap, ArrayList<Property> result, ArrayList<ArrayList<Integer>> idResult, boolean isCompulsory, boolean isAny) {
-        Set<Integer> allGroups = new HashSet<Integer>(groupMap.values());
-        MCol<ImSet<ValueClassWrapper>> mClassSets = ListFact.mCol();
-
-        for (ImSet<ValueClassWrapper> classSet : new Subsets<ValueClassWrapper>(classes.keys())) {
-            Set<Integer> classesGroups = new HashSet<Integer>();
-            for (ValueClassWrapper wrapper : classSet) {
-                int id = classes.get(wrapper);
-                if (groupMap.containsKey(id)) {
-                    classesGroups.add(groupMap.get(id));
-                }
-            }
-            if ((isCompulsory && classesGroups.size() == allGroups.size()) ||
-                    (!isCompulsory && classesGroups.size() > 0 || groupMap.isEmpty()) || classSet.isEmpty()) {
-                mClassSets.add(classSet);
-            }
-        }
-
-        for (PropertyClassImplement<T, ?> implement : baseLM.rootGroup.getProperties(mClassSets.immutableCol(), isAny, Version.DESCRIPTOR)) {
-            result.add(implement.property);
-            ArrayList<Integer> ids = new ArrayList<Integer>();
-            for (T iface : implement.property.interfaces) {
-                ids.add(classes.get(implement.mapping.get(iface)));
-            }
-            idResult.add(ids);
-        }
-    }
-
     public UserInfo getUserInfo(String username) throws RemoteException {
         return securityManager.getUserInfo(username, getExtraUserRoleNames(username));
     }
@@ -349,8 +254,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return securityManager.checkDefaultViewPermission(propertySid);
     }
 
-    public boolean checkFormExportPermission(String formSid) throws RemoteException {
-        return securityManager.checkFormExportPermission(formSid);
+    public boolean checkFormExportPermission(String canonicalName) throws RemoteException {
+        return securityManager.checkFormExportPermission(canonicalName);
     }
 
     @Override

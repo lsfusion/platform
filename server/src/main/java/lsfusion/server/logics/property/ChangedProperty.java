@@ -24,7 +24,6 @@ import lsfusion.server.session.PropertyChanges;
 
 import java.sql.SQLException;
 
-import static lsfusion.base.BaseUtils.capitalize;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class ChangedProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
@@ -106,10 +105,9 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new ChangedDrillDownFormEntity(
-                "drillDown" + capitalize(getUniqueSID()) + "Form",
-                getString("logics.property.drilldown.form.data"), this, LM
+                canonicalName, getString("logics.property.drilldown.form.data"), this, LM
         );
     }
 }

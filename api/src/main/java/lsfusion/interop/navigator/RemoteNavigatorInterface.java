@@ -43,12 +43,5 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
     byte[] getCurrentUserInfoByteArray() throws RemoteException;
 
     // для конфигуратора методы
-
-    RemoteFormInterface createPreviewForm(byte[] formState) throws RemoteException;
-
-    byte[] getRichDesignByteArray(String formSID) throws RemoteException;
-
-    byte[] getFormEntityByteArray(String formSID) throws RemoteException;
-
     boolean isConfigurationAccessAllowed() throws RemoteException;
 }

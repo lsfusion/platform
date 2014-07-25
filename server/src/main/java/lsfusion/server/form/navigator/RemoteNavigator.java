@@ -34,7 +34,6 @@ import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.instance.listener.RemoteFormListener;
-import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
 import lsfusion.server.logics.property.ActionProperty;
@@ -43,9 +42,6 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.remote.RemotePausableInvocation;
-import lsfusion.server.serialization.SerializationType;
-import lsfusion.server.serialization.ServerContext;
-import lsfusion.server.serialization.ServerSerializationPool;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -332,20 +328,17 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
                 for (Pair<DataObject, String> entry : openForms) {
                     DataObject connection = entry.first;
-                    String sid = entry.second;
+                    String canonicalName = entry.second;
+                    if (canonicalName == null) {
+                        continue;
+                    }
 
-                    Integer formId = (Integer) businessLogics.reflectionLM.navigatorElementSID.read(session, new DataObject(sid, businessLogics.reflectionLM.navigatorElementSIDClass));
+                    Integer formId = (Integer) businessLogics.reflectionLM.navigatorElementCanonicalName.read(
+                            session,
+                            new DataObject(canonicalName, businessLogics.reflectionLM.navigatorElementCanonicalNameClass));
+                    
                     if (formId == null) {
-                        //будем считать, что к SID модифицированных форм будет добавляться что-нибудь через подчёркивание
-                        int ind = sid.indexOf('_');
-                        if (ind != -1) {
-                            sid = sid.substring(0, ind);
-                            formId = (Integer) businessLogics.reflectionLM.navigatorElementSID.read(session, new DataObject(sid, businessLogics.reflectionLM.navigatorElementSIDClass));
-                        }
-
-                        if (formId == null) {
-                            return;
-                        }
+                        continue;
                     }
 
                     DataObject formObject = new DataObject(formId, businessLogics.reflectionLM.navigatorElement);
@@ -373,20 +366,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         addCacheObject(cls, objectID);
     }
 
-    private FormEntity<T> getFormEntity(String formSID) {
-        FormEntity<T> formEntity = (FormEntity<T>) businessLogics.getFormEntity(formSID);
-
-        if (formEntity == null) {
-            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.form.with.id.not.found") + " : " + formSID);
-        }
-
-        if (!securityPolicy.navigator.checkPermission(formEntity)) {
-            return null;
-        }
-
-        return formEntity;
-    }
-
     public RemoteFormInterface createForm(String formSID, Map<String, String> initialObjects, boolean isModal, boolean interactive) {
         RemoteForm form = (RemoteForm) createForm(getFormEntity(formSID), isModal, interactive);
         if(initialObjects != null) {
@@ -408,6 +387,20 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             }
         }
         return form;
+    }
+
+    private FormEntity<T> getFormEntity(String formSID) {
+        FormEntity<T> formEntity = (FormEntity<T>) businessLogics.getFormEntityBySID(formSID);
+
+        if (formEntity == null) {
+            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.form.with.id.not.found") + " : " + formSID);
+        }
+
+        if (!securityPolicy.navigator.checkPermission(formEntity)) {
+            return null;
+        }
+
+        return formEntity;
     }
 
     private RemoteFormInterface createForm(FormEntity<T> formEntity, boolean isModal, boolean interactive) {
@@ -433,34 +426,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             throw Throwables.propagate(e);
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
-        }
-    }
-
-    public RemoteFormInterface createPreviewForm(byte[] formState) throws RemoteException {
-        FormEntity newFormEntity = FormEntity.deserialize(businessLogics, formState);
-        return createForm(newFormEntity, false, true);
-    }
-
-    public byte[] getRichDesignByteArray(String formSID) throws RemoteException {
-        try {
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            DataOutputStream dataStream = new DataOutputStream(outStream);
-            FormView view = getFormEntity(formSID).getRichDesign();
-            new ServerSerializationPool(new ServerContext(securityPolicy, view)).serializeObject(dataStream, view, SerializationType.VISUAL_SETUP);
-            return outStream.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public byte[] getFormEntityByteArray(String formSID) throws RemoteException {
-        try {
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            DataOutputStream dataStream = new DataOutputStream(outStream);
-            new ServerSerializationPool(new ServerContext(businessLogics)).serializeObject(dataStream, getFormEntity(formSID));
-            return outStream.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -575,7 +540,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     @Override
     public ServerResponse executeNavigatorAction(String navigatorActionSID) throws RemoteException {
-        final NavigatorElement element = businessLogics.LM.root.getNavigatorElement(navigatorActionSID);
+        final NavigatorElement element = businessLogics.LM.root.getNavigatorElementBySID(navigatorActionSID);
 
         if (!(element instanceof NavigatorAction)) {
             throw new RuntimeException(ServerResourceBundle.getString("form.navigator.action.not.found"));
@@ -615,7 +580,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     public void formCreated(RemoteForm form) {
         DataObject connection = getConnection();
         if (connection != null) {
-            recentlyOpenForms.add(new Pair<DataObject, String>(connection, form.getSID()));
+            recentlyOpenForms.add(new Pair<DataObject, String>(connection, form.getCanonicalName()));
         }
         createdForms.put(form, Boolean.TRUE);
     }

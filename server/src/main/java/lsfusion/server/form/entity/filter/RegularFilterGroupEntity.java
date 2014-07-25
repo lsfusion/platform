@@ -9,16 +9,11 @@ import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.mutables.interfaces.NFProperty;
-import lsfusion.server.serialization.ServerIdentitySerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class RegularFilterGroupEntity extends IdentityObject implements ServerIdentitySerializable {
+public class RegularFilterGroupEntity extends IdentityObject {
 
     public NFOrderSet<RegularFilterEntity> filters = NFFact.orderSet();
 
@@ -62,16 +57,6 @@ public class RegularFilterGroupEntity extends IdentityObject implements ServerId
 
     public ImList<RegularFilterEntity> getFiltersList() {
         return filters.getList();
-    }
-
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeCollection(outStream, getFiltersList());
-        outStream.writeInt(defaultFilterIndex.get());
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        filters = NFFact.finalOrderSet(pool.<RegularFilterEntity>deserializeList(inStream));
-        defaultFilterIndex = NFFact.finalProperty(inStream.readInt());
     }
 
     public GroupObjectEntity getToDraw(FormEntity form) {

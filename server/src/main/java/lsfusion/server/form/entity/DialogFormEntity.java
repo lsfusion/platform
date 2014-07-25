@@ -9,8 +9,8 @@ import lsfusion.server.logics.mutables.Version;
 
 public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEntity<T> {
 
-    protected DialogFormEntity(BaseLogicsModule<T> LM, CustomClass cls, String sID, String caption) {
-        super(LM, cls, sID, caption);
+    public DialogFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
+        super(LM, cls, null, cls.caption);
 
         object.groupTo.setSingleClassView(ClassViewType.GRID);
 
@@ -24,9 +24,5 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassForm
             LM.addFormActions(this, object);
 
         finalizeInit(version);
-    }
-
-    public DialogFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
-        this(LM, cls, "dialogForm_" + cls.getSID(), cls.caption);
     }
 }

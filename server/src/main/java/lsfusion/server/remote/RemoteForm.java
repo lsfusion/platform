@@ -148,14 +148,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     /**
      * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается, что он отработаывает как ImmutableMethod через createAndExecute
-     * также специально выделен remote метод, чтобы не вызывать его из внутренних методов RemoteForm
-     */
-    public String getFormSID() {
-        return getSID();
-    }
-
-    /**
-     * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается, что он отработаывает как ImmutableMethod через createAndExecute
      */
     public FormUserPreferences getUserPreferences() throws RemoteException {
 
@@ -606,12 +598,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         });
     }
 
-    public int getID() {
-        return form.entity.getID();
-    }
-
     public String getSID() {
         return form.entity.getSID();
+    }
+    
+    public String getCanonicalName() {
+        return form.entity.getCanonicalName();
     }
 
     public ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {

@@ -1,6 +1,5 @@
 package lsfusion.base.serialization;
 
-import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.context.ApplicationContext;
@@ -246,42 +245,27 @@ public abstract class SerializationPool<C> {
     }
 
     public void writeString(DataOutputStream outStream, String str) throws IOException {
-        outStream.writeBoolean(str != null);
-        if (str != null) {
-            outStream.writeUTF(str);
-        }
+        SerializationUtil.writeString(outStream, str);
     }
 
     public String readString(DataInputStream inStream) throws IOException {
-        return inStream.readBoolean()
-                ? inStream.readUTF()
-                : null;
+        return SerializationUtil.readString(inStream);
     }
 
     public void writeInt(DataOutputStream outStream, Integer integer) throws IOException {
-        outStream.writeBoolean(integer != null);
-        if (integer != null) {
-            outStream.writeInt(integer);
-        }
+        SerializationUtil.writeInt(outStream, integer);
     }
 
     public Integer readInt(DataInputStream inStream) throws IOException {
-        return inStream.readBoolean()
-                ? inStream.readInt()
-                : null;
+        return SerializationUtil.readInt(inStream);
     }
 
     public void writeLong(DataOutputStream outStream, Long n) throws IOException {
-        outStream.writeBoolean(n != null);
-        if (n != null) {
-            outStream.writeLong(n);
-        }
+        SerializationUtil.writeLong(outStream, n);
     }
 
     public Long readLong(DataInputStream inStream) throws IOException {
-        return inStream.readBoolean()
-                ? inStream.readLong()
-                : null;
+        return SerializationUtil.readLong(inStream);
     }
 
     private boolean setInstanceContext(Object instance) {

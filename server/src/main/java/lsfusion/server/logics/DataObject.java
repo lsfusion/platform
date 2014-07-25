@@ -24,7 +24,6 @@ import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeObject;
-import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.ObjectEntity;
@@ -34,15 +33,11 @@ import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.ObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.integration.*;
-import lsfusion.server.serialization.ServerSerializationPool;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionChanges;
 import lsfusion.server.session.SessionTableUsage;
 import lsfusion.server.session.SinglePropertyTableUsage;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
 
@@ -212,18 +207,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public boolean isNull() {
         return false;
-    }
-
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        BaseUtils.serializeObject(outStream, object);
-
-        TypeSerializer.serializeType(outStream, getType());
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        object = BaseUtils.deserializeObject(inStream);
-
-        objectClass = pool.context.BL.getDataClass(object, TypeSerializer.deserializeType(inStream, 9999999));
     }
 
     public ImSet<ObjectInstance> getObjectInstances() {

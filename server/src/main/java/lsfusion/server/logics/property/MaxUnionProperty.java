@@ -11,7 +11,6 @@ import lsfusion.server.form.entity.drilldown.MaxUnionDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.session.PropertyChanges;
 
-import static lsfusion.base.BaseUtils.capitalize;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class MaxUnionProperty extends IncrementUnionProperty {
@@ -71,10 +70,9 @@ public class MaxUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new MaxUnionDrillDownFormEntity(
-                "drillDown" + capitalize(getUniqueSID()) + "Form",
-                getString("logics.property.drilldown.form.max.union"), this, LM
+                canonicalName, getString("logics.property.drilldown.form.max.union"), this, LM
         );
     }
 }

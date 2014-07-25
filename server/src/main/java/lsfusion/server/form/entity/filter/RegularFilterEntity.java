@@ -1,26 +1,19 @@
 package lsfusion.server.form.entity.filter;
 
 import lsfusion.base.identity.IdentityObject;
-import lsfusion.server.logics.ServerResourceBundle;
-import lsfusion.server.serialization.ServerIdentitySerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 
-public class RegularFilterEntity extends IdentityObject implements ServerIdentitySerializable {
+public class RegularFilterEntity extends IdentityObject {
     public transient FilterEntity filter;
     public String name = "";
     public KeyStroke key;
     public boolean showKey = true;
 
     public RegularFilterEntity() {
-        
+
     }
-    
+
     public RegularFilterEntity(int iID, FilterEntity ifilter, String iname) {
         this(iID, ifilter, iname, null);
     }
@@ -30,22 +23,5 @@ public class RegularFilterEntity extends IdentityObject implements ServerIdentit
         filter = ifilter;
         name = iname;
         key = ikey;
-    }
-
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeObject(outStream, filter);
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        filter = (FilterEntity) pool.deserializeObject(inStream);
-
-        name = inStream.readUTF();
-        try {
-            key = (KeyStroke) new ObjectInputStream(inStream).readObject();
-        } catch (ClassNotFoundException e) {
-            throw new IOException(ServerResourceBundle.getString("form.entity.filter.can.not.deserialize.regular.filter.entity"));
-        }
-
-        showKey = inStream.readBoolean();
     }
 }

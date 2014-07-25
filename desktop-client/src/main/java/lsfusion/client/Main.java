@@ -88,7 +88,6 @@ public class Main {
 
     private static PingThread pingThread;
 
-    private static ClientObjectClass baseClass = null;
     public static EventBus eventBus = new EventBus();
     private static ArrayList<IDaemonTask> daemonTasks;
 
@@ -284,19 +283,6 @@ public class Main {
         new HTMLEditorPane();
     }
 
-    public static ClientObjectClass getBaseClass() {
-        if (baseClass == null) {
-            try {
-                baseClass = (ClientObjectClass) ClientTypeSerializer.deserializeClientClass(
-                        new DataInputStream(new ByteArrayInputStream(
-                                remoteLogics.getBaseClassByteArray())));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return baseClass;
-    }
-
     public static void clientExceptionLog(String title, Throwable t) throws RemoteException {
         if (remoteNavigator != null) {
             remoteNavigator.logClientException(title, SystemUtils.getLocalHostName(), t);
@@ -463,7 +449,6 @@ public class Main {
         }
 
         computerId = -1;
-        baseClass = null;
         frame = null;
         remoteLoader = null;
         remoteLogics = null;

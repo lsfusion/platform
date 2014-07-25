@@ -3,26 +3,18 @@ package lsfusion.server.form.entity;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.serialization.ServerCustomSerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
-public abstract class PropertyObjectEntity<P extends PropertyInterface, T extends Property<P>> extends TwinImmutableObject implements ServerCustomSerializable {
+public abstract class PropertyObjectEntity<P extends PropertyInterface, T extends Property<P>> extends TwinImmutableObject {
 
     public T property;
     public ImMap<P, PropertyObjectInterfaceEntity> mapping;
@@ -87,32 +79,6 @@ public abstract class PropertyObjectEntity<P extends PropertyInterface, T extend
 
     public void fillObjects(Set<ObjectEntity> objects) {
         objects.addAll(getObjectInstances());
-    }
-
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeObject(outStream, property);
-
-        outStream.writeInt(mapping.size());
-        for (int i=0,size=mapping.size();i<size;i++) {
-            pool.serializeObject(outStream, mapping.getKey(i));
-            pool.serializeObject(outStream, mapping.getValue(i));
-        }
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        String propertySID = inStream.readUTF();
-        property = (T) pool.context.BL.findProperty(propertySID).property;
-
-        int size = inStream.readInt();
-        MExclMap<P,PropertyObjectInterfaceEntity> mMapping = MapFact.mExclMap(size);
-        for (int i = 0; i < size; ++i) {
-            int interId = inStream.readInt();
-            P inter = property.getInterfaceById(interId);
-            PropertyObjectInterfaceEntity value = pool.deserializeObject(inStream);
-
-            mMapping.exclAdd(inter, value);
-        }
-        mapping = mMapping.immutable();
     }
 
     protected final String creationScript;

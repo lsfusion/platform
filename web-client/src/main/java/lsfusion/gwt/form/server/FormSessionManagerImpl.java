@@ -40,12 +40,13 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
 
     public FormSessionManagerImpl() {}
 
-    public GForm createForm(RemoteFormInterface remoteForm, LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) throws IOException {
+    public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) throws IOException {
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
         GForm gForm = new ClientComponentToGwtConverter().convertOrCast(clientForm);
 
-        gForm.sID = remoteForm.getFormSID();
+        gForm.sID = formSID;
+        gForm.canonicalName = canonicalName;
         gForm.sessionID = nextFormSessionID();
 
         ProcessFormChangesClientAction clientAction = (ProcessFormChangesClientAction) remoteForm.getRemoteChanges(-1, -1, false).actions[0];

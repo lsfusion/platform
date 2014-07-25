@@ -25,7 +25,6 @@ import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.session.StructChanges;
 
-import static lsfusion.base.BaseUtils.capitalize;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> {
@@ -204,10 +203,9 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new DataDrillDownFormEntity(
-                "drillDown" + capitalize(getUniqueSID()) + "Form",
-                getString("logics.property.drilldown.form.data"), this, LM
+                canonicalName, getString("logics.property.drilldown.form.data"), this, LM
         );
     }
 }

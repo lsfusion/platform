@@ -39,7 +39,10 @@ import lsfusion.server.logics.table.TableFactory;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -138,7 +141,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public TableFactory tableFactory;
 
     // счетчик идентификаторов
-    static private IDGenerator idGenerator = new DefaultIDGenerator();
+    private static final IDGenerator idGenerator = new DefaultIDGenerator();
 
     private PropertySIDPolicy propertySidPolicy;
     

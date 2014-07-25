@@ -2,11 +2,9 @@ package lsfusion.client.logics;
 
 import lsfusion.base.context.ApplicationContext;
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.descriptor.editor.GridEditor;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.form.layout.FlexAlignment;
 
-import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -61,11 +59,6 @@ public class ClientGrid extends ClientComponent {
     @Override
     public String toString() {
         return getCaption() + " (" + groupObject.toString() + ")" + "[sid:" + getSID() + "]";
-    }
-
-    @Override
-    public JComponent getPropertiesEditor() {
-        return new GridEditor(this);
     }
 
     public void setTabVertical(boolean tabVertical) {

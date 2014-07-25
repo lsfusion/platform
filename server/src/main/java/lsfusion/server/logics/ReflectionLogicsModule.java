@@ -52,7 +52,10 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     public LCP sidNavigatorElement;
     public LCP numberNavigatorElement;
-    
+
+    public LCP navigatorElementCanonicalName;
+    public LCP canonicalNameNavigatorElement;
+
     public LCP navigatorElementSID;
     public LCP parentNavigatorElement;
     public LCP isNavigatorElement;
@@ -61,14 +64,13 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     public LCP sidGroupObject;
     public LCP navigatorElementGroupObject;
-    public LCP sidNavigatorElementGroupObject;
-    public LCP groupObjectSIDGroupObjectSIDNavigatorElementGroupObject;
+    public LCP groupObjectSIDNavigatorElementNameGroupObject;
 
     public LCP sidPropertyDraw;
     public LCP captionPropertyDraw;
     public LCP formPropertyDraw;
     public LCP groupObjectPropertyDraw;
-    public LCP propertyDrawSIDNavigatorElementSIDPropertyDraw;
+    public LCP propertyDrawSIDNavigatorElementNamePropertyDraw;
 
     public LCP showPropertyDraw;
     public LCP showPropertyDrawCustomUser;
@@ -133,6 +135,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LAP dropDropColumn;
 
     public final StringClass navigatorElementSIDClass = StringClass.get(50);
+    public final StringClass navigatorElementCanonicalNameClass = StringClass.get(100);
     public final StringClass navigatorElementCaptionClass = StringClass.get(250);
     public final StringClass propertySIDValueClass = StringClass.get(100);
     public final StringClass propertyCanonicalNameValueClass = StringClass.get(512);
@@ -202,8 +205,11 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         // Навигатор
         sidNavigatorElement = findProperty("sidNavigatorElement");
-        numberNavigatorElement = findProperty("numberNavigatorElement");
         navigatorElementSID = findProperty("navigatorElementSID");
+        
+        numberNavigatorElement = findProperty("numberNavigatorElement");
+        navigatorElementCanonicalName = findProperty("navigatorElementCanonicalName");
+        canonicalNameNavigatorElement = findProperty("canonicalNameNavigatorElement");
         parentNavigatorElement = findProperty("parentNavigatorElement");
         isNavigatorElement = findProperty("isNavigatorElement");
         isForm = findProperty("isForm");
@@ -214,8 +220,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         // Группа объектов
         sidGroupObject = findProperty("sidGroupObject");
         navigatorElementGroupObject = findProperty("navigatorElementGroupObject");
-        sidNavigatorElementGroupObject = findProperty("sidNavigatorElementGroupObject");
-        groupObjectSIDGroupObjectSIDNavigatorElementGroupObject = findProperty("groupObjectSIDGroupObjectSIDNavigatorElementGroupObject");
+        groupObjectSIDNavigatorElementNameGroupObject = findProperty("groupObjectSIDNavigatorElementNameGroupObject");
 
 
         // PropertyDraw
@@ -224,7 +229,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         formPropertyDraw = findProperty("formPropertyDraw");
         groupObjectPropertyDraw = findProperty("groupObjectPropertyDraw");
         // todo : это свойство должно быть для форм, а не навигаторов
-        propertyDrawSIDNavigatorElementSIDPropertyDraw = findProperty("propertyDrawSIDNavigatorElementSIDPropertyDraw");
+        propertyDrawSIDNavigatorElementNamePropertyDraw = findProperty("propertyDrawSIDNavigatorElementNamePropertyDraw");
 
         // UserPreferences
         showPropertyDraw = findProperty("showPropertyDraw");

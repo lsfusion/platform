@@ -7,9 +7,9 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.PropertyEditor;
 import lsfusion.client.form.PropertyRenderer;
-import lsfusion.client.form.editor.rich.RichTextPropertyEditor;
 import lsfusion.client.form.editor.StringPropertyEditor;
 import lsfusion.client.form.editor.TextPropertyEditor;
+import lsfusion.client.form.editor.rich.RichTextPropertyEditor;
 import lsfusion.client.form.renderer.StringPropertyRenderer;
 import lsfusion.client.form.renderer.TextPropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
@@ -205,10 +205,6 @@ public class ClientStringClass extends ClientDataClass {
 
         public byte getTypeId() {
             return Data.STRING;
-        }
-
-        public ClientStringClass getDefaultClass(ClientObjectClass baseClass) {
-            return getDefaultType();
         }
 
         public ClientStringClass getDefaultType() {

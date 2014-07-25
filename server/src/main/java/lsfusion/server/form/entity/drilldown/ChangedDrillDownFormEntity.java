@@ -18,8 +18,8 @@ public class ChangedDrillDownFormEntity extends DrillDownFormEntity<ClassPropert
     private PropertyDrawEntity newPropertyDraw;
     private PropertyDrawEntity oldPropertyDraw;
 
-    public ChangedDrillDownFormEntity(String sID, String caption, ChangedProperty property, LogicsModule LM) {
-        super(sID, caption, property, LM);
+    public ChangedDrillDownFormEntity(String canonicalName, String caption, ChangedProperty property, LogicsModule LM) {
+        super(canonicalName, caption, property, LM);
     }
 
     @Override

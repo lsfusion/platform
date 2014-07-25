@@ -3,8 +3,6 @@ package lsfusion.client.logics;
 import lsfusion.base.context.ApplicationContext;
 import lsfusion.base.context.ContextIdentityObject;
 import lsfusion.base.serialization.IdentitySerializable;
-import lsfusion.client.descriptor.editor.ComponentEditor;
-import lsfusion.client.descriptor.nodes.ComponentNode;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.ComponentDesign;
 import lsfusion.interop.form.layout.AbstractComponent;
@@ -101,14 +99,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         defaultComponent = inStream.readBoolean();
 
         sID = pool.readString(inStream);
-    }
-
-    public ComponentNode getNode() {
-        return new ComponentNode(this);
-    }
-
-    public JComponent getPropertiesEditor() {
-        return new ComponentEditor(this);
     }
 
     public void setDefaultComponent(boolean defaultComponent) {

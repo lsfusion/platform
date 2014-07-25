@@ -1,10 +1,10 @@
 package lsfusion.client.navigator;
 
 import lsfusion.base.IOUtils;
+import lsfusion.base.serialization.SerializationUtil;
 import lsfusion.interop.SerializableImageIconHolder;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +12,13 @@ import java.util.Map;
 import java.util.Set;
 
 public class ClientNavigatorElement {
-    public static final String BASE_ELEMENT_SID = "baseElement";
 
-    public int ID;
+    private int ID;
+    private String sID;
+    private String canonicalName;
+    
     public String caption;
-    public String sID;
+    
     public List<ClientNavigatorElement> parents = new ArrayList<ClientNavigatorElement>();
     public List<ClientNavigatorElement> children = new ArrayList<ClientNavigatorElement>();
     public SerializableImageIconHolder image;
@@ -24,6 +26,31 @@ public class ClientNavigatorElement {
 
     protected boolean hasChildren = false;
     public ClientNavigatorWindow window;
+
+    public ClientNavigatorElement(DataInputStream inStream) throws IOException {
+        ID = inStream.readInt();
+        sID = inStream.readUTF();
+        canonicalName = SerializationUtil.readString(inStream);
+        
+        caption = inStream.readUTF();
+        hasChildren = inStream.readBoolean();
+        window = ClientNavigatorWindow.deserialize(inStream);
+
+        image = IOUtils.readImageIcon(inStream);
+        imageFileName = inStream.readUTF();
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public String getSID() {
+        return sID;
+    }
+
+    public String getCanonicalName() {
+        return canonicalName;
+    }
 
     public boolean hasChildren() {
         return hasChildren;
@@ -33,48 +60,35 @@ public class ClientNavigatorElement {
         this.caption = caption;
     }
 
-    public String toString() {
-        return caption;
-    }
-
-    public ClientNavigatorElement() {
-    }
-
-    public ClientNavigatorElement(int ID, String sID, String caption, boolean hasChildren) {
-        this.ID = ID;
-        this.sID = sID;
-        this.caption = caption;
-        this.hasChildren = hasChildren;
-    }
-
-    public ClientNavigatorElement(DataInputStream inStream) throws IOException {
-        ID = inStream.readInt();
-        sID = inStream.readUTF();
-        caption = inStream.readUTF();
-        hasChildren = inStream.readBoolean();
-        window = ClientNavigatorWindow.deserialize(inStream);
-
-        image = IOUtils.readImageIcon(inStream);
-        imageFileName = inStream.readUTF();
-    }
-
-    public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeUTF(sID);
-        outStream.writeUTF(caption);
-    }
-
     @Override
     public int hashCode() {
-        return sID.hashCode();
+        return ID;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof ClientNavigatorElement) {
-            ClientNavigatorElement element = (ClientNavigatorElement) obj;
-            return element.sID.equals(sID);
+        return obj instanceof ClientNavigatorElement && ((ClientNavigatorElement) obj).ID == ID;
+    }
+
+    public String toString() {
+        return caption;
+    }
+
+    public ClientNavigatorElement findElementByCanonicalName(String canonicalName) {
+        if (canonicalName == null) {
+            return null;
         }
-        return false;
+        if (canonicalName.equals(this.canonicalName)) {
+            return this;
+        }
+        
+        for (ClientNavigatorElement child : children) {
+            ClientNavigatorElement found = child.findElementByCanonicalName(canonicalName);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
     }
 
     public static ClientNavigatorElement deserialize(DataInputStream inStream, Map<String, ClientNavigatorWindow> windows) throws IOException {
@@ -100,10 +114,6 @@ public class ClientNavigatorElement {
         }
 
         return element;
-    }
-
-    public String getSID() {
-        return sID;
     }
 
     //содержатся ли родители текущей вершины в заданном множестве

@@ -1,14 +1,7 @@
 package lsfusion.server.serialization;
 
 import lsfusion.base.serialization.SerializationPool;
-import lsfusion.server.form.entity.*;
-import lsfusion.server.form.entity.filter.*;
 import lsfusion.server.form.view.*;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.group.AbstractGroup;
 
 
 public class ServerSerializationPool extends SerializationPool<ServerContext> {
@@ -19,32 +12,6 @@ public class ServerSerializationPool extends SerializationPool<ServerContext> {
     public ServerSerializationPool(ServerContext context) {
         super(context);
         //порядок добавления должен соответствовать порядку в ClientSerializationPool
-
-        addMapping2(FormEntity.class);
-        addMapping2(GroupObjectEntity.class);
-        addMapping2(TreeGroupEntity.class);
-        addMapping2(PropertyDrawEntity.class);
-        addMapping2(CalcProperty.class);
-        addMapping2(ActionProperty.class);
-        addMapping2(AbstractGroup.class);
-
-        addMapping2(PropertyFilterEntity.class);
-        addMapping2(CompareFilterEntity.class);
-        addMapping2(IsClassFilterEntity.class);
-        addMapping2(NotNullFilterEntity.class);
-
-        addMapping2(OrFilterEntity.class);
-        addMapping2(NotFilterEntity.class);
-
-        addMapping2(RegularFilterEntity.class);
-        addMapping2(RegularFilterGroupEntity.class);
-
-        addMapping2(PropertyInterface.class);
-
-        addMapping2(DataObject.class);
-        addMapping2(ObjectEntity.class);
-        addMapping2(CalcPropertyObjectEntity.class);
-        addMapping2(ActionPropertyObjectEntity.class);
 
         addMapping2(FormView.class);
         addMapping2(ComponentView.class);

@@ -17,27 +17,21 @@ import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.serialization.ServerIdentitySerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.sql.SQLException;
 
-public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements CalcPropertyInterfaceImplement<P>, Comparable<P>, ServerIdentitySerializable {
+public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityObject implements CalcPropertyInterfaceImplement<P>, Comparable<P> {
 
     public PropertyInterface() {
         this(-1);
-
     }
 
     public PropertyInterface(int ID) {
-        this.ID = ID;
+        super(ID, "PropInt" + ID);
     }
 
     public static <T, P extends PropertyInterface> ImRevMap<T, P> getIdentityMap(ImMap<T, CalcPropertyInterfaceImplement<P>> mapping) {
@@ -119,12 +113,6 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 
     public ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty) {
         return null;
-    }
-
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
     }
 
     public ImMap<P, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {

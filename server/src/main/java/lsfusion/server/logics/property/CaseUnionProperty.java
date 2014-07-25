@@ -20,15 +20,14 @@ import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ScriptParsingException;
 import lsfusion.server.logics.mutables.NFFact;
-import lsfusion.server.logics.mutables.interfaces.NFList;
 import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.mutables.interfaces.NFList;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.session.StructChanges;
 
-import static lsfusion.base.BaseUtils.capitalize;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class CaseUnionProperty extends IncrementUnionProperty {
@@ -409,10 +408,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(LogicsModule LM, String canonicalName) {
         return new CaseUnionDrillDownFormEntity(
-                "drillDown" + capitalize(getUniqueSID()) + "Form",
-                getString("logics.property.drilldown.form.case.union"), this, LM
+                canonicalName, getString("logics.property.drilldown.form.case.union"), this, LM
         );
     }
 }
