@@ -31,7 +31,7 @@ import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.PropertySIDPolicy;
+import lsfusion.server.logics.PropertyDBNamePolicy;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -161,7 +161,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public boolean isSynchronizedApply = false;
 
-    private PropertySIDPolicy policy;
+    private PropertyDBNamePolicy policy;
     
     protected FormEntity(String canonicalName, String caption, Version version) {
         this(null, canonicalName, caption, null, null, version);
@@ -180,7 +180,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
-        policy = baseLM.getSIDPolicy();
+        policy = baseLM.getDBNamePolicy();
 
         printActionPropertyDraw = addPropertyDraw(baseLM.getFormPrint(), version);
         editActionPropertyDraw = addPropertyDraw(baseLM.getFormEdit(), version);

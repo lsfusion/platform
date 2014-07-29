@@ -680,7 +680,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     } 
     
     public void addSettingsToProperty(LP property, String name, String caption, List<TypedParameter> params, List<AndClassSet> signature, String groupName, boolean isPersistent, boolean isComplex, String tableName, Boolean notNullResolve, Event notNullEvent) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addSettingsToProperty(" + property.property.getUniqueSID() + ", " + name + ", " + caption + ", " +
+        scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + caption + ", " +
                            params + ", " + groupName + ", " + isPersistent  + ", " + tableName + ");");
         checkDuplicateProperty(name, signature);
        
@@ -689,7 +689,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkNamedParams(property, paramNames);
         
         // Если объявление имеет вид f(x, y) = g(x, y), то нужно дополнительно обернуть свойство g в join
-        if (property.property.getUniqueSID().equals(lastOpimizedJPropSID)) {
+        if (property.property.getSID().equals(lastOpimizedJPropSID)) {
             property = addJProp("", (LCP) property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
         }
 
@@ -906,9 +906,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP prop;
         if (isTrivialParamList(resultParams)) {
             prop = mainProp;
-            lastOpimizedJPropSID = mainProp.property.getUniqueSID();
+            lastOpimizedJPropSID = mainProp.property.getSID();
         } else {
-            scriptLogger.info("addScriptedJProp(" + mainProp.property.getUniqueSID() + ", " + resultParams + ");");
+            scriptLogger.info("addScriptedJProp(" + mainProp.property.getSID() + ", " + resultParams + ");");
             prop = addJProp("", (LCP) mainProp, resultParams.toArray());
         }
         return new LPWithParams(prop, mergeAllParams(paramProps));

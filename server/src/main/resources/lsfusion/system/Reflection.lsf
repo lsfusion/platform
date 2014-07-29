@@ -36,7 +36,7 @@ TABLE property (Property);
 
 parentProperty 'Родит. группа' = DATA PropertyGroup (Property);
 numberProperty 'Номер' = DATA INTEGER (Property);
-SIDProperty 'Код свойства' = DATA VARSTRING[100] (Property) IN base;
+dbNameProperty 'Код свойства' = DATA VARSTRING[100] (Property) IN base;
 canonicalNameProperty 'Имя свойства' = DATA VARSTRING[512] (Property) IN base;
 loggableProperty 'Логируется' = DATA BOOLEAN (Property);
 userLoggableProperty 'Логируется пользователем' = DATA BOOLEAN (Property);
@@ -49,9 +49,9 @@ complexityProperty 'Сложность свойства' = DATA LONG (Property);
 captionProperty 'Заголовок' = DATA VARSTRING[250] (Property) IN base;
 tableSIDProperty 'Таблица' = DATA VARSTRING[100] (Property);
 
-propertySID 'Свойство' (sid) = GROUP NAGGR property BY SIDProperty(property) WHERE property IS Property; // todo [dale]: временно, нужно для миграции на 15 версию БД
+propertySID 'Свойство' (sid) = GROUP NAGGR property BY dbNameProperty(property) WHERE property IS Property; // todo [dale]: временно, нужно для миграции на 15 версию БД
 propertyCanonicalName 'Свойство' (cn) = GROUP AGGR property BY canonicalNameProperty(property) WHERE property IS Property;
-propertyTableSID 'Свойство' = GROUP AGGR property BY tableSIDProperty(property), SIDProperty(property) WHERE storedProperty(property);
+propertyTableSID 'Свойство' = GROUP AGGR property BY tableSIDProperty(property), dbNameProperty(property) WHERE storedProperty(property);
 
 CLASS PropertyDraw 'Свойство на форме';
 
@@ -316,11 +316,11 @@ dumbPropertyGroup (pg) = ' ' IF pg IS PropertyGroup;
 
 FORM properties 'Свойства'
     OBJECTS p=Property
-    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty, SIDProperty, tableSIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
+    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty, dbNameProperty, tableSIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     TREE treePropertiesObject tps=PropertyGroup PARENT parentPropertyGroup, ps=Property
     PROPERTIES(tps) READONLY captionPropertyGroup, SIDPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, parentPropertyGroup, numberPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup
-    PROPERTIES(ps) READONLY captionProperty, canonicalNameProperty, SIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
+    PROPERTIES(ps) READONLY captionProperty, canonicalNameProperty, dbNameProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     ORDER BY numberProperty(p)
     ORDER BY numberPropertyGroup(tps)

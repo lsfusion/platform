@@ -248,7 +248,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void createModules() throws IOException {
-        LM = addModule(new BaseLogicsModule(this, new DefaultSIDPolicy(63)));
+        LM = addModule(new BaseLogicsModule(this, new DefaultDBNamePolicy(63)));
         serviceLM = addModule(new ServiceLogicsModule(this, LM));
         reflectionLM = addModule(new ReflectionLogicsModule(this, LM));
         contactLM = addModule(new ContactLogicsModule(this, LM));
@@ -718,8 +718,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
 
             //добавляем в контекстное меню пункт для показа формы
-            property.setContextMenuAction(property.getUniqueSID(), formActionProperty.caption);
-            property.setEditAction(property.getUniqueSID(), formActionProperty.getImplement(property.getOrderInterfaces()));
+            property.setContextMenuAction(property.getSID(), formActionProperty.caption);
+            property.setEditAction(property.getSID(), formActionProperty.getImplement(property.getOrderInterfaces()));
         }
     }
 
@@ -738,8 +738,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 Throwables.propagate(e);
             }
             setupPolicyAction.checkReadOnly = false;
-            property.setContextMenuAction(setupPolicyAction.getUniqueSID(), setupPolicyAction.caption);
-            property.setEditAction(setupPolicyAction.getUniqueSID(), setupPolicyAction.getImplement());
+            property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
+            property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());
         }
     }
 
@@ -1213,7 +1213,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                         }
                     });
                     long time = System.currentTimeMillis() - start;
-                    String message = String.format("Recalculate Follows: %s, %sms", property.getUniqueSID(), time);
+                    String message = String.format("Recalculate Follows: %s, %sms", property.getSID(), time);
                     systemLogger.info(message);
                     if(time > maxRecalculateTime)
                         messageList.add(message);                    
@@ -1305,7 +1305,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     long start = System.currentTimeMillis();
                     property.recalculateClasses(sql, LM.baseClass);
                     long time = System.currentTimeMillis() - start;
-                    String message = String.format("Recalculate Class: %s, %s", property.getUniqueSID(), time);
+                    String message = String.format("Recalculate Class: %s, %s", property.getSID(), time);
                     systemLogger.info(message);
                     if(time > maxRecalculateTime)
                         messageList.add(message);
@@ -1319,7 +1319,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             List<AndClassSet> res = parser.getSignature();
             System.out.print('"' + testCase + "\": " + (res == null ? "null" : res.toString()));
             testCase = testCase.replaceAll(" ", "");
-            System.out.println(" -> " + DefaultSIDPolicy.staticTransformCanonicalNameToSID(testCase));
+            System.out.println(" -> " + DefaultDBNamePolicy.staticTransformCanonicalNameToDBName(testCase));
         } catch (PropertyCanonicalNameParser.ParseException e) {
             System.out.println('"' + testCase + "\": error (" + e.getMessage() + ")");
         }

@@ -1455,7 +1455,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 Integer changed = data.size();
                 String dataChanged = "";
                 for(Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> entry : data.entrySet()){
-                    dataChanged+=entry.getKey().getSID() + ": " + entry.getValue().getCount() + "\n";
+                    dataChanged+=entry.getKey().getDBName() + ": " + entry.getValue().getCount() + "\n";
                 }
                 BL.systemEventsLM.changesSession.change(dataChanged, DataSession.this, applyObject);
                 currentSession.change(applyObject.object, DataSession.this);

@@ -327,7 +327,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
     public void synchronizePropertyEntities() {
         ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
-        ImportField sidPropertyField = new ImportField(reflectionLM.propertySIDValueClass);
+        ImportField dbNamePropertyField = new ImportField(reflectionLM.propertySIDValueClass);
         ImportField captionPropertyField = new ImportField(reflectionLM.propertyCaptionValueClass);
         ImportField loggablePropertyField = new ImportField(reflectionLM.propertyLoggableValueClass);
         ImportField storedPropertyField = new ImportField(reflectionLM.propertyStoredValueClass);
@@ -374,7 +374,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                     } catch (ArrayIndexOutOfBoundsException e) {
                         commonClasses = "";
                     }
-                    dataProperty.add(asList(property.getCanonicalName(),(Object) property.getSID(), property.caption, property.loggable ? true : null,
+                    dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), property.caption, property.loggable ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).setNotNull ? true : null,
                             commonClasses, returnClass, classProperty, complexityProperty, tableSID));
@@ -383,7 +383,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
             List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
             properties.add(new ImportProperty(canonicalNamePropertyField, reflectionLM.canonicalNameProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(sidPropertyField, reflectionLM.SIDProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(dbNamePropertyField, reflectionLM.dbNameProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(captionPropertyField, reflectionLM.captionProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(loggablePropertyField, reflectionLM.loggableProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(storedPropertyField, reflectionLM.storedProperty.getMapping(keyProperty)));
@@ -397,7 +397,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             List<ImportDelete> deletes = new ArrayList<ImportDelete>();
             deletes.add(new ImportDelete(keyProperty, LM.is(reflectionLM.property).getMapping(keyProperty), false));
 
-            ImportTable table = new ImportTable(asList(canonicalNamePropertyField, sidPropertyField, captionPropertyField, loggablePropertyField,
+            ImportTable table = new ImportTable(asList(canonicalNamePropertyField, dbNamePropertyField, captionPropertyField, loggablePropertyField,
                     storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField,
                     classPropertyField, complexityPropertyField, tableSIDPropertyField), dataProperty);
 

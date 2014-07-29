@@ -16,9 +16,9 @@ import java.util.List;
  * Time: 10:58
  */
 
-public class OldSIDPolicy implements PropertySIDPolicy {
+public class OldDBNamePolicy implements PropertyDBNamePolicy {
     @Override
-    public String createSID(String namespaceName, String name, List<AndClassSet> signature) {
+    public String createName(String namespaceName, String name, List<AndClassSet> signature) {
         if (namespaceName == null) {
             return name;
         } else {
@@ -27,7 +27,7 @@ public class OldSIDPolicy implements PropertySIDPolicy {
     }
 
     @Override
-    public String transformCanonicalNameToSID(String canonicalName) {
+    public String transformToDBName(String canonicalName) {
         String sid = canonicalName.replace(".", "_");
         int bracketPos = sid.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
         if (bracketPos >= 0) {

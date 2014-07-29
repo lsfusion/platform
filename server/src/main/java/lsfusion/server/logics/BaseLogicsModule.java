@@ -143,17 +143,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     // счетчик идентификаторов
     private static final IDGenerator idGenerator = new DefaultIDGenerator();
 
-    private PropertySIDPolicy propertySidPolicy;
+    private PropertyDBNamePolicy propertyDBNamePolicy;
     
     // не надо делать логику паблик, чтобы не было возможности тянуть её прямо из BaseLogicsModule,
     // т.к. она должна быть доступна в точке, в которой вызывается baseLM.BL
     private final T BL;
 
-    public BaseLogicsModule(T BL, PropertySIDPolicy propertySidPolicy) throws IOException {
+    public BaseLogicsModule(T BL, PropertyDBNamePolicy propertyDBNamePolicy) throws IOException {
         super(BaseLogicsModule.class.getResourceAsStream("/lsfusion/system/System.lsf"), "/lsfusion/system/System.lsf", null, BL);
         setBaseLogicsModule(this);
         this.BL = BL;
-        this.propertySidPolicy = propertySidPolicy;
+        this.propertyDBNamePolicy = propertyDBNamePolicy;
         namedModuleProperties = NFFact.simpleMap(namedModuleProperties);
     }
 
@@ -247,8 +247,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return null;
     }
 
-    public PropertySIDPolicy getSIDPolicy() {
-        return propertySidPolicy;
+    public PropertyDBNamePolicy getDBNamePolicy() {
+        return propertyDBNamePolicy;
     }
     
     public AbstractPropertyNameParser.ClassFinder getClassFinder() {
@@ -488,7 +488,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
             ValueClass valueClass = classes[0].getBaseClass();
             ObjectValueProperty property = new ObjectValueProperty(valueClass);
-            property.setCanonicalName(getNamespace(), name, Arrays.<AndClassSet>asList(valueClass.getUpSet()), getSIDPolicy());
+            property.setCanonicalName(getNamespace(), name, Arrays.<AndClassSet>asList(valueClass.getUpSet()), getDBNamePolicy());
             setParent(property, version);
             return property;
         }

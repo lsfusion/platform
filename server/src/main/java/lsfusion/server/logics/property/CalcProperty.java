@@ -265,7 +265,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         public final PropertyField propValue;
 
         public ClassTable(final CalcProperty<P> property, PrevClasses prevSameClasses) {
-            super(property.getUniqueSID());
+            super(property.getSID());
 
             ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues(new GetValue<KeyField, P>() {
                 public KeyField getMapValue(P value) {
@@ -613,7 +613,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             mapTable = tableFactory.getMapTable(keyClasses);
         }
 
-        PropertyField field = new PropertyField(getSID(), getType());
+        PropertyField field = new PropertyField(getDBName(), getType());
         fieldClassWhere = getClassWhere(mapTable, field);
         mapTable.table.addField(field, fieldClassWhere);
 

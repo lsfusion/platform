@@ -34,7 +34,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
     public LCP parentProperty;
     public LCP numberProperty;
-    public LCP SIDProperty;
+    public LCP dbNameProperty;
     public LCP canonicalNameProperty;
     public LCP loggableProperty;
     public LCP userLoggableProperty;
@@ -186,7 +186,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         parentProperty = findProperty("parentProperty");
         tableSIDProperty = findProperty("tableSIDProperty");
         numberProperty = findProperty("numberProperty");
-        SIDProperty = findProperty("SIDProperty");
+        dbNameProperty = findProperty("dbNameProperty");
         canonicalNameProperty = findProperty("canonicalNameProperty");
         loggableProperty = findProperty("loggableProperty");
         userLoggableProperty = findProperty("userLoggableProperty");

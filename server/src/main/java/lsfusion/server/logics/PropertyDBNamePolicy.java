@@ -11,10 +11,10 @@ import java.util.List;
  * Time: 9:27
  */
 
-public interface PropertySIDPolicy {
-    String createSID(String namespaceName, String name, List<AndClassSet> signature);
+public interface PropertyDBNamePolicy {
+    String createName(String namespaceName, String name, List<AndClassSet> signature);
     
-    String transformCanonicalNameToSID(String canonicalName);
+    String transformToDBName(String canonicalName);
     
     String createPropertyDrawSID(PropertyObjectEntity<?, ?> property);
 }

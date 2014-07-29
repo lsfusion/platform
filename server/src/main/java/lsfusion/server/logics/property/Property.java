@@ -53,7 +53,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         }};
 
     private int ID = 0;
-    private String sID;
+    private String dbName;
     private String name;
     private String canonicalName;
 
@@ -214,8 +214,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return getInterfaceClasses(ClassType.ASSERTFULL).get(propertyInterface).getType();
     }
 
-    public String getSID() {
-        return sID;
+    public String getDBName() {
+        return dbName;
     }
 
     public String getName() {
@@ -468,27 +468,27 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return canonicalName;
     }
 
-    public void setCanonicalName(String canonicalName, PropertySIDPolicy policy) {
+    public void setCanonicalName(String canonicalName, PropertyDBNamePolicy policy) {
         this.canonicalName = canonicalName;
         try {
             this.name = PropertyCanonicalNameParser.getName(canonicalName);
         } catch (AbstractPropertyNameParser.ParseException e) {
             Throwables.propagate(e);
         }
-        this.sID = policy.transformCanonicalNameToSID(canonicalName);
+        this.dbName = policy.transformToDBName(canonicalName);
     }
     
     final public boolean isNamed() {
         return canonicalName != null;
     }
     
-    public void setCanonicalName(String namespace, String name, List<AndClassSet> signature, PropertySIDPolicy policy) {
+    public void setCanonicalName(String namespace, String name, List<AndClassSet> signature, PropertyDBNamePolicy policy) {
         this.name = name;
         this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
-        this.sID = policy.transformCanonicalNameToSID(canonicalName);
+        this.dbName = policy.transformToDBName(canonicalName);
     }
     
-    public String getUniqueSID() {
+    public String getSID() {
         return canonicalName != null ? canonicalName : ("p" + ID); 
     }
 

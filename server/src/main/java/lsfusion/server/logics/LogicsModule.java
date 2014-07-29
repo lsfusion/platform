@@ -205,7 +205,7 @@ public abstract class LogicsModule {
     }
 
     protected <T extends LP> void makePropertyPublic(T lp, String name, List<AndClassSet> signature) {
-        lp.property.setCanonicalName(getNamespace(), name, signature, baseLM.getSIDPolicy());
+        lp.property.setCanonicalName(getNamespace(), name, signature, baseLM.getDBNamePolicy());
         addModuleLP(lp);
     }
 
@@ -1286,7 +1286,7 @@ public abstract class LogicsModule {
                 Throwables.propagate(e);
             }
         } else {
-            name = PropertyCanonicalNameUtils.logPropPrefix + lp.property.getUniqueSID();
+            name = PropertyCanonicalNameUtils.logPropPrefix + lp.property.getSID();
         }
         
         List<AndClassSet> signature = new ArrayList<AndClassSet>();
@@ -1417,8 +1417,8 @@ public abstract class LogicsModule {
             LAP<?> drillDownFormProperty = isDebug ? addLazyAProp((CalcProperty) property) : addDDAProp((CalcProperty) property);
             ActionProperty formProperty = drillDownFormProperty.property;
             formProperty.checkReadOnly = false;
-            property.setContextMenuAction(formProperty.getUniqueSID(), formProperty.caption);
-            property.setEditAction(formProperty.getUniqueSID(), formProperty.getImplement(property.getOrderInterfaces()));
+            property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
+            property.setEditAction(formProperty.getSID(), formProperty.getImplement(property.getOrderInterfaces()));
         }
     }
     
@@ -1445,7 +1445,7 @@ public abstract class LogicsModule {
                 Throwables.propagate(e);
             }
         }
-        return PropertyCanonicalNameUtils.drillDownPrefix + property.getUniqueSID();
+        return PropertyCanonicalNameUtils.drillDownPrefix + property.getSID();
     }
 
     public LAP<?> addDDAProp(CalcProperty property) {
@@ -1536,7 +1536,7 @@ public abstract class LogicsModule {
     public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
         LAP result = addAProp(new FormAddObjectActionProperty(cls, obj));
         if (formEntity.getCanonicalName() != null) {
-            String name = "_ADDOBJ" + "_" + cls.getSID() + "_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
+            String name = "_ADDOBJ" + "_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
             makePropertyPublic(result, name, cls.getUpSet());
         }
         return result;
@@ -1546,7 +1546,7 @@ public abstract class LogicsModule {
 
     @IdentityStrongLazy
     public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
-        String name = "_DELETE" + (oldSession ? "SESSION" : "") + "_" + cls.getSID();
+        String name = "_DELETE" + (oldSession ? "SESSION" : "");
 
         LAP res = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
         if (!oldSession) {
@@ -1832,7 +1832,7 @@ public abstract class LogicsModule {
     public <T extends PropertyInterface, L extends PropertyInterface> void setNotNull(CalcProperty<T> property, int options, Event event) {
         CalcPropertyMapImplement<L, T> mapClasses = (CalcPropertyMapImplement<L, T>) IsClassProperty.getMapProperty(property.getInterfaceClasses(ClassType.ASSERTFULL));
         addFollows(mapClasses.property, new CalcPropertyMapImplement<T, L>(property, mapClasses.mapping.reverse()),
-                ServerResourceBundle.getString("logics.property") + " " + property.caption + " [" + property.getUniqueSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
+                ServerResourceBundle.getString("logics.property") + " " + property.caption + " [" + property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
                 options, event);
     }
 

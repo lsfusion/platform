@@ -10,28 +10,28 @@ import java.util.List;
  * 
  */
 
-public class DefaultSIDPolicy implements PropertySIDPolicy {
+public class DefaultDBNamePolicy implements PropertyDBNamePolicy {
     private int MAX_LENGTH;
     
-    public DefaultSIDPolicy(int maxIDLength) {
+    public DefaultDBNamePolicy(int maxIDLength) {
         this.MAX_LENGTH = maxIDLength;
     }
     
     @Override
-    public String createSID(String namespaceName, String name, List<AndClassSet> signature) {
+    public String createName(String namespaceName, String name, List<AndClassSet> signature) {
         String canonicalName = PropertyCanonicalNameUtils.createName(namespaceName, name, signature);
-        return transformCanonicalNameToSID(canonicalName);
+        return transformToDBName(canonicalName);
     }
 
-    private String cutToMaxLength(String sid) {
-        if (sid.length() > MAX_LENGTH) {
-            sid = sid.substring(0, MAX_LENGTH);
+    private String cutToMaxLength(String s) {
+        if (s.length() > MAX_LENGTH) {
+            s = s.substring(0, MAX_LENGTH);
         }
-        return sid;
+        return s;
     }
     
     @Override
-    public String transformCanonicalNameToSID(String canonicalName) {
+    public String transformToDBName(String canonicalName) {
         int bracketPos = canonicalName.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
         if (bracketPos == -1) {
             bracketPos = canonicalName.length();
@@ -47,31 +47,31 @@ public class DefaultSIDPolicy implements PropertySIDPolicy {
         String signatureStr = canonicalName.substring(bracketPos);
         signatureStr = signatureStr.replaceAll("[a-zA-Z0-9_]+\\.", "");
         
-        String sid = canonicalName.substring(0, bracketPos) + signatureStr;
-        sid = sid.replaceAll("\\?", "null");
-        sid = sid.replaceAll("[^a-zA-Z0-9_]", "_");
-        while (sid.endsWith("_")) {
-            sid = sid.substring(0, sid.length() - 1); // убираем завершающие подчеркивания
+        String dbName = canonicalName.substring(0, bracketPos) + signatureStr;
+        dbName = dbName.replaceAll("\\?", "null");
+        dbName = dbName.replaceAll("[^a-zA-Z0-9_]", "_");
+        while (dbName.endsWith("_")) {
+            dbName = dbName.substring(0, dbName.length() - 1); // убираем завершающие подчеркивания
         }
-        return cutToMaxLength(sid);
+        return cutToMaxLength(dbName);
     }
     
     // todo [dale]: temporary
-    public static String staticTransformCanonicalNameToSID(String canonicalName) {
+    public static String staticTransformCanonicalNameToDBName(String canonicalName) {
         int bracketPos = canonicalName.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
 
         String signatureStr = canonicalName.substring(bracketPos);
         signatureStr = signatureStr.replaceAll("[a-zA-Z0-9_]+\\.", "");
 
-        String sid = canonicalName.substring(0, bracketPos) + signatureStr;
-        sid = sid.replaceAll("\\?", "null");
-        sid = sid.replaceAll("[^a-zA-Z0-9_]", "_");
-        return sid.substring(0, sid.length() - 1); // убираем завершающее подчеркивание 
+        String dbName = canonicalName.substring(0, bracketPos) + signatureStr;
+        dbName = dbName.replaceAll("\\?", "null");
+        dbName = dbName.replaceAll("[^a-zA-Z0-9_]", "_");
+        return dbName.substring(0, dbName.length() - 1); // убираем завершающее подчеркивание 
     }
     
     @Override
     public String createPropertyDrawSID(PropertyObjectEntity<?, ?> property) {
         assert property.property.isNamed();
-        return OldSIDPolicy.createPropertyDrawSID(property.property.getName(), property);
+        return OldDBNamePolicy.createPropertyDrawSID(property.property.getName(), property);
     }
 }
