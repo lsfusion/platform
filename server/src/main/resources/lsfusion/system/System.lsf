@@ -54,6 +54,8 @@ applyOnlyData = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnly
 applyAll = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyAllActionProperty';
 
 staticName 'Статическое имя' = DATA STRING[250] (Object);
+nameStatic (name) = GROUP MAX object BY staticName(object);
+
 staticCaption 'Статический заголовок' = DATA ISTRING[100] (Object);
 
 objectClassName 'Класс объекта' (o) = staticCaption(objectClass(o));;
