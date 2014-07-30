@@ -1277,16 +1277,13 @@ public abstract class LogicsModule {
     // todo [dale]: тут конечно страх, во-первых, сигнатура берется из интерфейсов свойства (можно брать из канонического имени), 
     // во-вторых руками markStored вызывается, чтобы обойти проблему с созданием propertyField из addDProp 
     public LCP addLProp(SystemEventsLogicsModule systemEventsLM, LCP lp) {
+        assert lp.property.isNamed();
         String name = "";
-        if (lp.property.isNamed()) {
-            try {
-                String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
-                name = PropertyCanonicalNameUtils.logPropPrefix + namespace + "_" + lp.property.getName();
-            } catch (PropertyCanonicalNameParser.ParseException e) {
-                Throwables.propagate(e);
-            }
-        } else {
-            name = PropertyCanonicalNameUtils.logPropPrefix + lp.property.getSID();
+        try {
+            String namespace = PropertyCanonicalNameParser.getNamespace(lp.property.getCanonicalName());
+            name = PropertyCanonicalNameUtils.logPropPrefix + namespace + "_" + lp.property.getName();
+        } catch (PropertyCanonicalNameParser.ParseException e) {
+            Throwables.propagate(e);
         }
         
         List<AndClassSet> signature = new ArrayList<AndClassSet>();
@@ -1435,25 +1432,24 @@ public abstract class LogicsModule {
     }
 
     private String nameForDrillDownAction(CalcProperty property, List<AndClassSet> signature) {
-        if (property.isNamed()) {
-            try {
-                PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(property.getCanonicalName(), baseLM.getClassFinder());
-                String name = PropertyCanonicalNameUtils.drillDownPrefix + parser.getNamespace() + "_" + property.getName();
-                signature.addAll(parser.getSignature());
-                return name;
-            } catch (PropertyCanonicalNameParser.ParseException e) {
-                Throwables.propagate(e);
-            }
+        assert property.isNamed();
+        String name = null;
+        try {
+            PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(property.getCanonicalName(), baseLM.getClassFinder());
+            name = PropertyCanonicalNameUtils.drillDownPrefix + parser.getNamespace() + "_" + property.getName();
+            signature.addAll(parser.getSignature());
+        } catch (PropertyCanonicalNameParser.ParseException e) {
+            Throwables.propagate(e);
         }
-        return PropertyCanonicalNameUtils.drillDownPrefix + property.getSID();
+        return name;
     }
 
     public LAP<?> addDDAProp(CalcProperty property) {
         List<AndClassSet> signature = new ArrayList<AndClassSet>();
-        String name = nameForDrillDownAction(property, signature);
         DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this, null);
         LAP result = addMFAProp(baseLM.drillDownGroup, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
         if (property.isNamed()) {
+            String name = nameForDrillDownAction(property, signature);
             makePropertyPublic(result, name, signature);
         }
         return result;
