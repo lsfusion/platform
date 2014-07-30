@@ -168,7 +168,7 @@ public class ScriptingFormEntity {
     }
 
     private ObjectEntity getObjectEntity(String name) throws ScriptingErrorLog.SemanticErrorException {
-        return LM.getObjectEntityByName(form, name);
+        return LM.getNFObjectEntityByName(form, name);
     }
 
     public MappedProperty getPropertyWithMapping(ScriptingLogicsModule.PropertyUsage pUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {

@@ -231,7 +231,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public ObjectEntity[] getMappingObjectsArray(FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         ObjectEntity[] objects = new ObjectEntity[mapping.size()];
         for (int i = 0; i < mapping.size(); i++) {
-            objects[i] = getObjectEntityByName(form, mapping.get(i));
+            objects[i] = getNFObjectEntityByName(form, mapping.get(i));
         }
         return objects;
     }
@@ -239,13 +239,21 @@ public class ScriptingLogicsModule extends LogicsModule {
     public List<AndClassSet> getMappingClassesArray(FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         List<AndClassSet> classes = new ArrayList<AndClassSet>();
         for (String paramName : mapping) {
-            ObjectEntity obj = getObjectEntityByName(form, paramName);
+            ObjectEntity obj = getNFObjectEntityByName(form, paramName);
             classes.add(obj.getAndClassSet());
         }
         return classes;
     }
-    
+
     public ObjectEntity getObjectEntityByName(FormEntity form, String name) throws ScriptingErrorLog.SemanticErrorException {
+        ObjectEntity obj = form.getObject(name);
+        if (obj == null) {
+            getErrLog().emitObjectNotFoundError(parser, name);
+        }
+        return obj;
+    }
+
+    public ObjectEntity getNFObjectEntityByName(FormEntity form, String name) throws ScriptingErrorLog.SemanticErrorException {
         ObjectEntity obj = form.getNFObject(name, getVersion());
         if (obj == null) {
             getErrLog().emitObjectNotFoundError(parser, name);

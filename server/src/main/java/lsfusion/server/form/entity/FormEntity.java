@@ -260,6 +260,15 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return null;
     }
 
+    public GroupObjectEntity getGroupObject(String sID) {
+        for (GroupObjectEntity group : getGroupsIt()) {
+            if (group.getSID().equals(sID)) {
+                return group;
+            }
+        }
+        return null;
+    }
+
     public GroupObjectEntity getNFGroupObject(String sID, Version version) {
         for (GroupObjectEntity group : getNFGroupsIt(version)) {
             if (group.getSID().equals(sID)) {
