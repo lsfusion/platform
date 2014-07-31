@@ -292,6 +292,11 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
+    public String getCancelActiveTaskQuery(Integer pid) {
+        return String.format("SELECT pg_cancel_backend(%s)", pid);
+    }
+    
+    @Override
     public String getAnalyze() {
         return "VACUUM ANALYZE";
     }

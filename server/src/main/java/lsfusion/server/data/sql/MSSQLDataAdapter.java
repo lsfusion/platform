@@ -231,6 +231,16 @@ public class MSSQLDataAdapter extends DataAdapter {
         return false;
     }
 
+    @Override
+    public String getCancelActiveTaskQuery(Integer pid) {
+        return String.format("KILL %s", pid);
+    }
+    
+    @Override
+    public String getAnalyze() {
+        return "execute sp_updatestats 'resample'";
+    }
+    
     public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String having, String top) {
         return "SELECT" + BaseUtils.clause("TOP", top) + " " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("HAVING", having) + BaseUtils.clause("ORDER BY", orderBy);
     }

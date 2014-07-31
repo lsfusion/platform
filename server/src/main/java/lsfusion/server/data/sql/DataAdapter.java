@@ -286,6 +286,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         throw new RuntimeException("unknown");
     }
 
+    public String getCancelActiveTaskQuery(Integer pid) {
+        return "";
+    }
+    
     public String backupDB(ExecutionContext context, String dumpFileName, List<String> excludeTables) throws IOException, InterruptedException {
         return null;
     }
