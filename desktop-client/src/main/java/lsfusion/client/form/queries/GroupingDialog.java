@@ -769,6 +769,8 @@ public abstract class GroupingDialog extends JDialog {
                 Dispatch fieldDispatch = Dispatch.call(pivotTableWizard, "HiddenFields", new Variant(i + pivotColumns.size() + 1)).toDispatch();
                 Dispatch.put(fieldDispatch, "Orientation", new Variant(xlDataField));
                 Dispatch.put(fieldDispatch, "Function", new Variant(xlSum));
+                String caption = Dispatch.get(fieldDispatch, "Caption").getString().replace("Сумма по полю ", "");
+                Dispatch.put(fieldDispatch, "Caption", new Variant(caption + "*"));
             }
 
             for (int i = pivotColumns.size(); i > 0; i--) {
@@ -776,23 +778,28 @@ public abstract class GroupingDialog extends JDialog {
                 Dispatch.put(fieldDispatch, "Orientation", new Variant(pivotColumns.get(i) ? xlColumnField : xlRowField));
             }
 
+            Dispatch field = Dispatch.get(pivotTableWizard, "DataPivotField").toDispatch();
+            Dispatch.put(field, "Orientation", new Variant(xlColumnField));
+
             Dispatch.get(workbook, "Save");
-            Dispatch.call(workbooks, "Close");
+            Dispatch.call(workbooks, "Close");                                                    
             excelComponent.invoke("Quit", new Variant[0]);
             ComThread.Release();
-                                                     
-            excelComponent.setProperty("Visible", new Variant(true));
+
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(file);
+            }
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-    
+
     private String getCellIndex(int column, int row) {
         String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String columnIndex = "";
-        while(column > 0) {
-            columnIndex += letters.charAt(column - 1);
+        while (column > 0) {
+            columnIndex = (column <=26 ? letters.charAt(column - 1) : letters.charAt(column % 26 - 1)) + columnIndex;
             column = column - 26;
         }
         return columnIndex + row;
