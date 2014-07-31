@@ -31,7 +31,8 @@ public class NamespacePropertyFinder extends NamespaceElementFinder<LP<?, ?>, Li
             boolean foundMoreSpecialized = false;
             for (int j = 0; j < cnt; j++) {
                 LP<?, ?> jProp = result.get(j).value;
-                if (i != j && LogicsModule.match(iParams, result.get(j).module.propClasses.get(jProp), false)) {
+                if (i != j && LogicsModule.match(iParams, result.get(j).module.propClasses.get(jProp), false) && 
+                              !LogicsModule.match(result.get(j).module.propClasses.get(jProp), iParams, false)) {
                     foundMoreSpecialized = true;
                     break;
                 }
