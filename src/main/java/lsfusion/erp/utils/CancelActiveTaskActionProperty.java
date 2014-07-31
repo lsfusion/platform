@@ -13,10 +13,10 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class CancelActiveTaskPostgreSQLActionProperty extends ScriptingActionProperty {
+public class CancelActiveTaskActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface integerInterface;
 
-    public CancelActiveTaskPostgreSQLActionProperty(ScriptingLogicsModule LM) {
+    public CancelActiveTaskActionProperty(ScriptingLogicsModule LM) {
         super(LM, IntegerClass.instance);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
@@ -41,9 +41,10 @@ public class CancelActiveTaskPostgreSQLActionProperty extends ScriptingActionPro
 
         DataObject currentObject = context.getDataKeyValue(integerInterface);
         Integer pid = (Integer) findProperty("idActiveTask").read(context, currentObject);
-        context.getSession().sql.executeDDL(String.format("SELECT pg_cancel_backend(%s)", pid));
         
-        findAction("getActiveTasksPostgreSQLAction").execute(context);
+        context.getSession().sql.executeDDL(context.getDbManager().getAdapter().getCancelActiveTaskQuery(pid));
+        
+        findAction("getActiveTasksAction").execute(context);
 
     }
 }
