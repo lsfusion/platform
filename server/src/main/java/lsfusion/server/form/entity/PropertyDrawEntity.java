@@ -28,6 +28,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -349,5 +350,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
         sidBuilder.append(")");
         return sidBuilder.toString();        
+    }
+
+    public static String createSID(PropertyObjectEntity<?, ?> property) {
+        assert property.property.isNamed();
+        List<String> mapping = new ArrayList<String>();
+        for (PropertyInterface<?> pi : property.property.getOrderInterfaces()) {
+            PropertyObjectInterfaceEntity obj = property.mapping.getObject(pi);
+            assert obj instanceof ObjectEntity;
+            mapping.add(((ObjectEntity) obj).getSID());
+        }
+        return createSID(property.property.getName(), mapping);
     }
 }

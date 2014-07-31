@@ -161,8 +161,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public boolean isSynchronizedApply = false;
 
-    private PropertyDBNamePolicy policy;
-    
     protected FormEntity(String canonicalName, String caption, Version version) {
         this(null, canonicalName, caption, null, null, version);
     }
@@ -179,8 +177,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         title = ititle;
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
-
-        policy = baseLM.getDBNamePolicy();
 
         printActionPropertyDraw = addPropertyDraw(baseLM.getFormPrint(), version);
         editActionPropertyDraw = addPropertyDraw(baseLM.getFormEdit(), version);
@@ -592,7 +588,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         propertyImplement.property.proceedDefaultDraw(newPropertyDraw, this, version);
 
         if (propertyImplement.property.isNamed()) {
-            String propertySID = policy.createPropertyDrawSID(propertyImplement);  
+            String propertySID = PropertyDrawEntity.createSID(propertyImplement);  
             setPropertyDrawSID(newPropertyDraw, propertySID);
         }
 

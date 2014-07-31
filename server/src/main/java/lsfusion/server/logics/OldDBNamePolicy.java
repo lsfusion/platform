@@ -45,10 +45,4 @@ public class OldDBNamePolicy implements PropertyDBNamePolicy {
         }
         return PropertyDrawEntity.createSID(name, mapping);
     }
-    
-    @Override
-    public String createPropertyDrawSID(PropertyObjectEntity<?, ?> property) {
-        assert property.property.isNamed();
-        return createPropertyDrawSID(property.property.getName(), property);
-    }
 }

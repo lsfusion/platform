@@ -68,10 +68,4 @@ public class DefaultDBNamePolicy implements PropertyDBNamePolicy {
         dbName = dbName.replaceAll("[^a-zA-Z0-9_]", "_");
         return dbName.substring(0, dbName.length() - 1); // убираем завершающее подчеркивание 
     }
-    
-    @Override
-    public String createPropertyDrawSID(PropertyObjectEntity<?, ?> property) {
-        assert property.property.isNamed();
-        return OldDBNamePolicy.createPropertyDrawSID(property.property.getName(), property);
-    }
 }

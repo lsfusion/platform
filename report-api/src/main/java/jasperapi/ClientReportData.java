@@ -17,7 +17,7 @@ import static lsfusion.interop.form.ReportConstants.*;
 
 public class ClientReportData implements JRDataSource {
     private final List<String> objectNames = new ArrayList<String>();
-    private final List<String> propertyNames = new ArrayList<String>();  // todo [dale]: не обеспечивается уникальность имен
+    private final List<String> propertyNames = new ArrayList<String>();  
     private final Map<String, Integer> objects = new HashMap<String,Integer>();
     private final Map<String, Pair<Integer, Integer>> properties = new HashMap<String, Pair<Integer, Integer>>();
 

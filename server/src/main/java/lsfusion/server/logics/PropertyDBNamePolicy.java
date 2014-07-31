@@ -15,6 +15,4 @@ public interface PropertyDBNamePolicy {
     String createName(String namespaceName, String name, List<AndClassSet> signature);
     
     String transformToDBName(String canonicalName);
-    
-    String createPropertyDrawSID(PropertyObjectEntity<?, ?> property);
 }
