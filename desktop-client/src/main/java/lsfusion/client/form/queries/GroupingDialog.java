@@ -1,6 +1,7 @@
 package lsfusion.client.form.queries;
 
 import com.jacob.activeX.ActiveXComponent;
+import com.jacob.com.ComThread;
 import com.jacob.com.Dispatch;
 import com.jacob.com.Variant;
 import jxl.CellView;
@@ -722,6 +723,10 @@ public abstract class GroupingDialog extends JDialog {
             Integer xlColumnField = 2;
             Integer xlFilterField = 3;
             Integer xlDataField = 4;
+
+            Integer xlSum = -4157;
+            Integer xlCount = -4112;
+            Integer xlAverage = -4106;
             
             ActiveXComponent excelComponent = new ActiveXComponent("Excel.Application");
 
@@ -763,6 +768,7 @@ public abstract class GroupingDialog extends JDialog {
             for (int i = pivotDataFieldsCount; i > 0; i--) {
                 Dispatch fieldDispatch = Dispatch.call(pivotTableWizard, "HiddenFields", new Variant(i + pivotColumns.size() + 1)).toDispatch();
                 Dispatch.put(fieldDispatch, "Orientation", new Variant(xlDataField));
+                Dispatch.put(fieldDispatch, "Function", new Variant(xlSum));
             }
 
             for (int i = pivotColumns.size(); i > 0; i--) {
@@ -771,6 +777,9 @@ public abstract class GroupingDialog extends JDialog {
             }
 
             Dispatch.get(workbook, "Save");
+            Dispatch.call(workbooks, "Close");
+            excelComponent.invoke("Quit", new Variant[0]);
+            ComThread.Release();
                                                      
             excelComponent.setProperty("Visible", new Variant(true));
 
