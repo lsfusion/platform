@@ -25,6 +25,12 @@ charLength = FORMULA INTEGER PG 'char_length($1)' MS 'len($1)';
 substr = FORMULA TEXT 'substring($1, $2, $3)';
 substrFrom = FORMULA TEXT 'substring($1, $2)'; 
 
+ltrim = FORMULA TEXT 'ltrim($1)';
+rtrim = FORMULA TEXT 'rtrim($1)';
+
+ltrim = FORMULA TEXT 'ltrim($1,$2)';
+rtrim = FORMULA TEXT 'rtrim($1,$2)';
+
 left = FORMULA TEXT 'left($1,$2)';
 right = FORMULA TEXT 'right($1,$2)';
 
