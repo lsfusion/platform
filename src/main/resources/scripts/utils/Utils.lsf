@@ -18,7 +18,7 @@ startsWith = FORMULA INTEGER PG 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN 1 ELSE
 isISubstring = FORMULA INTEGER PG 'CASE WHEN (($1) ILIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END' MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END'; 
 isSubstring = FORMULA INTEGER PG 'CASE WHEN (($1) LIKE (\'%\'||($2)||\'%\')) THEN 1 ELSE NULL END' MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END';
 
-replace = FORMULA 'replace($1,$2,$3)';
+replace = FORMULA TEXT 'replace($1,$2,$3)';
 
 charLength = FORMULA INTEGER PG 'char_length($1)' MS 'len($1)';
 
