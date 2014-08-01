@@ -97,7 +97,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private final static Logger scriptLogger = ServerLoggers.scriptLogger;
 
-    private final CompoundNameResolver<LP<?, ?>, List<AndClassSet>> lpResolver = new LPResolver(new SoftLPNameModuleFinder());
+    private final CompoundNameResolver<LP<?, ?>, List<AndClassSet>> lpResolver = new LPResolver(new SoftLPModuleFinder());
     private final CompoundNameResolver<LP<?, ?>, ?> lpOldResolver = new LPResolver(new OldLPNameModuleFinder());
     private final CompoundNameResolver<AbstractGroup, ?> groupResolver = new CompoundNameResolver<AbstractGroup, Object>(new GroupNameModuleFinder());
     private final CompoundNameResolver<NavigatorElement, ?> navigatorResolver = new CompoundNameResolver<NavigatorElement, Object>(new NavigatorElementNameModuleFinder());
@@ -2634,6 +2634,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         LogicsModule module = BL.getModuleContainingLP(getNamespace(), propName, signature);
         if (module != null) {
             errLog.emitAlreadyDefinedInModuleError(parser, "property", propName, module.getName());
+        }
+        EqualLPModuleFinder finder = new EqualLPModuleFinder(true);
+        if (!finder.resolveInModule(this, propName, signature).isEmpty()) {
+            errLog.emitAlreadyDefinedInModuleError(parser, "property", propName, getName());
         }
     }
 

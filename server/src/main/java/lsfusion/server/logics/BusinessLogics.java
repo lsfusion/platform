@@ -1351,7 +1351,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     // todo [dale]: временные реализации
     private LP findProperty(String namespace, String name, List<AndClassSet> classes) {
         assert namespaceToModules.get(namespace) != null;
-        NamespacePropertyFinder finder = new NamespacePropertyFinder(new SoftLPNameModuleFinder(), namespaceToModules.get(namespace));
+        NamespacePropertyFinder finder = new NamespacePropertyFinder(new SoftLPModuleFinder(), namespaceToModules.get(namespace));
         List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundElements = finder.findInNamespace(namespace, name, classes);
         assert foundElements.size() <= 1;
         return foundElements.size() == 0 ? null : foundElements.get(0).value;
@@ -1460,7 +1460,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     // Здесь ищется точное совпадение по сигнатуре
     public LogicsModule getModuleContainingLP(String namespaceName, String name, List<AndClassSet> classes) {
-        return getModuleContainingObject(namespaceName, name, classes, new LogicsModule.LPEqualNameModuleFinder());
+        return getModuleContainingObject(namespaceName, name, classes, new EqualLPModuleFinder(false));
     }
 
     public LogicsModule getModuleContainingGroup(String namespaceName, String name) {

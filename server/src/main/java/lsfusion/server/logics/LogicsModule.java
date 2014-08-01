@@ -2022,10 +2022,6 @@ public abstract class LogicsModule {
         return properties; 
     }
     
-    public LPEqualNameModuleFinder getEqualLPModuleFinder() {
-        return new LPEqualNameModuleFinder();        
-    }
-    
     public interface ModuleFinder<T, P> {
         public List<T> resolveInModule(LogicsModule module, String simpleName, P param);
     }
@@ -2051,7 +2047,7 @@ public abstract class LogicsModule {
         }
     }
 
-    public static class SoftLPNameModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
+    public static class SoftLPModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
         @Override
         public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<AndClassSet> classes)  {
             List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
@@ -2064,7 +2060,7 @@ public abstract class LogicsModule {
         }
     }                           
     
-    public static class LPNameModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
+    public static class LPModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
         @Override
         public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<AndClassSet> classes)  {
             List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
@@ -2077,12 +2073,19 @@ public abstract class LogicsModule {
         }
     }
 
-    public static class LPEqualNameModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
+    // Находит идентичные по имени и сигнатуре свойства.   
+    public static class EqualLPModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
+        private final boolean findLocals;
+        
+        public EqualLPModuleFinder(boolean findLocals) {
+            this.findLocals = findLocals;        
+        }
+        
         @Override
         public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<AndClassSet> classes)  {
             List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
             for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
-                if (match(module.getParamClasses(lp), classes, false) && match(classes, module.getParamClasses(lp), false)) {
+                if ((findLocals || !lp.property.isLocal()) && match(module.getParamClasses(lp), classes, false) && match(classes, module.getParamClasses(lp), false)) {
                     result.add(lp);
                 }
             }
