@@ -290,7 +290,9 @@ public class ReportGenerator {
             for (JRElement element : band.getElements()) {
                 if (element instanceof JRDesignTextField) {
                     JRDesignTextField textField = (JRDesignTextField) element;
-                    transformTextField(design, textField, toAdd, toDelete);
+                    if (textField.getExpression() != null) {
+                        transformTextField(design, textField, toAdd, toDelete);
+                    }
                 } else if (ignorePagination && element instanceof JRDesignBreak) {
                     toDelete.add((JRDesignBreak) element);
                 }
