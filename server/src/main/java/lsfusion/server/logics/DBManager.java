@@ -40,6 +40,7 @@ import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.IDTable;
@@ -1286,6 +1287,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return resultChanges;
     }
 
+    @NFLazy
     public void addIndex(LCP<?>... lps) {
         List<CalcProperty> index = new ArrayList<CalcProperty>();
         for (LCP<?> lp : lps) {
