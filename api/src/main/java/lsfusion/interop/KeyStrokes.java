@@ -54,6 +54,10 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_DOWN_MASK);
     }
 
+    public static KeyStroke getF2() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0);
+    }
+
     public static KeyStroke getF6() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0);
     }
@@ -205,6 +209,10 @@ public class KeyStrokes {
                     !isDeleteEvent(keyEvent);
         }
         return false;
+    }
+
+    public static boolean isSuitableEditKeyEventForRegularFilter(EventObject event) {
+        return isSuitableEditKeyEvent(event) && !isEnterEvent(event);
     }
 
     public static boolean isSuitableDialogFilteringEvent(EventObject event) {

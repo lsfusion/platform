@@ -5,6 +5,7 @@ import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.GroupObjectLogicsSupplier;
 import lsfusion.client.logics.ClientDataFilterValue;
 import lsfusion.client.logics.ClientPropertyDraw;
+import lsfusion.client.logics.classes.ClientLogicalClass;
 
 import javax.swing.*;
 import java.awt.*;
@@ -61,13 +62,18 @@ public abstract class DataFilterValueView extends FilterValueView {
     }
 
     public void startEditing(KeyEvent initFilterKeyEvent) {
-        valueTable.editCellAt(0, 0);
+        if (valueTable.getProperty().baseType != ClientLogicalClass.instance) {
+            // Не начинаем редактирование для check-box, т.к. оно бессмысленно
+            valueTable.editCellAt(0, 0);
+        }
         final Component editor = valueTable.getEditorComponent();
         if (editor != null) {
             editor.requestFocusInWindow();
             if (initFilterKeyEvent != null && editor instanceof JTextField) {
                 CaptureKeyEventsDispatcher.get().setCapture(editor);
             }
+        } else {
+            valueTable.requestFocusInWindow();
         }
     }
 
