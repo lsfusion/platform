@@ -800,7 +800,7 @@ public abstract class GroupingDialog extends JDialog {
         String columnIndex = "";
         while (column > 0) {
             columnIndex = (column <=26 ? letters.charAt(column - 1) : letters.charAt(column % 26 - 1)) + columnIndex;
-            column = column - 26;
+            column /= 26;
         }
         return columnIndex + row;
     }
