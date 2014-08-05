@@ -514,29 +514,38 @@ public class GridTable extends ClientPropertyTable {
 
         viewMoveInterval = 0;
     }
-
+    
+    private void selectColumn(int columnNumber) {
+        selectCell(getCurrentRow(), columnNumber);
+    }
+    
     private void selectRow(int rowNumber) {
-        if (rowNumber < 0 || rowNumber >= getRowCount()) {
+        selectCell(rowNumber, getColumnModel().getSelectionModel().getLeadSelectionIndex());
+    }
+    
+    private void selectCell(int row, int col) {
+        if (row < 0 || row >= getRowCount()
+//            || col < 0 || col >= getColumnCount()
+            ) {
             return;
         }
-
-        final int colSel = getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
         // scrollRectToVisible обязательно должен идти до setLeadSelectionIndex
         // иначе, если объект за пределами текущего "окна", сработает JViewport.changeListener
         // и он изменит текущий объект на другой (firstRow или lastRow)
-        scrollRectToVisible(getCellRect(rowNumber, (colSel == -1) ? 0 : colSel, false));
+        scrollRectToVisible(getCellRect(row, col == -1 ? 0 : col, false));
 
-        if (colSel == -1) {
+        if (col == -1) {
             isInternalNavigating = true;
-            changeSelection(rowNumber, 0, false, false);
+            changeSelection(row, 0, false, false);
             isInternalNavigating = false;
             moveToFocusableCellIfNeeded();
         } else {
-            if (rowNumber != getSelectedRow()) {
-                super.changeSelection(rowNumber, colSel, false, false);
+            if (row != getSelectedRow() || col != getSelectedColumn()) {
+                super.changeSelection(row, col, false, false);
             }
-            getSelectionModel().setLeadSelectionIndex(rowNumber);
+            getSelectionModel().setLeadSelectionIndex(row);
+            getColumnModel().getSelectionModel().setLeadSelectionIndex(col);
         }
     }
 
@@ -1098,6 +1107,37 @@ public class GridTable extends ClientPropertyTable {
     void configureEnclosingScrollPane(final JScrollPane pane) {
         assert pane.getViewport() == getParent();
         if (groupObject.pageSize != 0) {
+            pane.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+                @Override
+                public void adjustmentValueChanged(AdjustmentEvent e) {
+                    if (skipScrollingAdjusments) {
+                        return;
+                    }
+                    
+                    int currCol = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+                    if (currCol != -1 && getColumnCount() > 0) {
+                        Pair<Integer, Integer> firstAndLast = getFirstAndLastVisibleColumns(pane);
+
+                        int firstCol = firstAndLast.first;
+                        int lastCol = firstAndLast.second;
+
+                        if (lastCol < firstCol) {
+                            return;
+                        }
+
+                        if (isLayouting) {
+                            selectColumn(currCol);
+                        } else {
+                            if (currCol > lastCol) {
+                                selectColumn(lastCol);
+                            } else if (currCol < firstCol) {
+                                selectColumn(firstCol);
+                            }
+                        }
+                    }
+                }
+            });
+            
             pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
                 @Override
                 public void adjustmentValueChanged(AdjustmentEvent e) {
@@ -1135,6 +1175,29 @@ public class GridTable extends ClientPropertyTable {
                 }
             });
         }
+    }
+    
+    private Pair<Integer, Integer> getFirstAndLastVisibleColumns(JScrollPane pane) {
+        Rectangle viewRect = pane.getViewport().getViewRect();
+
+        TableColumnModel columnModel = getColumnModel();
+        int cc = getColumnCount();
+        
+        int first = -1;
+        int last = -1;
+        
+        int x = 0;
+        for (int column = 0; column < cc; column++) {
+            if (first == -1 && x >= viewRect.x && isCellFocusable(0, column)) {
+                first = column;
+            }
+            x += columnModel.getColumn(column).getWidth();
+            if (x <= viewRect.x + viewRect.width + 1 && isCellFocusable(0, column)) {
+                last = column;
+            }
+        }
+        
+        return new Pair<Integer, Integer>(first == -1 ? 0 : first, last == -1 ? 0 : last);
     }
 
     public void updatePageSizeIfNeeded(boolean checkVisible) {
