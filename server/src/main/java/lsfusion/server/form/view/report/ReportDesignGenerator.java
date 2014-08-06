@@ -18,6 +18,7 @@ import lsfusion.server.form.view.GroupObjectView;
 import lsfusion.server.form.view.ObjectView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.DataSession;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
@@ -293,6 +294,19 @@ public class ReportDesignGenerator {
 
             for (ReportDrawField propertyField : drawFields) {
                 addDesignField(design, propertyField);
+            }
+        }
+        
+        // Отдельно добавим design fields для свойств без параметров
+        for (PropertyDrawView property : formView.getPropertiesList()) {
+            GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.getGroupsList());
+            GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
+
+            if (applyGroup == null && drawGroup == null && property.entity.propertyObject.property instanceof CalcProperty && ((CalcProperty) property.entity.propertyObject.property).getOrderInterfaces().isEmpty()) {
+                ReportDrawField reportField = property.getReportDrawField(charWidth, 1);
+                if (reportField != null) {
+                    addDesignField(design, reportField);
+                }
             }
         }
     }

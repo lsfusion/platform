@@ -21,6 +21,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.GroupObjectHierarchy;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.SessionTableUsage;
 
@@ -229,10 +230,12 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         List<PropertyDrawInstance> resultList = new ArrayList<PropertyDrawInstance>();
         for (PropertyDrawInstance property : form.properties) {
             GroupObjectInstance applyGroup = property.propertyObject.getApplyObject();
-            if ((applyGroup == null || property.toDraw == applyGroup) && property.toDraw!=null && filterGroups.contains(property.toDraw)) {
+            // Отдельно рассматриваем случай свойства без параметров
+            if ((applyGroup == null || property.toDraw == applyGroup) && property.toDraw != null && filterGroups.contains(property.toDraw) ||  
+                (property.toDraw == null && applyGroup == null && property.propertyObject.property instanceof CalcProperty && property.propertyObject.property.getOrderInterfaces().isEmpty())) {
                 boolean add = true;
                 
-                if (userPreferences != null) {
+                if (userPreferences != null && property.toDraw != null) {
                     GroupObjectUserPreferences groupObjectPreferences = userPreferences.getUsedPreferences(property.toDraw.getSID());
                     if (groupObjectPreferences != null) {
                         ColumnUserPreferences columnUP = groupObjectPreferences.getColumnUserPreferences().get(property.getsID());
