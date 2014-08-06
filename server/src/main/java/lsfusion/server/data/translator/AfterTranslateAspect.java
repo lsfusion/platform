@@ -139,14 +139,14 @@ public class AfterTranslateAspect {
     @Around("execution(lsfusion.base.Pair lsfusion.server.data.where.AbstractWhere.getWhereJoins(boolean, lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.base.col.interfaces.immutable.ImOrderSet)) && target(where) && args(tryExclusive,keepStat,orderTop)")
     public Object callGetWhereJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean tryExclusive, ImSet keepStat, ImOrderSet orderTop) throws Throwable {
         if(keepStat.equals(where.getOuterKeys()) && orderTop.isEmpty())
-            return CacheAspect.callMethod(where, thisJoinPoint, false);
+            return CacheAspect.callMethod(where, thisJoinPoint, CacheAspect.Type.SIMPLE);
         return thisJoinPoint.proceed();
     }
 
     @Around("execution(lsfusion.base.col.interfaces.immutable.ImCol lsfusion.server.data.where.AbstractWhere.getStatJoins(boolean, lsfusion.base.col.interfaces.immutable.ImSet, lsfusion.server.data.query.innerjoins.GroupStatType, boolean)) && target(where) && args(exclusive,keepStat,type,noWhere)")
     public Object callGetStatJoins(ProceedingJoinPoint thisJoinPoint, AbstractWhere where, boolean exclusive, ImSet keepStat, GroupStatType type, boolean noWhere) throws Throwable {
         if(keepStat.equals(where.getOuterKeys()))
-            return CacheAspect.callMethod(where, thisJoinPoint, false);
+            return CacheAspect.callMethod(where, thisJoinPoint, CacheAspect.Type.SIMPLE);
         return thisJoinPoint.proceed();
     }
 

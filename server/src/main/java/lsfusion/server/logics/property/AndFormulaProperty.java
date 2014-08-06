@@ -1,17 +1,18 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.PropertyChanges;
 
 // выбирает объект по битам
@@ -62,10 +63,15 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
-        if(commonValue!=null)
-            return MapFact.singleton((AndFormulaProperty.Interface) objectInterface, commonValue);
-        return super.getInterfaceCommonClasses(commonValue, prevSameClasses);
+    public Inferred<Interface> calcInferInterfaceClasses(final ExClassSet commonValue, InferType inferType) {
+        return new Inferred<Interface>(interfaces.mapValues(new GetValue<ExClassSet, Interface>() {
+            @Override
+            public ExClassSet getMapValue(Interface value) {
+                return value == objectInterface ? commonValue : null;
+            }
+        }));
     }
-
+    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
+        return inferred.get(objectInterface);
+    }
 }

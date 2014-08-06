@@ -121,6 +121,10 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return this;
     }
 
+    public AndClassSet getCommonAnd() {
+        return this;
+    }
+
     private boolean containsAll(DataClass node, boolean implicitCast) {
         DataClass compatible = getCompatible((DataClass) node, true);
         if(implicitCast)
@@ -244,7 +248,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     public Stat getTypeStat() {
         return Stat.ALOT;
     }
-
+    
     public ValueClassSet getValueClassSet() {
         return this;
     }
@@ -252,5 +256,9 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     @Override
     public String getCanonicalName() {
         return getSID();
+    }
+    
+    public boolean fixedSize() {
+        return true;
     }
 }

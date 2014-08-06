@@ -14,7 +14,6 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.session.PropertyChanges;
-import org.apache.xpath.operations.Operation;
 
 import java.sql.SQLException;
 
@@ -43,7 +42,7 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
         throw new RuntimeException("should not be");
     }
 
-    protected ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses) {
+    public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
         return new ClassWhere<Object>(MapFact.<Object, AndClassSet>toMap(interfaces.single(), set, "value", set.getBaseClass().objectClass));
     }
 

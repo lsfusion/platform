@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
@@ -23,6 +24,8 @@ import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFList;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
@@ -148,8 +151,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
-        if(isAbstract() && calcType.isClass())
-            return getClassTableExpr(joinImplement, calcType);
+        if(isAbstract() && calcType instanceof CalcClassType)
+            return getClassTableExpr(joinImplement, (CalcClassType) calcType);
 
         ImList<Case> cases = getCases();
 
@@ -250,7 +253,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    @IdentityLazy
+    @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     public ImSet<DataProperty> getChangeProps() {
         MSet<DataProperty> result = SetFact.mSet();
         for(Case operand : getCases())
@@ -329,7 +332,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 CalcPropertyMapImplement<?, Interface> op2 = (CalcPropertyMapImplement<?, Interface>) addCase.where;
                 if (op1.mapIntersect(op2)) {
                     throw new ScriptParsingException("signature intersection of property " + addCase.property + " (WHEN " + addCase.where +") with previosly defined implementation " + listCases.get(i).property + " (WHEN " + listCases.get(i).where +") for abstract property " + this + "\n" +
-                            "Classes 1 : " + op1.mapClassWhere(ClassType.ASSERTFULL) + ", Classes 2 : " + op2.mapClassWhere(ClassType.ASSERTFULL));
+                            "Classes 1 : " + op1.mapClassWhere(ClassType.casePolicy) + ", Classes 2 : " + op2.mapClassWhere(ClassType.casePolicy));
                 }
             }
         }
@@ -348,19 +351,27 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return classValueWhere != null;
     }
 
-    public ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses) {
+    public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
         if(isAbstract())
             return classValueWhere;
 
-        return super.getClassValueWhere(type, prevSameClasses);
+        return super.calcClassValueWhere(type);
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
+    public Inferred<Interface> calcInferInterfaceClasses(final ExClassSet commonValue, final InferType inferType) {
         if(isAbstract())
-            return getInterfaceClasses(ClassType.ASSERTFULL, prevSameClasses);
-
-        return super.getInterfaceCommonClasses(commonValue, prevSameClasses);
+            return new Inferred<Interface>(classValueWhere.getCommonExClasses(interfaces)); // чтобы рекурсии не было
+        
+        return op(getCases().mapListValues(new GetValue<Inferred<Interface>, Case>() {
+            public Inferred<Interface> getMapValue(Case aCase) {
+                return aCase.where.mapInferInterfaceClasses(ExClassSet.notNull(commonValue), inferType).and(aCase.property.mapInferInterfaceClasses(commonValue, inferType), inferType);
+            }}), true, inferType);
+    }
+    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
+        if(isAbstract())
+            return classValueWhere.getCommonExClasses(SetFact.singleton("value")).singleValue();
+        return opInferValueClasses(getProps(), inferred, true, inferType);
     }
 
     protected boolean isChecked() {
@@ -391,9 +402,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     private ClassWhere<Object> getCaseClassValueWhere(Case propCase) {
-        ClassWhere<Object> operandClassValueWhere = BaseUtils.immutableCast(((CalcPropertyMapImplement<?, Interface>) propCase.where).mapClassWhere(ClassType.ASSERTFULL));
+        ClassWhere<Object> operandClassValueWhere = BaseUtils.immutableCast(((CalcPropertyMapImplement<?, Interface>) propCase.where).mapClassWhere(ClassType.casePolicy));
         if(propCase.property instanceof CalcPropertyMapImplement)
-            operandClassValueWhere = operandClassValueWhere.and(((CalcPropertyMapImplement<?, Interface>) propCase.property).mapClassValueWhere(ClassType.ASSERTFULL));
+            operandClassValueWhere = operandClassValueWhere.and(((CalcPropertyMapImplement<?, Interface>) propCase.property).mapClassValueWhere(ClassType.casePolicy));
         else { // идиотизм, но ту еще есть вопросы
             Interface operandInterface = (Interface)propCase.property;
             ValueClass valueClass = operandClassValueWhere.filterKeys(SetFact.<Object>singleton(operandInterface)).getCommonParent(SetFact.<Object>singleton(operandInterface)).singleValue();

@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.SFunctionSet;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -12,13 +11,12 @@ import lsfusion.interop.Compare;
 import lsfusion.server.Message;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.BaseClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NotNullKeyExpr;
-import lsfusion.server.data.expr.StringAggUnionProperty;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
@@ -26,6 +24,7 @@ import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DBManager;
+import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChanges;
 
@@ -103,28 +102,32 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         }
     }
     
-    // до сих пор есть проблема что если ABSTRACT A, и единственный B extends A то в зависимости от порядка может выбираться или A или B, решается например опцией mergeUpClassSets, но там другие проблемы, см. использование   
-    @IdentityLazy
-    public ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses) {
-        if(type == ClassType.ASSERTFULL) {
-            assert isFull();
-            return getClassValueWhere(ClassType.ASIS, prevSameClasses);
-        }
-        if(type == ClassType.FULL) {
-            ClassWhere<Object> result = getClassValueWhere(ClassType.ASIS, prevSameClasses);
-            if(!isFull())
-                result = result.and(new ClassWhere<Object>(BaseUtils.<ImMap<Object, ValueClass>>immutableCast(getInterfaceCommonClasses(null, prevSameClasses)), true));
-            return result;
-        }
-
+    @IdentityStartLazy
+    private Pair<ImRevMap<T,NotNullKeyExpr>, Expr> calculateQueryExpr(CalcType calcType) {
         ImRevMap<T,NotNullKeyExpr> mapExprs = getMapNotNullKeys();
-        return Query.getClassWhere(Where.TRUE, mapExprs, MapFact.singleton((Object)"value", calculateClassExpr(mapExprs, prevSameClasses)));
+        return new Pair<ImRevMap<T, NotNullKeyExpr>, Expr>(mapExprs, calculateExpr(mapExprs, calcType));
     }
     
+    @IdentityStartLazy
+    protected ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
+        Pair<ImRevMap<T, NotNullKeyExpr>, Expr> query = calculateQueryExpr(calcType == CalcClassType.PREVSAME && noOld() ? CalcClassType.PREVBASE : calcType); // оптимизация
+        ClassWhere<Object> result = Query.getClassWhere(Where.TRUE, query.first, MapFact.singleton((Object) "value", query.second)); 
+        if(calcType == CalcClassType.PREVSAME) // для того чтобы докинуть orAny, собсно только из-за этого infer необходим в любом случае
+            result = result.and(inferClassValueWhere(InferType.PREVSAME));
+        return result;
+    }
+
+    @Override
     @IdentityLazy
-    protected boolean checkNotNull() {
-        ImRevMap<T,NotNullKeyExpr> mapExprs = getMapNotNullKeys();
-        return calculateClassExpr(mapExprs, defaultPrevSameClasses).getWhere().means(Expr.getWhere(mapExprs));
+    protected boolean calcNotNull(CalcInfoType calcType) {
+        Pair<ImRevMap<T, NotNullKeyExpr>, Expr> query = calculateQueryExpr(calcType); // оптимизация
+        return query.second.getWhere().means(Expr.getWhere(query.first));
+    }
+
+    @Override
+    @IdentityLazy
+    protected boolean calcEmpty(CalcInfoType calcType) {
+        return calculateQueryExpr(calcType).second.getWhere().isFalse();
     }
 
     private ImRevMap<T, NotNullKeyExpr> getMapNotNullKeys() {
@@ -134,7 +137,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
             }});
     }
 
-    @IdentityLazy
+    @IdentityStartLazy
     public StatKeys<T> getInterfaceClassStats() {
         ImRevMap<T,KeyExpr> mapKeys = getMapKeys();
         return calculateStatExpr(mapKeys).getWhere().getStatKeys(mapKeys.valuesSet()).mapBack(mapKeys);

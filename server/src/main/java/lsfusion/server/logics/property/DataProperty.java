@@ -20,6 +20,9 @@ import lsfusion.server.form.entity.drilldown.DataDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.actions.ChangeEvent;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
@@ -42,9 +45,16 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         this.value = value;
     }
 
-    @Override
-    public ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses) {
+    public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
         return new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", value), true);
+    }
+
+    // перегружаем из-за assertion'а с depends
+    public Inferred<ClassPropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        return new Inferred<ClassPropertyInterface>(ExClassSet.toExValue(IsClassProperty.getMapClasses(interfaces)));
+    }
+    public ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
+        return ExClassSet.toExValue(value);
     }
 
     public ChangeEvent<?> event = null;

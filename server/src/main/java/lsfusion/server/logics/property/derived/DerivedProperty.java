@@ -338,20 +338,20 @@ public class DerivedProperty {
         return new CalcPropertyMapImplement<PropertyInterface, T>(NullValueProperty.instance);
     }
 
-    public static <T extends PropertyInterface> CalcProperty createAnyGProp(CalcProperty<T> property, PrevClasses prevSameClasses) {
-        return createAnyGProp(property, SetFact.<T>EMPTY(), prevSameClasses).property;
+    public static <T extends PropertyInterface> CalcProperty createAnyGProp(CalcProperty<T> property) {
+        return createAnyGProp(property, SetFact.<T>EMPTY()).property;
     }
-    public static <T extends PropertyInterface, P extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(CalcPropertyMapImplement<P, T> implement, ImSet<T> groupInterfaces, PrevClasses prevSameClasses) {
-        return createAnyGProp(implement.property, implement.mapping.filterInclValuesRev(groupInterfaces).keys(), prevSameClasses).map(implement.mapping);
+    public static <T extends PropertyInterface, P extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(CalcPropertyMapImplement<P, T> implement, ImSet<T> groupInterfaces) {
+        return createAnyGProp(implement.property, implement.mapping.filterInclValuesRev(groupInterfaces).keys()).map(implement.mapping);
     }
 
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(CalcProperty<T> prop, ImSet<T> groupInterfaces, PrevClasses prevSameClasses) {
-        return createAnyGProp("ANY " + prop.caption + " (" + groupInterfaces.toString(",") + ")", prop, groupInterfaces, prevSameClasses);
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(CalcProperty<T> prop, ImSet<T> groupInterfaces) {
+        return createAnyGProp("ANY " + prop.caption + " (" + groupInterfaces.toString(",") + ")", prop, groupInterfaces);
     }
-    public static <T extends PropertyInterface, N extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(String caption, CalcProperty<T> prop, ImSet<T> groupInterfaces, PrevClasses prevSameClasses) {
-        if(!prop.getType(prevSameClasses).equals(LogicalClass.instance)) { // делаем Logical, может валиться по nullPointer, если в ACTION'е идут противоречивые условия (классы неправильные)
+    public static <T extends PropertyInterface, N extends PropertyInterface> CalcPropertyMapImplement<?, T> createAnyGProp(String caption, CalcProperty<T> prop, ImSet<T> groupInterfaces) {
+        if(!prop.getType().equals(LogicalClass.instance)) { // делаем Logical, может валиться по nullPointer, если в ACTION'е идут противоречивые условия (классы неправильные)
             CalcPropertyMapImplement<N, T> notNull = (CalcPropertyMapImplement<N, T>) DerivedProperty.createNotNull(prop.getImplement());
-            return DerivedProperty.<N, T>createAnyGProp(caption, notNull.property, notNull.mapping.filterInclValuesRev(groupInterfaces).keys(), prevSameClasses).map(notNull.mapping);
+            return DerivedProperty.<N, T>createAnyGProp(caption, notNull.property, notNull.mapping.filterInclValuesRev(groupInterfaces).keys()).map(notNull.mapping);
         }
         MaxGroupProperty<T> groupProperty = new MaxGroupProperty<T>(caption, BaseUtils.<ImSet<CalcPropertyInterfaceImplement<T>>>immutableCast(groupInterfaces), prop, false);
         return new CalcPropertyMapImplement<GroupProperty.Interface<T>, T>(groupProperty, BaseUtils.<ImMap<GroupProperty.Interface<T>, T>>immutableCast(groupProperty.getMapInterfaces()).toRevExclMap());
@@ -727,8 +727,8 @@ public class DerivedProperty {
     }
 
     public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createDataProp(boolean session, CalcProperty<T> property) {
-        ImMap<T, ValueClass> interfaces = property.getInterfaceClasses(ClassType.ASSERTFULL);
-        ValueClass valueClass = property.getValueClass();
+        ImMap<T, ValueClass> interfaces = property.getInterfaceClasses(ClassType.obsolete);
+        ValueClass valueClass = property.getValueClass(ClassType.obsolete);
         return createDataProp(session, property.toString(), interfaces, valueClass);
     }
 
@@ -869,11 +869,11 @@ public class DerivedProperty {
 
             ImSet<I> checkContext = whereInterfaces.filter(context);
             if(!where.mapIsFull(checkContext)) // может быть избыточно для 2-го случая сверху, но для where в принципе надо
-                where = (CalcPropertyMapImplement<W, I>) createAnd(whereInterfaces, where, IsClassProperty.getMapProperty(where.mapInterfaceClasses(ClassType.FULL).filterIncl(checkContext)));
+                where = (CalcPropertyMapImplement<W, I>) createAnd(whereInterfaces, where, IsClassProperty.getMapProperty(where.mapInterfaceClasses(ClassType.wherePolicy).filterIncl(checkContext)));
 
             ImRevMap<W, I> mapPushInterfaces = where.mapping.filterValuesRev(innerInterfaces); ImRevMap<I, W> mapWhere = where.mapping.reverse();
             writeFrom = createLastGProp(where.property, writeFrom.map(mapWhere), mapPushInterfaces.keys(), mapImplements(orders, mapWhere), ordersNotNull).map(mapPushInterfaces);
-            where = (CalcPropertyMapImplement<W, I>) createAnyGProp(where.property, mapPushInterfaces.keys(), Property.defaultPrevSameClasses).map(mapPushInterfaces);
+            where = (CalcPropertyMapImplement<W, I>) createAnyGProp(where.property, mapPushInterfaces.keys()).map(mapPushInterfaces);
         }
 
         return createSetAction(innerInterfaces, context, where, writeTo, writeFrom);
@@ -885,7 +885,7 @@ public class DerivedProperty {
 
         if(!innerInterfaces.containsAll(whereInterfaces)) { // оптимизация, если есть допинтерфейсы - надо группировать
             ImRevMap<W, I> mapPushInterfaces = where.mapping.filterValuesRev(innerInterfaces);
-            where = (CalcPropertyMapImplement<W, I>) createAnyGProp(where.property, mapPushInterfaces.keys(), Property.defaultPrevSameClasses).map(mapPushInterfaces);
+            where = (CalcPropertyMapImplement<W, I>) createAnyGProp(where.property, mapPushInterfaces.keys()).map(mapPushInterfaces);
         }
 
         return createChangeClassAction(cls, forceDialog, innerInterfaces, context, where, changeInterface, baseClass);

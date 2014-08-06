@@ -19,15 +19,13 @@ public abstract class AbstractFormulaImpl implements FormulaImpl {
     public static Type getCompatibleType(ExprType source, TypeConversion conversion) {
         Type type = null;
         for (int i = 0; i < source.getExprCount(); ++i) {
-            if (!source.isParam(i)) {
-                Type exprType = source.getType(i);
-                if (type == null) {
-                    type = exprType;
-                } else {
-                    Type conversionType = conversion.getType(type, exprType);
-                    if (conversionType != null) {
-                        type = conversionType;
-                    }
+            Type exprType = source.getType(i);
+            if (type == null) {
+                type = exprType;
+            } else {
+                Type conversionType = conversion.getType(type, exprType);
+                if (conversionType != null) {
+                    type = conversionType;
                 }
             }
         }

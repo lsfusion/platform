@@ -2,7 +2,7 @@ package lsfusion.server.caches;
 
 import lsfusion.base.*;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.property.CalcType;
+import lsfusion.server.logics.property.*;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -29,9 +29,6 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.property.PropertyQueryType;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.session.SessionModifier;
@@ -63,7 +60,7 @@ public class AutoHintsAspect {
                 CalcProperty dependProperty = depends.get(i);
 
                 byte result = 0;
-                if(dependProperty.isFull() && modifier.allowHintIncrement(dependProperty)) {
+                if(dependProperty.isFull(AlgType.hintType) && modifier.allowHintIncrement(dependProperty)) {
                     result |= 1;
                     if(modifier.forceHintIncrement(dependProperty))
                         result |= 2;
@@ -219,9 +216,9 @@ public class AutoHintsAspect {
         return property.hasChanges(propChanges);
     }
     private static Object getQuery(ProceedingJoinPoint thisJoinPoint, CalcProperty property, CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, AMap interfaceValues) throws Throwable {
-        assert property.isNotNull();
+        assert property.isNotNull(calcType.getAlgInfo());
         
-        if(!property.isFull() || !calcType.isExpr())
+        if(!property.isFull(calcType.getAlgInfo()) || !calcType.isExpr())
             return thisJoinPoint.proceed();
 
         SessionModifier catchHint = catchAutoHint.get();
@@ -277,7 +274,7 @@ public class AutoHintsAspect {
     public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, CalcProperty property, ImMap joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
 
-        if(!property.isFull() || !calcType.isExpr())
+        if(!property.isFull(calcType.getAlgInfo()) || !calcType.isExpr())
             return thisJoinPoint.proceed();
 
         SessionModifier catchHint = catchAutoHint.get();

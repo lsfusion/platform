@@ -4,6 +4,9 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 
 public abstract class SessionCalcProperty<T extends PropertyInterface> extends SimpleIncrementProperty<T> {
 

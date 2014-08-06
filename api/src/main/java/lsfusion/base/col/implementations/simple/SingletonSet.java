@@ -603,4 +603,16 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
     public K last() {
         return key;
     }
+
+    public ImSet<K> split(ImSet<K> filter, Result<ImSet<K>> rest, Result<ImSet<K>> restSplit) {
+        if(filter.contains(key)) {
+            restSplit.set(filter.removeIncl(key));
+            rest.set(SetFact.<K>EMPTY());
+            return this;
+        } else {
+            restSplit.set(filter);
+            rest.set(this);
+            return SetFact.EMPTY();
+        }
+    }
 }

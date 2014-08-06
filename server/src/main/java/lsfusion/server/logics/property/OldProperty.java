@@ -4,15 +4,18 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.OldDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.PropertyChanges;
 
+import static lsfusion.base.BaseUtils.join;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class OldProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
@@ -35,28 +38,32 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
     }
 
     protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if(calcType.isClass())
-            return getClassTableExpr(joinImplement, calcType);
-
+        if(calcType instanceof CalcClassType) {
+            return getClassTableExpr(joinImplement, (CalcClassType) calcType);
+        }
         return property.getExpr(joinImplement); // возвращаем старое значение
     }
 
     @Override
-    public ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses) {
-        ClassWhere<Object> classValueWhere = property.getClassValueWhere(ClassType.ASSERTFULL, prevSameClasses);
-        switch (prevSameClasses) {
-            case SAME:
-                return classValueWhere;
-            case INVERTSAME:
-                return classValueWhere;
-            case BASE:
-                return classValueWhere.getBase();
-        }
-        throw new UnsupportedOperationException();    
+    public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
+        ClassWhere<Object> classValueWhere = property.getClassValueWhere(type);
+        if(type == CalcClassType.PREVBASE)
+            return classValueWhere.getBase();
+        return classValueWhere;
+//        return super.getClassValueWhere(type);
     }
 
-    public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
-        return property.getInterfaceCommonClasses(commonValue, prevSameClasses);
+    public Inferred<T> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        Inferred<T> result = property.inferInterfaceClasses(commonValue, inferType);
+        if(inferType == InferType.PREVBASE)
+            result = result.getBase(inferType);
+        return result;
+    }
+    public ExClassSet calcInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
+        ExClassSet exClassSet = property.inferValueClass(inferred, inferType);
+        if(inferType == InferType.PREVBASE)
+            exClassSet = ExClassSet.getBase(exClassSet);
+        return exClassSet;
     }
 
     @Override

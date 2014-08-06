@@ -11,6 +11,10 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
+import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChange;
@@ -46,5 +50,6 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
     void fill(MSet<P> interfaces, MSet<CalcPropertyMapImplement<?, P>> properties);
     ImCol<P> getInterfaces();
 
-    ImMap<P, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses);
+    Inferred<P> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType);
+    ExClassSet mapInferValueClass(ImMap<P, ExClassSet> inferred, InferType inferType);
 }

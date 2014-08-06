@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.LogicalClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -18,6 +17,8 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.ChangedDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
@@ -91,12 +92,21 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     @Override
-    public ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses) {
-        return new ClassWhere<Object>("value", LogicalClass.instance).and(BaseUtils.<ClassWhere<Object>>immutableCast(property.getClassWhere(ClassType.ASSERTFULL, prevSameClasses))); // assert что full
+    public ClassWhere<Object> calcClassValueWhere(CalcClassType calcType) {
+        ClassWhere<Object> result = new ClassWhere<Object>("value", LogicalClass.instance).and(BaseUtils.<ClassWhere<Object>>immutableCast(property.getClassWhere(calcType)));
+        if(calcType == CalcClassType.PREVBASE && !type.isNotNullNew())
+            result = result.getBase();
+        return result; // assert что full
     }
 
-    public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
-        return property.getInterfaceCommonClasses(null, prevSameClasses);
+    public Inferred<T> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        Inferred<T> result = property.inferInterfaceClasses(ExClassSet.notNull(commonValue), inferType);
+        if(inferType == InferType.PREVBASE && !type.isNotNullNew())
+            result = result.getBase(inferType);
+        return result;
+    }
+    public ExClassSet calcInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
+        return ExClassSet.logical;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -14,6 +13,8 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.actions.ChangeReadObjectActionProperty;
+import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.PropertyChanges;
 
 public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterface> {
@@ -57,9 +58,12 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     }
 
     @Override
-    public ImMap<ClassPropertyInterface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
-        if(commonValue!=null)
-            return MapFact.singleton(getInterface(), commonValue);
-        return super.getInterfaceCommonClasses(commonValue, prevSameClasses); 
+    public Inferred<ClassPropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        return getInterface().mapInferInterfaceClasses(commonValue, inferType).and(
+                getInterfaceClassProperty().mapInferInterfaceClasses(ExClassSet.notNull(commonValue), inferType), inferType);
+    }
+    @Override
+    public ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
+        return getInterface().mapInferValueClass(inferred, inferType);
     }
 }

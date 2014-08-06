@@ -245,7 +245,7 @@ public class PropertyDrawView extends ComponentView {
                         ((CalcProperty<?>)entity.propertyObject.property).mapTable : null;
         pool.writeString(outStream, mapTable != null ? mapTable.table.getName() : null);
 
-        ImMap<PropertyInterface, ValueClass> interfaceClasses = (ImMap<PropertyInterface, ValueClass>) entity.propertyObject.property.getInterfaceClasses(ClassType.FULL);
+        ImMap<PropertyInterface, ValueClass> interfaceClasses = (ImMap<PropertyInterface, ValueClass>) entity.propertyObject.property.getInterfaceClasses(ClassType.formPolicy);
         ImMap<PropertyInterface, PropertyObjectInterfaceEntity> interfaceEntities = (ImMap<PropertyInterface, PropertyObjectInterfaceEntity>) entity.propertyObject.mapping;
         outStream.writeInt(entity.propertyObject.property.interfaces.size());
         for (PropertyInterface iFace : entity.propertyObject.property.interfaces) {
@@ -258,7 +258,7 @@ public class PropertyDrawView extends ComponentView {
             }
         }
 
-        entity.propertyObject.property.getValueClass().serialize(outStream);
+        entity.propertyObject.property.getValueClass(ClassType.formPolicy).serialize(outStream); // только показать пользователю
         pool.writeString(outStream, entity.eventID);
 
         pool.writeString(outStream, entity.propertyObject.getCreationScript());

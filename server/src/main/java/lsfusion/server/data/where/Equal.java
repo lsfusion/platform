@@ -6,10 +6,10 @@ import lsfusion.server.data.expr.StaticExpr;
 import lsfusion.server.data.expr.ValueExpr;
 
 public class Equal {
-    public BaseExpr[] exprs;
+    public final BaseExpr[] exprs;
     public int size;
-    ValueExpr value;
-    StaticExpr staticValue;
+    public ValueExpr value;
+    public StaticExpr staticValue;
     public boolean dropped = false;
 
     Equal(BaseExpr expr,int max) {

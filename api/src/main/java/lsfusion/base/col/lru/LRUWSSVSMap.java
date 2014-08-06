@@ -1,6 +1,9 @@
 package lsfusion.base.col.lru;
 
-import lsfusion.base.BaseUtils;
+import lsfusion.base.DProcessor;
+import lsfusion.base.FunctionSet;
+import lsfusion.base.Processor;
+import lsfusion.base.SFunctionSet;
 
 import java.lang.ref.ReferenceQueue;
 
@@ -92,6 +95,14 @@ public class LRUWSSVSMap<W, K, E, V> extends ALRUKWMap<W, LRUWSSVSMap.AEntry<W, 
             return null;
         }
 
+    }
+
+    public void proceedLRUEKeyValues(final DProcessor<E, V> processor) {
+        proceedLRUEEntries(new Processor<AEntry<W,K,E,V>>() {
+            public void proceed(AEntry<W, K, E, V> element) {
+                processor.proceed(element.eKey, element.value);
+            }
+        });
     }
 
     static class AEntry<W, K, E, V> extends ALRUKWMap.AEntry<W, AEntry<W, K, E, V>> {

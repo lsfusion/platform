@@ -9,10 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.InnerExpr;
-import lsfusion.server.data.expr.IsClassExpr;
-import lsfusion.server.data.expr.NotNullExpr;
+import lsfusion.server.data.expr.*;
 import lsfusion.server.data.query.stat.UnionJoin;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.where.Where;
@@ -42,7 +39,7 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
         return InnerExpr.getFollowJoins(this, upWheres, unionJoins);
     }
 
-    public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+    public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
         return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
     }
 

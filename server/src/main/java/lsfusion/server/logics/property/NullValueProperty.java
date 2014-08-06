@@ -5,6 +5,9 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.PropertyChanges;
 
 public class NullValueProperty extends FormulaProperty<PropertyInterface>{
@@ -19,5 +22,10 @@ public class NullValueProperty extends FormulaProperty<PropertyInterface>{
 
     protected Expr calculateExpr(ImMap<PropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return CaseExpr.NULL;
+    }
+
+    @Override
+    protected Inferred<PropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        return Inferred.FALSE();
     }
 }

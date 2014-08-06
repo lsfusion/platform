@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.base.FullFunctionSet;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -12,6 +13,7 @@ import lsfusion.interop.Compare;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
@@ -32,6 +34,7 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.AggChangeActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
@@ -113,7 +116,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     private boolean checkPrereadNull(ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
-        return checkPrereadNull(joinImplement, implement.property.isNotNull(), implement.mapping.values(), calcType, propChanges);
+        return checkPrereadNull(joinImplement, implement.property.isNotNull(calcType.getAlgInfo()), implement.mapping.values(), calcType, propChanges);
     }
     
     public Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -210,7 +213,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    @IdentityLazy
+    @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     public ImSet<DataProperty> getChangeProps() {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) {
             assert implement.mapping.size()==2;
@@ -260,7 +263,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             CalcPropertyMapImplement<?, Interface> implementSingle = (CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue();
             KeyExpr keyExpr = new KeyExpr("key");
             Expr groupExpr = GroupExpr.create(MapFact.singleton(0, implement.property.getExpr(MapFact.singleton(implement.property.interfaces.single(), keyExpr), propChanges)),
-                    keyExpr, keyExpr.isUpClass(implementSingle.property.getValueClass()), GroupType.ANY, MapFact.singleton(0, change.expr));
+                    keyExpr, keyExpr.isUpClass(implementSingle.property.getValueClass(ClassType.editPolicy)), GroupType.ANY, MapFact.singleton(0, change.expr));
             return implementSingle.mapDataChanges(
                     new PropertyChange<Interface>(change, groupExpr), changedWhere, propChanges);
         }
@@ -297,7 +300,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 if(changeActionImplement==null)
                     return null;
 
-                ValueClass aggClass = ((CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass();
+                ValueClass aggClass = ((CalcPropertyMapImplement<?, Interface>) implement.mapping.singleValue()).property.getValueClass(ClassType.editPolicy);
 
                 ImOrderSet<Interface> listInterfaces = getOrderInterfaces();
                 AggChangeActionProperty<T> aggChangeActionProperty =
@@ -355,10 +358,45 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
-        ImOrderSet<T> orderImplement = implement.property.getOrderInterfaces();
-        return or(interfaces, super.getInterfaceCommonClasses(commonValue, prevSameClasses),
-                or(interfaces, orderImplement.mapList(implement.mapping), orderImplement.mapList(implement.property.getInterfaceCommonClasses(commonValue, prevSameClasses)), prevSameClasses));
+    public Inferred<Interface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        if(implement.property instanceof CompareFormulaProperty) {
+            CompareFormulaProperty compareProperty = (CompareFormulaProperty) implement.property;
+            return compareProperty.inferJoinInterfaceClasses(implement.mapping.getValue(0), implement.mapping.getValue(1), inferType);
+        }
+        
+//        if(implement.property instanceof FormulaUnionProperty) {
+//            return op(implement.mapping, implement.property.interfaces.toMap(commonValue), FullFunctionSet.<T>instance(), inferType, true);
+//        }
+        
+        Inferred<T> implementInferred = implement.property.inferInterfaceClasses(commonValue, inferType);
+        Inferred<Interface> result = inferJoin(inferType, implementInferred.getParams(inferType), implementInferred.getNotNull());
+                                    // пока нет смысла так как таких случаев нет в проекте, а нагрузка увеличивается
+//                                    inferJoin(inferType, implementInferred.getParams(inferType), implementInferred.getNotNull()).and(
+//                                     inferJoin(inferType, implementInferred.getNotParams(inferType), implementInferred.getNotNotNull()).not(), inferType);
+
+        if(implement.property instanceof NotFormulaProperty)
+            result = result.not();
+        
+        return result;
+    }
+
+    private Inferred<Interface> inferJoin(InferType inferType, ImMap<T, ExClassSet> implementParams, ImSet<T>[] implementNotNull) {
+        if(implementParams == null)
+            return Inferred.FALSE();
+        return op(implement.mapping, implementParams, implementNotNull, inferType); // возможно здесь надо было бы отдельно для прямой ветки, а отдельно для not*, но как их слить пока неясно
+    }
+
+    public ValueClass objectPropertyClass; // временный хак
+    @Override
+    public ExClassSet calcInferValueClass(final ImMap<Interface, ExClassSet> inferred, final InferType inferType) {
+        ExClassSet result = implement.property.inferValueClass(implement.mapping.mapValues(new GetValue<ExClassSet, CalcPropertyInterfaceImplement<Interface>>() {
+            public ExClassSet getMapValue(CalcPropertyInterfaceImplement<Interface> value) {
+                return value.mapInferValueClass(inferred, inferType);
+            }
+        }), inferType);
+        if(objectPropertyClass != null)
+            result = ExClassSet.op(result, ExClassSet.toExValue(objectPropertyClass), false);
+        return result;
     }
 
     @Override

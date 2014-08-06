@@ -26,8 +26,8 @@ public class SessionDataProperty extends DataProperty {
 
     @Override
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if(calcType.isClass())
-            return getClassTableExpr(joinImplement, calcType);
+        if(calcType instanceof CalcClassType)
+            return getClassTableExpr(joinImplement, (CalcClassType) calcType);
         if(propChanges.isEmpty())
             return CaseExpr.NULL;
         return super.calculateExpr(joinImplement, calcType, propChanges, changedWhere);

@@ -10,6 +10,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.PropertyChanges;
 
 public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaProperty.Interface> {
@@ -61,5 +63,13 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
             }});
 
         return FormulaExpr.createCustomFormula(formula, value, params, hasNotNull);
+    }
+
+    @Override
+    public lsfusion.server.logics.property.infer.ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
+        return FormulaImplProperty.inferValueClass(getOrderInterfaces(), FormulaExpr.createCustomFormulaImpl(formula, value, hasNotNull, getOrderInterfaces().mapOrderSetValues(new GetValue<String, Interface>() {
+            public String getMapValue(Interface value) {
+                return value.getString();
+            }})), inferred);
     }
 }

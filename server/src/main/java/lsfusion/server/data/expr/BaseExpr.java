@@ -48,13 +48,13 @@ public abstract class BaseExpr extends Expr {
         return new ExprCaseList(SetFact.<ExprCase>singleton(new ExprCase(Where.TRUE, this)));
     }
 
-    public ImSet<NotNullExpr> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
+    public ImSet<NotNullExprInterface> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
         assert includeThis || recursive; // также предполагается что NotNullExpr includeThis отработал
         return getExprFollows(includeInnerWithoutNotNull, recursive);
     }
-    private ImSet<NotNullExpr> exprFollows = null;
+    private ImSet<NotNullExprInterface> exprFollows = null;
     @ManualLazy
-    public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+    public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
         if(recursive && (!includeInnerWithoutNotNull || !hasExprFollowsWithoutNotNull())) {
             if(exprFollows==null)
                 exprFollows = getBaseJoin().getExprFollows(includeInnerWithoutNotNull, recursive);

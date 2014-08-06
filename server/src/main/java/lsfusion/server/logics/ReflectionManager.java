@@ -317,7 +317,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     private boolean needsToBeSynchronized(Property property) {
-        return property.isNamed() && (property instanceof ActionProperty || (((CalcProperty)property).isFull() && !(((CalcProperty)property).isEmpty())));
+        return property.isNamed() && (property instanceof ActionProperty || (((CalcProperty)property).isFull(AlgType.syncType) && !(((CalcProperty)property).isEmpty(AlgType.syncType))));
     }
 
     private void synchronizeProperties() {
@@ -360,8 +360,8 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                                 tableSID = "";
                             }
                         }
-                        returnClass = property.getValueClass().getSID();
-                        for (Object cc : property.getInterfaceClasses(property instanceof ActionProperty ? ClassType.FULL : ClassType.ASSERTFULL).valueIt()) {
+                        returnClass = property.getValueClass(ClassType.syncPolicy).getSID();
+                        for (Object cc : property.getInterfaceClasses(ClassType.syncPolicy).valueIt()) {
                             if (cc instanceof CustomClass)
                                 commonClasses += ((CustomClass) cc).getSID() + ", ";
                             else if (cc instanceof DataClass)

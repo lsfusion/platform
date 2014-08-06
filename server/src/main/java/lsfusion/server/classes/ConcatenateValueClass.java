@@ -42,7 +42,11 @@ public class ConcatenateValueClass implements ValueClass {
     }
 
     public ValueClass getBaseClass() {
-        throw new RuntimeException("not supported");
+        ValueClass[] result = new ValueClass[valueClasses.length];
+        for (int i = 0; i < valueClasses.length; i++) {
+            result[i] = valueClasses[i].getBaseClass();
+        }
+        return new ConcatenateValueClass(result);
     }
 
     public String getSID() {

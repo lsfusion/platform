@@ -769,8 +769,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 LCP<P> lcp = (LCP<P>) lp;
                 CalcProperty<P> property = lcp.property;
                 if (property.autoset) {
-                    ValueClass interfaceClass = property.getInterfaceClasses(ClassType.ASSERTFULL).singleValue();
-                    ValueClass valueClass = property.getValueClass();
+                    ValueClass interfaceClass = property.getInterfaceClasses(ClassType.autoSetPolicy).singleValue();
+                    ValueClass valueClass = property.getValueClass(ClassType.autoSetPolicy);
                     if (valueClass instanceof CustomClass && interfaceClass instanceof CustomClass &&
                             cls.isChild((CustomClass) interfaceClass)) { // в общем то для оптимизации
                         Integer obj = getClassListener().getObject((CustomClass) valueClass);
@@ -978,7 +978,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 property = toMax.getKey(i - separator);
                 currentList = toMax.getValue(i - separator);
 
-                if (property.getValueClass() instanceof FileClass) {
+                if (property.getType() instanceof FileClass) {
                     groupType = GroupType.ANY;
                 }
             }

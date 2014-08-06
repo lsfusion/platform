@@ -484,10 +484,10 @@ public abstract class LogicsModule {
         LCP<JoinProperty.Interface> listProperty = new LCP<JoinProperty.Interface>(joinProperty, listInterfaces);
 
         // получаем классы
-        ValueClass[] commonClasses = listProperty.getInterfaceClasses();
+        ValueClass[] commonClasses = listProperty.getInterfaceClasses(ClassType.logPolicy); // есть и другие obsolete использования
 
         // override'им классы
-        ValueClass valueClass = listProperty.property.getValueClass();
+        ValueClass valueClass = listProperty.property.getValueClass(ClassType.logPolicy);
         if (overrideClasses.length > dersize) {
             valueClass = overrideClasses[dersize];
             assert !overrideClasses[dersize].isCompatibleParent(valueClass);
@@ -1287,10 +1287,10 @@ public abstract class LogicsModule {
         }
         
         List<AndClassSet> signature = new ArrayList<AndClassSet>();
-        for (ValueClass cls : lp.getInterfaceClasses()) {
+        for (ValueClass cls : lp.getInterfaceClasses(ClassType.logPolicy)) {
             signature.add(cls.getUpSet());
         }
-        signature.add(systemEventsLM.currentSession.property.getValueClass().getUpSet());
+        signature.add(systemEventsLM.currentSession.property.getValueClass(ClassType.aroundPolicy).getUpSet());
         LCP result = addDCProp(baseLM.privateGroup, ServerResourceBundle.getString("logics.log") + " " + lp.property, 1, lp,
                 add(new Object[]{true}, add(getParams(lp), add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)))));
         makePropertyPublic(result, name, signature);
@@ -1761,7 +1761,7 @@ public abstract class LogicsModule {
                                 baseLM.cancel.property.getImplement(SetFact.<ClassPropertyInterface>EMPTYORDER())
                         )
                 );
-        constraintAction.mapEventAction(this, DerivedProperty.createAnyGProp(property, Property.constraintPrevSameClasses).getImplement(), event, true);
+        constraintAction.mapEventAction(this, DerivedProperty.createAnyGProp(property).getImplement(), event, true);
         addProp(constraintAction.property);
     }
 
@@ -1826,7 +1826,7 @@ public abstract class LogicsModule {
     }
 
     public <T extends PropertyInterface, L extends PropertyInterface> void setNotNull(CalcProperty<T> property, int options, Event event) {
-        CalcPropertyMapImplement<L, T> mapClasses = (CalcPropertyMapImplement<L, T>) IsClassProperty.getMapProperty(property.getInterfaceClasses(ClassType.ASSERTFULL));
+        CalcPropertyMapImplement<L, T> mapClasses = (CalcPropertyMapImplement<L, T>) IsClassProperty.getMapProperty(property.getInterfaceClasses(ClassType.logPolicy));
         addFollows(mapClasses.property, new CalcPropertyMapImplement<T, L>(property, mapClasses.mapping.reverse()),
                 ServerResourceBundle.getString("logics.property") + " " + property.caption + " [" + property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
                 options, event);

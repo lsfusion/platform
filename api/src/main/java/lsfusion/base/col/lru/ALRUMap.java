@@ -1,5 +1,6 @@
 package lsfusion.base.col.lru;
 
+import lsfusion.base.Processor;
 import lsfusion.base.WeakIdentityHashSet;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -106,6 +107,11 @@ public abstract class ALRUMap<E extends ALRUMap.AEntry<E>, S extends ALRUMap.ASe
     protected void forceRemoveLRU(double percent) {
         for(S seg : segments)
             seg.forceRemoveLRU(percent);
+    }
+
+    protected void proceedLRUEEntries(Processor<E> set) {
+        for(S seg : segments)
+            seg.proceedLRUEntries(set);
     }
 
 /*    public V get(K key) {
@@ -245,6 +251,20 @@ public abstract class ALRUMap<E extends ALRUMap.AEntry<E>, S extends ALRUMap.ASe
             } finally {
                 changeLock.unlock();
             }
+        }
+        
+        protected void proceedLRUEntries(Processor<E> processor) {
+            changeLock.lock();
+            try {
+                E entry = tail.getBefore();
+                while (entry != head) {
+                    assert entry != tail;
+                    processor.proceed(entry);
+                    entry = entry.getBefore();
+                }
+            } finally {
+                changeLock.unlock();
+            }            
         }
 
         protected E removeLRU(E last) {

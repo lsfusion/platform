@@ -10,7 +10,7 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.NotNullExpr;
+import lsfusion.server.data.expr.NotNullExprInterface;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.StatKeys;
@@ -59,7 +59,7 @@ public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
     }
 
     @Override
-    public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+    public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
         if(not)
             return SetFact.EMPTY();
         return super.getExprFollows(includeInnerWithoutNotNull, recursive);

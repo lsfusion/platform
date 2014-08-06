@@ -3,7 +3,7 @@ package lsfusion.base;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 
-public abstract class ExtraMapSetWhere<K,V,T extends ImMap<K,V>, This extends ExtraMapSetWhere<K,V,T,This>> extends ExtraSetWhere<T,This> {
+public abstract class ExtraMapSetWhere<K,V,T extends ImMap<K,V>, This extends ExtraMapSetWhere<K,V,T,This>> extends ExtraIntersectSetWhere<T,This> {
 
     protected ExtraMapSetWhere() {
     }
@@ -63,21 +63,4 @@ public abstract class ExtraMapSetWhere<K,V,T extends ImMap<K,V>, This extends Ex
         }
         return null;
     }
-
-    // если не null то слились
-    protected abstract T intersect(T where1, T where2);
-    
-    public This intersect(This intersect) {
-        if(isTrue() || intersect.isFalse()) return intersect;
-        if(isFalse() || intersect.isTrue()) return (This) this;
-
-        T[] intersectWheres = newArray(wheres.length*intersect.wheres.length); int numWheres = 0;
-        T resWhere;
-        for(T where : wheres)
-            for(T intWhere : intersect.wheres)
-                if((resWhere=intersect(where,intWhere))!=null)
-                    intersectWheres[numWheres++] = resWhere;
-        return createThis(add(newArray(wheres.length*intersect.wheres.length), 0, intersectWheres, numWheres, false));
-    }
-
 }

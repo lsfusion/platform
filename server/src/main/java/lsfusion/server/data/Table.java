@@ -476,7 +476,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return lsfusion.server.data.expr.Expr.getWhere(joins);
         }
 
-        public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+        public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
             return InnerExpr.getExprFollows(this, includeInnerWithoutNotNull, recursive);
         }
 

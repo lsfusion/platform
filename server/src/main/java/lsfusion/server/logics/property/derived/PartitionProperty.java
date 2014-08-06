@@ -1,16 +1,13 @@
 package lsfusion.server.logics.property.derived;
 
 import lsfusion.base.Result;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.AggrExpr;
@@ -20,6 +17,8 @@ import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.PropertyChanges;
 
 public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrementProperty<PartitionProperty.Interface<T>> {
@@ -157,18 +156,17 @@ public class PartitionProperty<T extends PropertyInterface> extends SimpleIncrem
     }
 
     @Override
-    public ImMap<Interface<T>, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
-        return or(interfaces, super.getInterfaceCommonClasses(commonValue, prevSameClasses),
-                getMapInterfaces().rightJoin(getInnerInterfaceCommonClasses(commonValue, prevSameClasses)));
+    public lsfusion.server.logics.property.infer.Inferred<Interface<T>> calcInferInterfaceClasses(final ExClassSet commonValue, InferType inferType) {
+        return inferInnerInterfaceClasses(commonValue, inferType).map(getMapInterfaces().reverse());
+    }
+    public ExClassSet calcInferValueClass(ImMap<Interface<T>, ExClassSet> inferred, InferType inferType) {
+        return inferInnerValueClass(getMapInterfaces().crossJoin(inferred), inferType);
     }
 
-    private ImMap<T, ValueClass> getInnerInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
-        final boolean isSelect = partitionType.isSelect();
-        ImList<CalcPropertyInterfaceImplement<T>> used = props.addList(partitions.toList()).addList(orders.keyOrderSet());
-        return or(innerInterfaces, used, ListFact.toList(used.size(), new GetIndex<ValueClass>() {
-            public ValueClass getMapValue(int i) {
-                return isSelect && i == 0 ? commonValue : null;
-            }
-        }), prevSameClasses);
+    private Inferred<T> inferInnerInterfaceClasses(final ExClassSet commonValue, InferType inferType) {
+        return inferInnerInterfaceClasses(props.addList(partitions.toList()), partitionType.isSelect(), commonValue, orders, ordersNotNull, -1, inferType);
+    }
+    public ExClassSet inferInnerValueClass(final ImMap<T, ExClassSet> commonClasses, InferType inferType) {
+        return inferInnerValueClass(props, commonClasses, partitionType, inferType);
     }
 }

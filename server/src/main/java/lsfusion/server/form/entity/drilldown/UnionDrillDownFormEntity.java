@@ -17,7 +17,7 @@ import java.util.List;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
-public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Property<I>> extends DrillDownFormEntity<UnionProperty.Interface, UnionProperty> {
+public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends CalcProperty<I>> extends DrillDownFormEntity<UnionProperty.Interface, UnionProperty> {
 
     protected List<PropertyDrawEntity> operandProperties;
     protected PropertyDrawEntity implPropertyDraw;

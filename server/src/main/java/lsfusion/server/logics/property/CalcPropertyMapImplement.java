@@ -19,6 +19,9 @@ import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.*;
 
 import java.sql.SQLException;
@@ -50,7 +53,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     }
 
     public void change(ImMap<T, DataObject> keys, ExecutionEnvironment env, Object value) throws SQLException, SQLHandledException {
-        change(keys, env, env.getSession().getObjectValue(property.getValueClass(), value));
+        change(keys, env, env.getSession().getObjectValue(property.getValueClass(ClassType.editPolicy), value));
     }
 
     public <K extends PropertyInterface> CalcPropertyMapImplement<P, K> map(ImRevMap<T, K> remap) {
@@ -69,10 +72,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return mapping.rightCrossJoin(property.getInterfaceClasses(type));
     }
     public ClassWhere<T> mapClassWhere(ClassType type) {
-        return mapClassWhere(type, Property.defaultPrevSameClasses); 
-    }
-    public ClassWhere<T> mapClassWhere(ClassType type, PrevClasses prevSameClasses) {
-        return new ClassWhere<T>(property.getClassWhere(type, prevSameClasses),mapping);
+        return new ClassWhere<T>(property.getClassWhere(type),mapping);
     }
 
     public boolean mapIsFull(ImSet<T> interfaces) {
@@ -82,7 +82,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         ImSet<P> checkInterfaces = mapping.filterValues(interfaces).keys();
 
         // если все собрали интерфейсы
-        return checkInterfaces.size() >= interfaces.size() && property.isFull(checkInterfaces);
+        return checkInterfaces.size() >= interfaces.size() && property.isFull(checkInterfaces, AlgType.actionType);
     }
 
     public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier) throws SQLException, SQLHandledException {
@@ -141,8 +141,11 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return editAction == null ? null : editAction.map(mapping);
     }
     
-    public ImMap<T, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
-        return mapping.crossJoin(property.getInterfaceCommonClasses(commonValue, prevSameClasses));
+    public Inferred<T> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        return property.inferInterfaceClasses(commonValue, inferType).map(mapping);
+    }
+    public ExClassSet mapInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
+        return property.inferValueClass(mapping.join(inferred), inferType);
     }
 
     public ClassWhere<Object> mapClassValueWhere(ClassType type) {

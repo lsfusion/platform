@@ -2,14 +2,12 @@ package lsfusion.server.data.expr;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.interfaces.immutable.ImCol;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.FormulaExprInterface;
 import lsfusion.server.data.expr.formula.FormulaJoinImpl;
@@ -60,9 +58,15 @@ public class FormulaNotNullExpr extends StaticClassNotNullExpr implements Formul
     public String getSource(final CompileSource compile) {
         return FormulaExpr.getSource(this, compile);
     }
+    public String toString() {
+        return FormulaExpr.toString(this);
+    }
 
     public ConcreteClass getStaticClass() {
         return FormulaExpr.getStaticClass(this);
+    }
+    public AndClassSet getAndClassSet(ImMap<VariableSingleClassExpr, AndClassSet> and) {
+        return FormulaExpr.getFormulaAndClassSet(this, and);
     }
 
     public Type getType(final KeyType keyType) {

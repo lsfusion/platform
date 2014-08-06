@@ -134,6 +134,18 @@ public class MapFact {
         return joinMap==null ? null : ((ImMap<K,E>)map).innerJoin(joinMap);
     }
 
+    public static <T, P, V> ImMap<P, V> nullCrossJoin(ImMap<T, V> map, ImRevMap<T, P> mapping) {
+        return map == null ? null : mapping.crossJoin(map);
+    }
+
+    public static <K, V> ImMap<K, V> nullRemove(ImMap<K, V> map, ImSet<K> set) {
+        return map == null ? null : map.remove(set);
+    }
+
+    public static <K, V> ImMap<K, V> nullFilter(ImMap<K, V> map, ImSet<K> set) {
+        return map == null ? null : map.filter(set);
+    }
+
     public static <K, V, T> ImOrderMap<V, T> orderMap(ImMap<K, T> map, ImRevMap<K, V> revMap, Result<ImOrderSet<K>> order) {
         int sizeNames = revMap.size();
         MOrderExclMap<V, T> mResult = MapFact.mOrderExclMap(sizeNames);

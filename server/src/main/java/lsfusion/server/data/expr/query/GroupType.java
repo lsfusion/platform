@@ -65,16 +65,26 @@ public enum GroupType implements AggrType {
         }
         return Expr.getWhere(exprs);
     }
-
-    public Expr getMainExpr(ImList<Expr> exprs) {
-        return getSingleExpr(exprs, null);
+    public int getSkipWhereIndex() {
+        if(this == LAST)
+            return 1;
+        return -1;
     }
 
-    public Expr getSingleExpr(ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
+    public Expr getMainExpr(ImList<Expr> exprs) {
+        return exprs.get(getMainIndex());
+    }
+
+    public int getMainIndex() {
         if(this==LAST) {
-            assert exprs.size()==2;
-            return exprs.get(1);
+            return 1;
         }
+        return 0;
+    }
+    
+    public Expr getSingleExpr(ImList<Expr> exprs, ImOrderMap<Expr, Boolean> orders) {
+        if(this == LAST)
+            return exprs.get(1).and(exprs.get(0).getWhere());
         return exprs.get(0);
     }
 

@@ -6,6 +6,7 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 
@@ -18,7 +19,7 @@ public class LazyActionProperty extends SystemExplicitActionProperty {
     private LAP evaluatedProperty = null;
        
     public LazyActionProperty(String caption, CalcProperty sourceProperty) {
-        super(caption, new LCP(sourceProperty).getInterfaceClasses());
+        super(caption, new LCP(sourceProperty).getInterfaceClasses(ClassType.drillDownPolicy));
         this.sourceProperty = sourceProperty;       
     }
 

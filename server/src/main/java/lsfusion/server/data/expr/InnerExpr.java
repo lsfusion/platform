@@ -51,7 +51,7 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
     }
 
     // множественное наследование
-    public static <K> ImSet<NotNullExpr> getExprFollows(BaseJoin<K> join, boolean includeInnerWithoutNotNull, boolean recursive) { // куда-то надо же положить
+    public static <K> ImSet<NotNullExprInterface> getExprFollows(BaseJoin<K> join, boolean includeInnerWithoutNotNull, boolean recursive) { // куда-то надо же положить
         return getExprFollows(join.getJoins().values(), includeInnerWithoutNotNull, recursive);
     }
 

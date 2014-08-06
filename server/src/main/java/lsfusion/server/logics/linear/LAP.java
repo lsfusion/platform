@@ -57,8 +57,8 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         lm.addEventAction(property, new CalcPropertyMapImplement<P, T>(lp.property.getChanged(type, event.getScope()), lp.getRevMap(listInterfaces, mapping)), MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, event, false);
     }
 
-    public ValueClass[] getInterfaceClasses() {
-        return listInterfaces.mapOrder(property.getInterfaceClasses(ClassType.ASIS)).toArray(new ValueClass[listInterfaces.size()]); // тут все равно obsolete
+    public ValueClass[] getInterfaceClasses() { // obsolete
+        return listInterfaces.mapOrder(property.getInterfaceClasses(ClassType.obsolete)).toArray(new ValueClass[listInterfaces.size()]); // тут все равно obsolete
     }
 
     public <U extends PropertyInterface> ActionPropertyMapImplement<T, U> getImplement(U... mapping) {

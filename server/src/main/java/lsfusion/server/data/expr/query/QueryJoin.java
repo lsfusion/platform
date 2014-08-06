@@ -70,7 +70,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
         public InnerExpr getInnerExpr(WhereJoin join) {
             return QueryJoin.getInnerExpr(thisObj, join);
         }
-        public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+        public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
             return InnerExpr.getExprFollows(thisObj, includeInnerWithoutNotNull, recursive);
         }
         public boolean hasExprFollowsWithoutNotNull() {
@@ -121,7 +121,7 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T exte
     public InnerExpr getInnerExpr(WhereJoin join) {
         return getOuter().getInnerExpr(join);
     }
-    public ImSet<NotNullExpr> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
+    public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
         return getOuter().getExprFollows(includeInnerWithoutNotNull, recursive);
     }
     public boolean hasExprFollowsWithoutNotNull() {

@@ -711,7 +711,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImplementTable targetTable = null;
         if (tableName != null) {
             targetTable = findTable(tableName);
-            if (!targetTable.equalClasses(((LCP<?>)property).property.getInterfaceClasses(ClassType.ASSERTFULL))) {
+            if (!targetTable.equalClasses(((LCP<?>)property).property.getInterfaceClasses(ClassType.storedPolicy))) {
                 // todo : проверка неправильная - должна быть на ClassWhere
                 //errLog.emitWrongClassesForTable(parser, name, tableName);
             }
@@ -971,7 +971,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private boolean isLogical(LP property) {
-        return property != null && property.property.getValueClass() != null && property.property.getValueClass().equals(LogicalClass.instance);
+        if(property == null)
+            return false;
+
+        Type type = property.property.getType();
+        return type != null && type.equals(LogicalClass.instance);
     }
 
     private LPWithParams toLogical(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
@@ -2174,7 +2178,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void addScriptedConstraint(LP property, Event event, boolean checked, List<PropertyUsage> propUsages, String message) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedConstraint(" + property + ", " + checked + ", " + propUsages + ", " + message + ");");
-        if (!property.property.check(true)) {
+        if (!((LCP<?>)property).property.check(true)) {
             errLog.emitConstraintPropertyAlwaysNullError(parser);
         }
         property.property.caption = message;
@@ -2609,7 +2613,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void checkPropertyValue(LP property) throws ScriptingErrorLog.SemanticErrorException {
-        if (property.property instanceof CalcProperty && !property.property.check(false) && !alwaysNullProperties.containsKey(property.property)) {
+        if (property.property instanceof CalcProperty && !((CalcProperty)property.property).check(false) && !alwaysNullProperties.containsKey(property.property)) {
             String path = parser.getCurrentScriptPath(getName(), parser.getCurrentParserLineNumber(), "\n\t\t\t");
             String location = path + ":" + (parser.getCurrentParser().input.LT(1).getCharPositionInLine() + 1);
             alwaysNullProperties.put(property.property, location);
@@ -2880,7 +2884,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkClassWhere(LCP<?> property, String name) {
-        ClassWhere<Integer> classWhere = property.getClassWhere(ClassType.ASIS);
+        ClassWhere<Integer> classWhere = property.getClassWhere(ClassType.signaturePolicy);
         boolean needWarning = false;
         if (classWhere.wheres.length > 1) {
             needWarning = true;

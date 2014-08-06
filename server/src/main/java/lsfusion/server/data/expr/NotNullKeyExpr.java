@@ -1,19 +1,22 @@
 package lsfusion.server.data.expr;
 
 import lsfusion.base.GlobalInteger;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.data.expr.where.NotNullWhere;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 
-public class NotNullKeyExpr extends ParamExpr {
+public class NotNullKeyExpr extends ParamExpr implements NotNullExprInterface {
 
     private final int ID;
     public NotNullKeyExpr(int ID) {
@@ -49,6 +52,19 @@ public class NotNullKeyExpr extends ParamExpr {
 
     public NotNull calculateNotNullWhere() {
         return new NotNull();
+    }
+
+    public void fillFollowSet(MSet<DataWhere> result) {
+        NotNullExpr.fillFollowSet(this, result);
+    }
+
+    // упрощенная копия аналогичного метода в NotNullExpr 
+    public ImSet<NotNullExprInterface> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
+        assert includeThis || recursive;
+        if(includeThis) {
+            return SetFact.<NotNullExprInterface>singleton(this);
+        }
+        return SetFact.EMPTY();
     }
 
     @Override

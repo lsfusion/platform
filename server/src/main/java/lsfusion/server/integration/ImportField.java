@@ -33,7 +33,7 @@ public class ImportField implements ImportFieldInterface, ImportKeyInterface {
     }
 
     public ImportField(CalcProperty<?> property) {
-        this.fieldClass = (DataClass) property.getValueClass();
+        this.fieldClass = (DataClass) property.getType();
     }
 
     public DataClass getFieldClass() {

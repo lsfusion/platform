@@ -7,7 +7,9 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 
 abstract public class UnionProperty extends ComplexIncrementProperty<UnionProperty.Interface> {
 
@@ -37,8 +39,11 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
+    public Inferred<Interface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         ImCol<CalcPropertyInterfaceImplement<Interface>> operands = getOperands();
-        return or(interfaces, operands.toList(), ListFact.toList(commonValue, operands.size()), prevSameClasses);
+        return op(operands.toList(), ListFact.toList(commonValue, operands.size()), operands.size(), -1, inferType, true);
+    }
+    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
+        return opInferValueClasses(getOperands(), inferred, true, inferType);
     }
 }

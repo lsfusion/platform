@@ -1036,7 +1036,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 
         final Expr dataExpr = property.getInconsistentExpr(mapKeys, baseClass);
 
-        Where correctClasses = property.getClassValueWhere(ClassType.ASSERTFULL).getWhere(new GetValue<Expr, Object>() {
+        Where correctClasses = property.getClassValueWhere(ClassType.storedPolicy).getWhere(new GetValue<Expr, Object>() {
             public Expr getMapValue(Object value) {
                 if(value instanceof PropertyInterface) {
                     return mapKeys.get((P)value);

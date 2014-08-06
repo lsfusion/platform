@@ -92,6 +92,15 @@ public enum PartitionType implements AggrType {
 //        assert isSelect();
         return false;
     }
+
+    public Type getType(Type exprType) {
+        return exprType;
+    }
+
+    public int getMainIndex() {
+        return 0;
+    }
+
     public Where getWhere(ImList<Expr> exprs) {
         return Expr.getWhere(exprs);
     }
@@ -99,4 +108,6 @@ public enum PartitionType implements AggrType {
     public Expr getMainExpr(ImList<Expr> exprs) {
         return exprs.get(0);
     }
+    
+    
 }

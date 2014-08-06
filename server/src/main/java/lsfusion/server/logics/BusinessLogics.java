@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRULogger;
 import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.interop.Compare;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
@@ -33,6 +34,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.query.MapCacheAspect;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.ObjectType;
@@ -72,6 +74,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
@@ -167,6 +170,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
+    public LRUWSASVSMap<Object, Method, Object, Object> startLruCache = new LRUWSASVSMap<Object, Method, Object, Object>(LRUUtil.G2);
+    public void cleanCaches() {
+        startLruCache = null;
+        MapCacheAspect.cleanClassCaches();
+
+        logger.info("Obsolete caches were successfully cleaned");
+    }
+    
     @Override
     protected void onStarted(LifecycleEvent event) {
         super.onStarted(event);

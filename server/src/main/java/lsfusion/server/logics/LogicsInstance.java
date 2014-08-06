@@ -189,6 +189,9 @@ public class LogicsInstance implements InitializingBean {
             ThreadLocalContext.set(context);
             lifecycle.fireStarting();
             lifecycle.fireStarted();
+            
+            businessLogics.cleanCaches();
+            
             logger.info("Logics instance has successfully started");
         } catch (Throwable throwable) {
             Throwable[] throwables = throwable instanceof MultiCauseException

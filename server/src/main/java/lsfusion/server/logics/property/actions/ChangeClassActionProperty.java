@@ -49,7 +49,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
      @Override
      public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
          OrObjectClassSet orSet;
-         if(needDialog() || where==null || (orSet = where.mapClassWhere(ClassType.ASIS).getOrSet(changeInterface))==null)
+         if(needDialog() || where==null || (orSet = where.mapClassWhere(ClassType.wherePolicy).getOrSet(changeInterface))==null)
              return baseClass.getChildProps().toMap(false);
 
          MSet<CalcProperty> mResult = SetFact.mSet(); // можно было бы оптимизировать (для exclAdd в частности), но пока не критично

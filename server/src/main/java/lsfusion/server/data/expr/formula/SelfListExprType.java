@@ -13,8 +13,6 @@ public class SelfListExprType extends ListExprType {
     }
 
     public Type getType(int i) {
-        if(isParam(i))
-            return null;
         return exprs.get(i).getSelfType();
     }
 }

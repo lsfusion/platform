@@ -35,16 +35,18 @@ public class UnionJoin extends CalculateJoin<Integer> {
         this.exprs = exprs;
     }
 
-    @IdentityLazy
-    public ImSet<ParamExpr> getLostKeys() {
-        return AbstractOuterContext.getOuterSetKeys(exprs).removeIncl(AbstractOuterContext.getOuterColKeys(getJoins().values()));
+    public ImMap<Integer, BaseExpr> getJoins() {
+        return getJoins(false);
     }
 
     @IdentityLazy
-    public ImMap<Integer, BaseExpr> getJoins() {
+    public ImMap<Integer, BaseExpr> getJoins(boolean forStat) {
         ImSet<BaseExpr> commonExprs = ListFact.fromJavaCol(getCommonExprs()).toSet();
-        ImSet<ParamExpr> lostKeys = AbstractOuterContext.getOuterSetKeys(exprs).removeIncl(AbstractOuterContext.getOuterColKeys(commonExprs));
-        return commonExprs.addExcl(lostKeys).toOrderSet().toIndexedMap();
+        if(forStat) {
+            ImSet<ParamExpr> lostKeys = AbstractOuterContext.getOuterSetKeys(exprs).removeIncl(AbstractOuterContext.getOuterColKeys(commonExprs));
+            commonExprs = commonExprs.addExcl(lostKeys);
+        }
+        return commonExprs.toOrderSet().toIndexedMap();
     }
 
     private static void fillOrderedExprs(BaseExpr baseExpr, BaseExpr fromExpr, MOrderExclMap<BaseExpr, MSet<BaseExpr>> orderedExprs) {

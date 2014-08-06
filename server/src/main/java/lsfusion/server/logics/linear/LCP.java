@@ -234,8 +234,8 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         property.autoset = autoset;
     }
 
-    public ValueClass[] getInterfaceClasses() {
-        return property.getInterfaceClasses(listInterfaces);
+    public ValueClass[] getInterfaceClasses(ClassType classType) {
+        return property.getInterfaceClasses(listInterfaces, classType);
     }
     
     public LAP getEditAction(String editActionSID) {

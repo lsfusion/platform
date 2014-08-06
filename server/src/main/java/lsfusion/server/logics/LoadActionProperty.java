@@ -10,6 +10,7 @@ import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 
@@ -20,7 +21,7 @@ public class LoadActionProperty extends SystemExplicitActionProperty {
     LCP<?> fileProperty;
 
     LoadActionProperty(String caption, LCP fileProperty) {
-        super(caption, fileProperty.getInterfaceClasses());
+        super(caption, fileProperty.getInterfaceClasses(ClassType.filePolicy));
 
         this.fileProperty = fileProperty;
     }

@@ -145,35 +145,18 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Type getType() {
-        return getType(defaultPrevSameClasses);
-    }
-
-    public Type getType(PrevClasses prevSameClasses) {
-        ValueClass valueClass = getValueClass(prevSameClasses);
+        ValueClass valueClass = getValueClass(ClassType.typePolicy);
         return valueClass != null ? valueClass.getType() : null;
     }
 
-    public ValueClass getValueClass() {
-        return getValueClass(defaultPrevSameClasses);
-    }
-    public abstract ValueClass getValueClass(PrevClasses prevSameClasses);
+    public abstract ValueClass getValueClass(ClassType classType);
 
-    public ValueClass[] getInterfaceClasses(ImOrderSet<T> listInterfaces) {
-        return listInterfaces.mapOrder(getInterfaceClasses(ClassType.ASSERTFULL)).toArray(new ValueClass[listInterfaces.size()]);
+    public ValueClass[] getInterfaceClasses(ImOrderSet<T> listInterfaces, ClassType classType) { // notification, load, lazy, dc, obsolete, в конструкторах при определении классов действий в основном
+        return listInterfaces.mapOrder(getInterfaceClasses(classType)).toArray(new ValueClass[listInterfaces.size()]);
     }
     public abstract ImMap<T, ValueClass> getInterfaceClasses(ClassType type);
     
-    public static final PrevClasses defaultPrevSameClasses = PrevClasses.SAME;
-    public static final PrevClasses constraintPrevSameClasses = PrevClasses.BASE;
-    
-    public ClassWhere<T> getClassWhere(ClassType type) {
-        return getClassWhere(type, defaultPrevSameClasses);
-    }
-    public abstract ClassWhere<T> getClassWhere(ClassType type, PrevClasses prevSameClasses);
-
-    public boolean check(boolean constraint) {
-        return !getClassWhere(ClassType.ASIS, constraint ? constraintPrevSameClasses : defaultPrevSameClasses).isFalse();
-    }
+    public abstract ClassWhere<T> getClassWhere(ClassType type);
 
     @IdentityLazy
     public boolean cacheIsInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny) { // для всех подряд свойств не имеет смысла
@@ -182,7 +165,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny) {
         ClassWhere<T> interfaceClassWhere = new ClassWhere<T>(interfaceClasses);
-        ClassWhere<T> fullClassWhere = getClassWhere(ClassType.FULL);
+        ClassWhere<T> fullClassWhere = getClassWhere(ClassType.formPolicy);
 
         if(isAny)
             return !fullClassWhere.andCompatible(interfaceClassWhere).isFalse();
@@ -211,7 +194,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     @IdentityLazy
     public Type getInterfaceType(T propertyInterface) {
-        return getInterfaceClasses(ClassType.ASSERTFULL).get(propertyInterface).getType();
+        return getInterfaceClasses(ClassType.materializeChangePolicy).get(propertyInterface).getType();
     }
 
     public String getDBName() {
@@ -418,7 +401,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         contextMenuBindings = contextMenuBindings == null ? MapFact.EMPTYORDER() : ((MOrderMap)contextMenuBindings).immutableOrder();
     }
 
-    public abstract void prereadCaches();
+    public void prereadCaches() {
+        getInterfaceClasses(ClassType.strictPolicy);
+        getInterfaceClasses(ClassType.signaturePolicy);
+    }
 
     protected abstract ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents);
 

@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
@@ -69,7 +70,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return mResult.immutable();
     }
     // схема с аспектом сделана из-за того что getChangeProps для ChangeClassAction не инвариантен (меняется после компиляции), тоже самое и For с addObject'ом
-    @IdentityLazy
+    @IdentityStartLazy // только компиляция, построение лексикографики
     protected ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         MMap<CalcProperty, Boolean> result = MapFact.mMap(addValue);
         for(ActionProperty<?> dependAction : getDependActions())
@@ -90,7 +91,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return aspectUsedExtProps();
     }
 
-    @IdentityLazy
+    @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     protected ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
         MMap<CalcProperty, Boolean> result = MapFact.mMap(addValue);
         for(ActionProperty<?> dependAction : getDependActions())
@@ -127,7 +128,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return usedProps;
     }
 
-    @IdentityLazy
+    @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     public boolean hasFlow(ChangeFlowType type) {
         for(ActionProperty<?> dependAction : getDependActions())
             if(dependAction.hasFlow(type))
@@ -135,7 +136,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return false;
     }
 
-    @IdentityLazy
+    @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
         MSet<SessionCalcProperty> mResult = SetFact.mSet();
         for(CalcProperty property : getUsedProps())
@@ -155,8 +156,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public ImMap<P, ValueClass> getInterfaceClasses(ClassType type) {
         return getWhereProperty().mapInterfaceClasses(type);
     }
-    public ClassWhere<P> getClassWhere(ClassType type, PrevClasses prevSameClasses) {
-        return getWhereProperty().mapClassWhere(type, prevSameClasses);
+    public ClassWhere<P> getClassWhere(ClassType type) {
+        return getWhereProperty().mapClassWhere(type);
     }
 
     public abstract CalcPropertyMapImplement<?, P> getWhereProperty();
@@ -264,10 +265,10 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return result;
     }
 
+    @Override
     public void prereadCaches() {
+        super.prereadCaches();
         compile();
-        getInterfaceClasses(ClassType.ASIS);
-        getInterfaceClasses(ClassType.FULL);
     }
 
     protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException, SQLHandledException;
@@ -285,7 +286,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         env.execute(this, keys, formEnv, null, null);
     }
 
-    public ValueClass getValueClass(PrevClasses prevSameClasses) {
+    public ValueClass getValueClass(ClassType classType) {
         return ActionClass.instance;
     }
 

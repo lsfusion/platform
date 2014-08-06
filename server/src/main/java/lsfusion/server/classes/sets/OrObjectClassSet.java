@@ -184,6 +184,11 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         return childPathes;
     }
 
+    @Override
+    public AndClassSet getCommonAnd() {
+        return this;
+    }
+
     public CustomClass getCommonClass() {
         assert !isEmpty();
         assert !unknown;

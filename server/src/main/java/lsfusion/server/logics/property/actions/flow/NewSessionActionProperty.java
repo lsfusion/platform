@@ -52,7 +52,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     @Override
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
         return IsClassProperty.getMapProperty(
-                super.getWhereProperty().mapInterfaceClasses(ClassType.FULL)); // нет смысла делать mapOld и нарушать , все равно весь механизм во многом эвристичен
+                super.getWhereProperty().mapInterfaceClasses(ClassType.wherePolicy)); // нет смысла делать mapOld и нарушать , все равно весь механизм во многом эвристичен
     }
 
     @IdentityLazy

@@ -9,13 +9,14 @@ import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.session.PropertyChanges;
 
 import java.util.Iterator;
 
 public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaProperty.Interface> {
 
-    final Compare compare;
+    public final Compare compare;
     public final Interface operator1;
     public final Interface operator2;
 
@@ -46,5 +47,24 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
 
     protected Expr calculateExpr(ImMap<Interface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         return ValueExpr.get(joinImplement.get(operator1).compare(joinImplement.get(operator2), compare));
+    }
+
+    @Override
+    public Inferred<Interface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        return inferJoinInterfaceClasses(operator1, operator2, inferType);
+    }
+
+    @Override
+    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
+        return ExClassSet.logical;
+    }
+    
+    public <T extends PropertyInterface> Inferred<T> inferJoinInterfaceClasses(CalcPropertyInterfaceImplement<T> operator1, CalcPropertyInterfaceImplement<T> operator2, InferType inferType) {
+        Compared<T> compared;
+        if(this.compare == Compare.EQUALS || this.compare == Compare.NOT_EQUALS)
+            compared = new Equals<T>(operator1, operator2);
+        else
+            compared = new Relationed<T>(operator1, operator2);
+        return Inferred.create(compared, inferType, this.compare == Compare.NOT_EQUALS);
     }
 }

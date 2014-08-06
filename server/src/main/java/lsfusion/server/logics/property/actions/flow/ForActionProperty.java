@@ -219,7 +219,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         if(ifProp==null)
             return MapFact.<I, ValueClass>EMPTY();
         assert ifProp.mapIsFull(getExtendInterfaces());
-        return ifProp.mapInterfaceClasses(ClassType.ASIS).remove(mapInterfaces.valuesSet()); // вообще тут предполагается ASSERTFULL, но только для не mapInterfaces, а пока такой возможности нет
+        return ifProp.mapInterfaceClasses(ClassType.forPolicy).remove(mapInterfaces.valuesSet()); // вообще тут предполагается ASSERTFULL, но только для extend interfaces, а пока такой возможности нет
     }
 
     @Override
@@ -242,13 +242,13 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             CalcPropertyMapImplement<?, I> noInlineIfProp = ifProp;
             ImSet<I> noInlineInterfaces = extNoInline;
             if(CalcProperty.depends(ifProp.property, StoredDataProperty.set)) { // нужно создать сначала материалайзить условие for по аналогии с проталкиванием
-                noInlineIfProp = DerivedProperty.createDataProp(true, getExtendClasses(), ifProp.property.getValueClass());// делаем SET в session свойство, и подменяем условие на это свойство
+                noInlineIfProp = DerivedProperty.createDataProp(true, getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy));// делаем SET в session свойство, и подменяем условие на это свойство
                 mResult.add(DerivedProperty.createSetAction(innerInterfaces, context, null, noInlineIfProp, ifProp));
                 noInlineInterfaces = noInline;
             }
 
             // затем сделать GROUP ANY TRUE IF с группировкой по noInline интерфейсам, затем
-            CalcPropertyMapImplement<?, I> groupNoInline = DerivedProperty.createAnyGProp(noInlineIfProp, noInlineInterfaces, Property.defaultPrevSameClasses);
+            CalcPropertyMapImplement<?, I> groupNoInline = DerivedProperty.createAnyGProp(noInlineIfProp, noInlineInterfaces);
             // по нему уже сгруппировать FOR noInline интерфейсам с опцией Inline.NO, а внутри FOR по материализованному условию где noInline уже будут внешними интерфейсами
             ActionPropertyMapImplement<?, I> cleanAction = createForAction(innerInterfaces, extNoInline, noInlineIfProp, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false,
                     action, null, addObject, addClass, forceDialog, recursive, SetFact.<I>EMPTY(), forceInline);
@@ -344,7 +344,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
             if (CalcProperty.depends(ifProp.property, pushChangedProps) || // если есть stored свойства (а не чисто session) или меняет условия
                     CalcProperty.depends(ifProp.property, StoredDataProperty.set)) {
-                pushProp = DerivedProperty.createDataProp(true, getExtendClasses(), ifProp.property.getValueClass()); // делаем SET в session свойство, и подменяем условие на это свойство
+                pushProp = DerivedProperty.createDataProp(true, getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy)); // делаем SET в session свойство, и подменяем условие на это свойство
                 mResult.add(DerivedProperty.createSetAction(innerInterfaces, context, null, pushProp, ifProp));
             }
         }

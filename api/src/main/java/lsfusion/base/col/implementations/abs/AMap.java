@@ -367,6 +367,14 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         });
     }
 
+    public ImMap<K, V> removeNulls() {
+        return filterFnValues(new SFunctionSet<V>() {
+            public boolean contains(V element) {
+                return element != null;
+            }
+        });
+    }
+
     public ImMap<K, V> mergeEqualsIncl(final ImMap<K, V> full) {
         return filterFn(new GetKeyValue<Boolean, K, V>() {
             public Boolean getMapValue(K key, V value) {
@@ -560,7 +568,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     protected boolean twins(ImMap<K, V> map) { // assert что size одинаковый
         for (int i = 0; i < size(); i++) {
             V mapValue = map.get(getKey(i));
-            if (mapValue == null || !BaseUtils.hashEquals(mapValue, getValue(i))) return false;
+            if (mapValue == null || !BaseUtils.nullEquals(mapValue, getValue(i))) return false;
         }
         return true;
     }
@@ -568,7 +576,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     public int immutableHashCode() {
         int hash = 0;
         for (int i = 0, size = size(); i < size; i++)
-            hash += getKey(i).hashCode() ^ getValue(i).hashCode();
+            hash += getKey(i).hashCode() ^ BaseUtils.nullHash(getValue(i));
         return hash;
     }
 

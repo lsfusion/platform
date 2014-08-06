@@ -6,4 +6,8 @@ public interface MAddCol<K> {
     boolean isEmpty();
 
     void add(K element);
+    
+    int size();
+    K get(int i);
+    void remove(int i);
 }

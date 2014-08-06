@@ -17,8 +17,4 @@ public abstract class ListExprType implements ExprType {
     public int getExprCount() {
         return exprs.size();
     }
-
-    public boolean isParam(int i) {
-        return exprs.get(i) instanceof ParamExpr;
-    }
 }

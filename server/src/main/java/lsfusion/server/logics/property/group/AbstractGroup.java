@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
@@ -70,7 +71,7 @@ public class AbstractGroup extends AbstractNode {
         prop.parent.set(this, version);
     }
 
-    @IdentityLazy
+    @IdentityStartLazy
     public ImMap<Property, Integer> getIndexedPropChildren() { // оптимизация
         MExclMap<Property, Integer> mResult = MapFact.mExclMap();
         int count = 0;

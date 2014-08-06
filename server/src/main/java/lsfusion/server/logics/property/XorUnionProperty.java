@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.where.Where;
@@ -74,7 +75,7 @@ public class XorUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    @IdentityLazy
+    @IdentityStartLazy // только компиляция, построение лексикографики и несколько мелких использований
     public ImSet<DataProperty> getChangeProps() {
         MSet<DataProperty> result = SetFact.mSet();
         for(CalcPropertyInterfaceImplement<Interface> operand : operands)

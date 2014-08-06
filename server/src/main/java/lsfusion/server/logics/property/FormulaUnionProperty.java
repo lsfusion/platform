@@ -8,6 +8,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.FormulaUnionExpr;
 import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.PropertyChanges;
 
 public abstract class FormulaUnionProperty extends UnionProperty {
@@ -32,4 +34,9 @@ public abstract class FormulaUnionProperty extends UnionProperty {
     }
 
     protected abstract FormulaUnionImpl getFormula();
+
+    @Override
+    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
+        return FormulaImplProperty.inferValueClass(getOrderInterfaces(), getFormula(), inferred);
+    }
 }

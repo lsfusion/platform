@@ -45,8 +45,9 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             if(classWhere==null) {
                 if(keyExpr instanceof PullExpr)
                     return ObjectType.instance;
-                else
-                    throw new RuntimeException("no classes"); // см. BaseExpr.pushValues или Settings.limitClassWhereCount
+                return null;
+//                else
+//                    throw new RuntimeException("no classes"); 
             }
             Type whereType = classWhere.getType();
             if(result == null)
@@ -55,6 +56,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
                 result = result.getCompatible(whereType);
         }
 
+        // если null, см. BaseExpr.pushValues или Settings.limitClassWhereCount
         return result;
     }
 
@@ -231,10 +233,10 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
         return result;
     }
 
-    public ImSet<NotNullExpr> getExprFollows() {
-        ImSet<NotNullExpr>[] follows = new ImSet[wheres.length]; int num = 0;
+    public ImSet<NotNullExprInterface> getExprFollows() {
+        ImSet<NotNullExprInterface>[] follows = new ImSet[wheres.length]; int num = 0;
         for(And<VariableSingleClassExpr> where : wheres) {
-            MSet<NotNullExpr> mResult = SetFact.mSet();
+            MSet<NotNullExprInterface> mResult = SetFact.mSet();
             for(int i=0,size=where.size();i<size;i++)
                 mResult.addAll(where.getKey(i).getExprFollows(true, NotNullExpr.FOLLOW, true));
             follows[num++] = mResult.immutable();

@@ -375,7 +375,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
                 return false;
             else if(hash == twHash) {
                 if(keys[i]==twKeys[i] || keys[i].equals(twKeys[i])) { // самый частый случай
-                    if(!BaseUtils.hashEquals((V)values[i], (V)twValues[i]))
+                    if(!BaseUtils.nullHashEquals((V)values[i], (V)twValues[i]))
                         return false;
 
                     i++;
@@ -402,7 +402,7 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
                         boolean founded = false;
                         for(int ktw = i; ktw < ntw; ktw++)
                             if(!found[ktw-i] && (key == twKeys[ktw] || key.equals(twKeys[ktw]))) {
-                                if(!BaseUtils.hashEquals(addedValue, (V)twValues[ktw]))
+                                if(!BaseUtils.nullHashEquals(addedValue, (V)twValues[ktw]))
                                     return false;
 
                                 found[ktw-i] = true;

@@ -31,7 +31,7 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
     @IdentityInstanceLazy
     public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
         return IsClassProperty.getMapProperty(mapInterfaces.innerJoin( // по аналогии с группировкой (а точнее вместо) такая "эвристика"
-                getGroupWhereProperty().mapInterfaceClasses(ClassType.FULL)));
+                getGroupWhereProperty().mapInterfaceClasses(ClassType.wherePolicy)));
     }
     protected abstract CalcPropertyMapImplement<?, I> getGroupWhereProperty();
 

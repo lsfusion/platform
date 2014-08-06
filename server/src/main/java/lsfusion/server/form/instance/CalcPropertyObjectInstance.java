@@ -13,6 +13,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyValueImplement;
+import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.Modifier;
 
@@ -41,7 +42,7 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
     }
 
     public ValueClass getValueClass() {
-        return property.getValueClass();
+        return property.getValueClass(ClassType.formPolicy);
     }
 
     private Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, WhereBuilder whereBuilder) throws SQLException, SQLHandledException {

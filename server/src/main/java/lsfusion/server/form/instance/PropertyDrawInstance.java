@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
@@ -50,8 +51,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         });
     }
 
-    public ValueClass getValueClass() {
-        return propertyObject.property.getValueClass();
+    public Type getType() {
+        return propertyObject.property.getType();
     }
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)

@@ -126,6 +126,14 @@ public class SetFact {
         return ((ImSet<T>)set).merge(merge);
     }
 
+    public static <T> ImSet<T> mergeSets(ImSet<? extends T>... sets) {
+        MSet<T> mResult = SetFact.mSet();
+        for(ImSet<? extends T> set : sets) {
+            mResult.addAll(set);
+        }
+        return mResult.immutable();
+    }
+
     public static <T> ImSet<T> addExcl(ImSet<? extends T> set, T element) {
         return ((ImSet<T>)set).addExcl(element);
     }
@@ -138,8 +146,20 @@ public class SetFact {
         return ((ImSet<T>)set).filter(filter);
     }
 
+    public static <T> ImSet<T> nullFilter(ImSet<? extends T> set, ImSet<? extends T> filter) {
+        return set == null ? null : filter(set, filter);
+    }
+
     public static <T> ImSet<T> remove(ImSet<? extends T> set, ImSet<? extends T> remove) {
         return ((ImSet<T>)set).remove(remove);
+    }
+
+    public static <T> ImSet<T> nullRemove(ImSet<? extends T> set, ImSet<? extends T> remove) {
+        return set == null ? null : remove(set, remove);
+    }
+
+    public static <K, V> ImSet<V> nullMapRev(ImSet<K> map, ImRevMap<K, V> mapping) {
+        return map == null ? null : map.mapRev(mapping);
     }
 
     public static <T, K extends T> ImSet<K> removeSet(ImSet<K> set, ImSet<? extends T> remove) {

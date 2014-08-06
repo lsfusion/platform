@@ -79,12 +79,12 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
         boolean isEquals = isEquals();
         ConcreteClass staticClass;
         if(operator2 instanceof VariableSingleClassExpr && operator1 instanceof StaticClassExprInterface &&
-                (staticClass = ((StaticClassExprInterface)operator1).getStaticClass()) != null && (isEquals || staticClass instanceof DataClass))
+                (staticClass = ((StaticClassExprInterface)operator1).getStaticClass()) != null && (isEquals || (staticClass instanceof DataClass && ((DataClass)staticClass).fixedSize())))
             classWhere = classWhere.and(new ClassExprWhere((VariableSingleClassExpr)operator2, staticClass));
         if(operator2 instanceof VariableClassExpr && operator1 instanceof VariableClassExpr)
             comps = SetFact.singleton(SetFact.toSet((VariableClassExpr)operator1, (VariableClassExpr) operator2));
         if(operator1 instanceof VariableSingleClassExpr && operator2 instanceof StaticClassExprInterface &&
-                (staticClass = ((StaticClassExprInterface)operator2).getStaticClass()) != null && (isEquals || staticClass instanceof DataClass))
+                (staticClass = ((StaticClassExprInterface)operator2).getStaticClass()) != null && (isEquals || (staticClass instanceof DataClass && ((DataClass)staticClass).fixedSize())))
             classWhere = classWhere.and(new ClassExprWhere((VariableSingleClassExpr)operator1,staticClass));
 
         return new MeanClassWhere(classWhere, comps, isEquals);

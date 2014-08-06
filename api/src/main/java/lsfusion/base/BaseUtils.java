@@ -45,25 +45,24 @@ public class BaseUtils {
     public static boolean nullEquals(Object obj1, Object obj2) {
         if (obj1 == null)
             return obj2 == null;
-        else
-            return obj1.equals(obj2);
+        return obj2 != null && obj1.equals(obj2);
     }
 
     public static int nullCompareTo(Comparable obj1, Comparable obj2) {
-        if (obj1 == null)
+        if (obj1 == null) {
             if (obj2 == null)
                 return 0;
             else
                 return obj2.compareTo(obj1);
-        else
-            return obj1.compareTo(obj2);
+        }
+        
+        return obj1.compareTo(obj2);
     }
 
     public static boolean nullHashEquals(Object obj1, Object obj2) {
         if (obj1 == null)
             return obj2 == null;
-        else
-            return hashEquals(obj1, obj2);
+        return obj2 != null && hashEquals(obj1, obj2);
     }
 
     public static int nullHash(Object obj) {
@@ -2170,6 +2169,14 @@ public class BaseUtils {
 //        if(set1 instanceof ImSet && set2 instanceof ImSet)
 //            return ((ImSet<K>)set1).merge((ImSet<K>)set2);
         return new MergeFunctionSet<K>(set1, set2);
+    }
+
+    public static <K> boolean containsAll(FunctionSet<K> set1, ImSet<K> set2) {
+        for(K element : set2) {
+            if (!set1.contains(element))
+                return false;
+        }
+        return true;
     }
 
     public static <T> FunctionSet<T> universal(boolean empty) {

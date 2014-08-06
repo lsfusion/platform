@@ -11,6 +11,7 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
@@ -34,7 +35,7 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
     private static AtomicLong counter = new AtomicLong(0);
 
     public EvalActionProperty(String caption, LCP<P> source) {
-        super(caption, source.getInterfaceClasses());
+        super(caption, source.getInterfaceClasses(ClassType.aroundPolicy));
         mapSource = source.listInterfaces.mapSet(getOrderInterfaces());
         this.source = source;
     }

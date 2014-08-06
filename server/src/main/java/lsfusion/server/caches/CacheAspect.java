@@ -2,14 +2,14 @@ package lsfusion.server.caches;
 
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
+import lsfusion.server.ServerLoggers;
+import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.logics.BusinessLogics;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import lsfusion.base.*;
-import lsfusion.base.col.SetFact;
-import lsfusion.server.data.expr.query.GroupExpr;
-import lsfusion.server.data.query.AbstractSourceJoin;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
@@ -17,7 +17,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 @Aspect
 public class CacheAspect {
@@ -63,7 +62,7 @@ public class CacheAspect {
         }
     }
 
-    private static Object lazyExecute(Object object, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs) throws Throwable {
+    private static Object lazyExecute(Object object, ProceedingJoinPoint thisJoinPoint, Object[] args, LRUWSASVSMap<Object, Method, Object, Object> lruCache, boolean changedArgs) throws Throwable {
         Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
         Object result = lruCache.get(object, method, args);
         if (result == null) {
@@ -166,7 +165,7 @@ public class CacheAspect {
 
 //    public final static SoftHashMap<IdentityInvocation, Object> lazyIdentityExecute = new SoftHashMap<IdentityInvocation, Object>();
     public final static IdentityInvocationWeakMap lazyIdentityExecute = new IdentityInvocationWeakMap();
-    public final static LRUWSASVSMap<Object, Method, Object, Object> lruCache = new LRUWSASVSMap<Object, Method, Object, Object>(LRUUtil.G2);
+    public final static LRUWSASVSMap<Object, Method, Object, Object> commonLruCache = new LRUWSASVSMap<Object, Method, Object, Object>(LRUUtil.G2);
     
     private static Object execute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs) throws Throwable {
         if(changedArgs) {
@@ -178,52 +177,71 @@ public class CacheAspect {
             return thisJoinPoint.proceed();
     }
 
-    public static Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs, boolean strong) throws Throwable {
-        if(args.length>0 && args[0] instanceof NoCacheInterface)
-            return execute(target, thisJoinPoint, args, changedArgs);
-
-        if (!strong) {
-            return lazyExecute(target, thisJoinPoint, args, changedArgs);     
-        }
-
-        synchronized (lazyIdentityExecute) {
-            IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
-            Object result = lazyIdentityExecute.get(invocation);
-            if (result == null && !lazyIdentityExecute.containsKey(invocation)) { // здесь и в lazyExecute кривовато, но пока такой способ handl'ить null
-                result = execute(target, thisJoinPoint, args, changedArgs);
-                lazyIdentityExecute.put(invocation, result);
+    public static enum Type {
+        SIMPLE, START, STRONG 
+    } 
+    
+    public static Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs, Type type) throws Throwable {
+//        if(args.length>0 && args[0] instanceof NoCacheInterface)
+//            return execute(target, thisJoinPoint, args, changedArgs);
+        
+        if(type == Type.STRONG) {
+            synchronized (lazyIdentityExecute) {
+                IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
+                Object result = lazyIdentityExecute.get(invocation);
+                if (result == null && !lazyIdentityExecute.containsKey(invocation)) { // здесь и в lazyExecute кривовато, но пока такой способ handl'ить null
+                    result = execute(target, thisJoinPoint, args, changedArgs);
+                    lazyIdentityExecute.put(invocation, result);
+                }
+                return result;
             }
-            return result;
         }
+
+        LRUWSASVSMap<Object, Method, Object, Object> lruCache = null;
+        if(type == Type.START) {
+            BusinessLogics businessLogics = ThreadLocalContext.getBusinessLogics();
+            if(businessLogics != null) {
+                lruCache = businessLogics.startLruCache;
+            } else
+                ServerLoggers.assertLog(false, "");
+        }
+        if(lruCache == null)
+            lruCache = commonLruCache;
+
+        return lazyExecute(target, thisJoinPoint, args, lruCache, changedArgs);     
     }
 
-    public static Object callMethod(Object object, ProceedingJoinPoint thisJoinPoint, boolean strong) throws Throwable {
-        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs(), false, strong);
+    public static Object callMethod(Object object, ProceedingJoinPoint thisJoinPoint, Type type) throws Throwable {
+        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs(), false, type);
     }
     @Around("execution(@lsfusion.server.caches.IdentityLazy * *.*(..)) && target(object)")
     public Object callMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return callMethod(object, thisJoinPoint, false);
+        return callMethod(object, thisJoinPoint, Type.SIMPLE);
+    }
+    @Around("execution(@lsfusion.server.caches.IdentityStartLazy * *.*(..)) && target(object)")
+    public Object callStartMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        return callMethod(object, thisJoinPoint, Type.START);
     }
     @Around("execution(@lsfusion.server.caches.IdentityInstanceLazy * *.*(..)) && target(object)")
     public Object callInstanceMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return callMethod(object, thisJoinPoint, false); // есть и для мелких объектов, а в этом случае нужна более быстрая синхронизация
+        return callMethod(object, thisJoinPoint, Type.SIMPLE); // есть и для мелких объектов, а в этом случае нужна более быстрая синхронизация
     }
     @Around("execution(@lsfusion.server.caches.IdentityStrongLazy * *.*(..)) && target(object)")
     public Object callStrongMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return callMethod(object, thisJoinPoint, true);
+        return callMethod(object, thisJoinPoint, Type.STRONG);
     }
 
-    public static Object callParamMethod(Object object, ProceedingJoinPoint thisJoinPoint, boolean strong) throws Throwable {
+    public static Object callParamMethod(Object object, ProceedingJoinPoint thisJoinPoint, Type type) throws Throwable {
         Object[] args = thisJoinPoint.getArgs();
         Object[] switchArgs = new Object[args.length];
         switchArgs[0] = object;
         System.arraycopy(args, 1, switchArgs, 1, args.length - 1);
 
-        return lazyIdentityExecute(args[0], thisJoinPoint, switchArgs, false, strong);
+        return lazyIdentityExecute(args[0], thisJoinPoint, switchArgs, false, type);
     }
     @Around("execution(@lsfusion.server.caches.ParamLazy * *.*(..)) && target(object)")
     public Object callParamMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return callParamMethod(object, thisJoinPoint, false);
+        return callParamMethod(object, thisJoinPoint, Type.SIMPLE);
     }
 
     //@net.jcip.annotations.Immutable
@@ -277,7 +295,7 @@ public class CacheAspect {
     @Around("execution(@lsfusion.server.caches.TwinLazy * *.*(..)) && target(object)")
     // с call'ом есть баги
     public Object callTwinMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs(), false, false);
+        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs(), false, Type.SIMPLE);
 //        return lazyTwinExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
     }
 

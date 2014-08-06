@@ -270,7 +270,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             byte[] fileBytes;
             try {
                 DataSession session = createSession();
-                ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.ASIS);
+                ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.filePolicy);
                 for (int i = 0; i < interfaces.size(); i++) {
                     objects[i] = session.getDataObject(interfaceClasses.get(interfaces.get(i)), Integer.decode(params[i]));
                 }
@@ -295,7 +295,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             try {
                 DataSession session = createSession();
                 ImOrderSet<PropertyInterface> interfaces = property.listInterfaces;
-                ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.ASIS);
+                ImMap<PropertyInterface, ValueClass> interfaceClasses = property.property.getInterfaceClasses(ClassType.editPolicy);
 
                 DataObject[] objects = new DataObject[interfaces.size()];
                 for (int i = 0; i < interfaces.size(); i++) {

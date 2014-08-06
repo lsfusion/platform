@@ -166,6 +166,12 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
         return SetFact.imFilter(mResult, this);
     }
 
+    public ImSet<K> split(ImSet<K> filter, Result<ImSet<K>> rest, Result<ImSet<K>> restSplit) {
+        ImSet<K> common = split(filter, rest);
+        restSplit.set(filter.remove(common));
+        return common;
+    }
+
     public ImSet<K> filter(ImSet<? extends K> filter) {
         if(size()>filter.size()) return ((ImSet<K>)filter).filter((ImSet<? extends K>)this);
         return filterFn((FunctionSet<K>) filter);

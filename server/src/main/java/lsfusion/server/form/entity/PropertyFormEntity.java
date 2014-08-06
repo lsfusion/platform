@@ -19,12 +19,9 @@ public class PropertyFormEntity<T extends BusinessLogics<T>> extends FormEntity<
 
         Version version = LM.getVersion();
 
-        ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.ASSERTFULL);
-        boolean prev = false;
-        if(interfaceClasses.isEmpty()) {
-            interfaceClasses = property.getInterfaceClasses(ClassType.ASSERTFULL, PrevClasses.INVERTSAME);
-            prev = true;
-        }
+        ImMap<P,ValueClass> interfaceClasses = property.getInterfaceClasses(ClassType.logPolicy);
+        boolean prev = property.usePrevHeur();
+        
         ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues(new GetValue<ObjectEntity, ValueClass>() {
             public ObjectEntity getMapValue(ValueClass value) {
                 return new ObjectEntity(genID(), value, value.toString());

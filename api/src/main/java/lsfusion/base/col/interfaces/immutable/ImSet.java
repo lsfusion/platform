@@ -30,6 +30,7 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
 
     public ImSet<T> filterFn(FunctionSet<T> filter);
     public ImSet<T> split(FunctionSet<T> filter, Result<ImSet<T>> rest);
+    public ImSet<T> split(ImSet<T> filter, Result<ImSet<T>> rest, Result<ImSet<T>> restSplit);
 
     public ImSet<T> filter(ImSet<? extends T> filter);
     ImSet<T> remove(ImSet<? extends T> remove);

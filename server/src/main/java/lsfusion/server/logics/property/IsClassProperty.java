@@ -21,6 +21,9 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.mutables.NFStaticLazy;
 import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
 
@@ -130,7 +133,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     @Override
-    public ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevClasses) {
+    public ClassWhere<Object> calcClassValueWhere(CalcClassType type) {
         return new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(IsClassProperty.getMapClasses(interfaces), "value", LogicalClass.instance), true);
     }
 
@@ -138,10 +141,11 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return interfaces.single().interfaceClass;
     }
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if(calcType.isClassInvert()) // жесткий хак
-            return getClassTableExpr(joinImplement, calcType);
+        ValueClass interfaceClass = getInterfaceClass();
+        if(calcType instanceof CalcClassType && (((CalcClassType)calcType).replaceIs() || interfaceClass instanceof BaseClass)) // жесткий хак
+            return getClassTableExpr(joinImplement, ((CalcClassType)calcType));
 
-        return ValueExpr.get(joinImplement.singleValue().isUpClass(getInterfaceClass()));
+        return ValueExpr.get(joinImplement.singleValue().isUpClass(interfaceClass));
     }
 
     @Override
@@ -156,5 +160,13 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
     public Where getRemoveWhere(Expr joinExpr, PropertyChanges newChanges) {
         return getChanged(IncrementType.DROP, ChangeEvent.scope).getExpr(MapFact.singleton(interfaces.single(), joinExpr), newChanges).getWhere();
+    }
+
+    public Inferred<ClassPropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) { // calcClassValueWhere - начинает какой-то ерундой страдать, разбивая условия на is'ы чтобы уменьшить кол-во таблиц
+        return new Inferred<ClassPropertyInterface>(ExClassSet.toExValue(IsClassProperty.getMapClasses(interfaces)));
+    }
+
+    public ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
+        return ExClassSet.logical;
     }
 }

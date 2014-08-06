@@ -8,9 +8,10 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.Message;
 import lsfusion.server.Settings;
@@ -18,6 +19,7 @@ import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.*;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.OrClassSet;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -43,6 +45,10 @@ import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferInfoType;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.table.TableFactory;
@@ -156,9 +162,17 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     // по выражениям проверяет
-    public <P extends PropertyInterface> boolean intersectFull(CalcProperty<P> property, ImMap<P, T> map) {
+    public <P extends PropertyInterface> boolean intersectFull(CalcProperty<P> property, ImRevMap<P, T> map) {
+        return AlgType.caseIntersectType.intersectFull(this, property, map);
+    }
+
+    public <P extends PropertyInterface> boolean inferIntersectFull(CalcProperty<P> property, ImRevMap<P, T> map, InferInfoType inferType) {
+        return !inferInterfaceClasses(inferType).and(property.inferInterfaceClasses(inferType).map(map), inferType).isEmpty(inferType);
+    }
+
+    public <P extends PropertyInterface> boolean calcIntersectFull(CalcProperty<P> property, ImMap<P, T> map, CalcInfoType calcType) {
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
-        return !calculateClassExpr(mapKeys, defaultPrevSameClasses).getWhere().and(property.calculateClassExpr(map.join(mapKeys), defaultPrevSameClasses).getWhere()).not().checkTrue();
+        return !calculateExpr(mapKeys, calcType).getWhere().and(property.calculateExpr(map.join(mapKeys), calcType).getWhere()).not().checkTrue();
     }
 
     protected CalcProperty(String caption, ImOrderSet<T> interfaces) {
@@ -229,6 +243,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public boolean noOld() { // именно так, а не через getSessionCalcDepends, так как может использоваться до инициализации логики
         return getParseOldDepends().isEmpty();
     }
+    @IdentityStartLazy
     public ImSet<OldProperty> getParseOldDepends() {
         MSet<OldProperty> mResult = SetFact.mSet();
         for(CalcProperty<?> property : getDepends(false))
@@ -249,14 +264,18 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return !noOld();
     }
 
-    protected Expr getClassTableExpr(ImMap<T, ? extends Expr> joinImplement, CalcType classCalcType) {
-        ClassTable<T> classTable = getClassTable(classCalcType.getPrevClasses());
+    protected Expr getClassTableExpr(ImMap<T, ? extends Expr> joinImplement, CalcClassType classType) {
+        ClassTable<T> classTable = getClassTable(classType);
         return classTable.join(classTable.mapFields.join(joinImplement)).getExpr(classTable.propValue);
     }
 
     @IdentityStrongLazy
-    public ClassTable<T> getClassTable(PrevClasses prevSameClasses) {
-        return new ClassTable<T>(this, prevSameClasses);
+    public ClassTable<T> getClassTable(CalcClassType classType) {
+        return new ClassTable<T>(this, classType);
+    }
+
+    public boolean usePrevHeur() {
+        return getExpr(getMapKeys(), CalcClassType.PREVSAME_KEEPIS).isNull();
     }
 
     public static class ClassTable<P extends PropertyInterface> extends Table {
@@ -264,22 +283,21 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         public final ImRevMap<KeyField, P> mapFields;
         public final PropertyField propValue;
 
-        public ClassTable(final CalcProperty<P> property, PrevClasses prevSameClasses) {
+        public ClassTable(final CalcProperty<P> property, CalcClassType classType) {
             super(property.getSID());
-
+            
             ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues(new GetValue<KeyField, P>() {
                 public KeyField getMapValue(P value) {
                     return new KeyField(value.getSID(), property.getInterfaceType(value));
                 }});
             mapFields = revMapFields.reverse();
             keys = property.getOrderInterfaces().mapOrder(revMapFields);
-
-            ValueClass valueClass = property.getValueClass(prevSameClasses);
-            propValue = new PropertyField("value", valueClass.getType());
+            
+            propValue = new PropertyField("value", property.getType());
             properties = SetFact.singleton(propValue);
 
-            classes = property.getClassWhere(ClassType.ASSERTFULL, prevSameClasses).remap(revMapFields);
-            propertyClasses = MapFact.singleton(propValue, BaseUtils.<ClassWhere<Field>>immutableCast(classes).and(new ClassWhere<Field>(propValue, valueClass.getUpSet())));
+            classes = property.getClassWhere(classType).remap(revMapFields);
+            propertyClasses = MapFact.singleton(propValue, property.getClassValueWhere(classType).remap(MapFact.<Object, Field>addRevExcl(revMapFields, "value", propValue)));
         }
 
         public StatKeys<KeyField> getStatKeys() {
@@ -377,7 +395,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
         // при вызове readChangeTable, используется assertion (см. assert fitKeyClasses) что если таблица подходит по классам для значения, то подходит по классам и для ключей
         // этот assertion может нарушаться если определилось конкретное значение и оно было null, как правило с комбинаторными event'ами (вообще может нарушиться и если не null, но так как propertyClasses просто вырезаются то не может), соответственно необходимо устранить этот случай
-        readTable.fixKeyClasses(getClassWhere(ClassType.ASSERTFULL));
+        readTable.fixKeyClasses(getClassWhere(ClassType.materializeChangePolicy));
         readTable.checkClasses(session, null); // нужен как раз для проверки fixKeyClasses
 
         return readTable;
@@ -486,7 +504,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return false;
     }
 
-    @IdentityLazy
+    @IdentityStartLazy
     public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
         MSet<SessionCalcProperty> mResult = SetFact.mSet();
         for(CalcProperty<?> property : getDepends(events)) // derived'ы в общем то не интересуют так как используется в singleApply
@@ -496,7 +514,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     // получает базовый класс по сути нужен для определения класса фильтра
     public CustomClass getDialogClass(ImMap<T, DataObject> mapValues, ImMap<T, ConcreteClass> mapClasses) {
-        return (CustomClass)getValueClass();
+        return (CustomClass)getValueClass(ClassType.editPolicy);
 /*        Map<T, Expr> mapExprs = new HashMap<T, Expr>();
         for (Map.Entry<T, DataObject> keyField : mapColValues.entrySet())
             mapExprs.put(keyField.getKey(), new ValueExpr(keyField.getValue().object, mapClasses.get(keyField.getKey())));
@@ -527,8 +545,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     protected abstract Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere);
 
-    public Expr calculateClassExpr(ImMap<T, ? extends Expr> joinImplement, PrevClasses prevSameClasses) { // вызывается до stored, поэтому чтобы не было проблем с кэшами, сделано так
-        return calculateExpr(joinImplement, prevSameClasses.getCalc(), PropertyChanges.EMPTY, null);
+    // чтобы не было рекурсии так сделано
+    public Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType) {
+        return calculateExpr(joinImplement, calcType, PropertyChanges.EMPTY, null);
     }
 
     public static <T extends PropertyInterface> ImMap<T, Expr> getJoinValues(ImMap<T, ? extends Expr> joinImplement) {
@@ -604,7 +623,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public void markStored(TableFactory tableFactory, ImplementTable table) {
         MapKeysTable<T> mapTable = null;
 
-        ImMap<T, ValueClass> keyClasses = getInterfaceClasses(ClassType.ASSERTFULL);
+        ImMap<T, ValueClass> keyClasses = getInterfaceClasses(ClassType.storedPolicy);
         if (table != null) {
             mapTable = table.getMapKeysTable(keyClasses);
             assert mapTable!=null;
@@ -621,33 +640,130 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         this.field = field;
     }
 
-    public ValueClass getValueClass(PrevClasses prevSameClasses) {
-        return getClassValueWhere(ClassType.ASIS, prevSameClasses).getCommonParent(SetFact.singleton("value")).get("value");
+    @IdentityLazy
+    public ValueClass getValueClass(ClassType classType) {
+        return getClassValueWhere(classType).getCommonParent(SetFact.singleton("value")).get("value");
     }
     
+    // для resolve'а
     public AndClassSet getValueClassSet() {
-        return getClassValueWhere(ClassType.ASIS).getCommonClass("value");
+        return getClassValueWhere(ClassType.resolvePolicy).getCommonClass("value");
     }
 
+    @IdentityLazy
     public ImMap<T, ValueClass> getInterfaceClasses(ClassType type) {
-        return getInterfaceClasses(type, defaultPrevSameClasses);
+        return getClassWhere(type).getCommonParent(interfaces);
     }
     @IdentityLazy
-    public ImMap<T, ValueClass> getInterfaceClasses(ClassType type, PrevClasses prevSameClasses) {
-        return getClassWhere(type, prevSameClasses).getCommonParent(interfaces);
-    }
-    @IdentityLazy
-    public ClassWhere<T> getClassWhere(ClassType type, PrevClasses prevSameClasses) {
-        return getClassValueWhere(type, prevSameClasses).filterKeys(interfaces); // не полностью, собсно для этого и есть full
+    public ClassWhere<T> getClassWhere(ClassType type) {
+        return getClassValueWhere(type).filterKeys(interfaces); // не полностью, собсно для этого и есть full
     }
 
     public ClassWhere<Object> getClassValueWhere(ClassType type) {
-        return getClassValueWhere(type, defaultPrevSameClasses);
+        boolean assertFull = false;
+        if(type == ClassType.ASSERTFULL_NOPREV) {
+            type = ClassType.useInsteadOfAssert;
+            assertFull = true;
+        } 
+        if(AlgType.checkInfer) checkInferClasses(type);
+
+        AlgType algType = type.getAlg();
+        assert !assertFull || isFull(algType.getAlgInfo());
+        return getClassValueWhere(algType);
     }
-    protected abstract ClassWhere<Object> getClassValueWhere(ClassType type, PrevClasses prevSameClasses);
+
+    @IdentityLazy
+    public ClassWhere<T> getClassWhere(AlgType type) {
+        return getClassValueWhere(type).filterKeys(interfaces); // не полностью, собсно для этого и есть full
+    }
+
+    public ClassWhere<Object> getClassValueWhere(AlgType algType) {
+        return algType.getClassValueWhere(this);
+    }
+
+    @IdentityStartLazy
+    private boolean checkInferClasses(ClassType type) {
+        if(this instanceof NullValueProperty)
+            return true;
+        
+        assert type != ClassType.ASSERTFULL_NOPREV;
+
+        CalcClassType calcType = type.getCalc();
+        InferType inferType = type.getInfer();
+//        if(calcType == CalcClassType.PREVSAME && getParseOldDepends().size() == 0) { // PREVSAME классовые свойства подменяет, а там есть очень сложные свойства
+//            calcType = CalcType.PREVBASE;
+//            inferType = InferType.PREVBASE;
+//        }
+            
+        ClassWhere<Object> calc = calcClassValueWhere(calcType);
+        ClassWhere<Object> inferred = inferClassValueWhere(inferType);
+        ImSet<Object> fullInterfaces = calc.getFullInterfaces();
+        ClassWhere<Object> cinferred = inferred.filterKeys(fullInterfaces);
+        if(!(calc.means(cinferred, false) && cinferred.means(calc, false)) &&
+                !calc.toString().equals("{value - Строка (bp) 2000}")
+//                !calc.toString().contains("PriceRound_RoundCondition") &&
+//                !(calc.toString().contains("System_Object") && getParseOldDepends().size() > 0) //&& 
+//                !(calc.getAnds().length > 1 && inferred.getAnds().length==1)
+                ) {
+            if(!BaseUtils.hashEquals(calc.getCommonParent(fullInterfaces), cinferred.getCommonParent(fullInterfaces))) {
+                System.out.println(this + ", CALC : " + calc + ", INF : " + cinferred);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @IdentityStartLazy
+    private boolean checkInferNotNull() {
+        boolean calcNotNull = calcNotNull(CalcClassType.PREVBASE);
+        boolean inferNotNull = inferNotNull(InferType.PREVBASE);
+        if(calcNotNull != inferNotNull) {
+            System.out.println(this + " NOTNULL, CALC : " + calcNotNull + ", INF : " + inferNotNull);
+            return false;
+        }
+        return true;
+    }
+
+    @IdentityStartLazy
+    private boolean checkInferEmpty() {
+        boolean calcEmpty = calcEmpty(CalcClassType.PREVBASE);
+        boolean inferEmpty = inferEmpty(InferType.PREVBASE);
+        if(calcEmpty != inferEmpty) {
+            System.out.println(this + " EMPTY, CALC : " + calcEmpty + ", INF : " + inferEmpty);
+            return false;
+        }
+        return true;
+    }
+
+    @IdentityStartLazy
+    private boolean checkInferFull(ImCol<T> checkInterfaces) {
+        boolean calcFull = calcFull(checkInterfaces, CalcClassType.PREVBASE);
+        boolean inferFull = inferFull(checkInterfaces, InferType.PREVBASE);
+        if(calcFull != inferFull) {
+            System.out.println(this + " FULL, CALC : " + calcFull + ", INF : " + inferFull);
+            return false;
+        }
+        return true;
+    }
+
+    protected abstract ClassWhere<Object> calcClassValueWhere(CalcClassType calcType);
+
+    @IdentityStartLazy
+    public ClassWhere<Object> inferClassValueWhere(InferType inferType) {
+        // эвристично определяет классы, для входных значений
+        ImMap<T, ExClassSet> inferred = inferInterfaceClasses(null, inferType).finishEx(inferType);
+        if (inferred == null) {
+            return ClassWhere.FALSE();
+        }
+        ExClassSet valueCommonClass = inferValueClass(inferred, inferType);
+        if (valueCommonClass != null && valueCommonClass.isEmpty()) {
+            return ClassWhere.FALSE();
+        }
+        return new ClassWhere<Object>(MapFact.<Object, AndClassSet>addExcl(ExClassSet.fromExAnd(inferred), "value", ExClassSet.fromExAnd(valueCommonClass)).removeNulls());
+    }
 
     public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
-        return getClassValueWhere(ClassType.ASSERTFULL).remap(MapFact.<Object, Field>addRevExcl(mapTable.mapKeys, "value", storedField)); //
+        return getClassValueWhere(ClassType.storedPolicy).remap(MapFact.<Object, Field>addRevExcl(mapTable.mapKeys, "value", storedField)); //
     }
 
     public Object read(ExecutionContext context) throws SQLException, SQLHandledException {
@@ -859,7 +975,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     @IdentityInstanceLazy
     public ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
-        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.FULL); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
+        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
         if(interfaceClasses.size() < interfaces.size()) // не все классы есть
             return null;
 
@@ -887,33 +1003,139 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public boolean autoset;
 
-    public static ValueClass or(ValueClass v1, ValueClass v2) {
+    public static ValueClass op(ValueClass v1, ValueClass v2, boolean or) {
         if(v1==null)
             return v2;
         if(v2==null)
             return v1;
-        return v1.getUpSet().getOr().or(v2.getUpSet().getOr()).getCommonClass();
+        OrClassSet or1 = v1.getUpSet().getOr();
+        OrClassSet or2 = v2.getUpSet().getOr();
+        OrClassSet orResult;
+        if(or)
+            orResult = or1.or(or2);
+        else
+            orResult = or1.and(or2);
+        return orResult.getCommonClass();
     }
 
-    public static <T extends PropertyInterface, X> ImMap<T, ValueClass> or(ImSet<T> interfaces, ImList<CalcPropertyInterfaceImplement<T>> operands, ImList<ValueClass> operandClasses, PrevClasses prevSameClasses) {
-        ImMap<T, ValueClass> result = MapFact.EMPTY();
-        for(int i=0,size=operands.size();i<size;i++)
-            result = or(interfaces, result, operands.get(i).mapInterfaceCommonClasses(operandClasses.get(i), prevSameClasses));
+    public static <T extends PropertyInterface> Inferred<T> op(ImList<Inferred<T>> operands, boolean or, InferType inferType) {
+        Inferred<T> result = or ? Inferred.<T>FALSE() : Inferred.<T>EMPTY();
+        for(int i=0,size=operands.size();i<size;i++) {
+            Inferred<T> operandInferred = operands.get(i);
+            if (i == 0)
+                result = operandInferred;
+            else
+                result = result.op(operandInferred, or, inferType);
+        }
         return result;
     }
 
-    public static <T extends PropertyInterface> ImMap<T, ValueClass> or(ImSet<T> interfaces, ImMap<T, ValueClass> or1, ImMap<T, ValueClass> or2) {
-        ImFilterValueMap<T, ValueClass> mvResult = interfaces.mapFilterValues();
-        for(int i=0,size=interfaces.size();i<size;i++) {
-            T propInterface = interfaces.get(i);
-            ValueClass or = or(or1.get(propInterface), or2.get(propInterface));
-            if(or!=null)
-                mvResult.mapValue(i, or);
+    public static <I, T extends PropertyInterface> Inferred<T> op(ImMap<I, CalcPropertyInterfaceImplement<T>> operands, ImMap<I, ExClassSet> operandClasses, FunctionSet<I> operandNotNulls, InferType inferType, boolean or) {
+        Inferred<T> result = Inferred.EMPTY();
+        for(int i=0,size=operands.size();i<size;i++) {
+            Inferred<T> operandInferred = operands.getValue(i).mapInferInterfaceClasses(operandClasses.get(operands.getKey(i)), inferType);
+            if(!operandNotNulls.contains(operands.getKey(i)))
+                operandInferred = operandInferred.orAny();
+            if (i == 0)
+                result = operandInferred;
+            else
+                result = result.op(operandInferred, or, inferType);
         }
-        return mvResult.immutableValue();
+        return result;
     }
-    public ImMap<T, ValueClass> getInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) { // эвристично определяет классы, для входных значений
-        return getClassValueWhere(ClassType.ASIS, prevSameClasses).getCommonParent(interfaces);
+    public static <I, T extends PropertyInterface> Inferred<T> op(ImMap<I, CalcPropertyInterfaceImplement<T>> operands, final ImMap<I, ExClassSet> operandClasses, ImSet<I>[] operandNotNulls, final InferType inferType) {
+        ImMap<I, Inferred<T>> inferred = mapInfer(operands, operandClasses, inferType);
+        return op(operandNotNulls, inferType, inferred);
+    }
+
+    public static <I, T extends PropertyInterface> ImMap<I, Inferred<T>> mapInfer(ImMap<I, CalcPropertyInterfaceImplement<T>> operands, final ImMap<I, ExClassSet> operandClasses, final InferType inferType) {
+        return operands.mapValues(new GetKeyValue<Inferred<T>, I, CalcPropertyInterfaceImplement<T>>() {
+                public Inferred<T> getMapValue(I key, CalcPropertyInterfaceImplement<T> value) {
+                    return value.mapInferInterfaceClasses(operandClasses.get(key), inferType);
+                }
+            });
+    }
+    
+    private static <I, T extends PropertyInterface> Inferred<T> op(ImSet<I>[] operandNotNulls, InferType inferType, ImMap<I, Inferred<T>> inferred) {
+        Inferred<T> result = Inferred.FALSE();
+        for (int i = 0; i < operandNotNulls.length; i++) {
+            ImSet<I> opNotNull = operandNotNulls[i];
+            
+            Inferred<T> andInferred = Inferred.EMPTY();
+            for(int j = 0, size = opNotNull.size(); j < size; j++) {
+                Inferred<T> opInferred = inferred.get(opNotNull.get(j));
+                if(j == 0)
+                    andInferred = opInferred;
+                else
+                    andInferred = andInferred.and(opInferred, inferType);
+            }
+            
+            if(i == 0)
+                result = andInferred;
+            else
+                result = result.or(andInferred, inferType);
+        }
+
+        // докидываем те которые не учавствуют ни в одном notNull
+        return result.and(op(inferred.remove(SetFact.mergeSets(operandNotNulls)).values().toList().mapListValues(new GetValue<Inferred<T>, Inferred<T>>() {
+            public Inferred<T> getMapValue(Inferred<T> value) {
+                return value.orAny();
+            }
+        }), false, inferType), inferType);
+    }
+
+    public static <T extends PropertyInterface> Inferred<T> op(ImList<CalcPropertyInterfaceImplement<T>> operands, ImList<ExClassSet> operandClasses, int operandNotNullCount, int skipNotNull, InferType inferType, boolean or) {
+        ImSet<Integer>[] operandNotNulls;        
+        if(or) { // мн-во singleton'ов
+            operandNotNulls = new ImSet[operandNotNullCount];
+            for(int i=0;i<operandNotNullCount;i++)
+                if(i!=skipNotNull)
+                    operandNotNulls[i] = SetFact.singleton(i);
+        } else {
+            operandNotNulls = new ImSet[1];
+            MExclSet<Integer> mSet = SetFact.mExclSetMax(operandNotNullCount);
+            for(int i=0;i<operandNotNullCount;i++)
+                if(i!=skipNotNull)
+                    mSet.exclAdd(i);
+            operandNotNulls[0] = mSet.immutable();            
+        }
+        return op(operands.toIndexedMap(), operandClasses.toIndexedMap(), operandNotNulls, inferType);
+    }
+
+    // раздельно вычисляет классы по каждому параметру (то есть для каждого параметра отдельно вычисляет его класс, как если остальных бы не было)
+    // плюс для prev'ов предполагается что классов объеков не меняются, not'ы не учитываются
+    // можно было бы попробовать использовать общий механизм, но там выделить одноместную логику классов гораздо сложнее, поэтому оставим такой механизм
+    // вся эта логика по сути дублирует логику plugin'а
+    @IdentityStartLazy
+    public Inferred<T> inferInterfaceClasses(InferType inferType) { // эвристично определяет классы, для входных значений
+        return inferInterfaceClasses(null, inferType);
+    }
+    @IdentityStartLazy
+    public Inferred<T> inferInterfaceClasses(ExClassSet commonValue, InferType inferType) { // эвристично определяет классы, для входных значений
+        return calcInferInterfaceClasses(commonValue, inferType);
+    }
+    protected Inferred<T> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) { // эвристично определяет классы, для входных значений
+        assert this instanceof ChangeProperty || getDepends().isEmpty(); // гарантирует "атомарность" метода
+        return new Inferred<T>(calcClassValueWhere(CalcClassType.PREVBASE).getCommonExClasses(interfaces));
+    }
+    @IdentityStartLazy
+    public ExClassSet inferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) { // эвристично определяет класс выходного значения
+        return calcInferValueClass(inferred, inferType);
+    }
+    public ExClassSet calcInferValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) { // эвристично определяет класс выходного значения
+        assert this instanceof ChangeProperty || getDepends().isEmpty(); // гарантирует "атомарность" метода
+        return calcClassValueWhere(CalcClassType.PREVBASE).getCommonExClasses(SetFact.singleton("value")).get("value");
+    }
+    public static <I extends PropertyInterface> ExClassSet opInferValueClasses(ImCol<? extends CalcPropertyInterfaceImplement<I>> props, ImMap<I, ExClassSet> inferred, boolean or, InferType inferType) {
+        ExClassSet result = null;
+        for (int i = 0; i < props.size(); i++) {
+            ExClassSet classSet = props.get(i).mapInferValueClass(inferred, inferType);
+            if (i == 0)
+                result = classSet;
+            else
+                result = ExClassSet.op(result, classSet, or);
+        }
+        return result;
     }
 
     // костыль для email
@@ -922,12 +1144,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         for(PropertyInterfaceImplement<I> prop : props) {
             ImMap<I, ValueClass> propClasses;
             if(prop instanceof CalcPropertyMapImplement)
-                propClasses = ((CalcPropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.ASSERTFULL);
+                propClasses = ((CalcPropertyMapImplement<?, I>) prop).mapInterfaceClasses(ClassType.aroundPolicy);
             else
                 propClasses = MapFact.EMPTY();
 
             for(int i=0;i<result.length;i++)
-                result[i] = or(result[i], propClasses.get(mapInterfaces.get(i)));
+                result[i] = op(result[i], propClasses.get(mapInterfaces.get(i)), true);
         }
         return result;
     }
@@ -999,7 +1221,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement) {
         return getExpr(joinImplement, PropertyChanges.EMPTY);
     }
-
+    public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType) {
+        return getExpr(joinImplement, calcType, PropertyChanges.EMPTY, null);
+    }
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier) throws SQLException, SQLHandledException {
         return getExpr(joinImplement, modifier, null);
     }
@@ -1016,26 +1240,37 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     // в будущем propClasses можно заменить на PropertyTables propTables
     public Expr getExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        if (isNotNull() && (Settings.get().isUseQueryExpr() || Query.getMapKeys(joinImplement)!=null))
+        if (isNotNull(calcType.getAlgInfo()) && (Settings.get().isUseQueryExpr() || Query.getMapKeys(joinImplement)!=null))
             return getQueryExpr(joinImplement, calcType, propChanges, changedWhere);
         else
             return getJoinExpr(joinImplement, calcType, propChanges, changedWhere);
     }
 
+    @Override
     public void prereadCaches() {
+        super.prereadCaches();
         getRecDepends();
-        getClassWhere(ClassType.ASIS);
-        getClassWhere(ClassType.FULL);
-        if(isNotNull())
+        if(isNotNull(CalcType.EXPR.getAlgInfo()))
             getQuery(CalcType.EXPR, PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, MapFact.<T, Expr>EMPTY()).pack();
     }
 
     public CalcPropertyMapImplement<?, T> getClassProperty() {
-        return IsClassProperty.getMapProperty(getInterfaceClasses(ClassType.ASSERTFULL));
+        return IsClassProperty.getMapProperty(getInterfaceClasses(ClassType.signaturePolicy));
     }
 
-    public boolean isFull(ImCol<T> checkInterfaces) {
-        return getClassValueWhere(ClassType.ASIS).isFull(checkInterfaces);
+    public boolean isFull(ImCol<T> checkInterfaces, AlgInfoType algType) {
+        if(AlgType.checkInfer) checkInferFull(checkInterfaces);
+        return algType.isFull(this, checkInterfaces);
+    }
+
+    @IdentityLazy
+    public boolean inferFull(ImCol<T> checkInterfaces, InferInfoType inferType) {
+        return inferInterfaceClasses(inferType).isFull(checkInterfaces, inferType);
+    }
+
+    @IdentityLazy
+    public boolean calcFull(ImCol<T> checkInterfaces, CalcInfoType calcType) {
+        return calcClassValueWhere(calcType).isFull(checkInterfaces);
     }
 
     public boolean supportsDrillDown() {
@@ -1054,47 +1289,63 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return null;
     }
 
-    private boolean calculateIsFull() {
-        return isFull(interfaces);
-    }
-    private Boolean isFull;
-    @ManualLazy
-    public boolean isFull() { // обозначает что можно вывести классы всех параметров, используется в частности для материализации (stored, hints) чтобы знать типы колонок, или даже в subQuery (для статистики)
-        if(isFull==null)
-            isFull = calculateIsFull();
-        return isFull;
+    public boolean isFull(AlgInfoType calcType) { // обозначает что можно вывести классы всех параметров, используется в частности для материализации (stored, hints) чтобы знать типы колонок, или даже в subQuery (для статистики)
+        return isFull(interfaces, calcType);
     }
     
-    public boolean isNotNull() { // обозначает что при null одном из параметров - null значение
-        if(isFull())
+    public boolean isNotNull(AlgInfoType algType) { // обозначает что при null одном из параметров - null значение
+        if(isFull(algType))
             return true;
         
-        if(this instanceof AggregateProperty)
-            return ((AggregateProperty)this).checkNotNull();
-        return false;
-    }
-    
-    public boolean isDrillFull() {
-        return isFull();
+        if(AlgType.checkInfer) checkInferNotNull();
+        return algType.isNotNull(this);
     }
 
-    public boolean isEmpty() {
-        return getClassValueWhere(ClassType.ASIS).isFalse();
+    protected boolean calcNotNull(CalcInfoType calcType) {
+        return true;
+    }
+
+    @IdentityLazy
+    public boolean inferNotNull(InferInfoType inferType) {
+        return inferInterfaceClasses(inferType).isNotNull(interfaces, inferType);
+    }
+
+    public boolean isDrillFull() {
+        return isFull(AlgType.drillType);
+    }
+
+    public boolean isEmpty(AlgInfoType algType) {
+        if(AlgType.checkInfer) checkInferEmpty();
+        return algType.isEmpty(this);
+    }
+
+    protected boolean calcEmpty(CalcInfoType calcType) {
+        return false;
+    }
+
+    @IdentityLazy
+    public boolean inferEmpty(InferInfoType inferType) {
+        // ищем false хоть по одному из параметров
+        return inferInterfaceClasses(inferType).isEmpty(inferType);
+    }
+
+    public boolean check(boolean constraint) {
+        return !isEmpty(AlgType.checkType);
     }
 
     @IdentityLazy
     public boolean allowHintIncrement() {
-        assert isFull();
+        assert isFull(AlgType.hintType);
 
-        if(!isEmpty())
-            for(ValueClass usedClass : getInterfaceClasses(ClassType.ASSERTFULL).values().toSet().merge(getValueClass()))
+        if(!isEmpty(AlgType.hintType))
+            for(ValueClass usedClass : getInterfaceClasses(ClassType.materializeChangePolicy).values().toSet().merge(getValueClass(ClassType.materializeChangePolicy)))
                 if(usedClass instanceof OrderClass)
                     return false;
 
         return true;
     }
     
-    @IdentityLazy
+    @IdentityStartLazy
     public long getComplexity() {
         try {
             return getExpr(getMapKeys(), Property.defaultModifier).getComplexity(false);

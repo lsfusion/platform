@@ -338,4 +338,9 @@ public class StringClass extends DataClass {
 
         return super.getInfiniteValue(min);
     }
+
+    @Override
+    public boolean fixedSize() {
+        return false;
+    }
 }

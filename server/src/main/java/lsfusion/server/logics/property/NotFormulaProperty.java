@@ -6,6 +6,9 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.PropertyChanges;
 
 public class NotFormulaProperty extends FormulaProperty<PropertyInterface> {
@@ -22,5 +25,10 @@ public class NotFormulaProperty extends FormulaProperty<PropertyInterface> {
     
     public <T> CalcPropertyImplement<PropertyInterface , T> getImplement(T map) {
         return new CalcPropertyImplement<PropertyInterface, T>(this, MapFact.singleton(interfaces.single(), map));
-    } 
+    }
+
+    @Override
+    public Inferred<PropertyInterface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        return new Inferred<PropertyInterface>(MapFact.<PropertyInterface, ExClassSet>EMPTY());
+    }
 }

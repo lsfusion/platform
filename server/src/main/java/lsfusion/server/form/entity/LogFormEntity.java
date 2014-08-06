@@ -96,7 +96,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         addPropertyDraw(logProperty, version, entities);
 
         ImList<PropertyClassImplement> recognizePropImpls =
-                systemEventsLM.baseLM.recognizeGroup.getProperties(SetFact.singleton(SetFact.singleton(new ValueClassWrapper(property.property.getValueClass()))), true, version);
+                systemEventsLM.baseLM.recognizeGroup.getProperties(SetFact.singleton(SetFact.singleton(new ValueClassWrapper(property.property.getValueClass(ClassType.logPolicy)))), true, version);
 
         for (PropertyClassImplement impl : recognizePropImpls) {
             if(impl instanceof CalcPropertyClassImplement) {
@@ -127,7 +127,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     }
 
     private static ValueClass[] getValueClassesList(LCP<?> property) {
-        ImMap<PropertyInterface, ValueClass> interfaces = (ImMap<PropertyInterface, ValueClass>) property.property.getInterfaceClasses(ClassType.ASSERTFULL);
+        ImMap<PropertyInterface, ValueClass> interfaces = (ImMap<PropertyInterface, ValueClass>) property.property.getInterfaceClasses(ClassType.logPolicy);
         ValueClass[] classes = new ValueClass[interfaces.size()];
         int index = 0;
         for (PropertyInterface pi : property.property.interfaces) {

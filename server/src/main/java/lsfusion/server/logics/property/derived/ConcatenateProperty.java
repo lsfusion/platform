@@ -1,20 +1,22 @@
 package lsfusion.server.logics.property.derived;
 
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.classes.ConcatenateValueClass;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.OrConcatenateClass;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.ConcatenateExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.FormulaProperty;
-import lsfusion.server.logics.property.PrevClasses;
 import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.PropertyChanges;
 
 import java.util.Iterator;
@@ -56,13 +58,28 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
+    public Inferred<Interface> calcInferInterfaceClasses(final ExClassSet commonValue, InferType inferType) {
         if(commonValue!=null) {
-            return getOrderInterfaces().mapOrderValues(new GetIndex<ValueClass>() {
-                public ValueClass getMapValue(int i) {
-                    return ((ConcatenateValueClass)commonValue).get(i);
-                }});
+            return new Inferred<Interface>(getOrderInterfaces().mapOrderValues(new GetIndex<ExClassSet>() {
+                public ExClassSet getMapValue(int i) {
+                    return getPart(i, commonValue);
+                }}));
         }
-        return super.getInterfaceCommonClasses(commonValue, prevSameClasses);
+        return super.calcInferInterfaceClasses(commonValue, inferType);
+    }
+
+    public static ExClassSet getPart(int i, ExClassSet commonValue) {
+        return new ExClassSet(((OrConcatenateClass)ExClassSet.fromEx(commonValue)).get(i), commonValue.orAny);
+    }
+
+    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
+        if(!inferred.containsNull() && inferred.filterFnValues(new SFunctionSet<ExClassSet>() { // жесть конечно, но потом будем уточнять этот метод
+            public boolean contains(ExClassSet element) {
+                return element.orAny;
+            }}).isEmpty()) {
+            ImMap<Integer, AndClassSet> andClassSets = getOrderInterfaces().toIndexedMap().join(ExClassSet.fromExAnd(inferred));
+            return new ExClassSet(new OrConcatenateClass(andClassSets), false);
+        }
+        return super.calcInferValueClass(inferred, inferType);
     }
 }

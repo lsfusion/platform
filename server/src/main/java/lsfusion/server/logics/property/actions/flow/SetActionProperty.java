@@ -105,7 +105,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
     }
 
     public static <I extends PropertyInterface> CalcPropertyMapImplement<?, I> getValueClassProperty(CalcPropertyMapImplement<?, I> writeTo, CalcPropertyInterfaceImplement<I> writeFrom) {
-        return DerivedProperty.createJoin(IsClassProperty.getProperty(writeTo.property.getValueClass(), "value").
+        return DerivedProperty.createJoin(IsClassProperty.getProperty(writeTo.property.getValueClass(ClassType.wherePolicy), "value").
                 mapImplement(MapFact.singleton("value", writeFrom)));
     }
 

@@ -7,7 +7,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -19,6 +18,9 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.GroupDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.PropertyChanges;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -60,19 +62,38 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     public abstract ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> getOrders();
     public abstract boolean getOrdersNotNull();
 
-    public ImMap<I, ValueClass> getInnerInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
-        final boolean isSelect = getGroupType().isSelect();
-        ImList<CalcPropertyInterfaceImplement<I>> props = getProps().addList(getMapInterfaces().values().toList()).addList(getOrders().keyOrderSet());
-        return or(innerInterfaces, props, ListFact.toList(props.size(), new GetIndex<ValueClass>() {
-                    public ValueClass getMapValue(int i) {
-                        return isSelect && i==0 ? commonValue : null;
-                    }}), prevSameClasses);
+    public Inferred<I> inferInnerInterfaceClasses(final ExClassSet commonValue, InferType inferType) {
+        GroupType groupType = getGroupType();
+        return inferInnerInterfaceClasses(getProps().addList(getMapInterfaces().values().toList()),
+                groupType.isSelect(), commonValue, getOrders(), getOrdersNotNull(), groupType.getSkipWhereIndex(), inferType);
+    }
+    public Inferred<I> inferInnerInterfaceClasses(final ImMap<Interface<I>, ExClassSet> inferred, InferType inferType) {
+        ImList<CalcPropertyInterfaceImplement<I>> props = getProps();
+        ImOrderSet<Interface<I>> orderInterfaces = getOrderInterfaces();
+        return inferInnerInterfaceClasses(props.addList(orderInterfaces.mapList(getMapInterfaces())), getOrders(), getOrdersNotNull(), getGroupType().getSkipWhereIndex(), ListFact.toList((ExClassSet) null, props.size()).addList(orderInterfaces.mapList(inferred)), inferType);
+    }
+    public ExClassSet inferInnerValueClass(final ImMap<I, ExClassSet> commonClasses, InferType inferType) {
+        return inferInnerValueClass(getProps(), commonClasses, getGroupType(), inferType);
     }
 
     @Override
-    public ImMap<Interface<I>, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
-        return or(interfaces, super.getInterfaceCommonClasses(commonValue, prevSameClasses),
-                MapFact.innerJoin(getMapInterfaces(), getInnerInterfaceCommonClasses(commonValue, prevSameClasses)));
+    public Inferred<Interface<I>> calcInferInterfaceClasses(final ExClassSet commonValue, final InferType inferType) {
+        final ImMap<I, ExClassSet> innerInferred = inferInnerInterfaceClasses(commonValue, inferType).finishEx(inferType);
+        if(innerInferred == null)
+            return Inferred.FALSE();
+
+        ImMap<Interface<I>, CalcPropertyInterfaceImplement<I>> mapInterfaces = getMapInterfaces();
+        return new Inferred<Interface<I>>(mapInterfaces.mapValues(new GetValue<ExClassSet, CalcPropertyInterfaceImplement<I>>() {
+            public ExClassSet getMapValue(CalcPropertyInterfaceImplement<I> value) {
+                return ExClassSet.toNotNull(value.mapInferValueClass(innerInferred, inferType));
+            }
+        }));
+    }
+    public ExClassSet calcInferValueClass(ImMap<Interface<I>, ExClassSet> inferred, InferType inferType) {
+        ImMap<I, ExClassSet> innerInferred = inferInnerInterfaceClasses(inferred, inferType).finishEx(inferType);
+        if(innerInferred == null)
+            return ExClassSet.FALSE;
+        return inferInnerValueClass(innerInferred, inferType);
     }
 
     protected ImMap<Interface<I>, Expr> getGroupImplements(ImMap<I, ? extends Expr> mapKeys, PropertyChanges changes) {
@@ -144,7 +165,8 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
 
     public ImMap<I, ValueClass> getInnerInterfaceClasses() {
-        return getInnerInterfaceCommonClasses(null, defaultPrevSameClasses);
+        InferType inferType = InferType.PREVSAME;
+        return ExClassSet.fromExValue(inferInnerInterfaceClasses((ExClassSet) null, inferType).finishEx(inferType));
 /*        ImRevMap<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
         Where w = Expr.getWhere(getGroupImplements(mapKeys, PropertyChanges.EMPTY))
                 .and(Expr.getWhere(getExprImplements(mapKeys, PropertyChanges.EMPTY)))

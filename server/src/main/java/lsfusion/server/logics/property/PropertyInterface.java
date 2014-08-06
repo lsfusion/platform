@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -11,12 +10,16 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.caches.LazyInit;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
+import lsfusion.server.serialization.ServerIdentitySerializable;
+import lsfusion.server.serialization.ServerSerializationPool;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChange;
@@ -115,10 +118,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return null;
     }
 
-    public ImMap<P, ValueClass> mapInterfaceCommonClasses(ValueClass commonValue, PrevClasses prevSameClasses) {
-        if(commonValue!=null)
-            return MapFact.singleton((P) this, commonValue);
-        return MapFact.EMPTY();
+    public Inferred<P> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        return new Inferred<P>((P) this, commonValue);
+    }
+    public ExClassSet mapInferValueClass(ImMap<P, ExClassSet> inferred, InferType inferType) {
+        return inferred.get((P)this);
     }
 
     public ImSet<DataProperty> mapChangeProps() {

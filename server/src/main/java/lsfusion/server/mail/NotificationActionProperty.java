@@ -2,6 +2,7 @@ package lsfusion.server.mail;
 
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.NullValue;
+import lsfusion.server.logics.property.*;
 import org.apache.log4j.Logger;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
@@ -14,10 +15,6 @@ import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
 
 import javax.mail.Message;
@@ -62,7 +59,7 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
     }
 
     private static ValueClass[] getValueClasses(LCP sourceProperty) {
-        return sourceProperty.getInterfaceClasses();
+        return sourceProperty.getInterfaceClasses(ClassType.logPolicy);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

@@ -132,6 +132,11 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         }
     };
 
+    public static <K> ImMap<K, BaseExpr> getJoinsForStat(BaseJoin<K> join) { // нужно чтобы не терялись ключи у Union в статистике, всегда добавлять их нельзя так как начнет следствия notNull рушить (для NotNullParams)
+        if(join instanceof UnionJoin)
+            return (ImMap<K, BaseExpr>) ((UnionJoin) join).getJoins(true);
+        return join.getJoins();
+    }
     // assert что rows >= result
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat) {
         final MAddMap<BaseJoin, Stat> joinStats = MapFact.mAddOverrideMap();
@@ -157,7 +162,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         }
         while(!queue.isEmpty()) {
             BaseJoin<Object> join = queue.poll();
-            ImMap<?, BaseExpr> joinExprs = join.getJoins();
+            ImMap<?, BaseExpr> joinExprs = getJoinsForStat(join);
 
 /*            if(((BaseJoin)join) instanceof UnionJoin) { // UnionJoin может потерять ключи, а они важны
                 for(ParamExpr lostKey : ((UnionJoin) (BaseJoin)join).getLostKeys())

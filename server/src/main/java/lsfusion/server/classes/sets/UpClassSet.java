@@ -17,7 +17,7 @@ import lsfusion.server.logics.property.ClassField;
 
 import java.util.Arrays;
 
-// выше вершин
+// не ExtraIntSetWhere потому как intersect несколько, а не один элемент возвращает
 public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements ObjectValueClassSet {
 
     public UpClassSet(CustomClass[] classes) {
@@ -184,7 +184,7 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return null;
     }
 
-    protected UpClassSet intersect(UpClassSet where) {
+    public UpClassSet intersect(UpClassSet where) {
         if(isTrue() || where.isFalse()) return where;
         if(isFalse() || where.isTrue()) return this;
 

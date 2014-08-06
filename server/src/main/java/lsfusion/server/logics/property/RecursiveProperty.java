@@ -12,7 +12,6 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.IntegralClass;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -21,6 +20,9 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.derived.DerivedProperty;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.PropertyChanges;
 
 
@@ -131,7 +133,7 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     private boolean checkPrereadNull(ImMap<T, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges) {
-        return JoinProperty.checkPrereadNull(joinImplement, step.property.isNotNull(), SetFact.singleton((CalcPropertyInterfaceImplement<T>)initial), calcType, propChanges); // isExclusive ? SetFact.toSet(cCase.where, cCase.property) : SetFact.singleton(cCase.where)
+        return JoinProperty.checkPrereadNull(joinImplement, step.property.isNotNull(calcType.getAlgInfo()), SetFact.singleton((CalcPropertyInterfaceImplement<T>)initial), calcType, propChanges); // isExclusive ? SetFact.toSet(cCase.where, cCase.property) : SetFact.singleton(cCase.where)
     }
 
     protected Expr calculateIncrementExpr(ImMap<Interface, ? extends Expr> joinImplement, PropertyChanges propChanges, Expr prevExpr, WhereBuilder changedWhere) {
@@ -196,14 +198,26 @@ public class RecursiveProperty<T extends PropertyInterface> extends ComplexIncre
     }
 
     @Override
-    public ImMap<Interface, ValueClass> getInterfaceCommonClasses(final ValueClass commonValue, PrevClasses prevSameClasses) {
-        return or(interfaces, super.getInterfaceCommonClasses(commonValue, prevSameClasses),
-                mapInterfaces.rightJoin(getInnerInterfaceCommonClasses(prevSameClasses)));
+    public Inferred<Interface> calcInferInterfaceClasses(final ExClassSet commonValue, InferType inferType) {
+        return inferInnerInterfaceClasses(commonValue, inferType).map(mapInterfaces.reverse());
+    }
+    @Override
+    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
+        return inferInnerValueClass(mapInterfaces.crossJoin(inferred), inferType);
     }
 
-    private ImMap<T, ValueClass> getInnerInterfaceCommonClasses(PrevClasses prevSameClasses) {
-        ImSet<T> outerInnerKeys = mapIterate.valuesSet();
-        ImMap<T, ValueClass> stepClasses = step.mapInterfaceCommonClasses(null, prevSameClasses);
-        return or(outerInnerKeys, or(outerInnerKeys, stepClasses.remove(mapIterate.keys()), mapIterate.reverse().innerJoin(stepClasses)), initial.mapInterfaceCommonClasses(null, prevSameClasses));
+    private Inferred<T> inferInnerInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+        Inferred<T> initialClasses = this.initial.mapInferInterfaceClasses(commonValue, inferType);
+
+        // вообще рекурсию надо запускать как в RecursiveExpr, но пока смысла нет
+        // remove - нужен как обратное действие добавлению недостающих ключей в конструкторе
+        Inferred<T> iterInitialClasses = initialClasses.remove(mapIterate.keys()).map(mapInterfaces.valuesSet().removeIncl(mapIterate.valuesSet()).toRevMap().addRevExcl(mapIterate.reverse()));
+        Inferred<T> stepClasses = step.mapInferInterfaceClasses(commonValue, inferType).and(iterInitialClasses, inferType).applyCompared(mapIterate.keys(), inferType);
+        return stepClasses.remove(mapIterate.keys()).or( // без старых
+//                stepClasses.keep(mapIterate.keys()).map(mapIterate), inferType).or( // старые отображенные на новые
+                initialClasses, inferType); // начальные
+    }
+    private ExClassSet inferInnerValueClass(ImMap<T, ExClassSet> inferred, InferType inferType) {
+        return ExClassSet.op(step.mapInferValueClass(inferred.addExcl(mapIterate.join(inferred)), inferType), initial.mapInferValueClass(inferred, inferType), true);
     }
 }

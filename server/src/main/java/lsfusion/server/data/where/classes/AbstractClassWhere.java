@@ -11,13 +11,9 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.AddValue;
-import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.SymmAddValue;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.ManualLazy;
-import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.ValueClassSet;
@@ -26,6 +22,7 @@ import lsfusion.server.classes.sets.OrClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.property.infer.ExClassSet;
 
 
 // !!! equals'ы и hashCode должны только в meanWheres вызываться
@@ -522,6 +519,23 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         return getCommonClasses(keys).mapValues(new GetValue<ValueClass, AndClassSet>() {
             public ValueClass getMapValue(AndClassSet value) {
                 return value.getOr().getCommonClass();
+            }
+        });
+    }
+
+    public <T extends K> ImMap<T, ExClassSet> getCommonExClasses(ImSet<T> keys) {
+        // assert что full - все ключи будут
+        return keys.mapValues(new GetValue<ExClassSet, T>() {
+            public ExClassSet getMapValue(T key) {
+                ExClassSet result = ExClassSet.FALSE;
+                for (int i = 0; i < wheres.length; i++) {
+                    ExClassSet where = ExClassSet.toExAnd(wheres[i].get(key));
+                    if(i==0)
+                        result = where;
+                    else
+                        result = ExClassSet.op(result, where, true);
+                }
+                return result;
             }
         });
     }
