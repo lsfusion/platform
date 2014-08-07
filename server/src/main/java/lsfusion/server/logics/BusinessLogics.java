@@ -1344,8 +1344,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             List<AndClassSet> signature = parser.getSignature();
             return findProperty(namespaceName, name, signature);
         } catch (PropertyCanonicalNameParser.ParseException e) {
-            return null;
+            Throwables.propagate(e);
         }
+        return null;
     }
 
     public LP findProperty(String namespace, String name, ValueClass... classes) {
@@ -1359,7 +1360,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return findProperty(namespace, name, classSets);
     }
 
-    // todo [dale]: временные реализации
     private LP findProperty(String namespace, String name, List<AndClassSet> classes) {
         assert namespaceToModules.get(namespace) != null;
         NamespacePropertyFinder finder = new NamespacePropertyFinder(new SoftLPModuleFinder(), namespaceToModules.get(namespace));
@@ -1368,17 +1368,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return foundElements.size() == 0 ? null : foundElements.get(0).value;
     }
 
-    private <T, P> T findElement(String canonicalName, P param, ModuleFinder<T, P> moduleFinder) {
+    private <R, P> R findElement(String canonicalName, P param, ModuleFinder<R, P> moduleFinder) {
         assert canonicalName != null;
         if (canonicalName.contains(".")) {
             String namespaceName = canonicalName.substring(0, canonicalName.indexOf('.'));
-            String className = canonicalName.substring(canonicalName.indexOf('.')+1);
+            String className = canonicalName.substring(canonicalName.indexOf('.') + 1);
 
             assert namespaceToModules.get(namespaceName) != null;
-            NamespaceElementFinder<T, P> finder = new NamespaceElementFinder<T, P>(moduleFinder, namespaceToModules.get(namespaceName));
-            List<NamespaceElementFinder.FoundItem<T>> resList = finder.findInNamespace(namespaceName, className, param);
+            NamespaceElementFinder<R, P> finder = new NamespaceElementFinder<R, P>(moduleFinder, namespaceToModules.get(namespaceName));
+            List<NamespaceElementFinder.FoundItem<R>> resList = finder.findInNamespace(namespaceName, className, param);
             assert resList.size() <= 1; 
-            return resList.size() == 0 ? null : (T)resList.get(0).value;
+            return resList.size() == 0 ? null : resList.get(0).value;
         }
         return null;
     }
