@@ -18,7 +18,7 @@ public class GRequestUserInputAction implements GAction {
     }
 
     @Override
-    public Object dispatch(GActionDispatcher dispatcher) {
+    public Object dispatch(GActionDispatcher dispatcher) throws Throwable {
         return dispatcher.execute(this);
     }
 }

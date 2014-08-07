@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.shared.view.actions;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class GExportFileAction extends GExecuteAction {
@@ -15,7 +14,7 @@ public class GExportFileAction extends GExecuteAction {
     }
 
     @Override
-    public void execute(GActionDispatcher dispatcher) throws IOException {
+    public void execute(GActionDispatcher dispatcher) throws Throwable {
         dispatcher.execute(this);
     }
 }

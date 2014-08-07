@@ -1,7 +1,5 @@
 package lsfusion.gwt.form.shared.view.actions;
 
-import java.io.IOException;
-
 public class GReportAction extends GExecuteAction {
     public String reportFileName;
     public boolean isModal;
@@ -14,7 +12,7 @@ public class GReportAction extends GExecuteAction {
         this.reportFileName = reportFileName;
     }
 
-    public void execute(GActionDispatcher dispatcher) throws IOException {
+    public void execute(GActionDispatcher dispatcher) throws Throwable {
         dispatcher.execute(this);
     }
 }

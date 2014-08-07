@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.shared.view.actions;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class GLogMessageAction extends GExecuteAction {
@@ -21,7 +20,7 @@ public class GLogMessageAction extends GExecuteAction {
     }
 
     @Override
-    public void execute(GActionDispatcher dispatcher) throws IOException {
+    public void execute(GActionDispatcher dispatcher) throws Throwable {
         dispatcher.execute(this);
     }
 }

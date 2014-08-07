@@ -2,8 +2,6 @@ package lsfusion.gwt.form.shared.view.actions;
 
 import lsfusion.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 
-import java.io.IOException;
-
 public class GProcessFormChangesAction extends GExecuteAction {
     public GFormChangesDTO formChanges;
 
@@ -16,7 +14,7 @@ public class GProcessFormChangesAction extends GExecuteAction {
     }
 
     @Override
-    public void execute(GActionDispatcher dispatcher) throws IOException {
+    public void execute(GActionDispatcher dispatcher) throws Throwable {
         dispatcher.execute(this);
     }
 }

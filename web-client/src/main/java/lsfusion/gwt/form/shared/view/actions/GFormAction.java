@@ -3,8 +3,6 @@ package lsfusion.gwt.form.shared.view.actions;
 import lsfusion.gwt.form.shared.view.GForm;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
 
-import java.io.IOException;
-
 public class GFormAction extends GExecuteAction {
     public GModalityType modalityType;
     public GForm form;
@@ -18,7 +16,7 @@ public class GFormAction extends GExecuteAction {
         this.form = form;
     }
 
-    public void execute(GActionDispatcher dispatcher) throws IOException {
+    public void execute(GActionDispatcher dispatcher) throws Throwable {
         dispatcher.execute(this);
     }
 }

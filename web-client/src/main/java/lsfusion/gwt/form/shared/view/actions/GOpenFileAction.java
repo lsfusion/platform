@@ -1,7 +1,5 @@
 package lsfusion.gwt.form.shared.view.actions;
 
-import java.io.IOException;
-
 public class GOpenFileAction extends GExecuteAction {
     public String filePath;
 
@@ -13,7 +11,7 @@ public class GOpenFileAction extends GExecuteAction {
     }
 
     @Override
-    public void execute(GActionDispatcher dispatcher) throws IOException {
+    public void execute(GActionDispatcher dispatcher) throws Throwable {
         dispatcher.execute(this);
     }
 }

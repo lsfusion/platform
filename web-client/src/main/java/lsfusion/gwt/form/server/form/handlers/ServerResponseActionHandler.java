@@ -1,12 +1,13 @@
 package lsfusion.gwt.form.server.form.handlers;
 
-import net.customware.gwt.dispatch.shared.Action;
 import lsfusion.gwt.form.server.FormDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.form.shared.actions.form.ServerResponseResult;
 import lsfusion.gwt.form.shared.view.actions.GAction;
+import lsfusion.gwt.form.shared.view.actions.GThrowExceptionAction;
 import lsfusion.interop.form.ServerResponse;
+import net.customware.gwt.dispatch.shared.Action;
 
 import java.io.IOException;
 
@@ -28,10 +29,12 @@ public abstract class ServerResponseActionHandler<A extends Action<ServerRespons
         } else {
             resultActions = new GAction[serverResponse.actions.length];
             for (int i = 0; i < serverResponse.actions.length; i++) {
-                if (form != null) {
-                    resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], form, servlet);
-                } else {
-                    resultActions[i] = clientActionConverter.convertAction(serverResponse.actions[i], servlet);
+                try {
+                    resultActions[i] = form != null
+                              ? clientActionConverter.convertAction(serverResponse.actions[i], form, servlet)
+                              : clientActionConverter.convertAction(serverResponse.actions[i], servlet);
+                } catch (Exception e) {
+                    resultActions[i] = new GThrowExceptionAction(new IllegalStateException("Can't convert server action: ", e));
                 }
             }
         }

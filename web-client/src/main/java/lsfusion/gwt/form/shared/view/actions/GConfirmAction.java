@@ -19,7 +19,7 @@ public class GConfirmAction  implements GAction {
         this.initialValue = initialValue;
     }
 
-    public final Object dispatch(GActionDispatcher dispatcher) {
+    public final Object dispatch(GActionDispatcher dispatcher) throws Throwable {
         return dispatcher.execute(this);
     }
 }

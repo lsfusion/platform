@@ -76,6 +76,8 @@ public class ObjectConverter {
                 if (suitableConverter) {
                     try {
                         return convertWithMethod(from, classConverter, parameters);
+                    } catch (InvocationTargetException ite) {
+                        Throwables.propagate(ite.getCause());
                     } catch (Exception e) {
                         Throwables.propagate(e);
                     }

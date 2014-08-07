@@ -2,8 +2,6 @@ package lsfusion.gwt.form.shared.view.actions;
 
 import lsfusion.gwt.form.shared.view.classes.GObjectClass;
 
-import java.io.IOException;
-
 public class GChooseClassAction implements GAction {
     public boolean concreate;
     public GObjectClass baseClass;
@@ -19,7 +17,7 @@ public class GChooseClassAction implements GAction {
         this.defaultClass = defaultClass;
     }
 
-    public final Object dispatch(GActionDispatcher dispatcher) throws IOException {
+    public final Object dispatch(GActionDispatcher dispatcher) throws Throwable {
         return dispatcher.execute(this);
     }
 }
