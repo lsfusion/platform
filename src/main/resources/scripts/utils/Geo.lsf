@@ -36,7 +36,7 @@ readLatitude 'Координата X' = DATA SESSION NUMERIC[10,5] ();
 readLongitude 'Координата Y' = DATA SESSION NUMERIC[10,5] ();
 
 getCoordinatesAddressMapProvider = ACTION CUSTOM 'lsfusion.erp.utils.geo.GetCoordinatesAddressActionProperty';
-getCoordinatesAddress = getCoordinatesAddressMapProvider(address, mapProvider());
+getCoordinatesAddress(address) = ACTION getCoordinatesAddressMapProvider(address, mapProvider());
 
 changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
 
@@ -49,7 +49,7 @@ WHEN SESSION (SETCHANGED(nameCountryPOI(POI)) OR SETCHANGED(addressPOI(POI))) AN
 
 // Показать на карте одну точку
 showOnMapMapProvider 'Показать на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapActionProperty';
-showOnMap = showOnMapMapProvider (latitude, longitude, mapProvider(), address);
+showOnMap(latitude, longitude, address) = ACTION showOnMapMapProvider (latitude, longitude, mapProvider(), address);
 
 showOnMapPOI 'Показать на карте'= ACTION (POI) {
     EXEC showOnMap (latitudePOI (POI), longitudePOI (POI), addressPOI(POI));
