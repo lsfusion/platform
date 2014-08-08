@@ -905,10 +905,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     public LPWithParams addScriptedJProp(LP mainProp, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
-        //  checkCalculationProperty(mainProp);
-        if (mainProp instanceof LAP)    // todo [dale]: Это нужно убирать, пока оставил для += действий.
-            return addScriptedJoinAProp(mainProp, paramProps);
-
+        checkCalculationProperty(mainProp);
         checkParamCount(mainProp, paramProps.size());
         List<Object> resultParams = getParamsPlainList(paramProps);
         LP prop;
@@ -2301,7 +2298,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addScriptedAspect(" + mainPropUsage + ", " + mainPropParams + ", " + actionProp + ", " + before + ");");
         LP mainProp = findLPByPropertyUsage(mainPropUsage);
         checkParamCount(mainProp, mainPropParams.size());
-        checkDistinctParameters(getParamNamesFromTypedParams(mainPropParams)); // todo [dale]: надо, наверное, это вынести в отдельный метод
+        checkDistinctParameters(getParamNamesFromTypedParams(mainPropParams)); 
         checkActionProperty(actionProp.property);
         checkActionProperty(mainProp);
 
