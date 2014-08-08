@@ -114,7 +114,7 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
         return getFullProperty(innerInterfaces, where, writeTo, writeFrom);
     }
 
-    protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {
+    protected CalcPropertyMapImplement<?, I> calcGroupWhereProperty() {
         return getFullProperty();
     }
 

@@ -163,7 +163,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         propertyView.showEditKey = false;
     }
 
-    protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {
+    protected CalcPropertyMapImplement<?, I> calcGroupWhereProperty() {
         if(where==null)
             return DerivedProperty.createTrue();
         return where;

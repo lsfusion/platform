@@ -45,6 +45,10 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return property.getWhereProperty().map(mapping);
     }
 
+    public CalcPropertyMapImplement<?, T> mapCalcWhereProperty() {
+        return property.getWhereProperty(true).map(mapping);
+    }
+
     public LAP<P> createLP(ImOrderSet<T> listInterfaces) {
         return new LAP<P>(property, listInterfaces.mapOrder(mapping.reverse()));
     }

@@ -24,7 +24,7 @@ public class ReturnActionProperty extends ChangeFlowActionProperty {
         return FlowResult.RETURN;
     }
 
-    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
+    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         return DerivedProperty.createNull();
     }
 }

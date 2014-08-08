@@ -622,6 +622,19 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         }
     }
 
+    public void runOnStarted() {
+        try {
+            DataSession session = dbManager.createSession();
+
+            LM.onStarted.execute(session);
+
+            session.apply(businessLogics);
+            session.close();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    
     public void logLaunch() {
         try {
             DataSession session = createSession();

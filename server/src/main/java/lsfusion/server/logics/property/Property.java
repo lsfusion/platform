@@ -154,8 +154,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public ValueClass[] getInterfaceClasses(ImOrderSet<T> listInterfaces, ClassType classType) { // notification, load, lazy, dc, obsolete, в конструкторах при определении классов действий в основном
         return listInterfaces.mapOrder(getInterfaceClasses(classType)).toArray(new ValueClass[listInterfaces.size()]);
     }
-    public abstract ImMap<T, ValueClass> getInterfaceClasses(ClassType type);
-    
+    @IdentityLazy
+    public ImMap<T, ValueClass> getInterfaceClasses(ClassType type) {
+        return getClassWhere(type).getCommonParent(interfaces);
+    }
     public abstract ClassWhere<T> getClassWhere(ClassType type);
 
     @IdentityLazy

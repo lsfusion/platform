@@ -178,22 +178,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         logger.info("Obsolete caches were successfully cleaned");
     }
     
-    @Override
-    protected void onStarted(LifecycleEvent event) {
-        super.onStarted(event);
-
-        try {
-            DataSession session = getDbManager().createSession();
-
-            LM.onStarted.execute(session);
-
-            session.apply(this);
-            session.close();
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     public ScriptingLogicsModule getModule(String name) {
         return (ScriptingLogicsModule) getSysModule(name);
     }

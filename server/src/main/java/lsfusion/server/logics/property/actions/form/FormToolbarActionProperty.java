@@ -46,9 +46,9 @@ public abstract class FormToolbarActionProperty extends ScriptingActionProperty 
     }
 
     @Override
-    public CalcPropertyMapImplement<?, ClassPropertyInterface> getWhereProperty() {
+    public CalcPropertyMapImplement<?, ClassPropertyInterface> calcWhereProperty() {
         CalcProperty enableIf = getEnableIf();
-        return enableIf == null ? super.getWhereProperty() : enableIf.getImplement();
+        return enableIf == null ? super.calcWhereProperty() : enableIf.getImplement();
     }
 
     private void setupToolbarButton(FormEntity form, PropertyDrawEntity propertyDraw) {

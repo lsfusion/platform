@@ -5,15 +5,12 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.ParamMessage;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
@@ -200,12 +197,12 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         return new PropertySet<I>(innerKeys, where, orderExprs, ordersNotNull).executeClasses(context.getEnv());
     }
 
-    protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {
+    protected CalcPropertyMapImplement<?, I> calcGroupWhereProperty() {
        CalcPropertyMapImplement<?, I> whereProp = ifProp != null ? ifProp : DerivedProperty.<I>createTrue();
        if(ordersNotNull)
            whereProp = DerivedProperty.createAnd(innerInterfaces, whereProp, orders.keys());
        return DerivedProperty.createIfElseUProp(innerInterfaces, whereProp,
-               action.mapWhereProperty(), elseAction != null ? elseAction.mapWhereProperty() : null);
+               action.mapCalcWhereProperty(), elseAction != null ? elseAction.mapCalcWhereProperty() : null);
     }
 
     private ImSet<I> getExtendInterfaces() {

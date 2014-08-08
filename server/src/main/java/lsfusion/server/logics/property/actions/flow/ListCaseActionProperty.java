@@ -59,14 +59,14 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
         abstractWhere = DerivedProperty.createUnion(isExclusive, isChecked, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
     }
 
-    protected abstract CalcPropertyMapImplement<?, PropertyInterface> calculateWhereProperty();
+    protected abstract CalcPropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty();
 
     @IdentityInstanceLazy
-    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
+    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         if(isAbstract())
             return abstractWhere;
 
-        return calculateWhereProperty();
+        return calcCaseWhereProperty();
     }
 
     @Override

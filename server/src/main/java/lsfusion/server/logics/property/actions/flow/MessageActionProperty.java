@@ -29,7 +29,7 @@ public class MessageActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
+    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         // TRUE AND a OR (NOT a), т.е. значение всегда TRUE, но при join'е будет учавствовать в classWhere - FULL
         return DerivedProperty.createUnion(interfaces, DerivedProperty.createAnd(DerivedProperty.createTrue(), interfaces.single()), DerivedProperty.createNot(interfaces.single()));
     }

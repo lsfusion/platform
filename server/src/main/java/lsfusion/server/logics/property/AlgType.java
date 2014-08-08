@@ -8,6 +8,8 @@ public interface AlgType {
     <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(CalcProperty<P> property);
     
     AlgInfoType getAlgInfo();
+    
+    public final static ActionWhereType actionWhere = ActionWhereType.CLASS;
 
     public final static boolean useInfer = true;
     public final static boolean useInferForInfo = true;

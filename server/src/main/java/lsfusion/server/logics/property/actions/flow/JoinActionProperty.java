@@ -93,8 +93,8 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
     }
 
     @IdentityInstanceLazy
-    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() { // тут на recursive не смо
-        return DerivedProperty.createJoin(action.property.getWhereProperty().mapImplement(action.mapping));
+    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() { // тут на recursive не смо
+        return DerivedProperty.createJoin(action.property.getWhereProperty(true).mapImplement(action.mapping));
     }
 
     @Override

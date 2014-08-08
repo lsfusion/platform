@@ -58,7 +58,7 @@ public class ApplyActionProperty extends KeepContextActionProperty {
     }
 
     @Override
-    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
+    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         
         MList<ActionPropertyMapImplement<?, PropertyInterface>> actions = ListFact.mList();
         if(action != null)
@@ -68,7 +68,7 @@ public class ApplyActionProperty extends KeepContextActionProperty {
                 ((ImList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).mapListValues(
                         new GetValue<CalcPropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
                             public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
-                                return value.mapWhereProperty();
+                                return value.mapCalcWhereProperty();
                             }});
         return DerivedProperty.createUnion(interfaces, listWheres);
         

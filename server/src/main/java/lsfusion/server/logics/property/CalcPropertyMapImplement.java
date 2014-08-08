@@ -182,7 +182,7 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return new CalcPropertyRevImplement<P, L>(property, mapping.join(mapImplement));
     }
 
-    public CalcPropertyInterfaceImplement<T> mapClassProperty() {
+    public CalcPropertyMapImplement<?, T> mapClassProperty() {
         return property.getClassProperty().mapPropertyImplement(mapping);
     }
 

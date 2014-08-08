@@ -407,6 +407,14 @@
     
     <!-- Задачи инициализации reflection manager'а -->
 
+    <bean id="executeOnStartedTask" class="lsfusion.server.logics.tasks.impl.ExecuteOnStartedTask">
+        <property name="dependencies">
+            <set>
+            </set>
+        </property>
+        <property name="reflectionManager" ref="reflectionManager"/>
+    </bean>
+
     <bean id="syncTablesTask" class="lsfusion.server.logics.tasks.impl.SyncTablesTask">
         <property name="dependencies">
             <set>
@@ -419,6 +427,7 @@
     <bean id="syncPropertyEntitiesTask" class="lsfusion.server.logics.tasks.impl.SyncPropertyEntitiesTask">
         <property name="dependencies">
             <set>
+                <ref bean="executeOnStartedTask"/>
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
@@ -427,6 +436,7 @@
     <bean id="syncPropertyParentsTask" class="lsfusion.server.logics.tasks.impl.SyncPropertyParentsTask">
         <property name="dependencies">
             <set>
+                <ref bean="executeOnStartedTask"/>
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
@@ -453,6 +463,7 @@
     <bean id="syncNavigatorElementsTask" class="lsfusion.server.logics.tasks.impl.SyncNavigatorElementsTask">
         <property name="dependencies">
             <set>
+                <ref bean="executeOnStartedTask"/>
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
@@ -461,6 +472,7 @@
     <bean id="syncGroupPropertiesTask" class="lsfusion.server.logics.tasks.impl.SyncGroupPropertiesTask">
         <property name="dependencies">
             <set>
+                <ref bean="executeOnStartedTask"/>
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
@@ -478,6 +490,7 @@
     <bean id="resetConnectionStatusTask" class="lsfusion.server.logics.tasks.impl.ResetConnectionStatusTask">
         <property name="dependencies">
             <set>
+                <ref bean="executeOnStartedTask"/>
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>

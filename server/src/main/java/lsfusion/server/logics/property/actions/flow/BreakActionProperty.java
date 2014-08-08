@@ -24,7 +24,7 @@ public class BreakActionProperty extends ChangeFlowActionProperty {
     }
 
     @Override
-    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
+    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         return DerivedProperty.createNull();
     }
 }

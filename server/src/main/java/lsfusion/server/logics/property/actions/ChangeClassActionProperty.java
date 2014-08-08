@@ -76,7 +76,7 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
     }
 
     @Override
-    protected CalcPropertyMapImplement<?, I> getGroupWhereProperty() {
+    protected CalcPropertyMapImplement<?, I> calcGroupWhereProperty() {
         CalcPropertyMapImplement<?, I> result = IsClassProperty.getMapProperty(MapFact.singleton(changeInterface, (ValueClass) baseClass));
         if(where!=null)
             result = DerivedProperty.createAnd(innerInterfaces, where, result);

@@ -55,7 +55,7 @@ public abstract class AroundAspectActionProperty extends KeepContextActionProper
     protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {
     }
 
-    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
-        return aspectActionImplement.mapWhereProperty();
+    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
+        return aspectActionImplement.mapCalcWhereProperty();
     }
 }

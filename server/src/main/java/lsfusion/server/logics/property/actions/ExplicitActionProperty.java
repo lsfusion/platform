@@ -39,7 +39,7 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
         return FlowResult.FINISH;
     }
 
-    public CalcPropertyMapImplement<?, ClassPropertyInterface> getWhereProperty() {
+    public CalcPropertyMapImplement<?, ClassPropertyInterface> calcWhereProperty() {
         return IsClassProperty.getProperty(interfaces);
     }
 

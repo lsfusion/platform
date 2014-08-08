@@ -23,7 +23,7 @@ public class AsyncUpdateEditValueActionProperty extends SystemActionProperty {
     }
 
     @Override
-    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
+    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         return DerivedProperty.createNull();
     }
 

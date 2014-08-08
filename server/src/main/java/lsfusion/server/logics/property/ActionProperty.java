@@ -153,14 +153,25 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public abstract ImSet<ActionProperty> getDependActions();
 
-    public ImMap<P, ValueClass> getInterfaceClasses(ClassType type) {
-        return getWhereProperty().mapInterfaceClasses(type);
-    }
     public ClassWhere<P> getClassWhere(ClassType type) {
         return getWhereProperty().mapClassWhere(type);
     }
 
-    public abstract CalcPropertyMapImplement<?, P> getWhereProperty();
+    public CalcPropertyMapImplement<?, P> getWhereProperty() {
+        return getWhereProperty(false);
+    }
+    
+    public CalcPropertyMapImplement<?, P> getWhereProperty(boolean recursive) {
+        CalcPropertyMapImplement<?, P> result = calcWhereProperty();
+        
+        ActionWhereType actionWhere = AlgType.actionWhere;
+        if(actionWhere != ActionWhereType.CALC && (!recursive || actionWhere == ActionWhereType.CLASS))
+            result = result.mapClassProperty();
+            
+        return result;
+    }
+    
+    public abstract CalcPropertyMapImplement<?, P> calcWhereProperty();
 
     @Override
     protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents) {

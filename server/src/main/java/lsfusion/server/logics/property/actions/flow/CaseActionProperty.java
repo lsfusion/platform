@@ -61,7 +61,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
     public void addOperand(ActionPropertyMapImplement<?,PropertyInterface> action, Version version) {
         assert isAbstract();
 
-        CalcPropertyMapImplement<?, PropertyInterface> where = action.mapWhereProperty();
+        CalcPropertyMapImplement<?, PropertyInterface> where =  action.mapWhereProperty();
         Case<PropertyInterface> addCase;
         if(type == AbstractType.CASE)
             addCase = new Case<PropertyInterface>((CalcPropertyMapImplement<?,PropertyInterface>) where.mapClassProperty(), action);
@@ -105,10 +105,10 @@ public class CaseActionProperty extends ListCaseActionProperty {
         cases = NFFact.list();
     }
 
-    protected CalcPropertyMapImplement<?, PropertyInterface> calculateWhereProperty() {
+    protected CalcPropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty() {
         ImList<Pair<CalcPropertyInterfaceImplement<PropertyInterface>, CalcPropertyInterfaceImplement<PropertyInterface>>> listWheres = getCases().mapListValues(new GetValue<Pair<CalcPropertyInterfaceImplement<PropertyInterface>, CalcPropertyInterfaceImplement<PropertyInterface>>, Case<PropertyInterface>>() {
             public Pair<CalcPropertyInterfaceImplement<PropertyInterface>, CalcPropertyInterfaceImplement<PropertyInterface>> getMapValue(Case<PropertyInterface> value) {
-                return new Pair<CalcPropertyInterfaceImplement<PropertyInterface>, CalcPropertyInterfaceImplement<PropertyInterface>>(value.where, value.action.mapWhereProperty());
+                return new Pair<CalcPropertyInterfaceImplement<PropertyInterface>, CalcPropertyInterfaceImplement<PropertyInterface>>(value.where, value.action.mapCalcWhereProperty());
             }});
         return DerivedProperty.createUnion(interfaces, isExclusive, listWheres);
     }

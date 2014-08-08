@@ -44,11 +44,11 @@ public class ListActionProperty extends ListCaseActionProperty {
         actions = ListFact.mList();
     }
 
-    public CalcPropertyMapImplement<?, PropertyInterface> calculateWhereProperty() {
+    public CalcPropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty() {
 
         ImList<CalcPropertyInterfaceImplement<PropertyInterface>> listWheres = getActions().mapListValues(new GetValue<CalcPropertyInterfaceImplement<PropertyInterface>, ActionPropertyMapImplement<?, PropertyInterface>>() {
             public CalcPropertyInterfaceImplement<PropertyInterface> getMapValue(ActionPropertyMapImplement<?, PropertyInterface> value) {
-                return value.mapWhereProperty();
+                return value.mapCalcWhereProperty();
             }});
         return DerivedProperty.createUnion(interfaces, listWheres);
     }

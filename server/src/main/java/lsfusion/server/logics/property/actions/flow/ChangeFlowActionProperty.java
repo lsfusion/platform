@@ -13,7 +13,7 @@ public abstract class ChangeFlowActionProperty extends KeepContextActionProperty
         super(caption, 0);
     }
 
-    public CalcPropertyMapImplement<?, PropertyInterface> getWhereProperty() {
+    public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         return DerivedProperty.createTrue();
     }
 
