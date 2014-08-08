@@ -103,6 +103,19 @@ DESIGN dialogDate FROM DEFAULT {
 
 }
 
+FORM dialogInteger 'Выбор числа'
+    OBJECTS i = INTEGER FIXED PANEL
+    PROPERTIES(i) objValue = OBJVALUE
+;
+
+DESIGN dialogInteger FROM DEFAULT {
+    PROPERTY (objValue) {
+        caption = 'Введите число';
+        font = 'bold 64';
+        panelLabelAbove = TRUE;
+    }
+}
+
 FORM dialogNumeric 'Выбор числа'
     OBJECTS n = NUMERIC[20,7] FIXED PANEL
     PROPERTIES(n) objValue = OBJVALUE
