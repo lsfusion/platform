@@ -124,8 +124,10 @@ public class ScriptingFormEntity {
 
                 List<CalcPropertyObjectEntity> propertyObjects = new ArrayList<CalcPropertyObjectEntity>();
                 for (ScriptingLogicsModule.PropertyUsage pUsage : properties) {
-                    if (pUsage.name != null)
-                        propertyObjects.add(form.addPropertyObject((LCP)LM.findLPByPropertyUsage(pUsage), groupObj.getOrderObjects().toArray(new ObjectEntity[groupObj.getObjects().size()])));
+                    if (pUsage.name != null) {
+                        LCP property = (LCP) findLP(pUsage, groupObj);
+                        propertyObjects.add(form.addPropertyObject(property, groupObj.getOrderObjects().toArray(new ObjectEntity[groupObj.getObjects().size()])));
+                    }
                 }
 
                 if (!propertyObjects.isEmpty())
@@ -135,6 +137,20 @@ public class ScriptingFormEntity {
         form.addTreeGroupObject(treeSID, version, groups.toArray(new GroupObjectEntity[groups.size()]));
     }
 
+    private LP findLP(ScriptingLogicsModule.PropertyUsage property, GroupObjectEntity group) throws ScriptingErrorLog.SemanticErrorException {
+        if (property.classNames != null) {
+            return LM.findLPByPropertyUsage(property);
+        } else {
+            ValueClass[] signature = new ValueClass[group.getOrderObjects().size()];
+            int index = 0;
+            for (ObjectEntity obj : group.getOrderObjects()) {
+                signature[index] = obj.baseClass;
+                ++index;
+            }
+            return LM.findLPByNameAndClasses(property.name, signature);
+        }
+    }
+    
     private void addGroupObjectEntity(String groupName, GroupObjectEntity group, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (form.getNFGroupObject(groupName, version) != null) {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "group object", groupName);
