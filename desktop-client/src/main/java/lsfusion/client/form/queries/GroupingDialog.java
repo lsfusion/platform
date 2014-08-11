@@ -779,7 +779,8 @@ public abstract class GroupingDialog extends JDialog {
             }
 
             Dispatch field = Dispatch.get(pivotTableWizard, "DataPivotField").toDispatch();
-            Dispatch.put(field, "Orientation", new Variant(xlColumnField));
+            if (pivotDataFieldsCount > 1)
+                Dispatch.put(field, "Orientation", new Variant(xlColumnField));
 
             Dispatch.get(workbook, "Save");
             Dispatch.call(workbooks, "Close");                                                    
