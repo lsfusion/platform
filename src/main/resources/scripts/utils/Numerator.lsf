@@ -116,17 +116,17 @@ META defineNumerated(class)
          DO generateSeriesNumber###class(o) ;
 END
 
-META defineNumeratedDefault(class, caption, series)
+META defineNumeratedDefault(class, captionV, seriesV)
     @defineNumerated(class);
-    @defineNumeratedDefault(class, caption, series, );
+    @defineNumeratedDefault(class, captionV, seriesV, );
 END
 
 GROUP defaultNumerator 'Нумераторы по умолчанию' : public;
 
-META defineNumeratedDefault(class, caption, series, prefix)
+META defineNumeratedDefault(class, captionV, seriesV, prefix)
 
     prefix###defaultNumerator###class = DATA Numerator ();
-    name###prefix##DefaultNumerator###class caption = nameNumerator(prefix###defaultNumerator###class()) IN defaultNumerator;
+    name###prefix##DefaultNumerator###class captionV = nameNumerator(prefix###defaultNumerator###class()) IN defaultNumerator;
 
     numerator###class(o) <- prefix###defaultNumerator###class() WHEN SET(o IS class);
 
@@ -139,8 +139,8 @@ META defineNumeratedDefault(class, caption, series, prefix)
     
     loadDefaultNumerators() += ACTION () {
         FOR ADDOBJ n = Numerator DO {
-            ASSIGN nameNumerator(n) <- caption;
-            ASSIGN seriesNumerator(n) <- series;
+            ASSIGN nameNumerator(n) <- captionV;
+            ASSIGN seriesNumerator(n) <- seriesV;
             ASSIGN minValueNumerator(n) <- 1L;
             ASSIGN maxValueNumerator(n) <- 99999L;
             ASSIGN stringLengthNumerator(n) <- 5;
@@ -175,10 +175,10 @@ META defineNumerated(object1, object2)
 
 END
 
-META defineNumeratedDefault (object1, object2, property, caption, series)
+META defineNumeratedDefault (object1, object2, property, captionV, seriesV)
 
     defaultNumerator###object1###object2 = DATA Numerator ();
-    nameDefaultNumerator###object1###object2 caption = nameNumerator(defaultNumerator###object1###object2());
+    nameDefaultNumerator###object1###object2 captionV = nameNumerator(defaultNumerator###object1###object2());
 
     EXTEND FORM defaultNumerators
         PROPERTIES() nameDefaultNumerator###object1###object2
@@ -191,8 +191,8 @@ META defineNumeratedDefault (object1, object2, property, caption, series)
 
     loadDefaultNumerators() += ACTION () {
         FOR ADDOBJ n = Numerator DO {
-            nameNumerator(n) <- caption;
-            seriesNumerator(n) <- series;
+            nameNumerator(n) <- captionV;
+            seriesNumerator(n) <- seriesV;
             minValueNumerator(n) <- 1L;
             maxValueNumerator(n) <- 99999L;
             stringLengthNumerator(n) <- 5;
