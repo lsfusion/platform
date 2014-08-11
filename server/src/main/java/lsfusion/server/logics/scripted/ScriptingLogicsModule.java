@@ -537,7 +537,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addImplementationToAbstract(PropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addImplementationToAbstract(" + abstractPropUsage + ", " + context + ", " + implement + ", " + when + ");");
 
-        LP abstractLP = findLPByPropertyUsage(abstractPropUsage);
+        LP abstractLP = findJoinMainProp(abstractPropUsage, context);
         checkParamCount(abstractLP, context.size());
 
         List<LPWithParams> allProps = new ArrayList<LPWithParams>();
@@ -667,7 +667,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return paramNames;        
     }
 
-    public List<AndClassSet> getClassesFromTypedParams(List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+    public List<AndClassSet> getClassesFromTypedParams(List<TypedParameter> params) {
         List<AndClassSet> paramClasses = new ArrayList<AndClassSet>();
         for (TypedParameter param : params) {
             if (param.cls == null) {
@@ -678,14 +678,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         return paramClasses;
     }
-    
-    private List<ValueClass> extractClasses(List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        List<ValueClass> classes = new ArrayList<ValueClass>();
-        for (TypedParameter param : params) {
-            classes.add(param.cls);
-        }
-        return classes;
-    } 
     
     public void addSettingsToProperty(LP property, String name, String caption, List<TypedParameter> params, List<AndClassSet> signature, String groupName, boolean isPersistent, boolean isComplex, String tableName, Boolean notNullResolve, Event notNullEvent) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + caption + ", " +
@@ -887,20 +879,30 @@ public class ScriptingLogicsModule extends LogicsModule {
     public List<AndClassSet> getSignatureForGProp(List<LPWithParams> paramProps, List<TypedParameter> params) {
         return getParamClassesByParamProperties(paramProps, params);
     }
+
+    private LP findJoinMainProp(String mainPropName, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+        List<AndClassSet> classes = getParamClassesByParamProperties(paramProps, context);
+        return findLPByNameAndClasses(mainPropName, classes);
+    }
     
-    private LP findJoinMainProp(String mainPropName, List<LPWithParams> paramProps, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        List<AndClassSet> classes = getParamClassesByParamProperties(paramProps, params);
-        LP mainProp = findLPByNameAndClasses(mainPropName, classes);
-        return mainProp;
+    private LP findJoinMainProp(PropertyUsage mainProp, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+        if (mainProp.classNames != null) {
+            return findLPByPropertyUsage(mainProp);
+        } else {
+            return findJoinMainProp(mainProp.name, paramProps, context);
+        }
+    }
+    
+    private LP findJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+        if (mainProp.classNames != null) {
+            return findLPByPropertyUsage(mainProp); 
+        } else {
+            return findLPByNameAndClasses(mainProp.name, getClassesFromTypedParams(params));
+        }
     }
     
     public LPWithParams addScriptedJProp(PropertyUsage pUsage, List<LPWithParams> paramProps, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        LP mainProp;
-        if (pUsage.classNames != null) {
-            mainProp = findLPByPropertyUsage(pUsage);
-        } else {
-            mainProp = findJoinMainProp(pUsage.name, paramProps, params);
-        }
+        LP mainProp = findJoinMainProp(pUsage, paramProps, params);
         return addScriptedJProp(mainProp, paramProps);
     }
     
@@ -1312,12 +1314,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedJoinAProp(PropertyUsage pUsage, List<LPWithParams> properties, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
-        LP mainProp;    
-        if (pUsage.classNames != null) { 
-            mainProp = findLPByPropertyUsage(pUsage);
-        } else {
-            mainProp = findJoinMainProp(pUsage.name, properties, params);
-        }
+        LP mainProp = findJoinMainProp(pUsage, properties, params);    
         return addScriptedJoinAProp(mainProp, properties);                        
     }
     
@@ -1408,9 +1405,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(res, property.usedParams);
     }
 
-    public LPWithParams addScriptedAssignPropertyAProp(List<TypedParameter> context, PropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedAssignPropertyAProp(List<TypedParameter> context, PropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedAssignPropertyAProp(" + context + ", " + toPropertyUsage + ", " + fromProperty + ", " + whereProperty + ");");
-        LP toPropertyLP = findLPByPropertyUsage(toPropertyUsage);
+        LP toPropertyLP = findJoinMainProp(toPropertyUsage, toPropertyMapping, newContext);
 
         if (!(toPropertyLP.property instanceof DataProperty || toPropertyLP.property instanceof CaseUnionProperty)) {
             errLog.emitOnlyDataCasePropertyIsAllowedError(parser, toPropertyUsage.name); // todo [dale]: изменить формат сообщения об ошибке
@@ -1447,7 +1444,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LPWithParams toProperty = null;
         if (toPropUsage != null && toPropMapping != null) {
-            toProperty = addScriptedJProp(findLPByPropertyUsage(toPropUsage), toPropMapping);
+            toProperty = addScriptedJProp(findJoinMainProp(toPropUsage, toPropMapping, context), toPropMapping);
         }
 
         List<Integer> resultInterfaces = getResultInterfaces(context.size(), toProperty, whereProperty);
@@ -2224,7 +2221,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void addScriptedFollows(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<Integer> options, List<LPWithParams> props, List<Event> sessions) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedFollows(" + mainPropUsage + ", " + namedParams + ", " + options + ", " + props + ", " + sessions + ");");
-        LCP mainProp = (LCP) findLPByPropertyUsage(mainPropUsage);
+        LCP mainProp = (LCP) findJoinMainProp(mainPropUsage, namedParams);
         checkProperty(mainProp, mainPropUsage.name);
         checkParamCount(mainProp, namedParams.size());
         checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
@@ -2240,7 +2237,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void addScriptedWriteWhen(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, LPWithParams valueProp, LPWithParams whenProp, boolean action) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedWriteWhen(" + mainPropUsage + ", " + namedParams + ", " + valueProp + ", " + whenProp + ");");
-        LP mainProp = findLPByPropertyUsage(mainPropUsage);
+        LP mainProp = findJoinMainProp(mainPropUsage, namedParams);
         if (!(mainProp.property instanceof DataProperty)) {
             errLog.emitOnlyDataPropertyIsAllowedError(parser, mainPropUsage.name);
         }
@@ -2296,7 +2293,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void addScriptedAspect(PropertyUsage mainPropUsage, List<TypedParameter> mainPropParams, LPWithParams actionProp, boolean before) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedAspect(" + mainPropUsage + ", " + mainPropParams + ", " + actionProp + ", " + before + ");");
-        LP mainProp = findLPByPropertyUsage(mainPropUsage);
+        LP mainProp = findJoinMainProp(mainPropUsage, mainPropParams);
         checkParamCount(mainProp, mainPropParams.size());
         checkDistinctParameters(getParamNamesFromTypedParams(mainPropParams)); 
         checkActionProperty(actionProp.property);

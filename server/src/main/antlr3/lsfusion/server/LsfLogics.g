@@ -2251,7 +2251,7 @@ assignActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPWith
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedAssignPropertyAProp(context, $propUsage.propUsage, $params.props, $expr.property, condition);
+		$property = self.addScriptedAssignPropertyAProp(context, $propUsage.propUsage, $params.props, $expr.property, condition, newContext);
 	}
 }
 	:	('ASSIGN')?
