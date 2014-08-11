@@ -613,7 +613,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }
             } else if (!insideRecursion) {
                 errLog.emitRecursiveParamsOutideRecursionError(parser, paramName);
-            } else if (indexOf(context, paramName.substring(1)) < 0 && !dynamic) {
+            } else if (indexOf(context, paramName.substring(1)) < 0) {
                 errLog.emitParamNotFoundError(parser, paramName.substring(1));
             }
         }
@@ -626,6 +626,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         if (index < 0 && context != null && (dynamic || paramName.startsWith("$") && insideRecursion)) {
+            if (paramName.startsWith("$") && insideRecursion) {
+                param.cls = context.get(indexOf(context, paramName.substring(1))).cls;            
+            }
             index = context.size();
             context.add(param);
         }
