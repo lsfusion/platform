@@ -1778,11 +1778,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedPartitionProp(PartitionType partitionType, PropertyUsage ungroupPropUsage, boolean strict, int precision, boolean isAscending,
-                                                 boolean useLast, int groupPropsCnt, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
+                                                 boolean useLast, int groupPropsCnt, List<LPWithParams> paramProps, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedPartitionProp(" + partitionType + ", " + ungroupPropUsage + ", " + strict + ", " + precision + ", " +
                                                         isAscending + ", " + useLast + ", " + groupPropsCnt + ", " + paramProps + ");");
         checkPartitionWindowConsistence(partitionType, useLast);
-        LP ungroupProp = ungroupPropUsage != null ? findLPByPropertyUsage(ungroupPropUsage) : null;
+        LP ungroupProp = ungroupPropUsage != null ? findJoinMainProp(ungroupPropUsage, paramProps.subList(1, groupPropsCnt + 1), context) : null;
         checkPartitionUngroupConsistence(ungroupProp, groupPropsCnt);
 
         boolean ordersNotNull = doesExtendContext(paramProps.subList(0, groupPropsCnt + 1), paramProps.subList(groupPropsCnt + 1, paramProps.size()));

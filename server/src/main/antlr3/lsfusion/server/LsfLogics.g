@@ -1208,7 +1208,7 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, ascending, useLast, groupExprCnt, paramProps);
+		$property = self.addScriptedPartitionProp(type, pUsage, strict, precision, ascending, useLast, groupExprCnt, paramProps, context);
 	}
 }
 	:	'PARTITION' 
