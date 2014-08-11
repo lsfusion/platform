@@ -85,6 +85,23 @@ END
 
 // --------------------------------------------- Диалоги --------------------------------- //
 
+FORM dialogString 'Выбор строку'
+    OBJECTS s = VARSTRING[200] FIXED PANEL
+    PROPERTIES(s) objValue = OBJVALUE
+;
+
+DESIGN dialogString FROM DEFAULT {
+    NEW string BEFORE functions.box {
+        fill = 1;
+        ADD PROPERTY (objValue) {
+            fill = 1;
+            caption = 'Введите строку';
+            font = 'bold 64';
+            panelLabelAbove = TRUE;
+        }
+    }
+}
+
 FORM dialogDate 'Выбор даты'
     OBJECTS d = DATE FIXED PANEL
     PROPERTIES(d) objValue = OBJVALUE
