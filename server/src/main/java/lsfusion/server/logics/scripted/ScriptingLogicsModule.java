@@ -3149,15 +3149,12 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }
             }
 
-            Set<String> checkedNamespaces = new HashSet<String>(namespaces);
             List<FoundItem<T>> resultList = new ArrayList<FoundItem<T>>();
             for (Map.Entry<String, List<LogicsModule>> e : namespaceToModules.entrySet()) {
-                if (!checkedNamespaces.contains(e.getKey())) {
-                    for (LogicsModule module : e.getValue()) {
-                        List<T> moduleResult = finder.resolveInModule(module, name, param);
-                        for (T obj : moduleResult) {
-                            resultList.add(new FoundItem<T>(obj, module));
-                        }
+                for (LogicsModule module : e.getValue()) {
+                    List<T> moduleResult = finder.resolveInModule(module, name, param);
+                    for (T obj : moduleResult) {
+                        resultList.add(new FoundItem<T>(obj, module));
                     }
                 }
             }
