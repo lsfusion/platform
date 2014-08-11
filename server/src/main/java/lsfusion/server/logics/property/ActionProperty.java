@@ -342,10 +342,14 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     @IdentityLazy
     public ImSet<OldProperty> getSessionEventOldDepends() { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
-        assert getSessionEnv(SystemEvent.SESSION)!=null;
+        return getEventOldDepends(SystemEvent.SESSION);
+    }
+    public ImSet<OldProperty> getEventOldDepends(SystemEvent event) { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
+        assert getSessionEnv(event)!=null;
+        final PrevScope scope = event.getScope();
         return getOldDepends().filterFn(new SFunctionSet<OldProperty>() {
             public boolean contains(OldProperty element) {
-                return element.scope == PrevScope.EVENT;
+                return element.scope == scope;
             }});
     }
 

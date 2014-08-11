@@ -1326,7 +1326,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     @IdentityLazy
     public boolean inferEmpty(InferInfoType inferType) {
         // ищем false хоть по одному из параметров
-        return inferInterfaceClasses(inferType).isEmpty(inferType);
+        return inferClassValueWhere(inferType).isFalse();
     }
 
     public boolean check(boolean constraint) {

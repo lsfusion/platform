@@ -84,9 +84,19 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
     }
 
     @Override
+    public void finalizeAroundInit() {
+        super.finalizeAroundInit();
+        hideOlds(); // для multi-threading'а
+    }
+
+    @Override
     public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
-        if(Settings.get().isUseEventValuePrevHeuristic() && property instanceof AggregateProperty && ((AggregateProperty)property).hasAlotKeys())
+        if(hideOlds())
             return SetFact.EMPTY();
         return super.getSessionCalcDepends(events);
+    }
+
+    private boolean hideOlds() {
+        return Settings.get().isUseEventValuePrevHeuristic() && property instanceof AggregateProperty && ((AggregateProperty)property).hasAlotKeys();
     }
 }

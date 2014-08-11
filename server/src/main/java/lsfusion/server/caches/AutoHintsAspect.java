@@ -229,7 +229,8 @@ public class AutoHintsAspect {
         if(queryType == PropertyQueryType.RECURSIVE)
             return result;
 
-        if(calcType.isExpr() && catchHint != null && catchHint.allowHintIncrement(property)) { // неправильно так как может быть не changed
+        if(calcType.isExpr() && catchHint != null && !propChanges.isEmpty() // проверка на пустоту для оптимизации при старте 
+                && catchHint.allowHintIncrement(property)) { // неправильно так как может быть не changed
             Where changed = null;
             if(queryType.needChange())
                 changed = result.getExpr("changed").getWhere();
