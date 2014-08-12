@@ -1,1 +1,1 @@
-call mvn install -P assemble,pack
+call mvn install -P assemble
