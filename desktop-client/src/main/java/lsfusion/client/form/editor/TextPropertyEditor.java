@@ -12,8 +12,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.EventObject;
@@ -42,7 +40,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
         textArea.setWrapStyleWord(true);
         textArea.setLineWrap(true);
 
-        getViewport().add(textArea);
+        setViewportView(textArea);
         setPreferredSize(new Dimension(200, 200));
         dialog = new JDialog(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
         textArea.setFont(new Font("Tahoma", Font.PLAIN, 12));
@@ -68,7 +66,6 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
         dialog.getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
         optionPane.addPropertyChangeListener(this);
         setFocusable(true);
-        textArea.setEditable(false);
         textArea.getCaret().setVisible(true);
 
         addFocusListener(new FocusAdapter() {
@@ -77,13 +74,6 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
             }
         });
 
-        textArea.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                textArea.setEditable(true);
-            }
-        }
-        );
     }
 
     public void clearAndHide() {
@@ -100,7 +90,6 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
             int x = (int) Math.min(tableLocation.getX(), screenSize.getWidth() - WIDTH);
             dialog.setBounds(x, (int) tableLocation.getY(), WIDTH, HEIGHT);
             dialog.setVisible(true);
-            textArea.setEditable(true);
             return null;
         } else {
             return this;

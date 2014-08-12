@@ -19,6 +19,7 @@ import lsfusion.base.DefaultFormsType;
 import lsfusion.client.*;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.dispatch.ClientNavigatorActionDispatcher;
+import lsfusion.client.form.editor.EditorEventQueue;
 import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.*;
 import lsfusion.interop.AbstractWindowType;
@@ -96,6 +97,8 @@ public class DockableMainFrame extends MainFrame {
         navigatorController.update();
 
         bindUIHandlers();
+
+        Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EditorEventQueue());
     }
 
     private void executeNavigatorAction(ClientNavigatorAction action) {
