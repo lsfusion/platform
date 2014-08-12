@@ -97,8 +97,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private final static Logger scriptLogger = ServerLoggers.scriptLogger;
 
-    private final CompoundNameResolver<LP<?, ?>, List<AndClassSet>> lpResolver = new LPResolver(new SoftLPModuleFinder());
-    private final CompoundNameResolver<LP<?, ?>, ?> lpOldResolver = new LPResolver(new OldLPNameModuleFinder());
+    private final CompoundNameResolver<LP<?, ?>, List<AndClassSet>> directLPResolver = new LPResolver(new LPModuleFinder(), true);
+    private final CompoundNameResolver<LP<?, ?>, List<AndClassSet>> indirectLPResolver = new LPResolver(new SoftLPModuleFinder(), false);
     private final CompoundNameResolver<AbstractGroup, ?> groupResolver = new CompoundNameResolver<AbstractGroup, Object>(new GroupNameModuleFinder());
     private final CompoundNameResolver<NavigatorElement, ?> navigatorResolver = new CompoundNameResolver<NavigatorElement, Object>(new NavigatorElementNameModuleFinder());
     private final CompoundNameResolver<AbstractWindow, ?> windowResolver = new CompoundNameResolver<AbstractWindow, Object>(new WindowNameModuleFinder());
@@ -378,7 +378,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     private LP<?, ?> findLPByNameAndClasses(String name, List<AndClassSet> params) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?, ?> property = lpResolver.resolve(name, params);
+        LP<?, ?> property = directLPResolver.resolve(name, params);
+        if (property == null) {
+            property = indirectLPResolver.resolve(name, params);
+        }
         checkProperty(property, name);
         return property;
     }
@@ -3187,62 +3190,36 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     public class LPResolver extends CompoundNameResolver<LP<?, ?>, List<AndClassSet>> {
-        public LPResolver(ModuleFinder<LP<?, ?>, List<AndClassSet>> finder) {
+        private final boolean filter;
+        
+        public LPResolver(ModuleFinder<LP<?, ?>, List<AndClassSet>> finder, boolean filter) {
             super(finder);
+            this.filter = filter;
         }
 
         @Override
         protected List<FoundItem<LP<?, ?>>> finalizeNamespaceResult(List<FoundItem<LP<?, ?>>> result, String name, List<AndClassSet> param) throws ScriptingErrorLog.SemanticErrorException {
-            List<FoundItem<LP<?, ?>>> nsResult = new ArrayList<FoundItem<LP<?, ?>>>();
-            for (FoundItem<LP<?, ?>> item : result) {
-                if (match(item.module.getParamClasses(item.value), param, false)) {
-                    nsResult.add(item);    
-                }
-            }
-            if (nsResult.isEmpty()) {
-                nsResult = result;
-            }
-            return nsResult;
+            return result;
         }
-
 
         @Override
         protected FoundItem<LP<?, ?>> finalizeResult(List<FoundItem<LP<?, ?>>> result, String name, List<AndClassSet> param) throws ScriptingErrorLog.SemanticErrorException {
-            List<LogicsModule> errorModules = new ArrayList<LogicsModule>();
             FoundItem<LP<?, ?>> finalItem = new FoundItem<LP<?, ?>>(null, null);
-
-            List<FoundItem<LP<?, ?>>> directResults = new ArrayList<FoundItem<LP<?, ?>>>();
-            List<FoundItem<LP<?, ?>>> indirectResults = new ArrayList<FoundItem<LP<?, ?>>>();
-            for (FoundItem<LP<?, ?>> item : result) {
-                if (match(item.module.getParamClasses(item.value), param, false)) {
-                    directResults.add(item);
-                } else {
-                    indirectResults.add(item);
+            if (!result.isEmpty()) {
+                if (filter) {
+                    result = NamespacePropertyFinder.filterFoundProperties(result);
                 }
-            }
-            
-            if (!directResults.isEmpty()) {
-                List<FoundItem<LP<?, ?>>> filteredDirectResults = NamespacePropertyFinder.filterFoundProperties(directResults);
-                if (filteredDirectResults.size() > 1) {
-                    for (FoundItem<LP<?, ?>> item : filteredDirectResults) {
+                if (result.size() > 1) {
+                    List<LogicsModule> errorModules = new ArrayList<LogicsModule>();
+                    for (FoundItem<LP<?, ?>> item : result) {
                         errorModules.add(item.module);
                     }
-                } else if (filteredDirectResults.size() == 1) {
-                    finalItem = filteredDirectResults.get(0);
+                    errLog.emitAmbiguousNameError(parser, errorModules, name); // todo [dale]: сделать нормальную ошибку                    
+                } else if (result.size() == 1) {
+                    finalItem = result.get(0);
                 }
                 
-            } else {
-                if (indirectResults.size() > 1) {
-                    for (FoundItem<LP<?, ?>> item : indirectResults) {
-                        errorModules.add(item.module);
-                    }
-                } else if (indirectResults.size() == 1) {
-                    finalItem = indirectResults.get(0);
-                }
-            }
-            if (errorModules.size() > 1) {
-                errLog.emitAmbiguousNameError(parser, errorModules, name); // todo [dale]: сделать нормальную ошибку                    
-            }
+            } 
             return finalItem;
         }
     }
