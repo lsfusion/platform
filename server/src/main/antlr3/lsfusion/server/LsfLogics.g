@@ -1812,7 +1812,7 @@ actionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns 
 				localContext = $list.params; localDynamic = false; ownContext = true; 
 				
 				if (inPropParseState() && !dynamic)	{
-					self.checkActionLocalContext(context, localContext);
+					self.mergeActionLocalContext(context, localContext);
 				}
 			} 
 		)?

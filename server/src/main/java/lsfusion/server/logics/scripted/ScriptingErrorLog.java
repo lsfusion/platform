@@ -257,6 +257,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "number of named parameters should be equal to actual number of parameters");
     }
 
+    public void emitActionParamTypesError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "action parameters lists have different classes for same parameter");
+    }
+    
     public void emitCasePropWhenParamMissingInThenParams(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "WHEN expressions should only have parameters used in THEN expressions");
     }
