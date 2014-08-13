@@ -1,6 +1,7 @@
 package lsfusion.server.data.sql;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.IOUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -17,6 +18,7 @@ import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.type.*;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.log4j.Logger;
 import org.springframework.util.PropertyPlaceholderHelper;
@@ -431,8 +433,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         ensuredConcTypes.exclAdd(concType, true);
     }
 
-    protected static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
-
+    public static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
 
     public synchronized void ensureRecursion(Object ot) throws SQLException {
         throw new UnsupportedOperationException();
@@ -681,5 +682,13 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 
     public boolean hasAggConcProblem() {
         return false;
+    }
+
+    protected String getPath() {
+        throw new UnsupportedOperationException();
+    }
+    public void ensureScript(String script, Properties props) throws SQLException, IOException {
+        String scriptString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream(getPath() + script));
+        executeEnsure(stringResolver.replacePlaceholders(scriptString, props));
     }
 }

@@ -210,6 +210,11 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
 
     @Override
+    protected String getPath() {
+        return "/sql/mssql/";
+    }
+
+    @Override
     public String getSafeCastNameFnc(Type type) {
         return "dbo." + super.getSafeCastNameFnc(type);
     }

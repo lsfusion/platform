@@ -42,6 +42,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
@@ -438,11 +439,22 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private boolean synchronizeDB() throws SQLException, IOException, SQLHandledException {
+    private boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         SQLSession sql = getThreadLocalSql();
 
         // инициализируем таблицы
         LM.tableFactory.fillDB(sql, LM.baseClass);
+
+        // потом надо сделать соответствующий механизм для Formula
+        ScriptingLogicsModule module = businessLogics.getModule("Country");
+        if(module != null) {
+            LCP<?> lp = module.findProperty("isDayOffCountryDate");
+
+            Properties props = new Properties();
+            props.put("dayoff.tablename", lp.property.mapTable.table.getName(sql.syntax));
+            props.put("dayoff.fieldname", lp.property.getDBName());
+            adapter.ensureScript("jumpworkdays.sc", props);
+        }
 
         SQLSyntax syntax = adapter;
 

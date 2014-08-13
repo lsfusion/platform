@@ -16,8 +16,8 @@ $BODY$
 		forward BOOLEAN := $3 > 0;
 	BEGIN
 		LOOP
-			SELECT CASE WHEN forward THEN array_agg(key1 ORDER BY key1 ASC) ELSE array_agg(key1 ORDER BY key1 DESC) END INTO daysOff FROM Country_countrydate
-				WHERE key0 = $1 AND Country_isdayoffcountrydate_country_date = 1 AND CASE WHEN forward THEN key1 > lastOff ELSE key1 < lastOff END LIMIT bufferSize;
+			SELECT CASE WHEN forward THEN array_agg(key1 ORDER BY key1 ASC) ELSE array_agg(key1 ORDER BY key1 DESC) END INTO daysOff FROM ${dayoff.tablename}
+				WHERE key0 = $1 AND ${dayoff.fieldname} = 1 AND CASE WHEN forward THEN key1 > lastOff ELSE key1 < lastOff END LIMIT bufferSize;
 			IF daysOff IS NULL THEN	--if there's no days off for the specified country OR date > last day off in the table
 				RETURN CASE WHEN $3 = 0 THEN date ELSE NULL END;
 			END IF;
