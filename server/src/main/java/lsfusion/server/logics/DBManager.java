@@ -453,7 +453,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             Properties props = new Properties();
             props.put("dayoff.tablename", lp.property.mapTable.table.getName(sql.syntax));
             props.put("dayoff.fieldname", lp.property.getDBName());
-            adapter.ensureScript("jumpworkdays.sc", props);
+            adapter.ensureScript("jumpWorkdays.sc", props);
         }
 
         SQLSyntax syntax = adapter;
