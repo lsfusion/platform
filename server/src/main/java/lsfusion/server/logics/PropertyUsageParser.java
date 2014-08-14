@@ -3,7 +3,7 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
@@ -66,7 +66,7 @@ public class PropertyUsageParser extends AbstractPropertyNameParser {
         return name;
     }
 
-    public List<AndClassSet> getSignature() throws ParseException {
+    public List<ResolveClassSet> getSignature() throws ParseException {
         int bracketPos = name.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
         if (bracketPos >= 0) {
             if (name.lastIndexOf(PropertyCanonicalNameUtils.signatureRBracket) != name.length() - 1) {
@@ -78,7 +78,7 @@ public class PropertyUsageParser extends AbstractPropertyNameParser {
             len = parseText.length();
 
             try {
-                List<AndClassSet> result = parseClassList();
+                List<ResolveClassSet> result = parseClassList();
                 if (pos < len) {
                     throw new ParseException("Parse error");
                 }
@@ -92,8 +92,8 @@ public class PropertyUsageParser extends AbstractPropertyNameParser {
         return null;
     }
 
-    private List<AndClassSet> parseClassList() {
-        List<AndClassSet> result = new ArrayList<AndClassSet>();
+    private List<ResolveClassSet> parseClassList() {
+        List<ResolveClassSet> result = new ArrayList<ResolveClassSet>();
         while (pos < len) {
             if (isNext(PropertyCanonicalNameUtils.UNKNOWNCLASS)) {
                 checkNext(PropertyCanonicalNameUtils.UNKNOWNCLASS);

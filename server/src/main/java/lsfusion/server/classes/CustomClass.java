@@ -19,6 +19,8 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.classes.sets.UpClassSet;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
@@ -126,6 +128,11 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     public UpClassSet getUpSet() {
         return new UpClassSet(this);
+    }
+
+    @Override
+    public ResolveClassSet getResolveSet() {
+        return new ResolveUpClassSet(this);
     }
 
     public BaseClass getBaseClass() {

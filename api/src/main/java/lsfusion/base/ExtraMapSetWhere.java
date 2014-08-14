@@ -3,7 +3,7 @@ package lsfusion.base;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 
-public abstract class ExtraMapSetWhere<K,V,T extends ImMap<K,V>, This extends ExtraMapSetWhere<K,V,T,This>> extends ExtraIntersectSetWhere<T,This> {
+public abstract class ExtraMapSetWhere<K,V,T extends ImMap<K,V>, This extends ExtraMapSetWhere<K,V,T,This>> extends ExtraSingleIntersectSetWhere<T,This> {
 
     protected ExtraMapSetWhere() {
     }

@@ -22,8 +22,9 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.ScannerDaemonTask;
 import lsfusion.server.data.OperationOwner;
@@ -560,7 +561,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             ClassDataProperty dataProperty = new ClassDataProperty(classSet.toString(), classSet);
             LCP<ClassPropertyInterface> lp = new LCP<ClassPropertyInterface>(dataProperty);
             LM.addProperty(null, new LCP<ClassPropertyInterface>(dataProperty));
-            LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<AndClassSet>singletonList(classSet));
+            LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<ResolveClassSet>singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));
             dataProperty.markStored(LM.tableFactory, table);
 
             for(ConcreteCustomClass customClass : set)
@@ -1311,7 +1312,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private void test(String testCase) {
         try {
             PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, testCase);
-            List<AndClassSet> res = parser.getSignature();
+            List<ResolveClassSet> res = parser.getSignature();
             System.out.print('"' + testCase + "\": " + (res == null ? "null" : res.toString()));
             testCase = testCase.replaceAll(" ", "");
             System.out.println(" -> " + DefaultDBNamePolicy.staticTransformCanonicalNameToDBName(testCase));
@@ -1325,7 +1326,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         try {
             String namespaceName = parser.getNamespace();
             String name = parser.getName();
-            List<AndClassSet> signature = parser.getSignature();
+            List<ResolveClassSet> signature = parser.getSignature();
             return findProperty(namespaceName, name, signature);
         } catch (PropertyCanonicalNameParser.ParseException e) {
             Throwables.propagate(e);
@@ -1334,17 +1335,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public LP findProperty(String namespace, String name, ValueClass... classes) {
-        List<AndClassSet> classSets = null;
+        List<ResolveClassSet> classSets = null;
         if (classes.length > 0) {
-            classSets = new ArrayList<AndClassSet>();
+            classSets = new ArrayList<ResolveClassSet>();
             for (ValueClass cls : classes) {
-                classSets.add(cls.getUpSet());
+                classSets.add(cls.getResolveSet());
             }
         }
         return findProperty(namespace, name, classSets);
     }
 
-    private LP findProperty(String namespace, String name, List<AndClassSet> classes) {
+    private LP findProperty(String namespace, String name, List<ResolveClassSet> classes) {
         assert namespaceToModules.get(namespace) != null;
         NamespacePropertyFinder finder = new NamespacePropertyFinder(new SoftLPModuleFinder(), namespaceToModules.get(namespace));
         List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundElements = finder.findInNamespace(namespace, name, classes);
@@ -1454,7 +1455,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // Здесь ищется точное совпадение по сигнатуре
-    public LogicsModule getModuleContainingLP(String namespaceName, String name, List<AndClassSet> classes) {
+    public LogicsModule getModuleContainingLP(String namespaceName, String name, List<ResolveClassSet> classes) {
         return getModuleContainingObject(namespaceName, name, classes, new EqualLPModuleFinder(false));
     }
 

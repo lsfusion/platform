@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import lsfusion.server.classes.NumericClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +27,7 @@ public final class PropertyCanonicalNameUtils {
     static public final String logPropPrefix = "_LOG_";
     static public final String drillDownPrefix = "_DRILLDOWN_";
 
-    static public String createName(String namespace, String name, List<AndClassSet> signature) {
+    static public String createName(String namespace, String name, List<ResolveClassSet> signature) {
         StringBuilder builder = new StringBuilder();
         builder.append(namespace);
         builder.append(".");
@@ -34,7 +35,7 @@ public final class PropertyCanonicalNameUtils {
         if (signature != null) {
             builder.append(signatureLBracket);
             boolean isFirst = true;
-            for (AndClassSet cs : signature) {
+            for (ResolveClassSet cs : signature) {
                 if (!isFirst) {
                     builder.append(",");
                 }
@@ -54,7 +55,7 @@ public final class PropertyCanonicalNameUtils {
         return builder.toString();
     }
 
-    static public String createName(String namespace, String name, AndClassSet... signature) {
+    static public String createName(String namespace, String name, ResolveClassSet... signature) {
         return createName(namespace, name, Arrays.asList(signature));
     }
     

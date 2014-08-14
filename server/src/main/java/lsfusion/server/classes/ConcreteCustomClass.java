@@ -10,10 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
-import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.classes.sets.ObjectClassSet;
-import lsfusion.server.classes.sets.OrObjectClassSet;
-import lsfusion.server.classes.sets.UpClassSet;
+import lsfusion.server.classes.sets.*;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
@@ -302,4 +299,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return getChangeProperties(mAddClasses.immutable(), mRemoveClasses.immutable());
     }
 
+    public ResolveClassSet toResolve() {
+        return new ResolveOrObjectClassSet(ResolveUpClassSet.FALSE, SetFact.singleton(this));
+    }
 }

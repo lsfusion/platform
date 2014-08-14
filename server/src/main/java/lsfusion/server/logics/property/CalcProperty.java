@@ -18,8 +18,9 @@ import lsfusion.server.Settings;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.*;
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -646,8 +647,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
     
     // для resolve'а
-    public AndClassSet getValueClassSet() {
-        return getClassValueWhere(ClassType.resolvePolicy).getCommonClass("value");
+    public ResolveClassSet getValueClassSet() {
+        return ResolveUpClassSet.toResolve(getClassValueWhere(ClassType.resolvePolicy).getCommonClass("value"));
     }
 
     @IdentityLazy
@@ -759,7 +760,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if (valueCommonClass != null && valueCommonClass.isEmpty()) {
             return ClassWhere.FALSE();
         }
-        return new ClassWhere<Object>(MapFact.<Object, AndClassSet>addExcl(ExClassSet.fromExAnd(inferred), "value", ExClassSet.fromExAnd(valueCommonClass)).removeNulls());
+        return new ClassWhere<Object>(ResolveUpClassSet.toAnd(MapFact.<Object, ResolveClassSet>addExcl(ExClassSet.fromEx(inferred), "value", ExClassSet.fromEx(valueCommonClass))).removeNulls());
     }
 
     public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {

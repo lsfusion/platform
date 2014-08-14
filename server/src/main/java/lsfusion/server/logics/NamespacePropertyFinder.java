@@ -2,6 +2,7 @@ package lsfusion.server.logics;
 
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.linear.LP;
 
 import java.util.ArrayList;
@@ -11,9 +12,9 @@ import java.util.List;
  * Created by DAle on 10.04.14.
  */
 
-public class NamespacePropertyFinder extends NamespaceElementFinder<LP<?, ?>, List<AndClassSet>> {
+public class NamespacePropertyFinder extends NamespaceElementFinder<LP<?, ?>, List<ResolveClassSet>> {
 
-    public NamespacePropertyFinder(LogicsModule.ModuleFinder<LP<?, ?>, List<AndClassSet>> finder, List<LogicsModule> modules) {
+    public NamespacePropertyFinder(LogicsModule.ModuleFinder<LP<?, ?>, List<ResolveClassSet>> finder, List<LogicsModule> modules) {
         super(finder, modules);
     }
 
@@ -27,7 +28,7 @@ public class NamespacePropertyFinder extends NamespaceElementFinder<LP<?, ?>, Li
         List<FoundItem<LP<?, ?>>> finalResult = new ArrayList<FoundItem<LP<?, ?>>>();
         for (int i = 0; i < cnt; i++) {
             LP<?, ?> iProp = result.get(i).value;
-            List<AndClassSet> iParams = result.get(i).module.propClasses.get(iProp);
+            List<ResolveClassSet> iParams = result.get(i).module.propClasses.get(iProp);
             boolean foundMoreSpecialized = false;
             for (int j = 0; j < cnt; j++) {
                 LP<?, ?> jProp = result.get(j).value;

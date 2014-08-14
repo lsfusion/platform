@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CurrentComputerFormulaProperty;
@@ -64,9 +65,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public void initProperties() throws RecognitionException {
         // Текущий пользователь
         currentUser = addProperty(null, new LCP<PropertyInterface>(new CurrentUserFormulaProperty(user)));
-        makePropertyPublic(currentUser, "currentUser", new ArrayList<AndClassSet>());
+        makePropertyPublic(currentUser, "currentUser", new ArrayList<ResolveClassSet>());
         currentComputer = addProperty(null, new LCP<PropertyInterface>(new CurrentComputerFormulaProperty(computer)));
-        makePropertyPublic(currentComputer, "currentComputer", new ArrayList<AndClassSet>());
+        makePropertyPublic(currentComputer, "currentComputer", new ArrayList<ResolveClassSet>());
 
         super.initProperties();
 

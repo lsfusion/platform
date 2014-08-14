@@ -17,7 +17,6 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.ClassCanonicalNameUtils;
 import lsfusion.server.logics.property.ClassField;
 
 import java.util.Comparator;
@@ -192,7 +191,6 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     public CustomClass getCommonClass() {
         assert !isEmpty();
         assert !unknown;
-
         final ImSet<CustomClass> commonSet;
         if(Settings.get().isMergeUpClassSets()) {
             if(set.isEmpty() && up.getCommonClasses().length==1)
@@ -204,10 +202,14 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         } else
             commonSet = SetFact.toExclSet(up.getCommonClasses()).addExcl(set);
 
+        return getCommonClass(commonSet);
+    }
+
+    public static CustomClass getCommonClass(final ImSet<CustomClass> commonSet) {
         if(commonSet.size()==1) // иначе firstFulls не заполнится
             return commonSet.single();
 
-        BaseClass baseClass = getBaseClass(); // базовая вершина
+        BaseClass baseClass = commonSet.get(0).getBaseClass(); // базовая вершина
 
         MSet<CustomClass> mUsed = SetFact.mSet();
         for(CustomClass commonClass : commonSet) // ищем все использованные вершины
@@ -394,7 +396,8 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     }
 
     @Override
-    public String getCanonicalName() {
-        return ClassCanonicalNameUtils.createName(this);
+    public ResolveClassSet toResolve() {
+        assert !unknown;
+        return new ResolveOrObjectClassSet(up.toResolve(), set);
     }
 }

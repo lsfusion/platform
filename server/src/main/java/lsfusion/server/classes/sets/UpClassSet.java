@@ -1,5 +1,6 @@
 package lsfusion.server.classes.sets;
 
+import lsfusion.base.ExtraMultiIntersectSetWhere;
 import lsfusion.base.ExtraSetWhere;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -18,7 +19,7 @@ import lsfusion.server.logics.property.ClassField;
 import java.util.Arrays;
 
 // не ExtraIntSetWhere потому как intersect несколько, а не один элемент возвращает
-public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements ObjectValueClassSet {
+public class UpClassSet extends AUpClassSet<UpClassSet> implements ObjectValueClassSet {
 
     public UpClassSet(CustomClass[] classes) {
         super(classes);
@@ -34,12 +35,6 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return wheres[0].getBaseClass();
     }
 
-    public boolean has(CustomClass checkNode) {
-        for(CustomClass node : wheres)
-            if(checkNode.isChild(node)) return true;
-        return false;
-    }
-
     public boolean has(RemoteClass checkNode) {
         return checkNode instanceof CustomClass && has((CustomClass)checkNode);
     }
@@ -51,27 +46,6 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
     public void fillNextConcreteChilds(MSet<ConcreteCustomClass> mSet) {
         for(CustomClass where : wheres)
             where.fillNextConcreteChilds(mSet);
-    }
-
-    public UpClassSet or(UpClassSet set) {
-        return add(set);
-    }
-
-    protected CustomClass[] newArray(int size) {
-        return new CustomClass[size];
-    }
-
-    protected boolean containsAll(CustomClass who, CustomClass what) {
-        return what.isChild(who);
-    }
-
-    protected CustomClass[] intersect(CustomClass where1, CustomClass where2) {
-        ImSet<CustomClass> common = where1.commonChilds(where2);
-        int size = common.size();
-        CustomClass[] result = new CustomClass[size];
-        for(int i=0;i<size;i++)
-            result[i] = common.get(i);
-        return result;
     }
 
     public boolean inSet(UpClassSet up,ImSet<ConcreteCustomClass> set) { // проверяет находится ли в up,set - обратная containsAll
@@ -88,8 +62,8 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
                 return UpClassSet.FALSE;
         }
         if(node instanceof UpClassSet)
-            return intersect((UpClassSet)node);
-        return getOr().and((OrObjectClassSet)node);
+            return and((UpClassSet) node);
+        return getOr().and((OrObjectClassSet) node);
     }
 
     public AndClassSet or(AndClassSet node) {
@@ -107,16 +81,12 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return new OrObjectClassSet(this);
     }
 
-    public boolean isEmpty() {
-        return wheres.length==0;
-    }
-
     public boolean containsAll(AndClassSet node, boolean implicitCast) {
         if(node instanceof ConcreteClass)
             return has((ConcreteClass)node);
         if(node instanceof UpClassSet)
             return ((UpClassSet)node).inSet(this, SetFact.<ConcreteCustomClass>EMPTY());
-        return getOr().containsAll((OrClassSet)node, implicitCast);
+        return getOr().containsAll((OrClassSet) node, implicitCast);
     }
 
     public ConcreteCustomClass getSingleClass() {
@@ -144,10 +114,6 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
 
     public String getNotWhereString(String source) {
         return OrObjectClassSet.getNotWhereString(this, source);
-    }
-
-    public Type getType() {
-        return ObjectType.instance;
     }
 
     public Stat getTypeStat(boolean forJoin) {
@@ -184,15 +150,8 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return null;
     }
 
-    public UpClassSet intersect(UpClassSet where) {
-        if(isTrue() || where.isFalse()) return where;
-        if(isFalse() || where.isTrue()) return this;
-
-        UpClassSet result = FALSE;
-        for(CustomClass andOp : where.wheres)
-            for(CustomClass and : wheres)
-                result = result.or(new UpClassSet(intersect(andOp,and)));
-        return result;
+    protected UpClassSet FALSETHIS() {
+        return FALSE;
     }
 
     public AndClassSet[] getAnd() {
@@ -210,13 +169,7 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return this;
     }
 
-    @Override
-    public String getCanonicalName() {
-        return ClassCanonicalNameUtils.createName(this);
-    }
-
-    @Override
-    public String toString() {
-        return "up{" + Arrays.toString(wheres) + "}";
+    public ResolveUpClassSet toResolve() {
+        return new ResolveUpClassSet(wheres);
     }
 }

@@ -16,7 +16,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.*;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.Time;
 import lsfusion.server.data.Union;
@@ -113,7 +113,7 @@ public abstract class LogicsModule {
     protected final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
     protected final Map<String, ImplementTable> moduleTables = new HashMap<String, ImplementTable>();
 
-    public final Map<LP<?, ?>, List<AndClassSet>> propClasses = new HashMap<LP<?, ?>, List<AndClassSet>>();
+    public final Map<LP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<LP<?, ?>, List<ResolveClassSet>>();
     
     protected final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<Pair<String, Integer>, MetaCodeFragment>();
 
@@ -204,12 +204,12 @@ public abstract class LogicsModule {
         }
     }
 
-    protected <T extends LP> void makePropertyPublic(T lp, String name, List<AndClassSet> signature) {
+    protected <T extends LP> void makePropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.property.setCanonicalName(getNamespace(), name, signature, baseLM.getDBNamePolicy());
         addModuleLP(lp);
     }
 
-    protected <T extends LP> void makePropertyPublic(T lp, String name, AndClassSet... signature) {
+    protected <T extends LP> void makePropertyPublic(T lp, String name, ResolveClassSet... signature) {
         makePropertyPublic(lp, name, Arrays.asList(signature));
     }
 
@@ -1286,11 +1286,11 @@ public abstract class LogicsModule {
             Throwables.propagate(e);
         }
         
-        List<AndClassSet> signature = new ArrayList<AndClassSet>();
+        List<ResolveClassSet> signature = new ArrayList<ResolveClassSet>();
         for (ValueClass cls : lp.getInterfaceClasses(ClassType.logPolicy)) {
-            signature.add(cls.getUpSet());
+            signature.add(cls.getResolveSet());
         }
-        signature.add(systemEventsLM.currentSession.property.getValueClass(ClassType.aroundPolicy).getUpSet());
+        signature.add(systemEventsLM.currentSession.property.getValueClass(ClassType.aroundPolicy).getResolveSet());
         LCP result = addDCProp(baseLM.privateGroup, ServerResourceBundle.getString("logics.log") + " " + lp.property, 1, lp,
                 add(new Object[]{true}, add(getParams(lp), add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)))));
         makePropertyPublic(result, name, signature);
@@ -1431,7 +1431,7 @@ public abstract class LogicsModule {
             throw new UnsupportedOperationException();
     }
 
-    private String nameForDrillDownAction(CalcProperty property, List<AndClassSet> signature) {
+    private String nameForDrillDownAction(CalcProperty property, List<ResolveClassSet> signature) {
         assert property.isNamed();
         String name = null;
         try {
@@ -1445,7 +1445,7 @@ public abstract class LogicsModule {
     }
 
     public LAP<?> addDDAProp(CalcProperty property) {
-        List<AndClassSet> signature = new ArrayList<AndClassSet>();
+        List<ResolveClassSet> signature = new ArrayList<ResolveClassSet>();
         DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this, null);
         LAP result = addMFAProp(baseLM.drillDownGroup, getString("logics.property.drilldown.action"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
         if (property.isNamed()) {
@@ -1458,7 +1458,7 @@ public abstract class LogicsModule {
     public LAP<?> addLazyAProp(CalcProperty property) {
         LAP result = addAProp(null, new LazyActionProperty(getString("logics.property.drilldown.action"), property));
         if (property.isNamed()) {
-            List<AndClassSet> signature = new ArrayList<AndClassSet>();
+            List<ResolveClassSet> signature = new ArrayList<ResolveClassSet>();
             String name = nameForDrillDownAction(property, signature);
             makePropertyPublic(result, name, signature);
         }
@@ -1533,7 +1533,7 @@ public abstract class LogicsModule {
         LAP result = addAProp(new FormAddObjectActionProperty(cls, obj));
         if (formEntity.getCanonicalName() != null) {
             String name = "_ADDOBJ" + "_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
-            makePropertyPublic(result, name, cls.getUpSet());
+            makePropertyPublic(result, name, cls.getResolveSet());
         }
         return result;
     }
@@ -1550,7 +1550,7 @@ public abstract class LogicsModule {
             res.setAskConfirm(true);
         }
         setDeleteActionOptions(res);
-        makePropertyPublic(res, name, cls.getUpSet());
+        makePropertyPublic(res, name, cls.getResolveSet());
         return res;
     }
     
@@ -1598,7 +1598,7 @@ public abstract class LogicsModule {
         LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
                 form.form, new ObjectEntity[]{},
                 form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope);
-        makePropertyPublic(result, name, new ArrayList<AndClassSet>());
+        makePropertyPublic(result, name, new ArrayList<ResolveClassSet>());
         
         setAddFormActionProperties(result, form, scope);
         
@@ -1631,7 +1631,7 @@ public abstract class LogicsModule {
         String name = "_EDITFORM" + scope + "_" + cls.getSID();
         LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.edit"),
                                  form.form, new ObjectEntity[]{form.object}, scope);
-        makePropertyPublic(result, name, form.object.baseClass.getUpSet());
+        makePropertyPublic(result, name, form.object.getResolveClassSet());
         return result;
     }
 
@@ -2026,14 +2026,14 @@ public abstract class LogicsModule {
         public List<T> resolveInModule(LogicsModule module, String simpleName, P param);
     }
 
-    public List<AndClassSet> getParamClasses(LP<?, ?> lp) {
-        List<AndClassSet> paramClasses = propClasses.get(lp);
-        return paramClasses == null ? Collections.<AndClassSet>nCopies(lp.listInterfaces.size(), null) : paramClasses;                   
+    public List<ResolveClassSet> getParamClasses(LP<?, ?> lp) {
+        List<ResolveClassSet> paramClasses = propClasses.get(lp);
+        return paramClasses == null ? Collections.<ResolveClassSet>nCopies(lp.listInterfaces.size(), null) : paramClasses;                   
     }
 
-    public static class OldLPNameModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
+    public static class OldLPNameModuleFinder implements ModuleFinder<LP<?, ?>, List<ResolveClassSet>> {
         @Override
-        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<AndClassSet> classes)  {
+        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
             List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
             for (List<LP<?, ?>> lps : module.getNamedModuleProperties().values()) {
                 for (LP<?, ?> lp : lps) {
@@ -2047,9 +2047,9 @@ public abstract class LogicsModule {
         }
     }
 
-    public static class SoftLPModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
+    public static class SoftLPModuleFinder implements ModuleFinder<LP<?, ?>, List<ResolveClassSet>> {
         @Override
-        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<AndClassSet> classes)  {
+        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
             List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
             for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
                 if (softMatch(module.getParamClasses(lp), classes)) {
@@ -2060,9 +2060,9 @@ public abstract class LogicsModule {
         }
     }                           
     
-    public static class LPModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
+    public static class LPModuleFinder implements ModuleFinder<LP<?, ?>, List<ResolveClassSet>> {
         @Override
-        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<AndClassSet> classes)  {
+        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
             List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
             for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
                 if (match(module.getParamClasses(lp), classes, false)) {
@@ -2074,7 +2074,7 @@ public abstract class LogicsModule {
     }
 
     // Находит идентичные по имени и сигнатуре свойства.   
-    public static class EqualLPModuleFinder implements ModuleFinder<LP<?, ?>, List<AndClassSet>> {
+    public static class EqualLPModuleFinder implements ModuleFinder<LP<?, ?>, List<ResolveClassSet>> {
         private final boolean findLocals;
         
         public EqualLPModuleFinder(boolean findLocals) {
@@ -2082,7 +2082,7 @@ public abstract class LogicsModule {
         }
         
         @Override
-        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<AndClassSet> classes)  {
+        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
             List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
             for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
                 if ((findLocals || !lp.property.isLocal()) && match(module.getParamClasses(lp), classes, false) && match(classes, module.getParamClasses(lp), false)) {
@@ -2093,7 +2093,7 @@ public abstract class LogicsModule {
         }
     }
     
-    public static boolean match(List<AndClassSet> interfaceClasses, List<AndClassSet> paramClasses, boolean strict) {
+    public static boolean match(List<ResolveClassSet> interfaceClasses, List<ResolveClassSet> paramClasses, boolean strict) {
         assert interfaceClasses != null;
         if (paramClasses == null) {
             return true;
@@ -2110,7 +2110,7 @@ public abstract class LogicsModule {
         return true;
     }
 
-    public static boolean softMatch(List<AndClassSet> interfaceClasses, List<AndClassSet> paramClasses) {
+    public static boolean softMatch(List<ResolveClassSet> interfaceClasses, List<ResolveClassSet> paramClasses) {
         assert interfaceClasses != null;
         if (paramClasses == null) {
             return true;

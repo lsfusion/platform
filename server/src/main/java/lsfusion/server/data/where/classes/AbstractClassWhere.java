@@ -20,6 +20,7 @@ import lsfusion.server.classes.ValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.property.infer.ExClassSet;
@@ -529,7 +530,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             public ExClassSet getMapValue(T key) {
                 ExClassSet result = ExClassSet.FALSE;
                 for (int i = 0; i < wheres.length; i++) {
-                    ExClassSet where = ExClassSet.toExAnd(wheres[i].get(key));
+                    ExClassSet where = ExClassSet.toEx(ResolveUpClassSet.toResolve(wheres[i].get(key)));
                     if(i==0)
                         result = where;
                     else

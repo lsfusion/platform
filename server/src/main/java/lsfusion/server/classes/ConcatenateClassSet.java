@@ -4,6 +4,8 @@ import lsfusion.base.ArrayCombinations;
 import lsfusion.base.col.ListFact;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.classes.sets.ResolveConcatenateClassSet;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
@@ -85,6 +87,13 @@ public class ConcatenateClassSet implements ConcreteClass, ValueClassSet  { // Ð
         return result;
     }
 
+    public ResolveClassSet toResolve() {
+        ResolveClassSet[] sets = new ResolveClassSet[classes.length];
+        for(int i=0;i<classes.length;i++)
+            sets[i] = classes[i].toResolve();
+        return new ResolveConcatenateClassSet(sets);
+    }
+
     public boolean inSet(AndClassSet set) {
         return ConcreteCustomClass.inSet(this, set);
     }
@@ -117,14 +126,5 @@ public class ConcatenateClassSet implements ConcreteClass, ValueClassSet  { // Ð
         for(int i=0;i<classes.length;i++)
             types[i] = classes[i].getValueClassSet();
         return new ConcatenateClassSet(types);
-    }
-
-    public AndClassSet[] getClasses() {
-        return classes;
-    }
-    
-    @Override
-    public String getCanonicalName() {
-        return ClassCanonicalNameUtils.createName(this);
     }
 }

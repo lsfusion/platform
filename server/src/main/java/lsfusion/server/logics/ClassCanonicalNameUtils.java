@@ -2,9 +2,7 @@ package lsfusion.server.logics;
 
 import lsfusion.base.ExtInt;
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.classes.sets.OrObjectClassSet;
-import lsfusion.server.classes.sets.UpClassSet;
+import lsfusion.server.classes.sets.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,10 +24,10 @@ public final class ClassCanonicalNameUtils {
     public static final String UpClassSetNameRBracket = ")";
     
     // CONCAT(CN1, ..., CNk)
-    public static String createName(ConcatenateClassSet ccs) {
-        AndClassSet[] classes = ccs.getClasses();
+    public static String createName(ResolveConcatenateClassSet ccs) {
+        ResolveClassSet[] classes = ccs.getClasses();
         String sid = ConcatenateClassNamePrefix + ConcatenateClassNameLBracket; 
-        for (AndClassSet set : classes) {
+        for (ResolveClassSet set : classes) {
             sid += (sid.length() > 1 ? "," : "");
             sid += set.getCanonicalName();
         }
@@ -37,7 +35,7 @@ public final class ClassCanonicalNameUtils {
     }
     
     // {UpCN, SetCN1, ..., SetCNk}
-    public static String createName(OrObjectClassSet cs) {
+    public static String createName(ResolveOrObjectClassSet cs) {
         if (cs.set.size() == 0) {
             return cs.up.getCanonicalName();
         } else {
@@ -52,7 +50,7 @@ public final class ClassCanonicalNameUtils {
     }
     
     // (CN1, ..., CNk) 
-    public static String createName(UpClassSet up) {
+    public static String createName(ResolveUpClassSet up) {
         if (up.wheres.length == 1) {
             return up.wheres[0].getCanonicalName();
         }

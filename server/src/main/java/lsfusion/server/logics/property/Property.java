@@ -24,6 +24,7 @@ import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -470,7 +471,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return canonicalName != null;
     }
     
-    public void setCanonicalName(String namespace, String name, List<AndClassSet> signature, PropertyDBNamePolicy policy) {
+    public void setCanonicalName(String namespace, String name, List<ResolveClassSet> signature, PropertyDBNamePolicy policy) {
         this.name = name;
         this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
         this.dbName = policy.transformToDBName(canonicalName);

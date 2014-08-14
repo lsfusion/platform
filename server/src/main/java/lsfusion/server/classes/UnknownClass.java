@@ -6,6 +6,7 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ObjectClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.FormulaClass;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
@@ -89,8 +90,7 @@ public class UnknownClass extends ImmutableObject implements FormulaClass, Concr
         return OrObjectClassSet.FALSE;
     }
 
-    @Override
-    public String getCanonicalName() {
-        return null;
+    public ResolveClassSet toResolve() {
+        throw new UnsupportedOperationException();
     }
 }

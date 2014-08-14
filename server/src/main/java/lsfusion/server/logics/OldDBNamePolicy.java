@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.PropertyObjectEntity;
@@ -18,7 +19,7 @@ import java.util.List;
 
 public class OldDBNamePolicy implements PropertyDBNamePolicy {
     @Override
-    public String createName(String namespaceName, String name, List<AndClassSet> signature) {
+    public String createName(String namespaceName, String name, List<ResolveClassSet> signature) {
         if (namespaceName == null) {
             return name;
         } else {

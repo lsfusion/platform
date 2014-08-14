@@ -1613,6 +1613,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
     
             apply.clear(sql, owner); // все сохраненные хинты обнуляем
+            dataModifier.clearHints(sql, owner); // drop'ем hint'ы (можно и без sql но пока не важно)
             restart(false, fromJavaSet(recursiveUsed).merge(keepProps)); // оставляем usedSessiona
         } finally {
             sql.inconsistent = false;

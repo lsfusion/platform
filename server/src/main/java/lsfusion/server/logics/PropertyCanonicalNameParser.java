@@ -4,9 +4,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.ArIndexedSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.classes.sets.OrObjectClassSet;
-import lsfusion.server.classes.sets.UpClassSet;
+import lsfusion.server.classes.sets.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +75,7 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
         return checkID(name);
     }
     
-    public List<AndClassSet> getSignature() throws ParseException {
+    public List<ResolveClassSet> getSignature() throws ParseException {
         int bracketPos = name.indexOf(PropertyCanonicalNameUtils.signatureLBracket);
         if (bracketPos >= 0) {
             if (name.lastIndexOf(PropertyCanonicalNameUtils.signatureRBracket) != name.length() - 1) {
@@ -89,7 +87,7 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
             len = parseText.length();
 
             try {
-                List<AndClassSet> result = parseAndClassSetList(true);
+                List<ResolveClassSet> result = parseAndClassSetList(true);
                 if (pos < len) {
                     throw new ParseException("Parse error");
                 }
@@ -101,8 +99,8 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
         return null;
     }
 
-    private List<AndClassSet> parseAndClassSetList(boolean isSignature) {
-        List<AndClassSet> result = new ArrayList<AndClassSet>();
+    private List<ResolveClassSet> parseAndClassSetList(boolean isSignature) {
+        List<ResolveClassSet> result = new ArrayList<ResolveClassSet>();
         while (pos < len) {
             if (isSignature && isNext(PropertyCanonicalNameUtils.UNKNOWNCLASS)) {
                 checkNext(PropertyCanonicalNameUtils.UNKNOWNCLASS);
@@ -120,8 +118,8 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
         return result;
     }
 
-    private AndClassSet parseAndClassSet() {
-        AndClassSet result;
+    private ResolveClassSet parseAndClassSet() {
+        ResolveClassSet result;
         if (isNext(CPREFIX)) {
             result = parseConcatenateClassSet();
         } else if (isNext(ClassCanonicalNameUtils.OrObjectClassSetNameLBracket)) {
@@ -134,22 +132,22 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
         return result;
     }
 
-    private ConcatenateClassSet parseConcatenateClassSet() {
+    private ResolveConcatenateClassSet parseConcatenateClassSet() {
         checkNext(CPREFIX);
-        List<AndClassSet> classes = parseAndClassSetList(false);
+        List<ResolveClassSet> classes = parseAndClassSetList(false);
         checkNext(ClassCanonicalNameUtils.ConcatenateClassNameRBracket);
-        return new ConcatenateClassSet(classes.toArray(new AndClassSet[classes.size()]));
+        return new ResolveConcatenateClassSet(classes.toArray(new ResolveClassSet[classes.size()]));
     }
 
-    private OrObjectClassSet parseOrObjectClassSet() {
+    private ResolveOrObjectClassSet parseOrObjectClassSet() {
         checkNext(ClassCanonicalNameUtils.OrObjectClassSetNameLBracket);
-        UpClassSet up = parseUpClassSet();
+        ResolveUpClassSet up = parseUpClassSet();
         checkNext(",");
         ImSet<ConcreteCustomClass> customClasses = SetFact.EMPTY();
         if (!isNext(ClassCanonicalNameUtils.OrObjectClassSetNameRBracket)) {
             customClasses = parseCustomClassList();
         }
-        OrObjectClassSet orSet = new OrObjectClassSet(up, customClasses);
+        ResolveOrObjectClassSet orSet = new ResolveOrObjectClassSet(up, customClasses);
         checkNext(ClassCanonicalNameUtils.OrObjectClassSetNameRBracket);
         return orSet;
     }
@@ -167,7 +165,7 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
         return new ArIndexedSet<ConcreteCustomClass>(classes.size(), classes.toArray(new ConcreteCustomClass[classes.size()]));
     }
 
-    private UpClassSet parseUpClassSet() {
+    private ResolveUpClassSet parseUpClassSet() {
         if (isNext(ClassCanonicalNameUtils.UpClassSetNameLBracket)) {
             checkNext(ClassCanonicalNameUtils.UpClassSetNameLBracket);
             List<CustomClass> classes = new ArrayList<CustomClass>();
@@ -178,10 +176,10 @@ public class PropertyCanonicalNameParser extends AbstractPropertyNameParser {
                 }
             }
             checkNext(ClassCanonicalNameUtils.UpClassSetNameRBracket);
-            return new UpClassSet(classes.toArray(new CustomClass[classes.size()]));
+            return new ResolveUpClassSet(classes.toArray(new CustomClass[classes.size()]));
         } else {
             CustomClass cls = parseCustomClass();
-            return new UpClassSet(cls);
+            return new ResolveUpClassSet(cls);
         }
     }
 

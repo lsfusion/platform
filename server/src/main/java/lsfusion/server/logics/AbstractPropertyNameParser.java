@@ -2,7 +2,7 @@ package lsfusion.server.logics;
 
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -86,14 +86,14 @@ public abstract class AbstractPropertyNameParser {
         return findCustomClass(parsedName);
     }
 
-    protected AndClassSet parseSingleClass() {
+    protected ResolveClassSet parseSingleClass() {
         String parsedName = parseClassName();
         DataClass cls = classFinder.findDataClass(parsedName);
 
         if (cls != null) {
             return cls;
         } else {
-            return findCustomClass(parsedName).getUpSet();
+            return findCustomClass(parsedName).getResolveSet();
         }
     }
 }

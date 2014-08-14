@@ -28,6 +28,6 @@ public class ValueProperty extends NoIncrementProperty<PropertyInterface> {
 
     @Override
     public ExClassSet calcInferValueClass(ImMap<PropertyInterface, ExClassSet> inferred, InferType inferType) {
-        return new ExClassSet(staticClass.getOr(), value);
+        return new ExClassSet(staticClass.getResolveSet(), value);
     }
 }

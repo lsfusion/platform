@@ -14,6 +14,7 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.PropertyFormEntity;
@@ -308,9 +309,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         Version version = getVersion();
 
         objectClass = addProperty(null, new LCP<ClassPropertyInterface>(baseClass.getObjectClassProperty()));
-        makePropertyPublic(objectClass, "objectClass", Collections.<AndClassSet>nCopies(1, null));
+        makePropertyPublic(objectClass, "objectClass", Collections.<ResolveClassSet>nCopies(1, null));
         random = addRMProp("Random");
-        makePropertyPublic(random, "random", Arrays.<AndClassSet>asList());
+        makePropertyPublic(random, "random", Arrays.<ResolveClassSet>asList());
 
         // только через операторы 
         flowBreak = addProperty(null, new LAP(new BreakActionProperty()));
@@ -488,7 +489,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
             ValueClass valueClass = classes[0].getBaseClass();
             ObjectValueProperty property = new ObjectValueProperty(valueClass);
-            property.setCanonicalName(getNamespace(), name, Arrays.<AndClassSet>asList(valueClass.getUpSet()), getDBNamePolicy());
+            property.setCanonicalName(getNamespace(), name, Arrays.asList(valueClass.getResolveSet()), getDBNamePolicy());
             setParent(property, version);
             return property;
         }

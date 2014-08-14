@@ -29,6 +29,6 @@ public interface AndClassSet {
     };
 
     ValueClassSet getValueClassSet();
-    
-    String getCanonicalName();
+
+    ResolveClassSet toResolve();
 }

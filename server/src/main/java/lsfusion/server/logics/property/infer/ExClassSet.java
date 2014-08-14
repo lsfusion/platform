@@ -10,12 +10,11 @@ import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.classes.sets.OrClassSet;
-import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.type.Type;
 
 public class ExClassSet extends TwinImmutableObject {
-    private final OrClassSet classSet;
+    private final ResolveClassSet classSet;
 
     public final ImSet<Object> values;    
     public final boolean orAny;
@@ -50,15 +49,15 @@ public class ExClassSet extends TwinImmutableObject {
         return set;
     }
 
-    public ExClassSet(OrClassSet classSet) {
+    public ExClassSet(ResolveClassSet classSet) {
         this(classSet, false);
     }
 
-    public ExClassSet(OrClassSet classSet, Object value) {
+    public ExClassSet(ResolveClassSet classSet, Object value) {
         this(classSet, SetFact.singleton(value), false);
     }
 
-    public ExClassSet(OrClassSet classSet, boolean orAny) {
+    public ExClassSet(ResolveClassSet classSet, boolean orAny) {
         this(classSet, null, orAny);
     }
 
@@ -68,20 +67,14 @@ public class ExClassSet extends TwinImmutableObject {
         return new ExClassSet(set.classSet, set.orAny);
     }
 
-    public static ExClassSet toEx(OrClassSet set) {
+    public static ExClassSet toEx(ResolveClassSet set) {
         if(set == null) return null;
         return new ExClassSet(set);
     }
 
-    public static ExClassSet toExAnd(AndClassSet set) {
-        if(set == null) 
-            return null;
-        return new ExClassSet(set.getOr());
-    }
-
     public static ExClassSet toExValue(ValueClass set) {
         if(set == null) return null;
-        return new ExClassSet(set.getUpSet().getOr());
+        return new ExClassSet(set.getResolveSet());
     }
 
     public static ExClassSet toExType(Type set) {
@@ -89,41 +82,39 @@ public class ExClassSet extends TwinImmutableObject {
         return new ExClassSet((DataClass)set);
     }
 
-    public static OrClassSet fromEx(ExClassSet set) {
+    public static ResolveClassSet fromEx(ExClassSet set) {
         if(set == null) return null;
         assert set.orAny || set.classSet != null;
         return set.classSet;
     }
 
-    public static AndClassSet fromExAnd(ExClassSet set) {
-        OrClassSet orSet = fromEx(set);
-        if(orSet == null) return null;
-        return orSet.getCommonAnd();
+    public static ResolveClassSet fromExAnd(ExClassSet set) {
+        return fromEx(set);
     }
 
     public static Type fromExType(ExClassSet set) {
-        AndClassSet andSet = fromExAnd(set);
+        ResolveClassSet andSet = fromExAnd(set);
         if(andSet == null) return null;
         return andSet.getType();
     }
 
     public static ValueClass fromExValue(ExClassSet set) {
-        OrClassSet orSet = fromEx(set);
+        ResolveClassSet orSet = fromEx(set);
         if(orSet == null) return null;
         return orSet.getCommonClass();
     }
     
     public final static ExClassSet logical = new ExClassSet(LogicalClass.instance);
 
-    public ExClassSet(OrClassSet classSet, ImSet<Object> values, boolean orAny) {
+    public ExClassSet(ResolveClassSet classSet, ImSet<Object> values, boolean orAny) {
         this.classSet = classSet;
         this.values = values;
         this.orAny = orAny;
     }
 
-    public static <T> ImMap<T, ExClassSet> toEx(ImMap<T, OrClassSet> classes) {
-        return classes.mapValues(new GetValue<ExClassSet, OrClassSet>() {
-            public ExClassSet getMapValue(OrClassSet value) {
+    public static <T> ImMap<T, ExClassSet> toEx(ImMap<T, ResolveClassSet> classes) {
+        return classes.mapValues(new GetValue<ExClassSet, ResolveClassSet>() {
+            public ExClassSet getMapValue(ResolveClassSet value) {
                 return toEx(value);
             }});
     }
@@ -135,17 +126,17 @@ public class ExClassSet extends TwinImmutableObject {
             }});
     }
 
-    public static <T> ImMap<T, OrClassSet> fromEx(ImMap<T, ExClassSet> classes) {
-        return classes.mapValues(new GetValue<OrClassSet, ExClassSet>() {
-            public OrClassSet getMapValue(ExClassSet value) {
+    public static <T> ImMap<T, ResolveClassSet> fromEx(ImMap<T, ExClassSet> classes) {
+        return classes.mapValues(new GetValue<ResolveClassSet, ExClassSet>() {
+            public ResolveClassSet getMapValue(ExClassSet value) {
                 return fromEx(value);
             }
         });
     }
 
-    public static <T> ImMap<T, AndClassSet> fromExAnd(ImMap<T, ExClassSet> classes) {
-        return classes.mapValues(new GetValue<AndClassSet, ExClassSet>() {
-            public AndClassSet getMapValue(ExClassSet value) {
+    public static <T> ImMap<T, ResolveClassSet> fromExAnd(ImMap<T, ExClassSet> classes) {
+        return classes.mapValues(new GetValue<ResolveClassSet, ExClassSet>() {
+            public ResolveClassSet getMapValue(ExClassSet value) {
                 return fromExAnd(value);
             }
         });
@@ -159,22 +150,22 @@ public class ExClassSet extends TwinImmutableObject {
         });
     }
 
-//    public static List<ExClassSet> toEx(List<OrClassSet> classes) {
+//    public static List<ExClassSet> toEx(List<ResolveClassSet> classes) {
 //        if(classes == null)
 //            return null;
 //
 //        List<ExClassSet> result = new ArrayList<ExClassSet>();
-//        for(OrClassSet paramClass : classes) {
+//        for(ResolveClassSet paramClass : classes) {
 //            result.add(toEx(paramClass));
 //        }
 //        return result;
 //    }
 //
-//    public static List<OrClassSet> fromEx(List<ExClassSet> classes) {
+//    public static List<ResolveClassSet> fromEx(List<ExClassSet> classes) {
 //        if(classes == null)
 //            return null;
 //
-//        List<OrClassSet> result = new ArrayList<OrClassSet>();
+//        List<ResolveClassSet> result = new ArrayList<ResolveClassSet>();
 //        for(ExClassSet paramClass : classes) {
 //            result.add(fromEx(paramClass));
 //        }
@@ -188,7 +179,7 @@ public class ExClassSet extends TwinImmutableObject {
     }
 
     // на конфликты типов (STRING - DATE например) по сути проверяет
-    public static ExClassSet checkNull(OrClassSet set, ImSet<Object> values, boolean orAny) {
+    public static ExClassSet checkNull(ResolveClassSet set, ImSet<Object> values, boolean orAny) {
         return new ExClassSet(set, values, orAny);
     }
     
@@ -198,7 +189,7 @@ public class ExClassSet extends TwinImmutableObject {
         return or ? values1.merge(values2) : values1.filter(values2);
     } 
     
-    private static OrClassSet op(OrClassSet set1, OrClassSet set2, boolean or) {
+    private static ResolveClassSet op(ResolveClassSet set1, ResolveClassSet set2, boolean or) {
         if(set1 == null) {
             if(or)
                 return set2;
@@ -213,7 +204,7 @@ public class ExClassSet extends TwinImmutableObject {
         }
         return or ? set1.or(set2) : set1.and(set2);
     }
-    public static ExClassSet op(OrClassSet set1, OrClassSet set2, ImSet<Object> values1, ImSet<Object> values2, boolean or, boolean orAny) {
+    public static ExClassSet op(ResolveClassSet set1, ResolveClassSet set2, ImSet<Object> values1, ImSet<Object> values2, boolean or, boolean orAny) {
         return checkNull(op(set1, set2, or), op(values1, values2, or) , orAny);
     }
 
@@ -258,6 +249,6 @@ public class ExClassSet extends TwinImmutableObject {
 
     public static ExClassSet getBase(ExClassSet set) {
         if(set == null) return null;
-        return new ExClassSet(set.classSet == null ? null : set.classSet.getCommonClass().getBaseClass().getUpSet().getOr(), null, set.orAny);
+        return new ExClassSet(set.classSet == null ? null : set.classSet.getCommonClass().getBaseClass().getResolveSet(), null, set.orAny);
     }
 }

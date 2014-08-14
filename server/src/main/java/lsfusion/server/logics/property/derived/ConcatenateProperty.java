@@ -9,6 +9,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.OrConcatenateClass;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.classes.sets.ResolveConcatenateClassSet;
 import lsfusion.server.data.expr.ConcatenateExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
@@ -69,7 +71,7 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
     }
 
     public static ExClassSet getPart(int i, ExClassSet commonValue) {
-        return new ExClassSet(((OrConcatenateClass)ExClassSet.fromEx(commonValue)).get(i), commonValue.orAny);
+        return new ExClassSet(((ResolveConcatenateClassSet)ExClassSet.fromEx(commonValue)).get(i), commonValue.orAny);
     }
 
     public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
@@ -77,8 +79,8 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
             public boolean contains(ExClassSet element) {
                 return element.orAny;
             }}).isEmpty()) {
-            ImMap<Integer, AndClassSet> andClassSets = getOrderInterfaces().toIndexedMap().join(ExClassSet.fromExAnd(inferred));
-            return new ExClassSet(new OrConcatenateClass(andClassSets), false);
+            ImList<ResolveClassSet> andClassSets = getOrderInterfaces().mapList(ExClassSet.fromExAnd(inferred));
+            return new ExClassSet(new ResolveConcatenateClassSet(andClassSets.toArray(new ResolveClassSet[andClassSets.size()])), false);
         }
         return super.calcInferValueClass(inferred, inferType);
     }

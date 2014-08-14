@@ -6,6 +6,7 @@ import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.ServerResourceBundle;
@@ -75,5 +76,9 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
     @Override
     public AndClassSet getAndClassSet() {
         return baseClass.getUpSet();
+    }
+
+    public ResolveClassSet getResolveClassSet() {
+        return baseClass.getResolveSet();
     }
 }

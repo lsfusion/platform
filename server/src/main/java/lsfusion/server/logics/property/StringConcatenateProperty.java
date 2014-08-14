@@ -4,6 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetStaticValue;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.sets.OrClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.StringJoinConcatenateFormulaImpl;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.infer.ExClassSet;
@@ -21,8 +22,8 @@ public class StringConcatenateProperty extends FormulaImplProperty {
     @Override
     public Inferred<Interface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         if (commonValue != null) {
-            return new Inferred<Interface>(ExClassSet.toEx(interfaces.mapValues(new GetStaticValue<OrClassSet>() {
-                public OrClassSet getMapValue() {
+            return new Inferred<Interface>(ExClassSet.toEx(interfaces.mapValues(new GetStaticValue<ResolveClassSet>() {
+                public ResolveClassSet getMapValue() {
                     return StringClass.get(0); // немного бред но ладно
                 }
             })));

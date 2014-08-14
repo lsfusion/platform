@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.form.entity.PropertyObjectEntity;
 
 import java.util.List;
@@ -18,7 +19,7 @@ public class DefaultDBNamePolicy implements PropertyDBNamePolicy {
     }
     
     @Override
-    public String createName(String namespaceName, String name, List<AndClassSet> signature) {
+    public String createName(String namespaceName, String name, List<ResolveClassSet> signature) {
         String canonicalName = PropertyCanonicalNameUtils.createName(namespaceName, name, signature);
         return transformToDBName(canonicalName);
     }

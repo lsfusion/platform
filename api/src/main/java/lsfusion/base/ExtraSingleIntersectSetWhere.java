@@ -1,15 +1,15 @@
 package lsfusion.base;
 
-public abstract class ExtraIntersectSetWhere<T, This extends ExtraIntersectSetWhere<T,This>> extends ExtraSetWhere<T,This> {
+public abstract class ExtraSingleIntersectSetWhere<T, This extends ExtraSingleIntersectSetWhere<T,This>> extends ExtraSetWhere<T,This> {
 
-    protected ExtraIntersectSetWhere() {
+    protected ExtraSingleIntersectSetWhere() {
     }
 
-    protected ExtraIntersectSetWhere(T[] wheres) {
+    protected ExtraSingleIntersectSetWhere(T[] wheres) {
         super(wheres);
     }
 
-    protected ExtraIntersectSetWhere(T where) {
+    protected ExtraSingleIntersectSetWhere(T where) {
         super(where);
     }
 

@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import org.antlr.runtime.RecognitionException;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -35,7 +36,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     @Override
     public void initProperties() throws RecognitionException {
         isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty()));
-        makePropertyPublic(isServerRestarting, "isServerRestarting", new ArrayList<AndClassSet>());
+        makePropertyPublic(isServerRestarting, "isServerRestarting", new ArrayList<ResolveClassSet>());
         super.initProperties();
         // Управление сервером базы данных
         checkAggregationsAction = findAction("checkAggregationsAction");

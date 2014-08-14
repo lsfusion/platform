@@ -1,5 +1,6 @@
 package lsfusion.server.classes;
 
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.formula.FormulaClass;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
@@ -35,7 +36,7 @@ import java.io.IOException;
 import java.text.Format;
 import java.util.Random;
 
-public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, FormulaClass, ValueClassSet, OrClassSet {
+public abstract class DataClass<T> extends AbstractType<T> implements StaticClass, FormulaClass, ValueClassSet, OrClassSet, ResolveClassSet {
     private static MAddExclMap<String, DataClass> sidToClass = MapFact.mBigStrongMap();
     protected String caption;
 
@@ -252,7 +253,31 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     public ValueClassSet getValueClassSet() {
         return this;
     }
-    
+
+    public ResolveClassSet getResolveSet() {
+        return this;
+    }
+
+    public boolean containsAll(ResolveClassSet set, boolean implicitCast) {
+        return set instanceof DataClass && containsAll((DataClass) set, implicitCast);
+    }
+
+    public ResolveClassSet and(ResolveClassSet set) {
+        return and((AndClassSet)set);
+    }
+
+    public ResolveClassSet or(ResolveClassSet set) {
+        return or((AndClassSet)set);
+    }
+
+    public AndClassSet toAnd() {
+        return this;
+    }
+
+    public ResolveClassSet toResolve() {
+        return this;
+    }
+
     @Override
     public String getCanonicalName() {
         return getSID();

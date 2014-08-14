@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.sets.OrClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.property.*;
 
 public class Inferred<T extends PropertyInterface> {
@@ -35,7 +36,7 @@ public class Inferred<T extends PropertyInterface> {
             ImMap<T, ExClassSet> recInferred = new Inferred<T>(result, new NotNull<T>(result.keys()), compared.removeIncl(compare)).finishEx(inferType); // вообще говоря not null не правильный, но это ни на что не влияет
             // вызываем infer без этого compare чтобы предотвратить рекурсию
             ExClassSet classSet = ExClassSet.op(compare.resolveInferred(compare.first, recInferred, inferType), compare.resolveInferred(compare.second, recInferred, inferType), false);
-            OrClassSet vSet = null;
+            ResolveClassSet vSet = null;
             if(compare instanceof Equals || ((vSet = ExClassSet.fromEx(classSet)) instanceof DataClass)) {
                 Inferred<T> inferCompared = compare.inferResolved(compare.second, classSet, inferType).and(compare.inferResolved(compare.first, classSet, inferType), inferType);
                 if (compare instanceof Relationed && !((DataClass) vSet).fixedSize())

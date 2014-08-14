@@ -1,5 +1,7 @@
 package lsfusion.server.classes;
 
+import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.classes.sets.ResolveConcatenateClassSet;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
@@ -31,6 +33,13 @@ public class ConcatenateValueClass implements ValueClass {
         for(int i=0;i<valueClasses.length;i++)
             upClasses[i] = valueClasses[i].getUpSet();
         return new ConcatenateClassSet(upClasses);
+    }
+
+    public ResolveClassSet getResolveSet() {
+        ResolveClassSet[] upClasses = new ResolveClassSet[valueClasses.length];
+        for(int i=0;i<valueClasses.length;i++)
+            upClasses[i] = valueClasses[i].getResolveSet();
+        return new ResolveConcatenateClassSet(upClasses);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

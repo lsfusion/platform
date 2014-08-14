@@ -21,7 +21,7 @@ grammar LsfLogics;
 	import lsfusion.server.form.view.ComponentView;
 	import lsfusion.server.form.view.GroupObjectView;
 	import lsfusion.server.form.view.PropertyDrawView;
-	import lsfusion.server.classes.sets.AndClassSet;
+	import lsfusion.server.classes.sets.ResolveClassSet;
 	import lsfusion.server.logics.mutables.Version;
 	import lsfusion.server.logics.linear.LP;
 	import lsfusion.server.logics.linear.LCP;
@@ -858,7 +858,7 @@ propertyStatement
 @init {
 	LP property = null;
 	List<TypedParameter> context = new ArrayList<TypedParameter>();
-	List<AndClassSet> signature = null; 
+	List<ResolveClassSet> signature = null; 
 	boolean dynamic = true;
 	int lineNumber = self.getParser().getCurrentParserLineNumber(); 
 }
@@ -1122,12 +1122,12 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	constDef=literal { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
-expressionUnfriendlyPD[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LP property, List<AndClassSet> signature]
+expressionUnfriendlyPD[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 	:	ciPD=contextIndependentPD[innerPD] { $property = $ciPD.property; $signature = $ciPD.signature; }
 	|	actPD=actionPropertyDefinition[context, dynamic] { if (inPropParseState()) { $property = $actPD.property.property; $signature = $actPD.signature;  }}	
 	;
 
-contextIndependentPD[boolean innerPD] returns [LP property, List<AndClassSet> signature]
+contextIndependentPD[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
 	|	abstractDef=abstractPropertyDefinition { $property = $abstractDef.property; $signature = $abstractDef.signature; }
 	|	abstractActionDef=abstractActionPropertyDefinition { $property = $abstractActionDef.property; $signature = $abstractActionDef.signature; }
@@ -1159,7 +1159,7 @@ joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 	;
 
 
-groupPropertyDefinition returns [LP property, List<AndClassSet> signature]
+groupPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
 	List<LPWithParams> groupProps = new ArrayList<LPWithParams>();
@@ -1237,7 +1237,7 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	;
 
 
-dataPropertyDefinition[boolean innerPD] returns [LP property, List<AndClassSet> signature]
+dataPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean sessionProp = false;
 }
@@ -1256,7 +1256,7 @@ dataPropertyDefinition[boolean innerPD] returns [LP property, List<AndClassSet> 
 	;
 
 
-abstractPropertyDefinition returns [LP property, List<AndClassSet> signature]
+abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
 	boolean isChecked = false;
@@ -1282,7 +1282,7 @@ abstractPropertyDefinition returns [LP property, List<AndClassSet> signature]
 		')'
 	;
 
-abstractActionPropertyDefinition returns [LP property, List<AndClassSet> signature]
+abstractActionPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;	
 	boolean isChecked = false;
@@ -1485,7 +1485,7 @@ formulaPropertySyntax returns [List<SQLSyntaxType> types = new ArrayList<SQLSynt
     (type=formulaPropertySyntaxType { $types.add($type.type); } formulaText=stringLiteral { $strings.add($formulaText.val); })+
 ;
 
-formulaPropertyDefinition returns [LP property, List<AndClassSet> signature]
+formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	String className = null;
 	boolean hasNotNull = false;
@@ -1493,7 +1493,7 @@ formulaPropertyDefinition returns [LP property, List<AndClassSet> signature]
 @after {
 	if (inPropParseState()) {
 		$property = self.addScriptedSFProp(className, $synt.types, $synt.strings, hasNotNull);
-		$signature = Collections.<AndClassSet>nCopies($property.listInterfaces.size(), null);
+		$signature = Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null);
 	}
 }
 	:	'FORMULA'
@@ -1502,14 +1502,14 @@ formulaPropertyDefinition returns [LP property, List<AndClassSet> signature]
 		synt = formulaPropertySyntax
 	;
 
-filterPropertyDefinition returns [LP property, List<AndClassSet> signature]
+filterPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	String className = null;
 	GroupObjectProp prop = null;
 }
 @after {
 	if (inPropParseState()) {
-		$signature = new ArrayList<AndClassSet>();	
+		$signature = new ArrayList<ResolveClassSet>();	
 		$property = self.addScriptedGroupObjectProp($gobj.sid, prop, $signature);
 	}
 }
@@ -1556,7 +1556,7 @@ propertyName returns [String name]
 	:	id=compoundID { $name = $id.sid; }
 	;
 
-propertyOptions[LP property, String propertyName, String caption, List<TypedParameter> context, List<AndClassSet> signature]
+propertyOptions[LP property, String propertyName, String caption, List<TypedParameter> context, List<ResolveClassSet> signature]
 @init {
 	String groupName = null;
 	String table = null;
@@ -1795,7 +1795,7 @@ eventIdSetting [LP property]
 ////////////////////////////////// ACTION PROPERTIES ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-actionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, List<AndClassSet> signature]
+actionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, List<ResolveClassSet> signature]
 @init {
 	List<TypedParameter> localContext = context;
 	boolean localDynamic = dynamic;
@@ -1819,7 +1819,7 @@ actionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns 
 		pdb=actionPropertyDefinitionBody[localContext, localDynamic] { if (inPropParseState()) { $property = $pdb.property; $signature = $pdb.signature; }}
 	;
 
-actionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, List<AndClassSet> signature]
+actionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, List<ResolveClassSet> signature]
 	:	extPDB=extendContextActionPDB[context, dynamic] { $property = $extPDB.property; if (inPropParseState()) $signature = self.getClassesFromTypedParams(context); }
 	|	keepPDB=keepContextActionPDB[context, dynamic] 	{ $property = $keepPDB.property; if (inPropParseState()) $signature = self.getClassesFromTypedParams(context); }
 	|	ciPDB=contextIndependentActionPDB	 	{ $property = $ciPDB.property; $signature = $ciPDB.signature; }
@@ -1861,7 +1861,7 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	focusPDB=focusActionPropertyDefinitionBody[context, dynamic] { $property = $focusPDB.property; }
 	;
 	
-contextIndependentActionPDB returns [LPWithParams property, List<AndClassSet> signature]
+contextIndependentActionPDB returns [LPWithParams property, List<ResolveClassSet> signature]
 @init {
 	$property = new LPWithParams(null, new ArrayList<Integer>());
 }
@@ -1913,24 +1913,24 @@ formActionObjectList[List<TypedParameter> context, boolean dynamic] returns [Lis
 		(',' objName=ID { $objects.add($objName.text); } '=' expr=propertyExpression[context, dynamic] { $exprs.add($expr.property); })*
 	;
 	
-customActionPropertyDefinitionBody returns [LP property, List<AndClassSet> signature]
+customActionPropertyDefinitionBody returns [LP property, List<ResolveClassSet> signature]
 @after {
 	if (inPropParseState()) {
 		$property = self.addScriptedCustomActionProp($classN.val);	
-		$signature = Collections.<AndClassSet>nCopies($property.listInterfaces.size(), null); 
+		$signature = Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null); 
 	}
 }
 	:	'CUSTOM' classN = stringLiteral ('(' classIdList ')')? 
 	;
 
 
-addFormActionPropertyDefinitionBody returns [LP property, List<AndClassSet> signature]
+addFormActionPropertyDefinitionBody returns [LP property, List<ResolveClassSet> signature]
 @init {
 	FormSessionScope scope = FormSessionScope.NEWSESSION;	
 }
 @after {
 	if (inPropParseState()) {
-		$signature = new ArrayList<AndClassSet>(); 
+		$signature = new ArrayList<ResolveClassSet>(); 
 		$property = self.addScriptedAddFormAction($cls.sid, scope);	
 	}
 }
@@ -1941,7 +1941,7 @@ addFormActionPropertyDefinitionBody returns [LP property, List<AndClassSet> sign
         cls=classId
 	;
 
-editFormActionPropertyDefinitionBody returns [LP property, List<AndClassSet> signature]
+editFormActionPropertyDefinitionBody returns [LP property, List<ResolveClassSet> signature]
 @init {
 	FormSessionScope scope = FormSessionScope.NEWSESSION;	
 }
