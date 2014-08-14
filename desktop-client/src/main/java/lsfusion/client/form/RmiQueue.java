@@ -110,7 +110,7 @@ public class RmiQueue {
                     throw new RuntimeException("RmiQueue is abandoned");
                 }
                 if (!direct) {
-                    flushCompletedRequestsNow(false);
+                    flushCompletedRequestsNow(true);
                 }
             }
 
@@ -169,17 +169,20 @@ public class RmiQueue {
 
         //не обрабатываем результат, пока не закончится редактирование и не вызовется this.editingStopped()
         if (!tableManager.isEditing()) {
-            flushCompletedRequestsNow(true);
+            flushCompletedRequestsNow(false);
         }
     }
 
-    private void flushCompletedRequestsNow(boolean rethrowThrowables) {
+    private void flushCompletedRequestsNow(boolean inSyncRequest) {
         while (!rmiFutures.isEmpty() && rmiFutures.element().isDone()) {
             try {
                 execNextFutureCallback();
             } catch (Throwable t) {
-                //если последний в очереди, то выбрасываем наверх в любом случае
-                if (rmiFutures.isEmpty() || rethrowThrowables) {
+                //при синхоронном вызове нужно, чтобы exception выбрасывался из того вызова
+                // => обрабатываем асинхронные запросы в очереди как обычно, но для последнего (синхронного) - выбрасываем наверх
+                if (rmiFutures.isEmpty() && inSyncRequest) {
+                    throw Throwables.propagate(t);
+                } else {
                     if (t instanceof ServerException || t instanceof ExecutionException) {
                         t = t.getCause();
                     }

@@ -97,8 +97,8 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                     }
                 } else {
                     if (actionThrowable != null) {
-                        Throwables.propagateIfPossible(actionThrowable, IOException.class);
-                        throw Throwables.propagate(actionThrowable);
+                        //всегда оборачиваем, чтобы был корректный stack-trace
+                        throw new RuntimeException("Exception while dispatching client action: ", actionThrowable);
                     }
                     break;
                 }
