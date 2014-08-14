@@ -1339,6 +1339,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                         if(adjLimit == 0) {
                             rowSize = calculateRowSize(keyReaders, propertyReaders, handler.getPrevResults());
                             adjLimit = BaseUtils.max(getMemoryLimit() / rowSize, pessLimit);
+
+                            ServerLoggers.exinfoLog("LARGE QUERY LIMIT " + adjLimit + " SIZE " + rowSize + " " + statement.toString());
                         }
                         if(rowCount > adjLimit) {
                             while(result.next()) {
@@ -1348,7 +1350,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                         }
                     }
                 }
-                
+
+                if(adjLimit > 0)
+                    ServerLoggers.exInfoLogger.info("LARGE QUERY ROWS COUNT " + rowCount);
+
                 handler.finish();
             } finally {
                 result.close();
