@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ListPermutations;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
@@ -39,11 +40,13 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
+import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import static lsfusion.interop.form.ServerResponse.*;
 
@@ -471,10 +474,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return canonicalName != null;
     }
     
-    public void setCanonicalName(String namespace, String name, List<ResolveClassSet> signature, PropertyDBNamePolicy policy) {
+    public void setCanonicalName(String namespace, String name, List<ResolveClassSet> signature, ImOrderSet<T> signatureOrder, PropertyDBNamePolicy policy) {
         this.name = name;
         this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
         this.dbName = policy.transformToDBName(canonicalName);
+        
+        setExplicitClasses(signatureOrder.mapList(ListFact.fromJavaList(signature)).removeNulls());
+    }
+    
+    public void setExplicitClasses(ImMap<T, ResolveClassSet> explicitClasses) {
+        this.explicitClasses = explicitClasses;
     }
     
     public String getSID() {
@@ -488,4 +497,41 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void setLocal(boolean local) {
         this.local = local;
     }
+
+
+    protected ImMap<T, ResolveClassSet> explicitClasses;
+    //
+    protected <V> ImMap<T, V> getExplicitCalcInterfaces(ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, String caption) {
+        
+        ImMap<T, V> inferred = null;
+        if (explicitInterfaces != null)
+            inferred = explicitInterfaces;
+
+        if (inferred == null || inferred.size() < interfaces.size() || AlgType.checkExplicitInfer) {
+            try {
+                ImMap<T, V> calcInferred = calcInterfaces.call();
+                if (calcInferred == null) {
+                    return null;
+                }
+                if (inferred == null)
+                    inferred = calcInferred;
+                else {
+                    if (AlgType.checkExplicitInfer) checkExplicitCalcInterfaces(caption, inferred, calcInferred);
+                    inferred = calcInferred.override(inferred); // тут возможно replaceValues достаточно, но не так просто оценить
+                }
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
+        }
+        return inferred;
+    }
+
+    private <V> boolean checkExplicitCalcInterfaces(String caption, ImMap<T, V> inferred, ImMap<T, V> calcInferred) {
+        if(!BaseUtils.hashEquals(calcInferred.filter(inferred.keys()), inferred)) {
+            System.out.println(this + " " + caption + ", CALC : " + calcInferred + ", INF : " + inferred);
+            return false;
+        }
+        return true;
+    }
+
 }

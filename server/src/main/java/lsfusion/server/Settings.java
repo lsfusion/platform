@@ -3,6 +3,7 @@ package lsfusion.server;
 import lsfusion.base.ApiResourceBundle;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.property.AlgType;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
@@ -182,7 +183,7 @@ public class Settings {
 
     private int reserveIDStep = 50; // по сколько ID'ков будут резервировать себе сервера приложений у сервера БД
 
-    private boolean mergeUpClassSets = false; // проблема в том что с false детерменированность не гарантирована
+    private boolean mergeUpClassSets = AlgType.useInfer; // проблема в том что с false детерменированность не гарантирована
 
     private int queryPrepareLength = 1000; // длина запроса, при которой необходимо pool'ить preparedStatement'ы
 

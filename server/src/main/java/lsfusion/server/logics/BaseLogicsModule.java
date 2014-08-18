@@ -13,7 +13,6 @@ import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
 import lsfusion.server.form.entity.FormEntity;
@@ -489,7 +488,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
             ValueClass valueClass = classes[0].getBaseClass();
             ObjectValueProperty property = new ObjectValueProperty(valueClass);
-            property.setCanonicalName(getNamespace(), name, Arrays.asList(valueClass.getResolveSet()), getDBNamePolicy());
+            property.setCanonicalName(getNamespace(), name, Arrays.asList(valueClass.getResolveSet()), property.getOrderInterfaces(), getDBNamePolicy());
             setParent(property, version);
             return property;
         }

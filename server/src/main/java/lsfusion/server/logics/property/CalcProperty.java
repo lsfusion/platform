@@ -58,6 +58,7 @@ import lsfusion.server.session.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> implements MapKeysInterface<T> {
 
@@ -666,7 +667,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             type = ClassType.useInsteadOfAssert;
             assertFull = true;
         } 
-        if(AlgType.checkInfer) checkInferClasses(type);
+        if(AlgType.checkInferCalc) checkInferClasses(type);
 
         AlgType algType = type.getAlg();
         assert !assertFull || isFull(algType.getAlgInfo());
@@ -750,17 +751,24 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     protected abstract ClassWhere<Object> calcClassValueWhere(CalcClassType calcType);
 
     @IdentityStartLazy
-    public ClassWhere<Object> inferClassValueWhere(InferType inferType) {
+    public ClassWhere<Object> inferClassValueWhere(final InferType inferType) {
         // эвристично определяет классы, для входных значений
-        ImMap<T, ExClassSet> inferred = inferInterfaceClasses(null, inferType).finishEx(inferType);
-        if (inferred == null) {
+        ImMap<T, ExClassSet> inferred = getExplicitCalcInterfaces(explicitClasses == null ? null : ExClassSet.toEx(explicitClasses), new Callable<ImMap<T, ExClassSet>>() {
+            public ImMap<T, ExClassSet> call() throws Exception {
+                return calcInferInterfaceClasses(inferType);
+            }}, "CALC");
+        if(inferred == null)
             return ClassWhere.FALSE();
-        }
+        
         ExClassSet valueCommonClass = inferValueClass(inferred, inferType);
         if (valueCommonClass != null && valueCommonClass.isEmpty()) {
             return ClassWhere.FALSE();
         }
         return new ClassWhere<Object>(ResolveUpClassSet.toAnd(MapFact.<Object, ResolveClassSet>addExcl(ExClassSet.fromEx(inferred), "value", ExClassSet.fromEx(valueCommonClass))).removeNulls());
+    }
+
+    private ImMap<T, ExClassSet> calcInferInterfaceClasses(InferType inferType) {
+        return inferInterfaceClasses(null, inferType).finishEx(inferType);
     }
 
     public ClassWhere<Field> getClassWhere(MapKeysTable<T> mapTable, PropertyField storedField) {
@@ -1260,7 +1268,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public boolean isFull(ImCol<T> checkInterfaces, AlgInfoType algType) {
-        if(AlgType.checkInfer) checkInferFull(checkInterfaces);
+        if(AlgType.checkInferCalc) checkInferFull(checkInterfaces);
         return algType.isFull(this, checkInterfaces);
     }
 
@@ -1298,7 +1306,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if(isFull(algType))
             return true;
         
-        if(AlgType.checkInfer) checkInferNotNull();
+        if(AlgType.checkInferCalc) checkInferNotNull();
         return algType.isNotNull(this);
     }
 
@@ -1316,7 +1324,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public boolean isEmpty(AlgInfoType algType) {
-        if(AlgType.checkInfer) checkInferEmpty();
+        if(AlgType.checkInferCalc) checkInferEmpty();
         return algType.isEmpty(this);
     }
 

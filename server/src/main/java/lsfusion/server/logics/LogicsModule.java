@@ -204,8 +204,8 @@ public abstract class LogicsModule {
         }
     }
 
-    protected <T extends LP> void makePropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
-        lp.property.setCanonicalName(getNamespace(), name, signature, baseLM.getDBNamePolicy());
+    protected <P extends PropertyInterface, T extends LP<P, ?>> void makePropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
+        lp.property.setCanonicalName(getNamespace(), name, signature, lp.listInterfaces, baseLM.getDBNamePolicy());
         addModuleLP(lp);
     }
 

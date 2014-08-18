@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.Pair;
 import lsfusion.base.SFunctionSet;
@@ -14,6 +15,7 @@ import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -27,9 +29,11 @@ import lsfusion.server.logics.property.actions.edit.GroupChangeActionProperty;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
+import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
+import java.util.concurrent.Callable;
 
 public abstract class ActionProperty<P extends PropertyInterface> extends Property<P> {
 
@@ -160,15 +164,31 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public CalcPropertyMapImplement<?, P> getWhereProperty() {
         return getWhereProperty(false);
     }
-    
+
+    private CalcPropertyMapImplement<?, P> calcClassWhereProperty() {
+        ImMap<P, ValueClass> inferred = getExplicitCalcInterfaces(getExplicitInterfaces(), new Callable<ImMap<P, ValueClass>>() {
+            public ImMap<P, ValueClass> call() throws Exception {
+                return calcWhereInterfaceClasses();
+            }}, "ACTION");
+        return IsClassProperty.getMapProperty(inferred);
+    }
+
+    private ImMap<P, ValueClass> getExplicitInterfaces() {
+        if(explicitClasses == null)
+            return null;
+        return new ClassWhere<P>(ResolveUpClassSet.toAnd(explicitClasses)).getCommonParent(interfaces);
+    }
+
+    private ImMap<P, ValueClass> calcWhereInterfaceClasses() {
+        return calcWhereProperty().mapInterfaceClasses(ClassType.signaturePolicy);
+    }
+
     public CalcPropertyMapImplement<?, P> getWhereProperty(boolean recursive) {
-        CalcPropertyMapImplement<?, P> result = calcWhereProperty();
-        
         ActionWhereType actionWhere = AlgType.actionWhere;
         if(actionWhere != ActionWhereType.CALC && (!recursive || actionWhere == ActionWhereType.CLASS))
-            result = result.mapClassProperty();
-            
-        return result;
+            return calcClassWhereProperty();
+        else
+            return calcWhereProperty();
     }
     
     public abstract CalcPropertyMapImplement<?, P> calcWhereProperty();
