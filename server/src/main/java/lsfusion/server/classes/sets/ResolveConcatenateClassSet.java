@@ -26,6 +26,9 @@ public class ResolveConcatenateClassSet implements ResolveClassSet {
     }
 
     public ResolveClassSet and(ResolveClassSet node) {
+        if(!(node instanceof ResolveConcatenateClassSet))
+            return ResolveUpClassSet.FALSE;
+
         ResolveConcatenateClassSet and = (ResolveConcatenateClassSet) node;
         assert and.classes.length == classes.length;
 

@@ -2065,7 +2065,22 @@ public abstract class LogicsModule {
         public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
             List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
             for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
-                if (match(module.getParamClasses(lp), classes, false)) {
+                if (match(module.getParamClasses(lp), classes, false, false)) {
+                    result.add(lp);
+                }
+            }
+            return result;
+        }
+    }
+
+    public static class ImplementLPModuleFinder implements ModuleFinder<LP<?, ?>, List<ResolveClassSet>> {
+        @Override
+        public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
+            List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
+            for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
+                if(((lp.property instanceof CaseUnionProperty && ((CaseUnionProperty)lp.property).isAbstract()) ||
+                        lp.property instanceof ListCaseActionProperty && ((ListCaseActionProperty)lp.property).isAbstract()) &&
+                    match(module.getParamClasses(lp), classes, false, false)) {
                     result.add(lp);
                 }
             }
@@ -2085,7 +2100,7 @@ public abstract class LogicsModule {
         public List<LP<?, ?>> resolveInModule(LogicsModule module, String simpleName, List<ResolveClassSet> classes)  {
             List<LP<?, ?>> result = new ArrayList<LP<?, ?>>();
             for (LP<?, ?> lp : module.getAllLPByName(simpleName)) {
-                if ((findLocals || !lp.property.isLocal()) && match(module.getParamClasses(lp), classes, false) && match(classes, module.getParamClasses(lp), false)) {
+                if ((findLocals || !lp.property.isLocal()) && match(module.getParamClasses(lp), classes, false, false) && match(classes, module.getParamClasses(lp), false, false)) {
                     result.add(lp);
                 }
             }
@@ -2093,7 +2108,9 @@ public abstract class LogicsModule {
         }
     }
     
-    public static boolean match(List<ResolveClassSet> interfaceClasses, List<ResolveClassSet> paramClasses, boolean strict) {
+    public final static boolean softMode = true; 
+        
+    public static boolean match(List<ResolveClassSet> interfaceClasses, List<ResolveClassSet> paramClasses, boolean strict, boolean falseImplicitClass) {
         assert interfaceClasses != null;
         if (paramClasses == null) {
             return true;
@@ -2101,11 +2118,21 @@ public abstract class LogicsModule {
         if (interfaceClasses.size() != paramClasses.size()) {
             return false;
         }
-        
-        for (int i = 0; i < interfaceClasses.size(); i++) {
-            if (interfaceClasses.get(i) != null && paramClasses.get(i) != null && !interfaceClasses.get(i).containsAll(paramClasses.get(i), !strict)) {
+
+        for (int i = 0, size = interfaceClasses.size(); i < size; i++) {
+            ResolveClassSet whoClass = interfaceClasses.get(i);
+            ResolveClassSet whatClass = paramClasses.get(i);
+            if (whoClass == null && whatClass == null)
+                continue;
+
+            if (whoClass != null && whatClass != null && !whoClass.containsAll(whatClass, !strict))
                 return false;
-            }
+
+            if (whatClass != null)
+                continue;
+
+            if (softMode && falseImplicitClass)
+                return false;
         }
         return true;
     }

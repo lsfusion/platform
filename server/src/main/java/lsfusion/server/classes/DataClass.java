@@ -1,6 +1,7 @@
 package lsfusion.server.classes;
 
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.formula.FormulaClass;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
@@ -263,7 +264,13 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     }
 
     public ResolveClassSet and(ResolveClassSet set) {
-        return and((AndClassSet)set);
+        if(!(set instanceof DataClass))
+            return ResolveUpClassSet.FALSE;
+
+        DataClass compatible = getCompatible((DataClass) set, false);
+        if(compatible == null)
+            return ResolveUpClassSet.FALSE;
+        return compatible;
     }
 
     public ResolveClassSet or(ResolveClassSet set) {

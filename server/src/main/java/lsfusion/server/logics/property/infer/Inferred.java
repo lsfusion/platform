@@ -56,7 +56,7 @@ public class Inferred<T extends PropertyInterface> {
         return oldClasses.filterFnValues(new NotFunctionSet<ExClassSet>(new SFunctionSet<ExClassSet>() {
             public boolean contains(ExClassSet element) {
                 return ExClassSet.fromEx(element) instanceof DataClass;
-            }})).override(newClasses);
+            }})).override(newClasses.removeNulls());
     }
     public ImMap<T, ExClassSet> finishEx(InferType inferType) {
         ImMap<T, ExClassSet> result = getParams(inferType);

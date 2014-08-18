@@ -9,7 +9,7 @@ public interface AlgType {
     
     AlgInfoType getAlgInfo();
     
-    public final static ActionWhereType actionWhere = ActionWhereType.CLASS;
+    public final static ActionWhereType actionWhere = ActionWhereType.CLASSCALC; // нельзя оборачивать на каждом шаге, так как IF (a IS A) { MESSAGE; g[B](a) } начнет выводить B 
 
     public final static boolean useInfer = true; // после разделения на infer / resolve и calculate ветки, использовать старую схему в основном из-за проблем с abstract'ами проблематично 
     public final static boolean useInferForInfo = true;

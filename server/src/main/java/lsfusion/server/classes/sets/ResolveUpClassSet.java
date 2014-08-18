@@ -5,6 +5,7 @@ import lsfusion.base.ExtraSetWhere;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.type.ObjectType;
@@ -35,6 +36,9 @@ public class ResolveUpClassSet extends AUpClassSet<ResolveUpClassSet> implements
     }
 
     public boolean containsAll(ResolveClassSet set, boolean implicitCast) {
+//        if(set instanceof ResolveOrObjectClassSet)
+//            return new ResolveOrObjectClassSet(this, SetFact.<ConcreteCustomClass>EMPTY()).containsAll(set, implicitCast);
+        
         if(!(set instanceof ResolveUpClassSet))
             return false;
         
@@ -51,7 +55,10 @@ public class ResolveUpClassSet extends AUpClassSet<ResolveUpClassSet> implements
 
     public ResolveClassSet and(ResolveClassSet set) {
         if(set instanceof ResolveOrObjectClassSet)
-            return set.and(this);            
+            return set.and(this);
+
+        if(!(set instanceof ResolveUpClassSet))
+            return ResolveUpClassSet.FALSE;
         return and((ResolveUpClassSet)set);
     }
 

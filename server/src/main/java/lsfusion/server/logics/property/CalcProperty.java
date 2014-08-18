@@ -18,6 +18,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.*;
 import lsfusion.server.classes.*;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
@@ -750,13 +751,28 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     protected abstract ClassWhere<Object> calcClassValueWhere(CalcClassType calcType);
 
+    private static final Checker<ExClassSet> checker = new Checker<ExClassSet>() {
+        public boolean checkEquals(ExClassSet expl, ExClassSet calc) {
+            ResolveClassSet resExpl = ExClassSet.fromEx(expl);
+            ResolveClassSet resCalc = ExClassSet.fromEx(calc);
+            if(resExpl == null)
+                return resCalc == null;
+            if(resCalc == null)
+                return false;
+            
+            AndClassSet explAnd = resExpl.toAnd();
+            AndClassSet calcAnd = resCalc.toAnd();
+            return explAnd.containsAll(calcAnd, false) && calcAnd.containsAll(explAnd, false);
+        }
+    };
+
     @IdentityStartLazy
     public ClassWhere<Object> inferClassValueWhere(final InferType inferType) {
-        // эвристично определяет классы, для входных значений
-        ImMap<T, ExClassSet> inferred = getExplicitCalcInterfaces(explicitClasses == null ? null : ExClassSet.toEx(explicitClasses), new Callable<ImMap<T, ExClassSet>>() {
+        // если prevBase и есть PREV'ы не используем explicitClasses
+        ImMap<T, ExClassSet> inferred = getExplicitCalcInterfaces((inferType == InferType.PREVBASE && !noOld()) || explicitClasses == null ? null : ExClassSet.toEx(explicitClasses), new Callable<ImMap<T, ExClassSet>>() {
             public ImMap<T, ExClassSet> call() throws Exception {
                 return calcInferInterfaceClasses(inferType);
-            }}, "CALC");
+            }}, "CALC", checker);
         if(inferred == null)
             return ClassWhere.FALSE();
         

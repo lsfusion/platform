@@ -63,7 +63,7 @@ public enum ClassType {
     public static final ClassType drillDownPolicy = signaturePolicy; // в явную есть проверки что только для isFull работать (хотя формально необязательно)
     public static final ClassType aroundPolicy = signaturePolicy; // наследование ннтерфейса, как правило PREV'ов нет, но в общем-то никто не запрещает
 
-    public static final ClassType valuePolicy = strictPolicy; // подойдет любая политика
-    public static final ClassType typePolicy = valuePolicy; // подойдет любая политика
-    public static final ClassType resolvePolicy = valuePolicy; // тут вообще нужно как-то очень приближенно к плагину делать ???
+    public static final ClassType valuePolicy = signaturePolicy; 
+    public static final ClassType typePolicy = valuePolicy;
+    public static final ClassType resolvePolicy = valuePolicy;
 }

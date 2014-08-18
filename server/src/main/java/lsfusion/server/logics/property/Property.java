@@ -500,8 +500,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
 
     protected ImMap<T, ResolveClassSet> explicitClasses;
+    
+    protected static interface Checker<V> {
+        boolean checkEquals(V expl, V calc);
+    }
+    
     //
-    protected <V> ImMap<T, V> getExplicitCalcInterfaces(ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, String caption) {
+    protected <V> ImMap<T, V> getExplicitCalcInterfaces(ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, String caption, Checker<V> checker) {
         
         ImMap<T, V> inferred = null;
         if (explicitInterfaces != null)
@@ -516,7 +521,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
                 if (inferred == null)
                     inferred = calcInferred;
                 else {
-                    if (AlgType.checkExplicitInfer) checkExplicitCalcInterfaces(caption, inferred, calcInferred);
+                    if (AlgType.checkExplicitInfer) checkExplicitCalcInterfaces(checker, caption, inferred, calcInferred);
                     inferred = calcInferred.override(inferred); // тут возможно replaceValues достаточно, но не так просто оценить
                 }
             } catch (Exception e) {
@@ -526,10 +531,15 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return inferred;
     }
 
-    private <V> boolean checkExplicitCalcInterfaces(String caption, ImMap<T, V> inferred, ImMap<T, V> calcInferred) {
-        if(!BaseUtils.hashEquals(calcInferred.filter(inferred.keys()), inferred)) {
-            System.out.println(this + " " + caption + ", CALC : " + calcInferred + ", INF : " + inferred);
-            return false;
+    private <V> boolean checkExplicitCalcInterfaces(Checker<V> checker, String caption, ImMap<T, V> inferred, ImMap<T, V> calcInferred) {
+        for(int i=0, size = inferred.size(); i<size; i++) {
+            T key = inferred.getKey(i);
+            V calcValue = calcInferred.get(key);
+            V inferValue = inferred.getValue(i);
+            if((calcValue != null || inferValue != null) && (calcValue == null || inferValue == null || !checker.checkEquals(calcValue, inferValue))) {
+                System.out.println(this + " " + caption + ", CALC : " + calcInferred + ", INF : " + inferred);
+                return false;
+            }
         }
         return true;
     }

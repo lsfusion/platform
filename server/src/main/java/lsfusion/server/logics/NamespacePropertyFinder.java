@@ -1,7 +1,5 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.ValueClass;
-import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.linear.LP;
 
@@ -32,8 +30,8 @@ public class NamespacePropertyFinder extends NamespaceElementFinder<LP<?, ?>, Li
             boolean foundMoreSpecialized = false;
             for (int j = 0; j < cnt; j++) {
                 LP<?, ?> jProp = result.get(j).value;
-                if (i != j && LogicsModule.match(iParams, result.get(j).module.propClasses.get(jProp), false) && 
-                              !LogicsModule.match(result.get(j).module.propClasses.get(jProp), iParams, false)) {
+                if (i != j && LogicsModule.match(iParams, result.get(j).module.propClasses.get(jProp), false, true) && 
+                              !LogicsModule.match(result.get(j).module.propClasses.get(jProp), iParams, false, true)) {
                     foundMoreSpecialized = true;
                     break;
                 }

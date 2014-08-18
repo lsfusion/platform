@@ -32,6 +32,7 @@ public class ResolveOrObjectClassSet extends TwinImmutableObject implements Reso
     @Override
     public boolean containsAll(ResolveClassSet set, boolean implicitCast) {
         throw new UnsupportedOperationException();
+//        return toAnd().containsAll(set.toAnd(), implicitCast); // жестко, но пока используется только для check
     }
 
     // добавляет отфильтровывая up'ы
@@ -47,6 +48,9 @@ public class ResolveOrObjectClassSet extends TwinImmutableObject implements Reso
     public ResolveClassSet and(ResolveClassSet resolveSet) {
         if(resolveSet instanceof ResolveOrObjectClassSet)
             return and((ResolveOrObjectClassSet)resolveSet);
+
+        if(!(resolveSet instanceof ResolveUpClassSet))
+            return ResolveUpClassSet.FALSE;
         return and(new ResolveOrObjectClassSet((ResolveUpClassSet)resolveSet));
     }
 

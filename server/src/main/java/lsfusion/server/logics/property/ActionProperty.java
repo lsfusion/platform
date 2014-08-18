@@ -164,12 +164,18 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public CalcPropertyMapImplement<?, P> getWhereProperty() {
         return getWhereProperty(false);
     }
-
+    
+    private static final Checker<ValueClass> checker = new Checker<ValueClass>() {
+        public boolean checkEquals(ValueClass expl, ValueClass calc) {
+            return BaseUtils.hashEquals(expl, calc);
+        }
+    }; 
+            
     private CalcPropertyMapImplement<?, P> calcClassWhereProperty() {
         ImMap<P, ValueClass> inferred = getExplicitCalcInterfaces(getExplicitInterfaces(), new Callable<ImMap<P, ValueClass>>() {
             public ImMap<P, ValueClass> call() throws Exception {
                 return calcWhereInterfaceClasses();
-            }}, "ACTION");
+            }}, "ACTION", checker);
         return IsClassProperty.getMapProperty(inferred);
     }
 

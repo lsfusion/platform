@@ -23,8 +23,6 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.classes.sets.OrObjectClassSet;
-import lsfusion.server.classes.sets.UpClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.Union;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
@@ -34,8 +32,6 @@ import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.where.classes.AbstractClassWhere;
-import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
@@ -97,8 +93,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private final static Logger scriptLogger = ServerLoggers.scriptLogger;
 
-    private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> directLPResolver = new LPResolver(new LPModuleFinder(), true);
-    private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> indirectLPResolver = new LPResolver(new SoftLPModuleFinder(), false);
+    private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> directLPResolver = new LPResolver(new LPModuleFinder(), true, false);
+    private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> implementLPResolver = new LPResolver(new ImplementLPModuleFinder(), true, true);
+    private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> indirectLPResolver = new LPResolver(new SoftLPModuleFinder(), false, false);
     private final CompoundNameResolver<AbstractGroup, ?> groupResolver = new CompoundNameResolver<AbstractGroup, Object>(new GroupNameModuleFinder());
     private final CompoundNameResolver<NavigatorElement, ?> navigatorResolver = new CompoundNameResolver<NavigatorElement, Object>(new NavigatorElementNameModuleFinder());
     private final CompoundNameResolver<AbstractWindow, ?> windowResolver = new CompoundNameResolver<AbstractWindow, Object>(new WindowNameModuleFinder());
@@ -376,11 +373,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         return findLPByNameAndClasses(name, classSets);
     }
-    
+
     private LP<?, ?> findLPByNameAndClasses(String name, List<ResolveClassSet> params) throws ScriptingErrorLog.SemanticErrorException {
-        LP<?, ?> property = directLPResolver.resolve(name, params);
-        if (property == null) {
-            property = indirectLPResolver.resolve(name, params);
+        return findLPByNameAndClasses(name, params, false);
+    }
+    
+    private LP<?, ?> findLPByNameAndClasses(String name, List<ResolveClassSet> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?, ?> property;
+        if(softMode && onlyAbstract)
+            property = implementLPResolver.resolve(name, params);
+        else {
+            property = directLPResolver.resolve(name, params);
+            if (property == null) {
+                property = indirectLPResolver.resolve(name, params);
+            }
         }
         checkProperty(property, name);
         return property;
@@ -540,7 +546,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addImplementationToAbstract(PropertyUsage abstractPropUsage, List<TypedParameter> context, LPWithParams implement, LPWithParams when) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addImplementationToAbstract(" + abstractPropUsage + ", " + context + ", " + implement + ", " + when + ");");
 
-        LP abstractLP = findJoinMainProp(abstractPropUsage, context);
+        LP abstractLP = findJoinMainProp(abstractPropUsage, context, true);
         checkParamCount(abstractLP, context.size());
 
         List<LPWithParams> allProps = new ArrayList<LPWithParams>();
@@ -898,12 +904,16 @@ public class ScriptingLogicsModule extends LogicsModule {
             return findJoinMainProp(mainProp.name, paramProps, context);
         }
     }
-    
+
     private LP findJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+        return findJoinMainProp(mainProp, params, false);
+    }
+    
+    private LP findJoinMainProp(PropertyUsage mainProp, List<TypedParameter> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp.classNames != null) {
             return findLPByPropertyUsage(mainProp); 
         } else {
-            return findLPByNameAndClasses(mainProp.name, getClassesFromTypedParams(params));
+            return findLPByNameAndClasses(mainProp.name, getClassesFromTypedParams(params), onlyAbstract);
         }
     }
     
@@ -3201,10 +3211,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     public class LPResolver extends CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> {
         private final boolean filter;
+        private final boolean prioritizeNotEquals;
         
-        public LPResolver(ModuleFinder<LP<?, ?>, List<ResolveClassSet>> finder, boolean filter) {
+        public LPResolver(ModuleFinder<LP<?, ?>, List<ResolveClassSet>> finder, boolean filter, boolean prioritizeNotEquals) {
             super(finder);
             this.filter = filter;
+            this.prioritizeNotEquals = prioritizeNotEquals;
         }
 
         @Override
@@ -3217,6 +3229,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             FoundItem<LP<?, ?>> finalItem = new FoundItem<LP<?, ?>>(null, null);
             if (!result.isEmpty()) {
                 if (filter) {
+                    if(prioritizeNotEquals)
+                        result = prioritizeNotEquals(result, param); 
                     result = NamespacePropertyFinder.filterFoundProperties(result);
                 }
                 if (result.size() > 1) {
@@ -3231,6 +3245,23 @@ public class ScriptingLogicsModule extends LogicsModule {
                 
             } 
             return finalItem;
+        }
+
+        private List<FoundItem<LP<?, ?>>> prioritizeNotEquals(List<FoundItem<LP<?, ?>>> result, List<ResolveClassSet> param) {
+            assert !result.isEmpty();
+            List<FoundItem<LP<?, ?>>> equals = new ArrayList<FoundItem<LP<?, ?>>>();
+            List<FoundItem<LP<?, ?>>> notEquals = new ArrayList<FoundItem<LP<?, ?>>>();
+            for (FoundItem<LP<?, ?>> item : result) {
+                if (!BaseUtils.nullHashEquals(item.module.getParamClasses(item.value), param))
+                    notEquals.add(item);
+                else
+                    equals.add(item);
+            }
+
+            if(!notEquals.isEmpty())
+                return notEquals;
+            else
+                return equals;
         }
     }
 }
