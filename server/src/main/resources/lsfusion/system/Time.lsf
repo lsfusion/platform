@@ -24,7 +24,8 @@ toDateTime(date) = DATETIME(date AS DATE);
 currentTime 'Тек. время' = toTime(currentDateTime());
 
 sumDate(date, days) = [= FORMULA DATE PG '(($1)+($2))' MS 'DATEADD(dd, $2, $1)'](date AS DATE, days AS LONG);
-sumDateYear = FORMULA DATE PG '(CAST(($1) AS date) + interval \'1 year\')' MS 'DATEADD(yy, $2, $1)';
+sumDateMonth (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + interval \'1 month\')' MS 'DATEADD(mm, $2, $1)';
+sumDateYear (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + interval \'1 year\')' MS 'DATEADD(yy, $2, $1)';
 
 subtractDate(date, days) = [= FORMULA DATE PG '(($1)-($2))' MS 'DATEADD(dd, -($2), $1)'](date AS DATE, days AS LONG);
 
