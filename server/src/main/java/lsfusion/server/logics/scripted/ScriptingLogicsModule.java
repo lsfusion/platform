@@ -2581,7 +2581,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
                 ResolveClassSet paramClassSet = signature.get(i);
 
-                ValueClass paramClass = paramClassSet.getCommonClass();
+                ValueClass paramClass = paramClassSet == null ? null : paramClassSet.getCommonClass();
 
                 String classFQN = null;
                 if (paramClass instanceof DataClass) {
