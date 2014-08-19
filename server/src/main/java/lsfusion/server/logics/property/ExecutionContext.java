@@ -94,7 +94,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         
         ExecutionContext<?> current = this;
         while (current != null) {
-            if (paramsToFQN != null) {
+            if (current.paramsToFQN != null) {
                 for (Map.Entry<String, String> e : current.paramsToFQN.entrySet()) {
                     if (!paramsToClass.containsKey(e.getKey())) {
                         paramsToClass.put(e.getKey(), e.getValue());
