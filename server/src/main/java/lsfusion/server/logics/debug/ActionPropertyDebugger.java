@@ -3,6 +3,7 @@ package lsfusion.server.logics.debug;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.IOUtils;
+import lsfusion.base.NullOutputStream;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.data.SQLHandledException;
@@ -19,6 +20,7 @@ import org.apache.log4j.Logger;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -82,10 +84,10 @@ public class ActionPropertyDebugger {
             String moduleName = e.getKey();
 
             //compiling
-            int status = compiler.run(null, null, null, "-g", createDelegatesHolderFile(sourceDir, moduleName, e.getValue()));
+            ByteArrayOutputStream errOut = new ByteArrayOutputStream();
+            int status = compiler.run(null, new NullOutputStream(), errOut, "-g", createDelegatesHolderFile(sourceDir, moduleName, e.getValue()));
             if (status != 0) {
-                //todo: read java System.err
-                throw new IllegalStateException("Compilation of debugger delegate files failed");
+                throw new IllegalStateException("Compilation of debugger delegate files failed: " + new String(errOut.toByteArray()));
             }
         }
 
