@@ -75,7 +75,7 @@ public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Int
     }
 
     public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
-        if(!inferred.containsNull() && inferred.filterFnValues(new SFunctionSet<ExClassSet>() { // жесть конечно, но потом будем уточнять этот метод
+        if(inferred.size() == interfaces.size() && !inferred.containsNull() && inferred.filterFnValues(new SFunctionSet<ExClassSet>() { // жесть конечно, но потом будем уточнять этот метод
             public boolean contains(ExClassSet element) {
                 return element.orAny;
             }}).isEmpty()) {
