@@ -541,7 +541,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 for (Iterator<DBStoredProperty> is = restNewDBStored.iterator(); is.hasNext(); ) {
                     DBStoredProperty newProperty = is.next();
 
-                    if (newProperty.getCanonicalName().equals(oldProperty.getCanonicalName())) {
+                    if (newProperty.getDBName().equals(oldProperty.getDBName())) {
                         MExclMap<KeyField, PropertyInterface> mFoundInterfaces = MapFact.mExclMapMax(newProperty.property.interfaces.size());
                         for (PropertyInterface propertyInterface : newProperty.property.interfaces) {
                             KeyField mapKeyField = oldProperty.mapKeys.get(propertyInterface.ID);
