@@ -23,6 +23,8 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
+import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.Union;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
@@ -39,6 +41,7 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.window.*;
 import lsfusion.server.logics.*;
+import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -91,7 +94,8 @@ import static lsfusion.server.logics.scripted.ScriptingFormEntity.getPropertyDra
 
 public class ScriptingLogicsModule extends LogicsModule {
 
-    private final static Logger scriptLogger = ServerLoggers.scriptLogger;
+    private static final Logger scriptLogger = ServerLoggers.scriptLogger;
+    private static final ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
 
     private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> directLPResolver = new LPResolver(new LPModuleFinder(), true, false);
     private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> implementLPResolver = new LPResolver(new ImplementLPModuleFinder(), true, true);
@@ -2094,12 +2098,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         addMetaCodeFragment(name, fragment);
     }
 
-    public void runMetaCode(String name, List<String> params, int lineNumber) throws RecognitionException {
+    public void runMetaCode(String name, List<String> params, int lineNumber, int positionInLine) throws RecognitionException {
         MetaCodeFragment metaCode = findMetaCodeFragment(name, params.size());
         checkMetaCodeParamCount(metaCode, params.size());
 
         String code = metaCode.getCode(params);
-        parser.runMetaCode(this, code, metaCode, metaCodeCallString(name, metaCode, params), lineNumber);
+        parser.runMetaCode(this, code, metaCode, metaCodeCallString(name, metaCode, params), lineNumber, positionInLine);
     }
 
     private String metaCodeCallString(String name, MetaCodeFragment metaCode, List<String> actualParams) {
@@ -2553,6 +2557,52 @@ public class ScriptingLogicsModule extends LogicsModule {
             element.window = (NavigatorWindow) window;
         } else {
             errLog.emitAddToSystemWindowError(parser, windowName);
+        }
+    }
+
+    public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams,
+                                                    List<TypedParameter> context,
+                                                    List<ResolveClassSet> signature,
+                                                    int line, int offset) throws ScriptingErrorLog.SemanticErrorException {
+        if (debugger.isEnabled()) {
+            
+            checkActionProperty(lpWithParams.property);
+
+            LAP<PropertyInterface> lAction = (LAP<PropertyInterface>) lpWithParams.property;
+            
+            ActionProperty property = (ActionProperty) lAction.property;
+
+            Map<String, PropertyInterface> paramsToInterfaces = new HashMap<String, PropertyInterface>();
+            Map<String, String> paramsToClassFQN = new HashMap<String, String>();
+            
+            for (int i = 0; i < lpWithParams.usedParams.size(); i++) {
+                int usedParam = lpWithParams.usedParams.get(i);
+                TypedParameter param = context.get(usedParam);
+                ResolveClassSet paramClass = signature.get(i);
+
+                // todo: simplify/think fqn
+                String classFQN = null;
+                if (paramClass instanceof DataClass) {
+                    classFQN = paramClass.getCanonicalName();
+                } else if (paramClass instanceof ResolveOrObjectClassSet) {
+                    ResolveOrObjectClassSet orSet = (ResolveOrObjectClassSet) paramClass;
+                    if (orSet.set.isEmpty()) {
+                        paramClass = orSet.up;
+                    }
+                }
+                
+                if (paramClass instanceof ResolveUpClassSet) {
+                    ResolveUpClassSet upSet = (ResolveUpClassSet) paramClass;
+                    if (upSet.wheres.length == 1) {
+                        classFQN = upSet.wheres[0].getCanonicalName();
+                    }
+                }
+
+                paramsToInterfaces.put(param.paramName, lAction.listInterfaces.get(i));
+                paramsToClassFQN.put(param.paramName, classFQN);
+            }
+            
+            debugger.addDelegate(property, paramsToInterfaces, paramsToClassFQN, getName(), line, offset);
         }
     }
 

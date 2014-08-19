@@ -21,6 +21,8 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.debug.ActionDebugInfo;
+import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.property.actions.BaseEvent;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
@@ -29,13 +31,17 @@ import lsfusion.server.logics.property.actions.edit.GroupChangeActionProperty;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
-import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 public abstract class ActionProperty<P extends PropertyInterface> extends Property<P> {
+    //просто для быстрого доступа
+    private static final ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
+
+    private ActionDebugInfo debugInfo;
 
     public ActionProperty(String caption, ImOrderSet<P> interfaces) {
         super(caption, interfaces);
@@ -47,9 +53,17 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         }
     };
 
+    public void setDebugInfo(ActionDebugInfo debugInfo) {
+        this.debugInfo = debugInfo;
+    }
+
+    public ActionDebugInfo getDebugInfo() {
+        return debugInfo;
+    }
+
     // assert что возвращает только DataProperty и Set(IsClassProperty), Drop(IsClassProperty), IsClassProperty, для использования в лексикографике (calculateLinks)
     public ImMap<CalcProperty, Boolean> getChangeExtProps() {
-        ActionPropertyMapImplement<?, P> compile = compile();
+        ActionPropertyMapImplement<?, P> compile = callCompile();
         if(compile!=null)
             return compile.property.getChangeExtProps();
 
@@ -59,7 +73,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     // убирает Set и Drop, так как с depends будет использоваться
     public ImSet<CalcProperty> getChangeProps() {
         ImMap<CalcProperty, Boolean> changeExtProps = getChangeExtProps();
-        int size = changeExtProps.size(); 
+        int size = changeExtProps.size();
         MSet<CalcProperty> mResult = SetFact.mSetMax(size);
         for(int i=0;i<size;i++) {
             CalcProperty property = changeExtProps.getKey(i);
@@ -88,7 +102,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public ImMap<CalcProperty, Boolean> getUsedExtProps() {
-        ActionPropertyMapImplement<?, P> compile = compile();
+        ActionPropertyMapImplement<?, P> compile = callCompile();
         if(compile!=null)
             return compile.property.getUsedExtProps();
 
@@ -124,7 +138,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             element.mapFillDepends(mResult);
         return mResult.immutable().toMap(false);
     }
-    
+
     private FunctionSet<CalcProperty> usedProps;
     public FunctionSet<CalcProperty> getDependsUsedProps() {
         if(usedProps==null)
@@ -209,24 +223,24 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         for(int i=0,size=used.size();i<size;i++) {
             CalcProperty<?> property = used.getKey(i);
             Boolean rec = used.getValue(i);
-            
+
             // эвристика : усилим связи к session calc, предполагается 
             ImSet<SessionCalcProperty> calcDepends = property.getSessionCalcDepends(true);
             for(int j=0,sizeJ=calcDepends.size();j<sizeJ;j++)
                 mResult.add(new Pair<Property<?>, LinkType>(calcDepends.get(j), rec ? LinkType.RECEVENT : LinkType.EVENTACTION));
-  
+
             mResult.add(new Pair<Property<?>, LinkType>(property, rec ? LinkType.RECUSED : LinkType.USEDACTION));
         }
 
 //        раньше зачем-то было, но зачем непонятно
 //        mResult.add(new Pair<Property<?>, LinkType>(getWhereProperty().property, hasFlow(ChangeFlowType.NEWSESSION) ? LinkType.RECUSED : LinkType.USEDACTION));
-        
+
         ImSet<CalcProperty> depend = getStrongUsed();
         for(int i=0,size=depend.size();i<size;i++)
             mResult.add(new Pair<Property<?>, LinkType>(depend.get(i), LinkType.DEPEND));
         return mResult.immutableCol();
     }
-    
+
     public ImSet<CalcProperty> strongUsed = SetFact.EMPTY();
     public void addStrongUsed(ImSet<CalcProperty> properties) { // чисто для лексикографики
         strongUsed = strongUsed.merge(properties);
@@ -256,7 +270,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public boolean hasResolve() {
         return getSessionEnv(SystemEvent.APPLY)==SessionEnvEvent.ALWAYS && resolve;
     }
-    
+
     private Object beforeAspects = ListFact.mCol();
     public void addBeforeAspect(ActionPropertyMapImplement<?, P> action) {
         ((MCol<ActionPropertyMapImplement<?, P>>)beforeAspects).add(action);
@@ -283,17 +297,27 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         events = ((MMap<BaseEvent, SessionEnvEvent>)events).immutable();
     }
 
-    public FlowResult execute(ExecutionContext<P> context) throws SQLException, SQLHandledException {
+    public final FlowResult execute(ExecutionContext<P> context) throws SQLException, SQLHandledException {
+        if (debugInfo != null && debugger.isEnabled()) {
+            context.setParamsToInterfaces((Map<String, P>) debugInfo.paramsToInterfaces);
+            context.setParamsToFQN(debugInfo.paramsToClassFQN);
+            return debugger.delegate(this, context);
+        } else {
+            return executeImpl(context);
+        }
+    }
+
+    public FlowResult executeImpl(ExecutionContext<P> context) throws SQLException, SQLHandledException {
         for(ActionPropertyMapImplement<?, P> aspect : getBeforeAspects()) {
             FlowResult beforeResult = aspect.execute(context);
             if(beforeResult != FlowResult.FINISH)
                 return beforeResult;
         }
 
-        ActionPropertyMapImplement<?, P> compile = compile();
-        if(compile!=null)
+        ActionPropertyMapImplement<?, P> compile = callCompile();
+        if (compile != null)
             return compile.execute(context);
-        
+
         FlowResult result = aspectExecute(context);
 
         for(ActionPropertyMapImplement<?, P> aspect : getAfterAspects())
@@ -305,7 +329,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     @Override
     public void prereadCaches() {
         super.prereadCaches();
-        compile();
+        callCompile();
     }
 
     protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException, SQLHandledException;
@@ -379,8 +403,16 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             }});
     }
 
+    private ActionPropertyMapImplement<?, P> callCompile() {
+        //не включаем компиляцию экшенов при дебаге
+        if (debugger.isEnabled()) {
+            return null;
+        }
+        return compile();
+    }
+
     public ActionPropertyMapImplement<?, P> compile() {
-       return null;
+        return null;
     }
 
     public ImList<ActionPropertyMapImplement<?, P>> getList() {

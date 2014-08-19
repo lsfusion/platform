@@ -392,8 +392,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <!-- Самый верхний task -->
-    <bean id="initBLTask" class="lsfusion.server.logics.tasks.GroupTask">
+    <bean id="initDebugTask" class="lsfusion.server.logics.tasks.impl.simple.InitActionDebuggerTask">
         <property name="dependencies">
             <set>
                 <ref bean="checkAbstractTask"/>
@@ -401,6 +400,15 @@
                 <ref bean="finalizePropsTask"/>
                 <ref bean="initIndicesTask"/>
                 <ref bean="finalizeFormsTask"/>
+            </set>
+        </property>
+    </bean>
+
+    <!-- Самый верхний task -->
+    <bean id="initBLTask" class="lsfusion.server.logics.tasks.GroupTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="initDebugTask"/>
             </set>
         </property>
     </bean>

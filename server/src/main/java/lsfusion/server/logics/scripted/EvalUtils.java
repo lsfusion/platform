@@ -1,0 +1,83 @@
+package lsfusion.server.logics.scripted;
+
+import com.google.common.base.Throwables;
+import lsfusion.base.FullFunctionSet;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.mutables.Version;
+import org.antlr.runtime.RecognitionException;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+public class EvalUtils {
+    public static class EvaluationException extends Exception {
+        public EvaluationException(String errString) {
+            super(errString);
+        }
+    }
+
+    private static final AtomicLong uniqueNameCounter = new AtomicLong(0);
+
+    private static String getUniqueName() {
+        return "UNIQUE" + uniqueNameCounter.incrementAndGet() + "NSNAME";
+    }
+
+    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String script) throws EvaluationException {
+        return evaluate(BL, null, script);
+    }
+    
+    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String require, String script) throws EvaluationException {
+        String name = getUniqueName();
+
+        ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(BL, require, script, name));
+        module.order = BL.getOrderedModules().size() + 1;
+        module.visible = FullFunctionSet.<Version>instance();
+        String errString = "";
+        try {
+            module.initModuleDependencies();
+            module.initModule();
+            module.initAliases();
+            module.initProperties();
+
+            errString = module.getErrorsDescription();
+        } catch (RecognitionException e) {
+            errString = module.getErrorsDescription() + e.getMessage();
+        } catch (Exception e) {
+            if (!module.getErrorsDescription().isEmpty()) {
+                errString = module.getErrorsDescription() + e.getMessage();
+            } else {
+                throw Throwables.propagate(e);
+            }
+        }
+
+        if (!errString.isEmpty()) {
+            throw new EvaluationException(errString);
+        }
+        
+        return module;
+    }
+
+    private static String wrapScript(BusinessLogics<?> BL, String require, String script, String name) {
+        StringBuilder strBuilder = new StringBuilder();
+        strBuilder.append("MODULE ");
+        strBuilder.append(name);
+        strBuilder.append(";\n");
+        strBuilder.append("REQUIRE ");
+        
+        if (require != null) {
+            strBuilder.append(require);
+        } else {
+            boolean isFirst = true;
+            for (LogicsModule module : BL.getLogicModules()) {
+                if (!isFirst) {
+                    strBuilder.append(", ");
+                }
+                isFirst = false;
+                strBuilder.append(module.getName());
+            }
+        }
+        strBuilder.append(";\n");
+        strBuilder.append(script);
+        return strBuilder.toString();
+    }
+}

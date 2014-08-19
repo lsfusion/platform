@@ -1,6 +1,8 @@
 package lsfusion.server;
 
 public class SystemProperties {
+    
+    public static final boolean isActionDebugEnabled = System.getProperty("lsfusion.server.debug.actions") != null;
 
     public static final boolean isDebug = "true".equals(System.getProperty("lsfusion.server.isdebug"));
 

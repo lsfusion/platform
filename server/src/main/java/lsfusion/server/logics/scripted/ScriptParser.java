@@ -19,6 +19,11 @@ public class ScriptParser {
 
     private State currentState = null;
     private Stack<ParserInfo> parsers = new Stack<ParserInfo>();
+    
+    private int globalExpandedLines = 0;
+    private int globalExpansionLine = 0;
+    private int globalExpansionOffset = 0;
+    
     private ScriptingErrorLog errLog;
 
     private boolean insideGeneratedMeta = false;
@@ -37,6 +42,7 @@ public class ScriptParser {
         lexer.self = LM;
         lexer.parseState = state;
 
+        globalExpandedLines = 0;
         currentState = state;
         parsers.push(new ParserInfo(parser, null, null, 0));
         if (state == State.PRE) {
@@ -48,7 +54,7 @@ public class ScriptParser {
         currentState = null;
     }
 
-    public void runMetaCode(ScriptingLogicsModule LM, String code, MetaCodeFragment metaCode, String callString, int lineNumber) throws RecognitionException {
+    public void runMetaCode(ScriptingLogicsModule LM, String code, MetaCodeFragment metaCode, String callString, int lineNumber, int positionInLine) throws RecognitionException {
         LsfLogicsLexer lexer = new LsfLogicsLexer(new ANTLRStringStream(code));
         LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
 
@@ -58,9 +64,34 @@ public class ScriptParser {
         parser.self = LM;
         parser.parseState = insideGeneratedMeta ? State.GENMETA : currentState;
 
-        parsers.push(new ParserInfo(parser, metaCode, callString, lineNumber));
+        //lineNumber is 1-based
+        globalExpansionLine += lineNumber - 1;
+        globalExpansionOffset += positionInLine;
+
+        ParserInfo lastParser = new ParserInfo(parser, metaCode, callString, lineNumber);
+        
+        parsers.push(lastParser);
         parser.metaCodeParsingStatement();
         parsers.pop();
+
+        if (parsers.size() == 1) {
+            globalExpandedLines = 0;
+        } else if (!insideGeneratedMeta && parser.parseState == State.PROP) {
+            globalExpandedLines += linesCount(code) - 1;
+        }
+
+        globalExpansionLine -= lineNumber - 1;
+        globalExpansionOffset -= positionInLine;
+    }
+    
+    private int linesCount(String code) {
+        int count = 1;
+        for (int i = 0; i < code.length(); i++) {
+            if (code.charAt(i) == '\n') {
+                count++;
+            }
+        }
+        return count;
     }
 
     public List<String> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
@@ -135,8 +166,21 @@ public class ScriptParser {
         return path.toString();
     }
 
+    //0-based
+    public int getGlobalCurrentLineNumber() {
+        return globalExpandedLines + globalExpansionLine + getCurrentParserLineNumber() - 1;
+    }
+
+    public int getGlobalPositionInLine() {
+        return globalExpansionOffset + getCurrentParserPositionInLine();
+    }
+
     public int getCurrentParserLineNumber() {
         return getLineNumber(parsers.lastElement().getParser());
+    }
+
+    public int getCurrentParserPositionInLine() {
+        return getPositionInLine(parsers.lastElement().getParser());
     }
 
     private int getLineNumber(Parser parser) {

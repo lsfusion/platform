@@ -1820,6 +1820,15 @@ actionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns 
 	;
 
 actionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, List<ResolveClassSet> signature]
+@init {
+	int line = self.getParser().getGlobalCurrentLineNumber(); 
+    int offset = self.getParser().getGlobalPositionInLine();
+}
+@after{
+    if (inPropParseState()) {
+        self.actionPropertyDefinitionBodyCreated($property, $context, $signature, line, offset);
+    }
+}
 	:	extPDB=extendContextActionPDB[context, dynamic] { $property = $extPDB.property; if (inPropParseState()) $signature = self.getClassesFromTypedParams(context); }
 	|	keepPDB=keepContextActionPDB[context, dynamic] 	{ $property = $keepPDB.property; if (inPropParseState()) $signature = self.getClassesFromTypedParams(context); }
 	|	ciPDB=contextIndependentActionPDB	 	{ $property = $ciPDB.property; $signature = $ciPDB.signature; }
@@ -3052,10 +3061,11 @@ metaCodeDeclarationStatement
 metaCodeStatement
 @init {
 	int lineNumber = self.getParser().getCurrentParserLineNumber();
+    int positionInLine = self.getParser().getCurrentParserPositionInLine();
 	ScriptParser.State oldState = null; 
 }
 @after {
-	self.runMetaCode($id.sid, $list.ids, lineNumber);
+	self.runMetaCode($id.sid, $list.ids, lineNumber, positionInLine);
 }
 	:	'@' id=compoundID '(' list=metaCodeIdList ')' 
 		('{' 	

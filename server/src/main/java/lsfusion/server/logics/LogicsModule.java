@@ -1532,7 +1532,7 @@ public abstract class LogicsModule {
     public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
         LAP result = addAProp(new FormAddObjectActionProperty(cls, obj));
         if (formEntity.getCanonicalName() != null) {
-            String name = "_ADDOBJ" + "_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
+            String name = "_ADDOBJ_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
             makePropertyPublic(result, name, cls.getResolveSet());
         }
         return result;

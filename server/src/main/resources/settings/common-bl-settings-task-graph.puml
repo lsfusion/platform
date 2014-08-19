@@ -33,10 +33,11 @@
 (initClassFormsTask) <-- (finalizeFormsTask)
 (setupDrillDownTask) <-- (finalizeFormsTask)
 (initReflectionEventsTask) <-- (finalizeFormsTask)
-(checkAbstractTask) <-- (initBLTask)
-(getPropertyListTask) <-- (initBLTask)
-(finalizePropsTask) <-- (initBLTask)
-(initIndicesTask) <-- (initBLTask)
-(finalizeFormsTask) <-- (initBLTask)
+(checkAbstractTask) <-- (initDebugTask)
+(getPropertyListTask) <-- (initDebugTask)
+(finalizePropsTask) <-- (initDebugTask)
+(initIndicesTask) <-- (initDebugTask)
+(finalizeFormsTask) <-- (initDebugTask)
+(initDebugTask) <-- (initBLTask)
 
 @enduml

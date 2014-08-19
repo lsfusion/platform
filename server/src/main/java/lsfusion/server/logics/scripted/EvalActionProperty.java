@@ -1,15 +1,14 @@
 package lsfusion.server.logics.scripted;
 
-import com.google.common.base.Throwables;
-import lsfusion.base.FullFunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.*;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -21,7 +20,6 @@ import org.antlr.runtime.RecognitionException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * User: DAle
@@ -32,7 +30,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class EvalActionProperty<P extends PropertyInterface> extends SystemExplicitActionProperty {
     private final LCP<P> source;
     private final ImMap<P, ClassPropertyInterface> mapSource;
-    private static AtomicLong counter = new AtomicLong(0);
 
     public EvalActionProperty(String caption, LCP<P> source) {
         super(caption, source.getInterfaceClasses(ClassType.aroundPolicy));
@@ -50,52 +47,20 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
         return (String) source.read(context, source.listInterfaces.mapOrder(sourceToData).toArray(new ObjectValue[interfaces.size()]));
     }
 
-    private String getUniqueName() {
-        return "UNIQUE" + counter.incrementAndGet() + "NSNAME";
-    }
-
-    private String wrapScript(BusinessLogics<?> BL, String script, String name) {
-        StringBuilder strBuilder = new StringBuilder();
-        strBuilder.append("MODULE ");
-        strBuilder.append(name);
-        strBuilder.append("; ");
-        strBuilder.append("REQUIRE ");
-        boolean isFirst = true;
-        for (LogicsModule module : BL.getLogicModules()) {
-            if (!isFirst) {
-                strBuilder.append(", ");
-            }
-            isFirst = false;
-            strBuilder.append(module.getName());
-        }
-        strBuilder.append("; ");
-        strBuilder.append(script);
-        return strBuilder.toString();
-    }
-
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         BusinessLogics BL = context.getBL();
 
         ScriptingLogicsModule evalLM = BL.getModule("EvalScript");
-        
+
         String script = getScript(context);
-        String name = getUniqueName();  
-        ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(BL, script, name));
-        module.order = BL.getOrderedModules().size() + 1;
-        module.visible = FullFunctionSet.<Version>instance();
-        String errString = "";
+
         try {
-            module.initModuleDependencies();
-            module.initModule();
-            module.initAliases();
-            module.initProperties();
+            ScriptingLogicsModule module = EvalUtils.evaluate(context.getBL(), script);
 
-            errString = module.getErrorsDescription();
-
-            String runName = name + ".run";
+            String runName = module.getName() + ".run";
             LAP<?> runAction = module.findAction(runName);
-            if (runAction != null && errString.isEmpty()) {
+            if (runAction != null) {
                 String textScript = (String) evalLM.findProperty("scriptStorage").read(context);
                 if (evalLM.findProperty("countTextScript").read(context) == null) {
                     DataSession session = context.createSession();
@@ -106,18 +71,10 @@ public class EvalActionProperty<P extends PropertyInterface> extends SystemExpli
                 }
                 runAction.execute(context);
             }
+        } catch (EvalUtils.EvaluationException e) {
+            context.requestUserInteraction(new MessageClientAction(e.getMessage(), "parse error"));
         } catch (RecognitionException e) {
-            errString = module.getErrorsDescription() + e.getMessage();
-        } catch (Exception e) {
-            if (!module.getErrorsDescription().isEmpty()) {
-                errString = module.getErrorsDescription() + e.getMessage();
-            } else {
-                Throwables.propagate(e);
-            }
-        }
-
-        if (!errString.isEmpty()) {
-            context.requestUserInteraction(new MessageClientAction(errString, "parse error"));
+            context.requestUserInteraction(new MessageClientAction(e.getMessage(), "parse error"));
         }
     }
 }

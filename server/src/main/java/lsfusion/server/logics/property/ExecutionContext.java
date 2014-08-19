@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -56,6 +57,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
 
     private final ExecutionEnvironment env;
     private final ExecutionContext stack;
+    private Map<String, P> paramsToInterfaces;
+    private Map<String, String> paramsToFQN;
     private final FormEnvironment<P> form;
 
     public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form, ExecutionContext stack) {
@@ -65,6 +68,50 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         this.env = env;
         this.form = form;
         this.stack = stack;
+    }
+
+    public void setParamsToInterfaces(Map<String, P> paramsToInterfaces) {
+        this.paramsToInterfaces = paramsToInterfaces;
+    }
+
+    public ObjectValue getParamValue(String param) {
+        P val = paramsToInterfaces.get(param);
+        if (val != null) {
+            return getKeyValue(val);
+        }
+        
+        if (stack != null) {
+            return stack.getParamValue(param);
+        }
+        
+        return null;
+    }
+    
+    public String[][] getAllParamsWithClassesInStack() {
+        Map<String, String> paramsToClass = new HashMap<String, String>();
+        
+        ExecutionContext<?> current = this;
+        while (current != null) {
+            for (Map.Entry<String, String> e : current.paramsToFQN.entrySet()) {
+                if (!paramsToClass.containsKey(e.getKey())) {
+                    paramsToClass.put(e.getKey(), e.getValue());
+                }
+            }
+            current = current.stack;
+        }
+        
+        String[][] res = new String[2][paramsToClass.size()];
+        int i = 0;
+        for (Map.Entry<String, String> e : paramsToClass.entrySet()) {
+            res[0][i] = e.getKey();
+            res[1][i++] = e.getValue();
+        }
+        
+        return res;
+    }
+
+    public void setParamsToFQN(Map<String, String> paramsToFQN) {
+        this.paramsToFQN = paramsToFQN;
     }
 
     public ExecutionEnvironment getEnv() {
