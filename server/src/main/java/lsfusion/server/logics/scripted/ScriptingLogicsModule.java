@@ -2578,26 +2578,18 @@ public class ScriptingLogicsModule extends LogicsModule {
             for (int i = 0; i < lpWithParams.usedParams.size(); i++) {
                 int usedParam = lpWithParams.usedParams.get(i);
                 TypedParameter param = context.get(usedParam);
-                ResolveClassSet paramClass = signature.get(i);
 
-                // todo: simplify/think fqn
+                ResolveClassSet paramClassSet = signature.get(i);
+
+                ValueClass paramClass = paramClassSet.getCommonClass();
+
                 String classFQN = null;
                 if (paramClass instanceof DataClass) {
-                    classFQN = paramClass.getCanonicalName();
-                } else if (paramClass instanceof ResolveOrObjectClassSet) {
-                    ResolveOrObjectClassSet orSet = (ResolveOrObjectClassSet) paramClass;
-                    if (orSet.set.isEmpty()) {
-                        paramClass = orSet.up;
-                    }
+                    classFQN = ((DataClass) paramClass).getCanonicalName();
+                } else if (paramClass instanceof CustomClass) {
+                    classFQN = ((CustomClass) paramClass).getCanonicalName();
                 }
                 
-                if (paramClass instanceof ResolveUpClassSet) {
-                    ResolveUpClassSet upSet = (ResolveUpClassSet) paramClass;
-                    if (upSet.wheres.length == 1) {
-                        classFQN = upSet.wheres[0].getCanonicalName();
-                    }
-                }
-
                 paramsToInterfaces.put(param.paramName, lAction.listInterfaces.get(i));
                 paramsToClassFQN.put(param.paramName, classFQN);
             }

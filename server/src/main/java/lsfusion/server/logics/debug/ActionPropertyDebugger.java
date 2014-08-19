@@ -185,7 +185,11 @@ public class ActionPropertyDebugger {
                 paramString += ", "; 
             }
             
-            paramString += clazz + " " + param;
+            if (clazz != null) {
+                paramString += clazz + " ";
+            }
+
+            paramString += param;
             
             //todo: ? непонятно, что делать, если clazz==null, но он должен быть примитивным классом
             expression += " IF " + param + " IS " + (clazz != null ? clazz : "Object");

@@ -75,9 +75,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
 
     public ObjectValue getParamValue(String param) {
-        P val = paramsToInterfaces.get(param);
-        if (val != null) {
-            return getKeyValue(val);
+        if (paramsToInterfaces != null) {
+            P val = paramsToInterfaces.get(param);
+            if (val != null) {
+                return getKeyValue(val);
+            }
         }
         
         if (stack != null) {
@@ -92,9 +94,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         
         ExecutionContext<?> current = this;
         while (current != null) {
-            for (Map.Entry<String, String> e : current.paramsToFQN.entrySet()) {
-                if (!paramsToClass.containsKey(e.getKey())) {
-                    paramsToClass.put(e.getKey(), e.getValue());
+            if (paramsToFQN != null) {
+                for (Map.Entry<String, String> e : current.paramsToFQN.entrySet()) {
+                    if (!paramsToClass.containsKey(e.getKey())) {
+                        paramsToClass.put(e.getKey(), e.getValue());
+                    }
                 }
             }
             current = current.stack;
