@@ -25,7 +25,7 @@ curStringValueNumerator 'Тек. значение (строка)' (numerator) = 
 
 incrementValueNumerator 'Увеличить значение' = ACTION (numerator) NEWSESSION {
     IF curValueNumerator(numerator) >= maxValueNumerator(numerator) THEN
-        MESSAGE 'Счетчик нумератора достиг максимального значения. Обратитесь к администратору.'
+        MESSAGE 'Счетчик нумератора ' + nameNumerator(numerator) + ' достиг максимального значения. Обратитесь к администратору.'
     ELSE {
         curValueNumerator(numerator) <- curValueNumerator(numerator) + 1;
         apply();
