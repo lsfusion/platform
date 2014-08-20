@@ -1,6 +1,6 @@
 MODULE EvalScript;
 
-REQUIRE System, Time, Utils;
+REQUIRE System, Time;
 
 NAMESPACE System;
 
