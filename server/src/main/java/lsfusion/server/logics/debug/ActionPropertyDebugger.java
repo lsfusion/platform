@@ -60,8 +60,9 @@ public class ActionPropertyDebugger {
     private ActionPropertyDebugger() {
     } //singleton
 
-    public synchronized void addDelegate(ActionProperty property, Map<String, PropertyInterface> paramsToInterfaces, Map<String, String> paramsToClassFQN, String moduleName, int line, int offset) {
-        ActionDebugInfo debugInfo = new ActionDebugInfo(paramsToInterfaces, paramsToClassFQN, moduleName, line, offset);
+    public synchronized void addDelegate(ActionProperty property, Map<String, PropertyInterface> paramsToInterfaces, Map<String, String> paramsToClassFQN,
+                                         String moduleName, int line, int offset, boolean delegateExecute) {
+        ActionDebugInfo debugInfo = new ActionDebugInfo(paramsToInterfaces, paramsToClassFQN, moduleName, line, offset, delegateExecute);
 
         property.setDebugInfo(debugInfo);
 
@@ -129,9 +130,10 @@ public class ActionPropertyDebugger {
 
         for (ActionDebugInfo info : infos) {
             String methodName = info.getMethodName();
+            String body = (info.delegateExecute ? "return action.executeImpl(context);" : "return null;");
             out.println(
                 "    public static FlowResult " + methodName + "(ActionProperty action, ExecutionContext context) throws SQLException, SQLHandledException {\n" +
-                "        return action.executeImpl(context);\n" +
+                "        " + body + "\n" +
                 "    }\n"
             );
         }
@@ -142,18 +144,25 @@ public class ActionPropertyDebugger {
         return sourceFile.getAbsolutePath();
     }
 
-    public FlowResult delegate(ActionProperty action, ExecutionContext context) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> FlowResult delegate(ActionProperty<P> action, ExecutionContext<P> context) throws SQLException, SQLHandledException {
         ActionDebugInfo debugInfo = action.getDebugInfo();
 
         if (debugInfo == null || !isEnabled()) {
             throw new IllegalStateException("Shouldn't happen: debug isn't enabled");
         }
 
-        Class delegatesHolderClass = delegatesHolderClasses.get(debugInfo.moduleName);
+        Class<?> delegatesHolderClass = delegatesHolderClasses.get(debugInfo.moduleName);
 
         try {
             Method method = delegatesHolderClass.getMethod(debugInfo.getMethodName(), ActionProperty.class, ExecutionContext.class);
-            return (FlowResult) method.invoke(delegatesHolderClass, action, context);
+//            FlowResult result = (FlowResult) method.invoke(delegatesHolderClass, action, context);
+
+            FlowResult result = (FlowResult) resumeBreakpointDelegate(delegatesHolderClass, method, action, context);
+            
+            return debugInfo.delegateExecute
+                    ? result
+                    : action.executeImpl(context);
+
         } catch (InvocationTargetException e) {
             throw ExceptionUtils.propagate(e.getCause(), SQLException.class, SQLHandledException.class);
         } catch (Exception e) {
@@ -161,6 +170,10 @@ public class ActionPropertyDebugger {
             //если упало исключение в reflection, то просто вызываем оригинальный execute
             return action.executeImpl(context);
         }
+    }
+    
+    private Object resumeBreakpointDelegate(Class<?> clazz, Method method, ActionProperty action, ExecutionContext context) throws InvocationTargetException, IllegalAccessException {
+        return method.invoke(clazz, action, context);
     }
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin

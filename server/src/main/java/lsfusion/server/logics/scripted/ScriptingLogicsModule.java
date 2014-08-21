@@ -50,7 +50,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.actions.BaseEvent;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
-import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
+import lsfusion.server.logics.property.actions.flow.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.mail.AttachmentFormat;
@@ -2568,9 +2568,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             
             checkActionProperty(lpWithParams.property);
 
+            //noinspection unchecked
             LAP<PropertyInterface> lAction = (LAP<PropertyInterface>) lpWithParams.property;
             
             ActionProperty property = (ActionProperty) lAction.property;
+            if (property instanceof ListActionProperty) {
+                return;
+            }
 
             Map<String, PropertyInterface> paramsToInterfaces = new HashMap<String, PropertyInterface>();
             Map<String, String> paramsToClassFQN = new HashMap<String, String>();
@@ -2593,8 +2597,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                 paramsToInterfaces.put(param.paramName, lAction.listInterfaces.get(i));
                 paramsToClassFQN.put(param.paramName, classFQN);
             }
-            
-            debugger.addDelegate(property, paramsToInterfaces, paramsToClassFQN, getName(), line, offset);
+
+            boolean delegateExecute = property instanceof JoinActionProperty;
+            debugger.addDelegate(property, paramsToInterfaces, paramsToClassFQN, getName(), line, offset, delegateExecute);
         }
     }
 

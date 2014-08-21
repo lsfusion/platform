@@ -11,14 +11,18 @@ public class ActionDebugInfo {
     public final String moduleName;
     public final int line;
     public final int offset;
+    public final boolean delegateExecute;
 
-    public ActionDebugInfo(Map<String, PropertyInterface> paramsToInterfaces, Map<String, String> paramsToClassFQN, String moduleName, int line, int offset) {
+    public ActionDebugInfo(Map<String, PropertyInterface> paramsToInterfaces, Map<String, String> paramsToClassFQN, String moduleName,
+                           int line, int offset, boolean delegateExecute) {
+        
         this.paramsToInterfaces = paramsToInterfaces;
         this.paramsToClassFQN = paramsToClassFQN;
 
         this.moduleName = moduleName;
         this.line = line;
         this.offset = offset;
+        this.delegateExecute = delegateExecute;
     }
 
     public String getMethodName() {

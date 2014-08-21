@@ -299,6 +299,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     public final FlowResult execute(ExecutionContext<P> context) throws SQLException, SQLHandledException {
         if (debugInfo != null && debugger.isEnabled()) {
+            //noinspection unchecked
             context.setParamsToInterfaces((Map<String, P>) debugInfo.paramsToInterfaces);
             context.setParamsToFQN(debugInfo.paramsToClassFQN);
             return debugger.delegate(this, context);
