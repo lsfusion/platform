@@ -497,7 +497,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             if (oldDBStructure.version < 15) {
                 convertDBStructureToVersion15(oldDBStructure, newDBStructure, sql);
             }
-            alterateDBStructure(oldDBStructure, sql);
+            // применяем к oldDBStructure изменения из migration script, переименовываем таблицы и поля  
+            alterateDBStructure(oldDBStructure, newDBStructure, sql);
 
             // проверка, не удалятся ли старые таблицы
             if (denyDropTables) {
@@ -541,7 +542,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 for (Iterator<DBStoredProperty> is = restNewDBStored.iterator(); is.hasNext(); ) {
                     DBStoredProperty newProperty = is.next();
 
-                    if (newProperty.getDBName().equals(oldProperty.getDBName())) {
+                    if (newProperty.getCanonicalName().equals(oldProperty.getCanonicalName())) {
                         MExclMap<KeyField, PropertyInterface> mFoundInterfaces = MapFact.mExclMapMax(newProperty.property.interfaces.size());
                         for (PropertyInterface propertyInterface : newProperty.property.interfaces) {
                             KeyField mapKeyField = oldProperty.mapKeys.get(propertyInterface.ID);
@@ -766,7 +767,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
                 if (entry.getKey().equals(oldProperty.getDBName())) {
                     convertSIDChanges.put(entry.getKey(), entry.getValue());
-                    oldProperty.setDBName(entry.getValue());
+                    oldProperty.setCanonicalName(null, entry.getValue());
                     found = true;
                     break;
                 }
@@ -1135,23 +1136,24 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    // Не разбирается с индексами. Было решено, что сохранять индексы необязательно.
-    private void alterateDBStructure(OldDBStructure oldData, SQLSession sql) throws SQLException {
+    private void renameColumn(SQLSession sql, OldDBStructure oldData, DBStoredProperty oldProperty, String newName) throws SQLException {
+        String oldName = oldProperty.getDBName();
+        if (!oldName.equals(newName)) {
+            systemLogger.info("Renaming column from " + oldName + " to " + newName + " in table " + oldProperty.tableName);
+            sql.renameColumn(oldProperty.getTableName(adapter), oldName, newName);
+            PropertyField field = oldData.getTable(oldProperty.tableName).findProperty(oldName);
+            field.setName(newName);
+        }
+    }
+    
+    private void renameMigratingProperties(SQLSession sql, OldDBStructure oldData) throws SQLException {
         Map<String, String> propertyChanges = getChangesAfter(oldData.dbVersion, propertyCNChanges);
-        Map<String, String> tableChanges = getChangesAfter(oldData.dbVersion, tableSIDChanges);
-        Map<String, String> classChanges = getChangesAfter(oldData.dbVersion, classSIDChanges);
-
-        Map<String, String> propertyDBNameChanges = new HashMap<String, String>();
-        SQLSyntax syntax = adapter;
-
         for (Map.Entry<String, String> entry : propertyChanges.entrySet()) {
             boolean found = false;
             for (DBStoredProperty oldProperty : oldData.storedProperties) {
                 if (entry.getKey().equals(oldProperty.getCanonicalName())) {
                     String newDBName = LM.getDBNamePolicy().transformToDBName(entry.getValue());
-                    systemLogger.info("Renaming column from " + oldProperty.getDBName() + " to " + newDBName + " in table " + oldProperty.tableName);
-                    sql.renameColumn(oldProperty.getTableName(syntax), oldProperty.getDBName(), newDBName);
-                    propertyDBNameChanges.put(oldProperty.getDBName(), newDBName);
+                    renameColumn(sql, oldData, oldProperty, newDBName);
                     oldProperty.setCanonicalName(entry.getValue());
                     found = true;
                     break;
@@ -1161,7 +1163,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 systemLogger.warn("Property " + entry.getKey() + " was not found for renaming to " + entry.getValue());
             }
         }
-
+    }
+    
+    private void renameMigratingTables(SQLSession sql, OldDBStructure oldData) throws SQLException {
+        Map<String, String> tableChanges = getChangesAfter(oldData.dbVersion, tableSIDChanges);
         for (DBStoredProperty oldProperty : oldData.storedProperties) {
             if (tableChanges.containsKey(oldProperty.tableName)) {
                 oldProperty.tableName = tableChanges.get(oldProperty.tableName);
@@ -1169,12 +1174,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
 
         for (Table table : oldData.tables.keySet()) {
-            for (PropertyField field : table.properties) {
-                if (propertyDBNameChanges.containsKey(field.getName())) {
-                    field.setName(propertyDBNameChanges.get(field.getName()));
-                }
-            }
-
             if (tableChanges.containsKey(table.getName())) {
                 String newSID = tableChanges.get(table.getName());
                 systemLogger.info("Renaming table from " + table + " to " + newSID);
@@ -1182,12 +1181,101 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 table.setName(newSID);
             }
         }
-
+    }
+    
+    private void renameMigratingClasses(OldDBStructure oldData) {
+        Map<String, String> classChanges = getChangesAfter(oldData.dbVersion, classSIDChanges);
         for (DBConcreteClass oldClass : oldData.concreteClasses) {
             if(classChanges.containsKey(oldClass.sID)) {
                 oldClass.sID = classChanges.get(oldClass.sID);
             }
         }
+    }
+    
+    private void migrateClassProperties(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
+        // Заменим ссылки на классовые свойства. Нужно только для перехода на версию базы >= 17
+        if (oldData.version < 17) {
+            for (DBConcreteClass cls : oldData.concreteClasses) {
+                String oldClassPropertySID = cls.sDataPropID;
+                boolean found = false;
+                for (DBStoredProperty oldProperty : oldData.storedProperties) {
+                    if (oldProperty.getDBName().equals(oldClassPropertySID)) {
+                        assert !found;
+                        found = true;
+                        cls.sDataPropID = oldProperty.getCanonicalName();
+                    }
+                }
+            }
+        }
+
+        // Теперь изменим в старой структуре классовые свойства. Предполагаем, что в одной таблице может быть только одно классовое свойство. Переименовываем поля в таблицах
+        Map<String, String> tableNewClassProps = new HashMap<String, String>();
+        for (DBConcreteClass cls : newData.concreteClasses) {
+            DBStoredProperty classProp = newData.getProperty(cls.sDataPropID);
+            assert classProp != null;
+            String tableName = classProp.getTable().getName();
+            if (tableNewClassProps.containsKey(tableName)) {
+                assert cls.sDataPropID.equals(tableNewClassProps.get(tableName));
+            } else {
+                tableNewClassProps.put(tableName, cls.sDataPropID);
+            }
+        }
+        
+        Map<String, String> nameRenames = new HashMap<String, String>();
+        for (DBConcreteClass cls : oldData.concreteClasses) {
+            if (!nameRenames.containsKey(cls.sDataPropID)) {
+                DBStoredProperty oldClassProp = oldData.getProperty(cls.sDataPropID);
+                assert oldClassProp != null;
+                String tableName = oldClassProp.tableName;
+                if (tableNewClassProps.containsKey(tableName)) {
+                    String newName = tableNewClassProps.get(tableName);
+                    nameRenames.put(cls.sDataPropID, newName);
+                    String newDBName = LM.getDBNamePolicy().transformToDBName(newName);
+                    renameColumn(sql, oldData, oldClassProp, newDBName);
+                    oldClassProp.setCanonicalName(newName);
+                    cls.sDataPropID = newName;
+                }
+            } else {
+                cls.sDataPropID = nameRenames.get(cls.sDataPropID);
+            }
+        }
+    } 
+    
+    private void migrateDBNames(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
+        Map<String, DBStoredProperty> newProperties = new HashMap<String, DBStoredProperty>();
+        for (DBStoredProperty newProperty : newData.storedProperties) {
+            newProperties.put(newProperty.getCanonicalName(), newProperty);
+        }
+
+        for (DBStoredProperty oldProperty : oldData.storedProperties) {
+            DBStoredProperty newProperty;
+            if ((newProperty = newProperties.get(oldProperty.getCanonicalName())) != null) {
+                if (!newProperty.getDBName().equals(oldProperty.getDBName())) {
+                    renameColumn(sql, oldData, oldProperty, newProperty.getDBName());
+                    // переустанавливаем каноническое имя, чтобы получить новый dbName
+                    oldProperty.setCanonicalName(oldProperty.getCanonicalName());
+                }
+            }
+        }
+    }
+    
+    // Не разбирается с индексами. Было решено, что сохранять индексы необязательно.
+    private void alterateDBStructure(OldDBStructure oldData, NewDBStructure newData, SQLSession sql) throws SQLException {
+        // Изменяем в старой структуре свойства из скрипта миграции, переименовываем поля в таблицах
+        renameMigratingProperties(sql, oldData);
+        
+        // Переименовываем таблицы из скрипта миграции, переустанавливаем ссылки на таблицы в свойствах
+        renameMigratingTables(sql, oldData);
+
+        // Переустановим имена классовым свойствам, если это необходимо. Также при необходимости переименуем поля в таблицах   
+        // Иимена полей могут измениться при переименовании таблиц (так как в именах классовых свойств есть имя таблицы) либо при изменении dbNamePolicy
+        migrateClassProperties(sql, oldData, newData);        
+        
+        // При изменении dbNamePolicy необходимо также переименовать поля
+        migrateDBNames(sql, oldData, newData);
+        
+        // переименовываем классы из скрипта миграции
+        renameMigratingClasses(oldData);
     }
 
     private DBVersion getCurrentDBVersion(DBVersion oldVersion) {
@@ -1466,10 +1554,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
 
         public DBStoredProperty(String canonicalName, String dbName, Boolean isDataProperty, String tableName, ImMap<Integer, KeyField> mapKeys) {
-            this.setCanonicalName(canonicalName);
-            if (canonicalName == null) {
-                this.setDBName(dbName);
-            }
+            this.setCanonicalName(canonicalName, dbName);
             this.isDataProperty = isDataProperty;
             this.tableName = tableName;
             this.mapKeys = mapKeys;
@@ -1477,11 +1562,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         public String getDBName() {
             return dbName;
-        }
-
-        public void setDBName(String dbName) {
-            assert getCanonicalName() == null;
-            this.dbName = dbName;
         }
 
         public String getCanonicalName() {
@@ -1493,6 +1573,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             if (canonicalName != null) {
                 this.dbName = LM.getDBNamePolicy().transformToDBName(canonicalName);
             }
+        }
+
+        public void setCanonicalName(String canonicalName, String dbName) {
+            this.canonicalName = canonicalName;
+            this.dbName = dbName;
         }
     }
 
@@ -1516,7 +1601,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         private DBConcreteClass(ConcreteCustomClass customClass) {
             sID = customClass.getSID();
-            sDataPropID = customClass.dataProperty.getDBName();
+            sDataPropID = customClass.dataProperty.getCanonicalName();
 
             this.customClass = customClass;
         }
@@ -1549,9 +1634,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             return null;
         }
 
-        public DBStoredProperty getProperty(String name) {
+        public DBStoredProperty getProperty(String canonicalName) {
             for (DBStoredProperty prop : storedProperties) {
-                if (prop.getDBName().equals(name)) {
+                if (prop.getCanonicalName().equals(canonicalName)) {
                     return prop;
                 }
             }
@@ -1562,7 +1647,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public NewDBStructure(DBVersion dbVersion) {
-            version = 16;
+            version = 17;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {
@@ -1605,9 +1690,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         public void write(DataOutputStream outDB, String hashModules) throws IOException {
             outDB.write('v' + version);  //для поддержки обратной совместимости
-            if (version > 2) {
-                outDB.writeUTF(dbVersion.toString());
-            }
+            outDB.writeUTF(dbVersion.toString());
 
             //записываем список подключенных модулей
             outDB.writeInt(businessLogics.getLogicModules().size());
@@ -1633,6 +1716,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             outDB.writeInt(storedProperties.size());
             for (DBStoredProperty property : storedProperties) {
                 outDB.writeUTF(property.getCanonicalName());
+                outDB.writeUTF(property.getDBName());
                 outDB.writeBoolean(property.isDataProperty);
                 outDB.writeUTF(property.tableName);
                 for (int i=0,size=property.mapKeys.size();i<size;i++) {
@@ -1686,10 +1770,15 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
                 int prevStoredNum = inputDB.readInt();
                 for (int i = 0; i < prevStoredNum; i++) {
-                    String sID = null;
+                    String sID;
                     String canonicalName = null;
                     if (version >= 15) {
                         canonicalName = inputDB.readUTF();
+                        if (version >= 17) {
+                            sID = inputDB.readUTF();
+                        } else {
+                            sID = LM.getDBNamePolicy().transformToDBName(canonicalName);
+                        }
                     } else {
                         sID = inputDB.readUTF();
                     }
