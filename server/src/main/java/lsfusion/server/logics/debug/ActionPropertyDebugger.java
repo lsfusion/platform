@@ -14,10 +14,8 @@ import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -43,9 +41,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.server.logics.debug.ActionDelegationType.AFTER_DELEGATE;
-import static lsfusion.server.logics.debug.ActionDelegationType.BEFORE_DELEGATE;
-import static lsfusion.server.logics.debug.ActionDelegationType.IN_DELEGATE;
+import static lsfusion.server.logics.debug.ActionDelegationType.*;
 
 public class ActionPropertyDebugger {
     public static final String DELEGATES_HOLDER_CLASS_PACKAGE = "lsfusion.server.logics.debug";

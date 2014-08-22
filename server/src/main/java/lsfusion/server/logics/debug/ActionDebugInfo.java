@@ -1,11 +1,5 @@
 package lsfusion.server.logics.debug;
 
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.logics.property.PropertyInterface;
-
-import java.util.Map;
-
 public class ActionDebugInfo {
     public final String moduleName;
     public final int line;
