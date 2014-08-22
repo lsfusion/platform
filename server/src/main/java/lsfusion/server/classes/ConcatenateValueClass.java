@@ -97,4 +97,8 @@ public class ConcatenateValueClass implements ValueClass {
     public int hashCode() {
         return Arrays.hashCode(valueClasses);
     }
+
+    public String getParsedName() {
+        return null;
+    }
 }

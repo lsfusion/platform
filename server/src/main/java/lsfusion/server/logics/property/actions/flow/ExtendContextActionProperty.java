@@ -28,6 +28,10 @@ public abstract class ExtendContextActionProperty<I extends PropertyInterface> e
         this.mapInterfaces = getMapInterfaces(mapInterfaces);
     }
 
+    protected ImSet<I> getExtendInterfaces() {
+        return innerInterfaces.remove(mapInterfaces.valuesSet());
+    }
+
     @IdentityInstanceLazy
     public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
         return IsClassProperty.getMapProperty(mapInterfaces.innerJoin( // по аналогии с группировкой (а точнее вместо) такая "эвристика"

@@ -603,10 +603,16 @@ public abstract class LogicsModule {
     protected LAP addListAProp(Object... params) {
         return addListAProp(null, "sys", params);
     }
+    protected LAP addListAProp(int removeLast, Object... params) {
+        return addListAProp(null, removeLast, "sys", params);
+    }
     protected LAP addListAProp(AbstractGroup group, String caption, Object... params) {
+        return addListAProp(group, 0, caption, params);
+    }
+    protected LAP addListAProp(AbstractGroup group, int removeLast, String caption, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         return addProperty(group, new LAP(new ListActionProperty(caption, listInterfaces,
-                readActionImplements(listInterfaces, params))));
+                readActionImplements(listInterfaces, removeLast > 0 ? Arrays.copyOf(params, params.length - removeLast) : params))));
     }
 
     protected LAP addAbstractListAProp(boolean isChecked, ValueClass[] params) {

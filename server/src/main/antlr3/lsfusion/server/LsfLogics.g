@@ -1779,7 +1779,7 @@ onEditEventSetting [LP property, List<TypedParameter> context]
 	    |   'CHANGEWYS' { type = ServerResponse.CHANGE_WYS; }
 	    |   'EDIT' { type = ServerResponse.EDIT_OBJECT; }
 	    )
-		action=actionPropertyDefinitionBody[context, false]
+		action=topActionPropertyDefinitionBody[context, false, false]
 	;
 
 eventIdSetting [LP property]
@@ -1816,8 +1816,23 @@ actionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns 
 				}
 			} 
 		)?
-		pdb=actionPropertyDefinitionBody[localContext, localDynamic] { if (inPropParseState()) { $property = $pdb.property; $signature = $pdb.signature; }}
+		pdb=topActionPropertyDefinitionBody[localContext, localDynamic, true] { if (inPropParseState()) { $property = $pdb.property; $signature = $pdb.signature; }}
 	;
+
+// top level, not recursive
+topActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean needFullContext] returns [LPWithParams property, List<ResolveClassSet> signature]
+    : PDB = modifyContextFlowActionPropertyDefinitionBody[new ArrayList<TypedParameter>(), context, dynamic, needFullContext] { $property = $PDB.property; $signature = $PDB.signature; }    
+;
+
+// modifies context + is flow action (uses another actions)
+modifyContextFlowActionPropertyDefinitionBody[List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean dynamic, boolean needFullContext] returns [LPWithParams property, List<ResolveClassSet> signature]
+@after{
+    if (inPropParseState()) {
+        $property = self.modifyContextFlowActionPropertyDefinitionBodyCreated($property, $newContext, $oldContext, $signature, needFullContext);
+    }
+}
+    : PDB = actionPropertyDefinitionBody[newContext, dynamic] { $property = $PDB.property; $signature = $PDB.signature; }    
+;
 
 actionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, List<ResolveClassSet> signature]
 @init {
@@ -1826,7 +1841,7 @@ actionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 }
 @after{
     if (inPropParseState()) {
-        self.actionPropertyDefinitionBodyCreated($property, $context, $signature, line, offset);
+        self.actionPropertyDefinitionBodyCreated($property, line, offset);
     }
 }
 	:	extPDB=extendContextActionPDB[context, dynamic] { $property = $extPDB.property; if (inPropParseState()) $signature = self.getClassesFromTypedParams(context); }
@@ -2370,7 +2385,7 @@ forActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPWithPar
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, $elsePDB.property, $addObj.paramCnt, $addObj.className, recursive, descending, $in.noInline, $in.forceInline);
+		$property = self.addScriptedForAProp(context, $expr.property, orders, $actPDB.property, $elsePDB.property, $addObj.paramCnt, $addObj.className, recursive, descending, $in.noInline, $in.forceInline, newContext);
 	}	
 }
 	:	(	'FOR' 
@@ -2383,7 +2398,7 @@ forActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPWithPar
 		)?)?
 		in = inlineStatement[newContext]
 		(addObj=forAddObjClause[newContext])?
-		'DO' actPDB=actionPropertyDefinitionBody[newContext, false]
+		'DO' actPDB=modifyContextFlowActionPropertyDefinitionBody[context, newContext, false, false]
 		( {!recursive}?=> 'ELSE' elsePDB=actionPropertyDefinitionBody[context, false])?
 	;
 
@@ -2559,7 +2574,7 @@ eventStatement
 		}
 		in=inlineStatement[context]
 		'DO'
-		action=actionPropertyDefinitionBody[context, false]
+		action=topActionPropertyDefinitionBody[context, false, false]
 		(	'ORDER' ('DESC' { descending = true; })?
 			orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); }
 		)?
@@ -2588,7 +2603,7 @@ globalEventStatement
 				self.setPrevScope($et.event);
 			}
 		}
-		action=actionPropertyDefinitionBody[new ArrayList<TypedParameter>(), false]
+		action=topActionPropertyDefinitionBody[new ArrayList<TypedParameter>(), false, false]
 		{
 			if (inPropParseState()) {
 				self.dropPrevScope($et.event);
@@ -2652,7 +2667,7 @@ aspectStatement
 	:	(	'BEFORE' 
 		| 	'AFTER' { before = false; }
 		)
-		mainProp=mappedProperty 'DO' action=actionPropertyDefinitionBody[$mainProp.mapping, false]
+		mainProp=mappedProperty 'DO' action=topActionPropertyDefinitionBody[$mainProp.mapping, false, false]
 		( {!self.semicolonNeeded()}?=>  | ';')
 	;
 

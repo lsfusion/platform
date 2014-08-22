@@ -1,24 +1,19 @@
 package lsfusion.server.logics.debug;
 
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.property.PropertyInterface;
 
 import java.util.Map;
 
 public class ActionDebugInfo {
-    public final Map<String, PropertyInterface> paramsToInterfaces;
-    public final Map<String, String> paramsToClassFQN;
-    
     public final String moduleName;
     public final int line;
     public final int offset;
     public final boolean delegateExecute;
 
-    public ActionDebugInfo(Map<String, PropertyInterface> paramsToInterfaces, Map<String, String> paramsToClassFQN, String moduleName,
-                           int line, int offset, boolean delegateExecute) {
+    public ActionDebugInfo(String moduleName, int line, int offset, boolean delegateExecute) {
         
-        this.paramsToInterfaces = paramsToInterfaces;
-        this.paramsToClassFQN = paramsToClassFQN;
-
         this.moduleName = moduleName;
         this.line = line;
         this.offset = offset;

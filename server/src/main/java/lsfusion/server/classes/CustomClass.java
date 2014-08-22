@@ -89,6 +89,10 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return getSID().replaceFirst("_", ".");
     }
 
+    public String getParsedName() {
+        return getCanonicalName();
+    }
+
     public String caption;
     public CustomClass(String sID, String caption, Version version, CustomClass... parents) {
         this.sID = sID;

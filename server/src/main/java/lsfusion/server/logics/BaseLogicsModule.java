@@ -21,6 +21,8 @@ import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.form.window.NavigatorWindow;
 import lsfusion.server.form.window.ToolBarNavigatorWindow;
+import lsfusion.server.logics.debug.ActionPropertyDebugger;
+import lsfusion.server.logics.debug.WatchActionProperty;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFFact;
@@ -98,6 +100,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     private LAP formCancel;
     private LAP formOk;
     private LAP formClose;
+
+    private LAP watch;
 
     public LAP seek;
 
@@ -344,6 +348,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         vtrue = addCProp(LogicalClass.instance, true);
         vzero = addCProp(DoubleClass.instance, 0);
         vnull = addProperty((AbstractGroup) null, new LCP<PropertyInterface>(NullValueProperty.instance));
+
+        if(ActionPropertyDebugger.getInstance().isEnabled()) {
+            watch = addProperty((AbstractGroup) null, new LAP<ClassPropertyInterface>(WatchActionProperty.instance));
+            makePropertyPublic(watch, "watch");
+        }
 
         super.initProperties();
 

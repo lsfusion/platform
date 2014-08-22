@@ -1,11 +1,13 @@
 package lsfusion.server.logics.property;
 
 import jasperapi.ReportGenerator;
+import lsfusion.base.Processor;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.server.auth.SecurityPolicy;
@@ -56,11 +58,18 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     private final DataObject pushedAddObject;
 
     private final ExecutionEnvironment env;
+        
     private final ExecutionContext stack;
-    private Map<String, P> paramsToInterfaces;
-    private Map<String, String> paramsToFQN;
+    private ImRevMap<String, P> paramsToInterfaces;
+    private ImMap<String, String> paramsToFQN;
+    private Processor<ImMap<String, ObjectValue>> watcher;
+    
     private final FormEnvironment<P> form;
 
+    public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env) {
+        this(keys, null, null, env, null, null);
+    }
+    
     public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ObjectValue pushedUserInput, DataObject pushedAddObject, ExecutionEnvironment env, FormEnvironment<P> form, ExecutionContext stack) {
         this.keys = keys;
         this.pushedUserInput = pushedUserInput;
@@ -70,8 +79,16 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         this.stack = stack;
     }
 
-    public void setParamsToInterfaces(Map<String, P> paramsToInterfaces) {
+    public void setParamsToInterfaces(ImRevMap<String, P> paramsToInterfaces) {
         this.paramsToInterfaces = paramsToInterfaces;
+    }
+
+    public void setWatcher(Processor<ImMap<String, ObjectValue>> watcher) {
+        this.watcher = watcher;
+    }
+
+    public ImRevMap<String, P> getParamsToInterfaces() {
+        return paramsToInterfaces;
     }
 
     public ObjectValue getParamValue(String param) {
@@ -95,9 +112,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         ExecutionContext<?> current = this;
         while (current != null) {
             if (current.paramsToFQN != null) {
-                for (Map.Entry<String, String> e : current.paramsToFQN.entrySet()) {
-                    if (!paramsToClass.containsKey(e.getKey())) {
-                        paramsToClass.put(e.getKey(), e.getValue());
+                for (int i = 0, size = current.paramsToFQN.size(); i<size; i++) {
+                    String paramName = current.paramsToFQN.getKey(i);
+                    String paramObject = current.paramsToFQN.getValue(i);
+                    if (!paramsToClass.containsKey(paramName)) {
+                        paramsToClass.put(paramName, paramObject);
                     }
                 }
             }
@@ -114,7 +133,23 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         return res;
     }
 
-    public void setParamsToFQN(Map<String, String> paramsToFQN) {
+    public <L extends PropertyInterface> void notifyParamValues(ImMap<String, ObjectValue> params) {
+        if (paramsToInterfaces != null) {
+            params = paramsToInterfaces.mapValues(new GetValue<ObjectValue, P>() {
+                public ObjectValue getMapValue(P value) {
+                    return getKeyValue(value);
+                }
+            }).override(params);
+        }
+        
+        if(watcher != null)
+            watcher.proceed(params);
+        
+        if(stack != null)
+            stack.notifyParamValues(params);
+    }
+
+    public void setParamsToFQN(ImMap<String, String> paramsToFQN) {
         this.paramsToFQN = paramsToFQN;
     }
 

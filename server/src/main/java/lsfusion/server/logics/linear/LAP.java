@@ -33,7 +33,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
         property.execute(getMapValues(objects), session, null);
     }
 
-    public FlowResult execute(ExecutionContext<?> context, DataObject... objects) throws SQLException, SQLHandledException {
+    public FlowResult execute(ExecutionContext<?> context, ObjectValue... objects) throws SQLException, SQLHandledException {
         return property.execute(context.override(getMapValues(objects), (FormEnvironment<T>) null));
     }
 

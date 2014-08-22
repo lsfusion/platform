@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.flow;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -12,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.ParamMessage;
 import lsfusion.server.ThisMessage;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
@@ -134,7 +136,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
         boolean execElse = elseAction != null;
         
-        assert addObject == null || addClass instanceof ConcreteCustomClass;        
+        assert !isHackAdd();        
         if(addObject != null) {
             innerKeys = innerKeys.removeRev(addObject);
             innerExprs = innerExprs.remove(addObject);
@@ -169,7 +171,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         } while (recursive && !rows.isEmpty());
 
         if (execElse) {
-            return execute(context, elseAction, innerValues, mapInterfaces);
+            elseAction.map(mapInterfaces.reverse()).execute(context);
         }
 
         return result;
@@ -179,6 +181,17 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     @ThisMessage
     private FlowResult executeFor(ExecutionContext<PropertyInterface> context, @ParamMessage ImMap<I, ObjectValue> newValues) throws SQLException, SQLHandledException {
         return execute(context, action, newValues, mapInterfaces);
+    }
+
+    private static <P extends PropertyInterface, M extends  PropertyInterface> FlowResult execute(ExecutionContext<PropertyInterface> context, ActionPropertyMapImplement<P, M> implement, ImMap<M, ? extends ObjectValue> keys, ImRevMap<PropertyInterface, M> mapInterfaces) throws SQLException, SQLHandledException {
+        return implement.property.execute(
+                context.override(
+                        implement.mapping.join(keys),
+                        BaseUtils.<ImMap<P, CalcPropertyInterfaceImplement<PropertyInterface>>>immutableCast(
+                                MapFact.innerCrossValues(implement.mapping, mapInterfaces)
+                        )
+                )
+        );
     }
 
     private ImOrderSet<ImMap<I, DataObject>> readRows(final ExecutionContext<PropertyInterface> context, ImRevMap<I, KeyExpr> innerKeys, ImMap<I, ? extends Expr> innerExprs) throws SQLException, SQLHandledException {
@@ -205,8 +218,8 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                action.mapCalcWhereProperty(), elseAction != null ? elseAction.mapCalcWhereProperty() : null);
     }
 
-    private ImSet<I> getExtendInterfaces() {
-        ImSet<I> result = innerInterfaces.remove(mapInterfaces.valuesSet());
+    protected ImSet<I> getExtendInterfaces() {
+        ImSet<I> result = super.getExtendInterfaces();
         if(addObject != null)
             result = result.removeIncl(addObject);
         return result;
@@ -215,8 +228,22 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
     private ImMap<I, ValueClass> getExtendClasses() {
         if(ifProp==null)
             return MapFact.<I, ValueClass>EMPTY();
-        assert ifProp.mapIsFull(getExtendInterfaces());
+        assert forIsFull();
         return ifProp.mapInterfaceClasses(ClassType.forPolicy).remove(mapInterfaces.valuesSet()); // вообще тут предполагается ASSERTFULL, но только для extend interfaces, а пока такой возможности нет
+    }
+
+    private boolean forIsFull() {
+        return ifProp == null || ifProp.mapIsFull(getExtendInterfaces());
+    }
+
+    private boolean isHackAdd() { // хак который используется только для реализации агрегаций, когда генерится FOR ADDOBJ t, затем CHANGE CLASS t TO X, который компиляция сворачивать в FOR ADDOBJ t=X (непонятно какой конкретный класс по умолчанию подставлять)  
+        return addObject != null && !(addClass instanceof ConcreteCustomClass);
+    }
+    
+    @Override
+    @IdentityLazy
+    protected boolean forceCompile() {
+        return isHackAdd() | !forIsFull(); // очень тормозит
     }
 
     @Override
@@ -254,7 +281,8 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             return DerivedProperty.createListAction(context, mResult.immutableList());
         }
 
-        if(allNoInline)
+        boolean hackAdd = isHackAdd();
+        if(allNoInline && !hackAdd)
             return null;
 
         if (addObject != null) { // "компиляция" ADDOBJ
@@ -271,6 +299,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                                 (CustomClass) changeClassProperty.valueClass, changeClassProperty.forceDialog, recursive, noInline, forceInline);
                 }
             }
+            assert !hackAdd; // должен отработать сверху
 
             CalcPropertyMapImplement<?, I> result = DerivedProperty.createDataProp(true, getExtendClasses(), addClass);
             return DerivedProperty.createListAction(context, ListFact.<ActionPropertyMapImplement<?, I>>toList(

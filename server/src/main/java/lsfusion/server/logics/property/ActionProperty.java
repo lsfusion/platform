@@ -23,6 +23,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ActionDebugInfo;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
+import lsfusion.server.logics.debug.ParamDebugInfo;
 import lsfusion.server.logics.property.actions.BaseEvent;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
@@ -34,7 +35,6 @@ import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 public abstract class ActionProperty<P extends PropertyInterface> extends Property<P> {
@@ -42,6 +42,8 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     private static final ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
 
     private ActionDebugInfo debugInfo;
+
+    private ParamDebugInfo<P> paramInfo; // только для "top-level" action
 
     public ActionProperty(String caption, ImOrderSet<P> interfaces) {
         super(caption, interfaces);
@@ -56,14 +58,18 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public void setDebugInfo(ActionDebugInfo debugInfo) {
         this.debugInfo = debugInfo;
     }
-
+    
     public ActionDebugInfo getDebugInfo() {
         return debugInfo;
     }
 
+    public void setParamInfo(ParamDebugInfo<P> paramInfo) {
+        this.paramInfo = paramInfo;
+    }
+
     // assert что возвращает только DataProperty и Set(IsClassProperty), Drop(IsClassProperty), IsClassProperty, для использования в лексикографике (calculateLinks)
     public ImMap<CalcProperty, Boolean> getChangeExtProps() {
-        ActionPropertyMapImplement<?, P> compile = callCompile();
+        ActionPropertyMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
             return compile.property.getChangeExtProps();
 
@@ -102,7 +108,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public ImMap<CalcProperty, Boolean> getUsedExtProps() {
-        ActionPropertyMapImplement<?, P> compile = callCompile();
+        ActionPropertyMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
             return compile.property.getUsedExtProps();
 
@@ -298,10 +304,11 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public final FlowResult execute(ExecutionContext<P> context) throws SQLException, SQLHandledException {
+        if(paramInfo != null) {
+            context.setParamsToInterfaces(paramInfo.paramsToInterfaces);
+            context.setParamsToFQN(paramInfo.paramsToClassFQN);
+        }
         if (debugInfo != null && debugger.isEnabled()) {
-            //noinspection unchecked
-            context.setParamsToInterfaces((Map<String, P>) debugInfo.paramsToInterfaces);
-            context.setParamsToFQN(debugInfo.paramsToClassFQN);
             return debugger.delegate(this, context);
         } else {
             return executeImpl(context);
@@ -315,7 +322,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
                 return beforeResult;
         }
 
-        ActionPropertyMapImplement<?, P> compile = callCompile();
+        ActionPropertyMapImplement<?, P> compile = callCompile(true);
         if (compile != null)
             return compile.execute(context);
 
@@ -330,7 +337,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     @Override
     public void prereadCaches() {
         super.prereadCaches();
-        callCompile();
+        callCompile(true);
     }
 
     protected abstract FlowResult aspectExecute(ExecutionContext<P> context) throws SQLException, SQLHandledException;
@@ -404,12 +411,16 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             }});
     }
 
-    private ActionPropertyMapImplement<?, P> callCompile() {
+    private ActionPropertyMapImplement<?, P> callCompile(boolean forExecution) {
         //не включаем компиляцию экшенов при дебаге
-        if (debugger.isEnabled()) {
+        if (forExecution && debugger.isEnabled() && !forceCompile()) {
             return null;
         }
         return compile();
+    }
+    
+    protected boolean forceCompile() {
+        return false;
     }
 
     public ActionPropertyMapImplement<?, P> compile() {

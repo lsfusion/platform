@@ -32,4 +32,6 @@ public interface ValueClass extends RemoteClass {
     Stat getTypeStat(boolean forJoin);
 
     IsClassProperty getProperty();
+    
+    String getParsedName();
 }

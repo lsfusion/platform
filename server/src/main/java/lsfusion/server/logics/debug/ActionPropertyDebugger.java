@@ -1,13 +1,19 @@
 package lsfusion.server.logics.debug;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.ExceptionUtils;
-import lsfusion.base.IOUtils;
-import lsfusion.base.NullOutputStream;
+import lsfusion.base.*;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -29,6 +35,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,13 +67,18 @@ public class ActionPropertyDebugger {
     private ActionPropertyDebugger() {
     } //singleton
 
-    public synchronized void addDelegate(ActionProperty property, Map<String, PropertyInterface> paramsToInterfaces, Map<String, String> paramsToClassFQN,
-                                         String moduleName, int line, int offset, boolean delegateExecute) {
-        ActionDebugInfo debugInfo = new ActionDebugInfo(paramsToInterfaces, paramsToClassFQN, moduleName, line, offset, delegateExecute);
+    public synchronized <P extends PropertyInterface> void addDelegate(ActionProperty<P> property, String moduleName, int line, int offset, boolean delegateExecute) {
+        ActionDebugInfo debugInfo = new ActionDebugInfo(moduleName, line, offset, delegateExecute);
 
         property.setDebugInfo(debugInfo);
 
         delegates.put(debugInfo, property);
+    }
+
+    public synchronized <P extends PropertyInterface> void addParamInfo(ActionProperty<P> property, Map<String, P> paramsToInterfaces, Map<String, String> paramsToClassFQN) {
+        ParamDebugInfo<P> paramInfo = new ParamDebugInfo<P>(MapFact.fromJavaRevMap(paramsToInterfaces), MapFact.fromJavaMap(paramsToClassFQN));
+
+        property.setParamInfo(paramInfo);
     }
 
     public void compileDelegatesHolders() throws IOException, ClassNotFoundException {
@@ -152,6 +164,8 @@ public class ActionPropertyDebugger {
         }
 
         Class<?> delegatesHolderClass = delegatesHolderClasses.get(debugInfo.moduleName);
+        if (delegatesHolderClass == null)
+            return action.executeImpl(context);
 
         try {
             Method method = delegatesHolderClass.getMethod(debugInfo.getMethodName(), ActionProperty.class, ExecutionContext.class);
@@ -176,6 +190,8 @@ public class ActionPropertyDebugger {
         return method.invoke(clazz, action, context);
     }
 
+    public static ThreadLocal<Boolean> watchHack = new ThreadLocal<Boolean>();
+        
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
     private Object eval(ActionProperty action, ExecutionContext context, String require, String expression)
         throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
@@ -205,22 +221,52 @@ public class ActionPropertyDebugger {
             }
 
             paramString += param;
-            
-            //todo: ? непонятно, что делать, если clazz==null, но он должен быть примитивным классом
-            expression += " IF " + param + " IS " + (clazz != null ? clazz : "Object");
         }
 
-        String script = "evalStub(" + paramString + ") = " + expression + ";" ;
+        String script = "evalStub(" + paramString + ") = ACTION FOR value == " + expression + " DO watch() ELSE watch();";
 
+        watchHack.set(false);
+        
         ScriptingLogicsModule module = EvalUtils.evaluate(context.getBL(), require, script);
+
+        Boolean forExHack = watchHack.get();
+        watchHack.set(null);
 
         String evalPropName = module.getName() + "." + "evalStub";
 
-        LCP<?> evalProp = module.findProperty(evalPropName);
+        LAP<PropertyInterface> evalProp = (LAP<PropertyInterface>) module.findAction(evalPropName);
 
         ObjectValue values[] = getParamValuesFromContextStack(context, params);
 
-        return evalProp.read(context.getSession(), values);
+        ExecutionContext<PropertyInterface> watchContext = new ExecutionContext<PropertyInterface>(MapFact.<PropertyInterface, ObjectValue>EMPTY(), context.getEnv());
+        final MOrderExclSet<ImMap<String, ObjectValue>> mResult = SetFact.mOrderExclSet();
+        final ImSet<String> externalParamNames = SetFact.toExclSet(params);
+        watchContext.setWatcher(new Processor<ImMap<String, ObjectValue>>() {
+            public void proceed(ImMap<String, ObjectValue> value) {
+                mResult.exclAdd(value.remove(externalParamNames));
+            }
+        });
+
+        evalProp.execute(watchContext, values);
+
+        ImOrderSet<ImMap<String, ObjectValue>> result = mResult.immutableOrder();
+        assert result.size() >= 1;
+        if(result.size() == 1) {
+            ImMap<String, ObjectValue> value = result.single();
+            if(value.isEmpty()) { // непонятно как отличить это нет записей или null
+                if(forExHack != null && forExHack)
+                    return new ArrayList();
+                else
+                    return null;
+            }                
+            if(value.size() == 1)
+                return value.singleValue();
+        }
+        return result.mapOrderSetValues(new GetValue<Map<String, ObjectValue>, ImMap<String,ObjectValue>>() {
+            public Map<String, ObjectValue> getMapValue(ImMap<String, ObjectValue> value) {
+                return value.toJavaMap();
+            }
+        }).toJavaList();
     }
 
     private ObjectValue[] getParamValuesFromContextStack(ExecutionContext context, String[] params) {

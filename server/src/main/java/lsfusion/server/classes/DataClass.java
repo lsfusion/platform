@@ -289,7 +289,11 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     public String getCanonicalName() {
         return getSID();
     }
-    
+
+    public String getParsedName() {
+        return getCanonicalName();
+    }
+
     public boolean fixedSize() {
         return true;
     }
