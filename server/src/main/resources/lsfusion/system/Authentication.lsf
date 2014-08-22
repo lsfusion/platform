@@ -59,6 +59,8 @@ generateLoginPassword 'Сгенерировать логин и пароль' = 
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
 serverLDAP 'Сервер' = DATA VARSTRING[100] ();
 portLDAP 'Порт' = DATA INTEGER ();
+baseDNLDAP 'Base DN' = DATA VARSTRING[100] ();
+userDNSuffixLDAP 'Суффикс для User DN' = DATA VARSTRING[100] ();
 
 changeSHA256PasswordCustomUser = ACTION(customUser) {
     REQUEST STRING[30] INPUT;
@@ -95,7 +97,7 @@ FORM customUsers 'Пользователи'
     PROPERTIES(u) forbidChangePasswordCustomUser, forbidEditProfileCustomUser, isLockedCustomUser READONLY,
                   ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL
 
-    PROPERTIES() useLDAP, serverLDAP, portLDAP
+    PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
 
     DIALOG CustomUser OBJECT u
 ;

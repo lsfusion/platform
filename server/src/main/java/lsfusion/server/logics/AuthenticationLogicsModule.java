@@ -42,6 +42,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP useLDAP;
     public LCP serverLDAP;
     public LCP portLDAP;
+    public LCP baseDNLDAP;
+    public LCP userDNSuffixLDAP;
 
     public LAP generateLoginPassword;
 
@@ -93,6 +95,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         useLDAP = findProperty("useLDAP");
         serverLDAP = findProperty("serverLDAP");
         portLDAP =  findProperty("portLDAP");
+        baseDNLDAP =  findProperty("baseDNLDAP");
+        userDNSuffixLDAP =  findProperty("userDNSuffixLDAP");
 
         generateLoginPassword = findAction("generateLoginPassword");
 

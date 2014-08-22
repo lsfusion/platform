@@ -60,6 +60,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     private AuthenticationLogicsModule authenticationLM;
     private SecurityLogicsModule securityLM;
     private ReflectionLogicsModule reflectionLM;
+    private ContactLogicsModule contactLM;
 
     public SecurityManager() {
         super(SECURITYMANAGER_ORDER);
@@ -93,6 +94,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         this.authenticationLM = businessLogics.authenticationLM;
         this.securityLM = businessLogics.securityLM;
         this.reflectionLM = businessLogics.reflectionLM;
+        this.contactLM = businessLogics.contactLM;
 
         try {
             defaultPolicy = new SecurityPolicy();
@@ -321,15 +323,17 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         if (useLDAP) {
             String server = (String) businessLogics.authenticationLM.serverLDAP.read(session);
             Integer port = (Integer) businessLogics.authenticationLM.portLDAP.read(session);
+            String baseDN = (String) businessLogics.authenticationLM.baseDNLDAP.read(session);
+            String userDNSuffix = (String) businessLogics.authenticationLM.userDNSuffixLDAP.read(session);
 
             try {
-                LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port).authenticate(login, password);
+                LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(login, password);
                 if (ldapParameters.isConnected()) {
                     needAuthentication = false;
                     if (user == null) {
                         user = addUser(login, password, session);
                     }
-                    setMainRoleCustomUser(user, ldapParameters.getGroupName(), session);
+                    setUserParameters(user, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupName(), session);
                 } else {
                     throw new LoginException();
                 }
@@ -641,11 +645,21 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         }
     }
 
-    public void setMainRoleCustomUser(User user, String userRoleSID, DataSession session) {
+    public void setUserParameters(User user, String firstName, String lastName, String email, String userRoleSID, DataSession session) {
         try {
 
+            DataObject customUser = new DataObject(user.ID, authenticationLM.customUser);
+
+            if (firstName != null)
+                contactLM.firstNameContact.change(firstName, session, (DataObject) customUser);
+
+            if (lastName != null)
+                contactLM.lastNameContact.change(lastName, session, (DataObject) customUser);
+            
+            if (email != null)
+                contactLM.emailContact.change(email, session, (DataObject) customUser);
+
             if (userRoleSID != null) {
-                DataObject customUser = new DataObject(user.ID, authenticationLM.customUser);
                 ObjectValue userRole = securityLM.userRoleSID.readClasses(session, new DataObject(userRoleSID));
 
                 if (userRole instanceof NullValue) {
