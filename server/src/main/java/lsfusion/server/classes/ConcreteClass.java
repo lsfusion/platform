@@ -8,4 +8,5 @@ public interface ConcreteClass extends RemoteClass, AndClassSet, GlobalObject {
     // у всех одинаковая реализация - проблема множественного наследования
     boolean inSet(AndClassSet set);
 
+    String getShortName();
 }

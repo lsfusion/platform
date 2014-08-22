@@ -7,10 +7,13 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
@@ -220,7 +223,6 @@ public class ActionPropertyDebugger {
         String[] classes = paramWithClasses[1];
         
         String paramString = "";
-        expression = "(" + expression + ")";
         for (int i = 0; i < params.length; i++) {
             String param = params[i];
             String clazz = classes[i];
@@ -235,8 +237,11 @@ public class ActionPropertyDebugger {
 
             paramString += param;
         }
-
-        String script = "evalStub(" + paramString + ") = ACTION FOR value == " + expression + " DO watch() ELSE watch();";
+        
+        final String valueName = "sfdjdfkljgfk";
+        if(!expression.contains("ORDER")) // жестковато конечно пока, но будет работать
+            expression = "(" + expression + ")";
+        String script = "evalStub(" + paramString + ") = ACTION FOR " + valueName + " == " + expression + " DO watch() ELSE watch();";
 
         watchHack.set(false);
         
@@ -275,13 +280,25 @@ public class ActionPropertyDebugger {
             if(value.size() == 1)
                 return value.singleValue();
         }
-        return result.mapOrderSetValues(new GetValue<Map<String, ObjectValue>, ImMap<String,ObjectValue>>() {
-            public Map<String, ObjectValue> getMapValue(ImMap<String, ObjectValue> value) {
-                return value.toJavaMap();
+        return result.mapOrderSetValues(new GetValue<ActionWatchEntry, ImMap<String,ObjectValue>>() {
+            public ActionWatchEntry getMapValue(ImMap<String, ObjectValue> value) {
+                return getWatchEntry(value, valueName);
             }
         }).toJavaList();
     }
 
+    private static ActionWatchEntry getWatchEntry(ImMap<String, ObjectValue> row, String valueName) {
+        ObjectValue value = row.get(valueName);
+        if(value instanceof DataObject && ((DataObject)value).objectClass instanceof LogicalClass) {
+            value = null;
+        }
+        return new ActionWatchEntry(row.remove(valueName).toOrderMap().mapOrderSetValues(new GetKeyValue<ActionWatchEntry.Param, String, ObjectValue>() {
+            public ActionWatchEntry.Param getMapValue(String key, ObjectValue value) {
+                return new ActionWatchEntry.Param(key, value);
+            }
+        }).toJavaList(), value);
+    }
+    
     private ObjectValue[] getParamValuesFromContextStack(ExecutionContext context, String[] params) {
         ObjectValue[] values = new ObjectValue[params.length];
 

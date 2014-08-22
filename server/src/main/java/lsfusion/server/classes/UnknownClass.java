@@ -93,4 +93,9 @@ public class UnknownClass extends ImmutableObject implements FormulaClass, Concr
     public ResolveClassSet toResolve() {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public String getShortName() {
+        return toString();
+    }
 }

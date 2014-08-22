@@ -17,8 +17,6 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
-import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.Union;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
@@ -2561,7 +2559,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, int line, int offset) throws ScriptingErrorLog.SemanticErrorException {
+    public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, int line, int offset, boolean modifyContext) throws ScriptingErrorLog.SemanticErrorException {
         if (debugger.isEnabled()) {
 
             checkActionProperty(lpWithParams.property);
@@ -2573,8 +2571,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 //            if (property instanceof ListActionProperty) {
 //                return;
 //            }
-            ActionDelegationType delegationType = ActionDelegationType.of(property);
-            debugger.addDelegate(property, getName(), line, offset, delegationType);
+            ActionDelegationType delegationType = ActionDelegationType.of(property, modifyContext);
+            if(delegationType != null)
+                debugger.addDelegate(property, getName(), line, offset, delegationType);
         }
     }
 

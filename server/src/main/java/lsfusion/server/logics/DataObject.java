@@ -246,4 +246,14 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public ParseInterface getParse(Field field, SQLSyntax syntax) {
         return new TypeObject(this, field, syntax);
     }
+
+    @Override
+    public String getShortName() {
+        String result = object.toString();
+        
+        String shortName = objectClass.getShortName();
+        if(!shortName.isEmpty())
+            result += "-" + shortName;
+        return result;
+    }
 }

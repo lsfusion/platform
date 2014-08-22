@@ -127,4 +127,9 @@ public class ConcatenateClassSet implements ConcreteClass, ValueClassSet  { // Ð
             types[i] = classes[i].getValueClassSet();
         return new ConcatenateClassSet(types);
     }
+
+    @Override
+    public String getShortName() {
+        return toString();
+    }
 }

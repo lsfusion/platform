@@ -297,4 +297,9 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     public boolean fixedSize() {
         return true;
     }
+
+    @Override
+    public String getShortName() {
+        return "";
+    }
 }

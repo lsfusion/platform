@@ -8,13 +8,16 @@ import lsfusion.server.logics.scripted.ScriptingActionProperty;
 public enum ActionDelegationType {
     BEFORE_DELEGATE, IN_DELEGATE, AFTER_DELEGATE;
 
-    public static ActionDelegationType of(ActionProperty property) {
+    public static ActionDelegationType of(ActionProperty property, boolean modifyContext) {
         if (property instanceof JoinActionProperty || property instanceof ScriptingActionProperty) {
             return IN_DELEGATE;
         } else if (property instanceof ListActionProperty) {
-            return BEFORE_DELEGATE;
+            if(modifyContext)
+                return BEFORE_DELEGATE;
+            else
+                return null;
         } else {
-            return BEFORE_DELEGATE;
+            return AFTER_DELEGATE;
         }
     }
 }

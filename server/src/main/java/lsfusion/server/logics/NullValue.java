@@ -131,4 +131,14 @@ public class NullValue extends ObjectValue<NullValue> {
     public ParseInterface getParse(Field field, SQLSyntax syntax) {
         return new Parse(field.type);
     }
+
+    @Override
+    public String toString() {
+        return "null";
+    }
+
+    @Override
+    public String getShortName() {
+        return toString();
+    }
 }

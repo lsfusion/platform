@@ -302,4 +302,9 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     public ResolveClassSet toResolve() {
         return new ResolveOrObjectClassSet(ResolveUpClassSet.FALSE, SetFact.singleton(this));
     }
+
+    @Override
+    public String getShortName() {
+        return getCaption();
+    }
 }

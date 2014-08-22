@@ -90,4 +90,6 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     public abstract <K> ClassWhere<K> getClassWhere(K key);
     
     public abstract ParseInterface getParse(Field field, SQLSyntax syntax);
+
+    public abstract String getShortName();
 }
