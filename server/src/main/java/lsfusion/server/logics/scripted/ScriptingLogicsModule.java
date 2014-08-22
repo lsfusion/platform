@@ -35,6 +35,7 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.window.*;
 import lsfusion.server.logics.*;
+import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -2562,18 +2563,18 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, int line, int offset) throws ScriptingErrorLog.SemanticErrorException {
         if (debugger.isEnabled()) {
-            
+
             checkActionProperty(lpWithParams.property);
 
             //noinspection unchecked
             LAP<PropertyInterface> lAction = (LAP<PropertyInterface>) lpWithParams.property;
-            
+
             ActionProperty property = (ActionProperty) lAction.property;
-            if (property instanceof ListActionProperty) {
-                return;
-            }
-            boolean delegateExecute = property instanceof JoinActionProperty;
-            debugger.addDelegate(property, getName(), line, offset, delegateExecute);
+//            if (property instanceof ListActionProperty) {
+//                return;
+//            }
+            ActionDelegationType delegationType = ActionDelegationType.of(property);
+            debugger.addDelegate(property, getName(), line, offset, delegationType);
         }
     }
 

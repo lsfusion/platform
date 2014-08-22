@@ -10,14 +10,14 @@ public class ActionDebugInfo {
     public final String moduleName;
     public final int line;
     public final int offset;
-    public final boolean delegateExecute;
+    public final ActionDelegationType delegationType;
 
-    public ActionDebugInfo(String moduleName, int line, int offset, boolean delegateExecute) {
+    public ActionDebugInfo(String moduleName, int line, int offset, ActionDelegationType delegationType) {
         
         this.moduleName = moduleName;
         this.line = line;
         this.offset = offset;
-        this.delegateExecute = delegateExecute;
+        this.delegationType = delegationType;
     }
 
     public String getMethodName() {

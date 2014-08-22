@@ -40,6 +40,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static lsfusion.server.logics.debug.ActionDelegationType.AFTER_DELEGATE;
+import static lsfusion.server.logics.debug.ActionDelegationType.BEFORE_DELEGATE;
+import static lsfusion.server.logics.debug.ActionDelegationType.IN_DELEGATE;
+
 public class ActionPropertyDebugger {
     public static final String DELEGATES_HOLDER_CLASS_PACKAGE = "lsfusion.server.logics.debug";
     public static final String DELEGATES_HOLDER_CLASS_NAME_PREFIX = "DebugDelegatesHolder_";
@@ -67,8 +71,8 @@ public class ActionPropertyDebugger {
     private ActionPropertyDebugger() {
     } //singleton
 
-    public synchronized <P extends PropertyInterface> void addDelegate(ActionProperty<P> property, String moduleName, int line, int offset, boolean delegateExecute) {
-        ActionDebugInfo debugInfo = new ActionDebugInfo(moduleName, line, offset, delegateExecute);
+    public synchronized <P extends PropertyInterface> void addDelegate(ActionProperty<P> property, String moduleName, int line, int offset, ActionDelegationType delegationType) {
+        ActionDebugInfo debugInfo = new ActionDebugInfo(moduleName, line, offset, delegationType);
 
         property.setDebugInfo(debugInfo);
 
@@ -142,7 +146,7 @@ public class ActionPropertyDebugger {
 
         for (ActionDebugInfo info : infos) {
             String methodName = info.getMethodName();
-            String body = (info.delegateExecute ? "return action.executeImpl(context);" : "return null;");
+            String body = (info.delegationType == IN_DELEGATE ? "return action.executeImpl(context);" : "return null;");
             out.println(
                 "    public static FlowResult " + methodName + "(ActionProperty action, ExecutionContext context) throws SQLException, SQLHandledException {\n" +
                 "        " + body + "\n" +
@@ -169,13 +173,22 @@ public class ActionPropertyDebugger {
 
         try {
             Method method = delegatesHolderClass.getMethod(debugInfo.getMethodName(), ActionProperty.class, ExecutionContext.class);
-//            FlowResult result = (FlowResult) method.invoke(delegatesHolderClass, action, context);
 
-            FlowResult result = (FlowResult) resumeBreakpointDelegate(delegatesHolderClass, method, action, context);
+            FlowResult result = null;
+            if (debugInfo.delegationType == BEFORE_DELEGATE) {
+                result = action.executeImpl(context);
+            }
+
+            FlowResult delegateResult = (FlowResult) resumeBreakpointDelegate(delegatesHolderClass, method, action, context);
+            if (debugInfo.delegationType == IN_DELEGATE) {
+                return delegateResult;
+            }
             
-            return debugInfo.delegateExecute
-                    ? result
-                    : action.executeImpl(context);
+            if (debugInfo.delegationType == AFTER_DELEGATE) {
+                return action.executeImpl(context);
+            }
+            
+            return result;
 
         } catch (InvocationTargetException e) {
             throw ExceptionUtils.propagate(e.getCause(), SQLException.class, SQLHandledException.class);
