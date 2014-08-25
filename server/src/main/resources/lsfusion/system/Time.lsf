@@ -71,7 +71,22 @@ FORM months
 
 TABLE month (Month);
 
-numberMonth 'Номер месяца' = PARTITION SUM 1 IF m IS Month ORDER m PERSISTENT;
+numberMonth 'Номер месяца' = DATA INTEGER (Month);
+onStarted() += ACTION (){
+    numberMonth(d) <- 1 WHERE d == Month.january; 
+    numberMonth(d) <- 2 WHERE d == Month.february; 
+    numberMonth(d) <- 3 WHERE d == Month.march; 
+    numberMonth(d) <- 4 WHERE d == Month.april; 
+    numberMonth(d) <- 5 WHERE d == Month.may; 
+    numberMonth(d) <- 6 WHERE d == Month.june; 
+    numberMonth(d) <- 7 WHERE d == Month.july; 
+    numberMonth(d) <- 8 WHERE d == Month.august; 
+    numberMonth(d) <- 9 WHERE d == Month.september; 
+    numberMonth(d) <- 10 WHERE d == Month.october; 
+    numberMonth(d) <- 11 WHERE d == Month.november; 
+    numberMonth(d) <- 12 WHERE d == Month.december; 
+}
+
 monthNumber 'Месяц (ИД)' (month) = GROUP AGGR month BY numberMonth(month);
 
 extractMonthNumber = [= FORMULA INTEGER PG '(extract(month from ($1)))' MS 'DATEPART(mm, $1)'](date AS DATE);
