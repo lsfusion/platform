@@ -326,7 +326,7 @@ META defineDocumentInterfaceHeaderPosted (objectClass)
 END
 
 META defineDocumentDetailPosted (object, detailClass)
-    isPosted##detailClass 'Проведен' (d) = isPosted###object(object##detailClass(d));
+    isPosted##detailClass 'Проведен' (d) = isPosted###object(object##detailClass(d)) PERSISTENT;
     isNotPosted##detailClass 'Не проведен' (d) = d IS detailClass AND NOT isPosted##detailClass(d);
 END
 
