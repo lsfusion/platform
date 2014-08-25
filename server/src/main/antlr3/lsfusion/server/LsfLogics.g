@@ -1995,7 +1995,7 @@ addObjectActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPW
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedAddObjProp(context, $cid.sid, toPropUsage, toPropMapping, condition);
+		$property = self.addScriptedAddObjProp(context, $cid.sid, toPropUsage, toPropMapping, condition, newContext);
 	}
 }
 	:	'ADDOBJ' cid=classId

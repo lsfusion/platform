@@ -1455,7 +1455,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, resultInterfaces);
     }
 
-    public LPWithParams addScriptedAddObjProp(List<TypedParameter> context, String className, PropertyUsage toPropUsage, List<LPWithParams> toPropMapping, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedAddObjProp(List<TypedParameter> context, String className, PropertyUsage toPropUsage, List<LPWithParams> toPropMapping, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedAddObjProp(" + className + ", " + toPropUsage + ", " + toPropMapping + ", " + whereProperty + ");");
         ValueClass cls = findClass(className);
         checkAddActionsClass(cls);
@@ -1463,7 +1463,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LPWithParams toProperty = null;
         if (toPropUsage != null && toPropMapping != null) {
-            toProperty = addScriptedJProp(findJoinMainProp(toPropUsage, toPropMapping, context), toPropMapping);
+            toProperty = addScriptedJProp(findJoinMainProp(toPropUsage, toPropMapping, newContext), toPropMapping);
         }
 
         List<Integer> resultInterfaces = getResultInterfaces(context.size(), toProperty, whereProperty);
