@@ -2,6 +2,7 @@ package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.HSet;
@@ -637,7 +638,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (ImMap<Object, Object> values : result.valueIt()) {
             LCP<?> prop = (LCP) findProperty(values.get("CNProperty").toString().trim());
             prop.property.setNotNull = true;
-            LM.setNotNull(prop, PropertyFollows.RESOLVE_NOTHING);
+            LM.setNotNull(prop, ListFact.<PropertyFollowsDebug>EMPTY());
         }
     }
 

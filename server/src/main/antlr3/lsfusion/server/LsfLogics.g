@@ -44,6 +44,9 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.CaseUnionProperty;
 	import lsfusion.server.logics.property.IncrementType;
 	import lsfusion.server.data.expr.formula.SQLSyntaxType;
+	import lsfusion.server.logics.property.BooleanDebug;
+	import lsfusion.server.logics.property.PropertyFollowsDebug;
+	import lsfusion.server.logics.debug.ActionDebugInfo;
 	
 	import javax.mail.Message;
 
@@ -1563,12 +1566,13 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 	boolean isPersistent = false;
 	boolean isComplex = false;
 	Boolean isLoggable = null;
-	Boolean notNullResolve = null;
+	BooleanDebug notNull = null;
+	BooleanDebug notNullResolve = null;
 	Event notNullEvent = null;
 }
 @after {
 	if (inPropParseState() && property != null) { // not native
-		self.addSettingsToProperty(property, propertyName, caption, context, signature, groupName, isPersistent, isComplex, table, notNullResolve, notNullEvent);	
+		self.addSettingsToProperty(property, propertyName, caption, context, signature, groupName, isPersistent, isComplex, table, notNull, notNullResolve, notNullEvent);	
 		self.makeLoggable(property, isLoggable);
 	}
 }
@@ -1592,7 +1596,11 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 		|	echoSymbolsSetting [property]
 		|	indexSetting [property]
 		|	aggPropSetting [property]
-		|	s=notNullSetting { notNullResolve = $s.toResolve; notNullEvent = $s.event; }
+		|	s=notNullSetting { 
+		    notNull = new BooleanDebug($s.debugInfo);
+		    notNullResolve = $s.toResolve; 
+		    notNullEvent = $s.event; 
+        }
 		|	onEditEventSetting [property, context]
 		|	eventIdSetting [property]
 		)*
@@ -1761,9 +1769,21 @@ aggPropSetting [LP property]
 	:	'AGGPROP'
 	;
 
-notNullSetting returns [boolean toResolve = false, Event event]
-	:	'NOT' 'NULL' ('DELETE' { $toResolve = true; })? et=baseEvent { $event = $et.event; }
-	;
+notNullSetting returns [ActionDebugInfo debugInfo, BooleanDebug toResolve = null, Event event]
+@init {
+    $debugInfo = self.getEventStackDebugInfo();
+}
+	:	'NOT' 'NULL' 
+	    (dt = notNullDeleteSetting { $toResolve = new BooleanDebug($dt.debugInfo); })? 
+	    et=baseEvent { $event = $et.event; }
+;
+
+notNullDeleteSetting returns [ActionDebugInfo debugInfo]
+@init {
+    $debugInfo = self.getEventStackDebugInfo();
+}
+    :   'DELETE'
+;
 
 onEditEventSetting [LP property, List<TypedParameter> context]
 @init {
@@ -2454,10 +2474,11 @@ constraintStatement
 @init {
 	boolean checked = false;
 	List<PropertyUsage> propUsages = null;
+	ActionDebugInfo debugInfo = self.getEventStackDebugInfo();
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedConstraint($expr.property.property, $et.event, checked, propUsages, $message.val);
+		self.addScriptedConstraint($expr.property.property, $et.event, checked, propUsages, $message.val, debugInfo);
 	}
 }
 	:	'CONSTRAINT'
@@ -2490,34 +2511,54 @@ followsStatement
 	List<TypedParameter> context;
 	PropertyUsage mainProp;
 	List<LPWithParams> props = new ArrayList<LPWithParams>();
-	List<Integer> options = new ArrayList<Integer>();
+	List<List<PropertyFollowsDebug>> options = new ArrayList<List<PropertyFollowsDebug>>();
 	List<Event> events = new ArrayList<Event>();
 	Event event = Event.APPLY;
+	List<ActionDebugInfo> debugInfos = new ArrayList<ActionDebugInfo>(); 
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedFollows(mainProp, context, options, props, events);
+		self.addScriptedFollows(mainProp, context, options, props, events, debugInfos);
 	}
 }
 	:	prop=mappedProperty { mainProp = $prop.propUsage; context = $prop.mapping; }
 		'=>'
-		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType et=baseEvent { event = $et.event; })?
-		{
-			props.add($firstExpr.property); 
-			options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
-			events.add(event);
-		}
+		fcl=followsClause[context] {
+            props.add($fcl.prop); 
+            options.add($fcl.pfollows);
+            events.add($fcl.event);
+            debugInfos.add($fcl.debug);
+		}		
 		(','
-			{	event = Event.APPLY;	}
-			nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType et=baseEvent { event = $et.event; })?
-			{	
-				props.add($nextExpr.property); 
-				options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
-				events.add(event);
+    		nfcl=followsClause[context] {
+                props.add($nfcl.prop); 
+                options.add($nfcl.pfollows);
+                events.add($nfcl.event);
+                debugInfos.add($nfcl.debug);
 			}
 		)*
 		';'
-	;
+;
+	
+followsClause[List<TypedParameter> context] returns [LPWithParams prop, Event event = Event.APPLY, ActionDebugInfo debug, List<PropertyFollowsDebug> pfollows = new ArrayList<PropertyFollowsDebug>()] 
+@init {
+    $debug = self.getEventStackDebugInfo();
+}
+    :   expr = propertyExpression[context, false] 
+        ('RESOLVE' (ct = followsClauseType {$pfollows.add($ct.type); } )+ 
+                   et=baseEvent { $event = $et.event; } 
+        )? { $prop = $expr.property; }
+;
+
+followsClauseType returns [PropertyFollowsDebug type]
+@init {
+	ActionDebugInfo debugInfo = self.getEventStackDebugInfo(); 
+}
+    :	lit=LOGICAL_LITERAL	
+        { 
+            $type = new PropertyFollowsDebug($lit.text.equals("TRUE"), debugInfo); 
+        }
+;
 
 followsResolveType returns [Integer type]
 	:	lit=LOGICAL_LITERAL	{ $type = $lit.text.equals("TRUE") ? PropertyFollows.RESOLVE_TRUE : PropertyFollows.RESOLVE_FALSE; }
@@ -2557,10 +2598,12 @@ eventStatement
 	List<TypedParameter> context = new ArrayList<TypedParameter>();
 	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
 	boolean descending = false;
+	
+    ActionDebugInfo debug = self.getEventStackDebugInfo(); 
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedEvent($whenExpr.property, $action.property, orderProps, descending, $et.event, $in.noInline, $in.forceInline);
+		self.addScriptedEvent($whenExpr.property, $action.property, orderProps, descending, $et.event, $in.noInline, $in.forceInline, debug);
 	} 
 }
 	:	'WHEN'

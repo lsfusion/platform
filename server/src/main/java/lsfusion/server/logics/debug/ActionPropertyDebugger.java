@@ -70,9 +70,7 @@ public class ActionPropertyDebugger {
     private ActionPropertyDebugger() {
     } //singleton
 
-    public synchronized <P extends PropertyInterface> void addDelegate(ActionProperty<P> property, String moduleName, int line, int offset, ActionDelegationType delegationType) {
-        ActionDebugInfo debugInfo = new ActionDebugInfo(moduleName, line, offset, delegationType);
-
+    public synchronized <P extends PropertyInterface> void addDelegate(ActionProperty<P> property, ActionDebugInfo debugInfo) {
         property.setDebugInfo(debugInfo);
 
         delegates.put(debugInfo, property);

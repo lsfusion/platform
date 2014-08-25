@@ -3,6 +3,7 @@ package lsfusion.server.data.expr.formula;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.expr.formula.conversion.ConversionSource;
 import lsfusion.server.data.expr.formula.conversion.TypeConversion;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 
 public abstract class ArithmeticFormulaImpl extends AbstractFormulaImpl implements FormulaJoinImpl {
@@ -13,12 +14,19 @@ public abstract class ArithmeticFormulaImpl extends AbstractFormulaImpl implemen
         this.conversionSource = conversionSource;
     }
 
+    
+    private DataClass safeDataCast(Type type) {
+        if(type instanceof ObjectType)
+            return ObjectType.idClass;
+        return (DataClass)type;
+    }
+    
     @Override
     public String getSource(ExprSource source) {
         assert source.getExprCount() == 2;
 
-        DataClass type1 = (DataClass) source.getType(0);
-        DataClass type2 = (DataClass) source.getType(1);
+        DataClass type1 = safeDataCast(source.getType(0));
+        DataClass type2 = safeDataCast(source.getType(1));
 
         String src1 = source.getSource(0);
         String src2 = source.getSource(1);

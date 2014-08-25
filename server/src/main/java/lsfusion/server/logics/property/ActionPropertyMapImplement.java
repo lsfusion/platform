@@ -7,6 +7,7 @@ import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.debug.ActionDebugInfo;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
@@ -33,8 +34,8 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
         return new ActionPropertyMapImplement<P, K>(property, mapping.join(remap));
     }
 
-    public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, CalcPropertyMapImplement<L, T> where, Event event, boolean resolve) {
-        lm.addEventAction(property, where.map(mapping.reverse()), MapFact.<CalcPropertyInterfaceImplement<P>, Boolean>EMPTYORDER(), false, event, resolve);
+    public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, CalcPropertyMapImplement<L, T> where, Event event, boolean resolve, ActionDebugInfo debugInfo) {
+        lm.addEventAction(property, where.map(mapping.reverse()), MapFact.<CalcPropertyInterfaceImplement<P>, Boolean>EMPTYORDER(), false, event, resolve, debugInfo);
     }
 
     public ActionPropertyObjectEntity<P> mapObjects(ImMap<T, ? extends PropertyObjectInterfaceEntity> mapObjects) {

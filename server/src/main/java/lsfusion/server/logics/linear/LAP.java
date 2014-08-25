@@ -54,7 +54,7 @@ public class LAP<T extends PropertyInterface> extends LP<T, ActionProperty<T>> {
     }
 
     public <P extends PropertyInterface> void setEventAction(LogicsModule lm, IncrementType type, Event event, LCP<P> lp, Integer... mapping) {
-        lm.addEventAction(property, new CalcPropertyMapImplement<P, T>(lp.property.getChanged(type, event.getScope()), lp.getRevMap(listInterfaces, mapping)), MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, event, false);
+        lm.addEventAction(property, new CalcPropertyMapImplement<P, T>(lp.property.getChanged(type, event.getScope()), lp.getRevMap(listInterfaces, mapping)), MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, event, false, null);
     }
 
     public ValueClass[] getInterfaceClasses() { // obsolete

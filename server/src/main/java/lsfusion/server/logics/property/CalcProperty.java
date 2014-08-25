@@ -940,7 +940,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, CalcPropertyInterfaceImplement<T> valueImplement, CalcPropertyMapImplement<W, T> whereImplement) {
         if(action && !Settings.get().isDisableWhenCalcDo()) {
             ActionPropertyMapImplement<?, T> setAction = DerivedProperty.createSetAction(interfaces, getImplement(), valueImplement);
-            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, Event.SESSION, null, true, false);
+            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.<CalcPropertyInterfaceImplement<T>, Boolean>EMPTYORDER(), false, Event.SESSION, null, true, false, null);
             return;
         }
 
