@@ -324,6 +324,7 @@ public class LoginDialog extends JDialog {
     private void onCancel() {
         result = null;
         dispose();
+        Main.shutdown();
     }
 
     public void setWarningMsg(String msg) {

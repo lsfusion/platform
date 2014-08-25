@@ -6,8 +6,7 @@ import lsfusion.base.SystemUtils;
 import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.ClientExternalScreen;
-import lsfusion.client.logics.classes.ClientObjectClass;
-import lsfusion.client.logics.classes.ClientTypeSerializer;
+import lsfusion.client.form.editor.rich.RichEditorPane;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.client.rmi.RMITimeoutSocketFactory;
@@ -17,7 +16,6 @@ import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import net.atlanticbb.tantlinger.shef.HTMLEditorPane;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -26,8 +24,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -42,9 +38,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import static lsfusion.base.DateConverter.createDateEditFormat;
-import static lsfusion.base.DateConverter.createDateTimeEditFormat;
-import static lsfusion.base.DateConverter.createTimeEditFormat;
+import static lsfusion.base.DateConverter.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.StartupProperties.*;
 import static lsfusion.interop.remote.RMIUtils.initRMI;
@@ -280,7 +274,7 @@ public class Main {
         
         // при первом использовании rich-editora во время редактирования, его создание тормозит...
         // возможно, где-то внутри кэшируются какие-то lazy-ресурсы... Чтобы это не напрягало на форме, создаём компонент вхолостую здесь
-        new HTMLEditorPane();
+        new RichEditorPane();
     }
 
     public static void clientExceptionLog(String title, Throwable t) throws RemoteException {
