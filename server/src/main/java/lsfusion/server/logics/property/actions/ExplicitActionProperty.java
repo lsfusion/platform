@@ -22,6 +22,11 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
         super(caption, IsClassProperty.getInterfaces(classes));
     }
 
+    //этот метод нужен для дебаггера, чтобы была общая точка для дебаггинга всех executeCustom
+    private void commonExecuteCustomDelegate(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        executeCustom(context);
+    }
+    
     protected abstract void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;
 
     protected boolean allowNulls() {
@@ -35,7 +40,7 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
             proceedNullException();
         else
             if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(dataKeys))) // если подходит по классам выполнем
-                executeCustom(context);
+                commonExecuteCustomDelegate(context);
         return FlowResult.FINISH;
     }
 

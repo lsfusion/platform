@@ -178,7 +178,7 @@ public class ActionPropertyDebugger {
                 result = action.executeImpl(context);
             }
 
-            FlowResult delegateResult = (FlowResult) resumeBreakpointDelegate(delegatesHolderClass, method, action, context);
+            FlowResult delegateResult = (FlowResult) commonExecuteDelegate(delegatesHolderClass, method, action, context);
             if (debugInfo.delegationType == IN_DELEGATE) {
                 return delegateResult;
             }
@@ -198,10 +198,10 @@ public class ActionPropertyDebugger {
         }
     }
     
-    private Object resumeBreakpointDelegate(Class<?> clazz, Method method, ActionProperty action, ExecutionContext context) throws InvocationTargetException, IllegalAccessException {
+    private Object commonExecuteDelegate(Class<?> clazz, Method method, ActionProperty action, ExecutionContext context) throws InvocationTargetException, IllegalAccessException {
         return method.invoke(clazz, action, context);
     }
-
+    
     public static ThreadLocal<Boolean> watchHack = new ThreadLocal<Boolean>();
         
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
