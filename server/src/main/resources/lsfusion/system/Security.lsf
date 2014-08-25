@@ -14,10 +14,19 @@ nameUserRole 'Наименование' = DATA VARISTRING[100](UserRole);
 
 sidUserRole 'Идентификатор' = DATA VARSTRING[30] (UserRole);
 userRoleSID (sid) = GROUP AGGR userRole BY sidUserRole (userRole) WHERE userRole IS UserRole;
+
 mainRoleUser = DATA UserRole (User);
 mainRoleCustomUser (user) = mainRoleUser (user) IF user IS CustomUser;
 sidMainRoleCustomUser 'Идентификатор главной роли' (user) = sidUserRole (mainRoleCustomUser(user));
 nameMainRoleUser 'Главная роль' (user) = nameUserRole (mainRoleUser(user));
+
+defaultMainRole 'Роль по умолчанию' = DATA UserRole ();
+nameDefaultMainRole 'Роль по умолчанию' = nameUserRole(defaultMainRole());
+EXTEND FORM customUsers
+    PROPERTIES() nameDefaultMainRole
+;
+mainRoleUser(u) <- defaultMainRole() WHEN SET(u IS CustomUser);
+
 inUserRole 'Вкл.' = DATA BOOLEAN (CustomUser, UserRole);
 
 inMainRoleCustomUser(customUser, userRole) = mainRoleCustomUser(customUser) == userRole OR inUserRole(customUser, userRole);

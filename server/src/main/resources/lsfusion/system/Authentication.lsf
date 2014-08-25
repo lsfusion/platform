@@ -95,7 +95,7 @@ FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY nameContact, loginCustomUser, emailContact
     PROPERTIES(u) forbidChangePasswordCustomUser, forbidEditProfileCustomUser, isLockedCustomUser READONLY,
-                  ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL
+                  ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
 
