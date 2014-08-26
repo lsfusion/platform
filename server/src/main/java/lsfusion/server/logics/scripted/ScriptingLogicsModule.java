@@ -2587,8 +2587,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 //                return;
 //            }
             ActionDelegationType delegationType = ActionDelegationType.of(property, modifyContext);
-            if(delegationType != null)
-                debugger.addDelegate(property, new ActionDebugInfo(getName(), line, offset, delegationType));
+            if(delegationType != null) {
+                ScriptParser parser = getParser();
+                debugger.addDelegate(property, delegationType.getDebugInfo(getName(), line, offset, parser.getGlobalCurrentLineNumber(true), parser.getGlobalPositionInLine(true)));
+            }
         }
     }
 

@@ -168,32 +168,46 @@ public class ScriptParser {
 
     //0-based
     public int getGlobalCurrentLineNumber() {
-        return globalExpandedLines + globalExpansionLine + getCurrentParserLineNumber() - 1;
+        return getGlobalCurrentLineNumber(false);
     }
-
+    public int getGlobalCurrentLineNumber(boolean previous) {
+        return globalExpandedLines + globalExpansionLine + getCurrentParserLineNumber(previous) - 1;
+    }
     public int getGlobalPositionInLine() {
-        return globalExpansionOffset + getCurrentParserPositionInLine();
+        return getGlobalPositionInLine(false);
+    }
+    public int getGlobalPositionInLine(boolean previous) {
+        return globalExpansionOffset + getCurrentParserPositionInLine(previous);
     }
 
     public int getCurrentParserLineNumber() {
-        return getLineNumber(parsers.lastElement().getParser());
+        return getCurrentParserLineNumber(false);
+    }
+    public int getCurrentParserLineNumber(boolean previous) {
+        return getLineNumber(parsers.lastElement().getParser(), previous);
     }
 
     public int getCurrentParserPositionInLine() {
-        return getPositionInLine(parsers.lastElement().getParser());
+        return getCurrentParserPositionInLine(false);
+    }
+    public int getCurrentParserPositionInLine(boolean previous) {
+        return getPositionInLine(parsers.lastElement().getParser(), previous);
     }
 
-    private int getLineNumber(Parser parser) {
-        Token token = getToken(parser);
+    private int getLineNumber(Parser parser, boolean previous) {
+        Token token = getToken(parser, previous);
         return token.getLine();
     }
 
-    private int getPositionInLine(Parser parser) {
-        Token token = getToken(parser);
+    private int getPositionInLine(Parser parser, boolean previous) {
+        Token token = getToken(parser, previous);
         return token.getCharPositionInLine();
     }
 
-    private Token getToken(Parser parser) {
+    private Token getToken(Parser parser, boolean previous) {
+        if(previous)
+            return parser.input.LT(-1);
+            
         Token token = parser.input.LT(1);
         if (token.getType() == Token.EOF) {
             token = parser.input.LT(-1);

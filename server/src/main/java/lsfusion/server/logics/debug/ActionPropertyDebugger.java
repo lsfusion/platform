@@ -7,6 +7,8 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
+import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
@@ -62,6 +64,15 @@ public class ActionPropertyDebugger {
     }
 
     private final Map<ActionDebugInfo, ActionProperty> delegates = new HashMap<ActionDebugInfo, ActionProperty>();
+    
+    private final MAddMap<Pair<String, Integer>, ActionDebugInfo> firstInLineDelegates = MapFact.mAddMap(new SymmAddValue<Pair<String, Integer>, ActionDebugInfo>() {
+        public ActionDebugInfo addValue(Pair<String, Integer> key, ActionDebugInfo prevValue, ActionDebugInfo newValue) {
+            return newValue.offset > prevValue.offset ? prevValue : newValue;
+        }
+    });
+    public boolean isDebugFirstInLine(ActionDebugInfo debugInfo) {
+        return BaseUtils.hashEquals(firstInLineDelegates.get(debugInfo.getModuleLine()), debugInfo);
+    }
 
     //в Java есть ограничение на количество имён в файле (~65000), поэтому нельзя всё впихнуть в один файл
     //приходится разбивать - пока просто для каждого модуля - свой класс
@@ -74,6 +85,8 @@ public class ActionPropertyDebugger {
         property.setDebugInfo(debugInfo);
 
         delegates.put(debugInfo, property);
+
+        firstInLineDelegates.add(debugInfo.getModuleLine(), debugInfo);
     }
 
     public synchronized <P extends PropertyInterface> void addParamInfo(ActionProperty<P> property, Map<String, P> paramsToInterfaces, Map<String, String> paramsToClassFQN) {
@@ -116,6 +129,10 @@ public class ActionPropertyDebugger {
         //убираем ненужные ссылки 
         delegates.clear();
     }
+    
+    private String getMethodName(ActionDebugInfo info) {
+        return info.getMethodName(isDebugFirstInLine(info));
+    }
 
     private String createDelegatesHolderFile(File sourceDir, String moduleName, Collection<ActionDebugInfo> infos) throws IOException, ClassNotFoundException {
         String holderClassName = DELEGATES_HOLDER_CLASS_NAME_PREFIX + moduleName;
@@ -142,7 +159,7 @@ public class ActionPropertyDebugger {
                     "");
 
         for (ActionDebugInfo info : infos) {
-            String methodName = info.getMethodName();
+            String methodName = getMethodName(info);
             String body = (info.delegationType == IN_DELEGATE ? "return action.executeImpl(context);" : "return null;");
             out.println(
                 "    public static FlowResult " + methodName + "(ActionProperty action, ExecutionContext context) throws SQLException, SQLHandledException {\n" +
@@ -169,7 +186,7 @@ public class ActionPropertyDebugger {
             return action.executeImpl(context);
 
         try {
-            Method method = delegatesHolderClass.getMethod(debugInfo.getMethodName(), ActionProperty.class, ExecutionContext.class);
+            Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo), ActionProperty.class, ExecutionContext.class);
 
             FlowResult result = null;
             if (debugInfo.delegationType == BEFORE_DELEGATE) {

@@ -1,5 +1,7 @@
 package lsfusion.server.logics.debug;
 
+import lsfusion.base.Pair;
+
 public class ActionDebugInfo {
     public final String moduleName;
     public final int line;
@@ -13,9 +15,13 @@ public class ActionDebugInfo {
         this.offset = offset;
         this.delegationType = delegationType;
     }
+    
+    public Pair<String, Integer> getModuleLine() {
+        return new Pair<String, Integer>(moduleName, line);
+    }
 
-    public String getMethodName() {
-        return "action_" + line + "_" + offset;
+    public String getMethodName(boolean firstInLine) {
+        return "action_" + line + (firstInLine ? "" : "_" + offset);
     }
 
     @Override
