@@ -5,6 +5,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.UserActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -47,6 +48,11 @@ public abstract class ScriptingActionProperty extends UserActionProperty {
             result[i] = findProperty(names[i]);
         }
         return result;
+    }
+
+    //этот метод нужен для дебаггера, чтобы была общая точка для дебаггинга всех executeCustom
+    public void commonExecuteCustomDelegate(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        executeCustom(context);
     }
 
     protected LAP<?> findAction(String name) throws ScriptingErrorLog.SemanticErrorException {

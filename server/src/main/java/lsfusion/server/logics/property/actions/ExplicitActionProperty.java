@@ -8,6 +8,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
+import lsfusion.server.logics.scripted.ScriptingActionProperty;
 
 import java.sql.SQLException;
 
@@ -22,11 +23,6 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
         super(caption, IsClassProperty.getInterfaces(classes));
     }
 
-    //этот метод нужен для дебаггера, чтобы была общая точка для дебаггинга всех executeCustom
-    private void commonExecuteCustomDelegate(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        executeCustom(context);
-    }
-    
     protected abstract void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException;
 
     protected boolean allowNulls() {
@@ -39,8 +35,12 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
         if(!allowNulls() && dataKeys.size() < keys.size())
             proceedNullException();
         else
-            if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(dataKeys))) // если подходит по классам выполнем
-                commonExecuteCustomDelegate(context);
+            if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(dataKeys))) { // если подходит по классам выполнем
+                if (this instanceof ScriptingActionProperty)
+                    ((ScriptingActionProperty) this).commonExecuteCustomDelegate(context);
+                else
+                    executeCustom(context);
+            }
         return FlowResult.FINISH;
     }
 
