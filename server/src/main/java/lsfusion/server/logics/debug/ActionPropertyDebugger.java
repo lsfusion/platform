@@ -1,5 +1,6 @@
 package lsfusion.server.logics.debug;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -27,22 +28,19 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.log4j.Logger;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
-import java.io.ByteArrayOutputStream;
+import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+import static java.util.Arrays.asList;
 import static lsfusion.server.logics.debug.ActionDelegationType.*;
 
 public class ActionPropertyDebugger {
@@ -105,73 +103,84 @@ public class ActionPropertyDebugger {
             }, delegates.keySet());
 
         File sourceDir = IOUtils.createTempDirectory("lsfusiondebug");
-
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        for (Map.Entry<String, Collection<ActionDebugInfo>> e : groupedActions.entrySet()) {
-            String moduleName = e.getKey();
-
-            //compiling
-            ByteArrayOutputStream errOut = new ByteArrayOutputStream();
-            int status = compiler.run(null, new NullOutputStream(), errOut, "-g", createDelegatesHolderFile(sourceDir, moduleName, e.getValue()));
-            if (status != 0) {
-                throw new IllegalStateException("Compilation of debugger delegate files failed: " + new String(errOut.toByteArray()));
-            }
-        }
-
-        // Load and instantiate compiled class.
-        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{sourceDir.toURI().toURL()});
         
-        for (String moduleName : groupedActions.keySet()) {
-            Class holderClass = Class.forName(DELEGATES_HOLDER_CLASS_FQN_PREFIX + moduleName, true, classLoader);
-            delegatesHolderClasses.put(moduleName, holderClass);
-        }
+        List<InMemoryJavaFileObject> filesToCompile = new ArrayList<InMemoryJavaFileObject>();
+        
+        generateDelegateClasses(groupedActions, filesToCompile);
 
+        compileDelegateClasses(sourceDir.getAbsolutePath(), filesToCompile);
+
+        loadDelegateClasses(groupedActions.keySet(), sourceDir);
+        
         //убираем ненужные ссылки 
         delegates.clear();
     }
-    
-    private String getMethodName(ActionDebugInfo info) {
-        return info.getMethodName(isDebugFirstInLine(info));
+
+    private void generateDelegateClasses(Map<String, Collection<ActionDebugInfo>> groupedActions, List<InMemoryJavaFileObject> filesToCompile) {
+        for (Map.Entry<String, Collection<ActionDebugInfo>> e : groupedActions.entrySet()) {
+            filesToCompile.add(createJavaFileObject(e.getKey(), e.getValue()));
+        }
     }
 
-    private String createDelegatesHolderFile(File sourceDir, String moduleName, Collection<ActionDebugInfo> infos) throws IOException, ClassNotFoundException {
+    private InMemoryJavaFileObject createJavaFileObject(String moduleName, Collection<ActionDebugInfo> infos) {
         String holderClassName = DELEGATES_HOLDER_CLASS_NAME_PREFIX + moduleName;
-        
+
         String holderFQN = DELEGATES_HOLDER_CLASS_FQN_PREFIX + moduleName;
-        
-        String surceFileName = holderFQN.replace('.', '/') + ".java";
-        File sourceFile = new File(sourceDir, surceFileName);
-        
-        sourceFile.getParentFile().mkdirs();
 
-        PrintStream out = new PrintStream(sourceFile, "UTF-8");
-
-        out.println("package " + DELEGATES_HOLDER_CLASS_PACKAGE + ";\n" +
-                    "\n" +
-                    "import lsfusion.server.data.SQLHandledException;\n" +
-                    "import lsfusion.server.logics.property.ActionProperty;\n" +
-                    "import lsfusion.server.logics.property.ExecutionContext;\n" +
-                    "import lsfusion.server.logics.property.actions.flow.FlowResult;\n" +
-                    "\n" +
-                    "import java.sql.SQLException;\n" +
-                    "\n" +
-                    "public class " + holderClassName + " {\n" +
-                    "");
+        String sourceString =
+            "package " + DELEGATES_HOLDER_CLASS_PACKAGE + ";\n" +
+            "\n" +
+            "import lsfusion.server.data.SQLHandledException;\n" +
+            "import lsfusion.server.logics.property.ActionProperty;\n" +
+            "import lsfusion.server.logics.property.ExecutionContext;\n" +
+            "import lsfusion.server.logics.property.actions.flow.FlowResult;\n" +
+            "\n" +
+            "import java.sql.SQLException;\n" +
+            "\n" +
+            "public class " + holderClassName + " {\n";
 
         for (ActionDebugInfo info : infos) {
             String methodName = getMethodName(info);
             String body = (info.delegationType == IN_DELEGATE ? "return action.executeImpl(context);" : "return null;");
-            out.println(
+            sourceString +=
                 "    public static FlowResult " + methodName + "(ActionProperty action, ExecutionContext context) throws SQLException, SQLHandledException {\n" +
                 "        " + body + "\n" +
-                "    }\n"
-            );
+                "    }\n";
         }
+        sourceString += "}";
 
-        out.println("}");
-        out.close();
-        
-        return sourceFile.getAbsolutePath();
+        try {
+            return new InMemoryJavaFileObject(holderFQN, sourceString);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private void compileDelegateClasses(String outputFolder, List<InMemoryJavaFileObject> filesToCompile) {
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+
+        DiagnosticListener diagnostics = new IgnoreDiagnosticListener();
+
+        StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, Locale.ENGLISH, null);
+
+        JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, asList("-g", "-d", outputFolder), null, filesToCompile);
+        if (!task.call()) {
+            throw new IllegalStateException("Compilation of debugger delegate files failed. ");
+        }
+    }
+
+    public void loadDelegateClasses(Set<String> moduleNames, File sourceDir) throws MalformedURLException, ClassNotFoundException {
+        // Load and instantiate compiled class.
+        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{sourceDir.toURI().toURL()});
+
+        for (String moduleName : moduleNames) {
+            Class holderClass = Class.forName(DELEGATES_HOLDER_CLASS_FQN_PREFIX + moduleName, true, classLoader);
+            delegatesHolderClasses.put(moduleName, holderClass);
+        }
+    }
+
+    private String getMethodName(ActionDebugInfo info) {
+        return info.getMethodName(isDebugFirstInLine(info));
     }
 
     public <P extends PropertyInterface> FlowResult delegate(ActionProperty<P> action, ExecutionContext<P> context) throws SQLException, SQLHandledException {
@@ -324,5 +333,25 @@ public class ActionPropertyDebugger {
         }
         
         return values;
+    }
+
+    public static class InMemoryJavaFileObject extends SimpleJavaFileObject {
+        private String contents = null;
+
+        public InMemoryJavaFileObject(String className, String contents) throws Exception {
+            super(URI.create("string:///" + className.replace('.', '/') + Kind.SOURCE.extension), Kind.SOURCE);
+            this.contents = contents;
+        }
+
+        public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+            return contents;
+        }
+    }
+
+    private static class IgnoreDiagnosticListener implements DiagnosticListener {
+        @Override
+        public void report(Diagnostic diagnostic) {
+            // ignore
+        }
     }
 }
