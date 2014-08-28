@@ -13,7 +13,10 @@ public class InitActionDebuggerTask extends SimpleBLTask {
     @Override
     public void run() {
         try {
-            ActionPropertyDebugger.getInstance().compileDelegatesHolders();
+            ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
+            if (debugger.isEnabled()) {
+                debugger.compileDelegatesHolders();
+            }
         } catch (Exception e) {
             Throwables.propagate(e);
         }
