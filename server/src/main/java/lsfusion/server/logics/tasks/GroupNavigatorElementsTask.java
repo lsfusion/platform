@@ -12,7 +12,7 @@ import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.Property;
 
-public abstract class GroupNavigatorElementsTask extends GroupSplitTask<NavigatorElement> {
+public abstract class GroupNavigatorElementsTask extends GroupSingleSplitTask<NavigatorElement> {
 
     @Override
     protected ImSet<NavigatorElement> getObjects(BusinessLogics<?> BL) {

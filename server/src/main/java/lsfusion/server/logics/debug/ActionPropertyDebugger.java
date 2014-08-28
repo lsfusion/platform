@@ -2,19 +2,20 @@ package lsfusion.server.logics.debug;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.SymmAddValue;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
@@ -63,8 +64,6 @@ public class ActionPropertyDebugger {
         return SystemProperties.isActionDebugEnabled;
     }
 
-    private final Map<ActionDebugInfo, ActionProperty> delegates = new HashMap<ActionDebugInfo, ActionProperty>();
-    
     private final MAddMap<Pair<String, Integer>, ActionDebugInfo> firstInLineDelegates = MapFact.mAddMap(new SymmAddValue<Pair<String, Integer>, ActionDebugInfo>() {
         public ActionDebugInfo addValue(Pair<String, Integer> key, ActionDebugInfo prevValue, ActionDebugInfo newValue) {
             return newValue.offset > prevValue.offset ? prevValue : newValue;
@@ -81,10 +80,21 @@ public class ActionPropertyDebugger {
     private ActionPropertyDebugger() {
     } //singleton
 
+    private Set<ActionDebugInfo> delegates = new HashSet<ActionDebugInfo>();
+    
+    public ImMap<String, ImSet<ActionDebugInfo>> getGroupDelegates() {
+        return SetFact.fromJavaSet(delegates).group(new BaseUtils.Group<String, ActionDebugInfo>() {
+                @Override
+                public String group(ActionDebugInfo key) {
+                    return key.moduleName;
+                }
+            });
+    }
+
     public synchronized <P extends PropertyInterface> void addDelegate(ActionProperty<P> property, ActionDebugInfo debugInfo) {
         property.setDebugInfo(debugInfo);
 
-        delegates.put(debugInfo, property);
+        delegates.add(debugInfo);
 
         firstInLineDelegates.add(debugInfo.getModuleLine(), debugInfo);
     }
@@ -95,36 +105,23 @@ public class ActionPropertyDebugger {
         property.setParamInfo(paramInfo);
     }
 
-    public void compileDelegatesHolders() throws IOException, ClassNotFoundException {
-        Map<String, Collection<ActionDebugInfo>> groupedActions = BaseUtils.group(
-            new BaseUtils.Group<String, ActionDebugInfo>() {
-                @Override
-                public String group(ActionDebugInfo key) {
-                    return key.moduleName;
-                }
-            }, delegates.keySet());
-
-        File sourceDir = IOUtils.createTempDirectory("lsfusiondebug");
-        
+    public void compileDelegatesHolders(File sourceDir, ImMap<String, ImSet<ActionDebugInfo>> modules) throws IOException, ClassNotFoundException {
         List<InMemoryJavaFileObject> filesToCompile = new ArrayList<InMemoryJavaFileObject>();
-        
-        generateDelegateClasses(groupedActions, filesToCompile);
+
+        generateDelegateClasses(modules, filesToCompile);
 
         compileDelegateClasses(sourceDir.getAbsolutePath(), filesToCompile);
 
-        loadDelegateClasses(groupedActions.keySet(), sourceDir);
-        
-        //убираем ненужные ссылки 
-        delegates.clear();
+        loadDelegateClasses(modules.keys(), sourceDir);
     }
 
-    private void generateDelegateClasses(Map<String, Collection<ActionDebugInfo>> groupedActions, List<InMemoryJavaFileObject> filesToCompile) {
-        for (Map.Entry<String, Collection<ActionDebugInfo>> e : groupedActions.entrySet()) {
-            filesToCompile.add(createJavaFileObject(e.getKey(), e.getValue()));
+    private void generateDelegateClasses(ImMap<String, ImSet<ActionDebugInfo>> groupedActions, List<InMemoryJavaFileObject> filesToCompile) {
+        for (int i = 0,size = groupedActions.size(); i < size; i++) {
+            filesToCompile.add(createJavaFileObject(groupedActions.getKey(i), groupedActions.getValue(i)));
         }
     }
 
-    private InMemoryJavaFileObject createJavaFileObject(String moduleName, Collection<ActionDebugInfo> infos) {
+    private InMemoryJavaFileObject createJavaFileObject(String moduleName, ImSet<ActionDebugInfo> infos) {
         String holderClassName = DELEGATES_HOLDER_CLASS_NAME_PREFIX + moduleName;
 
         String holderFQN = DELEGATES_HOLDER_CLASS_FQN_PREFIX + moduleName;
@@ -171,7 +168,7 @@ public class ActionPropertyDebugger {
         }
     }
 
-    public void loadDelegateClasses(Set<String> moduleNames, File sourceDir) throws MalformedURLException, ClassNotFoundException {
+    public void loadDelegateClasses(ImSet<String> moduleNames, File sourceDir) throws MalformedURLException, ClassNotFoundException {
         // Load and instantiate compiled class.
         URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{sourceDir.toURI().toURL()});
 

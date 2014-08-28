@@ -12,14 +12,18 @@ import lsfusion.server.logics.property.Property;
 
 public abstract class GroupSplitTask<T> extends GroupProgramTask {
 
-    protected abstract void runTask(T object);
+    protected abstract void runGroupTask(ImSet<T> objSet);
     
     protected abstract ImSet<T> getObjects(BusinessLogics<?> BL);
+    
+    protected int getSplitCount() {
+        return 1000;        
+    }
     
     @Override
     protected Pair<Iterable<SingleProgramTask>, Iterable<SingleProgramTask>> initTasks() {
         BusinessLogics<?> BL = (BusinessLogics<?>) getBL();
-        final int splitCount = 1000;
+        final int splitCount = getSplitCount();
         MCol<SingleProgramTask> mTasks = ListFact.mCol();
         ImMap<Integer, ImSet<T>> groupProps = getObjects(BL).mapValues(new GetIndex<Integer>() {
             public Integer getMapValue(int i) {
@@ -42,9 +46,7 @@ public abstract class GroupSplitTask<T> extends GroupProgramTask {
                 }
 
                 public void run() {
-                    for (T prop : objSet) {
-                        runTask(prop);
-                    }
+                    runGroupTask(objSet);
                 }
             });
         }
