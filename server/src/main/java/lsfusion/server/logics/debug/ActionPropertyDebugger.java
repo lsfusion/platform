@@ -2,20 +2,19 @@ package lsfusion.server.logics.debug;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.IdentityLazy;
-import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
@@ -228,6 +227,12 @@ public class ActionPropertyDebugger {
     public static ThreadLocal<Boolean> watchHack = new ThreadLocal<Boolean>();
 
     private final String valueName = "sfdjdfkljgfk";
+
+    @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
+    private Object evalAction(ActionProperty action, ExecutionContext context, String require, String statements)
+            throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+        return "<< TODO: code fragment evaluation >>";
+    }
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
     private Object eval(ActionProperty action, ExecutionContext context, String require, String expression)
