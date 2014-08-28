@@ -22,7 +22,6 @@ public class ScriptParser {
     
     private int globalExpandedLines = 0;
     private int globalExpansionLine = 0;
-    private int globalExpansionOffset = 0;
     
     private ScriptingErrorLog errLog;
 
@@ -54,7 +53,7 @@ public class ScriptParser {
         currentState = null;
     }
 
-    public void runMetaCode(ScriptingLogicsModule LM, String code, MetaCodeFragment metaCode, String callString, int lineNumber, int positionInLine) throws RecognitionException {
+    public void runMetaCode(ScriptingLogicsModule LM, String code, MetaCodeFragment metaCode, String callString, int lineNumber) throws RecognitionException {
         LsfLogicsLexer lexer = new LsfLogicsLexer(new ANTLRStringStream(code));
         LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
 
@@ -66,7 +65,6 @@ public class ScriptParser {
 
         //lineNumber is 1-based
         globalExpansionLine += lineNumber - 1;
-        globalExpansionOffset += positionInLine;
 
         ParserInfo lastParser = new ParserInfo(parser, metaCode, callString, lineNumber);
         
@@ -81,7 +79,6 @@ public class ScriptParser {
         }
 
         globalExpansionLine -= lineNumber - 1;
-        globalExpansionOffset -= positionInLine;
     }
     
     private int linesCount(String code) {
@@ -177,7 +174,7 @@ public class ScriptParser {
         return getGlobalPositionInLine(false);
     }
     public int getGlobalPositionInLine(boolean previous) {
-        return globalExpansionOffset + getCurrentParserPositionInLine(previous);
+        return getCurrentParserPositionInLine(previous);
     }
 
     public int getCurrentParserLineNumber() {

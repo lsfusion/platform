@@ -98,7 +98,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
 
     @IdentityLazy
     protected Where getOperandWhere() {
-        return operator1.getNotNullWhere().and(operator2.getNotNullWhere());
+        return operator1.getBinaryNotNullWhere(false).and(operator2.getBinaryNotNullWhere(false));
     }
 
     public ClassExprWhere calculateClassWhere() {
@@ -135,9 +135,9 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         String op2Source = operator2.getSource(compile);
 
         String result = "";
-        if(!compile.means(operator1.getNotNullWhere()))
+        if(!compile.means(operator1.getBinaryNotNullWhere(true)))
             result = op1Source + " IS NULL";
-        if(!compile.means(operator2.getNotNullWhere()))
+        if(!compile.means(operator2.getBinaryNotNullWhere(true)))
             result = (result.length()==0?"":result+" OR ") + op2Source + " IS NULL";
         String compare = "NOT " + getBaseSource(compile);
         if(result.length()==0)

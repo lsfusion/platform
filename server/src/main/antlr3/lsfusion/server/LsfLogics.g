@@ -3123,11 +3123,10 @@ metaCodeDeclarationStatement
 metaCodeStatement
 @init {
 	int lineNumber = self.getParser().getCurrentParserLineNumber();
-    int positionInLine = self.getParser().getCurrentParserPositionInLine();
 	ScriptParser.State oldState = null; 
 }
 @after {
-	self.runMetaCode($id.sid, $list.ids, lineNumber, positionInLine);
+	self.runMetaCode($id.sid, $list.ids, lineNumber);
 }
 	:	'@' id=compoundID '(' list=metaCodeIdList ')' 
 		('{' 	

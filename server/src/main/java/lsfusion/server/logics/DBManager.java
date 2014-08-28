@@ -469,7 +469,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         checkModules(oldDBStructure);
 
-        String hashModules = SystemProperties.isDebug ? "NOHASH" : calculateHashModules();
+        String hashModules = calculateHashModules();
         boolean sourceHashChanged = checkHashModulesChanged(oldDBStructure.hashModules, hashModules);
 
         runAlterationScript();
@@ -1097,7 +1097,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private String calculateHashModules() {
         try {
-            String modulesString = "";
+            String modulesString = SystemProperties.isDebug ? "ISDEBUG" : "";
             for (LogicsModule module : businessLogics.getLogicModules()) {
                 if (module instanceof ScriptingLogicsModule)
                     modulesString += new String(Hex.encodeHex(MessageDigest.getInstance("MD5").digest(((ScriptingLogicsModule) module).getCode().getBytes())));

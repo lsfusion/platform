@@ -14,8 +14,10 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
@@ -227,7 +229,9 @@ public class ActionPropertyDebugger {
     }
     
     public static ThreadLocal<Boolean> watchHack = new ThreadLocal<Boolean>();
-        
+
+    private final String valueName = "sfdjdfkljgfk";
+
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
     private Object eval(ActionProperty action, ExecutionContext context, String require, String expression)
         throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
@@ -237,11 +241,53 @@ public class ActionPropertyDebugger {
             throw new IllegalStateException("Action debugger isn't enabled!");
         }
 
+        Result<Boolean> forExHack = new Result<Boolean>();
+
         //используем все доступные в контексте параметры
         String[][] paramWithClasses = context.getAllParamsWithClassesInStack();
+
+        BusinessLogics bl = context.getBL();
+
         String[] params = paramWithClasses[0];
         String[] classes = paramWithClasses[1];
         
+        LAP<PropertyInterface> evalAction = evalAction(require, expression, params, classes, bl, forExHack);
+
+        ObjectValue values[] = getParamValuesFromContextStack(context, params);
+
+        ExecutionContext<PropertyInterface> watchContext = new ExecutionContext<PropertyInterface>(MapFact.<PropertyInterface, ObjectValue>EMPTY(), context.getEnv());
+        final MOrderExclSet<ImMap<String, ObjectValue>> mResult = SetFact.mOrderExclSet();
+        final ImSet<String> externalParamNames = SetFact.toExclSet(params);
+        watchContext.setWatcher(new Processor<ImMap<String, ObjectValue>>() {
+            public void proceed(ImMap<String, ObjectValue> value) {
+                mResult.exclAdd(value.remove(externalParamNames));
+            }
+        });
+
+        evalAction.execute(watchContext, values);
+
+        ImOrderSet<ImMap<String, ObjectValue>> result = mResult.immutableOrder();
+        assert result.size() >= 1;
+        if(result.size() == 1) {
+            ImMap<String, ObjectValue> value = result.single();
+            if(value.isEmpty()) { // непонятно как отличить это нет записей или null
+                if(forExHack.result != null && forExHack.result)
+                    return new ArrayList();
+                else
+                    return null;
+            }                
+            if(value.size() == 1)
+                return value.singleValue();
+        }
+        return result.mapOrderSetValues(new GetValue<ActionWatchEntry, ImMap<String,ObjectValue>>() {
+            public ActionWatchEntry getMapValue(ImMap<String, ObjectValue> value) {
+                return getWatchEntry(value, valueName);
+            }
+        }).toJavaList();
+    }
+
+    @IdentityLazy
+    private LAP<PropertyInterface> evalAction(String require, String expression, String[] params, String[] classes, BusinessLogics bl, Result<Boolean> forExHack) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
         String paramString = "";
         for (int i = 0; i < params.length; i++) {
             String param = params[i];
@@ -257,54 +303,21 @@ public class ActionPropertyDebugger {
 
             paramString += param;
         }
-        
-        final String valueName = "sfdjdfkljgfk";
+
         if(!expression.contains("ORDER")) // жестковато конечно пока, но будет работать
             expression = "(" + expression + ")";
         String script = "evalStub(" + paramString + ") = ACTION FOR " + valueName + " == " + expression + " DO watch() ELSE watch();";
 
         watchHack.set(false);
-        
-        ScriptingLogicsModule module = EvalUtils.evaluate(context.getBL(), require, script);
 
-        Boolean forExHack = watchHack.get();
+        ScriptingLogicsModule module = EvalUtils.evaluate(bl, require, script);
+
+        forExHack.set(watchHack.get());
         watchHack.set(null);
 
         String evalPropName = module.getName() + "." + "evalStub";
 
-        LAP<PropertyInterface> evalProp = (LAP<PropertyInterface>) module.findAction(evalPropName);
-
-        ObjectValue values[] = getParamValuesFromContextStack(context, params);
-
-        ExecutionContext<PropertyInterface> watchContext = new ExecutionContext<PropertyInterface>(MapFact.<PropertyInterface, ObjectValue>EMPTY(), context.getEnv());
-        final MOrderExclSet<ImMap<String, ObjectValue>> mResult = SetFact.mOrderExclSet();
-        final ImSet<String> externalParamNames = SetFact.toExclSet(params);
-        watchContext.setWatcher(new Processor<ImMap<String, ObjectValue>>() {
-            public void proceed(ImMap<String, ObjectValue> value) {
-                mResult.exclAdd(value.remove(externalParamNames));
-            }
-        });
-
-        evalProp.execute(watchContext, values);
-
-        ImOrderSet<ImMap<String, ObjectValue>> result = mResult.immutableOrder();
-        assert result.size() >= 1;
-        if(result.size() == 1) {
-            ImMap<String, ObjectValue> value = result.single();
-            if(value.isEmpty()) { // непонятно как отличить это нет записей или null
-                if(forExHack != null && forExHack)
-                    return new ArrayList();
-                else
-                    return null;
-            }                
-            if(value.size() == 1)
-                return value.singleValue();
-        }
-        return result.mapOrderSetValues(new GetValue<ActionWatchEntry, ImMap<String,ObjectValue>>() {
-            public ActionWatchEntry getMapValue(ImMap<String, ObjectValue> value) {
-                return getWatchEntry(value, valueName);
-            }
-        }).toJavaList();
+        return (LAP<PropertyInterface>) module.findAction(evalPropName);
     }
 
     private static ActionWatchEntry getWatchEntry(ImMap<String, ObjectValue> row, String valueName) {

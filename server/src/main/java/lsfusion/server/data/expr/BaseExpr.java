@@ -241,6 +241,15 @@ public abstract class BaseExpr extends Expr {
             notNullWhere = calculateNotNullWhere();
         return notNullWhere;
     }
+    
+    // notNull для использования в binaryWhere
+    // проблема в том что мог быть выполнен not и предположение что в условии есть and условия может нарушиться, строго говоря с not'ом просто из-за недетерминированного порядка or могут быть проблемы 
+    public Where getBinaryNotNullWhere(boolean source) {
+        if(source)
+            return getWhere();
+        else // не так принципиально так как в худшем случае потеряем следствие, что не перевешивает доп нагрузку по учету or where
+            return getNotNullWhere();
+    }
 
     public Where calculateNotNullWhere() {
         return getNotNullWhere(getUsed());

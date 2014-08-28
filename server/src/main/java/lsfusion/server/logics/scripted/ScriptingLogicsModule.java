@@ -2106,12 +2106,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         addMetaCodeFragment(name, fragment);
     }
 
-    public void runMetaCode(String name, List<String> params, int lineNumber, int positionInLine) throws RecognitionException {
+    public void runMetaCode(String name, List<String> params, int lineNumber) throws RecognitionException {
         MetaCodeFragment metaCode = findMetaCodeFragment(name, params.size());
         checkMetaCodeParamCount(metaCode, params.size());
 
         String code = metaCode.getCode(params);
-        parser.runMetaCode(this, code, metaCode, metaCodeCallString(name, metaCode, params), lineNumber, positionInLine);
+        parser.runMetaCode(this, code, metaCode, metaCodeCallString(name, metaCode, params), lineNumber); // no need
     }
 
     private String metaCodeCallString(String name, MetaCodeFragment metaCode, List<String> actualParams) {
