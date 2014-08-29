@@ -45,7 +45,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
         dialog = new JDialog(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
         textArea.setFont(new Font("Tahoma", Font.PLAIN, 12));
         if (design != null) {
-            design.designCell(this);
+            design.designCell(textArea);
         }
 
 
