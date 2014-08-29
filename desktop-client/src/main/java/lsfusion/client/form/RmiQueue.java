@@ -255,6 +255,7 @@ public class RmiQueue {
 
         @Override
         public T call() throws RemoteException {
+            int fatalsCount = 0;
             boolean registeredFailure = false;
             try {
                 do {
@@ -263,9 +264,13 @@ public class RmiQueue {
                     } catch (Throwable t) {
                         //если уже connectionLost, то в любом случае выбрасываем исключнение
                         if (t instanceof RemoteException && !(t instanceof ServerException) && !ConnectionLostManager.isConnectionLost() && !abandoned.get()) {
-                            if (ExceptionUtils.isFatalRemoteException(t)) {
+                            boolean isFatal = ExceptionUtils.isFatalRemoteException(t);
+                            if (isFatal && fatalsCount > 3) {
                                 ConnectionLostManager.connectionLost();
                             } else {
+                                if (isFatal) {
+                                    fatalsCount++;
+                                }
                                 t = null;
                                 if (!registeredFailure) {
                                     ConnectionLostManager.registerFailedRmiRequest();
