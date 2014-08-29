@@ -3,6 +3,7 @@ package lsfusion.server.logics.scripted;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -73,5 +74,10 @@ public abstract class ScriptingActionProperty extends UserActionProperty {
 
     protected boolean applySession(ExecutionContext context, DataSession session) throws SQLException, SQLHandledException {
         return session.apply(context);
+    }
+
+    @Override
+    public ActionDelegationType getDelegationType(boolean modifyContext) {
+        return ActionDelegationType.IN_DELEGATE;
     }
 }

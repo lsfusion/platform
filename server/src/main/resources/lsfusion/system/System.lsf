@@ -12,6 +12,7 @@ CLASS NATIVE Object;
 CLASS NATIVE CustomObjectClass;
 objectClass = NATIVE CustomObjectClass (Object);
 random = NATIVE DOUBLE ();
+//watch = ACTION NATIVE (); 
 
 statCustomObjectClass 'Статистика' = DATA INTEGER (CustomObjectClass);
 

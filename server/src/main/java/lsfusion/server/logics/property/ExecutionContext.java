@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import jasperapi.ReportGenerator;
+import lsfusion.base.Pair;
 import lsfusion.base.Processor;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -15,6 +16,7 @@ import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
@@ -25,6 +27,7 @@ import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.*;
@@ -38,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ScheduledExecutorService;
@@ -60,12 +64,29 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     private final ExecutionEnvironment env;
         
     private final ExecutionContext stack;
-    private ImRevMap<String, P> paramsToInterfaces;
-    private ImMap<String, String> paramsToFQN;
-    private Processor<ImMap<String, ObjectValue>> watcher;
-    
+
     private final FormEnvironment<P> form;
 
+    // debug info 
+    private ImRevMap<String, P> paramsToInterfaces;
+    private ImMap<String, String> paramsToFQN;
+    private ImSet<Pair<LP, List<ResolveClassSet>>> locals;
+    private boolean newDebugStack;
+    private Processor<ImMap<String, ObjectValue>> watcher;
+    
+//    public String actionName;
+//    public int showStack() {
+//        int level = 0;
+//        if(stack != null) {
+//            if(newDebugStack)
+//                System.out.println("new debug");
+//            level = stack.showStack();
+//        }
+//        if(actionName != null)
+//            System.out.println((level++) + actionName + (newDebugStack ? " NEWSTACK" : ""));
+//        return level;
+//    } 
+//    
     public ExecutionContext(ImMap<P, ? extends ObjectValue> keys, ExecutionEnvironment env) {
         this(keys, null, null, env, null, null);
     }
@@ -78,9 +99,21 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         this.form = form;
         this.stack = stack;
     }
+    
+    public ExecutionContext<P> override() { // для дебаггера
+        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, env, form, this);
+    }
 
     public void setParamsToInterfaces(ImRevMap<String, P> paramsToInterfaces) {
         this.paramsToInterfaces = paramsToInterfaces;
+    }
+
+    public void setLocals(ImSet<Pair<LP, List<ResolveClassSet>>> locals) {
+        this.locals = locals;
+    }
+    
+    public void setNewDebugStack(boolean newDebugStack) {
+        this.newDebugStack = newDebugStack;        
     }
 
     public void setWatcher(Processor<ImMap<String, ObjectValue>> watcher) {
@@ -91,62 +124,54 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         return paramsToInterfaces;
     }
 
-    public ObjectValue getParamValue(String param) {
-        if (paramsToInterfaces != null) {
-            P val = paramsToInterfaces.get(param);
-            if (val != null) {
-                return getKeyValue(val);
-            }
+    public ImMap<String, String> getAllParamsWithClassesInStack() {
+        ImMap<String, String> result = MapFact.EMPTY();
+        
+        if(paramsToFQN != null) {
+            result = paramsToFQN.addExcl(result); // потому 
         }
-        
-        if (stack != null) {
-            return stack.getParamValue(param);
-        }
-        
-        return null;
-    }
-    
-    public String[][] getAllParamsWithClassesInStack() {
-        Map<String, String> paramsToClass = new HashMap<String, String>();
-        
-        ExecutionContext<?> current = this;
-        while (current != null) {
-            if (current.paramsToFQN != null) {
-                for (int i = 0, size = current.paramsToFQN.size(); i<size; i++) {
-                    String paramName = current.paramsToFQN.getKey(i);
-                    String paramObject = current.paramsToFQN.getValue(i);
-                    if (!paramsToClass.containsKey(paramName)) {
-                        paramsToClass.put(paramName, paramObject);
-                    }
-                }
-            }
-            current = current.stack;
-        }
-        
-        String[][] res = new String[2][paramsToClass.size()];
-        int i = 0;
-        for (Map.Entry<String, String> e : paramsToClass.entrySet()) {
-            res[0][i] = e.getKey();
-            res[1][i++] = e.getValue();
-        }
-        
-        return res;
+
+        if(!newDebugStack && stack != null)
+            result = result.addExcl(stack.getAllParamsWithClassesInStack());
+
+        return result;
     }
 
-    public <L extends PropertyInterface> void notifyParamValues(ImMap<String, ObjectValue> params) {
-        if (paramsToInterfaces != null) {
-            params = paramsToInterfaces.mapValues(new GetValue<ObjectValue, P>() {
+    public ImMap<String, ObjectValue> getAllParamsWithValuesInStack() {
+        ImMap<String, ObjectValue> result = MapFact.EMPTY();
+
+        if(paramsToInterfaces != null) {
+            result = paramsToInterfaces.mapValues(new GetValue<ObjectValue, P>() {
                 public ObjectValue getMapValue(P value) {
                     return getKeyValue(value);
                 }
-            }).override(params);
+            }).addExcl(result);
         }
+
+        if(!newDebugStack && stack != null)
+            result = result.addExcl(stack.getAllParamsWithValuesInStack());
+
+        return result;
+    }
+
+    public ImSet<Pair<LP, List<ResolveClassSet>>> getAllLocalsInStack() {
+        ImSet<Pair<LP, List<ResolveClassSet>>> result = SetFact.EMPTY();
         
+        if(locals != null)
+            result = result.addExcl(locals);
+
+        if(!newDebugStack && stack != null)
+            result = result.addExcl(stack.getAllLocalsInStack());
+        
+        return result;
+    }
+    
+    public Processor<ImMap<String, ObjectValue>> getWatcher() {
         if(watcher != null)
-            watcher.proceed(params);
-        
+            return watcher;
         if(stack != null)
-            stack.notifyParamValues(params);
+            return stack.getWatcher();
+        return null;
     }
 
     public void setParamsToFQN(ImMap<String, String> paramsToFQN) {

@@ -15,6 +15,7 @@ import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
@@ -22,8 +23,10 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ActionDebugInfo;
+import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.debug.ParamDebugInfo;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.BaseEvent;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
@@ -35,6 +38,7 @@ import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 public abstract class ActionProperty<P extends PropertyInterface> extends Property<P> {
@@ -44,6 +48,15 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     private ActionDebugInfo debugInfo;
 
     private ParamDebugInfo<P> paramInfo; // только для "top-level" action
+    
+    private ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals;// только для list action
+    
+    public boolean hasDebugLocals() {
+        return debugLocals != null && !debugLocals.isEmpty();
+    }
+    public void setDebugLocals(ImSet<Pair<LP, List<ResolveClassSet>>> debugLocals) {
+        this.debugLocals = debugLocals;
+    }
 
     public ActionProperty(String caption, ImOrderSet<P> interfaces) {
         super(caption, interfaces);
@@ -304,11 +317,17 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public final FlowResult execute(ExecutionContext<P> context) throws SQLException, SQLHandledException {
+//        context.actionName = toString();
         if(paramInfo != null) {
+            context = context.override();
             context.setParamsToInterfaces(paramInfo.paramsToInterfaces);
             context.setParamsToFQN(paramInfo.paramsToClassFQN);
         }
-        if (debugInfo != null && debugger.isEnabled()) {
+        if(debugLocals != null) {
+            context = context.override();
+            context.setLocals(debugLocals);
+        }
+        if (debugInfo != null) {
             return debugger.delegate(this, context);
         } else {
             return executeImpl(context);
@@ -316,6 +335,12 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public FlowResult executeImpl(ExecutionContext<P> context) throws SQLException, SQLHandledException {
+
+        if(debugInfo != null && debugInfo.delegationType == ActionDelegationType.IN_DELEGATE) {
+            context = context.override();
+            context.setNewDebugStack(true);
+        }
+
         for(ActionPropertyMapImplement<?, P> aspect : getBeforeAspects()) {
             FlowResult beforeResult = aspect.execute(context);
             if(beforeResult != FlowResult.FINISH)
@@ -441,5 +466,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     protected void proceedNullException() {
+    }
+
+    public ActionDelegationType getDelegationType(boolean modifyContext) {
+        return ActionDelegationType.AFTER_DELEGATE;        
     }
 }

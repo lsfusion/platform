@@ -1,10 +1,7 @@
 package lsfusion.server.logics.scripted;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.ExtInt;
-import lsfusion.base.IOUtils;
-import lsfusion.base.OrderedMap;
+import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -1281,9 +1278,20 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LAP<?> listLP = addListAProp(resultParams.toArray());
 
+        MExclSet<Pair<LP, List<ResolveClassSet>>> mDebugLocals = null;
+        if(debugger.isEnabled()) {
+            mDebugLocals = SetFact.mExclSet(localProps.size());
+        }
+
         for (LP<?, ?> localProp : localProps) {
-            propClasses.remove(localProp);
+            List<ResolveClassSet> localSignature = propClasses.remove(localProp);
             removeModuleLP(localProp);
+            
+            if(mDebugLocals != null)
+                mDebugLocals.exclAdd(new Pair<LP, List<ResolveClassSet>>(localProp, localSignature));
+        }
+        if(mDebugLocals != null) {
+            listLP.property.setDebugLocals(mDebugLocals.immutable());
         }
 
         MExclSet<SessionDataProperty> mMigrateProps = SetFact.mExclSet(migrateSessionProps.size());
@@ -1335,6 +1343,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return res;
     }
 
+    public LP addWatchLocalDataProperty(LP lp, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
+        assert lp.property instanceof SessionDataProperty;
+        addModuleLP(lp);
+        propClasses.put(lp, signature);
+        return lp; 
+    }
+    
     public LPWithParams addScriptedJoinAProp(PropertyUsage pUsage, List<LPWithParams> properties, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         LP mainProp = findJoinMainProp(pUsage, properties, params);    
         return addScriptedJoinAProp(mainProp, properties);                        
@@ -2586,7 +2601,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 //            if (property instanceof ListActionProperty) {
 //                return;
 //            }
-            ActionDelegationType delegationType = ActionDelegationType.of(property, modifyContext);
+            ActionDelegationType delegationType = property.getDelegationType(modifyContext);
             if(delegationType != null) {
                 ScriptParser parser = getParser();
                 debugger.addDelegate(property, delegationType.getDebugInfo(getName(), line, offset, parser.getGlobalCurrentLineNumber(true), parser.getGlobalPositionInLine(true)));
@@ -2617,10 +2632,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             for (int i = 0; i < lpWithParams.usedParams.size(); i++) {
                 int usedParam = lpWithParams.usedParams.get(i);
-                TypedParameter param = newContext.get(usedParam);
+                if(usedParam >= oldContext.size()) { // если новый параметр
+                    TypedParameter param = newContext.get(usedParam);
 
-                paramsToInterfaces.put(param.paramName, lAction.listInterfaces.get(i));
-                paramsToClassFQN.put(param.paramName, param.getParsedName());
+                    paramsToInterfaces.put(param.paramName, lAction.listInterfaces.get(i));
+                    paramsToClassFQN.put(param.paramName, param.getParsedName());
+                }
             }
 
             debugger.addParamInfo(property, paramsToInterfaces, paramsToClassFQN);

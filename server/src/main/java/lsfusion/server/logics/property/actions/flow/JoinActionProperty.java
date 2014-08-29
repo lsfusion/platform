@@ -11,6 +11,8 @@ import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.debug.ActionDelegationType;
+import lsfusion.server.logics.debug.WatchActionProperty;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 
@@ -118,5 +120,12 @@ public class JoinActionProperty<T extends PropertyInterface> extends KeepContext
             isRecursive = true;
         } else
             super.markRecursions(recursiveAction);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public ActionDelegationType getDelegationType(boolean modifyContext) {
+        if(action.property instanceof WatchActionProperty)
+            return super.getDelegationType(modifyContext);
+        return ActionDelegationType.IN_DELEGATE;
     }
 }

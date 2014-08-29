@@ -337,7 +337,7 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
     public int immutableHashCode() {
         int hashCode = 1;
         for (int i=0,size=size();i<size;i++)
-            hashCode = 31 * hashCode + (getKey(i).hashCode() ^ getValue(i).hashCode());
+            hashCode = 31 * hashCode + (getKey(i).hashCode() ^ BaseUtils.nullHash(getValue(i)));
         return hashCode;
     }
 
@@ -352,7 +352,7 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
         if(list.size()!=size()) return false;
 
         for(int i=0,size=size();i<size;i++)
-            if(!(BaseUtils.hashEquals(getKey(i), list.getKey(i)) && BaseUtils.hashEquals(getValue(i), list.getValue(i))))
+            if(!(BaseUtils.hashEquals(getKey(i), list.getKey(i)) && BaseUtils.nullEquals(getValue(i), list.getValue(i))))
                 return false;
         return true;
     }

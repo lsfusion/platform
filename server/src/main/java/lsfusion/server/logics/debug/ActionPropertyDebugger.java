@@ -5,6 +5,7 @@ import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
@@ -16,11 +17,14 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.LogicalClass;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
+import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -226,58 +230,62 @@ public class ActionPropertyDebugger {
     
     public static ThreadLocal<Boolean> watchHack = new ThreadLocal<Boolean>();
 
-    private final String valueName = "sfdjdfkljgfk";
-
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
     private Object evalAction(ActionProperty action, ExecutionContext context, String require, String statements)
             throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
-        return "<< TODO: code fragment evaluation >>";
+        return evalAction(context, require, "{" + statements + "}", null);
     }
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
-    private Object eval(ActionProperty action, ExecutionContext context, String require, String expression)
+    private Object eval(ActionProperty action, ExecutionContext<?> context, String require, String expression)
         throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
+//        context.showStack();
 
         if (!isEnabled()) {
             throw new IllegalStateException("Action debugger isn't enabled!");
         }
 
-        Result<Boolean> forExHack = new Result<Boolean>();
+        final String valueName = "sfdjdfkljgfk";
 
+        if (!expression.contains("ORDER")) // жестковато конечно пока, но будет работать
+            expression = "(" + expression + ")";
+        String actionText = "FOR " + valueName + " == " + expression + " DO watch();";
+        return evalAction(context, require, actionText, valueName);
+    }
+
+    private Object evalAction(ExecutionContext<?> context, String require, String expression, final String valueName) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
         //используем все доступные в контексте параметры
-        String[][] paramWithClasses = context.getAllParamsWithClassesInStack();
+        ImOrderMap<String, String> paramsWithClasses = context.getAllParamsWithClassesInStack().toOrderMap();
+        ImMap<String, ObjectValue> paramsWithValues = context.getAllParamsWithValuesInStack();
 
-        BusinessLogics bl = context.getBL();
+        ImSet<Pair<LP, List<ResolveClassSet>>> locals = context.getAllLocalsInStack();
 
-        String[] params = paramWithClasses[0];
-        String[] classes = paramWithClasses[1];
-        
-        LAP<PropertyInterface> evalAction = evalAction(require, expression, params, classes, bl, forExHack);
-
-        ObjectValue values[] = getParamValuesFromContextStack(context, params);
+        Pair<LAP<PropertyInterface>, Boolean> evalResult = evalAction(require, expression, paramsWithClasses, locals, context.getBL());
+        LAP<PropertyInterface> evalAction = evalResult.first;
+        boolean forExHack = evalResult.second;
 
         ExecutionContext<PropertyInterface> watchContext = new ExecutionContext<PropertyInterface>(MapFact.<PropertyInterface, ObjectValue>EMPTY(), context.getEnv());
         final MOrderExclSet<ImMap<String, ObjectValue>> mResult = SetFact.mOrderExclSet();
-        final ImSet<String> externalParamNames = SetFact.toExclSet(params);
+        final ImSet<String> externalParamNames = paramsWithClasses.keys();
         watchContext.setWatcher(new Processor<ImMap<String, ObjectValue>>() {
             public void proceed(ImMap<String, ObjectValue> value) {
                 mResult.exclAdd(value.remove(externalParamNames));
             }
         });
 
-        evalAction.execute(watchContext, values);
+        ObjectValue[] orderedValues = paramsWithClasses.keyOrderSet().mapOrderMap(paramsWithValues).valuesList().toArray(new ObjectValue[paramsWithClasses.size()]);
+        evalAction.execute(watchContext, orderedValues);
 
         ImOrderSet<ImMap<String, ObjectValue>> result = mResult.immutableOrder();
-        assert result.size() >= 1;
+        if(result.size() == 0) {
+            if(forExHack)
+                return new ArrayList();
+            else
+                return null;
+        }
         if(result.size() == 1) {
             ImMap<String, ObjectValue> value = result.single();
-            if(value.isEmpty()) { // непонятно как отличить это нет записей или null
-                if(forExHack.result != null && forExHack.result)
-                    return new ArrayList();
-                else
-                    return null;
-            }                
             if(value.size() == 1)
                 return value.singleValue();
         }
@@ -289,11 +297,12 @@ public class ActionPropertyDebugger {
     }
 
     @IdentityLazy
-    private LAP<PropertyInterface> evalAction(String require, String expression, String[] params, String[] classes, BusinessLogics bl, Result<Boolean> forExHack) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
+    private Pair<LAP<PropertyInterface>, Boolean> evalAction(String require, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
+        
         String paramString = "";
-        for (int i = 0; i < params.length; i++) {
-            String param = params[i];
-            String clazz = classes[i];
+        for (int i = 0, size = paramWithClasses.size(); i < size; i++) {
+            String param = paramWithClasses.getKey(i);
+            String clazz = paramWithClasses.getValue(i);
             
             if (!paramString.isEmpty()) {
                 paramString += ", "; 
@@ -306,48 +315,34 @@ public class ActionPropertyDebugger {
             paramString += param;
         }
 
-        if(!expression.contains("ORDER")) // жестковато конечно пока, но будет работать
-            expression = "(" + expression + ")";
-        String script = "evalStub(" + paramString + ") = ACTION FOR " + valueName + " == " + expression + " DO watch() ELSE watch();";
+        String script = "evalStub(" + paramString + ") = ACTION " + action;
 
         watchHack.set(false);
 
-        ScriptingLogicsModule module = EvalUtils.evaluate(bl, require, script);
+        ScriptingLogicsModule module = EvalUtils.evaluate(bl, require, locals, script);
 
-        forExHack.set(watchHack.get());
+        boolean forExHack = watchHack.get();
         watchHack.set(null);
 
         String evalPropName = module.getName() + "." + "evalStub";
 
-        return (LAP<PropertyInterface>) module.findAction(evalPropName);
+        return new Pair<LAP<PropertyInterface>, Boolean>((LAP<PropertyInterface>) module.findAction(evalPropName), forExHack);
     }
 
     private static ActionWatchEntry getWatchEntry(ImMap<String, ObjectValue> row, String valueName) {
-        ObjectValue value = row.get(valueName);
-        if(value instanceof DataObject && ((DataObject)value).objectClass instanceof LogicalClass) {
-            value = null;
+        ObjectValue value = null;
+        if(valueName !=  null) {
+            value = row.get(valueName);
+            if (value instanceof DataObject && ((DataObject) value).objectClass instanceof LogicalClass) {
+                value = null;
+            }
+            row = row.remove(valueName);
         }
-        return new ActionWatchEntry(row.remove(valueName).toOrderMap().mapOrderSetValues(new GetKeyValue<ActionWatchEntry.Param, String, ObjectValue>() {
+        return new ActionWatchEntry(row.toOrderMap().mapOrderSetValues(new GetKeyValue<ActionWatchEntry.Param, String, ObjectValue>() {
             public ActionWatchEntry.Param getMapValue(String key, ObjectValue value) {
                 return new ActionWatchEntry.Param(key, value);
             }
         }).toJavaList(), value);
-    }
-    
-    private ObjectValue[] getParamValuesFromContextStack(ExecutionContext context, String[] params) {
-        ObjectValue[] values = new ObjectValue[params.length];
-
-        for (int i = 0; i < params.length; i++) {
-            String param = params[i];
-            ObjectValue value = context.getParamValue(param);
-            if (value == null) {
-                throw new IllegalStateException("param isn't found in context");
-            }
-                
-            values[i] = value;
-        }
-        
-        return values;
     }
 
     public static class InMemoryJavaFileObject extends SimpleJavaFileObject {

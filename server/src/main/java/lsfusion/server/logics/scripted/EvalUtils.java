@@ -2,11 +2,16 @@ package lsfusion.server.logics.scripted;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.FullFunctionSet;
+import lsfusion.base.Pair;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.Version;
 import org.antlr.runtime.RecognitionException;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class EvalUtils {
@@ -23,10 +28,10 @@ public class EvalUtils {
     }
 
     public static ScriptingLogicsModule evaluate(BusinessLogics BL, String script) throws EvaluationException {
-        return evaluate(BL, null, script);
+        return evaluate(BL, null, null, script);
     }
     
-    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String require, String script) throws EvaluationException {
+    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String require, ImSet<Pair<LP, List<ResolveClassSet>>> locals, String script) throws EvaluationException {
         String name = getUniqueName();
 
         ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(BL, require, script, name));
@@ -37,6 +42,13 @@ public class EvalUtils {
             module.initModuleDependencies();
             module.initModule();
             module.initAliases();
+            
+            if(locals != null) {
+                for(Pair<LP, List<ResolveClassSet>> local : locals) {
+                    module.addWatchLocalDataProperty(local.first, local.second);
+                }                
+            }
+            
             module.initProperties();
 
             errString = module.getErrorsDescription();

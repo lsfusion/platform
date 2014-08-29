@@ -28,6 +28,6 @@ public class WatchActionProperty extends SystemExplicitActionProperty {
     public static final WatchActionProperty instance = new WatchActionProperty();
     
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        context.notifyParamValues(MapFact.<String, ObjectValue>EMPTY());
+        context.getWatcher().proceed(context.getAllParamsWithValuesInStack());
     }
 }

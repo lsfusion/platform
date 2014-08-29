@@ -4,12 +4,15 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.debug.ActionDelegationType;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -137,5 +140,14 @@ public class ListActionProperty extends ListCaseActionProperty {
             }
         }
         return result;
+    }
+
+    @Override
+    public ActionDelegationType getDelegationType(boolean modifyContext) {
+        if(modifyContext || hasDebugLocals())
+            return ActionDelegationType.BEFORE_DELEGATE;
+        else
+            return null;
+
     }
 }

@@ -868,7 +868,7 @@ propertyStatement
 @after {
 	if (inPropParseState()) {
 	    if (property != null) // not native
-		self.setPropertyScriptInfo(property, $text, lineNumber);
+		    self.setPropertyScriptInfo(property, $text, lineNumber);
 	}
 }
 	:	declaration=propertyDeclaration { if ($declaration.params != null) { context = $declaration.params; dynamic = false; } }
@@ -876,6 +876,7 @@ propertyStatement
 		(	def=expressionUnfriendlyPD[context, dynamic, false] { property = $def.property; signature = $def.signature; }
 		|	expr=propertyExpression[context, dynamic] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); signature = self.getClassesFromTypedParams(context); property = $expr.property.property; } }
 		|	'NATIVE' classId '(' clist=classIdList ')' { if (inPropParseState()) { signature = self.createClassSetsFromClassNames($clist.ids); }}
+		|	'ACTION' 'NATIVE' '(' clist=classIdList ')' { if (inPropParseState()) { signature = self.createClassSetsFromClassNames($clist.ids); }}
 		)
 		propertyOptions[property, $declaration.name, $declaration.caption, context, signature]
 		( {!self.semicolonNeeded()}?=>  | ';')
