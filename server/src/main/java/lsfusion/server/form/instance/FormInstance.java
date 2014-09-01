@@ -252,16 +252,28 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         for (int i = 0, size = fixedOrders.size(); i < size; i++)
             fixedOrders.getKey(i).fixedOrders = fixedOrders.getValue(i);
 
-        // в первую очередь ставим на объекты из cache'а
-        if (classListener != null) {
-            for (GroupObjectInstance groupObject : groupObjects) {
-                for (ObjectInstance object : groupObject.objects)
-                    if (object.getBaseClass() instanceof CustomClass) {
-                        CustomClass cacheClass = (CustomClass) object.getBaseClass();
-                        Integer objectID = classListener.getObject(cacheClass);
-                        if (objectID != null)
-                            groupObject.addSeek(object, session.getDataObject(cacheClass, objectID), false);
+
+        for (GroupObjectInstance groupObject : groupObjects) {
+            for (ObjectUpdateInfo updateInfo : groupObject.getUpdateInfos()) {
+                if (!updateInfo.onUpdate && (updateInfo.isLast() || updateInfo.isFirst())) { // проставляем FIRST или LAST, если есть
+                    groupObject.seek(updateInfo.isLast());
+                }
+            }
+
+            ImMap<ObjectInstance, DataObject> staticObjs = groupObject.getStaticObjectsSeek(true);
+            for (int i = 0; i < staticObjs.size(); i++) {
+                groupObject.addSeek(staticObjs.getKey(i), staticObjs.getValue(i), false);
+            }
+            
+            for (ObjectInstance object : groupObject.objects) {
+                // ставим на объекты из cache'а
+                if (object.getBaseClass() instanceof CustomClass && classListener != null) {
+                    CustomClass cacheClass = (CustomClass) object.getBaseClass();
+                    Integer objectID = classListener.getObject(cacheClass);
+                    if (objectID != null) {
+                        groupObject.addSeek(object, session.getDataObject(cacheClass, objectID), false);
                     }
+                }
             }
         }
 

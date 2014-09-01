@@ -34,9 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.server.form.instance.FormSessionScope.NESTEDSESSION;
-import static lsfusion.server.form.instance.FormSessionScope.NEWSESSION;
-import static lsfusion.server.form.instance.FormSessionScope.OLDSESSION;
+import static lsfusion.server.form.instance.FormSessionScope.*;
 
 /**
  * User: DAle
@@ -96,6 +94,19 @@ public class ScriptingFormEntity {
 
             if (groupObject.pageSize != null) {
                 groupObj.pageSize = groupObject.pageSize;
+            }
+
+            if (groupObject.updateInfos != null) {
+                if (groupObject.updateInfos.size() != groupObject.objects.size()) {
+                    LM.getErrLog().emitElementCountError(LM.getParser(), "Objects update modifier(s)", groupObject.objects.size(), groupObject.updateInfos.size());
+                } else {
+                    groupObj.updateInfos = groupObject.updateInfos;
+                }
+            } else {
+                groupObj.updateInfos = new ArrayList<ObjectUpdateInfo>();
+                for (int i = 0; i < groupObject.objects.size(); i++) {
+                    groupObj.updateInfos.add(new ObjectUpdateInfo(ObjectUpdateInfo.UpdateType.FIRST, true));
+                }
             }
 
             addGroupObjectEntity(groupName, groupObj, version);

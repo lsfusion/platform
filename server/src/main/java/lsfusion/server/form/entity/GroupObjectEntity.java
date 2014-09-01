@@ -51,6 +51,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
     public Integer pageSize;
 
+    public List<ObjectUpdateInfo> updateInfos;
+
     public CalcPropertyObjectEntity<?> propertyBackground;
     public CalcPropertyObjectEntity<?> propertyForeground;
 
@@ -130,6 +132,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         objectEntity.groupTo = this;
         ((MOrderExclSet<ObjectEntity>)objects).exclAdd(objectEntity);
     }
+    
     public void setObjects(ImOrderSet<ObjectEntity> objects) {
         assert !finalizedObjects;
         finalizedObjects = true;

@@ -33,6 +33,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.GroupObjectProp;
+import lsfusion.server.form.entity.ObjectUpdateInfo;
 import lsfusion.server.form.instance.filter.AndFilterInstance;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.filter.OrFilterInstance;
@@ -52,6 +53,8 @@ import static lsfusion.interop.ClassViewType.GRID;
 import static lsfusion.interop.ClassViewType.HIDE;
 
 public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
+    public final SeekObjects SEEK_HOME = new SeekObjects(false); 
+    public final SeekObjects SEEK_END = new SeekObjects(true); 
 
     public final CalcPropertyObjectInstance propertyBackground;
     public final CalcPropertyObjectInstance propertyForeground;
@@ -582,6 +585,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
         // если изменились класс грида или представление
         boolean updateFilters = refresh || (updated & (UPDATED_GRIDCLASS | UPDATED_CLASSVIEW)) != 0;
+        
+        boolean objectsUpdated = false;
 
         ImSet<FilterInstance> setFilters = getSetFilters();
         if (FilterInstance.ignoreInInterface) {
@@ -616,6 +621,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             for (FilterInstance filt : filters)
                 if (filt.objectUpdated(SetFact.singleton(this))) {
                     updateFilters = true;
+                    objectsUpdated = true;
                     break;
                 }
 
@@ -674,6 +680,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             for (OrderInstance order : orders.keyIt())
                 if (order.objectUpdated(SetFact.singleton(this))) {
                     updateOrders = true;
+                    objectsUpdated = true;
                     break;
                 }
         if (!updateOrders && (!updateFilters || orderProperty!=null)) // изменились данные по порядкам
@@ -724,15 +731,30 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                     (parent != null && (updated & UPDATED_EXPANDS) != 0)) {
                 updateKeys = true;
             }
-            orderSeeks = new SeekObjects(false);
+            orderSeeks = SEEK_HOME;
         } else {
             if (userSeeks!=null) { // пользовательский поиск
                 orderSeeks = userSeeks;
                 updateKeys = true;
                 currentObject = MapFact.EMPTY();
             } else if (updateKeys) {
-                // изменились фильтры, порядки, вид, ищем текущий объект
-                orderSeeks = new SeekObjects(false, currentObject);
+                if (objectsUpdated) {
+                    for (ObjectUpdateInfo info : getUpdateInfos()) { // проставляем FIRST или LAST, если есть
+                        orderSeeks = info.isLast() ? SEEK_END : info.isFirst() ? SEEK_HOME : null;
+                    }
+                    
+                    // добавляем поиск статичных объектов
+                    ImMap<ObjectInstance, DataObject> staticObjs = getStaticObjectsSeek(false);
+                    if (orderSeeks == null) {
+                        orderSeeks = new SeekObjects(false, staticObjs);
+                    } else {
+                        for (int i = 0; i < staticObjs.size(); i++) {
+                            orderSeeks = orderSeeks.add(staticObjs.getKey(i), staticObjs.getValue(i), false);
+                        }
+                    }
+                } else {  // изменились фильтры, порядки, вид, ищем текущий объект
+                    orderSeeks = new SeekObjects(false, currentObject);
+                }
             }
 
             if (!updateKeys && curClassView == GRID && !currentObject.isEmpty() && (updated & (UPDATED_OBJECT | UPDATED_PAGESIZE)) != 0) { // скроллирование
@@ -742,7 +764,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
                     int lowestInd = getPageSize() * 2 - 1;
                     if (lowestInd >= keys.size()) // по сути END
-                        orderSeeks = new SeekObjects(true);
+                        orderSeeks = SEEK_END;
                     else {
                         direction = DIRECTION_UP;
                         orderSeeks = new SeekObjects(keys.getValue(lowestInd), false);
@@ -753,7 +775,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
                         int highestInd = keys.size() - getPageSize() * 2;
                         if (highestInd < 0) // по сути HOME
-                            orderSeeks = new SeekObjects(false);
+                            orderSeeks = SEEK_HOME;
                         else {
                             direction = DIRECTION_DOWN;
                             orderSeeks = new SeekObjects(keys.getValue(highestInd), false);
@@ -1010,7 +1032,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             if (objects != null)
                 return new SeekObjects(objects.second, end);
             else
-                return new SeekObjects(false);
+                return SEEK_HOME;
         }
     }
 
@@ -1020,6 +1042,35 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 return key.getType();
             }
         });                
+    }
+    
+    public ObjectUpdateInfo getUpdateInfo(ObjectInstance object) {
+        int index = orderObjects.indexOf(object);
+        return index >= 0 && index < orderObjects.size() ? getUpdateInfos().get(index) : null;
+    } 
+    
+    public ImMap<ObjectInstance, DataObject> getStaticObjectsSeek(boolean checkNoUpdate) {
+        MExclMap<ObjectInstance, DataObject> result = MapFact.mExclMap();
+        for (ObjectInstance object : objects) {
+            ObjectUpdateInfo updateInfo = getUpdateInfo(object);
+            if (updateInfo != null && updateInfo.isStatic() && (!checkNoUpdate || !updateInfo.onUpdate)) {
+                Object value = null;
+                if (updateInfo.staticObject) {
+                    if (object.getBaseClass() instanceof ConcreteCustomClass) {
+                        value = ((ConcreteCustomClass) object.getBaseClass()).getObjectID((String) updateInfo.literal);
+                    }
+                } else {
+                    value = updateInfo.literal;
+                }
+                DataObject dataObject = new DataObject(value, object.getCurrentClass());
+                result.exclAdd(object, dataObject);
+            }
+        }
+        return result.immutable();
+    }
+    
+    public List<ObjectUpdateInfo> getUpdateInfos() {
+        return entity.updateInfos;
     }
 
     public class RowBackgroundReaderInstance implements PropertyReaderInstance {

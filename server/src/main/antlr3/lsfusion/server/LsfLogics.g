@@ -456,6 +456,7 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 		(path = formGroupObjectReportPath { $groupObject.setReportPathProp($path.propUsage, $path.mapping); })?
 		(viewType = formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.isInitType); } )?
 		(pageSize = formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); })?
+		(update = formGroupObjectUpdateList { $groupObject.setUpdate($update.infos); })?
 	; 
 
 formTreeGroupObjectDeclaration returns [ScriptingGroupObject groupObject, List<PropertyUsage> properties]
@@ -498,6 +499,19 @@ classViewType returns [ClassViewType type]
 
 formGroupObjectPageSize returns [Integer value = null]
 	:	'PAGESIZE' size = intLiteral { $value = $size.val; }
+	;
+
+formGroupObjectUpdateList returns [List<ObjectUpdateInfo> infos = new ArrayList<ObjectUpdateInfo>()]
+	:	info = formGroupObjectUpdate { infos.add(new ObjectUpdateInfo($info.updateType, $info.value, $info.isStaticObject)); }
+		(',' info = formGroupObjectUpdate { infos.add(new ObjectUpdateInfo($info.updateType, $info.value, $info.isStaticObject)); })*
+	;
+
+formGroupObjectUpdate returns [ObjectUpdateInfo.UpdateType updateType, Object value, boolean isStaticObject]
+@init {
+}
+	:	'FIRST' { $updateType = ObjectUpdateInfo.UpdateType.FIRST; }
+	|	'LAST' { $updateType = ObjectUpdateInfo.UpdateType.LAST; }
+	|	'STATIC' lit = literal { $updateType = ObjectUpdateInfo.UpdateType.STATIC; $value = $lit.value; $isStaticObject = $lit.cls == ScriptingLogicsModule.ConstType.STATIC; }
 	;
 
 formSingleGroupObjectDeclaration returns [String name, String className, String caption, ActionPropertyObjectEntity event] 
@@ -1123,7 +1137,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	castDef=castPropertyDefinition[context, dynamic] { $property = $castDef.property; }
 	|	sessionDef=sessionPropertyDefinition[context, dynamic] { $property = $sessionDef.property; }
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
-	|	constDef=literal { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
+	|	constDef=constantProperty { $property = new LPWithParams($constDef.property, new ArrayList<Integer>()); }
 	;
 
 expressionUnfriendlyPD[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
@@ -3295,7 +3309,6 @@ nonEmptyPropertyUsageList returns [List<PropertyUsage> propUsages]
 		(',' next=propertyUsage { $propUsages.add($next.propUsage); })* 
 	; 
 
-
 singleParameterList[List<TypedParameter> context, boolean dynamic] returns [List<LPWithParams> props]
 @init {
 	props = new ArrayList<LPWithParams>();
@@ -3334,8 +3347,8 @@ nonEmptyPropertyExpressionList[List<TypedParameter> context, boolean dynamic] re
 	:	first=propertyExpression[context, dynamic] { $props.add($first.property); }
 		(',' next=propertyExpression[context, dynamic] { $props.add($next.property); })* 
 	; 
-
-literal returns [LP property]
+	
+constantProperty returns [LP property]
 @init {
 	ScriptingLogicsModule.ConstType cls = null;
 	Object value = null;
@@ -3345,18 +3358,22 @@ literal returns [LP property]
 		$property = self.addConstantProp(cls, value);	
 	}
 }
-	: 	vint=uintLiteral	{ cls = ScriptingLogicsModule.ConstType.INT; value = $vint.val; }
-	|	vlong=ulongLiteral	{ cls = ScriptingLogicsModule.ConstType.LONG; value = $vlong.val; }
-	|	vnum=UNUMERIC_LITERAL	{ cls = ScriptingLogicsModule.ConstType.NUMERIC; value = $vnum.text; }
-	|	vdouble=udoubleLiteral { cls = ScriptingLogicsModule.ConstType.REAL; value = $vdouble.val; }
-	|	vstr=stringLiteral	{ cls = ScriptingLogicsModule.ConstType.STRING; value = $vstr.val; }  
-	|	vbool=booleanLiteral	{ cls = ScriptingLogicsModule.ConstType.LOGICAL; value = $vbool.val; }
-	|	vdate=dateLiteral	{ cls = ScriptingLogicsModule.ConstType.DATE; value = $vdate.val; }
-	|	vdatetime=dateTimeLiteral { cls = ScriptingLogicsModule.ConstType.DATETIME; value = $vdatetime.val; }
-	|	vtime=timeLiteral 	{ cls = ScriptingLogicsModule.ConstType.TIME; value = $vtime.val; }
-	|	vsobj=staticObjectID { cls = ScriptingLogicsModule.ConstType.STATIC; value = $vsobj.sid; }
-	|	vnull=NULL_LITERAL 	{ cls = ScriptingLogicsModule.ConstType.NULL; }
-	|	vcolor=colorLiteral { cls = ScriptingLogicsModule.ConstType.COLOR; value = $vcolor.val; }		
+	:	lit = literal { cls = $lit.cls; value = $lit.value; }
+	;
+
+literal returns [ScriptingLogicsModule.ConstType cls, Object value]
+	: 	vint=uintLiteral	{ $cls = ScriptingLogicsModule.ConstType.INT; $value = $vint.val; }
+	|	vlong=ulongLiteral	{ $cls = ScriptingLogicsModule.ConstType.LONG; $value = $vlong.val; }
+	|	vnum=UNUMERIC_LITERAL	{ $cls = ScriptingLogicsModule.ConstType.NUMERIC; $value = $vnum.text; }
+	|	vdouble=udoubleLiteral { $cls = ScriptingLogicsModule.ConstType.REAL; $value = $vdouble.val; }
+	|	vstr=stringLiteral	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $vstr.val; }  
+	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val; }
+	|	vdate=dateLiteral	{ $cls = ScriptingLogicsModule.ConstType.DATE; $value = $vdate.val; }
+	|	vdatetime=dateTimeLiteral { $cls = ScriptingLogicsModule.ConstType.DATETIME; $value = $vdatetime.val; }
+	|	vtime=timeLiteral 	{ $cls = ScriptingLogicsModule.ConstType.TIME; $value = $vtime.val; }
+	|	vsobj=staticObjectID { $cls = ScriptingLogicsModule.ConstType.STATIC; $value = $vsobj.sid; }
+	|	vnull=NULL_LITERAL 	{ $cls = ScriptingLogicsModule.ConstType.NULL; }
+	|	vcolor=colorLiteral { $cls = ScriptingLogicsModule.ConstType.COLOR; $value = $vcolor.val; }		
 	;
 
 classId returns [String sid]

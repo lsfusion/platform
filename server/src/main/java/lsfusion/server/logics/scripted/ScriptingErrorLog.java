@@ -230,7 +230,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitParamCountError(ScriptParser parser, int interfacesCount, int paramCount) throws SemanticErrorException {
-        emitSimpleError(parser, format("%d parameter(s) expected, %d provided", interfacesCount, paramCount));
+        emitElementCountError(parser, "parameter(s)", interfacesCount, paramCount);
+    }
+    
+    public void emitElementCountError(ScriptParser parser, String elementName, int expected, int provided) throws SemanticErrorException {
+        emitSimpleError(parser, format("%d %s expected, %d provided", expected, elementName, provided));    
     }
 
     public void emitConstraintPropertyAlwaysNullError(ScriptParser parser) throws SemanticErrorException {
