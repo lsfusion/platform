@@ -220,8 +220,47 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         return parentInfo;
     }
 
-    public void synchronizePropertyDraws() {
+    private void migratePropertyDraws() {
+        Map<String, String> nameChanges = dbManager.getPropertyDrawNamesChanges();
+        
+        ImportField oldPropertyDrawSIDField = new ImportField(reflectionLM.propertyDrawSIDClass);
+        ImportField oldFormCanonicalNameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
+        ImportField newPropertyDrawSIDField = new ImportField(reflectionLM.propertyDrawSIDClass);
+        ImportField newFormCanonicalNameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
 
+        ImportKey<?> keyForm = new ImportKey(reflectionLM.form, reflectionLM.navigatorElementCanonicalName.getMapping(newFormCanonicalNameField));
+        ImportKey<?> keyProperty = new ImportKey(reflectionLM.propertyDraw, reflectionLM.propertyDrawSIDNavigatorElementNamePropertyDraw.getMapping(oldFormCanonicalNameField, oldPropertyDrawSIDField));
+
+        try {
+            List<List<Object>> data = new ArrayList<List<Object>>();
+            for (String oldName : nameChanges.keySet()) {
+                String newName = nameChanges.get(oldName);
+                String oldFormName = oldName.substring(0, oldName.lastIndexOf('.'));
+                String newFormName = newName.substring(0, newName.lastIndexOf('.'));
+                data.add(Arrays.<Object>asList(oldName.substring(oldFormName.length() + 1), oldFormName, newName.substring(newFormName.length() + 1), newFormName));
+            }
+
+            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+            properties.add(new ImportProperty(newPropertyDrawSIDField, reflectionLM.sidPropertyDraw.getMapping(keyProperty)));
+            properties.add(new ImportProperty(newFormCanonicalNameField, reflectionLM.formPropertyDraw.getMapping(keyProperty), LM.object(reflectionLM.navigatorElement).getMapping(keyForm)));
+
+            ImportTable table = new ImportTable(asList(oldPropertyDrawSIDField, oldFormCanonicalNameField, newPropertyDrawSIDField, newFormCanonicalNameField), data);
+
+            DataSession session = createSession();
+
+            IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyProperty), properties);
+            service.synchronize(false, false);
+
+            session.apply(businessLogics);
+            session.close();
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+    }
+    
+    public void synchronizePropertyDraws() {
+        migratePropertyDraws();
+        
         List<List<Object>> dataPropertyDraws = new ArrayList<List<Object>>();
         for (FormEntity formElement : businessLogics.getFormEntities()) {
             String canonicalName = formElement.getCanonicalName();
@@ -325,7 +364,39 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         synchronizePropertyParents();
     }
 
+    private void migrateProperties() {
+        Map<String, String> nameChanges = dbManager.getPropertyNamesChanges();
+        ImportField oldCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
+        ImportField newCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
+
+        ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertyCanonicalName.getMapping(oldCanonicalNameField));
+
+        try {
+            List<List<Object>> data = new ArrayList<List<Object>>();
+            for (String oldName : nameChanges.keySet()) {
+                    data.add(Arrays.<Object>asList(oldName, nameChanges.get(oldName)));
+            }
+
+            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+            properties.add(new ImportProperty(newCanonicalNameField, reflectionLM.canonicalNameProperty.getMapping(keyProperty)));
+
+            ImportTable table = new ImportTable(asList(oldCanonicalNameField, newCanonicalNameField), data);
+
+            DataSession session = createSession();
+
+            IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties);
+            service.synchronize(false, false);
+                        
+            session.apply(businessLogics);
+            session.close();
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+    }
+    
     public void synchronizePropertyEntities() {
+        migrateProperties();
+        
         ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
         ImportField dbNamePropertyField = new ImportField(reflectionLM.propertySIDValueClass);
         ImportField captionPropertyField = new ImportField(reflectionLM.propertyCaptionValueClass);

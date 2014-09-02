@@ -75,7 +75,6 @@ formPropertyDraw 'Форма' = DATA Form (PropertyDraw) INDEXED;
 groupObjectPropertyDraw 'Группа объектов' = DATA GroupObject (PropertyDraw);
 propertyDrawFormSID 'Свойство на форме' = GROUP AGGR propertyDraw BY formPropertyDraw (propertyDraw), sidPropertyDraw (propertyDraw) WHERE propertyDraw IS PropertyDraw;
 propertyDrawSIDNavigatorElementNamePropertyDraw 'Код формы' (str1, str2) = propertyDrawFormSID (navigatorElementCanonicalName(str1), str2);
-//PropertyDrawSIDNavigatorElementSIDPropertyDraw = addJProp(BL.LM.baseGroup, "PropertyDrawSIDNavigatorElementSIDPropertyDraw", getString("logics.forms.code"), propertyDrawFormSID, navigatorElementSID, 1, 2);
 
 showPropertyDraw 'Показ свойства' = DATA PropertyDrawShowStatus (PropertyDraw);
 showPropertyDrawCustomUser 'Показ свойства для пользователя' = DATA PropertyDrawShowStatus (PropertyDraw, CustomUser);

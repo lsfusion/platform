@@ -30,30 +30,23 @@ public class TypeSerializer {
         }
     }
 
-    public static Type deserializeType(DataInputStream inStream, int version) throws IOException {
-        if (version < 6) {
-            if(inStream.readBoolean())
+    public static Type deserializeType(DataInputStream inStream) throws IOException {
+        switch (inStream.readByte()) {
+            case 0:
                 return ObjectType.instance;
-            else
-                return deserializeDataClass(inStream, version);
-        } else {
-            switch (inStream.readByte()) {
-                case 0:
-                    return ObjectType.instance;
-                case 1:
-                    return deserializeDataClass(inStream, version);
-                case 2:
-            }       return deserializeConcatenateType(inStream, version);
-        }
+            case 1:
+                return deserializeDataClass(inStream);
+            case 2:
+        }       return deserializeConcatenateType(inStream);
     }
 
-    public static ConcatenateType deserializeConcatenateType(DataInputStream inStream, int version) throws IOException {
+    public static ConcatenateType deserializeConcatenateType(DataInputStream inStream) throws IOException {
         int typesCount = inStream.readInt();
 
         Type[] types = new Type[typesCount];
 
         for (int i = 0; i < typesCount; i++)
-            types[i] = TypeSerializer.deserializeType(inStream, version);
+            types[i] = TypeSerializer.deserializeType(inStream);
 
         return ConcatenateType.get(types);
     }
@@ -61,7 +54,7 @@ public class TypeSerializer {
     /**
      * номер последней версии определён в {@link lsfusion.server.logics.DBManager.DBStructure#DBStructure(lsfusion.server.logics.DBManager.DBVersion)}
      */
-    public static DataClass deserializeDataClass(DataInputStream inStream, int version) throws IOException {
+    public static DataClass deserializeDataClass(DataInputStream inStream) throws IOException {
         byte type = inStream.readByte();
 
         if (type == Data.INTEGER) return IntegerClass.instance;
@@ -75,64 +68,32 @@ public class TypeSerializer {
         if (type == Data.TIME) return TimeClass.instance;
         if (type == Data.COLOR) return ColorClass.instance;
 
-        if(version < 9) {
-            if (type == Data.VARSTRING) return StringClass.getv(inStream.readBoolean(), inStream.readInt());
+        
+        if (type == Data.STRING) {
+            return StringClass.get(inStream.readBoolean(), inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
+        }
 
-            if (version < 7) {
-                if (type == Data.STRING) return StringClass.get(inStream.readInt());
-                if (type == Data.INSENSITIVESTRING) return StringClass.geti(inStream.readInt());
-                if (type == Data.TEXT) return StringClass.text;
+        if (type == Data.IMAGE) return ImageClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.WORD) return WordClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.EXCEL) return ExcelClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.CUSTOMSTATICFORMATFILE) {
+            String filterDescription = inStream.readUTF();
+            String[] filterExtensions;
+            int extCount = inStream.readInt();
+            if (extCount <= 0) {
+                filterExtensions = new String[1];
+                filterExtensions[0] = "*";
             } else {
-                if (type == Data.STRING) return StringClass.get(inStream.readBoolean(), inStream.readInt());
-                if (type == Data.INSENSITIVESTRING) {
-                    // в 7й версии тип INSENSITIVESTRING был удалён
-                    throw new IllegalStateException("Incorrect type id");
-                }
-                if (type == Data.TEXT) {
-                    boolean caseInsensitive = inStream.readBoolean();
-                    assert !caseInsensitive;
-                    return StringClass.text;
-                }
-            }
-        } else {
-            if (type == Data.STRING) {
-                if (version < 13) {
-                    return StringClass.get(inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
-                } else {
-                    return StringClass.get(inStream.readBoolean(), inStream.readBoolean(), inStream.readBoolean(), ExtInt.deserialize(inStream));
-                }
-            }
-        }
+                filterExtensions = new String[extCount];
 
-        if(version>=2) { // обратная совместимость
-            if (type == Data.IMAGE) return ImageClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false);
-            if (type == Data.WORD) return WordClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false);
-            if (type == Data.EXCEL) return ExcelClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false);
-            if (type == Data.CUSTOMSTATICFORMATFILE) {
-                String filterDescription = inStream.readUTF();
-                String[] filterExtensions;
-                int extCount = inStream.readInt();
-                if (extCount <= 0) {
-                    filterExtensions = new String[1];
-                    filterExtensions[0] = "*";
-                } else {
-                    filterExtensions = new String[extCount];
-
-                    for (int i = 0; i < extCount; ++i) {
-                        filterExtensions[i] = inStream.readUTF();
-                    }
+                for (int i = 0; i < extCount; ++i) {
+                    filterExtensions[i] = inStream.readUTF();
                 }
-                return CustomStaticFormatFileClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false, filterDescription, filterExtensions);
             }
-            if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false);
-            if (type == Data.PDF) return PDFClass.get(inStream.readBoolean(), version >= 4 ? inStream.readBoolean() : false);
-        } else {
-            if (type == Data.IMAGE) return ImageClass.get(false, false);
-            if (type == Data.WORD) return WordClass.get(false, false);
-            if (type == Data.EXCEL) return ExcelClass.get(false, false);
-            if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(false, false);
-            if (type == Data.PDF) return PDFClass.get(false, false);
+            return CustomStaticFormatFileClass.get(inStream.readBoolean(), inStream.readBoolean(), filterDescription, filterExtensions);
         }
+        if (type == Data.DYNAMICFORMATFILE) return DynamicFormatFileClass.get(inStream.readBoolean(), inStream.readBoolean());
+        if (type == Data.PDF) return PDFClass.get(inStream.readBoolean(), inStream.readBoolean());
 
         throw new IOException();
     }

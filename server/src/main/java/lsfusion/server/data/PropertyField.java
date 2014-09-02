@@ -11,8 +11,8 @@ public class PropertyField extends Field {
         super(name,type);
     }
 
-    public PropertyField(DataInputStream inStream, int version) throws IOException {
-        super(inStream, version);
+    public PropertyField(DataInputStream inStream) throws IOException {
+        super(inStream);
     }
 
     byte getType() {

@@ -34,17 +34,18 @@ statement
  	|	classRename
 	|	tableRename
 	|	objectRename
+	|	propertyDrawRename
 	;
-    
+
 propertyRename
 @init {
-	List<String> newCls = null;
+	boolean stored = false;
+	String newClasses = null;
 }
-	:	'PROPERTY' 
-		(	r=sidRename { self.addPropertySIDChange($script::version, $r.from, $r.to); }
-		|	oldName=compoundID '[' oldClasses=classList ']' '->' newName=compoundID ('[' newClasses=classList ']' { newCls = $newClasses.classes; })?
-			{ self.addPropertyCNChange($script::version, $oldName.sid, $oldClasses.classes, $newName.sid, newCls); }
-		) 
+	:	('STORED' { stored = true; })?
+		'PROPERTY' 
+		oldName=compoundID oldSignature=signature '->' newName=compoundID (newSignature=signature { newClasses = $newSignature.result; })?
+		{ self.addPropertyCNChange($script::version, $oldName.sid, $oldSignature.result, $newName.sid, newClasses, stored); }
 	;
 	
 classRename
@@ -67,32 +68,80 @@ objectSidRename returns [String from, String to]
 	:	old=staticObjectID '->' newID=staticObjectID	{ $from = $old.text; $to = $newID.text; }
 	;
 
+propertyDrawRename
+	:	'FORM' 'PROPERTY' oldName=formPropertyID '->' newName=formPropertyID { self.addPropertyDrawSIDChange($script::version, $oldName.sid, $newName.sid); }
+	;
+
 changeVersion returns [String version] 
 	:	v=VERSION { $version = $v.text.substring(1); }
 	;
+
+signature returns [String result] 
+@after {
+	$result = $text;
+}
+	:	'[' (signatureItem (',' signatureItem)*)? ']'
+	;
 	
-className returns [String classID]
-	:	id=compoundID { $classID = $id.sid; }
-	|	type=PRIMITIVE_TYPE { $classID = $type.text; }
+signatureItem 
+	:	cs=resolveClassSet 
+	|	'?'
 	;	
+	
+resolveClassSet
+	:	concatenateClassSet
+	|	orObjectClassSet
+	|	upClassSet
+	|	singleClass
+	;
+	
+concatenateClassSet
+	:	'CONCAT(' resolveClassSetList ')'
+	;
+
+resolveClassSetList
+	:	(resolveClassSet (',' resolveClassSet)*)?
+	;
+
+orObjectClassSet
+	:	'{' (upClassSet | customClass) (',' customClassList)? '}'
+	;
+
+customClassList
+	:	(customClass (',' customClass)*)?
+	;
+
+upClassSet
+	:	'(' customClassList ')'
+	;
+
+singleClass
+	:	customClass
+	|	PRIMITIVE_TYPE
+	;
+
+	
+customClass
+	:	compoundID
+	;
 
 compoundID returns [String sid]
-	:	{ $sid = ""; }
-		(firstPart=ID '.' { $sid = $firstPart.text + '.'; })? secondPart=ID { $sid = $sid + $secondPart.text; }
+	:	namespacePart=ID '.' namePart=ID { $sid = $namespacePart.text + '.' + $namePart.text; }
 	;
+	
+formPropertyID returns [String sid]
+	:	namespacePart=ID '.' namePart=ID '.' propertyName=ID { $sid = $namespacePart.text + '.' + $namePart.text + '.' + $propertyName.text; }
+		('(' ids=idList ')' { $sid = $sid + '(' + $ids.result + ')'; })?
+	;	
 	
 staticObjectID returns [String sid]
-	:	(namespacePart=ID '.')? classPart=ID '.' namePart=ID { $sid = ($namespacePart != null ? $namespacePart.text + '.' : "") + $classPart.text + '.' + $namePart.text; }
+	:	namespacePart=ID '.' classPart=ID '.' namePart=ID { $sid = $namespacePart.text + '.' + $classPart.text + '.' + $namePart.text; }
 	;
 	
-classList returns [List<String> classes]
-@init {
-	classes = new ArrayList<String>();
-}
-	:	(firstName=className	{ $classes.add($firstName.classID); }
-		(',' nextName=className	{ $classes.add($nextName.classID); })*)?
+idList returns [String result]
+	:	{ $result = ""; }
+		(first=ID { $result = $result + $first.text; } (',' next=ID { $result = $result + $next.text; })*)?
 	;
-	
 	
 /////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////// LEXER //////////////////////////////////////
@@ -108,7 +157,7 @@ fragment DIGITS		:	('0'..'9')+;
 PRIMITIVE_TYPE      :   'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATETIME' | 'DATE' | 'YEAR' | 'TIME'
                     |   'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'CUSTOMFILE' | 'EXCELFILE'
                     |   'STRING' | 'NUMERIC' | 'COLOR'
-			        ;
+                    ;
 
 VERSION     :	'V' DIGIT+ ('.' DIGIT+)*;
 ID          :	FIRST_ID_LETTER NEXT_ID_LETTER*;

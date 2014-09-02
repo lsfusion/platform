@@ -203,17 +203,17 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             }});
     }
 
-    public Table(DataInputStream inStream, final BaseClass baseClass, int version) throws IOException {
+    public Table(DataInputStream inStream, final BaseClass baseClass) throws IOException {
         name = inStream.readUTF();
         int keysNum = inStream.readInt();
         MOrderExclSet<KeyField> mKeys = SetFact.mOrderExclSet(keysNum); // десериализация, поэтому порядок важен
         for(int i=0;i<keysNum;i++)
-            mKeys.exclAdd((KeyField) Field.deserialize(inStream, version));
+            mKeys.exclAdd((KeyField) Field.deserialize(inStream));
         keys = mKeys.immutableOrder();
         int propNum = inStream.readInt();
         MExclSet<PropertyField> mProperties = SetFact.mExclSet(propNum);
         for(int i=0;i<propNum;i++)
-            mProperties.exclAdd((PropertyField) Field.deserialize(inStream, version));
+            mProperties.exclAdd((PropertyField) Field.deserialize(inStream));
         properties = mProperties.immutable();
 
         initBaseClasses(baseClass);

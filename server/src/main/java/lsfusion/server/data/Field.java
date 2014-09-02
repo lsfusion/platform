@@ -77,15 +77,15 @@ public abstract class Field extends TwinImmutableObject implements BinarySeriali
         TypeSerializer.serializeType(outStream,type);
     }
 
-    protected Field(DataInputStream inStream, int version) throws IOException {
+    protected Field(DataInputStream inStream) throws IOException {
         name = inStream.readUTF();
-        type = TypeSerializer.deserializeType(inStream, version);
+        type = TypeSerializer.deserializeType(inStream);
     }
 
-    public static Field deserialize(DataInputStream inStream, int version) throws IOException {
+    public static Field deserialize(DataInputStream inStream) throws IOException {
         int type = inStream.readByte();
-        if(type==0) return new KeyField(inStream, version);
-        if(type==1) return new PropertyField(inStream, version);
+        if(type==0) return new KeyField(inStream);
+        if(type==1) return new PropertyField(inStream);
 
         throw new IOException();
     }

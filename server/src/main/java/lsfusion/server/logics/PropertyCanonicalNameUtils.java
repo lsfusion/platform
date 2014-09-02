@@ -58,17 +58,4 @@ public final class PropertyCanonicalNameUtils {
     static public String createName(String namespace, String name, ResolveClassSet... signature) {
         return createName(namespace, name, Arrays.asList(signature));
     }
-    
-    static public String createSignatureStr(List<String> classNames) {
-        StringBuilder signature = new StringBuilder();
-        signature.append("[");
-        for (int i = 0; i < classNames.size(); i++) {
-            if (i > 0) {
-                signature.append(",");
-            }
-            signature.append(classNames.get(i));
-        }
-        signature.append("]");
-        return signature.toString();
-    }
 }

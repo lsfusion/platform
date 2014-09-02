@@ -17,8 +17,8 @@ public class KeyField extends Field implements Comparable<KeyField> {
             return super.getDeclare(syntax, typeEnv) + " default 0";
         }
     };
-    public KeyField(DataInputStream inStream, int version) throws IOException {
-        super(inStream, version);
+    public KeyField(DataInputStream inStream) throws IOException {
+        super(inStream);
     }
 
     byte getType() {

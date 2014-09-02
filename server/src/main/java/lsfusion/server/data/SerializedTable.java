@@ -13,8 +13,8 @@ import java.io.IOException;
 // предыдущая таблица в базе
 public class SerializedTable extends Table {
 
-    public SerializedTable(DataInputStream inStream, BaseClass baseClass, int version) throws IOException {
-        super(inStream, baseClass, version);
+    public SerializedTable(DataInputStream inStream, BaseClass baseClass) throws IOException {
+        super(inStream, baseClass);
     }
 
     public SerializedTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, BaseClass baseClass) {
