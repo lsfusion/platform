@@ -4,14 +4,17 @@ import com.google.common.base.Throwables;
 import lsfusion.interop.exceptions.RemoteServerException;
 
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.rmi.*;
 
 public class ExceptionUtils {
-    public static Throwable getInitialCause(Throwable throwable) {
+    public static Throwable getRootCause(Throwable throwable) {
         Throwable result = throwable;
-        while (result != null && result.getCause() != null && result instanceof RemoteException) {
+        while (result != null && result.getCause() != null) {
             result = result.getCause();
         }
 
@@ -31,13 +34,6 @@ public class ExceptionUtils {
         for (StackTraceElement aTrace : trace)
             s += "\tat " + aTrace + '\n';
         return s;
-    }
-
-    public static boolean isRecoverableRemoteException(Throwable remote) {
-        return remote instanceof RemoteException &&
-               (remote.getClass() == RemoteException.class
-                || remote instanceof ServerException
-                || getInitialCause(remote) instanceof RemoteServerException);
     }
 
     public static Throwable getNonSpringCause(Throwable throwable) {
@@ -91,9 +87,17 @@ public class ExceptionUtils {
         }
     }
 
-    public static boolean isFatalRemoteException(Throwable t) {
-        return t instanceof NoSuchObjectException ||
-                 t instanceof UnmarshalException ||
-                 t instanceof MarshalException;
+    public static int getFatalRemoteExceptionCount(Throwable t) {
+        t = getRootCause(t);
+        
+        // скорее всего уже не восстановимся сервел уничтожил объект на сервере
+        if(t instanceof NoSuchObjectException)
+            return 3;
+        
+        // временная проблема со связью
+        if(t instanceof ConnectException || t instanceof SocketException || t instanceof UnknownHostException) // проблема со связью ждем бесконечно
+            return Integer.MAX_VALUE;
+        
+        return 10; // неизвестно что
     }
 }

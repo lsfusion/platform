@@ -149,8 +149,6 @@ public class Main {
                     remoteNavigator = loginAction.getRemoteNavigator();
                     computerId = loginAction.getComputerId();
 
-                    ClientExceptionManager.flushUnreportedThrowables();
-
                     configurationAccessAllowed = remoteNavigator.isConfigurationAccessAllowed();
 
                     startSplashScreen();
@@ -277,10 +275,12 @@ public class Main {
         new RichEditorPane();
     }
 
-    public static void clientExceptionLog(String title, Throwable t) throws RemoteException {
+    public static boolean clientExceptionLog(String title, Throwable t) throws RemoteException {
         if (remoteNavigator != null) {
             remoteNavigator.logClientException(title, SystemUtils.getLocalHostName(), t);
+            return true;
         }
+        return false;
     }
 
     public static void setStatusText(String msg) {

@@ -7,6 +7,8 @@ import lsfusion.client.SwingUtils;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.interop.DaemonThreadFactory;
+import lsfusion.interop.exceptions.RemoteAbandonedException;
+import lsfusion.interop.exceptions.FatalHandledRemoteException;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
@@ -15,6 +17,7 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class RmiQueue {
     private static final Logger logger = ClientLoggers.invocationLogger;
@@ -55,6 +58,65 @@ public class RmiQueue {
         synchronized (edtSyncBlocker) {
             edtSyncBlocker.wait();
         }
+    }
+
+    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned) {
+        return runRetryableRequest(request, abandoned, false);
+    }
+    
+    private static AtomicLong reqIdGen = new AtomicLong();
+    
+    // вызывает request (предположительно remote) несколько раз, проблемы с целостностью предполагается что решается либо индексом, либо результат не так важен
+    public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure) {
+        int reqCount = 0;
+        boolean abandonedIt = false;
+        long reqId = reqIdGen.incrementAndGet();
+        try {
+            do {
+                try {
+                    return request.call();
+                } catch (Throwable t) {
+                    abandonedIt = abandoned.get();
+                    if(abandonedIt) // suppress'им все, failedRmiRequest'ы flush'ся отдельно
+                        throw new RemoteAbandonedException();
+                        
+                    if (t instanceof RemoteException) {
+                        RemoteException remote = (RemoteException) t;
+
+                        int maxFatal = ExceptionUtils.getFatalRemoteExceptionCount(t);
+                        if (reqCount > maxFatal) {
+                            ConnectionLostManager.connectionLost();
+
+                            t = new FatalHandledRemoteException(remote, reqId);
+                        } else {
+                            reqCount++;
+
+                            if (!registeredFailure) {
+                                ConnectionLostManager.registerFailedRmiRequest();
+                                registeredFailure = true;
+                            }
+
+                            ConnectionLostManager.addFailedRmiRequest(remote, reqId);
+                            t = null;
+                        }
+                    }
+
+                    if (t != null) {
+                        throw Throwables.propagate(t);
+                    }
+                }
+
+                SystemUtils.sleep(300);
+            } while (true);
+        } finally {
+            if (registeredFailure) {
+                ConnectionLostManager.unregisterFailedRmiRequest(abandonedIt);
+            }
+        }        
+    }
+
+    public static void handleNotRetryableRemoteException(RemoteException remote) {
+        ConnectionLostManager.connectionBroke();
     }
 
     public void abandon() {
@@ -255,42 +317,11 @@ public class RmiQueue {
 
         @Override
         public T call() throws RemoteException {
-            int fatalsCount = 0;
-            boolean registeredFailure = false;
-            try {
-                do {
-                    try {
-                        return request.doRequest();
-                    } catch (Throwable t) {
-                        //если уже connectionLost, то в любом случае выбрасываем исключнение
-                        if (t instanceof RemoteException && !(t instanceof ServerException) && !ConnectionLostManager.isConnectionLost() && !abandoned.get()) {
-                            boolean isFatal = ExceptionUtils.isFatalRemoteException(t);
-                            if (isFatal && fatalsCount > 3) {
-                                ConnectionLostManager.connectionLost();
-                            } else {
-                                if (isFatal) {
-                                    fatalsCount++;
-                                }
-                                t = null;
-                                if (!registeredFailure) {
-                                    ConnectionLostManager.registerFailedRmiRequest();
-                                    registeredFailure = true;
-                                }
-                            }
-                        }
-
-                        if (t != null) {
-                            throw Throwables.propagate(t);
-                        }
-                    }
-
-                    SystemUtils.sleep(1000);
-                } while (true);
-            } finally {
-                if (registeredFailure && !abandoned.get()) {
-                    ConnectionLostManager.unregisterFailedRmiRequest();
+            return runRetryableRequest(new Callable<T>() {
+                public T call() throws Exception {
+                    return request.doRequest();
                 }
-            }
+            }, abandoned);
         }
     }
 }

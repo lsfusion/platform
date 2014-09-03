@@ -1,12 +1,15 @@
 package lsfusion.client;
 
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.rmi.ConnectionLostManager;
+import lsfusion.interop.remote.CallbackMessage;
 import lsfusion.interop.remote.ClientCallBackInterface;
 
 import javax.swing.*;
-import java.rmi.RemoteException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -49,8 +52,13 @@ public class PingThread extends Thread {
                 if (!ConnectionLostManager.shouldBeBlocked()) {
                     //не спами лишний раз, если отключены
                     try {
-                        clientProcessor.processMessages(remoteClient.pullMessages());
-                    } catch (final RemoteException e) {
+                        List<CallbackMessage> messages = RmiQueue.runRetryableRequest(new Callable<List<CallbackMessage>>() {
+                            public List<CallbackMessage> call() throws Exception {
+                                return remoteClient.pullMessages();
+                            }
+                        }, abandoned);
+                        clientProcessor.processMessages(messages);
+                    } catch (final Throwable t) {
                         //выкидываем ошибку в EDT, чтобы обработать общим механизмом и чтобы не убивать PingThread
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
@@ -58,7 +66,7 @@ public class PingThread extends Thread {
                                 if (abandoned.get()) {
                                     return;
                                 }
-                                throw new RuntimeException(e);
+                                throw new RuntimeException(t);
                             }
                         });
                     }

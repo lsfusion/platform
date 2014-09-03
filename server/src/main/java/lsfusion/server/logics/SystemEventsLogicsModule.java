@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.DateConverter;
 import lsfusion.base.ExceptionUtils;
+import lsfusion.interop.exceptions.*;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.data.SQLHandledException;
@@ -14,6 +15,7 @@ import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Calendar;
 
@@ -23,6 +25,10 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public AbstractCustomClass exception;
     public ConcreteCustomClass clientException;
+    public ConcreteCustomClass remoteServerException;
+    public ConcreteCustomClass fatalHandledRemoteException;
+    public ConcreteCustomClass nonFatalHandledRemoteException;
+    public ConcreteCustomClass unhandledRemoteException;
     public ConcreteCustomClass serverException;
     public ConcreteCustomClass launch;
     public ConcreteCustomClass connection;
@@ -49,6 +55,10 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP clientClientException;
     public LCP loginClientException;
 
+    private LCP reqIdHandledException;
+    private LCP countNonFatalHandledException;
+    private LCP abandonedNonFatalHandledException;
+
     public LCP connectionFormCount;
 
     public LCP currentSession;
@@ -70,6 +80,10 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         super.initClasses();
 
         clientException = (ConcreteCustomClass) findClass("ClientException");
+        remoteServerException = (ConcreteCustomClass) findClass("RemoteServerException");
+        fatalHandledRemoteException = (ConcreteCustomClass) findClass("FatalHandledException");
+        nonFatalHandledRemoteException = (ConcreteCustomClass) findClass("NonFatalHandledException");
+        unhandledRemoteException = (ConcreteCustomClass) findClass("UnhandledException");
         serverException = (ConcreteCustomClass) findClass("ServerException");
         launch = (ConcreteCustomClass) findClass("Launch");
         connection = (ConcreteCustomClass) findClass("Connection");
@@ -104,6 +118,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         typeException =  findProperty("typeException");
         clientClientException = findProperty("clientClientException");
         loginClientException = findProperty("loginClientException");
+        reqIdHandledException = findProperty("reqIdHandledException");
+        countNonFatalHandledException = findProperty("countNonFatalHandledException");
+        abandonedNonFatalHandledException = findProperty("abandonedNonFatalHandledException");
 
         // Открытые формы во время подключения
         connectionFormCount = findProperty("connectionFormCount");
@@ -128,7 +145,27 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         DataSession session = createSession();
         DataObject exceptionObject;
         if (client) {
-            exceptionObject = session.addObject(clientException);
+            if(t instanceof RemoteServerException) {
+                exceptionObject = session.addObject(remoteServerException);
+            } else if (t instanceof RemoteException) {
+                exceptionObject = session.addObject(unhandledRemoteException);
+            } else if (t instanceof HandledRemoteException) {
+                HandledRemoteException handled = (HandledRemoteException) t;
+
+                if(t instanceof FatalHandledRemoteException)
+                    exceptionObject = session.addObject(fatalHandledRemoteException);
+                else {
+                    exceptionObject = session.addObject(nonFatalHandledRemoteException);
+                    
+                    NonFatalHandledRemoteException nonFatal = (NonFatalHandledRemoteException) t;
+                    countNonFatalHandledException.change(nonFatal.count, session, exceptionObject);
+                    abandonedNonFatalHandledException.change(nonFatal.abandoned, session, exceptionObject);
+                }
+                
+                reqIdHandledException.change(handled.reqId, session, exceptionObject);
+            } else {
+                exceptionObject = session.addObject(clientException);
+            }
             clientClientException.change(clientName, session, exceptionObject);
             String userLogin = (String) authenticationLM.loginCustomUser.read(session, user);
             loginClientException.change(userLogin, session, exceptionObject);
