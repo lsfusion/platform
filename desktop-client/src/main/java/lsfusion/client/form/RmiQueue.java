@@ -69,15 +69,13 @@ public class RmiQueue {
     // вызывает request (предположительно remote) несколько раз, проблемы с целостностью предполагается что решается либо индексом, либо результат не так важен
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure) {
         int reqCount = 0;
-        boolean abandonedIt = false;
         long reqId = reqIdGen.incrementAndGet();
         try {
             do {
                 try {
                     return request.call();
                 } catch (Throwable t) {
-                    abandonedIt = abandoned.get();
-                    if(abandonedIt) // suppress'им все, failedRmiRequest'ы flush'ся отдельно
+                    if(abandoned.get()) // suppress'им все, failedRmiRequest'ы flush'ся отдельно
                         throw new RemoteAbandonedException();
                         
                     if (t instanceof RemoteException) {
@@ -110,7 +108,7 @@ public class RmiQueue {
             } while (true);
         } finally {
             if (registeredFailure) {
-                ConnectionLostManager.unregisterFailedRmiRequest(abandonedIt);
+                ConnectionLostManager.unregisterFailedRmiRequest(abandoned.get(), reqId);
             }
         }        
     }

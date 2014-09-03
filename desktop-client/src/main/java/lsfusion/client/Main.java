@@ -80,8 +80,6 @@ public class Main {
 
     public static int asyncTimeOut;
 
-    private static PingThread pingThread;
-
     public static EventBus eventBus = new EventBus();
     private static ArrayList<IDaemonTask> daemonTasks;
 
@@ -157,15 +155,6 @@ public class Main {
                     frame = module.initFrame(remoteNavigator);
                     logger.info("After init frame");
 
-                    pingThread = new PingThread(remoteNavigator.getClientCallBack());
-                    pingThread.setDaemon(true);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            pingThread.start();
-                        }
-                    });
-
                     remoteNavigator.setUpdateTime(pullMessagesPeriod);
 
                     frame.addWindowListener(
@@ -179,7 +168,7 @@ public class Main {
                     frame.setExtendedState(Frame.MAXIMIZED_BOTH);
                     logger.info("After setExtendedState");
 
-                    ConnectionLostManager.start(frame);
+                    ConnectionLostManager.start(frame, remoteNavigator.getClientCallBack());
 
                     frame.setVisible(true);
 
@@ -435,12 +424,6 @@ public class Main {
             }
         }
         eventBus.invalidate();
-
-        if (pingThread != null) {
-            pingThread.abandon();
-            pingThread.interrupt();
-            pingThread = null;
-        }
 
         computerId = -1;
         frame = null;

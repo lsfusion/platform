@@ -95,7 +95,7 @@ public class ExceptionUtils {
             return 3;
         
         // временная проблема со связью
-        if(t instanceof ConnectException || t instanceof SocketException || t instanceof UnknownHostException) // проблема со связью ждем бесконечно
+        if(t instanceof ConnectException || t instanceof java.net.ConnectException || t instanceof SocketException || t instanceof UnknownHostException || t instanceof java.net.UnknownHostException) // проблема со связью ждем бесконечно
             return Integer.MAX_VALUE;
         
         return 10; // неизвестно что

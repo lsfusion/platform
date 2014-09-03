@@ -1,15 +1,13 @@
 package lsfusion.client.rmi;
 
 import lsfusion.base.*;
-import lsfusion.client.Main;
-import lsfusion.client.MainFrame;
-import lsfusion.client.StartupProperties;
-import lsfusion.client.SwingUtils;
+import lsfusion.client.*;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.form.RmiQueue;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
+import lsfusion.interop.remote.ClientCallBackInterface;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -22,6 +20,7 @@ import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,13 +42,24 @@ public class ConnectionLostManager {
     private static Pinger pinger;
     private static ExecutorService pingerExecutor = Executors.newCachedThreadPool(new DaemonThreadFactory("pinger"));
 
-    public static void start(MainFrame frame) {
+    private static PingThread pingThread;
+
+    public static void start(MainFrame frame, ClientCallBackInterface clientCallBack) {
         SwingUtils.assertDispatchThread();
 
         assert frame != null;
         if (currentFrame != frame) {
             currentFrame = frame;
         }
+
+        pingThread = new PingThread(clientCallBack);
+        pingThread.setDaemon(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                pingThread.start();
+            }
+        });
 
         connectionLost.set(false);
 
@@ -134,24 +144,27 @@ public class ConnectionLostManager {
         RmiQueue.notifyEdtSyncBlocker();
     }
     
-    private static final List<NonFatalHandledRemoteException> failedNotFatalHandledRequests = Collections.synchronizedList(new ArrayList<NonFatalHandledRemoteException>());
+    private static final ConcurrentHashMap<Long, List<NonFatalHandledRemoteException>> failedNotFatalHandledRequests = new ConcurrentHashMap<Long, List<NonFatalHandledRemoteException>>();
     public static void addFailedRmiRequest(RemoteException remote, long reqId) {
-        failedNotFatalHandledRequests.add(new NonFatalHandledRemoteException(remote, reqId)); // !! важно создавать здесь чтобы релевантный stack trace был        
+        List<NonFatalHandledRemoteException> exceptions = failedNotFatalHandledRequests.get(reqId);
+        if(exceptions == null) {
+            exceptions = new ArrayList<NonFatalHandledRemoteException>();
+            failedNotFatalHandledRequests.put(reqId, exceptions);
+        }
+        exceptions.add(new NonFatalHandledRemoteException(remote, reqId)); // !! важно создавать здесь чтобы релевантный stack trace был
     }
     
-    public static void flushFailedNotFatalRequests(final boolean abandoned) {
-        if(!failedNotFatalHandledRequests.isEmpty()) {
+    public static void flushFailedNotFatalRequests(final boolean abandoned, long reqId) {
+        final List<NonFatalHandledRemoteException> flushExceptions = failedNotFatalHandledRequests.remove(reqId);
+        if(flushExceptions != null) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     Map<Pair<String, Long>, Collection<NonFatalHandledRemoteException>> group;
-                    synchronized (failedNotFatalHandledRequests) {
                         group = BaseUtils.group(new BaseUtils.Group<Pair<String, Long>, NonFatalHandledRemoteException>() {
                             public Pair<String, Long> group(NonFatalHandledRemoteException key) {
                                 return new Pair<String, Long>(key.getMessage() + ExceptionUtils.getStackTraceString(key), key.reqId);
                             }
-                        }, failedNotFatalHandledRequests);
-                        failedNotFatalHandledRequests.clear();
-                    }
+                        }, flushExceptions);
 
                     for (Map.Entry<Pair<String, Long>, Collection<NonFatalHandledRemoteException>> entry : group.entrySet()) {
                         Collection<NonFatalHandledRemoteException> all = entry.getValue();
@@ -166,11 +179,11 @@ public class ConnectionLostManager {
         }
     }
     
-    public static void unregisterFailedRmiRequest(boolean abandoned) {
+    public static void unregisterFailedRmiRequest(boolean abandoned, long reqId) {
         if(!abandoned) // чтобы еще раз не decrement'ся
             failedRequests.decrementAndGet();
         
-        flushFailedNotFatalRequests(abandoned);
+        flushFailedNotFatalRequests(abandoned, reqId);
     }
 
     private static boolean hasFailedRequest() {
@@ -203,7 +216,13 @@ public class ConnectionLostManager {
 
         rmiQueues.clear();
 
-        failedRequests.set(0);
+        if (pingThread != null) {
+            pingThread.abandon();
+            pingThread.interrupt();
+            pingThread = null;
+        }
+
+        failedRequests.set(0); // важно abandon'ы сделать до обнуления failedRequests
 
         if (timerWhenBlocked != null) {
             timerWhenBlocked.stop();
