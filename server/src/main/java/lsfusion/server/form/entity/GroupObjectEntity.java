@@ -51,8 +51,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
     public Integer pageSize;
 
-    public List<ObjectUpdateInfo> updateInfos = new ArrayList<ObjectUpdateInfo>();
-
     public CalcPropertyObjectEntity<?> propertyBackground;
     public CalcPropertyObjectEntity<?> propertyForeground;
 

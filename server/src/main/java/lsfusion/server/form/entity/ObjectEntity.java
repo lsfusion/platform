@@ -23,6 +23,8 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     public String caption;
 
+    public ObjectUpdateInfo updateInfo = new ObjectUpdateInfo(ObjectUpdateInfo.UpdateType.FIRST, true);
+
     public String getCaption() {
         return !BaseUtils.isRedundantString(caption)
                ? caption

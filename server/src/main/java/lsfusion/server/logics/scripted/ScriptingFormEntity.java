@@ -100,12 +100,9 @@ public class ScriptingFormEntity {
                 if (groupObject.updateInfos.size() != groupObject.objects.size()) {
                     LM.getErrLog().emitElementCountError(LM.getParser(), "Objects update modifier(s)", groupObject.objects.size(), groupObject.updateInfos.size());
                 } else {
-                    groupObj.updateInfos = groupObject.updateInfos;
-                }
-            } else {
-                groupObj.updateInfos = new ArrayList<ObjectUpdateInfo>();
-                for (int i = 0; i < groupObject.objects.size(); i++) {
-                    groupObj.updateInfos.add(new ObjectUpdateInfo(ObjectUpdateInfo.UpdateType.FIRST, true));
+                    for (ObjectEntity objectEntity : groupObj.getOrderObjects()) {
+                        objectEntity.updateInfo = groupObject.updateInfos.get(groupObj.getOrderObjects().indexOf(objectEntity));
+                    }
                 }
             }
 

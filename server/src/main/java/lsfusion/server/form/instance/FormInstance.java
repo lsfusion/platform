@@ -254,7 +254,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
 
         for (GroupObjectInstance groupObject : groupObjects) {
-            for (ObjectUpdateInfo updateInfo : groupObject.getUpdateInfos()) {
+            for (ObjectInstance object : groupObject.objects) {
+                ObjectUpdateInfo updateInfo = object.getUpdateInfo();
                 if (!updateInfo.onUpdate && (updateInfo.isLast() || updateInfo.isFirst())) { // проставляем FIRST или LAST, если есть
                     groupObject.seek(updateInfo.isLast());
                 }

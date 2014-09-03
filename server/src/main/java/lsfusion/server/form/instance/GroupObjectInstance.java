@@ -739,7 +739,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 currentObject = MapFact.EMPTY();
             } else if (updateKeys) {
                 if (objectsUpdated) {
-                    for (ObjectUpdateInfo info : getUpdateInfos()) { // проставляем FIRST или LAST, если есть
+                    for (ObjectInstance obj : getOrderObjects()) { // проставляем FIRST или LAST, если есть
+                        ObjectUpdateInfo info = obj.getUpdateInfo();
                         orderSeeks = info.isLast() ? SEEK_END : info.isFirst() ? SEEK_HOME : null;
                     }
                     
@@ -1044,16 +1045,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         });                
     }
     
-    public ObjectUpdateInfo getUpdateInfo(ObjectInstance object) {
-        int index = orderObjects.indexOf(object);
-        return index >= 0 && index < orderObjects.size() ? getUpdateInfos().get(index) : null;
-    } 
-    
     public ImMap<ObjectInstance, DataObject> getStaticObjectsSeek(boolean checkNoUpdate) {
         MExclMap<ObjectInstance, DataObject> result = MapFact.mExclMap();
         for (ObjectInstance object : objects) {
-            ObjectUpdateInfo updateInfo = getUpdateInfo(object);
-            if (updateInfo != null && updateInfo.isStatic() && (!checkNoUpdate || !updateInfo.onUpdate)) {
+            ObjectUpdateInfo updateInfo = object.getUpdateInfo();
+            if (updateInfo.isStatic() && (!checkNoUpdate || !updateInfo.onUpdate)) {
                 Object value = null;
                 if (updateInfo.staticObject) {
                     if (object.getBaseClass() instanceof ConcreteCustomClass) {
@@ -1067,10 +1063,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             }
         }
         return result.immutable();
-    }
-    
-    public List<ObjectUpdateInfo> getUpdateInfos() {
-        return entity.updateInfos;
     }
 
     public class RowBackgroundReaderInstance implements PropertyReaderInstance {
