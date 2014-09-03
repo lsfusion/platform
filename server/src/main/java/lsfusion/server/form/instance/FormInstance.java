@@ -1790,6 +1790,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                     query.addProperty(object, object.getExpr(query.getMapExprs(), getModifier()));
                     mQueryOrders.add(object, false);
                 }
+
+                if (group.curClassView == ClassViewType.PANEL) {
+                    for (ObjectInstance object : group.objects) {
+                        query.and(object.getExpr(query.getMapExprs(), getModifier()).compare(object.getObjectValue().getExpr(), Compare.EQUALS));
+                    }
+                }
             }
         }
 
