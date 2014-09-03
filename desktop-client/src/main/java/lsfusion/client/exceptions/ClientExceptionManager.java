@@ -26,8 +26,10 @@ public class ClientExceptionManager {
                 logger.error("Client error: ", e);
                 
                 Throwable remote = getRemoteExceptionCause(e);
-                if(remote == null)
-                    reportClientThrowable(e); // обычный throwable        
+                if(remote == null) {
+                    Log.error("Внутренняя ошибка клиента", e);
+                    reportClientThrowable(e); // обычный throwable
+                }
                 if (remote instanceof RemoteServerException) {
                     Log.error("Внутренняя ошибка сервера", e);
                     reportServerRemoteThrowable((RemoteServerException) remote);
