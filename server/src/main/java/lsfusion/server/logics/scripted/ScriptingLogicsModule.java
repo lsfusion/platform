@@ -356,6 +356,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return (LCP<?>) findLP(name);
     }
 
+    public LCP<?>[] findProperties(String... names) throws ScriptingErrorLog.SemanticErrorException {
+        LCP<?>[] result = new LCP[names.length];
+        for (int i = 0; i < names.length; i++) {
+            result[i] = findProperty(names[i]);
+        }
+        return result;
+    }
+
     private LP<?, ?> findLP(String name) throws ScriptingErrorLog.SemanticErrorException {
         PropertyUsageParser parser = new PropertyUsageParser(this, name);
         LP<?, ?> property = null;
