@@ -790,9 +790,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
             updated = (updated | UPDATED_KEYS);
 
-            if (curClassView != GRID) // панель
-                return orderSeeks.readKeys(sql, env, modifier, baseClass, reallyChanged);
-            else {
+            if (curClassView != GRID) { // панель
+                ImMap<ObjectInstance, DataObject> readKeys = orderSeeks.readKeys(sql, env, modifier, baseClass, reallyChanged);
+                updateViewProperty(execEnv, readKeys);
+                return readKeys;
+            } else {
                 int activeRow = -1; // какой ряд выбранным будем считать
 
                 if (isInTree()) { // если дерево, то без поиска, но возможно с parent'ами
@@ -889,15 +891,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 keyTable.writeKeys(sql, keys.keys(), env.getOpOwner());
                 result.gridObjects.exclAdd(this, keys.keyOrderSet());
 
-                CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
-                if(viewProperty != null) {
-                    ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
-                    execEnv.getSession().dropChanges((SessionDataProperty)viewProperty.property);
-                    execEnv.change(viewProperty.property, new PropertyChange<ClassPropertyInterface>(viewProperty.mapping.join(mapKeys), ValueExpr.TRUE, keyTable.join(mapKeys).getWhere()));
-
-                    // обновлять changeProps не надо, так как это сделает updateData
-//                    changedProps.set(BaseUtils.merge(changedProps.result, CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty)viewProperty.property))));
-                }
+                updateViewProperty(execEnv, keyTable);
 
                 if (!keys.containsKey(currentObject)) { // если нету currentObject'а, его нужно изменить
                     if(getUpTreeGroup()==null) // если верхняя группа
@@ -910,6 +904,27 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         }
 
         return null; // ничего не изменилось
+    }
+
+    private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
+        CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
+        if(viewProperty != null) {
+            ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+            updateViewProperty(execEnv, viewProperty, new PropertyChange<ClassPropertyInterface>(ValueExpr.TRUE, viewProperty.mapping.join(keys)));
+        }
+    }
+    
+    private void updateViewProperty(ExecutionEnvironment execEnv, NoPropertyTableUsage<ObjectInstance> keyTable1) throws SQLException, SQLHandledException {
+        CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
+        if(viewProperty != null) {
+            ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
+            updateViewProperty(execEnv, viewProperty, new PropertyChange<ClassPropertyInterface>(viewProperty.mapping.join(mapKeys), ValueExpr.TRUE, keyTable1.join(mapKeys).getWhere()));
+        }
+    }
+
+    private void updateViewProperty(ExecutionEnvironment execEnv, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
+        execEnv.getSession().dropChanges((SessionDataProperty)viewProperty.property);
+        execEnv.change(viewProperty.property, change);
     }
 
     public ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> seekObjects(SQLSession sql, QueryEnvironment env, Modifier modifier, BaseClass baseClass, int readSize) throws SQLException, SQLHandledException {
