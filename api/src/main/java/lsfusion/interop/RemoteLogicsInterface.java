@@ -5,10 +5,10 @@ import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.PendingRemoteInterface;
-import lsfusion.interop.remote.UserInfo;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 
 public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
@@ -30,7 +30,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException;
 
-    UserInfo getUserInfo(String username) throws RemoteException;
+    List<String> authenticateUser(String userName, String password) throws RemoteException;
 
     VMOptions getClientVMOptions() throws RemoteException;
 

@@ -1,5 +1,6 @@
 package lsfusion.server.remote;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -10,9 +11,9 @@ import lsfusion.interop.exceptions.RemoteMessageException;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.UserInfo;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.auth.User;
 import lsfusion.server.classes.*;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.data.SQLHandledException;
@@ -194,8 +195,23 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return BaseLogicsModule.generateStaticNewID();
     }
 
-    public UserInfo getUserInfo(String username) throws RemoteException {
-        return securityManager.getUserInfo(username, getExtraUserRoleNames(username));
+    @Override
+    public List<String> authenticateUser(String userName, String password) throws RemoteException {
+        DataSession session;
+        try {
+            session = dbManager.createSession();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+        try {
+            User user = securityManager.authenticateUser(session, userName, password);
+            if (user != null) {
+                return securityManager.getUserRolesNames(userName, getExtraUserRoleNames(userName));    
+            }
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+        return null;
     }
 
     @Override

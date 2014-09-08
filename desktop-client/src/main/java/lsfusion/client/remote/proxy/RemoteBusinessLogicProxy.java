@@ -6,10 +6,10 @@ import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.UserInfo;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends RemoteObjectProxy<T> implements RemoteLogicsInterface {
 
@@ -87,10 +87,11 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         target.ping();
     }
 
-    public UserInfo getUserInfo(String username) throws RemoteException {
-        logRemoteMethodStartCall("getUserInfo");
-        UserInfo result = target.getUserInfo(username);
-        logRemoteMethodEndCall("getUserInfo", result);
+    @Override
+    public List<String> authenticateUser(String userName, String password) throws RemoteException {
+        logRemoteMethodStartCall("authenticateUser");
+        List<String> result = target.authenticateUser(userName, password);
+        logRemoteMethodEndCall("authenticateUser", result);
         return result;
     }
 

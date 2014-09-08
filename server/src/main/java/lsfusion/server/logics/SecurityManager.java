@@ -576,36 +576,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         }
     }
 
-    public UserInfo getUserInfo(String username, List<String> extraUserRoleNames) {
-        try {
-            DataSession session = createSession();
-            try {
-                //User user = readUser(username, session);
-                //if (user == null) {
-                //    throw new LoginException();
-                //}
-                Integer userId = (Integer) authenticationLM.customUserLogin.read(session, new DataObject(username, StringClass.get(30)));
-                if (userId == null) {
-                    throw new LoginException();
-                }
-                DataObject userObject = new DataObject(userId, authenticationLM.customUser);
-                String password = (String) authenticationLM.sha256PasswordCustomUser.read(session, userObject);
-                Boolean isLocked = (Boolean) authenticationLM.isLockedCustomUser.read(session, userObject);
-                if (password != null)
-                    password = password.trim();
-
-                return new UserInfo(isLocked, username, password, getUserRolesNames(username, extraUserRoleNames));
-            } finally {
-                session.close();
-            }
-        } catch (SQLException se) {
-            throw new RuntimeException(getString("logics.info.error.reading.user.data"), se);
-        } catch (SQLHandledException se) {
-            throw new RuntimeException(getString("logics.info.error.reading.user.data"), se);
-        }
-    }
-
-    private List<String> getUserRolesNames(String username, List<String> extraUserRoleNames) {
+    public List<String> getUserRolesNames(String username, List<String> extraUserRoleNames) {
         try {
             DataSession session = createSession();
             try {

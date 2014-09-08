@@ -62,12 +62,9 @@
         <authentication-provider ref="authenticationProvider"/>
     </authentication-manager>
 
-    <b:bean id="authenticationProvider" class="lsfusion.gwt.base.server.spring.GwtAuthenticationProvider">
-        <b:property name="passwordEncoder">
-            <b:bean class="lsfusion.gwt.base.server.spring.Base64ShaPasswordEncoder" />
-        </b:property>
-        <b:property name="userDetailsService">
-            <b:bean class="lsfusion.gwt.base.server.spring.GwtLogicsUserDetailsService" />
+    <b:bean id="authenticationProvider" class="org.springframework.security.authentication.rcp.RemoteAuthenticationProvider">
+        <b:property name="remoteAuthenticationManager">
+            <b:bean class="lsfusion.gwt.base.server.spring.GwtRemoteAuthenticationManager"/>
         </b:property>
     </b:bean>
 
