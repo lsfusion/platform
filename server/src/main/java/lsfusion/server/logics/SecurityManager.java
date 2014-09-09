@@ -333,7 +333,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                     if (user == null) {
                         user = addUser(login, password, session);
                     }
-                    setUserParameters(user, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupName(), session);
+                    setUserParameters(user, ldapParameters.getFirstName(), ldapParameters.getLastName(), ldapParameters.getEmail(), ldapParameters.getGroupNames(), session);
                 } else {
                     throw new LoginException();
                 }
@@ -616,7 +616,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         }
     }
 
-    public void setUserParameters(User user, String firstName, String lastName, String email, String userRoleSID, DataSession session) {
+    public void setUserParameters(User user, String firstName, String lastName, String email, List<String> userRoleSIDs, DataSession session) {
         try {
 
             DataObject customUser = new DataObject(user.ID, authenticationLM.customUser);
@@ -630,16 +630,15 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             if (email != null)
                 contactLM.emailContact.change(email, session, (DataObject) customUser);
 
-            if (userRoleSID != null) {
-                ObjectValue userRole = securityLM.userRoleSID.readClasses(session, new DataObject(userRoleSID));
+            if (userRoleSIDs != null) {
+                for (String userRoleName : userRoleSIDs) {
+                    ObjectValue userRole = securityLM.userRoleSID.readClasses(session, new DataObject(userRoleName));
 
-                if (userRole instanceof NullValue) {
-                    userRole = session.addObject(securityLM.userRole);
-                    securityLM.sidUserRole.change(userRoleSID, session, (DataObject) userRole);
-                    securityLM.nameUserRole.change(userRoleSID, session, (DataObject) userRole);
+                    if (! (userRole instanceof NullValue)) {
+                        securityLM.mainRoleCustomUser.change(userRole.getValue(), session, customUser);
+                        break;
+                    }
                 }
-
-                securityLM.mainRoleCustomUser.change(userRole.getValue(), session, customUser);
             }
         } catch (SQLException e) {
             throw Throwables.propagate(e);

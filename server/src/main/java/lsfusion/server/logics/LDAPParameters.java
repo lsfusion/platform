@@ -1,31 +1,25 @@
 package lsfusion.server.logics;
 
+import java.util.List;
+
 public class LDAPParameters {
 
     private boolean connected;
-    private String groupName;
     private String firstName;
     private String lastName;
     private String email;
+    private List<String> groupNames;
 
-    public LDAPParameters(boolean connected, String firstName, String lastName, String email) {
+    public LDAPParameters(boolean connected, String firstName, String lastName, String email, List<String> groupNames) {
         this.connected = connected;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-    }
-
-    public LDAPParameters(boolean connected, String firstName, String lastName, String email, String groupName) {
-        this(connected, firstName, lastName, email);
-        this.groupName = groupName;
+        this.groupNames = groupNames;
     }
 
     public boolean isConnected() {
         return connected;
-    }
-
-    public String getGroupName() {
-        return groupName;
     }
 
     public String getFirstName() {
@@ -39,4 +33,8 @@ public class LDAPParameters {
     public String getEmail() {
         return email;
     }
-}
+    
+    public List<String> getGroupNames() {
+        return groupNames;
+    }
+}                       

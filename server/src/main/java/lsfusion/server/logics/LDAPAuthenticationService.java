@@ -5,7 +5,9 @@ import javax.naming.CommunicationException;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.*;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 public class LDAPAuthenticationService {
 
@@ -47,16 +49,17 @@ public class LDAPAuthenticationService {
             String firstName = null;
             String lastName = null;
             String email = null;
+            List<String> groupNames = new ArrayList<String>();
 
             if (baseDN != null) {
                 NamingEnumeration personResults = authContext.search(baseDN, "(userPrincipalName=" + principal + ")", controls);
                 while (personResults.hasMore()) {
                     SearchResult searchResult = (SearchResult) personResults.next();
-    
+
                     Attribute givenName = searchResult.getAttributes().get("givenName");
                     if (givenName != null)
                         firstName = (String) givenName.get();
-                    
+
                     Attribute sn = searchResult.getAttributes().get("sn");
                     if (sn != null)
                         lastName = (String) sn.get();
@@ -69,27 +72,29 @@ public class LDAPAuthenticationService {
                     Attribute mail = searchResult.getAttributes().get("mail");
                     if (mail != null)
                         email = (String) mail.get();
+
+                    Attribute memberOf = searchResult.getAttributes().get("memberOf");
+                    if (memberOf != null) {
+                        NamingEnumeration memberOfAll = memberOf.getAll();
+                        while (memberOfAll.hasMore()) {
+                            String memberString = (String) memberOfAll.next();
+                            String[] members = memberString.split(",");
+                            for (String member : members) {
+                                if (member.startsWith("CN=")) {
+                                    groupNames.add(member.replace("CN=", ""));
+                                }
+                            }
+                        }
+                    }
                 }
-                // Пока не очень понятно как по группе определять роль
-//              NamingEnumeration groupResults = authContext.search(base, "(objectClass=GroupOfNames)", controls);
-//              while (groupResults.hasMore()) {
-//              SearchResult searchResult = (SearchResult) groupResults.next();
-//              Attributes attributes = searchResult.getAttributes();
-//              String groupName = (String) attributes.get("cn").get();
-//              String[] members = ((String) attributes.get("member").get()).split(",");
-//              for (String member : members) {
-//                  if (member.startsWith("cn=") && member.replace("cn=", "").equals(personName))
-//                      return new LDAPParameters(true, groupName);
-//                  }
-//              }
             }
 
 
-            return new LDAPParameters(true, firstName, lastName, email);
+            return new LDAPParameters(true, firstName, lastName, email, groupNames);
         } catch (CommunicationException e) {
             throw e;
         } catch (AuthenticationException e) {
-            return new LDAPParameters(false, null, null, null);
+            return new LDAPParameters(false, null, null, null, null);
         } catch (Exception e) {
             throw new RuntimeException("Error while authenticating using LDAP : ", e);
         } finally {
