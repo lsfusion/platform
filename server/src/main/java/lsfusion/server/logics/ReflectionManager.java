@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.*;
@@ -193,7 +194,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
     private List<List<Object>> getRelations(NavigatorElement element, Set<String> elementsWithParent) {
         List<List<Object>> parentInfo = new ArrayList<List<Object>>();
-        ImSet<NavigatorElement> children = (ImSet<NavigatorElement>) element.getChildren();
+        ImOrderSet<NavigatorElement> children = (ImOrderSet<NavigatorElement>) element.getChildrenList();
         int counter = 1;
         for (NavigatorElement child : children) 
             if(child.needsToBeSynchronized()) {
@@ -210,7 +211,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
     private List<List<Object>> getRelations(NavigatorElement element) {
         List<List<Object>> parentInfo = new ArrayList<List<Object>>();
-        ImSet<NavigatorElement> children = (ImSet<NavigatorElement>) element.getChildren();
+        ImOrderSet<NavigatorElement> children = (ImOrderSet<NavigatorElement>) element.getChildrenList();
         int counter = 1;
         for (NavigatorElement child : children)
             if(child.needsToBeSynchronized()) {
