@@ -266,7 +266,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             CalcPropertyMapImplement<?, I> noInlineIfProp = ifProp;
             ImSet<I> noInlineInterfaces = extNoInline;
             if(CalcProperty.depends(ifProp.property, StoredDataProperty.set)) { // нужно создать сначала материалайзить условие for по аналогии с проталкиванием
-                noInlineIfProp = DerivedProperty.createDataProp(true, getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy));// делаем SET в session свойство, и подменяем условие на это свойство
+                noInlineIfProp = DerivedProperty.createForDataProp(getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy));// делаем SET в session свойство, и подменяем условие на это свойство
                 mResult.add(DerivedProperty.createSetAction(innerInterfaces, context, null, noInlineIfProp, ifProp));
                 noInlineInterfaces = noInline;
             }
@@ -301,7 +301,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             }
             assert !hackAdd; // должен отработать сверху
 
-            CalcPropertyMapImplement<?, I> result = DerivedProperty.createDataProp(true, getExtendClasses(), addClass);
+            CalcPropertyMapImplement<?, I> result = DerivedProperty.createForDataProp(getExtendClasses(), addClass);
             return DerivedProperty.createListAction(context, ListFact.<ActionPropertyMapImplement<?, I>>toList(
                     DerivedProperty.createAddAction(addClass, forceDialog, innerInterfaces.removeIncl(addObject), context, ifProp, result, orders, ordersNotNull),
                     DerivedProperty.createForAction(innerInterfaces, context, DerivedProperty.<I>createCompare(
@@ -370,7 +370,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
             if (CalcProperty.depends(ifProp.property, pushChangedProps) || // если есть stored свойства (а не чисто session) или меняет условия
                     CalcProperty.depends(ifProp.property, StoredDataProperty.set)) {
-                pushProp = DerivedProperty.createDataProp(true, getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy)); // делаем SET в session свойство, и подменяем условие на это свойство
+                pushProp = DerivedProperty.createForDataProp(getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy)); // делаем SET в session свойство, и подменяем условие на это свойство
                 mResult.add(DerivedProperty.createSetAction(innerInterfaces, context, null, pushProp, ifProp));
             }
         }

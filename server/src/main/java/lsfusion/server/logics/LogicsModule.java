@@ -1111,7 +1111,6 @@ public abstract class LogicsModule {
         SumGroupProperty<T> property = new SumGroupProperty<T>(caption, innerInterfaces.getSet(), listImplements, implement.get(0));
 
         LCP lp = mapLGProp(group, persistent, property, listImplements);
-        lp.listGroupInterfaces = innerInterfaces;
         return lp;
     }
 

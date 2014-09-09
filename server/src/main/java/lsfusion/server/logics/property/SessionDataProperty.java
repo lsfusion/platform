@@ -19,9 +19,21 @@ public class SessionDataProperty extends DataProperty {
     }
 
     public SessionDataProperty(String caption, ValueClass[] classes, ValueClass value) {
+        this(caption, classes, value, false);
+    }
+
+    private final boolean noClasses;
+    public SessionDataProperty(String caption, ValueClass[] classes, ValueClass value, boolean noClasses) {
         super(caption, classes, value);
 
+        this.noClasses = noClasses;
+        
         finalizeInit();
+    }
+
+    @Override
+    protected boolean noClasses() {
+        return noClasses;
     }
 
     @Override
@@ -35,23 +47,6 @@ public class SessionDataProperty extends DataProperty {
 
     public boolean isStored() {
         return false;
-    }
-
-    // тяжело использовать так как могут пересекаться и создавать каскадные эффекты
-    // по аналогии с IsClassProperty
-    public final static MAddExclMap<Pair<ImMap<ValueClass, Integer>, ValueClass>, CalcPropertyImplement<?, ValueClass>> cacheClasses = MapFact.mBigStrongMap();
-    @ManualLazy
-    public static <T extends PropertyInterface, P extends PropertyInterface> CalcPropertyMapImplement<?, T> getProperty(ValueClass value, ImMap<T, ValueClass> classes) {
-        Pair<ImMap<ValueClass, Integer>, ValueClass> multiClasses = new Pair<ImMap<ValueClass, Integer>, ValueClass>(classes.values().multiSet(), value);
-        synchronized (cacheClasses) {
-            CalcPropertyImplement<P, ValueClass> implement = (CalcPropertyImplement<P, ValueClass>) cacheClasses.get(multiClasses);
-            if (implement == null) {
-                CalcPropertyMapImplement<?, T> classImplement = DerivedProperty.createDataProp(true, classes, value);
-                cacheClasses.exclAdd(multiClasses, classImplement.mapImplement(classes));
-                return classImplement;
-            } else
-                return new CalcPropertyMapImplement<P, T>(implement.property, MapFact.mapValues(implement.mapping, classes));
-        }
     }
 
 }

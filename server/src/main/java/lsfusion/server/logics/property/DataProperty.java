@@ -65,16 +65,26 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
 
     @IdentityInstanceLazy
     protected CalcPropertyMapImplement<?, ClassPropertyInterface> getInterfaceClassProperty() {
+        assert !noClasses();
         return IsClassProperty.getProperty(interfaces);
     }
 
     @IdentityInstanceLazy
     protected CalcPropertyRevImplement<?, String> getValueClassProperty() {
+        assert !noClasses();
         return IsClassProperty.getProperty(value, "value");
+    }
+
+    // для for'а hack, так как там unknown может быть
+    protected boolean noClasses() {
+        return false;
     }
 
     @Override
     protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
+        if(noClasses())
+            return SetFact.EMPTY();
+        
         return propChanges.getUsedChanges(SetFact.toSet((CalcProperty) getInterfaceClassProperty().property, (CalcProperty) getValueClassProperty().property));
     }
 
@@ -85,7 +95,9 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
 
     @Override
     protected DataChanges calculateDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        change = change.and(getInterfaceClassProperty().mapExpr(change.getMapExprs(), propChanges, null).getWhere().and(getValueClassProperty().mapExpr(MapFact.singleton("value", change.expr), propChanges, null).getWhere().or(change.expr.getWhere().not())));
+        if(!noClasses())
+            change = change.and(getInterfaceClassProperty().mapExpr(change.getMapExprs(), propChanges, null).getWhere().and(getValueClassProperty().mapExpr(MapFact.singleton("value", change.expr), propChanges, null).getWhere().or(change.expr.getWhere().not())));
+        
         if(change.where.isFalse()) // чтобы не плодить пустые change'и
             return DataChanges.EMPTY;
 
@@ -94,23 +106,27 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
-        ImSet<CalcProperty> result = value.getProperty().getUsedChanges(propChanges);
-        for(ClassPropertyInterface remove : interfaces)
-            result = result.merge(remove.interfaceClass.getProperty().getUsedChanges(propChanges));
-        if(event !=null)
+        ImSet<CalcProperty> result = SetFact.EMPTY();
+        
+        if(!noClasses()) {
+            result = result.merge(value.getProperty().getUsedChanges(propChanges));
+            for (ClassPropertyInterface remove : interfaces)
+                result = result.merge(remove.interfaceClass.getProperty().getUsedChanges(propChanges));
+        }
+        if (event != null)
             result = result.merge(event.getUsedDataChanges(propChanges));
         return result;
     }
 
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        PropertyChange<ClassPropertyInterface> change = getEventChange(propChanges, getJoinValues(joinImplement));
 
         Expr prevExpr = getExpr(joinImplement);
 
-        if(change!=null) {
+        PropertyChange<ClassPropertyInterface> change = getEventChange(propChanges, getJoinValues(joinImplement));
+        if (change != null) {
             WhereBuilder changedExprWhere = new WhereBuilder();
             Expr changedExpr = change.getExpr(joinImplement, changedExprWhere);
-            if(changedWhere!=null) changedWhere.add(changedExprWhere.toWhere());
+            if (changedWhere != null) changedWhere.add(changedExprWhere.toWhere());
             return changedExpr.ifElse(changedExprWhere.toWhere(), prevExpr);
         }
 
@@ -125,26 +141,28 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
             eventChange = ((ChangeEvent<ClassPropertyInterface>)event).getDataChanges(changes, event.isData() ? joinValues : MapFact.<ClassPropertyInterface, Expr>EMPTY()).get(this);
 
 
-        ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = getMapKeys();
-        ImMap<ClassPropertyInterface, Expr> mapExprs = MapFact.override(mapKeys, joinValues);
-        Expr prevExpr = null;
-        Where removeWhere = Where.FALSE;
-        for(ClassPropertyInterface remove : interfaces) {
-            IsClassProperty classProperty = remove.interfaceClass.getProperty();
-            if(classProperty.hasChanges(changes)) {
-                if(prevExpr==null) // оптимизация
-                    prevExpr = getExpr(mapExprs);
-                removeWhere = removeWhere.or(classProperty.getRemoveWhere(mapExprs.get(remove), changes).and(prevExpr.getWhere()));
+        if(!noClasses()) {
+            ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = getMapKeys();
+            ImMap<ClassPropertyInterface, Expr> mapExprs = MapFact.override(mapKeys, joinValues);
+            Expr prevExpr = null;
+            Where removeWhere = Where.FALSE;
+            for (ClassPropertyInterface remove : interfaces) {
+                IsClassProperty classProperty = remove.interfaceClass.getProperty();
+                if (classProperty.hasChanges(changes)) {
+                    if (prevExpr == null) // оптимизация
+                        prevExpr = getExpr(mapExprs);
+                    removeWhere = removeWhere.or(classProperty.getRemoveWhere(mapExprs.get(remove), changes).and(prevExpr.getWhere()));
+                }
             }
+            IsClassProperty classProperty = value.getProperty();
+            if (classProperty.hasChanges(changes)) {
+                if (prevExpr == null) // оптимизация
+                    prevExpr = getExpr(mapExprs);
+                removeWhere = removeWhere.or(classProperty.getRemoveWhere(prevExpr, changes));
+            }
+            if (!removeWhere.isFalse())
+                result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, removeWhere, joinValues));
         }
-        IsClassProperty classProperty = value.getProperty();
-        if(classProperty.hasChanges(changes)) {
-            if(prevExpr==null) // оптимизация
-                prevExpr = getExpr(mapExprs);
-            removeWhere = removeWhere.or(classProperty.getRemoveWhere(prevExpr, changes));
-        }
-        if(!removeWhere.isFalse())
-            result = PropertyChange.addNull(result, new PropertyChange<ClassPropertyInterface>(mapKeys, removeWhere, joinValues));
 
         if(eventChange!=null)
             result = PropertyChange.addNull(result, eventChange);
@@ -160,10 +178,15 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
 
     @Override
     public ImSet<CalcProperty> calculateRecDepends() { // именно в recdepends, потому как в depends "порушиться"
-        return super.calculateRecDepends().merge(interfaces.mapMergeSetValues(new GetValue<CalcProperty, ClassPropertyInterface>() {
-            public CalcProperty getMapValue(ClassPropertyInterface value) {
-                return value.interfaceClass.getProperty();
-            }})).merge(value.getProperty());
+        ImSet<CalcProperty> result = super.calculateRecDepends();
+        if(!noClasses()) {
+            result = result.merge(interfaces.mapMergeSetValues(new GetValue<CalcProperty, ClassPropertyInterface>() {
+                public CalcProperty getMapValue(ClassPropertyInterface value) {
+                    return value.interfaceClass.getProperty();
+                }
+            })).merge(value.getProperty());
+        }
+        return result;
     }
 
     @Override
@@ -171,14 +194,16 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         MCol<Pair<Property<?>, LinkType>> mResult = ListFact.mCol();
 
         mResult.addAll(getActionChangeProps()); // только у Data и IsClassProperty
-        MSet<ChangedProperty> mRemoveDepends = SetFact.mSet();
-        for(ClassPropertyInterface remove : interfaces)
-            if(remove.interfaceClass instanceof CustomClass)
-                mRemoveDepends.add(((CustomClass)remove.interfaceClass).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
-        if(value instanceof CustomClass)
-            mRemoveDepends.add(((CustomClass)value).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
-        for(CalcProperty property : mRemoveDepends.immutable())
-            mResult.add(new Pair<Property<?>, LinkType>(property, LinkType.DEPEND));
+        if(!noClasses()) {
+            MSet<ChangedProperty> mRemoveDepends = SetFact.mSet();
+            for (ClassPropertyInterface remove : interfaces)
+                if (remove.interfaceClass instanceof CustomClass)
+                    mRemoveDepends.add(((CustomClass) remove.interfaceClass).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
+            if (value instanceof CustomClass)
+                mRemoveDepends.add(((CustomClass) value).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
+            for (CalcProperty property : mRemoveDepends.immutable())
+                mResult.add(new Pair<Property<?>, LinkType>(property, LinkType.DEPEND));
+        }
 
         return super.calculateLinks(calcEvents).mergeCol(mResult.immutableCol()); // чтобы удаления классов зацеплять
     }
@@ -197,13 +222,15 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     public boolean depends(ImSet<CustomClass> cls) { // оптимизация
-        if(SetFact.contains(value, cls))
-            return true;
-
-        for(ClassPropertyInterface propertyInterface : interfaces)
-            if(SetFact.contains(propertyInterface.interfaceClass, cls))
+        if(!noClasses()) {
+            if (SetFact.contains(value, cls))
                 return true;
 
+            for (ClassPropertyInterface propertyInterface : interfaces)
+                if (SetFact.contains(propertyInterface.interfaceClass, cls))
+                    return true;
+        }
+            
         return false;
     }
 

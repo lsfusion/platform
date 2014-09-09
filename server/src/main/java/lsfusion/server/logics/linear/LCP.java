@@ -185,18 +185,6 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         property.setEventChange(lm, action, listImplements.get(0), (CalcPropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
     }
 
-    public ImOrderSet<T> listGroupInterfaces;
-    public void setDG(boolean ascending, Object... params) {
-        setDG(ascending, false, params);
-    }
-    public void setDG(boolean ascending, boolean over, Object... params) {
-        setDG(ascending, over, readCalcImplements(listGroupInterfaces, params));
-    }
-    public <T extends PropertyInterface> void setDG(boolean ascending, boolean over, ImList<CalcPropertyInterfaceImplement<T>> listImplements) {
-        ((SumGroupProperty<T>)property).setDataChanges(listImplements.subList(1, listImplements.size()).toOrderSet().toOrderMap(ascending),
-                (CalcPropertyMapImplement<?, T>) listImplements.get(0), over);
-    }
-
     public void addOperand(boolean hasWhen, Version version, Object... params) {
         ImList<CalcPropertyInterfaceImplement<T>> readImplements = readCalcImplements(listInterfaces, params);
         CalcPropertyInterfaceImplement<UnionProperty.Interface> operand = (CalcPropertyInterfaceImplement<UnionProperty.Interface>) readImplements.get(0);

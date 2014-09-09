@@ -726,35 +726,19 @@ public class DerivedProperty {
         return DerivedProperty.createXUnion(innerInterfaces, ifTrue, ifFalse);
     }
 
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createDataProp(boolean session, CalcProperty<T> property) {
-        ImMap<T, ValueClass> interfaces = property.getInterfaceClasses(ClassType.obsolete);
-        ValueClass valueClass = property.getValueClass(ClassType.obsolete);
-        return createDataProp(session, property.toString(), interfaces, valueClass);
-    }
-
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createDataProp(boolean session, ImMap<T, ValueClass> interfaces, ValueClass valueClass) {
-        return createDataProp(session, "sys", interfaces, valueClass);
-    }
-
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createDataProp(boolean session, String caption, ImMap<T, ValueClass> interfaces, ValueClass valueClass) {
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createForDataProp(ImMap<T, ValueClass> interfaces, ValueClass valueClass) {
         ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
         ImOrderSet<T> listInterfaces = orderInterfaces.keyOrderSet();
         ValueClass[] interfaceClasses = orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]);
-        DataProperty dataProperty = (session ? new SessionDataProperty(caption, interfaceClasses, valueClass) :
-                        new StoredDataProperty(caption, interfaceClasses, valueClass));
+        DataProperty dataProperty = new SessionDataProperty("sys", interfaceClasses, valueClass, true);
         return dataProperty.getImplement(listInterfaces);
     }
 
-    public static <T> CalcPropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(boolean session, ImMap<T, ValueClass> interfaces, ValueClass valueClass) {
-        return createDataPropRev(session, "sys", interfaces, valueClass);
-    }
-
-    public static <T> CalcPropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(boolean session, String caption, ImMap<T, ValueClass> interfaces, ValueClass valueClass) {
+    public static <T> CalcPropertyRevImplement<ClassPropertyInterface, T> createDataPropRev(String caption, ImMap<T, ValueClass> interfaces, ValueClass valueClass) {
         ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
         ImOrderSet<T> listInterfaces = orderInterfaces.keyOrderSet();
         ValueClass[] interfaceClasses = orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]);
-        DataProperty dataProperty = (session ? new SessionDataProperty(caption, interfaceClasses, valueClass) :
-                new StoredDataProperty(caption, interfaceClasses, valueClass));
+        DataProperty dataProperty = new SessionDataProperty(caption, interfaceClasses, valueClass);
         return dataProperty.getRevImplement(listInterfaces);
     }
 

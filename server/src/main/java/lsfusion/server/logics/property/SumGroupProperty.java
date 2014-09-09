@@ -48,18 +48,6 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         return changedExpr.diff(changedPrevExpr).sum(getExpr(joinImplement));
     }
 
-    public <L extends PropertyInterface> void setDataChanges(ImOrderMap<CalcPropertyInterfaceImplement<I>, Boolean> mapOrders, CalcPropertyMapImplement<L, I> restriction, boolean over) {
-        ImRevMap<I,L> revMapping = restriction.mapping.reverse();
-
-        ImOrderMap<CalcPropertyInterfaceImplement<L>, Boolean> orders = DerivedProperty.mapImplements(mapOrders, revMapping);
-
-        nullImplement = DerivedProperty.createDataProp(true, this);
-
-        distribute = DerivedProperty.createUGProp(new CalcPropertyImplement<ClassPropertyInterface, CalcPropertyInterfaceImplement<L>>(nullImplement.property,
-                nullImplement.mapping.join(DerivedProperty.mapImplements(getMapInterfaces(), revMapping))),
-                orders, restriction.property, over).map(restriction.mapping);
-    }
-
     @Override
     protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
         if(distribute != null) {
