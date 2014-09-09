@@ -151,7 +151,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
     public void setupDefaultAdminUser() throws SQLException, SQLHandledException {
         DataSession session = createSession();
-        setUserPolicies(addUser("admin", initialAdminPassword, session).ID, permitAllPolicy, allowConfiguratorPolicy);
+        User user = addUser("admin", initialAdminPassword, session);
+        applySecurityPolicy(user);
+        setUserPolicies(user.ID, permitAllPolicy, allowConfiguratorPolicy);
         session.apply(businessLogics);
     }
 
@@ -234,7 +236,17 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             return null;
         }
         User userObject = new User(userId);
-
+        applyTimeout(userObject);
+        return userObject;
+    }
+    
+    public User readUserWithSecurityPolicy(String login, DataSession session) throws SQLException, SQLHandledException {
+        User user = readUser(login, session);
+        applySecurityPolicy(user);
+        return user;
+    }
+    
+    public void applySecurityPolicy(User userObject) throws SQLException, SQLHandledException {
         // политика по умолчанию из кода
         userObject.addSecurityPolicy(defaultPolicy);
 
@@ -250,19 +262,15 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
         // политика для роли из формы "Политика безопасности"
         applyFormDefinedUserPolicy(userObject);
-        
-        applyTimeout(userObject);
 
         // дополнительные политики из формы "Политика безопасности"
-        List<Integer> userPoliciesIds = readUserPoliciesIds(userId);
+        List<Integer> userPoliciesIds = readUserPoliciesIds(userObject.ID);
         for (int policyId : userPoliciesIds) {
             SecurityPolicy policy = getPolicy(policyId);
             if (policy != null) {
                 userObject.addSecurityPolicy(policy);
             }
         }
-
-        return userObject;
     }
 
     private void applyTimeout(User user) throws SQLException, SQLHandledException {
@@ -359,6 +367,10 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                     throw new LoginException();
                 }
             }
+        }
+        
+        if (user != null) {
+            applySecurityPolicy(user);
         }
 
         return user;
@@ -650,7 +662,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     public boolean checkPropertyViewPermission(String userName, String propertySID) {
         boolean permitView = false;
         try {
-            User user = readUser(userName, createSession());
+            User user = readUserWithSecurityPolicy(userName, createSession());
             if (user != null) {
                 SecurityPolicy policy = user.getSecurityPolicy();
                 permitView = policy.property.view.checkPermission(businessLogics.findProperty(propertySID).property);
@@ -666,7 +678,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     public boolean checkPropertyChangePermission(String userName, String propertySID) {
         boolean permitChange = false;
         try {
-            User user = readUser(userName, createSession());
+            User user = readUserWithSecurityPolicy(userName, createSession());
             if (user != null) {
                 SecurityPolicy policy = user.getSecurityPolicy();
                 permitChange = policy.property.change.checkPermission(businessLogics.findProperty(propertySID).property);

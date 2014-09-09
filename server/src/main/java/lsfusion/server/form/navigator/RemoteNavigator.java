@@ -154,7 +154,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public SecurityPolicy getUserSecurityPolicy(Result<Integer> timeout) {
         try {
-            User user = securityManager.readUser(getUserLogin(), createSession());
+            User user = securityManager.readUserWithSecurityPolicy(getUserLogin(), createSession());
             timeout.set(user.getTimeout());
             return user.getSecurityPolicy();
         } catch (Exception e) {
