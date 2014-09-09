@@ -805,7 +805,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             if (tableHeight == 0) {
                 return;
             }
-            int newPageSize = tableHeight / getRowHeight() + 1;
+            Integer currentPageSize = currentGridPreferences.pageSize;
+            int newPageSize = currentPageSize != null ? currentPageSize : (tableHeight / getRowHeight() + 1);
             if (newPageSize != pageSize) {
                 form.changePageSizeAfterUnlock(groupObject, newPageSize);
                 pageSize = newPageSize;
@@ -1004,6 +1005,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         return currentGridPreferences.getUserAscendingSort(property);
     }
 
+    public void setUserPageSize(Integer pageSize) {
+        currentGridPreferences.pageSize = pageSize;
+    }
+    
     public void setUserFont(GFont userFont) {
         currentGridPreferences.font = userFont;
     }

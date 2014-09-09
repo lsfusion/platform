@@ -10,22 +10,24 @@ import java.util.Map;
 public class GGridUserPreferences {
     private Map<GPropertyDraw, GColumnUserPreferences> columnUserPreferences;
     public GFont font;
+    public Integer pageSize;
     public GGroupObject groupObject;
     private Boolean hasUserPreferences;
 
     public GGridUserPreferences(GGroupObject groupObject) {
-        this(groupObject, new HashMap<GPropertyDraw, GColumnUserPreferences>(), null, null);
+        this(groupObject, new HashMap<GPropertyDraw, GColumnUserPreferences>(), null, null, null);
     }
 
-    public GGridUserPreferences(GGroupObject groupObject, Map<GPropertyDraw, GColumnUserPreferences> columnUserPreferences, GFont font, Boolean hasUserPreferences) {
+    public GGridUserPreferences(GGroupObject groupObject, Map<GPropertyDraw, GColumnUserPreferences> columnUserPreferences, GFont font, Integer pageSize, Boolean hasUserPreferences) {
         this.groupObject = groupObject;
         this.columnUserPreferences = columnUserPreferences;
         this.font = font;
+        this.pageSize = pageSize;
         this.hasUserPreferences = hasUserPreferences;
     }
 
     public GGridUserPreferences(GGridUserPreferences prefs) {
-        this(prefs.groupObject, new HashMap<GPropertyDraw, GColumnUserPreferences>(), prefs.font, prefs.hasUserPreferences);
+        this(prefs.groupObject, new HashMap<GPropertyDraw, GColumnUserPreferences>(), prefs.font, prefs.pageSize, prefs.hasUserPreferences);
 
         for (Map.Entry<GPropertyDraw, GColumnUserPreferences> entry : prefs.columnUserPreferences.entrySet()) {
             columnUserPreferences.put(entry.getKey(), new GColumnUserPreferences(entry.getValue()));
@@ -124,6 +126,7 @@ public class GGridUserPreferences {
 
     public void resetPreferences() {
         font = new GFont(null, -1, false, false);
+        pageSize = null;
         hasUserPreferences = false;
         for (GPropertyDraw property : new HashSet<GPropertyDraw>(columnUserPreferences.keySet())) {
             columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null));
@@ -158,6 +161,6 @@ public class GGridUserPreferences {
         for (Map.Entry<GPropertyDraw, GColumnUserPreferences> entry : columnUserPreferences.entrySet()) {
             columns.put(entry.getKey().sID, entry.getValue());
         }
-        return new GGroupObjectUserPreferences(columns, groupObject.getSID(), font, hasUserPreferences());
+        return new GGroupObjectUserPreferences(columns, groupObject.getSID(), font, pageSize, hasUserPreferences());
     }
 }

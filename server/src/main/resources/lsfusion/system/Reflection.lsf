@@ -117,6 +117,9 @@ isFontBoldGroupObject 'Полужирный шрифт' = DATA BOOLEAN (GroupObj
 isFontItalicGroupObjectCustomUser 'Курсивный шрифт для пользователя'= DATA BOOLEAN (GroupObject, CustomUser);
 isFontItalicGroupObject 'Курсивный шрифт' = DATA BOOLEAN (GroupObject);
 
+pageSizeGroupObjectCustomUser 'Размер страницы для пользователя'= DATA INTEGER (GroupObject, CustomUser);
+pageSizeGroupObject 'Размер шрифта' = DATA INTEGER (GroupObject);
+
 CLASS Table 'Таблица';
 TABLE tables (Table);
 
@@ -264,8 +267,8 @@ FORM forms 'Формы'
     PROPERTIES(u) SELECTOR firstNameContact, lastNameContact, loginCustomUser
 
     OBJECTS g=GroupObject
-    PROPERTIES(g) sidGroupObject READONLY, fontSizeGroupObject, isFontBoldGroupObject, isFontItalicGroupObject, hasUserPreferencesGroupObject
-    PROPERTIES(g,u) fontSizeGroupObjectCustomUser, isFontBoldGroupObjectCustomUser, isFontItalicGroupObjectCustomUser, hasUserPreferencesGroupObjectCustomUser
+    PROPERTIES(g) sidGroupObject READONLY, fontSizeGroupObject, isFontBoldGroupObject, isFontItalicGroupObject, pageSizeGroupObject, hasUserPreferencesGroupObject
+    PROPERTIES(g,u) fontSizeGroupObjectCustomUser, isFontBoldGroupObjectCustomUser, isFontItalicGroupObjectCustomUser, pageSizeGroupObjectCustomUser, hasUserPreferencesGroupObjectCustomUser
     
     OBJECTS fg=FormGrouping
     PROPERTIES(fg) nameFormGrouping, itemQuantityFormGrouping

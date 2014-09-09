@@ -326,7 +326,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
                         columnPreferences.put(property, entry.getValue());
                     }
                 }
-                return new GGridUserPreferences(groupObject, columnPreferences, groupPreferences.getFont(), groupPreferences.hasUserPreferences());
+                return new GGridUserPreferences(groupObject, columnPreferences, groupPreferences.getFont(), groupPreferences.getPageSize(), groupPreferences.hasUserPreferences());
             }
         }
         return null;

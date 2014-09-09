@@ -131,7 +131,7 @@ public class GwtToClientConverter extends ObjectConverter {
         for (Map.Entry<String, GColumnUserPreferences> entry : gprefs.getColumnUserPreferences().entrySet()) {
             columnUPs.put(entry.getKey(), convertColumnPreferences(entry.getValue()));
         }
-        return new GroupObjectUserPreferences(columnUPs, gprefs.getGroupObjectSID(), convertFont(gprefs.getFont()), gprefs.hasUserPreferences());        
+        return new GroupObjectUserPreferences(columnUPs, gprefs.getGroupObjectSID(), convertFont(gprefs.getFont()), gprefs.getPageSize(), gprefs.hasUserPreferences());        
     }
     
     @Converter(from = GColumnUserPreferences.class)

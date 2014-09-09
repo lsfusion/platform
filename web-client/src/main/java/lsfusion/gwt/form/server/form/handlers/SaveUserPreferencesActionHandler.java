@@ -33,7 +33,7 @@ public class SaveUserPreferencesActionHandler extends ServerResponseActionHandle
             GColumnUserPreferences gColumnUP = entry.getValue();
             columnUPMap.put(entry.getKey(), new ColumnUserPreferences(gColumnUP.userHide, gColumnUP.userCaption, gColumnUP.userWidth, gColumnUP.userOrder, gColumnUP.userSort, gColumnUP.userAscendingSort));
         }
-        GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gwtConverter.convertFont(gGroupObjectUP.getFont()), gGroupObjectUP.hasUserPreferences());
+        GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gwtConverter.convertFont(gGroupObjectUP.getFont()), gGroupObjectUP.getPageSize(), gGroupObjectUP.hasUserPreferences());
 
         return getServerResponseResult(form, form.remoteForm.saveUserPreferences(action.requestIndex, -1, groupObjectUP, action.forAllUsers));
     }

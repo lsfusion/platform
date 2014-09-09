@@ -97,6 +97,10 @@ public class GridTable extends ClientPropertyTable {
 
     private int pageSize = 50;
 
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
+    
     private GridSelectionController selectionController = new GridSelectionController(this);
     private KeyController keyController = new KeyController(this);
 
@@ -1201,7 +1205,8 @@ public class GridTable extends ClientPropertyTable {
     }
 
     public void updatePageSizeIfNeeded(boolean checkVisible) {
-        int newPageSize = getParent().getHeight() / getRowHeight() + 1;
+        Integer currentPageSize = currentGridPreferences.getPageSize();
+        int newPageSize = currentPageSize != null ? currentPageSize : (getParent().getHeight() / getRowHeight() + 1);
         if (newPageSize != 0 && newPageSize != pageSize && (!checkVisible || SwingUtils.isRecursivelyVisible(this))) {
             try {
                 form.changePageSize(groupObject, newPageSize);
@@ -1324,6 +1329,10 @@ public class GridTable extends ClientPropertyTable {
         return currentGridPreferences.fontInfo;
     }
     
+    public Integer getUserPageSize() {
+        return currentGridPreferences.pageSize;
+    }
+    
     public Boolean getUserHide(ClientPropertyDraw property) {
         return currentGridPreferences.getUserHide(property);
     }
@@ -1350,6 +1359,10 @@ public class GridTable extends ClientPropertyTable {
     
     public void setUserFont(Font userFont) {
         currentGridPreferences.fontInfo = FontInfo.createFrom(userFont);
+    }
+    
+    public void setUserPageSize(Integer userPageSize) {
+        currentGridPreferences.pageSize = userPageSize;
     }
     
     public void setUserHide(ClientPropertyDraw property, Boolean userHide) {

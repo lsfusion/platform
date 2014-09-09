@@ -34,6 +34,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     private FocusPanel focusPanel;
 
     private ColumnsDualListBox columnsDualListBox;
+    private TextBox pageSizeBox;
     private TextBox sizeBox;
     private CheckBox boldBox;
     private CheckBox italicBox;
@@ -58,6 +59,19 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
         preferencesPanel.add(GwtClientUtils.createVerticalStrut(3));
 
+        //page size settings
+
+        Label pageSizeLabel = new Label("Размер страницы: ");
+        pageSizeBox = new TextBox();
+        pageSizeBox.addStyleName("userPreferencesFontSizeTextBox");
+
+        FlexPanel pageSizePanel = new FlexPanel(FlexPanel.Justify.CENTER);
+        pageSizePanel.add(pageSizeLabel, GFlexAlignment.CENTER);
+        pageSizePanel.add(pageSizeBox, GFlexAlignment.CENTER);
+
+        GCaptionPanel pageSizeSettingsPanel = new GCaptionPanel("Настройки размера страницы", pageSizePanel);
+        preferencesPanel.add(pageSizeSettingsPanel);
+        
         // font settings
         Label sizeLabel = new Label("Размер: ");
         sizeBox = new TextBox();
@@ -213,6 +227,9 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         grid.setUserFont(userFont);
         grid.font = userFont;
         
+        Integer userPageSize = getUserPageSize();
+        grid.setUserPageSize(userPageSize);
+        
         grid.setHasUserPreferences(true);
         
         grid.columnsPreferencesChanged();
@@ -230,6 +247,16 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         }
 
         return new GFont(initialFont.family, size != 0 ? size : initialFont.size, boldBox.getValue(), italicBox.getValue());
+    }
+
+    private Integer getUserPageSize() {
+        Integer pageSize;
+        try {
+            pageSize = Integer.parseInt(pageSizeBox.getValue());
+        } catch(NumberFormatException e) {
+            return null;
+        }
+        return pageSize != 0 ? pageSize : null;
     }
 
     private GFont getInitialFont() {
@@ -264,6 +291,9 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
         GFont userFont = getUserFont();
         grid.setUserFont(userFont);
+        
+        Integer userPageSize = getUserPageSize();
+        grid.setUserPageSize(userPageSize);
         
         grid.saveCurrentPreferences(forAllUsers, createSaveCallback("Сохранение настроек успешно завершено"));
     }
@@ -304,6 +334,9 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         sizeBox.setValue((font == null || font.size == null) ? DEFAULT_FONT_SIZE.toString() : font.size.toString());
         boldBox.setValue(font != null && font.bold);
         italicBox.setValue(font != null && font.italic);
+
+        Integer currentPageSize = currentPreferences.pageSize;
+        pageSizeBox.setValue(currentPageSize == null ? "" : String.valueOf(currentPageSize));
     }
     
     private GFont mergeFont() {

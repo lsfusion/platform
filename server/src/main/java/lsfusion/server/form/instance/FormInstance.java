@@ -390,6 +390,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             query.addProperty("generalAscendingSort", BL.reflectionLM.columnAscendingSortPropertyDraw.getExpr(propertyDrawExpr));
             query.addProperty("generalHasUserPreferences", BL.reflectionLM.hasUserPreferencesGroupObject.getExpr(groupObjectPropertyDrawExpr));
             query.addProperty("generalFontSize", BL.reflectionLM.fontSizeGroupObject.getExpr(groupObjectPropertyDrawExpr));
+            query.addProperty("generalPageSize", BL.reflectionLM.pageSizeGroupObject.getExpr(groupObjectPropertyDrawExpr));
             query.addProperty("generalIsFontBold", BL.reflectionLM.isFontBoldGroupObject.getExpr(groupObjectPropertyDrawExpr));
             query.addProperty("generalIsFontItalic", BL.reflectionLM.isFontItalicGroupObject.getExpr(groupObjectPropertyDrawExpr));
 
@@ -401,6 +402,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             query.addProperty("userAscendingSort", BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.addProperty("userHasUserPreferences", BL.reflectionLM.hasUserPreferencesGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
             query.addProperty("userFontSize", BL.reflectionLM.fontSizeGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
+            query.addProperty("userPageSize", BL.reflectionLM.pageSizeGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
             query.addProperty("userIsFontBold", BL.reflectionLM.isFontBoldGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
             query.addProperty("userIsFontItalic", BL.reflectionLM.isFontItalicGroupObjectCustomUser.getExpr(groupObjectPropertyDrawExpr, customUserExpr));
 
@@ -439,6 +441,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             Boolean userAscendingSort = (Boolean) values.get(prefix + "AscendingSort");
             ColumnUserPreferences columnPrefs = new ColumnUserPreferences(needToHide, caption, width, order, sort, userAscendingSort != null ? userAscendingSort : (sort != null ? false : null));
 
+            Integer pageSize = (Integer) values.get(prefix + "PageSize");
+            
             Object hasPreferences = values.get(prefix + "HasUserPreferences");
             Integer fontSize = (Integer) values.get(prefix + "FontSize");
             boolean isFontBold = values.get(prefix + "IsFontBold") != null;
@@ -461,7 +465,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 goPreferences.add(new GroupObjectUserPreferences(preferencesMap,
                         groupObjectSID.trim(),
                         new FontInfo(null, fontSize == null ? 0 : fontSize, isFontBold, isFontItalic),
-                        hasPreferences != null));
+                        pageSize, hasPreferences != null));
             }
         }    
     }
@@ -506,11 +510,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             if (forAllUsers) {
                 BL.reflectionLM.hasUserPreferencesGroupObject.change(preferences.hasUserPreferences ? true : null, dataSession, groupObjectObject);
                 BL.reflectionLM.fontSizeGroupObject.change(preferences.fontInfo.fontSize != -1 ? preferences.fontInfo.fontSize : null, dataSession, groupObjectObject);
+                BL.reflectionLM.pageSizeGroupObject.change(preferences.pageSize, dataSession, groupObjectObject);
                 BL.reflectionLM.isFontBoldGroupObject.change(preferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject);
                 BL.reflectionLM.isFontItalicGroupObject.change(preferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject);
             } else {
                 BL.reflectionLM.hasUserPreferencesGroupObjectCustomUser.change(preferences.hasUserPreferences ? true : null, dataSession, groupObjectObject, userObject);
                 BL.reflectionLM.fontSizeGroupObjectCustomUser.change(preferences.fontInfo.fontSize != -1 ? preferences.fontInfo.fontSize : null, dataSession, groupObjectObject, userObject);
+                BL.reflectionLM.pageSizeGroupObjectCustomUser.change(preferences.pageSize, dataSession, groupObjectObject, userObject);
                 BL.reflectionLM.isFontBoldGroupObjectCustomUser.change(preferences.fontInfo.isBold() ? true : null, dataSession, groupObjectObject, userObject);
                 BL.reflectionLM.isFontItalicGroupObjectCustomUser.change(preferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject, userObject);
             }

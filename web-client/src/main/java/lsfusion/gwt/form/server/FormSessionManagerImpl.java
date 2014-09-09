@@ -89,7 +89,7 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
                 }
                 userFont.family = GFont.DEFAULT_FONT_FAMILY;
             }
-            gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, userFont, groupObjectUP.hasUserPreferences));
+            gGroupObjectUPList.add(new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, userFont, groupObjectUP.pageSize, groupObjectUP.hasUserPreferences));
             gForm.addFont(userFont); // добавляем к используемым шрифтам с целью подготовить FontMetrics
         }
         return gGroupObjectUPList;

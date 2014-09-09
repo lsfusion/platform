@@ -97,6 +97,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP isFontBoldGroupObjectCustomUser;
     public LCP isFontItalicGroupObject;
     public LCP isFontItalicGroupObjectCustomUser;
+    public LCP pageSizeGroupObject;
+    public LCP pageSizeGroupObjectCustomUser;
     
     public LCP nameFormGrouping;
     public LCP itemQuantityFormGrouping;
@@ -266,6 +268,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         isFontItalicGroupObjectCustomUser = findProperty("isFontItalicGroupObjectCustomUser");
         isFontItalicGroupObject = findProperty("isFontItalicGroupObject");
+
+        pageSizeGroupObjectCustomUser = findProperty("pageSizeGroupObjectCustomUser");
+        pageSizeGroupObject = findProperty("pageSizeGroupObject");
 
         // группировки
         nameFormGrouping = findProperty("nameFormGrouping");

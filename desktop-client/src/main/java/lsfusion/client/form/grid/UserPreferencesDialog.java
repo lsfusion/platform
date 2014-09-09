@@ -32,6 +32,7 @@ public abstract class UserPreferencesDialog extends JDialog {
     private PropertyListModel visibleListModel, invisibleListModel;
     private JList visibleList, invisibleList;
     private JTextField fontSizeField;
+    private JTextField pageSizeField;
     private JCheckBox isFontBoldCheckBox;
     private JCheckBox isFontItalicCheckBox;
     private JTextField columnCaptionField;
@@ -272,6 +273,12 @@ public abstract class UserPreferencesDialog extends JDialog {
         columnCaptionPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         columnCaptionPanel.add(new JLabel(getString("form.grid.preferences.column.caption") + ": "));
         columnCaptionPanel.add(columnCaptionField);
+
+        pageSizeField = new JTextField(4);
+        TitledPanel pageSizePanel = new TitledPanel(getString("form.grid.preferences.page.size.settings"));
+        pageSizePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        pageSizePanel.add(new JLabel(getString("form.grid.preferences.page.size") + ": "));
+        pageSizePanel.add(pageSizeField);
         
         fontSizeField = new JTextField(2);
         isFontBoldCheckBox = new JCheckBox(getString("descriptor.editor.font.style.bold"));
@@ -285,6 +292,7 @@ public abstract class UserPreferencesDialog extends JDialog {
         fontPanel.add(isFontItalicCheckBox);
 
         Box fontAndCaptionSettingsPanel = new Box(BoxLayout.Y_AXIS);
+        fontAndCaptionSettingsPanel.add(pageSizePanel);
         fontAndCaptionSettingsPanel.add(columnCaptionPanel);
         fontAndCaptionSettingsPanel.add(fontPanel);
         
@@ -387,6 +395,9 @@ public abstract class UserPreferencesDialog extends JDialog {
         initialTable.setUserFont(tableFont);
         initialTable.setFont(tableFont);
         
+        initialTable.setUserPageSize(getPageSize());
+        initialTable.updatePageSizeIfNeeded(false);
+        
         initialTable.setHasUserPreferences(true);
         
         initialTable.updateTable();
@@ -416,6 +427,8 @@ public abstract class UserPreferencesDialog extends JDialog {
         Font tableFont = getInitialFont();
         tableFont = tableFont.deriveFont(getFontStyle(), getFontSize(tableFont.getSize()));
         initialTable.setUserFont(tableFont);
+        initialTable.setUserPageSize(getPageSize());
+        initialTable.updatePageSizeIfNeeded(false);
         
         initialTable.saveCurrentPreferences(forAllUsers, saveSuccessCallback, saveFailureCallback);
     }
@@ -484,6 +497,10 @@ public abstract class UserPreferencesDialog extends JDialog {
         fontSizeField.setText(font.getFontSize() + "");
         isFontBoldCheckBox.setSelected(font.bold);
         isFontItalicCheckBox.setSelected(font.italic);
+
+        initialTable.updatePageSizeIfNeeded(false); 
+        Integer currentPageSize = currentPreferences.getPageSize();
+        pageSizeField.setText(currentPageSize == null ? "" : String.valueOf(currentPageSize));
     }
     
     FontInfo mergeFont() {
@@ -518,6 +535,16 @@ public abstract class UserPreferencesDialog extends JDialog {
             return oldSize;
         }
         return fontSize != 0 ? fontSize : oldSize;
+    }
+
+    private Integer getPageSize() {
+        int pageSize;
+        try {
+            pageSize = Integer.parseInt(pageSizeField.getText());
+        } catch (Exception e) {
+            return null;
+        }
+        return pageSize != 0 ? pageSize : null;
     }
     
     private String getSelectedItemCaption(JList list) {
