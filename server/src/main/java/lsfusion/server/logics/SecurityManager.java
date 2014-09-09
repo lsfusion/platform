@@ -152,7 +152,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     public void setupDefaultAdminUser() throws SQLException, SQLHandledException {
         DataSession session = createSession();
         User user = addUser("admin", initialAdminPassword, session);
-        applySecurityPolicy(user);
+        applySecurityPolicy(user, session);
         setUserPolicies(user.ID, permitAllPolicy, allowConfiguratorPolicy);
         session.apply(businessLogics);
     }
@@ -242,11 +242,11 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     
     public User readUserWithSecurityPolicy(String login, DataSession session) throws SQLException, SQLHandledException {
         User user = readUser(login, session);
-        applySecurityPolicy(user);
+        applySecurityPolicy(user, session);
         return user;
     }
     
-    public void applySecurityPolicy(User userObject) throws SQLException, SQLHandledException {
+    public void applySecurityPolicy(User userObject, DataSession session) throws SQLException, SQLHandledException {
         // политика по умолчанию из кода
         userObject.addSecurityPolicy(defaultPolicy);
 
@@ -258,13 +258,13 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         }
 
         // политика по умолчанию из формы "Политика безопасности"
-        applyDefaultFormDefinedPolicy(userObject);
+        applyDefaultFormDefinedPolicy(userObject, session);
 
         // политика для роли из формы "Политика безопасности"
-        applyFormDefinedUserPolicy(userObject);
+        applyFormDefinedUserPolicy(userObject, session);
 
         // дополнительные политики из формы "Политика безопасности"
-        List<Integer> userPoliciesIds = readUserPoliciesIds(userObject.ID);
+        List<Integer> userPoliciesIds = readUserPoliciesIds(userObject.ID, session);
         for (int policyId : userPoliciesIds) {
             SecurityPolicy policy = getPolicy(policyId);
             if (policy != null) {
@@ -294,10 +294,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         session.close();
     }
 
-    private List<Integer> readUserPoliciesIds(Integer userId) {
+    private List<Integer> readUserPoliciesIds(Integer userId, DataSession session) {
         try {
             ArrayList<Integer> result = new ArrayList<Integer>();
-            DataSession session = createSession();
 
             QueryBuilder<String, Object> q = new QueryBuilder<String, Object>(SetFact.toExclSet("userId", "policyId"));
             Expr orderExpr = securityLM.orderUserPolicy.getExpr(session.getModifier(), q.getMapExprs().get("userId"), q.getMapExprs().get("policyId"));
@@ -313,8 +312,6 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                     result.add((Integer) keyMap.get("policyId"));
                 }
             }
-
-            session.close();
 
             return result;
         } catch (Exception e) {
@@ -370,7 +367,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         }
         
         if (user != null) {
-            applySecurityPolicy(user);
+            applySecurityPolicy(user, session);
         }
 
         return user;
@@ -388,11 +385,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         return result;
     }
 
-    private void applyDefaultFormDefinedPolicy(User user) {
+    private void applyDefaultFormDefinedPolicy(User user, DataSession session) {
         SecurityPolicy policy = new SecurityPolicy(-1);
         try {
-            DataSession session = createSession();
-
             QueryBuilder<String, String> qf = new QueryBuilder<String, String>(SetFact.singleton("formId"));
             Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
             Expr permitFormExpr = securityLM.permitNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
@@ -447,11 +442,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         }
     }
 
-    private void applyFormDefinedUserPolicy(User user) {
+    private void applyFormDefinedUserPolicy(User user, DataSession session) {
         SecurityPolicy policy = new SecurityPolicy(-1);
         try {
-            DataSession session = createSession();
-
             DataObject userObject = new DataObject(user.ID, authenticationLM.customUser);
 
             QueryBuilder<String, String> qu = new QueryBuilder<String, String>(SetFact.toExclSet("userId"));
