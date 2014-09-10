@@ -264,7 +264,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         applyFormDefinedUserPolicy(userObject, session);
 
         // дополнительные политики из формы "Политика безопасности"
-        List<Integer> userPoliciesIds = readUserPoliciesIds(userObject.ID, session);
+        List<Integer> userPoliciesIds = readUserPoliciesIds(userObject, session);
         for (int policyId : userPoliciesIds) {
             SecurityPolicy policy = getPolicy(policyId);
             if (policy != null) {
@@ -276,7 +276,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     private void applyTimeout(User user) throws SQLException, SQLHandledException {
         DataSession session = createSession();
 
-        DataObject userObject = new DataObject(user.ID, authenticationLM.customUser);
+        DataObject userObject = user.getDataObject(authenticationLM.customUser, session);
 
         QueryBuilder<String, String> qu = new QueryBuilder<String, String>(SetFact.toExclSet("userId"));
         Expr userExpr = qu.getMapExprs().get("userId");
@@ -294,7 +294,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         session.close();
     }
 
-    private List<Integer> readUserPoliciesIds(Integer userId, DataSession session) {
+    private List<Integer> readUserPoliciesIds(User user, DataSession session) {
         try {
             ArrayList<Integer> result = new ArrayList<Integer>();
 
@@ -303,7 +303,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
             q.addProperty("pOrder", orderExpr);
             q.and(orderExpr.getWhere());
-            q.and(q.getMapExprs().get("userId").compare(new DataObject(userId, authenticationLM.customUser), Compare.EQUALS));
+            q.and(q.getMapExprs().get("userId").compare(user.getDataObject(authenticationLM.customUser, session), Compare.EQUALS));
 
             ImOrderMap<Object, Boolean> orderBy = MapFact.<Object, Boolean>singletonOrder("pOrder", false);
             ImSet<ImMap<String, Object>> keys = q.execute(session, orderBy, 0).keys();
@@ -324,12 +324,12 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
         User user = readUser(login, session);
 
-        boolean useLDAP = businessLogics.authenticationLM.useLDAP.read(session) != null;
+        boolean useLDAP = authenticationLM.useLDAP.read(session) != null;
         if (useLDAP) {
-            String server = (String) businessLogics.authenticationLM.serverLDAP.read(session);
-            Integer port = (Integer) businessLogics.authenticationLM.portLDAP.read(session);
-            String baseDN = (String) businessLogics.authenticationLM.baseDNLDAP.read(session);
-            String userDNSuffix = (String) businessLogics.authenticationLM.userDNSuffixLDAP.read(session);
+            String server = (String) authenticationLM.serverLDAP.read(session);
+            Integer port = (Integer) authenticationLM.portLDAP.read(session);
+            String baseDN = (String) authenticationLM.baseDNLDAP.read(session);
+            String userDNSuffix = (String) authenticationLM.userDNSuffixLDAP.read(session);
 
             try {
                 LDAPParameters ldapParameters = new LDAPAuthenticationService(server, port, baseDN, userDNSuffix).authenticate(login, password);
@@ -352,14 +352,14 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 throw new LoginException();
             }
 
-            DataObject userObject = new DataObject(user.ID, businessLogics.authenticationLM.customUser);
+            DataObject userObject = user.getDataObject(authenticationLM.customUser, session);
 
-            if (businessLogics.authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
+            if (authenticationLM.isLockedCustomUser.read(session, userObject) != null) {
                 throw new LockedException();
             }
 
             if (!isUniversalPassword(password)) {
-                String hashPassword = (String) businessLogics.authenticationLM.sha256PasswordCustomUser.read(session, userObject);
+                String hashPassword = (String) authenticationLM.sha256PasswordCustomUser.read(session, userObject);
                 if (hashPassword == null || !hashPassword.trim().equals(BaseUtils.calculateBase64Hash("SHA-256", nullTrim(password), UserInfo.salt))) {
                     throw new LoginException();
                 }
@@ -445,7 +445,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     private void applyFormDefinedUserPolicy(User user, DataSession session) {
         SecurityPolicy policy = new SecurityPolicy(-1);
         try {
-            DataObject userObject = new DataObject(user.ID, authenticationLM.customUser);
+            DataObject userObject = user.getDataObject(authenticationLM.customUser, session);
 
             QueryBuilder<String, String> qu = new QueryBuilder<String, String>(SetFact.toExclSet("userId"));
             Expr userExpr = qu.getMapExprs().get("userId");
@@ -624,7 +624,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     public void setUserParameters(User user, String firstName, String lastName, String email, List<String> userRoleSIDs, DataSession session) {
         try {
 
-            DataObject customUser = new DataObject(user.ID, authenticationLM.customUser);
+            DataObject customUser = user.getDataObject(authenticationLM.customUser, session);
 
             if (firstName != null)
                 contactLM.firstNameContact.change(firstName, session, (DataObject) customUser);

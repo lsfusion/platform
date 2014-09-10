@@ -102,7 +102,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     private static final List<Pair<DataObject, String>> recentlyOpenForms = Collections.synchronizedList(new ArrayList<Pair<DataObject, String>>());
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
-    public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, String remoteAddress, User currentUser, int computer, int port) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public RemoteNavigator(LogicsInstance logicsInstance, boolean isFullClient, String remoteAddress, User currentUser, int computer, int port, DataSession session) throws RemoteException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         super(port);
 
         this.logicsInstance = logicsInstance;
@@ -128,7 +128,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         this.securityPolicy = currentUser.getSecurityPolicy();
         this.transactionTimeout = currentUser.getTimeout();
 
-        this.user = new DataObject(currentUser.ID, businessLogics.authenticationLM.customUser);
+        this.user = currentUser.getDataObject(businessLogics.authenticationLM.customUser, session);
         this.computer = new DataObject(computer, businessLogics.authenticationLM.computer);
 
         this.remoteAddress = remoteAddress;

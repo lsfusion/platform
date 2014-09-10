@@ -125,7 +125,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
                 }
             }
 
-            RemoteNavigator navigator = new RemoteNavigator(logicsInstance, isFullClient, remoteAddress, user, computer, rmiManager.getExportPort());
+            RemoteNavigator navigator = new RemoteNavigator(logicsInstance, isFullClient, remoteAddress, user, computer, rmiManager.getExportPort(), session);
             addNavigator(loginKey, navigator, securityManager.isUniversalPassword(password));
 
             return navigator;
