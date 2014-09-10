@@ -21,6 +21,8 @@ toDate(dateTime) = DATE(dateTime AS DATETIME);
 toTime(dateTime) = TIME(dateTime AS DATETIME);
 toDateTime(date) = DATETIME(date AS DATE);
 
+toDateDDMMYY = FORMULA VARSTRING[8] 'to_char(($1),\'DD.MM.YY\')';
+
 currentTime 'Тек. время' = toTime(currentDateTime());
 
 sumDate(date, days) = [= FORMULA DATE PG '(($1)+($2))' MS 'DATEADD(dd, $2, $1)'](date AS DATE, days AS LONG);
