@@ -118,6 +118,8 @@ EXTEND DESIGN editProfile {
 
 // ---------------- Действия по изменению пользователя ------------------- //
 
+userChanged() = DATA SESSION BOOLEAN();
+
 // Смена пользователя по логину и паролю
 FORM reloginLoginUser 'Сменить пользователя'
     OBJECTS data = (login = STRING[30], password = STRING[30]) FIXED PANEL
@@ -155,7 +157,9 @@ reloginLoginUser = ACTION () {
                 EXEC calculateBase64Hash('SHA-256', chosenString('password'));
                 IF sha256PasswordCustomUser(user()) == calculatedHash() THEN {
                     EXEC reloginUser(user());
-                    MESSAGE 'Пользователь изменён (хэш)';
+                    IF userChanged() THEN {
+                        MESSAGE 'Пользователь изменён';
+                    }
                 } ELSE {
                     MESSAGE 'Неверный пароль (хэш)';
                 }
@@ -195,7 +199,9 @@ reloginPasswordUser = ACTION (customUser) {
                 EXEC calculateBase64Hash('SHA-256', chosenString('password'));
                 IF sha256PasswordCustomUser(customUser)==calculatedHash() THEN {
                     EXEC reloginUser(customUser);
-                    MESSAGE 'Пользователь изменён (хэш)';
+                    IF userChanged() THEN {
+                        MESSAGE 'Пользователь изменён';
+                    }
                 } ELSE {
                     MESSAGE 'Неверный пароль (хэш)';
                 }

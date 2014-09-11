@@ -580,6 +580,10 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             throw new RuntimeException(e);
         }
     }
+    
+    public Object getUserMainRole(DataObject user) throws SQLException, SQLHandledException {
+        return securityLM.mainRoleCustomUser.read(createSession(), user);
+    }
 
     public List<String> getUserRolesNames(String username, List<String> extraUserRoleNames) {
         try {

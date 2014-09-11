@@ -16,7 +16,10 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.*;
 import lsfusion.server.caches.IdentityStrongLazy;
-import lsfusion.server.classes.*;
+import lsfusion.server.classes.ByteArrayClass;
+import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.classes.CustomClass;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
@@ -243,7 +246,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public DataSession createSession(SQLSession sql, OperationOwner upOwner) throws SQLException {
         return createSession(sql,
                 new UserController() {
-                    public void changeCurrentUser(DataObject user) {
+                    public boolean changeCurrentUser(DataObject user) {
                         throw new RuntimeException("not supported");
                     }
 

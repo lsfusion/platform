@@ -139,12 +139,18 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return isFullClient;
     }
 
-    public void changeCurrentUser(DataObject user) throws SQLException {
-        this.user = user;
-        Result<Integer> timeout = new Result<Integer>();
-        this.securityPolicy = getUserSecurityPolicy(timeout);
-        this.transactionTimeout = timeout.result;
-        updateEnvironmentProperty((CalcProperty) businessLogics.authenticationLM.currentUser.property, user);
+    public boolean changeCurrentUser(DataObject user) throws SQLException, SQLHandledException {
+        Object newRole = securityManager.getUserMainRole(user);
+        Object currentRole = securityManager.getUserMainRole(this.user);
+        if (BaseUtils.nullEquals(newRole, currentRole)) {
+            this.user = user;
+            Result<Integer> timeout = new Result<Integer>();
+            this.securityPolicy = getUserSecurityPolicy(timeout);
+            this.transactionTimeout = timeout.result;
+            updateEnvironmentProperty((CalcProperty) businessLogics.authenticationLM.currentUser.property, user);
+            return true;
+        }
+        return false;
     }
 
     public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
@@ -258,8 +264,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             this.weakThis = new WeakReference<RemoteNavigator>(navigator);
         }
 
-        public void changeCurrentUser(DataObject user) throws SQLException {
-            weakThis.get().changeCurrentUser(user);
+        public boolean changeCurrentUser(DataObject user) throws SQLException, SQLHandledException {
+            return weakThis.get().changeCurrentUser(user);
         }
 
         public DataObject getCurrentUser() {
