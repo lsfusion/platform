@@ -1207,7 +1207,7 @@ public class GridTable extends ClientPropertyTable {
     public void updatePageSizeIfNeeded(boolean checkVisible) {
         Integer currentPageSize = currentGridPreferences.getPageSize();
         int newPageSize = currentPageSize != null ? currentPageSize : (getParent().getHeight() / getRowHeight() + 1);
-        if (newPageSize != 0 && newPageSize != pageSize && (!checkVisible || SwingUtils.isRecursivelyVisible(this))) {
+        if (newPageSize != pageSize && (!checkVisible || SwingUtils.isRecursivelyVisible(this))) {
             try {
                 form.changePageSize(groupObject, newPageSize);
                 pageSize = newPageSize;
