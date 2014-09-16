@@ -14,6 +14,8 @@ DESIGN defaultData FROM DEFAULT {
         fill = 1;
         type = TABBED;
         NEW commons {
+            type = COLUMNS;
+            columns = 3;
             caption = 'Общие';
             ADD PROPERTY(loadDefaultData());
         }
