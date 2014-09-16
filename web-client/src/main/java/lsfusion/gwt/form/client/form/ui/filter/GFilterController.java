@@ -72,6 +72,17 @@ public abstract class GFilterController {
         return filterDialog;
     }
 
+    public boolean isDialogAttached() {
+        return filterDialog != null && filterDialog.isAttached();
+    }
+
+    public void reattachDialog() {
+        if (isDialogAttached()) {
+            getFilterDialog().hide();
+            getFilterDialog().show();
+        }
+    }
+
     private void setDialogVisible(boolean visible) {
         // игнорируем setVisible(false), пока диалог не создан
         if (visible || filterDialog != null) {

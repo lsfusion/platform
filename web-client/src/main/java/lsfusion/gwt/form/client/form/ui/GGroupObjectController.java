@@ -503,6 +503,12 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
             super.setFilterVisible(visible);
         }
     }
+    
+    public void reattachFilter() {
+        if (filter != null) {
+            filter.reattachDialog();
+        }    
+    }
 
     public void selectProperty(GPropertyDraw propertyDraw) {
         grid.selectProperty(propertyDraw);

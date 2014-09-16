@@ -1156,6 +1156,12 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public void addHotkeyBinding(GGroupObject groupObjcet, GKeyStroke key, HotkeyManager.Binding binding) {
         hotkeyManager.addHotkeyBinding(groupObjcet, key, binding);
     }
+    
+    public void modalFormAttached() { // фильтры норовят спрятаться за диалог (например, при его перемещении). передобавляем их в конец.
+        for (GGroupObjectController controller : controllers.values()) {
+            controller.reattachFilter();
+        }
+    }
 
     private class ServerResponseCallback extends ErrorHandlingCallback<ServerResponseResult> {
         @Override
