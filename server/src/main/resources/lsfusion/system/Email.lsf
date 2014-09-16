@@ -93,7 +93,7 @@ FORM account 'E-mail аккаунт'
 FORM accounts 'E-mail аккаунты'
    
     OBJECTS a = Account
-    PROPERTIES(a) nameAccount, passwordAccount, fromAddressAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount,
+    PROPERTIES(a) READONLY nameAccount, passwordAccount, fromAddressAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount,
                   nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, 
                   isDefaultNotificationAccount, disableAccount
     PROPERTIES(a) ADDFORM, EDITFORM, DELETE TOOLBAR

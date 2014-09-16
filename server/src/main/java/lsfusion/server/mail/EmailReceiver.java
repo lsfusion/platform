@@ -152,7 +152,7 @@ public class EmailReceiver {
 
         List<List<Object>> dataEmails = new ArrayList<List<Object>>();
         List<List<Object>> dataAttachments = new ArrayList<List<Object>>();
-        Session emailSession = Session.getDefaultInstance(mailProps);
+        Session emailSession = Session.getInstance(mailProps);
 
         Store emailStore = emailSession.getStore(isPOP3 ? "pop3" : "imap");
         emailStore.connect(nameAccount, passwordAccount);
