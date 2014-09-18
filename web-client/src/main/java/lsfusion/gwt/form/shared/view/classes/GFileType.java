@@ -17,14 +17,16 @@ import static lsfusion.gwt.form.shared.view.filter.GCompare.NOT_EQUALS;
 
 public abstract class GFileType extends GDataType {
     public boolean multiple;
+    public boolean storeName;
     public String description;
     public ArrayList<String> extensions;
 
     public GFileType() {
     }
 
-    public GFileType(boolean multiple) {
+    public GFileType(boolean multiple, boolean storeName) {
         this.multiple = multiple;
+        this.storeName = storeName;
     }
 
     @Override
@@ -44,7 +46,7 @@ public abstract class GFileType extends GDataType {
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new FileGridCellEditor(editManager, editProperty, description, multiple, extensions);
+        return new FileGridCellEditor(editManager, editProperty, description, multiple, storeName, extensions);
     }
 
     @Override

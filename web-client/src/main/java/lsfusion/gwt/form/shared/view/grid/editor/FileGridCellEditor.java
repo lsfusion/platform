@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 
 public class FileGridCellEditor extends DialogBasedGridCellEditor {
     private boolean multiple;
+    private boolean storeName;
     private String description;
     private ArrayList<String> extensions;
 
@@ -34,9 +35,10 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
     private LinkedHashMap<String, String> filePrefixes;
     private HashMap<String, String> fileNames;
 
-    public FileGridCellEditor(EditManager editManager, GPropertyDraw property, String description, boolean multiple, ArrayList<String> extensions) {
+    public FileGridCellEditor(EditManager editManager, GPropertyDraw property, String description, boolean multiple, boolean storeName, ArrayList<String> extensions) {
         super(editManager, property, "Загрузка файлов", 500, 150);
         this.multiple = multiple;
+        this.storeName = storeName;
         this.extensions = extensions;
         this.description = description;
     }
@@ -249,7 +251,7 @@ public class FileGridCellEditor extends DialogBasedGridCellEditor {
                 for (String id : filePrefixes.keySet()) {
                     fileSIDS.add(filePrefixes.get(id) + "_" + fileNames.get(id));
                 }
-                commitEditing(new GFilesDTO(fileSIDS, multiple, extensions == null));
+                commitEditing(new GFilesDTO(fileSIDS, multiple, storeName, extensions == null));
             }
         });
 

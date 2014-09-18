@@ -69,6 +69,7 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
 
     private <T extends GFileType> T initializeFileClass(ClientFileClass clientFileClass, T fileClass) {
         fileClass.multiple = clientFileClass.multiple;
+        fileClass.storeName = clientFileClass.storeName;
         if (clientFileClass.getExtensions() != null) {
             fileClass.extensions = new ArrayList<String>();
             MimetypesFileTypeMap mimeMap;
