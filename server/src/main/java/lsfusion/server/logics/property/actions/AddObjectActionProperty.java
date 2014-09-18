@@ -16,6 +16,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
@@ -152,7 +153,10 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         entity.shouldBeLast = true;
         entity.forceViewType = ClassViewType.PANEL;
 
-        entity.toDraw = form.getNFObject(valueClass, version).groupTo;
+        ObjectEntity object = form.getNFObject(valueClass, version);
+        if (object != null) {
+            entity.toDraw = object.groupTo;
+        }
     }
 
     @Override
