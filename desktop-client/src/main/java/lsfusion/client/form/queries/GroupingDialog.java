@@ -449,11 +449,9 @@ public abstract class GroupingDialog extends JDialog {
 
     public LinkedHashMap<Integer, Boolean> getSelectedPivotColumns() {
         LinkedHashMap<Integer, Boolean> selectedPivotColumns = new LinkedHashMap<Integer, Boolean>();
-        int i = 1;
         for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, JSpinner> spinner : groupSpinners.entrySet()) {
             if (spinner.getValue().isVisible()) {
-                selectedPivotColumns.put(i, groupPivotChecks.get(spinner.getKey()).isSelected());
-                i++;
+                selectedPivotColumns.put((Integer)spinner.getValue().getValue(), groupPivotChecks.get(spinner.getKey()).isSelected());
             }            
         }
         return selectedPivotColumns;
