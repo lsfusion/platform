@@ -2400,13 +2400,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedWindow(WindowType type, String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedWindow(WindowType type, String name, String captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         if (scriptLogger.isInfoEnabled()) {
-            scriptLogger.info("addScriptedWindow(" + name + ", " + type + ", " + caption + ", " + options + ");");
+            scriptLogger.info("addScriptedWindow(" + name + ", " + type + ", " + captionStr + ", " + options + ");");
         }
 
         checkDuplicateWindow(name);
 
+        String caption = (captionStr == null ? name : captionStr);
         NavigatorWindow window = null;
         switch (type) {
             case MENU:
@@ -2448,7 +2449,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         DockPosition dockPosition = options.getDockPosition();
 
         if (orientation == null) {
-            errLog.emitWindowOrientationNotSpecified(parser, name);
+            orientation = Orientation.VERTICAL;
         }
 
         PanelNavigatorWindow window = new PanelNavigatorWindow(orientation.asToolbarOrientation(), null, caption);
@@ -2464,7 +2465,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         DockPosition dockPosition = options.getDockPosition();
 
         if (orientation == null) {
-            errLog.emitWindowOrientationNotSpecified(parser, name);
+            orientation = Orientation.VERTICAL;
         }
 
         if (borderPosition != null && dockPosition != null) {

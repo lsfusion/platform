@@ -2785,10 +2785,10 @@ windowStatement
 windowCreateStatement
 @after {
 	if (inPropParseState()) {
-		self.addScriptedWindow($type.type, $id.text, $caption.val, $opts.options);
+		self.addScriptedWindow($type.type, $name.name, $name.caption, $opts.options);
 	}
 }
-	:	'WINDOW' type=windowType id=ID caption=stringLiteral opts=windowOptions ';'
+	:	'WINDOW' name=simpleNameWithCaption type=windowType opts=windowOptions  ';'
 	;
 
 windowHideStatement
