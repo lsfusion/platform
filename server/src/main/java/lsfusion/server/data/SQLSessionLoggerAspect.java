@@ -30,7 +30,7 @@ public class SQLSessionLoggerAspect {
 
     @Around("execution(* lsfusion.server.data.SQLSession.insertBatchRecords(java.lang.String, lsfusion.base.col.interfaces.immutable.ImOrderSet, lsfusion.base.col.interfaces.immutable.ImMap, ..)) && target(session) && args(table, keys, rows, ..)")
     public Object executeInsertBatch(ProceedingJoinPoint thisJoinPoint, SQLSession session, String table, ImOrderSet keys, ImMap rows) throws Throwable {
-        return executeMethodAndLogTime(thisJoinPoint, session, "INSERT BATCH INTO " + table + " ROWS " + rows.size());
+        return executeMethodAndLogTime(thisJoinPoint, session, "INSERT BATCH INTO " + table + " ROWS " + rows.size() + (rows.isEmpty() ? "" : " FIRST " + rows.getKey(0) + " - " + rows.getValue(0)));
     }
     @Around("execution(* lsfusion.server.data.SQLSession.readSingleValues(lsfusion.server.data.SessionTable, ..)) && target(session) && args(table, ..)")
     public Object executeReadSingleValues(ProceedingJoinPoint thisJoinPoint, SQLSession session, SessionTable table) throws Throwable {
