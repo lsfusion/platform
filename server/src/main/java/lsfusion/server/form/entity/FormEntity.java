@@ -31,7 +31,6 @@ import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.PropertyDBNamePolicy;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -418,7 +417,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return treeGroup;
     }
 
-    public void addGroupObject(GroupObjectEntity group, Version version) {
+    public void addGroupObject(GroupObjectEntity group, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) {
         for (GroupObjectEntity groupOld : getNFGroupsIt(version)) {
             assert group.getID() != groupOld.getID() && !group.getSID().equals(groupOld.getSID());
             for (ObjectEntity obj : group.getObjects()) {
@@ -427,11 +426,20 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
                 }
             }
         }
-        groups.add(group, version);
+        if (neighbour != null) {
+            groups.addIfNotExistsToThenLast(group, neighbour, isRightNeighbour != null && isRightNeighbour, version);
+        } else {
+            groups.add(group, version);    
+        }
 
         FormView richDesign = getNFRichDesign(version);
-        if (richDesign != null)
-            richDesign.addGroupObject(group, version);
+        if (richDesign != null) {
+            richDesign.addGroupObject(group, neighbour, isRightNeighbour, version);    
+        }
+    }
+
+    public void addGroupObject(GroupObjectEntity group, Version version) {
+        addGroupObject(group, null, null, version);
     }
 
     public void addPropertyDraw(ObjectEntity object, Version version, Object... groups) {

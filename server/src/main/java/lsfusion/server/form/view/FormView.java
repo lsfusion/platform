@@ -221,12 +221,24 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             setComponentSID(object.classChooser, getClassChooserSID(object.entity));
         }
     }
+    
+    public GroupObjectView addGroupObjectBase(GroupObjectEntity groupObject, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) {
+        GroupObjectView groupObjectView = new GroupObjectView(idGenerator, groupObject);
+        if (neighbour != null) {
+            groupObjects.addIfNotExistsToThenLast(groupObjectView, get(neighbour), isRightNeighbour != null && isRightNeighbour, version);
+        } else {
+            groupObjects.add(groupObjectView, version);
+        }
+        addGroupObjectView(groupObjectView);
+        return groupObjectView;    
+    }
 
     private GroupObjectView addGroupObjectBase(GroupObjectEntity groupObject, Version version) {
-        GroupObjectView groupObjectView = new GroupObjectView(idGenerator, groupObject);
-        groupObjects.add(groupObjectView, version);
-        addGroupObjectView(groupObjectView);
-        return groupObjectView;
+        return addGroupObjectBase(groupObject, null, null, version);
+    }
+
+    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) {
+        return addGroupObjectBase(groupObject, neighbour, isRightNeighbour, version);    
     }
 
     public GroupObjectView addGroupObject(GroupObjectEntity groupObject, Version version) {

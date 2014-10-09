@@ -17,7 +17,10 @@ import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.serialization.ServerIdentitySerializable;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.synchronizedMap;
 
@@ -274,10 +277,15 @@ public class DefaultFormView extends FormView {
     }
 
     @Override
-    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, Version version) {
-        GroupObjectView view = super.addGroupObject(groupObject, version);
+    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) {
+        GroupObjectView view = super.addGroupObject(groupObject, neighbour, isRightNeighbour, version);
         addGroupObjectView(view, version);
         return view;
+    }
+
+    @Override
+    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, Version version) {
+        return addGroupObject(groupObject, null, null, version);
     }
 
     @Override

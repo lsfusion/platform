@@ -106,7 +106,7 @@ public class ScriptingFormEntity {
                 }
             }
 
-            addGroupObjectEntity(groupName, groupObj, version);
+            addGroupObjectEntity(groupName, groupObj, groupObject.neighbourGroupObject, groupObject.isRightNeighbour, version);
             groups.add(groupObj);
         }
 
@@ -159,12 +159,15 @@ public class ScriptingFormEntity {
         }
     }
     
-    private void addGroupObjectEntity(String groupName, GroupObjectEntity group, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    private void addGroupObjectEntity(String groupName, GroupObjectEntity group, GroupObjectEntity neighbour, Boolean isRightNeighbour, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (form.getNFGroupObject(groupName, version) != null) {
             LM.getErrLog().emitAlreadyDefinedError(LM.getParser(), "group object", groupName);
         }
+        if (neighbour != null && neighbour.treeGroup != null) {
+            LM.getErrLog().emitGroupObjectInTreeAfterBeforeError(LM.getParser(), neighbour.getSID());    
+        }
         group.setSID(groupName);
-        form.addGroupObject(group, version);
+        form.addGroupObject(group,neighbour, isRightNeighbour, version);
     }
 
     private void addObjectEntity(String name, ObjectEntity object, GroupObjectEntity group, Version version) throws ScriptingErrorLog.SemanticErrorException {

@@ -457,6 +457,7 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 		(viewType = formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.isInitType); } )?
 		(pageSize = formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); })?
 		(update = formGroupObjectUpdateList { $groupObject.setUpdate($update.infos); })?
+		(relative = formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); })?
 	; 
 
 formTreeGroupObjectDeclaration returns [ScriptingGroupObject groupObject, List<PropertyUsage> properties]
@@ -504,6 +505,11 @@ formGroupObjectPageSize returns [Integer value = null]
 formGroupObjectUpdateList returns [List<ObjectUpdateInfo> infos = new ArrayList<ObjectUpdateInfo>()]
 	:	info = formGroupObjectUpdate { infos.add(new ObjectUpdateInfo($info.updateType, $info.value, $info.isStaticObject)); }
 		(',' info = formGroupObjectUpdate { infos.add(new ObjectUpdateInfo($info.updateType, $info.value, $info.isStaticObject)); })*
+	;
+	
+formGroupObjectRelativePosition returns [GroupObjectEntity groupObject, boolean isRightNeighbour]
+	:	'AFTER' go=formGroupObjectEntity { $groupObject = $go.groupObject; $isRightNeighbour = true; }
+	|	'BEFORE' go=formGroupObjectEntity { $groupObject = $go.groupObject; $isRightNeighbour = false; }
 	;
 
 formGroupObjectUpdate returns [ObjectUpdateInfo.UpdateType updateType, Object value, boolean isStaticObject]

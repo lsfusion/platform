@@ -140,6 +140,10 @@ public class ScriptingErrorLog {
     public void emitIllegalInsertBeforeAfterComponentElement(ScriptParser parser, String component, String parentComponent, String anchorComponent) throws SemanticErrorException {
         emitSimpleError(parser, "can't insert component " + component + " after or before '" + anchorComponent + "' in " + parentComponent);
     }
+    
+    public void emitGroupObjectInTreeAfterBeforeError(ScriptParser parser, String groupObject) throws SemanticErrorException {
+        emitSimpleError(parser, "'" + groupObject + "' is in tree group - can't use it in AFTER/BEFORE");
+    }
 
     public void emitComponentIsNullError(ScriptParser parser, String mainMsg) throws SemanticErrorException {
         emitSimpleError(parser, mainMsg + " component is null");

@@ -2,6 +2,7 @@ package lsfusion.server.logics.scripted;
 
 import lsfusion.interop.ClassViewType;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
+import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.ObjectUpdateInfo;
 
 import java.util.List;
@@ -18,6 +19,9 @@ public class ScriptingGroupObject {
     ScriptingLogicsModule.PropertyUsage reportPathPropUsage;
     List<String> reportPathMapping;
     List<ObjectUpdateInfo> updateInfos;
+    
+    GroupObjectEntity neighbourGroupObject;
+    Boolean isRightNeighbour;
 
     public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<String> captions, List<ActionPropertyObjectEntity> events) {
         assert objects.size() == classes.size() && classes.size() == captions.size() && captions.size() == events.size();
@@ -52,5 +56,10 @@ public class ScriptingGroupObject {
     
     public void setUpdate(List<ObjectUpdateInfo> infos) {
         updateInfos = infos;
+    }
+    
+    public void setNeighbourGroupObject(GroupObjectEntity neighbourGroupObject, boolean isRightNeighbour) {
+        this.neighbourGroupObject = neighbourGroupObject;
+        this.isRightNeighbour = isRightNeighbour;
     }
 }
