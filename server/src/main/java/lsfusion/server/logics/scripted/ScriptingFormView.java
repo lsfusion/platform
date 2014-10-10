@@ -22,12 +22,12 @@ public class ScriptingFormView {
         this.view = view;
     }
 
-    public ComponentView getComponentBySID(String sid) throws ScriptingErrorLog.SemanticErrorException {
-        return getComponentBySID(sid, true);
+    public ComponentView getComponentBySID(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        return getComponentBySID(sid, true, version);
     }
 
-    public ComponentView getComponentBySID(String sid, boolean hasToExist) throws ScriptingErrorLog.SemanticErrorException {
-        ComponentView component = view.getComponentBySID(sid);
+    public ComponentView getComponentBySID(String sid, boolean hasToExist, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        ComponentView component = view.getComponentBySID(sid, version);
         if (hasToExist && component == null) {
             errLog.emitComponentNotFoundError(parser, sid);
         }
@@ -54,14 +54,13 @@ public class ScriptingFormView {
     public ContainerView createNewComponent(String sid, ComponentView parentComponent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert sid != null && sid.matches("[a-zA-Z][a-zA-Z_0-9]*(\\.[a-zA-Z][a-zA-Z_0-9]*)*") && parentComponent != null;
 
-        if (getComponentBySID(sid, false) != null) {
+        if (getComponentBySID(sid, false, version) != null) {
             errLog.emitAlreadyDefinedError(parser, "component", sid);
         }
 
-        ContainerView container = view.createContainer(null, null, sid);
-        if (parentComponent != null) {
-            moveComponent(container, parentComponent, pos, anchorComponent, version);
-        }
+        ContainerView container = view.createContainer(null, null, sid, version);
+        
+        moveComponent(container, parentComponent, pos, anchorComponent, version);
 
         return container;
     }
@@ -114,7 +113,7 @@ public class ScriptingFormView {
 
         //не удаляем компоненты (не-контейнеры) из пула, чтобы можно было опять их использовать в настройке
         if (component instanceof ContainerView) {
-            view.removeContainerFromMapping((ContainerView) component);
+            view.removeContainerFromMapping((ContainerView) component, version);
             if (cascade) {
                 for (ComponentView child : ((ContainerView) component).getNFChildrenIt(version)) {
                     removeComponent(child, true, version);

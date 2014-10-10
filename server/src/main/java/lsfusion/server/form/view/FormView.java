@@ -154,7 +154,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         this.entity = entity;
 
         mainContainer = new ContainerView(idGenerator.idShift());
-        setComponentSID(mainContainer, getMainContainerSID());
+        setComponentSID(mainContainer, getMainContainerSID(), version);
 
         for (GroupObjectEntity group : entity.getNFGroupsListIt(version)) {
             addGroupObjectBase(group, version);
@@ -209,16 +209,16 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         properties.move(propertyView, neighbourView, isRightNeighbour, version);
     }
 
-    private void addGroupObjectView(GroupObjectView groupObjectView) {
+    private void addGroupObjectView(GroupObjectView groupObjectView, Version version) {
         mgroupObjects.put(groupObjectView.entity, groupObjectView);
-        setComponentSID(groupObjectView.getGrid(), getGridSID(groupObjectView.entity));
-        setComponentSID(groupObjectView.getShowType(), getShowTypeSID(groupObjectView.entity));
-        setComponentSID(groupObjectView.getToolbar(), getToolbarSID(groupObjectView.entity));
-        setComponentSID(groupObjectView.getFilter(), getFilterSID(groupObjectView.entity));
+        setComponentSID(groupObjectView.getGrid(), getGridSID(groupObjectView.entity), version);
+        setComponentSID(groupObjectView.getShowType(), getShowTypeSID(groupObjectView.entity), version);
+        setComponentSID(groupObjectView.getToolbar(), getToolbarSID(groupObjectView.entity), version);
+        setComponentSID(groupObjectView.getFilter(), getFilterSID(groupObjectView.entity), version);
 
         for (ObjectView object : groupObjectView) {
             mobjects.put(object.entity, object);
-            setComponentSID(object.classChooser, getClassChooserSID(object.entity));
+            setComponentSID(object.classChooser, getClassChooserSID(object.entity), version);
         }
     }
     
@@ -229,7 +229,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         } else {
             groupObjects.add(groupObjectView, version);
         }
-        addGroupObjectView(groupObjectView);
+        addGroupObjectView(groupObjectView, version);
         return groupObjectView;    
     }
 
@@ -249,29 +249,29 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return addTreeGroupBase(treeGroup, version);
     }
 
-    private void addTreeGroupView(TreeGroupView treeGroupView) {
+    private void addTreeGroupView(TreeGroupView treeGroupView, Version version) {
         mtreeGroups.put(treeGroupView.entity, treeGroupView);
-        setComponentSID(treeGroupView, getTreeSID(treeGroupView.entity));
-        setComponentSID(treeGroupView.getToolbar(), getToolbarSID(treeGroupView.entity));
-        setComponentSID(treeGroupView.getFilter(), getFilterSID(treeGroupView.entity));
+        setComponentSID(treeGroupView, getTreeSID(treeGroupView.entity), version);
+        setComponentSID(treeGroupView.getToolbar(), getToolbarSID(treeGroupView.entity), version);
+        setComponentSID(treeGroupView.getFilter(), getFilterSID(treeGroupView.entity), version);
     }
 
     private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, Version version) {
         TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup, version);
         treeGroups.add(treeGroupView, version);
-        addTreeGroupView(treeGroupView);
+        addTreeGroupView(treeGroupView, version);
         return treeGroupView;
     }
 
-    private void addRegularFilterGroupView(RegularFilterGroupView filterGroupView) {
+    private void addRegularFilterGroupView(RegularFilterGroupView filterGroupView, Version version) {
         mfilters.put(filterGroupView.entity, filterGroupView);
-        setComponentSID(filterGroupView, getRegularFilterGroupSID(filterGroupView.entity));
+        setComponentSID(filterGroupView, getRegularFilterGroupSID(filterGroupView.entity), version);
     }
 
     private RegularFilterGroupView addRegularFilterGroupBase(RegularFilterGroupEntity filterGroup, Version version) {
         RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup, version);
         regularFilters.add(filterGroupView, version);
-        addRegularFilterGroupView(filterGroupView);
+        addRegularFilterGroupView(filterGroupView, version);
         return filterGroupView;
     }
 
@@ -286,11 +286,11 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public void fillComponentMaps() {
         for (GroupObjectView group : getGroupObjectsIt()) {
-            addGroupObjectView(group);
+            addGroupObjectView(group, Version.DESCRIPTOR);
         }
 
         for (TreeGroupView treeGroup : getTreeGroupsIt()) {
-            addTreeGroupView(treeGroup);
+            addTreeGroupView(treeGroup, Version.DESCRIPTOR);
         }
 
         for (PropertyDrawView property : getPropertiesIt()) {
@@ -298,7 +298,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
 
         for (RegularFilterGroupView filterGroup : getRegularFiltersIt()) {
-            addRegularFilterGroupView(filterGroup);
+            addRegularFilterGroupView(filterGroup, Version.DESCRIPTOR);
         }
 
         initButtons(Version.DESCRIPTOR);
@@ -316,21 +316,21 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         dropButton = setupFormButton(entity.dropActionPropertyDraw, "drop", version);
     }
 
-    public ContainerView createContainer() {
-        return createContainer(null);
+    public ContainerView createContainer(Version version) {
+        return createContainer(null, version);
     }
 
-    public ContainerView createContainer(String caption) {
-        return createContainer(caption, null, null);
+    public ContainerView createContainer(String caption, Version version) {
+        return createContainer(caption, null, null, version);
     }
 
-    public ContainerView createContainer(String caption, String description, String sID) {
+    public ContainerView createContainer(String caption, String description, String sID, Version version) {
         ContainerView container = new ContainerView(idGenerator.idShift());
         container.setCaption(caption);
         container.setDescription(description);
         container.setSID(sID);
         if (sID != null) {
-            addComponentToMapping(container);
+            addComponentToMapping(container, version);
         }
         return container;
     }
@@ -345,16 +345,16 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
     };
     
-    public void addComponentToMapping(ComponentView container) {
-        componentSIDHandler.store(container);
+    public void addComponentToMapping(ComponentView container, Version version) {
+        componentSIDHandler.store(container, version);
     }
 
-    public void removeContainerFromMapping(ContainerView container) {
-        componentSIDHandler.remove(container);
+    public void removeContainerFromMapping(ContainerView container, Version version) {
+        componentSIDHandler.remove(container, version);
     }
 
-    public ComponentView getComponentBySID(String sid) {
-        return componentSIDHandler.find(sid);
+    public ComponentView getComponentBySID(String sid, Version version) {
+        return componentSIDHandler.find(sid, version);
     }
 
     public PropertyDrawView getPrintButton() {
@@ -800,13 +800,13 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         getProperty(property).hide = hide;
     }
 
-    protected void setComponentSID(ComponentView component, String sid) {
+    protected void setComponentSID(ComponentView component, String sid, Version version) {
         component.setSID(sid);
-        addComponentToMapping(component);
+        addComponentToMapping(component, version);
     }
 
-    public ContainerView getContainerBySID(String sid) {
-        ComponentView component = getComponentBySID(sid);
+    public ContainerView getContainerBySID(String sid, Version version) {
+        ComponentView component = getComponentBySID(sid, version);
         if (component != null && !(component instanceof ContainerView)) {
             throw new IllegalStateException(sid + " component has to be container");
         }
@@ -815,7 +815,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     private PropertyDrawView setupFormButton(PropertyDrawEntity function, String type, Version version) {
         PropertyDrawView functionView = getNFProperty(function, version);        
-        setComponentSID(functionView, getClientFunctionSID(type));
+        setComponentSID(functionView, getClientFunctionSID(type), version);
         return functionView;         
     }
 

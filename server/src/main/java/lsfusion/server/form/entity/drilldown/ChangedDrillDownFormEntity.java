@@ -35,9 +35,9 @@ public class ChangedDrillDownFormEntity extends DrillDownFormEntity<ClassPropert
         DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
         valueContainer.add(design.get(propertyDraw), version);
-        ContainerView newValueContainer = design.createContainer(getString("logics.property.drilldown.form.new.value"));
+        ContainerView newValueContainer = design.createContainer(getString("logics.property.drilldown.form.new.value"), version);
         newValueContainer.add(design.get(newPropertyDraw), version);
-        ContainerView oldValueContainer = design.createContainer(getString("logics.property.drilldown.form.old.value"));
+        ContainerView oldValueContainer = design.createContainer(getString("logics.property.drilldown.form.old.value"), version);
         oldValueContainer.add(design.get(oldPropertyDraw), version);
 
         design.mainContainer.addAfter(newValueContainer, valueContainer, version);

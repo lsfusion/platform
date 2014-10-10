@@ -81,7 +81,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
     public FormView createDefaultRichDesign(Version version) {
         DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
-        ContainerView extraParamsContainer = design.createContainer(getString("logics.property.drilldown.form.inner.params"));
+        ContainerView extraParamsContainer = design.createContainer(getString("logics.property.drilldown.form.inner.params"), version);
         design.mainContainer.addAfter(extraParamsContainer, valueContainer, version);
 
         if(implPropertyDraw != null) {

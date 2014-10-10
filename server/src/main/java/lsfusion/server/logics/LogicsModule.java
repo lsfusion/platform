@@ -38,6 +38,7 @@ import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.mutables.GlobalVersion;
 import lsfusion.server.logics.mutables.LastVersion;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
@@ -320,7 +321,7 @@ public abstract class LogicsModule {
     private final Version version = new Version() {
         public boolean canSee(Version version) {
             assert !(version instanceof LastVersion);
-            return visible.contains(version);
+            return version instanceof GlobalVersion || visible.contains(version);
         }
 
         public Integer getOrder() {
@@ -355,25 +356,12 @@ public abstract class LogicsModule {
 
     protected void storeCustomClass(CustomClass customClass) {
         addModuleClass(customClass);
-        baseLM.storeSIDClass(customClass);
     }
 
     protected BaseClass addBaseClass(String sID, String caption) {
         BaseClass baseClass = new BaseClass(sID, caption, getVersion());
         storeCustomClass(baseClass);
         return baseClass;
-    }
-
-    protected CustomClass findCustomClass(String sid) {
-        return baseLM.findCustomClass(sid);
-    }
-
-    protected ValueClass findValueClass(String sid) {
-        ValueClass valueClass = findCustomClass(sid);
-        if (valueClass == null) {
-            valueClass = DataClass.findDataClass(sid);
-        }
-        return valueClass;
     }
 
     protected ConcreteCustomClass addConcreteClass(String name, String caption, CustomClass... parents) {

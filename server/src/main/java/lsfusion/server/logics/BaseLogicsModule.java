@@ -27,7 +27,6 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.NFLazy;
-import lsfusion.server.logics.mutables.SIDHandler;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
@@ -563,18 +562,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public void initClassForms() {
         objectForm = baseClass.getBaseClassForm(this);
         objects.add(objectForm, getVersion());
-    }
-
-    private final SIDHandler<CustomClass> classSIDHandler = new SIDHandler<CustomClass>() {
-        protected String getSID(CustomClass customClass) {
-            return customClass.getSID();
-        }};
-
-    public void storeSIDClass(CustomClass customClass) {
-        classSIDHandler.store(customClass);
-    }
-    protected CustomClass findCustomClass(String sid) {
-        return classSIDHandler.find(sid);
     }
 
 

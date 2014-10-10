@@ -37,6 +37,10 @@ public class NFMapListImpl<K, V> extends NFImpl<Map<K, NFList<V>>, ImMap<K, ImLi
             mResult.exclAdd(entry.getKey(), entry.getValue().getNFList(version));
         return mResult.immutable();
     }
+    
+    public NFList<V> getNFList(K key) {
+        return getChanges().get(key);
+    }
 
     public ImMap<K, ImList<V>> getOrderMap() {
         return getFinal();

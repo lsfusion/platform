@@ -14,7 +14,9 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.ClassType;
+import lsfusion.server.logics.property.PropertyInterface;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -65,18 +67,18 @@ public class DrillDownFormEntity<I extends PropertyInterface, P extends CalcProp
     public FormView createDefaultRichDesign(Version version) {
         DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign(version);
 
-        paramsContainer = design.createContainer(getString("logics.property.drilldown.form.params"));
+        paramsContainer = design.createContainer(getString("logics.property.drilldown.form.params"), version);
         paramsContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addFirst(paramsContainer, version);
         for (ObjectEntity obj : paramObjects) {
             paramsContainer.add(design.getGroupObjectContainer(obj.groupTo), version);
         }
 
-        valueContainer = design.createContainer(getString("logics.property.drilldown.form.value"));
+        valueContainer = design.createContainer(getString("logics.property.drilldown.form.value"), version);
         valueContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addAfter(valueContainer, paramsContainer, version);
 
-        detailsContainer = design.createContainer(getString("logics.property.drilldown.form.details"));
+        detailsContainer = design.createContainer(getString("logics.property.drilldown.form.details"), version);
         detailsContainer.setAlignment(FlexAlignment.STRETCH);
         design.mainContainer.addAfter(detailsContainer, valueContainer, version);
 

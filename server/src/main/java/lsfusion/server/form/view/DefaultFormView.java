@@ -92,9 +92,9 @@ public class DefaultFormView extends FormView {
         autoRefresh = entity.autoRefresh;
 
         FormContainerSet<ContainerView, ComponentView> formSet = FormContainerSet.fillContainers(this, containerFactory, new ContainerView.VersionContainerAdder(version));
-        setComponentSID(formSet.getFormButtonContainer(), formSet.getFormButtonContainer().getSID());
-        setComponentSID(formSet.getNoGroupPanelContainer(), formSet.getNoGroupPanelContainer().getSID());
-        setComponentSID(formSet.getNoGroupPanelPropsContainer(), formSet.getNoGroupPanelPropsContainer().getSID());
+        setComponentSID(formSet.getFormButtonContainer(), formSet.getFormButtonContainer().getSID(), version);
+        setComponentSID(formSet.getNoGroupPanelContainer(), formSet.getNoGroupPanelContainer().getSID(), version);
+        setComponentSID(formSet.getNoGroupPanelPropsContainer(), formSet.getNoGroupPanelPropsContainer().getSID(), version);
 
         formButtonContainer = formSet.getFormButtonContainer();
         noGroupPanelContainer = formSet.getNoGroupPanelContainer();
@@ -154,12 +154,12 @@ public class DefaultFormView extends FormView {
         PropertyDrawView closeFunction = get(entity.closeActionPropertyDraw);
         setupFormButton(closeFunction, KeyStrokes.getCloseKeyStroke(), null);
 
-        ContainerView leftControlsContainer = createContainer(null, null, "leftControls");
+        ContainerView leftControlsContainer = createContainer(null, null, "leftControls", version);
         leftControlsContainer.setType(ContainerType.CONTAINERH);
         leftControlsContainer.childrenAlignment = Alignment.LEADING;
         leftControlsContainer.flex = 0;
 
-        ContainerView rightControlsContainer = createContainer(null, null, "rightControls");
+        ContainerView rightControlsContainer = createContainer(null, null, "rightControls", version);
         rightControlsContainer.setType(ContainerType.CONTAINERH);
         rightControlsContainer.childrenAlignment = Alignment.TRAILING;
         rightControlsContainer.flex = 1;
@@ -197,28 +197,28 @@ public class DefaultFormView extends FormView {
         mainContainer.add(groupSet.getGroupContainer(), version);
 
         groupContainers.put(groupObject, groupSet.getGroupContainer());
-        setComponentSID(groupSet.getGroupContainer(), groupSet.getGroupContainer().getSID());
+        setComponentSID(groupSet.getGroupContainer(), groupSet.getGroupContainer().getSID(), version);
         gridContainers.put(groupObject, groupSet.getGridContainer());
-        setComponentSID(groupSet.getGridContainer(), groupSet.getGridContainer().getSID());
+        setComponentSID(groupSet.getGridContainer(), groupSet.getGridContainer().getSID(), version);
         panelContainers.put(groupObject, groupSet.getPanelContainer());
-        setComponentSID(groupSet.getPanelContainer(), groupSet.getPanelContainer().getSID());
+        setComponentSID(groupSet.getPanelContainer(), groupSet.getPanelContainer().getSID(), version);
         panelPropsContainers.put(groupObject, groupSet.getPanelPropsContainer());
-        setComponentSID(groupSet.getPanelPropsContainer(), groupSet.getPanelPropsContainer().getSID());
+        setComponentSID(groupSet.getPanelPropsContainer(), groupSet.getPanelPropsContainer().getSID(), version);
         controlsContainers.put(groupObject, groupSet.getControlsContainer());
-        setComponentSID(groupSet.getControlsContainer(), groupSet.getControlsContainer().getSID());
+        setComponentSID(groupSet.getControlsContainer(), groupSet.getControlsContainer().getSID(), version);
         rightControlsContainers.put(groupObject, groupSet.getRightControlsContainer());
-        setComponentSID(groupSet.getRightControlsContainer(), groupSet.getRightControlsContainer().getSID());
+        setComponentSID(groupSet.getRightControlsContainer(), groupSet.getRightControlsContainer().getSID(), version);
         filtersContainers.put(groupObject, groupSet.getFiltersContainer());
-        setComponentSID(groupSet.getFiltersContainer(), groupSet.getFiltersContainer().getSID());
+        setComponentSID(groupSet.getFiltersContainer(), groupSet.getFiltersContainer().getSID(), version);
         toolbarPropsContainers.put(groupObject, groupSet.getToolbarPropsContainer());
-        setComponentSID(groupSet.getToolbarPropsContainer(), groupSet.getToolbarPropsContainer().getSID());
+        setComponentSID(groupSet.getToolbarPropsContainer(), groupSet.getToolbarPropsContainer().getSID(), version);
 
         if (groupObject.size() == 1) {
             groupSet.getGridContainer().addFirst(groupObject.get(0).classChooser, version);
         } else if (groupObject.size() > 1) {
             List<ContainerView> containers = new ArrayList<ContainerView>();
             for (int i = 0; i < groupObject.size() - 1; i++) {
-                ContainerView container = createContainer();
+                ContainerView container = createContainer(version);
                 container.setType(ContainerType.HORIZONTAL_SPLIT_PANE);
                 container.add(groupObject.get(i).classChooser, version);
                 containers.add(container);
@@ -239,15 +239,15 @@ public class DefaultFormView extends FormView {
         TreeGroupContainerSet<ContainerView, ComponentView> treeSet = TreeGroupContainerSet.create(treeGroup, containerFactory, new ContainerView.VersionContainerAdder(version));
 
         treeContainers.put(treeGroup, treeSet.getTreeContainer());
-        setComponentSID(treeSet.getTreeContainer(), treeSet.getTreeContainer().getSID());
+        setComponentSID(treeSet.getTreeContainer(), treeSet.getTreeContainer().getSID(), version);
         controlsContainers.put(treeGroup, treeSet.getControlsContainer());
-        setComponentSID(treeSet.getControlsContainer(), treeSet.getControlsContainer().getSID());
+        setComponentSID(treeSet.getControlsContainer(), treeSet.getControlsContainer().getSID(), version);
         rightControlsContainers.put(treeGroup, treeSet.getRightControlsContainer());
-        setComponentSID(treeSet.getRightControlsContainer(), treeSet.getRightControlsContainer().getSID());
+        setComponentSID(treeSet.getRightControlsContainer(), treeSet.getRightControlsContainer().getSID(), version);
         filtersContainers.put(treeGroup, treeSet.getFiltersContainer());
-        setComponentSID(treeSet.getFiltersContainer(), treeSet.getFiltersContainer().getSID());
+        setComponentSID(treeSet.getFiltersContainer(), treeSet.getFiltersContainer().getSID(), version);
         toolbarPropsContainers.put(treeGroup, treeSet.getToolbarPropsContainer());
-        setComponentSID(treeSet.getToolbarPropsContainer(), treeSet.getToolbarPropsContainer().getSID());
+        setComponentSID(treeSet.getToolbarPropsContainer(), treeSet.getToolbarPropsContainer().getSID(), version);
 
         //вставляем перед первым groupObject в данной treeGroup
         mainContainer.addBefore(treeSet.getTreeContainer(), groupContainers.get(mgroupObjects.get(treeGroup.entity.getGroups().get(0))), version);
@@ -427,13 +427,13 @@ public class DefaultFormView extends FormView {
             String currentGroupContainerSID = getPropertyGroupContainerSID(groupObject, currentGroup);
 
             //ищем по имени
-            currentGroupContainer = getContainerBySID(currentGroupContainerSID);
+            currentGroupContainer = getContainerBySID(currentGroupContainerSID, Version.GLOBAL);
             if (currentGroupContainer == null) {
                 //сначала создаём контейнеры для верхних групп, чтобы соблюдался порядок
                 getPropGroupContainer(groupObject, currentGroup.getNFParent(version), version);
 
                 //затем создаём контейнер для текущей группы
-                currentGroupContainer = createContainer(currentGroup.caption, null, currentGroupContainerSID);
+                currentGroupContainer = createContainer(currentGroup.caption, null, currentGroupContainerSID, Version.GLOBAL);
                 currentGroupContainer.setType(ContainerType.COLUMNS);
                 currentGroupContainer.columns = 4;
 

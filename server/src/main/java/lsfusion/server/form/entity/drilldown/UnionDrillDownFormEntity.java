@@ -61,7 +61,7 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Cal
 
         valueContainer.add(design.get(implPropertyDraw), version);
 
-        ContainerView operandsContainer = design.createContainer(getString("logics.property.drilldown.form.operands"));
+        ContainerView operandsContainer = design.createContainer(getString("logics.property.drilldown.form.operands"), version);
         operandsContainer.setAlignment(FlexAlignment.STRETCH);
         for (PropertyDrawEntity operandProperty : operandProperties) {
             operandsContainer.add(design.get(operandProperty), version);

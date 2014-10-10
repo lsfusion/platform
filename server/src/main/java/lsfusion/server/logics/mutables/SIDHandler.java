@@ -1,35 +1,40 @@
 package lsfusion.server.logics.mutables;
 
-import lsfusion.server.classes.CustomClass;
+import lsfusion.server.logics.mutables.interfaces.NFList;
+import lsfusion.server.logics.mutables.interfaces.NFMapList;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Iterator;
 
 public abstract class SIDHandler<K> {
 
-    private final Map<String, K> sidToObject = new HashMap<String, K>();
+    private final NFMapList<String, K> sidToObject = NFFact.mapList();
     
     protected abstract String getSID(K object);
 
-    @NFLazy
-    public void store(K object) {
+    public void store(K object, Version version) {
         String sid = getSID(object);
-        assert !checkUnique() || !sidToObject.containsKey(sid);
-        sidToObject.put(sid, object);
+        NFList<K> nfList = sidToObject.getNFList(sid);
+        assert !checkUnique() || nfList == null || nfList.getNFList(version).isEmpty();
+        sidToObject.addAll(sid, Arrays.asList(object), version);
     }
     
     public boolean checkUnique() {
         return true;
     }
 
-    @NFLazy
-    public K find(String sid) {
-        return sidToObject.get(sid);
+    public K find(String sid, Version version) {
+        NFList<K> nfList = sidToObject.getNFList(sid);
+        if (nfList == null) {
+            return null;
+        } else {
+            Iterator<K> iterator = nfList.getNFListIt(version).iterator();
+            return iterator.hasNext() ? iterator.next() : null;
+        }
     }
     
-    @NFLazy
-    public void remove(K object) {
-        sidToObject.remove(getSID(object));
+    public void remove(K object, Version version) {
+        sidToObject.removeAll(getSID(object), version);
     }
 
 }

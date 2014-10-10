@@ -3067,7 +3067,7 @@ componentSelector returns [ComponentView component]
 	|	mid=multiCompoundID
 		{
 			if (inPropParseState()) {
-				$component = $designStatement::design.getComponentBySID($mid.sid);
+				$component = $designStatement::design.getComponentBySID($mid.sid, self.getVersion());
 			}
 		}
 	;
