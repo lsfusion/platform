@@ -909,8 +909,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     private void updateViewProperty(ExecutionEnvironment execEnv, ImMap<ObjectInstance, DataObject> keys) throws SQLException, SQLHandledException {
         CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance> viewProperty = props.get(GroupObjectProp.VIEW);
         if(viewProperty != null) {
-            ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
-            updateViewProperty(execEnv, viewProperty, new PropertyChange<ClassPropertyInterface>(ValueExpr.TRUE, viewProperty.mapping.join(keys)));
+            updateViewProperty(execEnv, viewProperty, keys.isEmpty() ? new PropertyChange<ClassPropertyInterface>(viewProperty.property.getMapKeys(), ValueExpr.TRUE, Where.FALSE) : 
+                    new PropertyChange<ClassPropertyInterface>(ValueExpr.TRUE, viewProperty.mapping.join(keys)));
         }
     }
     
