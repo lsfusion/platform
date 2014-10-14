@@ -1934,6 +1934,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public void setParentSession(DataSession parentSession) throws SQLException, SQLHandledException {
         assert parentSession != null;
         
+        activeForms.putAll(parentSession.activeForms);        
         parentSession.copyDataTo(this, true);
 
         this.parentSession = parentSession;
