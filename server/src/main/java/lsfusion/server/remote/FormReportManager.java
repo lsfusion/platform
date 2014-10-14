@@ -46,25 +46,23 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     public Map<String, String> getReportPath(final boolean toExcel, final Integer groupId, final FormUserPreferences userPreferences) {
         Map<String, String> ret = new HashMap<String, String>();
 
-        String sid = getDefaultReportSID(toExcel, groupId);
-        Map<String, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, groupId);
-        if (customDesigns != null) {
-            Set<String> keySet = customDesigns.keySet();
-            for (String key : keySet) {
-                boolean foundInUserDir = new File(SystemProperties.userDir + "/src/main/resources/" + findCustomReportDesignName(key, sid)).exists();
+        List<String> reportsFileNames = getCustomReportsFileNames(toExcel, groupId);
+        if (reportsFileNames != null) {
+            for (String customReportDesignName : reportsFileNames) {
+                boolean foundInUserDir = new File(SystemProperties.userDir + "/src/main/resources/" + customReportDesignName).exists();
                 if(foundInUserDir) {
                     ret.put(
-                            SystemProperties.userDir + "/src/main/resources/" + findCustomReportDesignName(key, sid),
-                            SystemProperties.userDir + "/target/classes/" + findCustomReportDesignName(key, sid)
+                            SystemProperties.userDir + "/src/main/resources/" + customReportDesignName,
+                            SystemProperties.userDir + "/target/classes/" + customReportDesignName
                     );
                 }   else {
                     String[] classPath = System.getProperty("java.class.path").split(System.getProperty("path.separator"));
                     for(String path : classPath) {
-                        String sourcePath = path + "/../../src/main/resources/" + findCustomReportDesignName(key, sid);
+                        String sourcePath = path + "/../../src/main/resources/" + customReportDesignName;
                         if(new File(sourcePath).exists()) {
                             ret.put(
                                     sourcePath,
-                                    path + "/" + findCustomReportDesignName(key, sid)
+                                    path + "/" + customReportDesignName
                             );
                             break;
                         }
@@ -82,6 +80,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             try {
                 ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel, null);
                 Map<String, JasperDesign> designs = generator.generate();
+                String sid = getDefaultReportSID(toExcel, groupId);
                 String reportName;
                 for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
                     String id = entry.getKey();
@@ -232,14 +231,15 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     private InputStream getCustomReportInputStream(String sid, GroupObjectHierarchy.ReportNode node, boolean toExcel, Integer groupId) throws SQLException, SQLHandledException {
         InputStream iStream = null;
         if (node != null) {
-            CalcPropertyObjectEntity reportPathProp = node.getGroupList().get(0).reportPathProp;
-            if (reportPathProp != null) {
-                CalcPropertyObjectInstance propInstance = form.instanceFactory.getInstance(reportPathProp);
-                String reportPath = (String) propInstance.read(form);
-                if (reportPath != null) {
-                    String resourceName = "/" + findCustomReportDesignName(getReportPrefix(toExcel, groupId) + reportPath.trim(), "");
-                    iStream = getClass().getResourceAsStream(resourceName);
-                }
+            String resourceName = getReportPathPropStreamResourceName(node.getGroupList().get(0).reportPathProp, toExcel, groupId);
+            if (resourceName != null) {
+                iStream = getClass().getResourceAsStream(resourceName);
+            }
+        }
+        if (iStream == null && node == null) {
+            String resourceName = getReportPathPropStreamResourceName(form.entity.reportPathProp, toExcel, groupId);
+            if (resourceName != null) {
+                iStream = getClass().getResourceAsStream(resourceName);
             }
         }
         if (iStream == null) {
@@ -249,16 +249,44 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
         return iStream;
     }
 
+    private String getReportPathPropStreamResourceName(CalcPropertyObjectEntity reportPathProp, boolean toExcel, Integer groupId) throws SQLException, SQLHandledException {
+        if (reportPathProp != null) {
+            CalcPropertyObjectInstance propInstance = form.instanceFactory.getInstance(reportPathProp);
+            String reportPath = (String) propInstance.read(form);
+            if (reportPath != null) {
+                return "/" + findCustomReportDesignName(getReportPrefix(toExcel, groupId) + reportPath.trim(), "");
+            }
+        }
+        return null;
+    }
+    
+    private List<String> getCustomReportsFileNames(boolean toExcel, Integer groupId) {
+        try {
+            List<String> result = new ArrayList<String>();
+            for (Pair<String, GroupObjectHierarchy.ReportNode> node : getReportNodes(groupId)) {
+                String resourceName = null;
+                if (node.second != null) {
+                    resourceName = getReportPathPropStreamResourceName(node.second.getGroupList().get(0).reportPathProp, toExcel, groupId);
+                }
+                if (resourceName == null && node.second == null) {
+                    resourceName = getReportPathPropStreamResourceName(form.entity.reportPathProp, toExcel, groupId);
+                }
+                if (resourceName == null) {
+                    resourceName = "/" + findCustomReportDesignName(node.first, getDefaultReportSID(toExcel, groupId));
+                }
+                result.add(resourceName);
+            }
+            return result;
+        } catch (Exception e) {
+            systemLogger.error("Error loading custom report design: ", e);
+            return null;
+        }
+    }
+
     private Map<String, JasperDesign> getCustomReportDesigns(boolean toExcel, Integer groupId) {
         try {
-            GroupObjectHierarchy.ReportHierarchy hierarchy = getReportHierarchy(groupId);
             Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
-            List<Pair<String, GroupObjectHierarchy.ReportNode>> nodes = new ArrayList<Pair<String, GroupObjectHierarchy.ReportNode>>();
-            nodes.add(new Pair<String, GroupObjectHierarchy.ReportNode>(GroupObjectHierarchy.rootNodeName, null));
-            for (GroupObjectHierarchy.ReportNode node : hierarchy.getAllNodes()) {
-                nodes.add(new Pair<String, GroupObjectHierarchy.ReportNode>(node.getID(), node));
-            }
-            for (Pair<String, GroupObjectHierarchy.ReportNode> node : nodes) {
+            for (Pair<String, GroupObjectHierarchy.ReportNode> node : getReportNodes(groupId)) {
                 InputStream iStream = getCustomReportInputStream(node.first, node.second, toExcel, groupId);
                 // Если не нашли custom design для xls, пробуем найти обычный
                 if (toExcel && iStream == null) {
@@ -275,6 +303,16 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             systemLogger.error("Error loading custom report design: ", e);
             return null;
         }
+    }
+    
+    private List<Pair<String, GroupObjectHierarchy.ReportNode>> getReportNodes(Integer groupId) {
+        GroupObjectHierarchy.ReportHierarchy hierarchy = getReportHierarchy(groupId);
+        List<Pair<String, GroupObjectHierarchy.ReportNode>> nodes = new ArrayList<Pair<String, GroupObjectHierarchy.ReportNode>>();
+        nodes.add(new Pair<String, GroupObjectHierarchy.ReportNode>(GroupObjectHierarchy.rootNodeName, null));
+        for (GroupObjectHierarchy.ReportNode node : hierarchy.getAllNodes()) {
+            nodes.add(new Pair<String, GroupObjectHierarchy.ReportNode>(node.getID(), node));
+        }    
+        return nodes;
     }
 
     private byte[] getReportSourcesByteArray(ReportSourceGenerator<T> sourceGenerator, Result<Map<String, LinkedHashSet<List<Object>>>> columnGroupObjects) {

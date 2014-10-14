@@ -160,6 +160,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public boolean isSynchronizedApply = false;
 
+    public CalcPropertyObjectEntity<?> reportPathProp;
+
     protected FormEntity(String canonicalName, String caption, Version version) {
         this(null, canonicalName, caption, null, null, version);
     }

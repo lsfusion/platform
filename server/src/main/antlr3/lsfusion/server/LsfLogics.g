@@ -360,6 +360,7 @@ scope {
 		|	dialogFormDeclaration
 		|	editFormDeclaration
 		|	listFormDeclaration
+		|	reportFilesDeclaration
 		)*
 		';'
 	;
@@ -389,6 +390,28 @@ listFormDeclaration
 				$formStatement::form.setAsListForm($cid.sid, $oid.text, self.getVersion());
 			}
 		}
+	;
+
+reportFilesDeclaration
+	:	'REPORTFILES' reportPath (',' reportPath)*
+	;
+	
+reportPath
+@init {
+	GroupObjectEntity groupObject = null;
+	PropertyUsage propUsage = null;
+	List<String> mapping = null;
+}
+@after {
+	if (inPropParseState()) {
+		$formStatement::form.setReportPath(groupObject, propUsage, mapping);	
+	}
+}
+	:	(
+			'TOP' 
+		| 	go = formGroupObjectEntity { groupObject = $go.groupObject; }
+		) 
+		prop = formMappedProperty { propUsage = $prop.propUsage; mapping = $prop.mapping; }
 	;
 
 formDeclaration returns [ScriptingFormEntity form]
@@ -453,7 +476,6 @@ formTreeGroupObjectList
 
 formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 	:	(object = formCommonGroupObject { $groupObject = $object.groupObject; })	
-		(path = formGroupObjectReportPath { $groupObject.setReportPathProp($path.propUsage, $path.mapping); })?
 		(viewType = formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.isInitType); } )?
 		(pageSize = formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); })?
 		(update = formGroupObjectUpdateList { $groupObject.setUpdate($update.infos); })?
@@ -483,10 +505,6 @@ formCommonGroupObject returns [ScriptingGroupObject groupObject]
 		{
 			$groupObject = new ScriptingGroupObject($mdecl.groupName, $mdecl.objectNames, $mdecl.classNames, $mdecl.captions, $mdecl.events);
 		}
-	;
-
-formGroupObjectReportPath returns [PropertyUsage propUsage, List<String> mapping]
-	:	'REPORTFILE' prop=formMappedProperty { $propUsage = $prop.propUsage; $mapping = $prop.mapping; }
 	;
 
 formGroupObjectViewType returns [ClassViewType type, boolean isInitType]

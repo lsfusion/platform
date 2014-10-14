@@ -237,6 +237,14 @@ public class ScriptingFormEntity {
         }
         return groupObjectEntity;
     }
+    
+    public void setReportPath(GroupObjectEntity groupObject, ScriptingLogicsModule.PropertyUsage propUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        if (groupObject != null) {
+            groupObject.reportPathProp = addCalcPropertyObject(propUsage, mapping);
+        } else {
+            form.reportPathProp = addCalcPropertyObject(propUsage, mapping);
+        }
+    }
 
     public void addScriptedPropertyDraws(List<ScriptingLogicsModule.PropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
