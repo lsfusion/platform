@@ -10,10 +10,8 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.mutables.Version;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.CaseUnionProperty;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.cases.CalcCase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +35,10 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
         propProperties = new ArrayList<PropertyDrawEntity>();
         whereProperties = new ArrayList<PropertyDrawEntity>();
 
-        ImList<CaseUnionProperty.Case> cases = property.getCases();
+        ImList<CalcCase<UnionProperty.Interface>> cases = property.getCases();
 
         for (int i = 0; i < cases.size(); ++i) {
-            CalcPropertyInterfaceImplement<CaseUnionProperty.Interface> intImpl = cases.get(i).property;
+            CalcPropertyInterfaceImplement<CaseUnionProperty.Interface> intImpl = cases.get(i).implement;
             if (intImpl instanceof CalcPropertyMapImplement) {
 
                 //добавляем фильтр для этого объекта и соотв. свойства

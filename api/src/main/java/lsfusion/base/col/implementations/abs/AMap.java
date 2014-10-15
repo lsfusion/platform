@@ -359,6 +359,11 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         });
     }
 
+    public ImMap<K, V> removeIncl(K key) {
+        assert containsKey(key);
+        return remove(key);
+    }
+
     public ImMap<K, V> removeValues(final V value) {
         return filterFnValues(new SFunctionSet<V>() {
             public boolean contains(V element) {

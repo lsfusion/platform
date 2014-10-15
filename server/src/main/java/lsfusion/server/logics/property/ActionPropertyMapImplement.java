@@ -2,6 +2,7 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
@@ -9,8 +10,11 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ActionDebugInfo;
 import lsfusion.server.logics.linear.LAP;
+import lsfusion.server.logics.property.actions.flow.CaseActionProperty;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
+import lsfusion.server.logics.property.cases.ActionCase;
+import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
@@ -93,5 +97,30 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
 
     public ActionPropertyValueImplement<P> getValueImplement(ImMap<T, ? extends ObjectValue> mapObjects) {
         return new ActionPropertyValueImplement<P>(property, mapping.join(mapObjects));
+    }
+
+    public Graph<ActionCase<T>> mapAbstractGraph() {
+        if(property instanceof CaseActionProperty) {
+            Graph<ActionCase<PropertyInterface>> absGraph = ((CaseActionProperty) property).getAbstractGraph();
+            if(absGraph != null)
+                return absGraph.map(new GetValue<ActionCase<T>, ActionCase<PropertyInterface>>() {
+                    public ActionCase<T> getMapValue(ActionCase<PropertyInterface> value) {
+                        return value.map((ImRevMap<PropertyInterface, T>) mapping);
+                    }
+                });
+        }
+        return null;        
+    }
+
+    public boolean equalsMap(PropertyInterfaceImplement<T> object) {
+        if(!(object instanceof ActionPropertyMapImplement))
+            return false;
+
+        ActionPropertyMapImplement<?, T> mapProp = (ActionPropertyMapImplement<?, T>) object;
+        return property.equals(mapProp.property) && mapping.equals(mapProp.mapping);
+    }
+
+    public int hashMap() {
+        return 31 * property.hashCode() + mapping.hashCode();
     }
 }

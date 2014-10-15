@@ -56,11 +56,15 @@ public class ListFact {
             }});
     }
 
-        public static <T> ImList<T> add(T element, ImList<? extends T> list) {
+    public static <T> ImList<T> add(T element, ImList<? extends T> list) {
         MList<T> mList = ListFact.mList(list.size()+1);
         mList.add(element);
         mList.addAll(list);
         return mList.immutableList();
+    }
+
+    public static <T> ImList<T> add(ImList<? extends T> list1, ImList<? extends T> list2) {
+        return ((ImList<T>)list1).addList(list2);
     }
 
     public static <T> ImCol<T> fromJavaCol(Collection<T> col) {

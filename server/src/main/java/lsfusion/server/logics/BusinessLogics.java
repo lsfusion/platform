@@ -56,7 +56,9 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormActionProperty;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.property.actions.SystemEvent;
+import lsfusion.server.logics.property.actions.flow.CaseActionProperty;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
+import lsfusion.server.logics.property.cases.AbstractCase;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
@@ -116,7 +118,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public ScriptingLogicsModule evalScriptLM;
 
     protected LogicsInstance logicsInstance;
-
+    
     private String topModulesList;
 
     private String orderDependencies;
@@ -570,25 +572,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private void finishAbstract() {
-        for (Property property : getOrderProperties())
-            if (property instanceof CaseUnionProperty && ((CaseUnionProperty) property).isAbstract())
-                property.finalizeInit();
-
-        for (Property property : getOrderProperties())
-            if(property instanceof CaseUnionProperty) {
-                ((CaseUnionProperty)property).checkAbstract();
-            }
-    }
-
-    private void finishActions() { // потому как могут использовать abstract
-        for (Property property : getOrderProperties())
-            if(property instanceof ActionProperty) {
-                if(property instanceof ListCaseActionProperty && ((ListCaseActionProperty)property).isAbstract())
-                    property.finalizeInit();
-            }
-    }
-
     public void initReflectionEvents() {
 
         //временное решение
@@ -765,6 +748,110 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
         return namedProperties;
     }
+    
+    private static class NamedDecl {
+        public final LP prop;
+        public final String namespace;
+        public final boolean defaultNamespace;
+        public final List<ResolveClassSet> signature;
+        public final Version version;
+
+        public NamedDecl(LP prop, String namespace, boolean defaultNamespace, List<ResolveClassSet> signature, Version version) {
+            this.prop = prop;
+            this.namespace = namespace;
+            this.defaultNamespace = defaultNamespace;
+            this.signature = signature;
+            this.version = version;
+        }
+    }
+
+    public Map<String, List<NamedDecl>> getNamedModuleProperties() {
+        Map<String, List<NamedDecl>> result = new HashMap<String, List<NamedDecl>>();
+        for (Map.Entry<String, List<LogicsModule>> namespaceToModule : namespaceToModules.entrySet()) {
+            String namespace = namespaceToModule.getKey();
+            for(LogicsModule module : namespaceToModule.getValue()) {
+                for(Map.Entry<String, List<LP<?, ?>>> namedModuleProperty : module.getNamedModuleProperties().entrySet()) {
+                    String propertyName = namedModuleProperty.getKey();
+                    List<NamedDecl> resultProps = result.get(propertyName);
+                    if(resultProps == null) {
+                        resultProps = new ArrayList<NamedDecl>();
+                        result.put(propertyName, resultProps);
+                    }
+                    for(LP prop : namedModuleProperty.getValue()) {
+                        resultProps.add(new NamedDecl(prop, namespace, module.isDefaultNamespace(), module.getParamClasses(prop), module.getVersion()));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+    public <A extends PropertyInterface, I extends PropertyInterface> void fillImplicitCases() {
+//        ImMap<ImOrderSet<String>, ImSet<String>> mp = getCustomClasses().group(new BaseUtils.Group<String, CustomClass>() {
+//            @Override
+//            public String group(CustomClass key) {
+//                String name = key.getCanonicalName();
+//                return name.substring(name.lastIndexOf(".") + 1);
+//            }
+//        }).filterFnValues(new SFunctionSet<ImSet<CustomClass>>() {
+//            @Override
+//            public boolean contains(ImSet<CustomClass> element) {
+//                return element.size() > 1;
+//            }
+//        }).mapValues(new GetValue<ImOrderSet<String>, ImSet<CustomClass>>() {
+//            @Override
+//            public ImOrderSet<String> getMapValue(ImSet<CustomClass> value) {
+//                return value.mapSetValues(new GetValue<String, CustomClass>() {
+//                    @Override
+//                    public String getMapValue(CustomClass value) {
+//                        String name = value.getCanonicalName();
+//                        return name.substring(0, name.indexOf("."));
+//                    }
+//                }).sort();
+//            }
+//        }).groupValues();
+//        System.out.println(mp);
+//
+//        ImMap<ImOrderSet<String>, ImSet<String>> fm = getFormEntities().group(new BaseUtils.Group<String, FormEntity>() {
+//            @Override
+//            public String group(FormEntity key) {
+//                String name = key.getCanonicalName();
+//                return name.substring(name.lastIndexOf(".") + 1);
+//            }
+//        }).filterFnValues(new SFunctionSet<ImSet<FormEntity>>() {
+//            @Override
+//            public boolean contains(ImSet<FormEntity> element) {
+//                return element.size() > 1;
+//            }
+//        }).mapValues(new GetValue<ImOrderSet<String>, ImSet<FormEntity>>() {
+//            @Override
+//            public ImOrderSet<String> getMapValue(ImSet<FormEntity> value) {
+//                return value.mapSetValues(new GetValue<String, FormEntity>() {
+//                    @Override
+//                    public String getMapValue(FormEntity value) {
+//                        String name = value.getCanonicalName();
+//                        return name.substring(0, name.indexOf("."));
+//                    }
+//                }).sort();
+//            }
+//        }).groupValues();
+//        System.out.println(fm);
+        if(!disableImplicitCases) {
+            Map<String, List<NamedDecl>> namedProps = getNamedModuleProperties();
+            for (List<NamedDecl> props : namedProps.values()) {
+                // бежим по всем парам смотрим подходят друг другу или нет
+                for (NamedDecl absDecl : props) {
+                    String absNamespace = absDecl.namespace;
+                    if (AbstractCase.preFillImplicitCases(absDecl.prop)) {
+                        for (NamedDecl impDecl : props)
+                            AbstractCase.fillImplicitCases(absDecl.prop, impDecl.prop, absDecl.signature, impDecl.signature, absNamespace.equals(impDecl.namespace), impDecl.version);
+                    }
+                }
+            }
+        }
+    }
+    
+    public static final boolean disableImplicitCases = true;
     
     public List<AbstractGroup> getParentGroups() {
         return LM.rootGroup.getParentGroups();

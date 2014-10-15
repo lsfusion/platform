@@ -2,6 +2,7 @@ package lsfusion.base.col.implementations.abs;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -357,4 +358,11 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
         return true;
     }
 
+    public ImOrderMap<K, V> removeOrderNulls() {
+        return filterOrderValuesMap(new SFunctionSet<V>() {
+            public boolean contains(V element) {
+                return element != null;
+            }
+        });
+    }
 }

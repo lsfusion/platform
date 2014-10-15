@@ -5,17 +5,21 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 
+import java.util.List;
+
 public abstract class ListCaseActionProperty extends KeepContextActionProperty {
 
     private final CalcPropertyMapImplement<UnionProperty.Interface, PropertyInterface> abstractWhere;
-    protected final boolean isExclusive;
-
+    protected boolean isExclusive;
+    
     public enum AbstractType { CASE, MULTI, LIST }
 
+    protected boolean checkExclusiveImplementations;
     protected final AbstractType type;
 
     public boolean isAbstract() {
@@ -27,8 +31,8 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
     }
 
 
-    protected void addWhereOperand(ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
-        ((CaseUnionProperty) abstractWhere.property).addOperand(action.mapWhereProperty().map(abstractWhere.mapping.reverse()), version);
+    protected void addWhereOperand(ActionPropertyMapImplement<?, PropertyInterface> action, List<ResolveClassSet> signature, Version version) {
+        ((CaseUnionProperty) abstractWhere.property).addOperand(action.mapWhereProperty().map(abstractWhere.mapping.reverse()), signature, version);
     }
 
     protected void addWhereCase(CalcPropertyInterfaceImplement<PropertyInterface> where, ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
@@ -36,6 +40,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
         ((CaseUnionProperty) abstractWhere.property).addCase(where.map(abstractMap), action.mapWhereProperty().map(abstractMap), version);
     }
 
+    // immutable реализация
     protected <I extends PropertyInterface> ListCaseActionProperty(String caption, boolean isExclusive, ImOrderSet<I> innerInterfaces) {
         super(caption, innerInterfaces.size());
 
@@ -44,10 +49,11 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
         this.isExclusive = isExclusive;
     }
 
-    public <I extends PropertyInterface> ListCaseActionProperty(String caption, boolean isExclusive, boolean isChecked, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+    // mutable реализация
+    public <I extends PropertyInterface> ListCaseActionProperty(String caption, boolean checkExclusiveImplementations, boolean checkAllImplementations, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
         super(caption, innerInterfaces.size());
 
-        this.isExclusive = isExclusive;
+        this.checkExclusiveImplementations = checkExclusiveImplementations; 
         this.type = type;
 
         CaseUnionProperty.Type caseType = null;
@@ -56,7 +62,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
             case MULTI: caseType = CaseUnionProperty.Type.MULTI; break;
             case LIST: caseType = CaseUnionProperty.Type.VALUE; break;
         }
-        abstractWhere = DerivedProperty.createUnion(isExclusive, isChecked, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
+        abstractWhere = DerivedProperty.createUnion(checkExclusiveImplementations, checkAllImplementations, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
     }
 
     protected abstract CalcPropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty();
@@ -69,18 +75,22 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
         return calcCaseWhereProperty();
     }
 
+    protected void finalizeAbstractInit() {
+        CaseUnionProperty caseProp = (CaseUnionProperty) abstractWhere.property;
+        try {
+            caseProp.checkAbstract();
+        } catch (CaseUnionProperty.NotFullyImplementedException e) {
+            throw new RuntimeException("Action is not fully implemented : " + this +  ", Calculated : " + e.fullClassValueWhere + ", Specified : " + e.classValueWhere);
+        }
+        caseProp.finalizeInit();
+    }
+    
     @Override
     public void finalizeInit() {
         super.finalizeInit();
 
         if (isAbstract()) {
-            CaseUnionProperty caseProp = (CaseUnionProperty) abstractWhere.property;
-            caseProp.finalizeInit();
-            try {
-                caseProp.checkAbstract();
-            } catch (CaseUnionProperty.NotFullyImplementedException e) {
-                throw new RuntimeException("Action is not fully implemented : " + this +  ", Calculated : " + e.fullClassValueWhere + ", Specified : " + e.classValueWhere);
-            }
+            finalizeAbstractInit();
             markRecursions(this);
         }
     }

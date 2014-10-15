@@ -12,7 +12,7 @@ public class CheckAbstractTask extends GroupPropertiesTask {
 
     protected void runTask(Property property) {
         if (property instanceof CaseUnionProperty) {
-            ((CaseUnionProperty) property).checkAbstract();
+//            ((CaseUnionProperty) property).checkAbstract();
         }
     }
 }

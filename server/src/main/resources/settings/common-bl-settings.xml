@@ -260,10 +260,19 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <bean id="fillImplicitCasesTask" class="lsfusion.server.logics.tasks.impl.simple.FillImplicitCasesTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="initPropertiesTask"/> <!-- так как влияет на работу с expr'ами и учавствует в большом количестве кэшей  -->
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
     <bean id="finalizeCalcAbstractTask" class="lsfusion.server.logics.tasks.impl.FinalizeCalcAbstractTask">
         <property name="dependencies">
             <set>
-                <ref bean="initPropertiesTask"/>
+                <ref bean="fillImplicitCasesTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -272,7 +281,7 @@
     <bean id="finalizeActionAbstractTask" class="lsfusion.server.logics.tasks.impl.FinalizeActionAbstractTask">
         <property name="dependencies">
             <set>
-                <ref bean="initPropertiesTask"/>
+                <ref bean="fillImplicitCasesTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

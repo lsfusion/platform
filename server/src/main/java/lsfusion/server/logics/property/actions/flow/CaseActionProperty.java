@@ -11,90 +11,93 @@ import lsfusion.server.Settings;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.interfaces.NFList;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.cases.*;
+import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import static lsfusion.server.logics.property.derived.DerivedProperty.createForAction;
 
 public class CaseActionProperty extends ListCaseActionProperty {
-
-    private NFList<Case<PropertyInterface>> cases;
 
     public static <I extends PropertyInterface> ActionProperty createIf(String caption, boolean not, ImOrderSet<I> innerInterfaces, CalcPropertyMapImplement<?, I> ifProp, ActionPropertyMapImplement<?, I> trueAction, ActionPropertyMapImplement<?, I> falseAction) {
         assert trueAction != null;
         if(not) // просто not'им if
             ifProp = DerivedProperty.createNot(ifProp);
 
-        MList<Case<I>> mCases = ListFact.mListMax(2);
-        mCases.add(new Case<I>(ifProp, trueAction));
+        MList<ActionCase<I>> mCases = ListFact.mListMax(2);
+        mCases.add(new ActionCase<I>(ifProp, trueAction));
         if(falseAction != null)
-            mCases.add(new Case<I>(DerivedProperty.<I>createTrue(), falseAction));
+            mCases.add(new ActionCase<I>(DerivedProperty.<I>createTrue(), falseAction));
         return new CaseActionProperty(caption, false, innerInterfaces, mCases.immutableList());
-    }
-
-    public static class Case<P extends PropertyInterface> {
-        public final CalcPropertyMapImplement<?, P> where;
-        public final ActionPropertyMapImplement<?, P> action;
-
-        public Case(CalcPropertyMapImplement<?, P> where, ActionPropertyMapImplement<?, P> action) {
-            this.where = where;
-            this.action = action;
-        }
     }
 
     public void addCase(CalcPropertyMapImplement<?, PropertyInterface> where, ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
         assert type == AbstractType.CASE;
 
-        Case<PropertyInterface> aCase = new Case<PropertyInterface>(where, action);
-        cases.add(aCase, version);
+        ExplicitActionCase<PropertyInterface> aCase = new ExplicitActionCase<PropertyInterface>(where, action);
+        addAbstractCase(aCase, version);
 
-        addWhereCase(aCase.where, aCase.action, version);
+        addWhereCase(aCase.where, aCase.implement, version);
     }
 
-    public void addOperand(ActionPropertyMapImplement<?,PropertyInterface> action, Version version) {
+    private Object cases;
+
+    public void addImplicitCase(ActionPropertyMapImplement<?, PropertyInterface> aCase, List<ResolveClassSet> signature, boolean sameNamespace, Version version) {
+        addAbstractCase(new ImplicitActionCase(aCase, signature, sameNamespace), version);        
+    }
+
+    private void addAbstractCase(AbstractActionCase<PropertyInterface> aCase, Version version) {
+        ((NFList<AbstractActionCase<PropertyInterface>>)cases).add(aCase, version);
+    }
+
+    public void addOperand(ActionPropertyMapImplement<?,PropertyInterface> action, List<ResolveClassSet> signature, Version version) {
         assert isAbstract();
 
         CalcPropertyMapImplement<?, PropertyInterface> where =  action.mapWhereProperty();
-        Case<PropertyInterface> addCase;
+        ExplicitActionCase<PropertyInterface> addCase;
         if(type == AbstractType.CASE)
-            addCase = new Case<PropertyInterface>((CalcPropertyMapImplement<?,PropertyInterface>) where.mapClassProperty(), action);
+            addCase = new ExplicitActionCase<PropertyInterface>((CalcPropertyMapImplement<?,PropertyInterface>) where.mapClassProperty(), action, signature);
         else
-            addCase = new Case<PropertyInterface>(where, action);
+            addCase = new ExplicitActionCase<PropertyInterface>(where, action);
+        addAbstractCase(addCase, version);
 
-        cases.add(addCase, version);
-
-        addWhereOperand(addCase.action, version);
+        addWhereOperand(addCase.implement, signature, version);
     }
-
-
-    private ImList<Case<PropertyInterface>> getCases() {
-        return cases.getList();
+    
+    private ImList<ActionCase<PropertyInterface>> getCases() {
+        return ((ImList<ActionCase<PropertyInterface>>)cases);
     }
 
     public <I extends PropertyInterface> CaseActionProperty(String caption, boolean isExclusive, ImList<ActionPropertyMapImplement> impls, ImOrderSet<I> innerInterfaces) {
-        this(caption, isExclusive, innerInterfaces, impls.<Case<I>>mapListValues(new GetValue<Case<I>, ActionPropertyMapImplement>() {
+        this(caption, isExclusive, innerInterfaces, impls.<ActionCase<I>>mapListValues(new GetValue<ActionCase<I>, ActionPropertyMapImplement>() {
             @Override
-            public Case<I> getMapValue(ActionPropertyMapImplement value) {
-                return new Case<I>((CalcPropertyMapImplement)value.mapWhereProperty().mapClassProperty(), value);
+            public ActionCase<I> getMapValue(ActionPropertyMapImplement value) {
+                return new ActionCase<I>((CalcPropertyMapImplement)value.mapWhereProperty().mapClassProperty(), value);
             }
         }));
     }
 
-    public <I extends PropertyInterface> CaseActionProperty(String caption, boolean isExclusive, ImOrderSet<I> innerInterfaces, ImList<Case<I>> cases)  {
+    // explicit конструктор
+    public <I extends PropertyInterface> CaseActionProperty(String caption, boolean isExclusive, ImOrderSet<I> innerInterfaces, ImList<ActionCase<I>> cases)  {
         super(caption, isExclusive, innerInterfaces);
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
-        this.cases = NFFact.finalList(cases.mapListValues(new GetValue<Case<PropertyInterface>, Case<I>>() {
-            public Case<PropertyInterface> getMapValue(Case<I> value) {
-                return new Case<PropertyInterface>(value.where.map(mapInterfaces), value.action.map(mapInterfaces));
-            }}));
+        this.cases = cases.mapListValues(new GetValue<ActionCase<PropertyInterface>, ActionCase<I>>() {
+            public ActionCase<PropertyInterface> getMapValue(ActionCase<I> value) {
+                return value.map(mapInterfaces);
+            }
+        });
 
         finalizeInit();
     }
@@ -106,24 +109,24 @@ public class CaseActionProperty extends ListCaseActionProperty {
     }
 
     protected CalcPropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty() {
-        ImList<Pair<CalcPropertyInterfaceImplement<PropertyInterface>, CalcPropertyInterfaceImplement<PropertyInterface>>> listWheres = getCases().mapListValues(new GetValue<Pair<CalcPropertyInterfaceImplement<PropertyInterface>, CalcPropertyInterfaceImplement<PropertyInterface>>, Case<PropertyInterface>>() {
-            public Pair<CalcPropertyInterfaceImplement<PropertyInterface>, CalcPropertyInterfaceImplement<PropertyInterface>> getMapValue(Case<PropertyInterface> value) {
-                return new Pair<CalcPropertyInterfaceImplement<PropertyInterface>, CalcPropertyInterfaceImplement<PropertyInterface>>(value.where, value.action.mapCalcWhereProperty());
+        ImList<CalcCase<PropertyInterface>> listWheres = getCases().mapListValues(new GetValue<CalcCase<PropertyInterface>, ActionCase<PropertyInterface>>() {
+            public CalcCase<PropertyInterface> getMapValue(ActionCase<PropertyInterface> value) {
+                return new CalcCase<PropertyInterface>(value.where, value.implement.mapCalcWhereProperty());
             }});
         return DerivedProperty.createUnion(interfaces, isExclusive, listWheres);
     }
 
     protected ImList<ActionPropertyMapImplement<?, PropertyInterface>> getListActions() {
-        return getCases().mapListValues(new GetValue<ActionPropertyMapImplement<?, PropertyInterface>, Case<PropertyInterface>>() {
-            public ActionPropertyMapImplement<?, PropertyInterface> getMapValue(Case<PropertyInterface> value) {
-                return value.action;
+        return getCases().mapListValues(new GetValue<ActionPropertyMapImplement<?, PropertyInterface>, ActionCase<PropertyInterface>>() {
+            public ActionPropertyMapImplement<?, PropertyInterface> getMapValue(ActionCase<PropertyInterface> value) {
+                return value.implement;
             }});
     }
 
     @Override
     public ImMap<CalcProperty, Boolean> aspectUsedExtProps() {
-        return getCases().mapListValues(new GetValue<CalcProperty, Case<PropertyInterface>>() {
-            public CalcProperty getMapValue(Case<PropertyInterface> value) {
+        return getCases().mapListValues(new GetValue<CalcProperty, ActionCase<PropertyInterface>>() {
+            public CalcProperty getMapValue(ActionCase<PropertyInterface> value) {
                 return value.where.property;
             }}).toOrderSet().getSet().toMap(false).merge(super.aspectUsedExtProps(), addValue);
     }
@@ -131,9 +134,9 @@ public class CaseActionProperty extends ListCaseActionProperty {
     @Override
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         FlowResult result = FlowResult.FINISH;
-        for(Case<PropertyInterface> aCase : getCases()) {
+        for(ActionCase<PropertyInterface> aCase : getCases()) {
             if(aCase.where.read(context, context.getKeys()) != null) {
-                result = aCase.action.execute(context);
+                result = aCase.implement.execute(context);
                 break;
             }
         }
@@ -153,21 +156,32 @@ public class CaseActionProperty extends ListCaseActionProperty {
     public <T extends PropertyInterface, PW extends PropertyInterface> ActionPropertyMapImplement<?, T> pushFor(ImRevMap<PropertyInterface, T> mapping, ImSet<T> context, CalcPropertyMapImplement<PW, T> push, ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders, boolean ordersNotNull) {
         assert hasPushFor(mapping, context, ordersNotNull);
 
-        final Case<PropertyInterface> singleCase = getCases().single();
+        final ActionCase<PropertyInterface> singleCase = getCases().single();
         return ForActionProperty.pushFor(interfaces, singleCase.where, interfaces.toRevMap(), mapping, context, push, orders, ordersNotNull, new ForActionProperty.PushFor<PropertyInterface, PropertyInterface>() {
             public ActionPropertyMapImplement<?, PropertyInterface> push(ImSet<PropertyInterface> context, CalcPropertyMapImplement<?, PropertyInterface> where, ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders, boolean ordersNotNull, ImRevMap<PropertyInterface, PropertyInterface> mapInnerInterfaces) {
-                return createForAction(context, where, orders, ordersNotNull, singleCase.action.map(mapInnerInterfaces), null, false, SetFact.<PropertyInterface>EMPTY(), false);
+                return createForAction(context, where, orders, ordersNotNull, singleCase.implement.map(mapInnerInterfaces), null, false, SetFact.<PropertyInterface>EMPTY(), false);
             }
         });
     }
 
     @Override
-    public void finalizeInit() {
-        super.finalizeInit();
-
-        if(isAbstract())
-            cases.finalizeCol();
+    protected void finalizeAbstractInit() {
+        super.finalizeAbstractInit();
+        
+        FinalizeResult<ActionCase<PropertyInterface>> finalize = AbstractCase.finalizeActionCases(
+                interfaces, (NFList<AbstractActionCase<PropertyInterface>>) cases, type == AbstractType.MULTI, checkExclusiveImplementations);
+        cases = finalize.cases;
+        isExclusive = finalize.isExclusive;
+        abstractGraph = finalize.graph;
     }
+    
+    public Graph<ActionCase<PropertyInterface>> getAbstractGraph() {
+        assert isAbstract() && type == AbstractType.MULTI;
+
+        return BusinessLogics.disableImplicitCases ? null : abstractGraph;
+    }
+
+    public Graph<ActionCase<PropertyInterface>> abstractGraph; 
 
     @Override
     public Type getSimpleRequestInputType(boolean optimistic) {

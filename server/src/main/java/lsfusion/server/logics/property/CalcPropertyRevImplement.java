@@ -8,7 +8,7 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.session.PropertyChanges;
 
 public class CalcPropertyRevImplement<P extends PropertyInterface, T> {
-
+    
     public final CalcProperty<P> property;
     public final ImRevMap<P, T> mapping;
 

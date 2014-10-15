@@ -2,6 +2,7 @@ package lsfusion.base.col.interfaces.immutable;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 
 public interface ImOrderMap<K,V> {
@@ -30,6 +31,8 @@ public interface ImOrderMap<K,V> {
     int indexOf(K key);
     
     ImOrderMap<K, V> reverseOrder();
+
+    public ImOrderMap<K, V> removeOrderNulls();
 
     <G> ImMap<G, ImOrderMap<K, V>> groupOrder(BaseUtils.Group<G, K> getter);
     ImOrderMap<V, ImOrderSet<K>> groupOrderValues();

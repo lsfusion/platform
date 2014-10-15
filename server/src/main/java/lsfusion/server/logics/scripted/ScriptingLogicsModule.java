@@ -566,32 +566,33 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         List<Object> params = getParamsPlainList(allProps);
 
+        List<ResolveClassSet> signature = getClassesFromTypedParams(context);
         if (abstractLP instanceof LCP) {
-            addImplementationToAbstractProp(abstractPropUsage.name, (LCP) abstractLP, when != null, params);
+            addImplementationToAbstractProp(abstractPropUsage.name, (LCP) abstractLP, signature, when != null, params);
         } else {
-            addImplementationToAbstractAction(abstractPropUsage.name, (LAP) abstractLP, when != null, params);
+            addImplementationToAbstractAction(abstractPropUsage.name, (LAP) abstractLP, signature, when != null, params);
         }
     }
 
-    private void addImplementationToAbstractProp(String propName, LCP abstractProp, boolean isCase, List<Object> params) throws ScriptingErrorLog.SemanticErrorException {
+    private void addImplementationToAbstractProp(String propName, LCP abstractProp, List<ResolveClassSet> signature, boolean isCase, List<Object> params) throws ScriptingErrorLog.SemanticErrorException {
         checkAbstractProperty(abstractProp, propName);
         CaseUnionProperty.Type type = ((CaseUnionProperty)abstractProp.property).getAbstractType();
         checkAbstractTypes(type == CaseUnionProperty.Type.CASE, isCase);
 
         try {
-            abstractProp.addOperand(isCase, getVersion(), params.toArray());
+            abstractProp.addOperand(isCase, signature, getVersion(), params.toArray());
         } catch (ScriptParsingException e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
     }
 
-    private void addImplementationToAbstractAction(String actionName, LAP abstractAction, boolean isCase, List<Object> params) throws ScriptingErrorLog.SemanticErrorException {
+    private void addImplementationToAbstractAction(String actionName, LAP abstractAction, List<ResolveClassSet> signature, boolean isCase, List<Object> params) throws ScriptingErrorLog.SemanticErrorException {
         checkAbstractAction(abstractAction, actionName);
         ListCaseActionProperty.AbstractType type = ((ListCaseActionProperty)abstractAction.property).getAbstractType();
         checkAbstractTypes(type == ListCaseActionProperty.AbstractType.CASE, isCase);
 
         try {
-            abstractAction.addOperand(isCase, getVersion(), params.toArray());
+            abstractAction.addOperand(isCase, signature, getVersion(), params.toArray());
         } catch (ScriptParsingException e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
@@ -1163,7 +1164,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             eaProp.setFromAddressAccount(allImplements.get(i++));
         } else {
             // по умолчанию используем стандартный fromAddressAccount
-            eaProp.setFromAddressAccount(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.findProperty("fromAddressDefaultNotificationAccount").property));
+            eaProp.setFromAddressAccount(new CalcPropertyMapImplement((CalcProperty) BL.emailLM.findProperty("fromAddressDefaultNotificationAccount[]").property));
         }
         eaProp.setSubject(allImplements.get(i++));
 
@@ -3216,6 +3217,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void initScriptingModule(String name, String namespace, List<String> requiredModules, List<String> namespacePriority) {
         setModuleName(name);
         setNamespace(namespace == null ? name : namespace);
+        setDefaultNamespace(namespace == null);
         setRequiredModules(new HashSet<String>(requiredModules));
         setNamespacePriority(namespacePriority);
     }

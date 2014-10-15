@@ -25,7 +25,7 @@ public class ListActionProperty extends ListCaseActionProperty {
     public void addAction(ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
         ((MList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).add(action);
 
-        addWhereOperand(action, version);
+        addWhereOperand(action, null, version);
     }
 
     private ImList<ActionPropertyMapImplement<?, PropertyInterface>> getActions() {
@@ -76,11 +76,10 @@ public class ListActionProperty extends ListCaseActionProperty {
     }
 
     @Override
-    public void finalizeInit() {
-        super.finalizeInit();
-
-        if(isAbstract())
-            actions = ((MList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).immutableList();
+    protected void finalizeAbstractInit() {
+        super.finalizeAbstractInit();
+        
+        actions = ((MList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).immutableList();
     }
 
     @Override

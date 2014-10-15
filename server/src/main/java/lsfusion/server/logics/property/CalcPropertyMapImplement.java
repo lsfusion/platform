@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -18,6 +19,10 @@ import lsfusion.server.form.instance.CalcPropertyObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.property.actions.flow.CaseActionProperty;
+import lsfusion.server.logics.property.cases.ActionCase;
+import lsfusion.server.logics.property.cases.CalcCase;
+import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
@@ -189,5 +194,30 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
     // временно
     public CalcPropertyMapImplement<?, T> cloneProp() {
         return DerivedProperty.createJoin(new CalcPropertyImplement<P, CalcPropertyInterfaceImplement<T>>(property, BaseUtils.<ImMap<P, CalcPropertyInterfaceImplement<T>>>immutableCast(mapping)));
+    }
+
+    public Graph<CalcCase<T>> mapAbstractGraph() {
+        if(property instanceof CaseUnionProperty) {
+            Graph<CalcCase<UnionProperty.Interface>> absGraph = ((CaseUnionProperty) property).abstractGraph;
+            if(absGraph != null)
+                return absGraph.map(new GetValue<CalcCase<T>, CalcCase<UnionProperty.Interface>>() {
+                    public CalcCase<T> getMapValue(CalcCase<UnionProperty.Interface> value) {
+                        return value.map((ImRevMap<UnionProperty.Interface, T>) mapping);
+                    }
+                });
+        }
+        return null;
+    }
+    
+    public boolean equalsMap(PropertyInterfaceImplement<T> object) {
+        if(!(object instanceof CalcPropertyMapImplement))
+            return false;
+
+        CalcPropertyMapImplement<?, T> mapProp = (CalcPropertyMapImplement<?, T>) object;
+        return property.equals(mapProp.property) && mapping.equals(mapProp.mapping);
+    }
+
+    public int hashMap() {
+        return 31 * property.hashCode() + mapping.hashCode();
     }
 }

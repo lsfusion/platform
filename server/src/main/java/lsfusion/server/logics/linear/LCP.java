@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -17,12 +18,14 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.cases.AbstractCase;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChange;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import static lsfusion.server.logics.PropertyUtils.mapCalcImplement;
 import static lsfusion.server.logics.PropertyUtils.readCalcImplements;
@@ -185,13 +188,21 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         property.setEventChange(lm, action, listImplements.get(0), (CalcPropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
     }
 
-    public void addOperand(boolean hasWhen, Version version, Object... params) {
+    public void addOperand(boolean hasWhen, List<ResolveClassSet> signature, Version version, Object... params) {
         ImList<CalcPropertyInterfaceImplement<T>> readImplements = readCalcImplements(listInterfaces, params);
         CalcPropertyInterfaceImplement<UnionProperty.Interface> operand = (CalcPropertyInterfaceImplement<UnionProperty.Interface>) readImplements.get(0);
         if(hasWhen)
             ((CaseUnionProperty)property).addCase((CalcPropertyInterfaceImplement<UnionProperty.Interface>) readImplements.get(1), operand, version);
-        else
-            ((CaseUnionProperty)property).addOperand((CalcPropertyMapImplement<?, UnionProperty.Interface>) operand, version);
+        else {
+//            if(((CaseUnionProperty) property).getAbstractType() == CaseUnionProperty.Type.MULTI) {
+//                AbstractCase.cntexpl = AbstractCase.cntexpl + 1;
+//                if(operand instanceof CalcPropertyMapImplement) {
+//                    if(BaseUtils.nullEquals(((CalcPropertyMapImplement)operand).property.getName(), property.getName()))
+//                        AbstractCase.cntexplname = AbstractCase.cntexplname + 1;
+//                }
+//            }
+            ((CaseUnionProperty) property).addOperand((CalcPropertyMapImplement<?, UnionProperty.Interface>) operand, signature, version);
+        }
     }
 
     public ImRevMap<T, KeyExpr> getMapKeys() {

@@ -70,6 +70,7 @@ public interface ImMap<K, V> {
     <EV extends V> ImMap<K, EV> filterValues(ImSet<EV> values);
     ImMap<K, V> remove(ImSet<? extends K> keys);
     ImMap<K, V> remove(K key);
+    ImMap<K, V> removeIncl(K key);
     ImMap<K, V> removeValues(V value); // желательно не менять если нет
     ImMap<K, V> removeNulls();
 

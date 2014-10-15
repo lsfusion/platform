@@ -45,6 +45,8 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
 import lsfusion.server.logics.property.actions.flow.*;
+import lsfusion.server.logics.property.cases.ActionCase;
+import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.derived.*;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
@@ -144,6 +146,7 @@ public abstract class LogicsModule {
     private String namespace;
     private Set<String> requiredModules;
     private List<String> namespacePriority;
+    private boolean defaultNamespace;
 
     public String getName() {
         return name;
@@ -640,12 +643,12 @@ public abstract class LogicsModule {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readImplements(listInterfaces, params);
 
-        MList<CaseActionProperty.Case<PropertyInterface>> mCases = ListFact.mList();
+        MList<ActionCase<PropertyInterface>> mCases = ListFact.mList();
         for (int i = 0; i*2+1 < readImplements.size(); i++) {
-            mCases.add(new CaseActionProperty.Case((CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2+1)));
+            mCases.add(new ActionCase((CalcPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(i*2+1)));
         }
         if(readImplements.size() % 2 != 0) {
-            mCases.add(new CaseActionProperty.Case(DerivedProperty.createTrue(), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(readImplements.size() - 1)));
+            mCases.add(new ActionCase(DerivedProperty.createTrue(), (ActionPropertyMapImplement<?, PropertyInterface>) readImplements.get(readImplements.size() - 1)));
         }
         return addProperty(null, new LAP(new CaseActionProperty("", isExclusive, listInterfaces, mCases.immutableList())));
     }
@@ -1226,7 +1229,7 @@ public abstract class LogicsModule {
                 property = new SumUnionProperty(caption, listInterfaces, mMapOperands.immutable());
                 break;
             case OVERRIDE:
-                property = new CaseUnionProperty(caption, listInterfaces, listOperands, false, true);
+                property = new CaseUnionProperty(caption, listInterfaces, listOperands, false, false, true);
                 break;
             case XOR:
                 property = new XorUnionProperty(caption, listInterfaces, listOperands);
@@ -1238,7 +1241,7 @@ public abstract class LogicsModule {
                 property = new CaseUnionProperty(caption, listInterfaces, listOperands.getCol(), true);
                 break;
             case CLASSOVERRIDE:
-                property = new CaseUnionProperty(caption, listInterfaces, listOperands, true, false);
+                property = new CaseUnionProperty(caption, listInterfaces, listOperands, true, false, false);
                 break;
             case STRING_AGG:
                 property = new StringAggUnionProperty(caption, listInterfaces, listOperands, separator);
@@ -1260,12 +1263,12 @@ public abstract class LogicsModule {
 
     protected LCP addCaseUProp(AbstractGroup group, boolean persistent, String caption, boolean isExclusive, Object... params) {
         ImOrderSet<UnionProperty.Interface> listInterfaces = UnionProperty.getInterfaces(getIntNum(params));
-        MList<CaseUnionProperty.Case> mListCases = ListFact.mList();
+        MList<CalcCase<UnionProperty.Interface>> mListCases = ListFact.mList();
         ImList<CalcPropertyMapImplement<?,UnionProperty.Interface>> mapImplements = (ImList<CalcPropertyMapImplement<?, UnionProperty.Interface>>) (ImList<?>) readCalcImplements(listInterfaces, params);
         for (int i = 0; i < mapImplements.size() / 2; i++)
-            mListCases.add(new CaseUnionProperty.Case(mapImplements.get(2 * i), mapImplements.get(2 * i + 1)));
+            mListCases.add(new CalcCase<UnionProperty.Interface>(mapImplements.get(2 * i), mapImplements.get(2 * i + 1)));
         if (mapImplements.size() % 2 != 0)
-            mListCases.add(new CaseUnionProperty.Case(new CalcPropertyMapImplement<PropertyInterface, UnionProperty.Interface>((CalcProperty<PropertyInterface>) baseLM.vtrue.property), mapImplements.get(mapImplements.size() - 1)));
+            mListCases.add(new CalcCase<UnionProperty.Interface>(new CalcPropertyMapImplement<PropertyInterface, UnionProperty.Interface>((CalcProperty<PropertyInterface>) baseLM.vtrue.property), mapImplements.get(mapImplements.size() - 1)));
 
         return addProperty(group, persistent, new LCP<UnionProperty.Interface>(new CaseUnionProperty(caption, listInterfaces, isExclusive, mListCases.immutableList()), listInterfaces));
     }
@@ -1998,6 +2001,14 @@ public abstract class LogicsModule {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public boolean isDefaultNamespace() {
+        return defaultNamespace;
+    }
+
+    public void setDefaultNamespace(boolean defaultNamespace) {
+        this.defaultNamespace = defaultNamespace;
     }
 
     public Set<String> getRequiredModules() {

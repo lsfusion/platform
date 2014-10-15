@@ -15,6 +15,8 @@ import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.property.cases.CalcCase;
+import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
@@ -139,5 +141,17 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 
     public DataChanges mapDataChanges(PropertyChange<P> pPropertyChange, WhereBuilder changedWhere, PropertyChanges propChanges) {
         return DataChanges.EMPTY;
+    }
+
+    public Graph<CalcCase<P>> mapAbstractGraph() {
+        return null;
+    }
+
+    public boolean equalsMap(PropertyInterfaceImplement<P> object) {
+        return equals(object);
+    }
+
+    public int hashMap() {
+        return hashCode();
     }
 }
