@@ -29,6 +29,7 @@ import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
+import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import org.apache.log4j.Logger;
 
 import javax.mail.Message;
@@ -284,6 +285,9 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 break;
             case RTF:
                 exporter = new JRRtfExporter();
+                break;
+            case XLSX:
+                exporter = new JRXlsxExporter();
                 break;
             default:
                 exporter = new ReportHTMLExporter();

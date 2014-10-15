@@ -3550,7 +3550,7 @@ formPrintTypeLiteral returns [FormPrintType val]
 	:	'PRINT'
 		(
 			'AUTO' { $val = FormPrintType.AUTO; }
-		|	'XLS' { $val = FormPrintType.XLS; }
+		|	'XLSX' { $val = FormPrintType.XLSX; }
 		|	'PDF' { $val = FormPrintType.PDF; }
 		)?
 	;
@@ -3573,6 +3573,7 @@ emailAttachFormat returns [AttachmentFormat val]
 	|	'DOCX'	{ $val = AttachmentFormat.DOCX; }
 	|	'HTML'	{ $val = AttachmentFormat.HTML; }
 	|	'RTF'	{ $val = AttachmentFormat.RTF; }
+	|	'XLSX'	{ $val = AttachmentFormat.XLSX; }
 	;
 
 udoubleLiteral returns [double val]

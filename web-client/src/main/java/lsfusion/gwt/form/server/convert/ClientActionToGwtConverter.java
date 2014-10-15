@@ -116,7 +116,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ReportClientAction.class)
     public GReportAction convertAction(ReportClientAction action, FormSessionObject form) throws IOException {
-        return new GReportAction(FileUtils.exportReport(action.printType == FormPrintType.XLS, action.generationData));
+        return new GReportAction(FileUtils.exportReport(action.printType == FormPrintType.XLSX, action.generationData));
     }
 
     @Converter(from = RequestUserInputClientAction.class)

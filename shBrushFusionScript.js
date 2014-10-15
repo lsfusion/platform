@@ -28,7 +28,7 @@ SyntaxHighlighter.brushes.Custom = function()
         'SHOWIF SINGLE SPLITH SPLITV STEP STRETCH STRICT STRUCT SUBJECT ' +
         'SUM TABBED TABLE TEXTHALIGN TEXTVALIGN THEN TIME TITLE TO TODRAW ' +
         'TOOLBAR TOP TRAILING TREE TRUE UNGROUP UPDATE VALIGN ' +
-        'VERTICAL WHEN WHERE WHILE WINDOW WORDFILE XLS XOR YES';
+        'VERTICAL WHEN WHERE WHILE WINDOW WORDFILE XLSX XOR YES';
 
     this.regexList = [
         { regex: SyntaxHighlighter.regexLib.singleLineCComments, css: 'color1' },

@@ -1,11 +1,11 @@
 package lsfusion.server.mail;
 
 
-import org.apache.log4j.Logger;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.ServerResourceBundle;
+import org.apache.log4j.Logger;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -111,9 +111,11 @@ public class EmailSender {
             case PDF:
                 return "application/pdf";
             case DOCX:
-                return "application/msword";
+                return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
             case RTF:
                 return "text/rtf";
+            case XLSX:
+                return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             default:
                 return "text/html";
         }
