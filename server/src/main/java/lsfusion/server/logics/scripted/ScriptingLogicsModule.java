@@ -2172,7 +2172,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ValueClass cls = findClass(className);
         if (cls instanceof ConcreteCustomClass) {
             ConcreteCustomClass concreteClass = (ConcreteCustomClass) cls;
-            if (concreteClass.hasNFStaticObject(instanceName, version)) {
+            if (concreteClass.hasStaticObject(instanceName)) { //, versionб так как отдельным шагом парсится
                 resultProp = addCProp(concreteClass, instanceName);
             } else {
                 errLog.emitNotFoundError(parser, "static оbject", instanceName);

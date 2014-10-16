@@ -149,6 +149,15 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return false;
     }
 
+    public boolean hasStaticObject(String name) {
+        for (ObjectInfo info : getStaticObjectsInfoIt()) {
+            if (info.name.equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public int getObjectID(String name) {
         for (ObjectInfo info : getStaticObjectsInfoIt()) {
             if (info.name.equals(name)) {
