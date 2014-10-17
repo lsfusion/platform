@@ -33,6 +33,7 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
             String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
             if (attrID != null) {
                 changeTreeState(context, value, event);
+                GwtClientUtils.stopPropagation(event);
             }
         }
     }

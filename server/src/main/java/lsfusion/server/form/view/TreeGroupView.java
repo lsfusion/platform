@@ -21,6 +21,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
 
     public ToolbarView toolbar;
     public FilterView filter;
+    
+    public boolean expandOnClick = false;
 
     public TreeGroupView() {
         
@@ -64,6 +66,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         pool.serializeObject(outStream, filter, serializationType);
 
         outStream.writeBoolean(entity.plainTreeMode);
+        
+        outStream.writeBoolean(expandOnClick);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -73,6 +77,8 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
         toolbar = pool.deserializeObject(inStream);
         filter = pool.deserializeObject(inStream);
 
+        expandOnClick = inStream.readBoolean();
+        
         entity = pool.context.entity.getTreeGroup(ID);
     }
 

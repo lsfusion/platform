@@ -26,6 +26,7 @@ public class ViewProxyFactory {
         proxyClasses.put(PropertyDrawView.class, PropertyDrawViewProxy.class);
         proxyClasses.put(ToolbarView.class, ToolbarViewProxy.class);
         proxyClasses.put(FilterView.class, FilterViewProxy.class);
+        proxyClasses.put(TreeGroupView.class, TreeGroupViewProxy.class);
     }
 
     public ViewProxy createViewProxy(Object target) {

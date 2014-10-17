@@ -2,6 +2,7 @@ package lsfusion.client.form.tree;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.sun.java.swing.plaf.windows.WindowsTreeUI;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.SwingUtils;
@@ -232,6 +233,32 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 }
             });
         }
+        
+        if (treeGroup.expandOnClick) {
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() == 1) {
+                        TreePath path = getPathForRow(rowAtPoint(e.getPoint()));
+                        if (path != null && !isExpanded(path) && !((TreeGroupTreeUI) getHierarhicalColumnRenderer().getUI()).isLocationInExpandControl(path, e.getX(), e.getY())) {
+                            TreeGroupNode node = (TreeGroupNode) path.getLastPathComponent();
+
+                            if (node.isExpandable() && !synchronize && !manualExpand) {
+                                if (node.group != null) {
+                                    try {
+                                        form.expandGroupObject(node.group, node.key);
+                                    } catch (IOException ex) {
+                                        throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"), ex);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        getHierarhicalColumnRenderer().setUI(new TreeGroupTreeUI());
 
         initializeActionMap();
         currentTreePath = new TreePath(rootNode);
@@ -1034,5 +1061,12 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             }
         }
         return null;
+    }
+    
+    class TreeGroupTreeUI extends WindowsTreeUI {
+        @Override
+        protected boolean isLocationInExpandControl(TreePath path, int mouseX, int mouseY) {
+            return super.isLocationInExpandControl(path, mouseX, mouseY);
+        }
     }
 }

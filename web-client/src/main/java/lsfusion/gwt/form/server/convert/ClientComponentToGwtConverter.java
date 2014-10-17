@@ -428,6 +428,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         treeGroup.toolbar = convertOrCast(clientTreeGroup.toolbar);
         treeGroup.filter = convertOrCast(clientTreeGroup.filter);
+        
+        treeGroup.expandOnClick = clientTreeGroup.expandOnClick;
 
         for (ClientGroupObject clientGroup : clientTreeGroup.groups) {
             GGroupObject group = convertOrCast(clientGroup);

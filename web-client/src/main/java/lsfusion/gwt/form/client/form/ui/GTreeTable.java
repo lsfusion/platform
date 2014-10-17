@@ -3,7 +3,9 @@ package lsfusion.gwt.form.client.form.ui;
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
@@ -425,6 +427,20 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             GGroupObjectValue columnKey = getCurrentKey();
             if (property != null) {
                 form.pasteSingleValue(property, columnKey, table.get(0).get(0));
+            }
+        }
+    }
+
+    @Override
+    protected void onBrowserEvent2(Event event) {
+        super.onBrowserEvent2(event);
+
+        if (event.getTypeInt() == Event.ONCLICK) {
+            if (treeGroupController.isExpandOnClick() && getTableBodyElement().isOrHasChild(Node.as(event.getEventTarget()))) {
+                GTreeTableNode node = tree.getNodeByRecord(getSelectedRecord());
+                if (node.isExpandable() && !node.isOpen()) {
+                    fireExpandNode(node);
+                }
             }
         }
     }

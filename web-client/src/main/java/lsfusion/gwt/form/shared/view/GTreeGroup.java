@@ -8,4 +8,6 @@ public class GTreeGroup extends GComponent {
 
     public GToolbar toolbar;
     public GFilter filter;
+    
+    public boolean expandOnClick;
 }

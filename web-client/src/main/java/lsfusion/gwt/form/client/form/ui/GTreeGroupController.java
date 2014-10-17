@@ -280,4 +280,8 @@ public class GTreeGroupController extends GAbstractGroupObjectController {
     protected void changeFilter(List<GPropertyFilter> conditions) {
         formController.changeFilter(treeGroup, conditions);
     }
+    
+    public boolean isExpandOnClick() {
+        return treeGroup.expandOnClick;
+    }
 }

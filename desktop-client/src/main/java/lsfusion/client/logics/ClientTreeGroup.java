@@ -21,6 +21,8 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     public ClientFilter filter;
 
     public boolean plainTreeMode;
+    
+    public boolean expandOnClick;
 
     public ClientTreeGroup() {
 
@@ -55,6 +57,8 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         pool.serializeCollection(outStream, groups, serializationType);
         pool.serializeObject(outStream, toolbar, serializationType);
         pool.serializeObject(outStream, filter, serializationType);
+        
+        outStream.writeBoolean(expandOnClick);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -65,6 +69,8 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         filter = pool.deserializeObject(inStream);
 
         plainTreeMode = inStream.readBoolean();
+        
+        expandOnClick = inStream.readBoolean();
 
         List<ClientGroupObject> upGroups = new ArrayList<ClientGroupObject>();
         for (ClientGroupObject group : groups) {
