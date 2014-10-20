@@ -1,6 +1,5 @@
 package lsfusion.client.form.renderer;
 
-import lsfusion.client.form.PropertyRenderer;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.classes.ClientColorClass;
 
@@ -9,9 +8,10 @@ import java.awt.*;
 
 public class ColorPropertyRenderer extends LabelPropertyRenderer {
     Color value;
-
+    ClientPropertyDraw property;
     public ColorPropertyRenderer(ClientPropertyDraw property) {
         super(property);
+        this.property = property;
     }
 
     @Override
@@ -29,9 +29,9 @@ public class ColorPropertyRenderer extends LabelPropertyRenderer {
     public void drawBackground(boolean isSelected, boolean hasFocus) {
         if (isSelected) {
             if (hasFocus) {
-                setBackground(new Color(value.getRGB() & PropertyRenderer.FOCUSED_CELL_BACKGROUND.getRGB()));
+                setBackground(new Color(value.getRGB() & property.colorPreferences.getFocusedCellBackground().getRGB()));
             } else {
-                setBackground(new Color(value.getRGB() & PropertyRenderer.SELECTED_ROW_BACKGROUND.getRGB()));
+                setBackground(new Color(value.getRGB() & property.colorPreferences.getSelectedRowBackground().getRGB()));
             }
         } else {
             setBackground(value);
@@ -40,6 +40,6 @@ public class ColorPropertyRenderer extends LabelPropertyRenderer {
 
     @Override
     public void paintAsSelected() {
-        setBackground(new Color(value.getRGB() & PropertyRenderer.SELECTED_CELL_BACKGROUND.getRGB()));
+        setBackground(new Color(value.getRGB() & property.colorPreferences.getSelectedCellBackground().getRGB()));
     }
 }

@@ -13,6 +13,7 @@ import lsfusion.client.logics.classes.ClientTypeSerializer;
 import lsfusion.client.serialization.ClientIdentitySerializable;
 import lsfusion.client.serialization.ClientSerializationPool;
 import lsfusion.interop.PropertyEditType;
+import lsfusion.interop.form.ColorPreferences;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
 
@@ -107,6 +108,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String creationScript;
     public String creationPath;
+    
+    public ColorPreferences colorPreferences;
     
     public ClientPropertyDraw() {
     }

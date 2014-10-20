@@ -100,4 +100,6 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
     ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers) throws RemoteException;
 
     FormUserPreferences getUserPreferences() throws RemoteException;
+    
+    ColorPreferences getColorPreferences() throws RemoteException;
 }

@@ -46,7 +46,7 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new LogicalPropertyRenderer();
+        return new LogicalPropertyRenderer(property);
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property) {

@@ -65,6 +65,17 @@ defaultBackgroundColor 'Цвет фона по умолчанию при выд�
 defaultOverrideBackgroundColor 'Цвет фона по умолчанию при выделении' = OVERRIDE RGB(255, 255, 0), defaultBackgroundColor() PERSISTENT;
 defaultForegroundColor 'Цвет шрифта по умолчанию при выделении' = DATA COLOR ();
 defaultOverrideForegroundColor 'Цвет шрифта по умолчанию при выделении' = OVERRIDE RGB(255, 0, 0), defaultForegroundColor() PERSISTENT;
+
+selectedRowBackgroundColor 'Цвет фона ряда при выделении' = DATA COLOR ();
+overrideSelectedRowBackgroundColor 'Цвет фона ряда при выделении' = OVERRIDE RGB(249, 249, 255), selectedRowBackgroundColor();
+selectedRowBorderColor 'Цвет границы ряда при выделении' = DATA COLOR ();
+overrideSelectedRowBorderColor 'Цвет границы ряда при выделении' = OVERRIDE RGB(175, 175, 255), selectedRowBorderColor();
+selectedCellBackgroundColor 'Цвет фона ячейки при выделении' = DATA COLOR ();
+overrideSelectedCellBackgroundColor 'Цвет фона ячейки при выделении' = OVERRIDE RGB(237, 238, 244), selectedCellBackgroundColor();
+focusedCellBackgroundColor 'Цвет фона ячейки при фокусировании' = DATA COLOR ();
+overrideFocusedCellBackgroundColor 'Цвет фона ячейки при фокусировании' = OVERRIDE RGB(237, 238, 244), focusedCellBackgroundColor();
+focusedCellBorderColor 'Цвет границы ячейки при фокусировании' = DATA COLOR ();
+overrideFocusedCellBorderColor 'Цвет границы ячейки при фокусировании' = OVERRIDE RGB(98, 98, 255), focusedCellBorderColor();
   
 customReportCharWidth 'Ширина символа в пикселах в отчетах' = DATA INTEGER ();
 customReportRowHeight 'Высота поля в пикселах в отчетах' = DATA INTEGER ();

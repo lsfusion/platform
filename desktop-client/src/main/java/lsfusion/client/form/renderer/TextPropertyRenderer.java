@@ -14,9 +14,11 @@ public class TextPropertyRenderer extends JEditorPane implements PropertyRendere
     private final boolean rich;
 
     private Color defaultBackground;
+    private ClientPropertyDraw property;
 
     public TextPropertyRenderer(ClientPropertyDraw property, boolean rich) {
         this.rich = rich;
+        this.property = property;
 
         setOpaque(true);
         setFont(new Font("Tahoma", Font.PLAIN, 10));
@@ -32,11 +34,11 @@ public class TextPropertyRenderer extends JEditorPane implements PropertyRendere
     void setSelected(boolean isSelected, boolean hasFocus) {
         if (isSelected) {
             if (hasFocus) {
-                setBorder(BorderFactory.createCompoundBorder(FOCUSED_CELL_BORDER, BorderFactory.createEmptyBorder(1, 2, 0, 1)));
-                setBackground(FOCUSED_CELL_BACKGROUND);
+                setBorder(BorderFactory.createCompoundBorder(property.colorPreferences.getFocusedCellBorder(), BorderFactory.createEmptyBorder(1, 2, 0, 1)));
+                setBackground(property.colorPreferences.getFocusedCellBackground());
             } else {
-                setBorder(BorderFactory.createCompoundBorder(SELECTED_ROW_BORDER, BorderFactory.createEmptyBorder(1, 3, 0, 2)));
-                setBackground(SELECTED_ROW_BACKGROUND);
+                setBorder(BorderFactory.createCompoundBorder(property.colorPreferences.getSelectedRowBorder(), BorderFactory.createEmptyBorder(1, 3, 0, 2)));
+                setBackground(property.colorPreferences.getSelectedRowBackground());
             }
         } else {
             setBorder(BorderFactory.createEmptyBorder(2, 3, 1, 2));
@@ -68,6 +70,6 @@ public class TextPropertyRenderer extends JEditorPane implements PropertyRendere
 
     @Override
     public void paintAsSelected() {
-        setBackground(PropertyRenderer.SELECTED_CELL_BACKGROUND);
+        setBackground(property.colorPreferences.getSelectedCellBackground());
     }
 }

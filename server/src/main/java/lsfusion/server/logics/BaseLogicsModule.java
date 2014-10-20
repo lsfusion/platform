@@ -135,6 +135,17 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP defaultForegroundColor;
     public LCP defaultOverrideForegroundColor;
 
+    public LCP selectedRowBackgroundColor;
+    public LCP overrideSelectedRowBackgroundColor;
+    public LCP selectedRowBorderColor;
+    public LCP overrideSelectedRowBorderColor;
+    public LCP selectedCellBackgroundColor;
+    public LCP overrideSelectedCellBackgroundColor;
+    public LCP focusedCellBackgroundColor;
+    public LCP overrideFocusedCellBackgroundColor;
+    public LCP focusedCellBorderColor;
+    public LCP overrideFocusedCellBorderColor;
+
     public LCP reportRowHeight, reportCharWidth, reportToStretch;
     
     public ObjectValuePropertySet objectValue;
@@ -400,6 +411,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         defaultForegroundColor = findProperty("defaultForegroundColor");
         defaultOverrideForegroundColor = findProperty("defaultOverrideForegroundColor");
 
+        selectedRowBackgroundColor = findProperty("selectedRowBackgroundColor");
+        overrideSelectedRowBackgroundColor = findProperty("overrideSelectedRowBackgroundColor");
+        selectedRowBorderColor = findProperty("selectedRowBorderColor");
+        overrideSelectedRowBorderColor = findProperty("overrideSelectedRowBorderColor");
+        selectedCellBackgroundColor = findProperty("selectedCellBackgroundColor");
+        overrideSelectedCellBackgroundColor = findProperty("overrideSelectedCellBackgroundColor");
+        focusedCellBackgroundColor = findProperty("focusedCellBackgroundColor");
+        overrideFocusedCellBackgroundColor = findProperty("overrideFocusedCellBackgroundColor");
+        focusedCellBorderColor = findProperty("focusedCellBorderColor");
+        overrideFocusedCellBorderColor = findProperty("overrideFocusedCellBorderColor");
         initNavigators();
     }
 

@@ -78,6 +78,8 @@ public class ClientFormController implements AsyncListener {
     private final String formSID;
     private final String canonicalName;
 
+    private ColorPreferences colorPreferences;
+
     private final int ID;
 
     private final ClientFormLayout formLayout;
@@ -187,10 +189,16 @@ public class ClientFormController implements AsyncListener {
         return formLayout;
     }
 
+    public ColorPreferences getColorPreferences() {
+        return colorPreferences;
+    }
+
     // ------------------------------------------------------------------------------------ //
     // ----------------------------------- Инициализация ---------------------------------- //
     // ------------------------------------------------------------------------------------ //
     private void initializeForm() throws Exception {
+        initializeColorPreferences();
+        
         initializeControllers();
 
         initializeRegularFilters();
@@ -206,6 +214,13 @@ public class ClientFormController implements AsyncListener {
         return form.getPropertyDraws();
     }
 
+    private void initializeColorPreferences() throws RemoteException {
+        colorPreferences = remoteForm.getColorPreferences();
+        for (ClientPropertyDraw properties : form.getPropertyDraws()) {
+                properties.colorPreferences = colorPreferences;
+        }
+    }
+    
     private void initializeControllers() throws IOException {
         FormUserPreferences preferences = remoteForm.getUserPreferences();
         

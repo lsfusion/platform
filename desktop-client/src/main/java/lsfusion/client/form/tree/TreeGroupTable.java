@@ -19,6 +19,7 @@ import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.ClientTreeGroup;
 import lsfusion.client.logics.classes.ClientType;
 import lsfusion.interop.Order;
+import lsfusion.interop.form.ColorPreferences;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
@@ -141,12 +142,13 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             setShowGrid(false, false);
         } else {
             //подсветка ячеек дерева
+            ColorPreferences colorPreferences = getForm().getColorPreferences();
             setHighlighters(
                     new ColorHighlighter(
                             new HighlightPredicate.AndHighlightPredicate(
                                     HighlightPredicate.HAS_FOCUS,
                                     new HighlightPredicate.ColumnHighlightPredicate(0)
-                            ), PropertyRenderer.FOCUSED_CELL_BACKGROUND, Color.BLACK, PropertyRenderer.FOCUSED_CELL_BACKGROUND, Color.BLACK
+                            ), colorPreferences.getFocusedCellBackground(), Color.BLACK, colorPreferences.getFocusedCellBackground(), Color.BLACK
                     ),
                     new ColorHighlighter(
                             new HighlightPredicate.AndHighlightPredicate(
@@ -154,7 +156,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                                             HighlightPredicate.HAS_FOCUS
                                     ),
                                     new HighlightPredicate.ColumnHighlightPredicate(0)
-                            ), Color.WHITE, Color.BLACK, PropertyRenderer.SELECTED_ROW_BACKGROUND, Color.BLACK
+                            ), Color.WHITE, Color.BLACK, colorPreferences.getSelectedRowBackground(), Color.BLACK
                     )
             );
 

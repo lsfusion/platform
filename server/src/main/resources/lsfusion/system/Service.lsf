@@ -86,6 +86,7 @@ WHEN SESSION CHANGED(valueReflectionSetting()) DO saveValueReflectionSetting();
 
 FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
+                 selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
                  restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, checkClassesAction, 
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
@@ -107,6 +108,11 @@ DESIGN admin FROM DEFAULT {
             caption = 'Цвета';
             ADD PROPERTY(defaultBackgroundColor());
             ADD PROPERTY(defaultForegroundColor());
+            ADD PROPERTY(selectedRowBackgroundColor());
+            ADD PROPERTY(selectedRowBorderColor());
+            ADD PROPERTY(selectedCellBackgroundColor());
+            ADD PROPERTY(focusedCellBackgroundColor());
+            ADD PROPERTY(focusedCellBorderColor());
         }
         NEW report {
             caption = 'Отчеты';

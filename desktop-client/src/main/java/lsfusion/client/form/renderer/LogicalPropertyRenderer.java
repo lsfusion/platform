@@ -1,15 +1,17 @@
 package lsfusion.client.form.renderer;
 
 import lsfusion.client.form.PropertyRenderer;
+import lsfusion.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class LogicalPropertyRenderer extends JCheckBox implements PropertyRenderer {
-
-    public LogicalPropertyRenderer() {
+    protected ClientPropertyDraw property;
+    
+    public LogicalPropertyRenderer(ClientPropertyDraw property) {
         super();
-
+        this.property = property;
         setHorizontalAlignment(JCheckBox.CENTER);
         setBorderPainted(true);
         setOpaque(true);
@@ -24,12 +26,12 @@ public class LogicalPropertyRenderer extends JCheckBox implements PropertyRender
 
         if (isSelected) {
             if (hasFocus) {
-                setBorder(FOCUSED_CELL_BORDER);
-                setBackground(FOCUSED_CELL_BACKGROUND);
+                setBorder(property.colorPreferences.getFocusedCellBorder());
+                setBackground(property.colorPreferences.getFocusedCellBackground());
             }
             else {
-                setBorder(SELECTED_ROW_BORDER);
-                setBackground(SELECTED_ROW_BACKGROUND);
+                setBorder(property.colorPreferences.getSelectedRowBorder());
+                setBackground(property.colorPreferences.getSelectedRowBackground());
             }
         } else {
             setBorder(BorderFactory.createEmptyBorder());
@@ -39,6 +41,6 @@ public class LogicalPropertyRenderer extends JCheckBox implements PropertyRender
 
     @Override
     public void paintAsSelected() {
-        setBackground(PropertyRenderer.SELECTED_CELL_BACKGROUND);
+        setBackground(property.colorPreferences.getSelectedCellBackground());
     }
 }

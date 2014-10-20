@@ -13,8 +13,10 @@ public class ActionPropertyRenderer extends JButton implements PropertyRenderer 
     private final Color defaultBackground = getBackground();
     private Border defaultBorder = getBorder();
     private Icon defaultIcon;
+    private ClientPropertyDraw property;
 
     public ActionPropertyRenderer(ClientPropertyDraw property) {
+        this.property = property;
         property.design.designComponent(this);
         setFocusPainted(false);
     }
@@ -31,12 +33,12 @@ public class ActionPropertyRenderer extends JButton implements PropertyRenderer 
 
         if (isSelected) {
             if (hasFocus) {
-                setBorder(FOCUSED_CELL_BORDER);
-                setBackground(FOCUSED_CELL_BACKGROUND);
+                setBorder(property.colorPreferences.getFocusedCellBorder());
+                setBackground(property.colorPreferences.getFocusedCellBackground());
             }
             else {
-                setBorder(SELECTED_ROW_BORDER);
-                setBackground(SELECTED_ROW_BACKGROUND);
+                setBorder(property.colorPreferences.getSelectedRowBorder());
+                setBackground(property.colorPreferences.getSelectedRowBackground());
             }
         } else {
             setBorder(value == null ? BorderFactory.createEmptyBorder() : defaultBorder);
@@ -46,6 +48,6 @@ public class ActionPropertyRenderer extends JButton implements PropertyRenderer 
 
     @Override
     public void paintAsSelected() {
-        setBackground(PropertyRenderer.SELECTED_CELL_BACKGROUND);
+        setBackground(property.colorPreferences.getSelectedCellBackground());
     }
 }

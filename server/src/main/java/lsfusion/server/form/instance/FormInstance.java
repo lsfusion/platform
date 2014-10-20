@@ -15,6 +15,7 @@ import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.HideFormClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
+import lsfusion.interop.form.ColorPreferences;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
@@ -56,10 +57,12 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.*;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 import java.util.Map.Entry;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
@@ -422,6 +425,22 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         return new FormUserPreferences(goGeneralPreferences, goUserPreferences);
+    }
+
+    public ColorPreferences loadColorPreferences() {       
+        try {
+            Color selectedRowBackground = (Color) BL.LM.overrideSelectedRowBackgroundColor.read(session);
+            Color selectedRowBorder = (Color) BL.LM.overrideSelectedRowBorderColor.read(session);
+            Color selectedCellBackground = (Color) BL.LM.overrideSelectedCellBackgroundColor.read(session);
+            Color focusedCellBackground = (Color) BL.LM.overrideFocusedCellBackgroundColor.read(session);
+            Color focusedCellBorder = (Color) BL.LM.overrideFocusedCellBorderColor.read(session);
+            return new ColorPreferences(selectedRowBackground, selectedRowBorder, selectedCellBackground, 
+                    focusedCellBackground, focusedCellBorder);
+        } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        } catch (SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
     }
     
     public void readPreferencesValues(ImMap<String, Object> values, List<GroupObjectUserPreferences> goPreferences, boolean general) {

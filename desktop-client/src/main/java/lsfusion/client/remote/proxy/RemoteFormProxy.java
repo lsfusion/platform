@@ -36,6 +36,20 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         }
     }
 
+    @Override
+    public ColorPreferences getColorPreferences() throws RemoteException {
+        try {
+            return callImmutableMethod("getColorPreferences", new Callable<ColorPreferences>() {
+                @Override
+                public ColorPreferences call() throws Exception {
+                    return target.getColorPreferences();
+                }
+            });
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     @ImmutableMethod
     public byte[] getRichDesignByteArray() throws RemoteException {
         try {

@@ -1,14 +1,17 @@
 package lsfusion.client.form.renderer;
 
 import lsfusion.client.form.PropertyRenderer;
+import lsfusion.interop.form.ColorPreferences;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class BitPropertyRenderer extends JCheckBox implements PropertyRenderer {
-
-    public BitPropertyRenderer() {
+    private ColorPreferences colorPreferences;
+    
+    public BitPropertyRenderer(ColorPreferences colorPreferences) {
         super();
+        this.colorPreferences = colorPreferences;
 
         setHorizontalAlignment(JCheckBox.CENTER);
 
@@ -27,12 +30,12 @@ public class BitPropertyRenderer extends JCheckBox implements PropertyRenderer {
 
         if (isSelected) {
             if (hasFocus) {
-                setBorder(FOCUSED_CELL_BORDER);
-                setBackground(FOCUSED_CELL_BACKGROUND);
+                setBorder(colorPreferences.getFocusedCellBorder());
+                setBackground(colorPreferences.getFocusedCellBackground());
             }
             else {
-                setBorder(SELECTED_ROW_BORDER);
-                setBackground(SELECTED_ROW_BACKGROUND);
+                setBorder(colorPreferences.getSelectedRowBorder());
+                setBackground(colorPreferences.getSelectedRowBackground());
             }
         } else {
             setBorder(BorderFactory.createEmptyBorder());
@@ -46,6 +49,6 @@ public class BitPropertyRenderer extends JCheckBox implements PropertyRenderer {
 
     @Override
     public void paintAsSelected() {
-        setBackground(PropertyRenderer.SELECTED_CELL_BACKGROUND);
+        setBackground(colorPreferences.getSelectedCellBackground());
     }
 }

@@ -43,6 +43,7 @@ import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -157,6 +158,20 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             logger.trace("getUserPreferences Action");
         }
         
+        return result;
+    }
+
+    /**
+     * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается, что он отработаывает как ImmutableMethod через createAndExecute
+     */
+    public ColorPreferences getColorPreferences() throws RemoteException {
+
+        ColorPreferences result = form.loadColorPreferences();
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("getColorPreferences Action");
+        }
+
         return result;
     }
 
