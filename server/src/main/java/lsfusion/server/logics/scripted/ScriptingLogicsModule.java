@@ -887,7 +887,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (LPWithParams paramProp : paramProps) {
             if (paramProp.property != null) {
                 CalcProperty lcp = (CalcProperty) paramProp.property.property;
-                classes.add(lcp.getValueClassSet());
+                classes.add(lcp.getResolveClassSet());
             } else {
                 TypedParameter param = params.get(paramProp.usedParams.get(0));
                 if (param.cls == null) {

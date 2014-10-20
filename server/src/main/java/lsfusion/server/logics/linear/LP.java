@@ -42,15 +42,6 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
         return getMap(objects);
     }
 
-    public ClassWhere<Integer> getClassWhere(ClassType type) {
-        ClassWhere<T> classWhere = property.getClassWhere(type);
-        ImRevMap<T,Integer> mapping = listInterfaces.mapOrderRevValues(new GetIndex<Integer>() {
-            public Integer getMapValue(int i) {
-                return i+1;
-            }});
-        return new ClassWhere<Integer>(classWhere, mapping);
-    }
-
     public void setMinimumWidth(int charWidth) {
         property.minimumCharWidth = charWidth;
     }

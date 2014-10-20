@@ -6,10 +6,12 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
@@ -54,6 +56,8 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
 
     Inferred<P> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType);
     ExClassSet mapInferValueClass(ImMap<P, ExClassSet> inferred, InferType inferType);
+    
+    AndClassSet mapValueClassSet(ClassWhere<P> interfaceClasses);
 
     Graph<CalcCase<P>> mapAbstractGraph();
 }

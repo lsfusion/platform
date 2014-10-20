@@ -10,10 +10,12 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.server.caches.LazyInit;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.PullExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
@@ -125,6 +127,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
     }
     public ExClassSet mapInferValueClass(ImMap<P, ExClassSet> inferred, InferType inferType) {
         return inferred.get((P)this);
+    }
+
+    public AndClassSet mapValueClassSet(ClassWhere<P> interfaceClasses) {
+        return interfaceClasses.getCommonClass((P)this);
     }
 
     public ImSet<DataProperty> mapChangeProps() {

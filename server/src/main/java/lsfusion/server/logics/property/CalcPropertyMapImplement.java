@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.Where;
@@ -19,8 +20,6 @@ import lsfusion.server.form.instance.CalcPropertyObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.actions.flow.CaseActionProperty;
-import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -153,16 +152,16 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return property.inferValueClass(mapping.join(inferred), inferType);
     }
 
-    public ClassWhere<Object> mapClassValueWhere(ClassType type) {
-        return property.getClassValueWhere(type).remap(MapFact.<Object, Object>addRevExcl(mapping, "value", "value"));
+    public AndClassSet mapValueClassSet(ClassWhere<T> interfaceClasses) {
+        return property.getValueClassSet();
     }
 
     public CalcPropertyObjectInstance<P> mapObjects(ImMap<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {
         return new CalcPropertyObjectInstance<P>(property, mapping.join(mapObjects));
     }
     
-    public <I extends PropertyInterface> boolean mapIntersect(CalcPropertyMapImplement<I, T> implement) {
-        return property.intersectFull(implement.property, implement.mapping.rightCrossValuesRev(mapping));
+    public <I extends PropertyInterface> void mapCheckExclusiveness(String caption, CalcPropertyMapImplement<I, T> implement, String implementCaption) {
+        property.checkExclusiveness(caption, implement.property, implementCaption, implement.mapping.rightCrossValuesRev(mapping));
     }
 
     public ActionPropertyMapImplement<?, T> getSetNotNullAction(boolean notNull) {

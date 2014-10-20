@@ -19,7 +19,15 @@ public class ExClassSet extends TwinImmutableObject {
     public final ImSet<Object> values;    
     public final boolean orAny;
 
-    public static final ExClassSet FALSE = new ExClassSet(null); 
+    public static final ExClassSet FALSE = new ExClassSet(null);
+
+    public static <T> ImMap<T, ExClassSet> op(ImSet<T> keys, final ImMap<T, ExClassSet> op1, final ImMap<T, ExClassSet> op2, final boolean or) {
+        return keys.mapValues(new GetValue<ExClassSet, T>() {
+            public ExClassSet getMapValue(T value) {
+                return op(op1.get(value), op2.get(value), or);
+            }
+        });
+    }
 
     @Override
     protected boolean calcTwins(TwinImmutableObject o) {

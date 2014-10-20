@@ -308,6 +308,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     public void addCase(CalcPropertyInterfaceImplement<Interface> where, CalcPropertyInterfaceImplement<Interface> property, Version version) {
         assert abs.type == Type.CASE;
+//        
+//        if(property instanceof CalcPropertyMapImplement)
+//            where = DerivedProperty.createAnd(interfaces, where, ((CalcPropertyMapImplement<?, Interface>)property).mapClassProperty());
 
         addCase(new ExplicitCalcCase(where, property), version);
     }
@@ -324,24 +327,20 @@ public class CaseUnionProperty extends IncrementUnionProperty {
        addCase(addCase, version);
     }
 
-    public void addCase(ExplicitCalcCase addCase, Version version) {
-        if (isAbstract()) {
-            ClassWhere<Object> caseClassValueWhere = getCaseClassValueWhere(addCase);
-            if (!caseClassValueWhere.means(classValueWhere, false)) {
-                throw new ScriptParsingException("wrong signature of implementation " + addCase.implement + " (specified " + caseClassValueWhere + ") for abstract property " + this + " (expected " + classValueWhere + ")");
-            }
-        }
+    public <L extends PropertyInterface> void addCase(ExplicitCalcCase addCase, Version version) {
+        assert isAbstract();
+
+        CalcPropertyMapImplement<L, Interface> caseWhere = (CalcPropertyMapImplement<L, Interface>) addCase.where;
+        CalcPropertyInterfaceImplement<Interface> caseImplement = (CalcPropertyInterfaceImplement<Interface>)addCase.implement;
+        String caseCaption = caseImplement.toString();
+        checkContainsAll(caseWhere.property, caseCaption, caseWhere.mapping, caseImplement);
 
         if (abs.checkExclusiveImplementations) {
             ImList<ExplicitCalcCase<Interface>> listCases = getNFCases(version);
 
             for (int i = 0; i < listCases.size(); i++) {
-                CalcPropertyMapImplement<?, Interface> op1 = (CalcPropertyMapImplement<?, Interface>) listCases.get(i).where;
-                CalcPropertyMapImplement<?, Interface> op2 = (CalcPropertyMapImplement<?, Interface>) addCase.where;
-                if (op1.mapIntersect(op2)) {
-                    throw new ScriptParsingException("signature intersection of property " + addCase.implement + " (WHEN " + addCase.where +") with previosly defined implementation " + listCases.get(i).implement + " (WHEN " + listCases.get(i).where +") for abstract property " + this + "\n" +
-                            "Classes 1 : " + op1.mapClassWhere(ClassType.casePolicy) + ", Classes 2 : " + op2.mapClassWhere(ClassType.casePolicy));
-                }
+                CalcPropertyMapImplement<?, Interface> prevCaseWhere = (CalcPropertyMapImplement<?, Interface>) listCases.get(i).where;
+                prevCaseWhere.mapCheckExclusiveness(listCases.get(i).implement.toString(), caseWhere, caseCaption);
             }
         }
 
@@ -401,9 +400,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     public static class NotFullyImplementedException extends RuntimeException {
-        public ClassWhere fullClassValueWhere;
-        public ClassWhere classValueWhere;
-        public NotFullyImplementedException(String msg, ClassWhere full, ClassWhere cur) {
+        public String fullClassValueWhere;
+        public String classValueWhere;
+        public NotFullyImplementedException(String msg, String full, String cur) {
             super(msg);
             this.fullClassValueWhere = full;
             this.classValueWhere = cur;
@@ -412,27 +411,19 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     public void checkAbstract() {
         if (isAbstract() && abs.checkAllImplementations) {
-            ClassWhere<Object> fullClassValueWhere = ClassWhere.FALSE();
-            for (ExplicitCalcCase<Interface> operand : getNFCases()) {
-                fullClassValueWhere = fullClassValueWhere.or(getCaseClassValueWhere(operand));
-            }
-
-            if (!classValueWhere.filterKeys(interfaces).means(fullClassValueWhere.filterKeys(interfaces), true)) {
-                throw new NotFullyImplementedException("Property is not fully implemented : " + this +  ", Calculated : " + fullClassValueWhere + ", Specified : " + classValueWhere, fullClassValueWhere, classValueWhere);
-            }
+            ImList<CalcPropertyMapImplement<?, Interface>> cases = getNFCases().mapListValues(new GetValue<CalcPropertyMapImplement<?, Interface>, ExplicitCalcCase<Interface>>() {
+                public CalcPropertyMapImplement<?, Interface> getMapValue(ExplicitCalcCase<Interface> value) {
+                    return (CalcPropertyMapImplement<?, Interface>) value.where;
+                }});
+            
+            checkAllImplementations(cases.mapListValues(new GetValue<CalcProperty<PropertyInterface>, CalcPropertyMapImplement<?, Interface>>() {
+                public CalcProperty<PropertyInterface> getMapValue(CalcPropertyMapImplement<?, Interface> value) {
+                    return (CalcProperty<PropertyInterface>) value.property;
+                }}), cases.mapListValues(new GetValue<ImRevMap<PropertyInterface, Interface>, CalcPropertyMapImplement<?, Interface>>() {
+                public ImRevMap<PropertyInterface, Interface> getMapValue(CalcPropertyMapImplement<?, Interface> value) {
+                    return (ImRevMap<PropertyInterface, Interface>) value.mapping;
+                }}));
         }
-    }
-
-    private ClassWhere<Object> getCaseClassValueWhere(ExplicitCalcCase<Interface> propCase) {
-        ClassWhere<Object> operandClassValueWhere = BaseUtils.immutableCast(((CalcPropertyMapImplement<?, Interface>) propCase.where).mapClassWhere(ClassType.casePolicy));
-        if(propCase.implement instanceof CalcPropertyMapImplement)
-            operandClassValueWhere = operandClassValueWhere.and(((CalcPropertyMapImplement<?, Interface>) propCase.implement).mapClassValueWhere(ClassType.casePolicy));
-        else { // идиотизм, но ту еще есть вопросы
-            Interface operandInterface = (Interface)propCase.implement;
-            ValueClass valueClass = operandClassValueWhere.filterKeys(SetFact.<Object>singleton(operandInterface)).getCommonParent(SetFact.<Object>singleton(operandInterface)).singleValue();
-            operandClassValueWhere = operandClassValueWhere.and(new ClassWhere<Object>(operandInterface, valueClass.getUpSet()));
-        }
-        return operandClassValueWhere;
     }
 
     @Override

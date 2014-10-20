@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.sets.OrClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.property.*;
 
@@ -155,11 +154,7 @@ public class Inferred<T extends PropertyInterface> {
         if(op2 == null)
             return op1;
 
-        ImMap<T, ExClassSet> result = op1.keys().merge(op2.keys()).mapValues(new GetValue<ExClassSet, T>() {
-            public ExClassSet getMapValue(T value) {
-                return ExClassSet.op(op1.get(value), op2.get(value), or);
-            }
-        });
+        ImMap<T, ExClassSet> result = ExClassSet.op(op1.keys().merge(op2.keys()), op1, op2, or);
         if(!or)
             return checkNull(result);
         return result;
