@@ -109,15 +109,15 @@ public class EmailSender {
     private String getMimeType(AttachmentFormat format) {
         switch (format) {
             case PDF:
-                return "application/pdf";
+                return "application/pdf; charset=utf-8";
             case DOCX:
-                return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                return "application/vnd.openxmlformats-officedocument.wordprocessingml.document; charset=utf-8";
             case RTF:
-                return "text/rtf";
+                return "text/rtf; charset=utf-8";
             case XLSX:
-                return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=utf-8";
             default:
-                return "text/html";
+                return "text/html; charset=utf-8";
         }
     }
 
