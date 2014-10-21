@@ -37,7 +37,7 @@ META defineDocumentAbstractRelation(object, detailClass, caption)
 END
 
 META defineDocumentAbstractRelation(object, objectClass, detailClass, caption)
-    object##detailClass = ABSTRACT objectClass (detailClass) PERSISTENT;
+    object##detailClass = ABSTRACT objectClass (detailClass) PERSISTENT INDEXED;
     in###object##detailClass(o, d) = object##detailClass(d) == o;
 
     @defineDocumentHeaderCount(object, detailClass);
