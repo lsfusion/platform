@@ -22,7 +22,7 @@ public class TreeGroupView extends ComponentView implements ServerIdentitySerial
     public ToolbarView toolbar;
     public FilterView filter;
     
-    public boolean expandOnClick = false;
+    public boolean expandOnClick = true;
 
     public TreeGroupView() {
         
