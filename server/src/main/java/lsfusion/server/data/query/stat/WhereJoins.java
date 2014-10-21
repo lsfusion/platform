@@ -196,7 +196,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             PropStat exprStat = expr.getStatValue(keyStat);
             exprStats.add(expr, exprStat.distinct);
             if(exprStat.notNull!=null)
-                exprNotNullStats.add(expr.getBaseJoin(), exprStat.notNull);
+                exprNotNullStats.add(expr.getBaseJoin(), exprStat.notNull); // тут как и снизу возможно лучше min брать
         }
         // уменьшаем статистику join'а до минимального notNull значения
         for(int i=0,size=exprNotNullStats.size();i<size;i++) {
