@@ -283,6 +283,8 @@ public class PropertyDrawView extends ComponentView {
                 pool.writeString(outStream, contextMenuBindings.getValue(i));
             }
         }
+
+        outStream.writeBoolean(entity.propertyObject.property.isSetNotNull());
     }
 
     private OrderedMap<String, String> filterContextMenuItems(OrderedMap<String, String> contextMenuBindings, ServerContext context) {

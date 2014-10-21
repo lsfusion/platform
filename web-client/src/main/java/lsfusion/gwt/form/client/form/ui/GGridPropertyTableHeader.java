@@ -32,6 +32,8 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     private String caption;
     private String toolTip;
+    
+    private boolean notNull;
 
     public GGridPropertyTableHeader(GGridPropertyTable table) {
         this(table, null);
@@ -49,8 +51,9 @@ public class GGridPropertyTableHeader extends Header<String> {
         this.toolTip = toolTip;
     }
 
-    public void setCaption(String caption) {
+    public void setCaption(String caption, boolean notNull) {
         this.caption = caption;
+        this.notNull = notNull;
     }
 
     public void setToolTip(String toolTip) {
@@ -120,6 +123,14 @@ public class GGridPropertyTableHeader extends Header<String> {
         div.getStyle().setOverflow(Style.Overflow.HIDDEN);
         div.getStyle().setTextAlign(Style.TextAlign.CENTER);
         div.getStyle().setWhiteSpace(Style.WhiteSpace.NOWRAP);
+
+        SpanElement notNullSign = null;
+        if (notNull) {
+            notNullSign = Document.get().createSpanElement();
+            notNullSign.getStyle().setColor("red");
+            notNullSign.setInnerText("*");
+        }
+        
         if (sortDir != null) {
             ImageElement img = Document.get().createImageElement();
             img.getStyle().setHeight(15, Style.Unit.PX);
@@ -135,11 +146,22 @@ public class GGridPropertyTableHeader extends Header<String> {
 
             div.appendChild(img);
             div.appendChild(span);
+            if (notNullSign != null) {
+                div.appendChild(notNullSign);
+            }
             th.appendChild(div);
         } else {
-            div.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
-            div.setInnerText(escapedCaption);
+            if (notNullSign == null) {
+                div.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
+                div.setInnerText(escapedCaption);
+            } else {
+                SpanElement span = Document.get().createSpanElement();
+                span.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
+                span.setInnerText(escapedCaption);
 
+                div.appendChild(span);
+                div.appendChild(notNullSign);
+            }
             renderedCaptionElement = div;
             th.appendChild(div);
         }

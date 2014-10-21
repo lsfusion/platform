@@ -450,7 +450,11 @@ public class GridTable extends ClientPropertyTable {
                     ((getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) ? cell.getMinimumWidth(this) : cell.getPreferredWidth(this)));
             column.setMaxWidth(cell.getMaximumWidth(this));
 
-            column.setHeaderValue(getUserCaption(cell) != null ? getUserCaption(cell) : model.getColumnName(i));
+            if (cell.notNull) {
+                column.setHeaderValue("<html><font>" + getColumnCaption(i) + "</font><font color=red>*</font></html>");
+            } else {
+                column.setHeaderValue(getColumnCaption(i)); 
+            }
 
             rowHeight = max(rowHeight, cell.getPreferredHeight(this));
 
@@ -489,6 +493,12 @@ public class GridTable extends ClientPropertyTable {
         } else {
             gridController.setForceHidden(true);
         }
+    }
+    
+    private String getColumnCaption(int column) {
+        ClientPropertyDraw cell = model.getColumnProperty(column);
+        String userCaption = getUserCaption(cell);
+        return userCaption != null ? userCaption : model.getColumnName(column);   
     }
 
     private void adjustSelection() {
@@ -1557,7 +1567,7 @@ public class GridTable extends ClientPropertyTable {
             }
             int modelIndex = columnModel.getColumn(index).getModelIndex();
 
-            return model.getColumnProperty(modelIndex).getTooltipText((String) columnModel.getColumn(index).getHeaderValue());
+            return model.getColumnProperty(modelIndex).getTooltipText(getColumnCaption(index));
         }
 
         @Override

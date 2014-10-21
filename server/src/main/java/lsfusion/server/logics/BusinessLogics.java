@@ -23,8 +23,8 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
-import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.ScannerDaemonTask;
@@ -616,7 +616,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         for (ImMap<Object, Object> values : result.valueIt()) {
             LCP<?> prop = (LCP) findProperty(values.get("CNProperty").toString().trim());
-            prop.property.setNotNull = true;
+            prop.property.reflectionNotNull = true;
             LM.setNotNull(prop, ListFact.<PropertyFollowsDebug>EMPTY());
         }
     }

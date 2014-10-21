@@ -53,7 +53,8 @@ public class DataPanelView extends JPanel implements PanelView {
         //readOnly будет проверяться на уровне сервера и обрезаться возвратом пустого changeType
         table = new DataPanelViewTable(iform, columnKey, property);
 
-        label = new JLabel(property.getEditCaption());
+        label = new JLabel();
+        setLabelText(property.getEditCaption());
         if (property.panelLabelAbove) {
             label.setHorizontalAlignment(SwingConstants.CENTER);
         }
@@ -179,7 +180,15 @@ public class DataPanelView extends JPanel implements PanelView {
     }
 
     public void setCaption(String caption) {
-        label.setText(property.getEditCaption(caption));
+        setLabelText(property.getEditCaption(caption));
+    }
+    
+    public void setLabelText(String text) {
+        if (!property.notNull) {
+            label.setText(text);
+        } else {
+            label.setText("<html>" + text + "<font color=red>*</font></html>");
+        }   
     }
 
     @Override

@@ -448,7 +448,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                     }
                     dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), property.caption, property.loggable ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
-                            property instanceof CalcProperty && ((CalcProperty) property).setNotNull ? true : null,
+                            property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
                             commonClasses, returnClass, classProperty, complexityProperty, tableSID));
                 }
             }

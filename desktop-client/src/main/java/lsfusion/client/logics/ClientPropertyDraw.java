@@ -111,6 +111,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     
     public ColorPreferences colorPreferences;
     
+    public boolean notNull;
+
     public ClientPropertyDraw() {
     }
 
@@ -428,6 +430,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 editBindingMap.setContextMenuAction(actionSID, caption);
             }
         }
+        
+        notNull = inStream.readBoolean();
     }
 
     private void initEditBindingMap() {

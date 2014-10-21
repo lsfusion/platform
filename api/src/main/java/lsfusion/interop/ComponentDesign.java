@@ -132,7 +132,7 @@ public class ComponentDesign extends ContextObject implements Serializable {
             return (Font) oFont;
         }
 
-        Font cFont = font.deriveFrom(component);
+        Font cFont = fontInfo.deriveFrom(component);
         if (component instanceof JComponent) {
             ((JComponent) component).putClientProperty(fontInfo, cFont);
         }

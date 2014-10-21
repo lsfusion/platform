@@ -1834,6 +1834,7 @@ public abstract class LogicsModule {
 
     public <T extends PropertyInterface, L extends PropertyInterface> void setNotNull(CalcProperty<T> property, ActionDebugInfo debugInfo, ImList<PropertyFollowsDebug> options, Event event) {
         CalcPropertyMapImplement<L, T> mapClasses = (CalcPropertyMapImplement<L, T>) IsClassProperty.getMapProperty(property.getInterfaceClasses(ClassType.logPolicy));
+        property.setNotNull = true;
         addFollows(mapClasses.property, new CalcPropertyMapImplement<T, L>(property, mapClasses.mapping.reverse()),
                 ServerResourceBundle.getString("logics.property") + " " + property.caption + " [" + property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
                 debugInfo, options, event);

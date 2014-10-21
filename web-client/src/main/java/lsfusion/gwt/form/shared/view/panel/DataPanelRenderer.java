@@ -1,11 +1,14 @@
 package lsfusion.gwt.form.shared.view.panel;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
-import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.safehtml.client.SafeHtmlTemplates;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
@@ -27,13 +30,19 @@ import static lsfusion.gwt.base.client.GwtClientUtils.isShowing;
 import static lsfusion.gwt.form.client.HotkeyManager.Binding;
 
 public class DataPanelRenderer implements PanelRenderer {
+    interface LabelTemplate extends SafeHtmlTemplates {
+        @Template("{0}<span style='color: red'>{1}</span>")
+        SafeHtml title(String caption, String notNullSign);
+    }
+    static final LabelTemplate LABEL_TEMPLATE = GWT.create(LabelTemplate.class);
+    
     public final GPropertyDraw property;
 
     private final FlexPanel panel;
     private final ResizableComplexPanel gridPanel;
     private final SimplePanel focusPanel;
 
-    private final Label label;
+    private final HTML label;
     private int currentLabelWidth = -1;
     
     private final GSinglePropertyTable valueTable;
@@ -51,7 +60,9 @@ public class DataPanelRenderer implements PanelRenderer {
 
         tooltip = property.getTooltipText(property.getCaptionOrEmpty());
 
-        label = new Label(caption = property.getEditCaption());
+        label = new HTML();
+        label.addStyleName("customFontPresenter");
+        setLabelText(caption = property.getEditCaption());
         if (!vertical) {
             label.getElement().getStyle().setMarginRight(4, Style.Unit.PX);
         }
@@ -178,9 +189,13 @@ public class DataPanelRenderer implements PanelRenderer {
     public void setCaption(String caption) {
         if (!GwtSharedUtils.nullEquals(this.caption, caption)) {
             this.caption = caption;
-            label.setText(property.getEditCaption(caption));
+            setLabelText(property.getEditCaption(caption));
             tooltip = property.getTooltipText(caption);
         }
+    }
+    
+    private void setLabelText(String text) {
+        label.setHTML(LABEL_TEMPLATE.title(text, property.notNull ? "*" : "")); 
     }
 
     @Override

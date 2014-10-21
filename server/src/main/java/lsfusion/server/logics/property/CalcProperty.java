@@ -1114,6 +1114,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     public boolean setNotNull;
+    public boolean reflectionNotNull;
+
+    @Override
+    public boolean isSetNotNull() {
+        return setNotNull;
+    }
 
     protected PropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping) {
         return new CalcPropertyClassImplement<T>(this, classes, mapping);

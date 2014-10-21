@@ -471,4 +471,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public ActionDelegationType getDelegationType(boolean modifyContext) {
         return ActionDelegationType.AFTER_DELEGATE;        
     }
+
+    @Override
+    public boolean isSetNotNull() {
+        return false;
+    }
 }

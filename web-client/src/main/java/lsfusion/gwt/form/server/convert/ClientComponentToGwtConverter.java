@@ -329,6 +329,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.panelLabelAbove = clientPropertyDraw.panelLabelAbove;
         
         propertyDraw.hide = clientPropertyDraw.hide;
+        
+        propertyDraw.notNull = clientPropertyDraw.notNull;
 
         return propertyDraw;
     }

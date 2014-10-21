@@ -270,7 +270,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             if (captions != null) {
                 String value = GwtSharedUtils.nullTrim(captions.values().iterator().next());
                 GGridPropertyTableHeader header = headers.get(getColumnIndex(property));
-                header.setCaption(value);
+                header.setCaption(value, false);
                 header.setToolTip(property.getTooltipText(value));
                 needsHeaderRefresh = true;
             }

@@ -78,6 +78,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public boolean hide;
 
     private transient GridCellRenderer cellRenderer;
+    
+    public boolean notNull;
 
     public static class AddRemove implements Serializable {
         public GObject object;

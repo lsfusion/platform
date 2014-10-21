@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.ListPermutations;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
@@ -40,7 +39,6 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
-import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
 
@@ -202,6 +200,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public Type getInterfaceType(T propertyInterface) {
         return getInterfaceClasses(ClassType.materializeChangePolicy).get(propertyInterface).getType();
     }
+
+    public abstract boolean isSetNotNull();
 
     public String getDBName() {
         return dbName;
