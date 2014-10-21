@@ -56,8 +56,6 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormActionProperty;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.property.actions.SystemEvent;
-import lsfusion.server.logics.property.actions.flow.CaseActionProperty;
-import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.cases.AbstractCase;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
@@ -119,7 +117,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     protected LogicsInstance logicsInstance;
     
-    private String topModulesList;
+    private String topModule;
 
     private String orderDependencies;
 
@@ -132,8 +130,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         super(LOGICS_ORDER);
     }
 
-    public void setTopModulesList(String topModulesList) {
-        this.topModulesList = topModulesList;
+    public void setTopModule(String topModule) {
+        this.topModule = topModule;
     }
 
     public void setOrderDependencies(String orderDependencies) {
@@ -483,21 +481,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    private void overrideModulesList(String startModulesList) {
+    private void overrideModulesList(String startModuleName) {
 
         Set<LogicsModule> was = new HashSet<LogicsModule>();
         Queue<LogicsModule> queue = new LinkedList<LogicsModule>();
 
         fillNameToModules();
 
-        for (String moduleName : startModulesList.split(",\\s*")) {
-            LogicsModule startModule = nameToModule.get(moduleName);
-            if(startModule == null)
-                logger.error(String.format("Module %s not found.", moduleName));
-            assert startModule != null;
-            queue.add(startModule);
-            was.add(startModule);
-        }
+        LogicsModule startModule = nameToModule.get(startModuleName);
+        if(startModule == null)
+            logger.error(String.format("Module %s not found.", startModuleName));
+        assert startModule != null;
+        queue.add(startModule);
+        was.add(startModule);
 
         while (!queue.isEmpty()) {
             LogicsModule current = queue.poll();
@@ -526,8 +522,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void initModuleOrders() {
-        if (!isRedundantString(topModulesList)) {
-            overrideModulesList(topModulesList);
+        if (!isRedundantString(topModule)) {
+            overrideModulesList(topModule);
         }
 
         Map<LogicsModule, ImSet<LogicsModule>> recRequiredModules = new HashMap<LogicsModule, ImSet<LogicsModule>>();

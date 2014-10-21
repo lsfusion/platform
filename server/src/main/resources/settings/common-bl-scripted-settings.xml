@@ -15,7 +15,7 @@
         
         <property name="initTask" ref="initBLTask"/>
 
-        <property name="topModulesList" value="${logics.topModulesList:}"/>
+        <property name="topModule" value="${logics.topModule:}"/>
         <property name="orderDependencies" value="${logics.orderDependencies:}"/>
     </bean>
 </beans>
