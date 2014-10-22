@@ -204,6 +204,16 @@ META defineNumeratedDefault (object1, object2, property, captionV, seriesV)
     numerator###object1###object2 (object1, object2) <- defaultNumerator###object1###object2 () WHEN SET(property(object1, object2));
 END
 
+META defineNumeratedID(object, caption)
+    defaultNumerator##object = DATA Numerator ();
+    nameDefaultNumerator##object caption = nameNumerator(defaultNumerator##object()) IN defaultNumerator;
+    WHEN SET(o IS object) AND defaultNumerator##object() AND NOT id##object(o) DO {
+        id##object(o) <- CONCAT '', seriesNumerator(defaultNumerator##object()), curStringValueNumerator(defaultNumerator##object());  
+        incrementValueSessionNumerator(defaultNumerator##object());
+    } 
+    
+    EXTEND FORM defaultNumerators PROPERTIES() nameDefaultNumerator##object;
+END
 // --------------------------------------------- Стандартные значения ---------------------------- //
 
 loadDefaultNumerators 'Загрузить стандартные нумераторы' = ABSTRACT ACTION LIST ();
