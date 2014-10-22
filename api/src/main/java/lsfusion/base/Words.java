@@ -319,6 +319,13 @@ public class Words {
         return toString(numObject.doubleValue(), type);
     }
 
+    public static String toString(BigDecimal numObject, String type, boolean upcase) {
+        String result = toString(numObject, type);
+        if (result != null && upcase)
+            result = result.substring(0, 1).toUpperCase() + result.substring(1);
+        return result;
+    }
+
     //для дабла без типа
     public static String toString(BigDecimal numObject, Integer numOfDigits, Boolean female) {
         if (numObject == null) return toString((Double) null, numOfDigits, female);
