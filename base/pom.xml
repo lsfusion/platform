@@ -45,7 +45,7 @@
         <jssc.version>0.8</jssc.version>
         <!--<jtds.version>1.2.4</jtds.version>-->
         <mssql.version>4.0</mssql.version>
-        <javax.mail.version>1.4</javax.mail.version>
+        <javax.mail.version>1.4.2</javax.mail.version>
         <blocking.map.version>1.0-patched</blocking.map.version>
         <antlr.version>3.3</antlr.version>
         <supercsv.version>1.52</supercsv.version>

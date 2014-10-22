@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 
 import static lsfusion.base.BaseUtils.nullTrim;
@@ -65,8 +66,8 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
     }
 
     private void receiveEmail(ExecutionContext context, DataObject accountObject, String receiveHostAccount,
-                              String nameAccount, String passwordAccount, boolean isPop3, boolean deleteMessagesAccount) 
-            throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+                              String nameAccount, String passwordAccount, boolean isPop3, boolean deleteMessagesAccount)
+            throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException, GeneralSecurityException {
         if (receiveHostAccount == null) {
             logError(context, getString("mail.pop3.host.not.specified.letters.will.not.be.received"));
             return;

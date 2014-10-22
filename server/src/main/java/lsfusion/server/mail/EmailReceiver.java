@@ -1,6 +1,7 @@
 package lsfusion.server.mail;
 
 
+import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.ServerLoggers;
@@ -19,6 +20,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import java.io.*;
+import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
@@ -28,6 +30,7 @@ public class EmailReceiver {
     EmailLogicsModule LM;
     Properties mailProps = new Properties();
     DataObject accountObject;
+    String hostAccount;
     String nameAccount;
     String passwordAccount;
     boolean isPOP3;
@@ -38,13 +41,14 @@ public class EmailReceiver {
             mailProps.setProperty(isPOP3 ? "mail.pop3.host" : "mail.imap.host", hostAccount);
         this.LM = emailLM;
         this.accountObject = accountObject;
+        this.hostAccount = hostAccount;
         this.nameAccount = nameAccount;
         this.passwordAccount = passwordAccount;
         this.isPOP3 = isPOP3;
         this.deleteMessagesAccount = deleteMessagesAccount;
     }
 
-    public void receiveEmail(ExecutionContext context) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
+    public void receiveEmail(ExecutionContext context) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
 
         List<List<List<Object>>> data = downloadEmailList();
 
@@ -148,14 +152,19 @@ public class EmailReceiver {
         session.close();
     }
 
-    public List<List<List<Object>>> downloadEmailList() throws MessagingException, SQLException, IOException {
+    public List<List<List<Object>>> downloadEmailList() throws MessagingException, SQLException, IOException, GeneralSecurityException {
 
         List<List<Object>> dataEmails = new ArrayList<List<Object>>();
         List<List<Object>> dataAttachments = new ArrayList<List<Object>>();
+        if(!isPOP3) { //imaps
+            MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
+            socketFactory.setTrustAllHosts(true);
+            mailProps.put("mail.imaps.ssl.socketFactory", socketFactory);
+            mailProps.setProperty("mail.store.protocol", "imaps");
+        }
         Session emailSession = Session.getInstance(mailProps);
-
-        Store emailStore = emailSession.getStore(isPOP3 ? "pop3" : "imap");
-        emailStore.connect(nameAccount, passwordAccount);
+        Store emailStore = emailSession.getStore(isPOP3 ? "pop3" : "imaps");
+        emailStore.connect(hostAccount, nameAccount, passwordAccount);
 
         Folder emailFolder = emailStore.getFolder("INBOX");
         emailFolder.open(Folder.READ_WRITE);
