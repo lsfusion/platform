@@ -24,7 +24,7 @@ public class LogicalPropertyRenderer extends JCheckBox implements PropertyRender
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         setSelected(value != null);
 
-        if (isSelected) {
+        if (isSelected && property != null) {
             if (hasFocus) {
                 setBorder(property.colorPreferences.getFocusedCellBorder());
                 setBackground(property.colorPreferences.getFocusedCellBackground());

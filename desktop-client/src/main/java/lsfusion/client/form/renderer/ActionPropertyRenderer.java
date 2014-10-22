@@ -31,7 +31,7 @@ public class ActionPropertyRenderer extends JButton implements PropertyRenderer 
         setText(defaultIcon != null || value == null ? "" : defaultCaption);
         setIcon(value == null ? null : defaultIcon);
 
-        if (isSelected) {
+        if (isSelected && property != null) {
             if (hasFocus) {
                 setBorder(property.colorPreferences.getFocusedCellBorder());
                 setBackground(property.colorPreferences.getFocusedCellBackground());

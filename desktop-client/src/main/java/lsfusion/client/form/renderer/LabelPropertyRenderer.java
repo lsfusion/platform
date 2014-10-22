@@ -44,7 +44,7 @@ public abstract class LabelPropertyRenderer extends JLabel implements PropertyRe
     }
 
     protected void drawBackground(boolean isSelected, boolean hasFocus) {
-        if (isSelected) {
+        if (isSelected && property != null) {
             if (hasFocus) {
                 setBackground(property.colorPreferences.getFocusedCellBackground());
             } else {

@@ -32,7 +32,7 @@ public class TextPropertyRenderer extends JEditorPane implements PropertyRendere
     }
 
     void setSelected(boolean isSelected, boolean hasFocus) {
-        if (isSelected) {
+        if (isSelected && property != null) {
             if (hasFocus) {
                 setBorder(BorderFactory.createCompoundBorder(property.colorPreferences.getFocusedCellBorder(), BorderFactory.createEmptyBorder(1, 2, 0, 1)));
                 setBackground(property.colorPreferences.getFocusedCellBackground());
