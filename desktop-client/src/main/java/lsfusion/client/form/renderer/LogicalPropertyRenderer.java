@@ -41,6 +41,6 @@ public class LogicalPropertyRenderer extends JCheckBox implements PropertyRender
 
     @Override
     public void paintAsSelected() {
-        setBackground(property.colorPreferences.getSelectedCellBackground());
+        if (property != null) setBackground(property.colorPreferences.getSelectedCellBackground());
     }
 }

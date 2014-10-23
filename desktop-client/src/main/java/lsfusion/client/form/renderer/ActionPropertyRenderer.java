@@ -48,6 +48,6 @@ public class ActionPropertyRenderer extends JButton implements PropertyRenderer 
 
     @Override
     public void paintAsSelected() {
-        setBackground(property.colorPreferences.getSelectedCellBackground());
+        if (property != null) setBackground(property.colorPreferences.getSelectedCellBackground());
     }
 }

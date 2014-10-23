@@ -31,7 +31,7 @@ public abstract class LabelPropertyRenderer extends JLabel implements PropertyRe
     }
 
     protected void drawBorder(boolean isSelected, boolean hasFocus) {
-        if (isSelected) {
+        if (isSelected && property != null) {
             if (hasFocus) {
                 setBorder(BorderFactory.createCompoundBorder(property.colorPreferences.getFocusedCellBorder(), BorderFactory.createEmptyBorder(0, 1, 0, 1)));
             } else {
@@ -56,6 +56,6 @@ public abstract class LabelPropertyRenderer extends JLabel implements PropertyRe
     }
 
     public void paintAsSelected() {
-        setBackground(property.colorPreferences.getSelectedCellBackground());
+        if (property != null) setBackground(property.colorPreferences.getSelectedCellBackground());
     }
 }

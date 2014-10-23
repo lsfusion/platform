@@ -40,6 +40,6 @@ public class ColorPropertyRenderer extends LabelPropertyRenderer {
 
     @Override
     public void paintAsSelected() {
-        setBackground(new Color(value.getRGB() & property.colorPreferences.getSelectedCellBackground().getRGB()));
+        if (property != null) setBackground(new Color(value.getRGB() & property.colorPreferences.getSelectedCellBackground().getRGB()));
     }
 }

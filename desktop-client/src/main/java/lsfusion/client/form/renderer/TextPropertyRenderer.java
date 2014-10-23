@@ -70,6 +70,6 @@ public class TextPropertyRenderer extends JEditorPane implements PropertyRendere
 
     @Override
     public void paintAsSelected() {
-        setBackground(property.colorPreferences.getSelectedCellBackground());
+        if (property != null) setBackground(property.colorPreferences.getSelectedCellBackground());
     }
 }
