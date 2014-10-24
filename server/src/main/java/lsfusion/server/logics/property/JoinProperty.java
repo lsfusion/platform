@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.base.FullFunctionSet;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -12,7 +11,6 @@ import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.server.caches.IdentityInstanceLazy;
-import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
@@ -34,7 +32,9 @@ import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.AggChangeActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.logics.property.infer.*;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
@@ -418,5 +418,16 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return super.getSetNotNullAction(notNull);
 
         return implement.property.getSetNotNullAction(notNull).map(identityMap);
+    }
+
+    @Override
+    public boolean isSetNotNull() {
+        if (super.isSetNotNull()) {
+            return true;
+        }
+        if (implement.mapping.size() == 1) {
+            return ((CalcPropertyMapImplement) implement.mapping.singleValue()).property.isSetNotNull();    
+        }
+        return false;
     }
 }
