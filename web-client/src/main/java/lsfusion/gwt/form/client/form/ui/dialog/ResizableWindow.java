@@ -92,6 +92,7 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
         headerPanel = new FocusPanel();
         headerPanel.addStyleName(RESIZABLE_DIALOG_HEADER_STYLE);
         headerPanel.add(headerWidget);
+        headerPanel.setTabIndex(-1);
 
         VerticalPanel centerPanel = new VerticalPanel();
         centerPanel.add(headerPanel);
@@ -103,14 +104,18 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
 
         createEdgeWidget(0, 0, NORTH_WEST);
         northEdge = createEdgeWidget(0, 1, NORTH);
+        northEdge.getElement().setTabIndex(-1);
         createEdgeWidget(0, 2, NORTH_EAST);
 
         westEdge = createEdgeWidget(1, 0, WEST);
+        westEdge.getElement().setTabIndex(-1);
         contentGrid.setWidget(1, 1, centerPanel);
         eastEdge = createEdgeWidget(1, 2, EAST);
+        eastEdge.getElement().setTabIndex(-1);
 
         createEdgeWidget(2, 0, SOUTH_WEST);
         southEdge = createEdgeWidget(2, 1, SOUTH);
+        southEdge.getElement().setTabIndex(-1);
         createEdgeWidget(2, 2, SOUTH_EAST);
 
         mainPanel.add(contentGrid);
@@ -119,6 +124,7 @@ public class ResizableWindow extends Composite implements HasCloseHandlers<Resiz
     private Widget createEdgeWidget(int row, int col, Direction direction) {
         final EdgeWidget edgeWidget = new EdgeWidget(direction);
         edgeWidget.setPixelSize(BORDER_THICKNESS, BORDER_THICKNESS);
+        edgeWidget.setTabIndex(-1);
 
         contentGrid.setWidget(row, col, edgeWidget);
         windowController.getResizeDragController().addDraggableEdge(edgeWidget);
