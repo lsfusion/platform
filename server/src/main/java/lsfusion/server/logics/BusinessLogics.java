@@ -589,6 +589,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     }
 
+    public Integer readCurrentUser() {
+        try {
+            return (Integer) authenticationLM.currentUser.read(getDbManager().createSession());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private void setUserLoggableProperties(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
         
         LCP<PropertyInterface> isProperty = LM.is(reflectionLM.property);

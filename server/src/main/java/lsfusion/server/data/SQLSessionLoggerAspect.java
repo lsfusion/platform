@@ -1,12 +1,12 @@
 package lsfusion.server.data;
 
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.Settings;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 
 import static lsfusion.server.ServerLoggers.sqlLogger;
 
@@ -44,7 +44,7 @@ public class SQLSessionLoggerAspect {
     private static int breakPointLength = 10000;
 
     public Object executeMethodAndLogTime(ProceedingJoinPoint thisJoinPoint, SQLSession session, String queryString) throws Throwable {
-        boolean loggingEnabled = sqlLogger.isDebugEnabled();
+        boolean loggingEnabled = session.isLoggerDebugEnabled();
 
         long startTime = 0;
         if (loggingEnabled)

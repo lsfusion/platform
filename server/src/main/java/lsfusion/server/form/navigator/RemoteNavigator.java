@@ -132,7 +132,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         this.computer = new DataObject(computer, businessLogics.authenticationLM.computer);
 
         this.remoteAddress = remoteAddress;
-        this.sql = dbManager.createSQL();
+        this.sql = dbManager.createSQL(new WeakSQLSessionUserProvider(this));
     }
 
     public boolean isFullClient() {
@@ -298,6 +298,19 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         public int getTransactionTimeout() {
             return weakThis.get().getTransactionTimeout();
+        }
+    }
+
+    private static class WeakSQLSessionUserProvider implements SQLSessionUserProvider { // чтобы помочь сборщику мусора и устранить цикл
+        WeakReference<RemoteNavigator> weakThis;
+
+        private WeakSQLSessionUserProvider(RemoteNavigator dbManager) {
+            this.weakThis = new WeakReference<RemoteNavigator>(dbManager);
+        }
+
+        @Override
+        public Integer getCurrentUser() {
+            return (Integer) weakThis.get().user.object;
         }
     }
 

@@ -338,5 +338,9 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     public String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
         return securityManager.addUser(username, email, password, firstName, lastName, localeLanguage);
     }
+    
+    public Integer getCurrentUser() {
+        return dbManager.getSystemUserObject();
+    }
 }
 

@@ -43,7 +43,6 @@ import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -952,6 +951,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
 
         return callAndCacheResult(requestIndex, lastReceivedRequestIndex, continueRequest);
+    }
+
+    public Integer getCurrentUser() {
+        return (Integer) form.session.user.getCurrentUser().object;
     }
 
     String getLogMessage() {

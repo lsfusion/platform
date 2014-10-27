@@ -39,6 +39,10 @@ TABLE loginSID (STRING[30], STRING[30]);
 currentUser = NATIVE User ();
 currentUserName 'Имя Тек. Польз.' () = nameContact(currentUser());
 
+nameUser 'Имя пользователя' (User user) = IF user IS SystemUser 
+                        THEN 'Системный пользователь'
+                        ELSE nameContact(user);
+
 currentComputer = NATIVE Computer ();
 hostnameCurrentComputer 'Текущий компьютер' () = hostnameComputer(currentComputer());
 

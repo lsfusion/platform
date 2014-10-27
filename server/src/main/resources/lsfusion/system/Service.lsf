@@ -14,11 +14,6 @@ vacuumDBAction 'Упаковать БД' = ACTION CUSTOM 'lsfusion.server.logics
 packAction 'Упаковать таблицы' = ACTION CUSTOM 'lsfusion.server.logics.service.PackActionProperty';
 serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBActionProperty';
 getVMInfo 'Данные виртуальной машины' = ACTION CUSTOM 'lsfusion.server.logics.service.GetVMInfoActionProperty';
-toggleExplainAnalyzeMode 'Выводить в лог EXPLAIN ANALYZE запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleExplainAnalyzeModeActionProperty';
-toggleExplainMode 'Выводить в лог EXPLAIN запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleExplainModeActionProperty';
-toggleVolatileStats 'Не использовать nested loop' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleVolatileStatsActionProperty';
-toggleSQLLoggerDebugMode 'Выводить в лог SQL запросы' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleSQLLoggerDebugModeActionProperty';
-toggleRemoteLoggerDebugMode 'Выводить в лог действия пользователей' = ACTION CUSTOM 'lsfusion.server.logics.service.ToggleRemoteLoggerDebugModeActionProperty';
 
 singleTransaction 'Перерасчет одной транзакцией' = DATA BOOLEAN ();
 
@@ -53,6 +48,65 @@ WHEN CHANGED(TILMode()) DO {
 }
 onStarted() += ACTION {
     refreshRepeatableReadTILMode();
+} 
+
+setExplainAnalyzeModeUser 'Выводить в лог EXPLAIN ANALYZE запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.SetExplainAnalyzeModeUserActionProperty' (BOOLEAN, User);
+explainAnalyzeModeUser 'Включён Explain Analyze' = DATA BOOLEAN (User);
+refreshExplainAnalyzeModeUser 'Обновить Explain Analyze'(user) = ACTION {
+    setExplainAnalyzeModeUser(explainAnalyzeModeUser(user), user);  
+}
+WHEN CHANGED(explainAnalyzeModeUser(user)) DO {
+    refreshExplainAnalyzeModeUser(user);
+}
+
+turnExplainAnalizeOnCurrentUser 'Включить EXPLAIN ANALYZE' () = ACTION {
+    explainAnalyzeModeUser(user) <- TRUE WHERE user == currentUser();     
+}
+
+setExplainModeUser 'Выводить в лог EXPLAIN запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.SetExplainModeUserActionProperty' (BOOLEAN, User);
+explainModeUser 'Включён Explain' = DATA BOOLEAN (User);
+refreshExplainModeUser 'Обновить Explain' = ACTION (user) {
+    setExplainModeUser(explainModeUser(user), user);  
+}
+WHEN CHANGED(explainModeUser(user)) DO {
+    refreshExplainModeUser(user);
+}
+
+setLoggerDebugEnabledUser 'Включить вывод в лог SQL запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.SetLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
+loggerDebugEnabledUser 'Выводить в лог SQL запросы' = DATA BOOLEAN (User);
+refreshLoggerDebugEnabledUser '' = ACTION (user) {
+    setLoggerDebugEnabledUser(loggerDebugEnabledUser(user), user);
+}
+WHEN CHANGED(loggerDebugEnabledUser(user)) DO {
+    refreshLoggerDebugEnabledUser(user);
+}
+
+setRemoteLoggerDebugEnabledUser 'Включить вывод в лог действий пользователей' = ACTION CUSTOM 'lsfusion.server.logics.service.SetRemoteLoggerDebugEnabledUserActionProperty' (BOOLEAN, User);
+remoteLoggerDebugEnabledUser 'Выводить в лог действия пользователей' = DATA BOOLEAN (User);
+refreshRemoteLoggerDebugEnabledUser '' = ACTION (user) {
+    setRemoteLoggerDebugEnabledUser(remoteLoggerDebugEnabledUser(user), user);
+}
+WHEN CHANGED(remoteLoggerDebugEnabledUser(user)) DO {
+    refreshRemoteLoggerDebugEnabledUser(user);
+}
+
+setVolatileStatsEnabledUser 'Установить использование nested loop' = ACTION CUSTOM 'lsfusion.server.logics.service.SetVolatileStatsEnabledUserActionProperty' (BOOLEAN, User);
+volatileStatsEnabledUser 'Не использовать nested loop' = DATA BOOLEAN (User);
+refreshVolatileStatsEnabledUser '' = ACTION (user) {
+    setVolatileStatsEnabledUser(volatileStatsEnabledUser(user), user);
+}
+WHEN CHANGED(volatileStatsEnabledUser(user)) DO {
+    refreshVolatileStatsEnabledUser(user);
+}
+
+onStarted() += ACTION {
+    FOR u IS User DO {
+        refreshExplainAnalyzeModeUser(u);
+        refreshExplainModeUser(u);
+        refreshLoggerDebugEnabledUser(u);
+        refreshVolatileStatsEnabledUser(u);
+        refreshRemoteLoggerDebugEnabledUser(u);
+    }
 } 
 
 setReupdateMode 'Включить REUPDATE' = ACTION CUSTOM 'lsfusion.server.logics.service.SetReupdateModeActionProperty' (BOOLEAN);
@@ -91,9 +145,10 @@ FORM admin 'Администрирование'
                  restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, checkClassesAction, 
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
                  vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, dropLRU, makeHeapDump, 
-                 toggleExplainAnalyzeMode, toggleExplainMode, toggleVolatileStats,
-                 toggleSQLLoggerDebugMode, toggleRemoteLoggerDebugMode, TILMode, reupdateMode, singleTransaction,
-                 nameReflectionSetting, valueReflectionSetting SHOWIF nameReflectionSetting()
+                 TILMode, reupdateMode, singleTransaction,
+                 nameReflectionSetting, turnExplainAnalizeOnCurrentUser, valueReflectionSetting SHOWIF nameReflectionSetting()
+    OBJECTS u=User
+    PROPERTIES(u) nameUser READONLY, explainAnalyzeModeUser, explainModeUser, loggerDebugEnabledUser, remoteLoggerDebugEnabledUser, volatileStatsEnabledUser;
 ;
 
 DESIGN admin FROM DEFAULT {
@@ -153,7 +208,6 @@ DESIGN admin FROM DEFAULT {
             ADD PROPERTY(packAction());
             ADD PROPERTY(analyzeDBAction());
             ADD PROPERTY(vacuumDBAction());
-            ADD PROPERTY(toggleVolatileStats());
             ADD PROPERTY(TILMode());
             ADD PROPERTY(reupdateMode());
             ADD PROPERTY(singleTransaction());
@@ -167,10 +221,7 @@ DESIGN admin FROM DEFAULT {
         }
         NEW log {
             caption = 'Логирование';
-            ADD PROPERTY(toggleExplainAnalyzeMode());
-            ADD PROPERTY(toggleExplainMode());
-            ADD PROPERTY(toggleSQLLoggerDebugMode());
-            ADD PROPERTY(toggleRemoteLoggerDebugMode());
+            ADD PROPERTY(turnExplainAnalizeOnCurrentUser());
         }
         NEW settings {
             caption = 'Настройка свойств';
@@ -178,6 +229,7 @@ DESIGN admin FROM DEFAULT {
             ADD PROPERTY(valueReflectionSetting());
         }        
     }
+    ADD u.box;
     ADD functions.box;
 }
 

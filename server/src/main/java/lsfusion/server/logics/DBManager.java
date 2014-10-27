@@ -192,9 +192,24 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             throw new RuntimeException(e);
         }
     }
+    
+    public int getSystemUserObject() {
+        return systemUserObject;
+    }
+
+    private SQLSessionUserProvider userProvider = new SQLSessionUserProvider() {
+        @Override
+        public Integer getCurrentUser() {
+            return systemUserObject;
+        }
+    }; 
 
     public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        return new SQLSession(adapter);
+        return createSQL(userProvider);
+    }
+
+    public SQLSession createSQL(SQLSessionUserProvider environment) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        return new SQLSession(adapter, environment);
     }
 
     public SQLSession getThreadLocalSql() throws SQLException {
@@ -389,7 +404,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public void uploadToDB(SQLSession sql, boolean isolatedTransactions, final DataAdapter adapter) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, SQLHandledException {
         final OperationOwner owner = OperationOwner.unknown;
-        final SQLSession sqlFrom = new SQLSession(adapter);
+        final SQLSession sqlFrom = new SQLSession(adapter, userProvider);
 
         sql.pushNoQueryLimit();
         try {

@@ -1,17 +1,6 @@
 package lsfusion.server.data;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.MutableClosedObject;
-import lsfusion.base.col.lru.LRUUtil;
-import lsfusion.base.col.lru.LRUWSVSMap;
-import lsfusion.server.classes.IntegerClass;
-import lsfusion.server.data.expr.where.extra.BinaryWhere;
-import lsfusion.server.data.query.*;
-import org.apache.commons.collections.Buffer;
-import org.apache.commons.collections.BufferUtils;
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -24,19 +13,29 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.server.Message;
 import lsfusion.server.ParamMessage;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.where.extra.BinaryWhere;
+import lsfusion.server.data.query.*;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import org.apache.commons.collections.Buffer;
+import org.apache.commons.collections.BufferUtils;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -46,14 +45,13 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static lsfusion.server.ServerLoggers.remoteLogger;
-import static lsfusion.server.ServerLoggers.sqlLogger;
 import static lsfusion.server.ServerLoggers.systemLogger;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> {
@@ -85,6 +83,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public SQLSyntax syntax;
+
+    public SQLSessionUserProvider userProvider;
 
     public <F extends Field> GetValue<String, F> getDeclare(final TypeEnvironment typeEnv) {
         return getDeclare(syntax, typeEnv);
@@ -138,10 +138,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private ReentrantLock temporaryTablesLock = new ReentrantLock(true);
     private ReentrantReadWriteLock timeoutLock = new ReentrantReadWriteLock(true);
 
-    public SQLSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public SQLSession(DataAdapter adapter, SQLSessionUserProvider userProvider) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
         connectionPool = adapter;
         typePool = adapter;
+        this.userProvider = userProvider;
     }
 
     private void needPrivate() throws SQLException { // получает unique connection
@@ -156,7 +157,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         removeUnusedTemporaryTables(false, owner);
         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
         assertLock();
-        if(inTransaction == 0 && volatileStats.get() == 0 && sessionTablesMap.isEmpty() && !explicitNeedPrivate) { // вернемся к commonConnection'у
+        if(inTransaction == 0 && getVolatileStats() == 0 && sessionTablesMap.isEmpty() && !explicitNeedPrivate) { // вернемся к commonConnection'у
             ServerLoggers.assertLog(privateConnection != null, "BRACES NEEDPRIVATE - TRYCOMMON SHOULD MATCH");
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
@@ -767,19 +768,24 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return noQueryLimit.get() > 0;
     }
 
-    private AtomicInteger volatileStats = new AtomicInteger(0);
-    
     public boolean isVolatileStats() {
-        return volatileStats.get() > 0;
+        return getVolatileStats() > 0;
     }
 
     public void pushVolatileStats(Connection connection, OperationOwner owner) throws SQLException {
-        if(syntax.supportsVolatileStats())
-            if(volatileStats.getAndIncrement() == 0) {
+        pushVolatileStats(owner, userProvider.getCurrentUser());
+    }
+
+    public void pushVolatileStats(OperationOwner owner, Integer user) throws SQLException {
+        if(syntax.supportsVolatileStats()) {
+            Integer vs = getVolatileStats(user);
+            setVolatileStats(user, vs + 1);
+            if (vs == 0) {
                 envNeedPrivate(owner);
 
                 executeDDL("SET enable_nestloop=off", owner);
             }
+        }
     }
 
     private void envNeedPrivate(OperationOwner owner) throws SQLException {
@@ -794,13 +800,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void popVolatileStats(Connection connection, OperationOwner opOwner) throws SQLException {
-        if (syntax.supportsVolatileStats())
-            if (volatileStats.decrementAndGet() == 0) {
-                if(problemInTransaction == null)
-                    executeDDL("SET enable_nestloop=on", opOwner);
+        popVolatileStats(opOwner, userProvider.getCurrentUser());
+    }
 
-                envTryCommon(opOwner);
+    public void popVolatileStats(OperationOwner opOwner, Integer user) throws SQLException {
+        if (syntax.supportsVolatileStats())
+            setVolatileStats(user, getVolatileStats(user) - 1);
+        if (getVolatileStats(user) == 0) {
+            if(problemInTransaction == null) {
+                executeDDL("SET enable_nestloop=on", opOwner);
             }
+
+            envTryCommon(opOwner);
+        }
     }
 
     private void envTryCommon(OperationOwner opOwner) throws SQLException {
@@ -842,29 +854,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     public void popNoTransactTimeout() {
         noTransactTimeout.decrementAndGet();
-    }
-
-    public void toggleVolatileStats(OperationOwner owner) throws SQLException {
-        if(volatileStats.get() == 0)
-            pushVolatileStats(null, owner);
-        else
-            popVolatileStats(null, owner);
-    }
-
-    public void toggleSQLLoggerDebugMode() {
-
-        if(sqlLogger.getLevel()== Level.INFO)
-            sqlLogger.setLevel(Level.DEBUG);
-        else
-            sqlLogger.setLevel(Level.INFO);
-    }
-
-    public void toggleRemoteLoggerDebugMode() {
-
-        if(remoteLogger.getLevel()== Level.INFO)
-            remoteLogger.setLevel(Level.TRACE);
-        else
-            remoteLogger.setLevel(Level.INFO);
     }
 
     public void executeDDL(String DDL) throws SQLException {
@@ -910,15 +899,59 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return executeDML(execute.command, execute.owner, execute.tableOwner, execute.params, execute.env, execute.queryExecEnv, execute.transactTimeout);
     }
 
-    private boolean explainAnalyzeMode = false;
-    public void toggleExplainAnalyzeMode() {
-        explainAnalyzeMode = !explainAnalyzeMode;
+    private static Map<Integer, Boolean> explainAnalyzeUserMode = new ConcurrentHashMap<Integer, Boolean>();
+    private static Map<Integer, Boolean> explainUserMode = new ConcurrentHashMap<Integer, Boolean>();
+    private static Map<Integer, Boolean> loggerDebugEnabled = new ConcurrentHashMap<Integer, Boolean>();
+    private static Map<Integer, Integer> volatileStats = new ConcurrentHashMap<Integer, Integer>();
+
+    public void setExplainAnalyzeMode(Integer user, Boolean mode) {
+        explainAnalyzeUserMode.put(user, mode != null && mode);
     }
-    public void toggleExplainMode() {
-        explainAnalyzeMode = !explainAnalyzeMode;
-        explainNoAnalyze = explainAnalyzeMode;
+
+    public void setExplainMode(Integer user, Boolean mode) {
+        explainUserMode.put(user, mode != null && mode);
     }
-    private boolean explainNoAnalyze = false;
+
+    public void setLoggerDebugEnabled(Integer user, Boolean enabled) {
+        loggerDebugEnabled.put(user, enabled != null && enabled);
+    }
+    
+    public void setVolatileStats(Integer user, Boolean enabled, OperationOwner owner) throws SQLException {
+        if (enabled) {
+            pushVolatileStats(owner, user);
+        } else if (getVolatileStats(user) != 0) {
+            popVolatileStats(owner, user);
+        }
+    }
+    
+    private void setVolatileStats(Integer user, Integer vs) {
+        volatileStats.put(user, vs);   
+    }
+    
+    private boolean explainAnalyze() {
+        Boolean eam = explainAnalyzeUserMode.get(userProvider.getCurrentUser());
+        return eam != null && eam;
+    }
+
+    private boolean explainNoAnalyze() {
+        Boolean ea = explainUserMode.get(userProvider.getCurrentUser());
+        return ea != null && ea;
+    }
+
+    public boolean isLoggerDebugEnabled() {
+        Boolean lde = loggerDebugEnabled.get(userProvider.getCurrentUser());
+        return lde != null && lde;
+    }
+    
+    public Integer getVolatileStats(Integer user) {
+        Integer vs = volatileStats.get(user);
+        return vs == null ? 0 : vs;    
+    }
+    
+    public Integer getVolatileStats() {
+        return getVolatileStats(userProvider.getCurrentUser());    
+    }
+    
     // причины медленных запросов:
     // Postgres (но могут быть и другие)
     // 1. Неравномерная статистика:
@@ -1111,26 +1144,26 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             lockTimeout(execInfo.needTimeoutLock());
 
-            statement = getStatement((explainAnalyzeMode && !explainNoAnalyze?"EXPLAIN (ANALYZE, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
+            statement = getStatement((explainAnalyze() && !explainNoAnalyze()?"EXPLAIN (ANALYZE, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
             queryExecEnv.beforeStatement(statement, this, execInfo);
 
-            if(explainAnalyzeMode) {
+            if(explainAnalyze()) {
                 PreparedStatement explainStatement = statement;
                 Result<ReturnStatement> returnExplain = null; long explainStarted = 0;
-                if(explainNoAnalyze) {
+                if(explainNoAnalyze()) {
                     returnExplain = new Result<ReturnStatement>();
                     explainStatement = getStatement("EXPLAIN (VERBOSE, COSTS)" + command, paramObjects, connection, syntax, env, returnExplain, env.isNoPrepare());
                     explainStarted = System.currentTimeMillis();
                 }
 //                systemLogger.info(explainStatement.toString());
                 env.before(this, connection, command, owner);
-                result = executeExplain(explainStatement, explainNoAnalyze, true);
+                result = executeExplain(explainStatement, explainNoAnalyze(), true);
                 env.after(this, connection, command, owner);
-                if(explainNoAnalyze)
+                if(explainNoAnalyze())
                     returnExplain.result.proceed(explainStatement, System.currentTimeMillis() - explainStarted);
             }
 
-            if(!(explainAnalyzeMode && !explainNoAnalyze)) {
+            if(!(explainAnalyze() && !explainNoAnalyze())) {
                 long started = System.currentTimeMillis();
                 result = statement.executeUpdate();
                 runTime = System.currentTimeMillis() - started;
@@ -1282,13 +1315,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         ExConnection connection = getConnection();
 
-        if(explainAnalyzeMode) {
+        if(explainAnalyze()) {
 //            systemLogger.info(select);
             Result<ReturnStatement> returnExplain = new Result<ReturnStatement>();
-            PreparedStatement statement = getStatement("EXPLAIN (" + (explainNoAnalyze ? "VERBOSE, COSTS" : "ANALYZE") + ") " + select, paramObjects, connection, syntax, env, returnExplain, env.isNoPrepare());
+            PreparedStatement statement = getStatement("EXPLAIN (" + (explainNoAnalyze() ? "VERBOSE, COSTS" : "ANALYZE") + ") " + select, paramObjects, connection, syntax, env, returnExplain, env.isNoPrepare());
             long started = System.currentTimeMillis();
             env.before(this, connection, select, owner);
-            executeExplain(statement, explainNoAnalyze, false);
+            executeExplain(statement, explainNoAnalyze(), false);
             env.after(this, connection, select, owner);
             returnExplain.result.proceed(statement, System.currentTimeMillis() - started);
         }
