@@ -8,5 +8,5 @@ public interface MAddExclMap<K, V> {
     int size();
     K getKey(int i);
     V getValue(int i);
-
+    Iterable<K> keyIt();
 }

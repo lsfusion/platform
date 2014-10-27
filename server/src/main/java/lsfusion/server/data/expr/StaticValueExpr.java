@@ -51,6 +51,10 @@ public class StaticValueExpr extends StaticExpr<StaticClass> implements ParseVal
     public boolean calcTwins(TwinImmutableObject o) {
         return object.equals(((StaticValueExpr)o).object) && objectClass.equals(((StaticValueExpr)o).objectClass) && sID==((StaticValueExpr)o).sID;
     }
+    
+    public boolean isZero() {
+        return objectClass.isZero(object);
+    }
 
     public String getSource(CompileSource compile) {
         if (compile instanceof ToString) {

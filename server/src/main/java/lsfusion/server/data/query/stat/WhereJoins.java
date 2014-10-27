@@ -8,11 +8,13 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.OuterContext;
@@ -27,6 +29,8 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
+import lsfusion.utils.prim.Prim;
+import lsfusion.utils.prim.UndirectedGraph;
 
 import java.util.*;
 
@@ -206,14 +210,13 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             joinStats.add(notNullJoin, stat);
         }
 
-        MAddExclMap<BaseExpr, Set<Edge>> balancedEdges = MapFact.mAddExclMap();
+        MAddExclMap<BaseExpr, Set<Edge>> balancedEdges = MapFact.mAddExclMap(); // assert edge.expr == key
         MAddExclMap<BaseExpr, Stat> balancedStats = MapFact.mAddExclMap();
 
         // ищем несбалансированное ребро с минимальной статистикой
         Stat currentStat = null;
         MAddExclMap<BaseExpr, Set<Edge>> currentBalancedEdges = MapFact.mAddExclMap();
 
-        Stat balanced = Stat.ONE;
         while(edges.size() > 0 || currentBalancedEdges.size() > 0) {
             Edge<?> unbalancedEdge = null;
             Pair<Stat, Stat> unbalancedStat = null;
@@ -267,9 +270,12 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
 
                             if(mergeEdges.size() > 1) { // если пара используется несколько раз объединим
                                 ConcatenateExpr concExpr = new ConcatenateExpr(ListFact.toList(expr, bExpr)); // создаем общую вершину
+                                InnerBaseJoin<?> concJoin = concExpr.getBaseJoin();
                                 Stat mergedStat = currentStat.mult(bStat);
-                                balanced = balanced.mult(mergedStat); // добавляем два внутренних edge'а (обработанных), собсно так как они потом не будут использовать просто добавим в статистику
-                                joinStats.add(concExpr.getBaseJoin(), mergedStat); exprStats.add(concExpr, mergedStat); // добавляем join \ записываем статистику
+//                                balanced = balanced.mult(mergedStat); // добавляем два внутренних edge'а (обработанных), собсно так как они потом не будут использовать просто добавим в статистику
+                                exprEdges.add(new Edge(concJoin, currentStat, expr));
+                                bExprEdges.add(new Edge(concJoin, bStat, bExpr));
+                                joinStats.add(concJoin, mergedStat); exprStats.add(concExpr, mergedStat); // добавляем join \ записываем статистику
                                 for(Pair<Edge, Edge> mergeEdge : mergeEdges) { // добавляем внешние (возможно не сбалансированные edge'и)
                                     assert BaseUtils.hashEquals(mergeEdge.first.join, mergeEdge.second.join);
                                     Edge mergedEdge = new Edge(mergeEdge.first.join, mergedStat, concExpr);
@@ -314,13 +320,15 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
             }
         }
 
+        // pessimistic adjust - строим остовное дерево (на        
+        Stat edgeRowStat = getEdgeRowStat(joinStats, balancedEdges, balancedStats);
+
         // бежим по всем сбалансированным ребрам суммируем, бежим по всем нодам суммируем, возвращаем разность
-        for(int i=0;i<balancedEdges.size();i++)
-            balanced = balanced.mult(balancedStats.get(balancedEdges.getKey(i)).deg(balancedEdges.getValue(i).size()));
         Stat rowStat = Stat.ONE;
         for(int i=0,size=joinStats.size();i<size;i++)
             rowStat = rowStat.mult(joinStats.getValue(i));
-        final Stat finalStat = rowStat.div(balanced);
+        final Stat finalStat = rowStat.div(edgeRowStat);
+        
         if(rows!=null)
             rows.set(finalStat);
 
@@ -329,6 +337,181 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
                 return getPropStat(value, joinStats, exprStats).min(finalStat);
             }}));
         return new StatKeys<K>(distinct.getMax().min(finalStat), distinct); // возвращаем min(суммы groups, расчитанного результата)
+    }
+
+    private Stat getEdgeRowStat(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats) {
+        // высчитываем total
+        
+        int pessStatType = Settings.get().getPessStatType();
+        
+        Stat total = null;
+        
+        if(pessStatType != 3) {
+            total = Stat.ONE;
+            for (int i = 0; i < balancedEdges.size(); i++)
+                total = total.mult(balancedStats.get(balancedEdges.getKey(i)).deg(balancedEdges.getValue(i).size()));
+        }
+
+        if(pessStatType == 0)
+            return total;
+
+        Stat mt = null;
+        // multi tree stat
+        if(pessStatType != 3) {
+            mt = getMTCost(joinStats, balancedEdges, balancedStats, total);
+            assert mt.lessEquals(total);
+            
+            if (pessStatType == 1)
+                return mt;
+        }
+
+        // minimum spanning tree cost
+        Stat mst = getMSTCost(joinStats, balancedEdges, balancedStats);
+        if(pessStatType == 3)
+            return mst;
+        
+        assert mst.lessEquals(mt) && pessStatType == 2;        
+        return mst.avg(mt);
+    }
+
+    private Stat getMSTCost(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats) {
+        UndirectedGraph<BaseJoin> graph = new UndirectedGraph<BaseJoin>();
+        BaseJoin root = ValueJoin.instance; // чтобы создать связность
+        graph.addNode(root);
+        for(int i=0,size=joinStats.size();i<size;i++) {
+            BaseJoin node = joinStats.getKey(i);
+            graph.addNode(node);
+            graph.addEdge(root, node, 0);
+        }
+        
+        for(int i=0;i<balancedEdges.size();i++) {
+            BaseExpr bExpr = balancedEdges.getKey(i);
+            BaseJoin from = bExpr.getBaseJoin();
+            for(Edge edge : balancedEdges.getValue(i)) {
+                assert BaseUtils.hashEquals(edge.expr, bExpr);
+                graph.addEdge(from, edge.join, - balancedStats.get(bExpr).getWeight());
+            }
+        }
+        return new Stat(-Prim.mst(graph).calculateTotalEdgeCost(), true);
+    }
+
+    private Stat getMTCost(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats, Stat totalBalanced) {
+        MExclMap<BaseJoin, MExclSet<Edge>> mEdges = MapFact.mExclMap();
+        for(int i=0,size=joinStats.size();i<size;i++) {
+            mEdges.exclAdd(joinStats.getKey(i), SetFact.<Edge>mExclSet());
+        }
+        for(int i=0;i<balancedEdges.size();i++) {
+            BaseExpr bExpr = balancedEdges.getKey(i);
+            BaseJoin from = bExpr.getBaseJoin();
+            MExclSet<Edge> mFromEdges = mEdges.get(from);
+            for(Edge edge : balancedEdges.getValue(i)) {
+                assert BaseUtils.hashEquals(edge.expr, bExpr);
+                mFromEdges.exclAdd(edge);
+            }            
+        }
+        ImMap<BaseJoin, ImSet<Edge>> edges = MapFact.immutable(mEdges);
+        Pair<Integer, ImSet<Edge>> mt = recBuildMT(MapFact.buildGraphOrder(edges, new GetValue<BaseJoin, Edge>() {
+            public BaseJoin getMapValue(Edge value) {
+                return value.join;
+            }}), edges, balancedStats, new HashSet<Edge>(), 0, new HashMap<BaseJoin, ImMap<BaseJoin, Edge>>(), 0, null);
+        if(mt == null)
+            return totalBalanced;
+        return totalBalanced.div(new Stat(mt.first, true));
+    }
+    
+    // proceeded - из какой вершины в какую можно пройти и вершина через которую надо идти
+    private Pair<Integer, ImSet<Edge>> recBuildMT(ImOrderSet<BaseJoin> order, ImMap<BaseJoin, ImSet<Edge>> edgesOuts, final MAddExclMap<BaseExpr, Stat> balancedStats, Set<Edge> removedEdges, int removedStat, Map<BaseJoin, ImMap<BaseJoin, Edge>> currentTree, int currentIndex, Pair<Integer, ImSet<Edge>> currentMin) {
+        if(currentIndex >= order.size()) {
+            return new Pair<Integer, ImSet<Edge>>(removedStat, SetFact.fromJavaSet(removedEdges));
+        }
+        
+        BaseJoin currentNode = order.get(currentIndex);
+        ImSet<Edge> edgesOut = edgesOuts.get(currentNode);
+        
+        MExclMap<BaseJoin, Edge> edgeOutTree = MapFact.mExclMap();
+        for(Edge edgeOut : edgesOut) {
+            if(removedEdges.contains(edgeOut)) // избыточная проверка с точки зрения того что removedEdges содержит уже отработанные node'ы
+                continue;
+            ImMap<BaseJoin, Edge> reachableEdges = currentTree.get(edgeOut.join).addExcl(edgeOut.join, edgeOut);
+            // нашли "два пути", edge на одном из путей надо вырезать рекурсивно выбираем минимум
+            for(int i=0,size=reachableEdges.size();i<size;i++) {
+                BaseJoin reachableJoin = reachableEdges.getKey(i);
+//                Edge reachableEdge = reachableEdges.getValue(i);
+
+                Edge presentEdgeOut = edgeOutTree.get(reachableJoin);
+                if(presentEdgeOut != null) { // нашли цикл, один через edgeOut, второй через presentEdgeOut, один из edge'й на этих путях придется удалить в любом случае (это и перебираем)
+                    // бежим по обоим найденным путям, упорядочив по минимальным весам 
+                    Iterable<Edge> edges = BaseUtils.sort(BaseUtils.mergeIterables(getEdgePath(currentTree, edgeOut, reachableJoin), getEdgePath(currentTree, presentEdgeOut, reachableJoin)), new Comparator<Edge>() {
+                        public int compare(Edge o1, Edge o2) {
+                            return Integer.compare(balancedStats.get(o1.expr).getWeight(), balancedStats.get(o2.expr).getWeight());
+                        }});
+                    for(Edge currentEdge : edges) {
+                        // пробуем удалить ребро
+                        int newRemovedStat = removedStat + balancedStats.get(currentEdge.expr).getWeight();
+                        if(currentMin == null || currentMin.first > newRemovedStat) {
+                            MAddExclMap<BaseJoin, ImMap<BaseJoin, Edge>> stackRemoved = removeEdge(currentTree, currentEdge);
+                            removedEdges.add(currentEdge);
+                            Pair<Integer, ImSet<Edge>> recCut = recBuildMT(order, edgesOuts, balancedStats, removedEdges, newRemovedStat, currentTree, currentIndex, currentMin);// придется начинать с 0 чтобы перестроить дерево
+                            removedEdges.remove(currentEdge);
+                            MapFact.addJavaAll(currentTree, stackRemoved);
+
+                            if(recCut != null) {
+                                assert currentMin == null || recCut.first < currentMin.first || recCut == currentMin;
+                                currentMin = recCut;
+                            }
+                        }
+                    }
+                    return currentMin;
+                } else
+                    edgeOutTree.exclAdd(reachableJoin, edgeOut);                
+            }
+        }
+        currentTree.put(currentNode, edgeOutTree.immutable()); // assert что не было
+        Pair<Integer, ImSet<Edge>> result = recBuildMT(order, edgesOuts, balancedStats, removedEdges, removedStat, currentTree, currentIndex + 1, currentMin);
+        currentTree.remove(currentNode); // assert что было
+        return result;
+    }
+    
+    private Iterable<Edge> getEdgePath(final Map<BaseJoin, ImMap<BaseJoin, Edge>> currentTree, final Edge startEdge, final BaseJoin endNode) {
+        return new Iterable<Edge>() {
+            public Iterator<Edge> iterator() {
+                return new Iterator<Edge>() {
+                    Edge currentEdge = startEdge; 
+
+                    public boolean hasNext() {
+                        return currentEdge != null;
+                    }
+
+                    public Edge next() {
+                        Edge nextEdge = currentEdge;
+                        currentEdge = currentTree.get(currentEdge.join).get(endNode);
+                        assert currentEdge != null || BaseUtils.hashEquals(nextEdge.join, endNode);
+                        return nextEdge;
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        };
+    }
+
+    // удаляет из дерева ребро
+    private MAddExclMap<BaseJoin, ImMap<BaseJoin, Edge>> removeEdge(Map<BaseJoin, ImMap<BaseJoin, Edge>> currentTree, Edge removeEdge) {
+        BaseJoin to = removeEdge.join;
+        MAddExclMap<BaseJoin, ImMap<BaseJoin, Edge>> rest = MapFact.mAddExclMap();
+        final BaseJoin from = removeEdge.expr.getBaseJoin();
+        final ImSet<BaseJoin> toNodes = currentTree.get(to).keys().addExcl(to);
+        for(Map.Entry<BaseJoin, ImMap<BaseJoin, Edge>> entry : currentTree.entrySet()) {
+            BaseJoin node = entry.getKey();
+            ImMap<BaseJoin, Edge> nodes = entry.getValue();
+            if(nodes.containsKey(from) || BaseUtils.hashEquals(node, from)) {
+                rest.exclAdd(entry.getKey(), nodes);
+                entry.setValue(nodes.removeIncl(toNodes));
+            }
+        }
+        return rest;
     }
 
     public <K extends BaseExpr> Where getPushWhere(ImSet<K> groups, ImMap<WhereJoin, Where> upWheres, final KeyStat stat, Stat currentStat, Stat currentJoinStat) {

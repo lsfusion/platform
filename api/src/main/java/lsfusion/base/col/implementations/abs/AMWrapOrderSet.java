@@ -23,8 +23,8 @@ public abstract class AMWrapOrderSet<K, W extends AMSet<K>> extends AMOrderSet<K
         return wrapSet;
     }
 
-    public void add(K key) {
-        wrapSet.add(key);
+    public boolean add(K key) {
+        return wrapSet.add(key);
     }
 
     public void exclAdd(K key) {

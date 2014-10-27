@@ -2,6 +2,7 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -9,14 +10,19 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.Message;
+import lsfusion.server.Settings;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NotNullKeyExpr;
+import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.query.GroupExpr;
+import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
@@ -29,6 +35,8 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChanges;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends CalcProperty<T> {
 
@@ -64,6 +72,53 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         }
     }
 
+//    public List<Double> checkStats(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
+//
+//        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(SetFact.EMPTY());
+//        Where where = getExpr(getMapKeys()).getWhere();
+//        try {
+//            Stat statRows = where.getStatRows();
+//            Stat maxStat = new Stat(5, true);
+//            boolean timeouted = false;
+//            if(!where.isFalse() && statRows.lessEquals(maxStat)) {
+//                ValueExpr one = new ValueExpr(1, IntegerClass.instance);
+//                query.addProperty("count", GroupExpr.create(MapFact.<Integer, Expr>EMPTY(), one,
+//                        where, GroupType.SUM, MapFact.<Integer, Expr>EMPTY()));
+//                Integer cnt;
+//                try {
+//                    cnt = (Integer)query.execute(session, DataSession.emptyEnv(OperationOwner.debug)).singleValue().singleValue();
+//                    if(cnt == null)
+//                        cnt = 0;
+//                } catch (SQLTimeoutException e) {
+//                    cnt = maxStat.getWeight();
+//                    timeouted = true;
+//                }
+//
+//                List<Double> list = new ArrayList<Double>();
+//                for(int i=0;i<4;i++) {
+//                    Settings.get().setPessStatType(i);
+//                    
+//                    Stat iStat = where.getStatRows();
+//                    if(timeouted)
+//                        iStat = iStat.min(maxStat);
+//                    
+//                    Stat calcStat = new Stat(cnt);
+//                    double diff = calcStat.getWeight() - (double) iStat.getWeight();
+//                    if (diff > 5.0)
+//                        diff = 5.0;
+//                    if (diff < -5.0)
+//                        diff = -5.0;
+//                    list.add(diff);
+//                }
+//                return list;
+//            }
+//        } catch (RuntimeException r) {
+//            assert r.getMessage().contains("no classes") || r.getMessage().contains("not supported");
+//            return null;
+//        }
+//        return null;
+//    }
+//
     public Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement) {
         return calculateExpr(joinImplement, CalcType.EXPR, PropertyChanges.EMPTY, null);
     }

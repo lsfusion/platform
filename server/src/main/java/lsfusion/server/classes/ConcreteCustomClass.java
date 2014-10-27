@@ -316,4 +316,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     public String getShortName() {
         return getCaption();
     }
+
+    public boolean isZero(Object object) {
+        return false;
+    }
 }

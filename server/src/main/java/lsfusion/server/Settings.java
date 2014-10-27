@@ -1095,4 +1095,19 @@ public class Settings {
     public void setLogTimeThreshold(int logTimeThreshold) {
         this.logTimeThreshold = logTimeThreshold;
     }
+    
+    // 0 - no adjustment
+    // 1 - multi tree
+    // 2 - (multi tree + spanning tree) / 2
+    // 3 - spanning tree
+    // 1 и 2 используют переборный механизм, поэтому туда надо еще отсечение вставить, если понадобится использовать
+    private int pessStatType = 3;
+
+    public int getPessStatType() {
+        return pessStatType;
+    }
+
+    public void setPessStatType(int pessStatType) {
+        this.pessStatType = pessStatType;
+    }
 }

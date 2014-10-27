@@ -302,4 +302,13 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     public String getShortName() {
         return "";
     }
+
+    @Override
+    public boolean isZero(Object object) {
+        return isValueZero(read(object));
+    }
+    
+    public boolean isValueZero(T value) {
+        return false;
+    }
 }

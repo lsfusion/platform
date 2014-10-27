@@ -38,7 +38,7 @@ public class ArOrderIndexedSet<K> extends AMOrderSet<K> {
         return arSet.get(order[i]);
     }
 
-    public void add(K key) {
+    public boolean add(K key) {
         throw new UnsupportedOperationException();
     }
 

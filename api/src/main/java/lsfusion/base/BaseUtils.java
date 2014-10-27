@@ -2331,4 +2331,47 @@ public class BaseUtils {
     public static boolean hasRightSpace(String string) {
         return BaseUtils.rtrim(string).length() != string.length();
     }
+    
+    public static <T> Iterable<T> mergeIterables(final Iterable<T> it1, final Iterable<T> it2) {
+        return new Iterable<T>() {
+            public Iterator<T> iterator() {
+                return mergeIterators(it1.iterator(), it2.iterator());
+            }
+        };
+    }
+
+    public static <T> Iterator<T> mergeIterators(final Iterator<T> it1, final Iterator<T> it2) {
+        return new Iterator<T>() {
+            boolean it1Running = true;
+            
+            public boolean hasNext() {
+                return (it1Running && it1.hasNext()) || it2.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if(it1Running) {
+                    if(it1.hasNext())
+                        return it1.next();
+                    else
+                        it1Running = false;
+                }
+                return it2.next();
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+    
+    public static <T> Iterable<T> sort(Iterable<T> it, Comparator<T> comparator) {
+        List<T> list = new ArrayList<T>();
+        for(T element : it) {
+            list.add(element);
+        }
+        Collections.sort(list, comparator);
+        return list;        
+    }
+        
 }

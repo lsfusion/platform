@@ -847,6 +847,55 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
+//    public String checkStats(SQLSession session) throws SQLException, SQLHandledException {
+//        ImOrderSet<Property> checkProperties = businessLogics.getPropertyList();
+//        
+//        double cnt = 0;
+//        List<Double> sum = new ArrayList<Double>();
+//        List<List<Double>> sumd = new ArrayList<List<Double>>();
+//        for(int i=0;i<4;i++) {
+//            sum.add(0.0);
+//            sumd.add(new ArrayList<Double>());
+//        }
+//        
+//        final Result<Integer> proceeded = new Result<Integer>(0);
+//        int total = checkProperties.size();
+//        ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
+//        try {
+//            String message = "";
+//            for (Property property : checkProperties) {
+//                if(property instanceof AggregateProperty) {
+//                    List<Double> diff = ((AggregateProperty) property).checkStats(session, LM.baseClass);
+//                    if(diff != null) {
+//                        for(int i=0;i<4;i++) {
+//                            sum.set(i, sum.get(i) + diff.get(i));
+//                            sumd.get(i).add(diff.get(i));
+//                            cnt++;
+//                        }
+//                    }
+//                }
+//                
+//                if(cnt % 100 == 0) {
+//                    for(int i=0;i<4;i++) {
+//                        double avg = (double) sum.get(i) / (double) cnt;
+//                        double disp = 0;
+//                        for (double diff : sumd.get(i)) {
+//                            disp += ((double) diff - avg) * ((double) diff - avg);
+//                        }
+//                        System.out.println("I: " + i + "AVG : " + avg + " DISP : " + (disp) / cnt);
+//                    }
+//                }
+//
+//                proceeded.set(proceeded.result + 1);
+//                ThreadLocalContext.popActionMessage();
+//                ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
+//            }
+//            return message;
+//        } finally {
+//            ThreadLocalContext.popActionMessage();
+//        }
+//    }
+//
     public String checkAggregationTableColumn(SQLSession session, String propertyCanonicalName) throws SQLException, SQLHandledException {
         for (CalcProperty property : businessLogics.getAggregateStoredProperties())
             if (propertyCanonicalName.equals(property.getCanonicalName())) {

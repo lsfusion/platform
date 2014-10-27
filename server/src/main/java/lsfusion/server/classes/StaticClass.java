@@ -11,4 +11,6 @@ public interface StaticClass extends ConcreteValueClass {
     String getString(Object value, SQLSyntax syntax);
     
     ResolveClassSet getResolveSet();
+
+    boolean isZero(Object object);
 }

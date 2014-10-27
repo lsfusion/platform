@@ -16,12 +16,11 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class MapFact {
     private final static AddValue<Object, Integer> addLinear = new SymmAddValue<Object, Integer>() {
@@ -607,6 +606,10 @@ public class MapFact {
         for(int i=0,size=add.size();i<size;i++)
             map.put(add.getKey(i), add.getValue(i));
     }
+    public static <K, V> void addJavaAll(Map<K, V> map, MAddExclMap<K, V> add) {
+        for(int i=0,size=add.size();i<size;i++)
+            map.put(add.getKey(i), add.getValue(i));
+    }
     public static <K, V> boolean disjointJava(ImSet<K> set1, Set<K> set2) {
         for(K element : set2)
             if(set1.contains(element))
@@ -616,5 +619,24 @@ public class MapFact {
 
     public static <K> AddValue<K, Integer> addLinear() {
         return (AddValue<K, Integer>) addLinear;
+    }
+    
+    private static <N, E> void recBuildGraphOrder(MOrderExclSet<N> orderSet, N node, ImMap<N, ImSet<E>> edges, GetValue<N, E> edgeTo) {
+        if(orderSet.contains(node)) // значит уже были
+            return;
+        
+        for(E edge : edges.get(node)) {
+            recBuildGraphOrder(orderSet, edgeTo.getMapValue(edge), edges, edgeTo);
+        }
+        
+        orderSet.exclAdd(node);
+    }
+    
+    public static <N, E> ImOrderSet<N> buildGraphOrder(ImMap<N, ImSet<E>> edges, GetValue<N, E> edgeTo) {
+        MOrderExclSet<N> mResult = SetFact.mOrderExclSet(edges.size());
+        for(N node : edges.keyIt()) {
+            recBuildGraphOrder(mResult, node, edges, edgeTo);
+        }
+        return mResult.immutableOrder();
     }
 }

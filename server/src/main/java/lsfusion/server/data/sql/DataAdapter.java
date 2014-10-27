@@ -640,6 +640,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         throw new UnsupportedOperationException();
     }
 
+    // должно быть синхронизировано с StaticClass.isZero
     public String getNotZero(String expr, Type type, TypeEnvironment typeEnv) {
         throw new UnsupportedOperationException();
     }

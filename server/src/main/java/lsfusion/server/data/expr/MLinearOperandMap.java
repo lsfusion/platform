@@ -18,6 +18,8 @@ public class MLinearOperandMap {
     public void add(Expr expr,int coeff) {
         if(expr.isNull()) // если null не добавляем
             return;
+        if(expr instanceof StaticValueExpr && (((StaticValueExpr)expr).isZero())) // 0 тоже не добавляем, важно так как LEFT JOIN вместо JOIN может порождать
+            return;
 
         if(expr instanceof LinearExpr)
             add(((LinearExpr)expr).map,coeff);

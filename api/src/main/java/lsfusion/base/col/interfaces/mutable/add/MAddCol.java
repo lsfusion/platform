@@ -10,4 +10,5 @@ public interface MAddCol<K> {
     int size();
     K get(int i);
     void remove(int i);
+    void removeAll();
 }

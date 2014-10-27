@@ -12,6 +12,7 @@ public class Case<P extends PropertyInterface, W extends CalcPropertyInterfaceIm
     public Case(W where, M implement) {
         this.where = where;
         this.implement = implement;
+        assert implement != null;
     }
 
     @Override
