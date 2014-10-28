@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
@@ -435,11 +436,16 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     protected void onBrowserEvent2(Event event) {
         super.onBrowserEvent2(event);
 
-        if (event.getTypeInt() == Event.ONCLICK) {
-            if (treeGroupController.isExpandOnClick() && getTableBodyElement().isOrHasChild(Node.as(event.getEventTarget()))) {
+        if (event.getTypeInt() == Event.ONDBLCLICK) {
+            if (treeGroupController.isExpandOnClick() && !isEditable(getCurrentCellContext()) && getTableBodyElement().isOrHasChild(Node.as(event.getEventTarget()))) {
                 GTreeTableNode node = tree.getNodeByRecord(getSelectedRecord());
-                if (node.isExpandable() && !node.isOpen()) {
-                    fireExpandNode(node);
+                if (node.isExpandable()) {
+                    GwtClientUtils.stopPropagation(event);
+                    if (!node.isOpen()) {
+                        fireExpandNode(node);
+                    } else {
+                        fireCollapseNode(node);
+                    }
                 }
             }
         }

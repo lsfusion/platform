@@ -240,18 +240,20 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    if (e.getClickCount() == 1) {
+                    if (e.getClickCount() == 2 && !editPerformed) {
                         TreePath path = getPathForRow(rowAtPoint(e.getPoint()));
-                        if (path != null && !isExpanded(path) && !((TreeGroupTreeUI) getHierarhicalColumnRenderer().getUI()).isLocationInExpandControl(path, e.getX(), e.getY())) {
+                        if (path != null && !((TreeGroupTreeUI) getHierarhicalColumnRenderer().getUI()).isLocationInExpandControl(path, e.getX(), e.getY())) {
                             TreeGroupNode node = (TreeGroupNode) path.getLastPathComponent();
 
-                            if (node.isExpandable() && !synchronize && !manualExpand) {
-                                if (node.group != null) {
-                                    try {
+                            if (node.isExpandable() && node.group != null) {
+                                try {
+                                    if (!isExpanded(path)) {
                                         form.expandGroupObject(node.group, node.key);
-                                    } catch (IOException ex) {
-                                        throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"), ex);
+                                    } else {
+                                        form.collapseGroupObject(node.group, node.key);
                                     }
+                                } catch (IOException ex) {
+                                    throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"), ex);
                                 }
                             }
                         }

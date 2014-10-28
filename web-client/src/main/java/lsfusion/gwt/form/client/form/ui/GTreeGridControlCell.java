@@ -21,15 +21,13 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
     private GTreeTable treeTable;
 
     public GTreeGridControlCell(GTreeTable table) {
-        super(CLICK, DBLCLICK);
+        super(CLICK);
         treeTable = table;
     }
 
     @Override
     public void onBrowserEvent(Context context, Element parent, Object value, NativeEvent event) {
-        if (DBLCLICK.equals(event.getType())) {
-            changeTreeState(context, value, event);
-        } else if (CLICK.equals(event.getType())) {
+        if (CLICK.equals(event.getType())) {
             String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
             if (attrID != null) {
                 changeTreeState(context, value, event);
@@ -43,10 +41,11 @@ public class GTreeGridControlCell extends AbstractCell<Object> {
 
         Boolean open = ((GTreeColumnValue) value).getOpen();
         if (open != null) {
+            GTreeGridRecord record = (GTreeGridRecord) context.getRowValue();
             if (!open) {
-                treeTable.expandNodeByRecord((GTreeGridRecord) context.getRowValue());
+                treeTable.expandNodeByRecord(record);
             } else {
-                treeTable.collapseNodeByRecord((GTreeGridRecord) context.getRowValue());
+                treeTable.collapseNodeByRecord(record);
             }
         }
     }
