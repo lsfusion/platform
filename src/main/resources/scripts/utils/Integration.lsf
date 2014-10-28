@@ -10,7 +10,7 @@ END
 
 META defineExternalizable (object, type, prefix)
     prefix###id###object 'Код' = DATA type (###object) IN recognize INDEXED MINCHARWIDTH 10 PREFCHARWIDTH 15;
-    prefix###object##Id (id) = GROUP AGGR object BY prefix###id###object (object);
+    prefix###object##Id (id) = GROUP AGGR (object) BY prefix###id###object (object);
 END
 
 META defineExternalizableAbstract (object, type)
@@ -19,7 +19,7 @@ END
 
 META defineExternalizableAbstract (object, type, prefix)
     prefix###id###object 'Код' = ABSTRACT type (###object) PERSISTENT INDEXED MINCHARWIDTH 10 PREFCHARWIDTH 15;
-    prefix###object##Id (id) = GROUP AGGR object BY prefix###id###object (object);
+    prefix###object##Id (id) = GROUP AGGR (object) BY prefix###id###object (object);
 END
 
 EXTEND FORM options PROPERTIES() showIDs;
