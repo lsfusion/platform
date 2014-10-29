@@ -59,6 +59,8 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
     }
 
     public static Where create(BaseExpr operator1, BaseExpr operator2, Boolean isStartWith) {
+        if(operator1.compatibleEquals(operator2))
+            return operator1.getWhere();
         return create(operator1, operator2, new LikeWhere(operator1, operator2, isStartWith));
     }
 }
