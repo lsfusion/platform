@@ -296,6 +296,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return null;
     }
 
+    public void killProcess(Integer processId) {
+    }
+
     public String getAnalyze(){
         return "";
     }

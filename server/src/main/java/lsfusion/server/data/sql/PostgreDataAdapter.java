@@ -297,6 +297,34 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
+    public void killProcess(Integer processId) {
+        if (isRedundantString(binPath)) {
+            logger.error("Error while killing process : no bin path");
+            return;
+        }
+
+        CommandLine commandLine = new CommandLine(new File(binPath, "pg_ctl"));
+        commandLine.addArgument("kill");
+        commandLine.addArgument("TERM");
+        commandLine.addArgument(String.valueOf(processId));
+
+        Executor executor = new DefaultExecutor();
+        executor.setExitValue(0);
+
+        try {
+            int result = executor.execute(commandLine);
+            if (result != 0) {
+                logger.error("Error while killing process : " + result);
+            }
+        } catch (ExecuteException e) {
+            logger.error("Error while killing process : " + commandLine);
+        } catch (IOException e) {
+            logger.error("Error while killing process : " + commandLine);
+        }
+    }
+
+
+    @Override
     public String getCancelActiveTaskQuery(Integer pid) {
         return String.format("SELECT pg_cancel_backend(%s)", pid);
     }

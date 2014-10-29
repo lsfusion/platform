@@ -202,6 +202,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         public Integer getCurrentUser() {
             return systemUserObject;
         }
+        
+        @Override
+        public Integer getCurrentComputer() {
+            return systemComputer;
+        }
     }; 
 
     public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {

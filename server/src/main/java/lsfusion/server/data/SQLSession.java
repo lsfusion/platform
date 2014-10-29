@@ -59,6 +59,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static final Logger logger = ServerLoggers.sqlLogger;
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
 
+    public static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = new ConcurrentWeakHashMap<SQLSession, Integer>();
+    
     private static interface SQLRunnable {
         void run() throws SQLException, SQLHandledException;
     }
@@ -126,6 +128,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     private ExConnection privateConnection = null;
+    
+    public ExConnection getDebugConnection() {
+        return privateConnection;
+    }
 
     public boolean inconsistent = true; // для отладки
 
@@ -144,6 +150,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         connectionPool = adapter;
         typePool = adapter;
         this.userProvider = userProvider;
+        sqlSessionMap.put(this, 1);
     }
 
     private void needPrivate() throws SQLException { // получает unique connection

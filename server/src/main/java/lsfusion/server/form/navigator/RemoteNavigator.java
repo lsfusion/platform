@@ -312,6 +312,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         public Integer getCurrentUser() {
             return (Integer) weakThis.get().user.object;
         }
+
+        @Override
+        public Integer getCurrentComputer() {
+            return (Integer) weakThis.get().computer.object;
+        }
     }
 
     private int transactionTimeout;
