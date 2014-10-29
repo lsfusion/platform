@@ -12,8 +12,10 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.StringClass;
+import lsfusion.server.data.ExConnection;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.query.ExecuteEnvironment;
 import lsfusion.server.data.query.QueryExecuteEnvironment;
@@ -26,9 +28,12 @@ import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
+import org.postgresql.PGConnection;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GetActiveTasksActionProperty extends ScriptingActionProperty {
 
@@ -40,8 +45,8 @@ public class GetActiveTasksActionProperty extends ScriptingActionProperty {
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         try {
-
-            getActiveTasksFromDatabase(context);
+            
+            getActiveTasksFromDatabase(context); 
 
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
@@ -131,7 +136,7 @@ public class GetActiveTasksActionProperty extends ScriptingActionProperty {
 
         } else if (syntaxType == SQLSyntaxType.POSTGRES) {
 
-            String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s' AND state!='idle'", context.getBL().getDataBaseName());
+            String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s'"/* AND state!='idle'*/, context.getBL().getDataBaseName());
 
             MExclSet<String> keyNames = SetFact.mExclSet();
             keyNames.exclAdd("numberrow");
@@ -160,6 +165,13 @@ public class GetActiveTasksActionProperty extends ScriptingActionProperty {
             ImOrderMap rs = session.sql.executeSelect(originalQuery, OperationOwner.unknown, ExecuteEnvironment.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
                     QueryExecuteEnvironment.DEFAULT, 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
+            Map<Integer, SQLSession> sessionMap = new HashMap<Integer, SQLSession>();
+            for(SQLSession sqlSession : session.sql.sqlSessionMap.keySet()) {
+                ExConnection connection = sqlSession.getDebugConnection();
+                if(connection != null)
+                    sessionMap.put(((PGConnection) connection.sql).getBackendPID(), sqlSession);
+            }
+            
             int i = 0;
             for (Object rsValue : rs.values()) {
 
@@ -169,13 +181,23 @@ public class GetActiveTasksActionProperty extends ScriptingActionProperty {
 
                 String query = trim((String) entry.get("query"));
                 Integer processId = (Integer) entry.get("pid");
-                String userActiveTask = trim((String) entry.get("usename"));
+                //String userActiveTask = trim((String) entry.get("usename"));
                 String address = trim((String) entry.get("client_addr"));
                 Timestamp dateTime = (Timestamp) entry.get("query_start");
                 if (!query.equals(originalQuery)) {
 
+                    SQLSession sqlSession = sessionMap.get(processId);
+                    String userActiveTask = null;
+                    String computerActiveTask = null;
+                    if (sqlSession != null) {
+                        userActiveTask = (String) findProperty("nameUser").read(session,
+                                session.getObjectValue(LM.baseLM.baseClass, sqlSession.userProvider.getCurrentUser()));
+                        computerActiveTask = (String) findProperty("hostnameComputer").read(session,
+                                session.getObjectValue(LM.baseLM.baseClass, sqlSession.userProvider.getCurrentComputer()));
+                    }
                     findProperty("idActiveTask").change(processId, session, currentObject);
                     findProperty("queryActiveTask").change(query, session, currentObject);
+                    findProperty("computerActiveTask").change(computerActiveTask, session, currentObject);
                     findProperty("userActiveTask").change(userActiveTask, session, currentObject);
                     findProperty("addressUserActiveTask").change(address, session, currentObject);
                     findProperty("dateTimeActiveTask").change(dateTime, session, currentObject);
