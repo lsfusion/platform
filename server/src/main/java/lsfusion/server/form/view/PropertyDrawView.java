@@ -66,6 +66,8 @@ public class PropertyDrawView extends ComponentView {
     public boolean clearText;
     public String toolTip;
 
+    public boolean notNull;
+
     @SuppressWarnings({"UnusedDeclaration"})
     public PropertyDrawView() {
 
@@ -284,7 +286,7 @@ public class PropertyDrawView extends ComponentView {
             }
         }
 
-        outStream.writeBoolean(entity.propertyObject.property.isSetNotNull());
+        outStream.writeBoolean(notNull || entity.propertyObject.property.isSetNotNull());
     }
 
     private OrderedMap<String, String> filterContextMenuItems(OrderedMap<String, String> contextMenuBindings, ServerContext context) {

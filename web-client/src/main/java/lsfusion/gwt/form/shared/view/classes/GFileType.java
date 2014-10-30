@@ -51,7 +51,7 @@ public abstract class GFileType extends GDataType {
 
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new FileGridCellRenderer();
+        return new FileGridCellRenderer(property);
     }
 
     @Override

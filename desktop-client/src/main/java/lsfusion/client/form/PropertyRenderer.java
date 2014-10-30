@@ -3,7 +3,6 @@ package lsfusion.client.form;
 import lsfusion.client.ClientResourceBundle;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 
 public interface PropertyRenderer {
@@ -16,6 +15,9 @@ public interface PropertyRenderer {
     //Border FOCUSED_CELL_BORDER = BorderFactory.createMatteBorder(1, 1, 1, 1, FOCUSED_CELL_BORDER_COLOR);
 
     String EMPTY_STRING = ClientResourceBundle.getString("form.renderer.not.defined");
+    String REQUIRED_STRING = ClientResourceBundle.getString("form.renderer.required");
+    
+    Color REQUIRED_FOREGROUND = new Color(136, 9, 0);
 
     JComponent getComponent();
 

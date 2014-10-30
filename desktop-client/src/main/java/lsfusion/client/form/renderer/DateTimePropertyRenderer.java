@@ -20,8 +20,13 @@ public class DateTimePropertyRenderer extends LabelPropertyRenderer {
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        setText(value == null ? "" : format.format(DateConverter.stampToDate((Timestamp) value)));
-        setForeground(UIManager.getColor("TextField.foreground"));
+        if (value == null && property.isEditableNotNull()) {
+            setText(REQUIRED_STRING);
+            setForeground(REQUIRED_FOREGROUND);
+        } else {
+            setText(value == null ? "" : format.format(DateConverter.stampToDate((Timestamp) value)));
+            setForeground(UIManager.getColor("TextField.foreground"));
+        }
         setSelected(isSelected, hasFocus);
     }
 }

@@ -8,7 +8,7 @@ import lsfusion.gwt.form.shared.view.grid.renderer.ImageGridCellRenderer;
 public class GImageType extends GFileType {
     @Override
     public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new ImageGridCellRenderer();
+        return new ImageGridCellRenderer(property);
     }
 
     @Override

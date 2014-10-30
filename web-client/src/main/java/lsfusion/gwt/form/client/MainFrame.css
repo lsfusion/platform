@@ -506,6 +506,10 @@ textarea {
     color: #A7A7A7;
 }
 
+.requiredValueString {
+    color: #C70D00;
+}
+
 .floatRight {
     float: right;
 }

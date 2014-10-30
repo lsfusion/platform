@@ -24,12 +24,17 @@ public class StringPropertyRenderer extends LabelPropertyRenderer {
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        if (value != null) {
-            setForeground(normalForeground);
-            setText(echoSymbols ? "******" : value.toString());
+        if (value == null && property.isEditableNotNull()) {
+            setText(REQUIRED_STRING);
+            setForeground(REQUIRED_FOREGROUND);
         } else {
-            setForeground(inactiveForeground);
-            setText(EMPTY_STRING);
+            if (value != null) {
+                setForeground(normalForeground);
+                setText(echoSymbols ? "******" : value.toString());
+            } else {
+                setForeground(inactiveForeground);
+                setText(EMPTY_STRING);
+            }
         }
         setSelected(isSelected, hasFocus);
     }

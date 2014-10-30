@@ -53,8 +53,13 @@ public class TextPropertyRenderer extends JEditorPane implements PropertyRendere
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value == null) {
             setContentType("text");
-            setText(EMPTY_STRING);
-            setForeground(UIManager.getColor("TextField.inactiveForeground"));
+            if (property.isEditableNotNull()) {
+                setText(REQUIRED_STRING);
+                setForeground(REQUIRED_FOREGROUND);
+            } else {
+                setText(EMPTY_STRING);
+                setForeground(UIManager.getColor("TextField.inactiveForeground"));
+            }
         } else {
             if (rich) {
                 setContentType("text/html");

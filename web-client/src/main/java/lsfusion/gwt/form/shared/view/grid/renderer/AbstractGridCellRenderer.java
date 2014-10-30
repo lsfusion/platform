@@ -5,6 +5,8 @@ import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
 
 public abstract class AbstractGridCellRenderer implements GridCellRenderer {
+    protected final String EMPTY_VALUE = "Не определено";
+    protected final String REQUIRED_VALUE = "Необходимо заполнить";
 
     @Override
     public abstract void renderDom(Cell.Context context, DataGrid table, DivElement cellElement, Object value);

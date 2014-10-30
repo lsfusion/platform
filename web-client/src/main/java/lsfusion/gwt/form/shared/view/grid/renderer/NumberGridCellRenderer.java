@@ -26,9 +26,16 @@ public class NumberGridCellRenderer extends TextBasedGridCellRenderer<Number> {
     @Override
     protected void setInnerText(DivElement div, String innerText) {
         if (innerText == null) {
-            div.setInnerText(EscapeUtils.UNICODE_NBSP);
+            if (property.isEditableNotNull()) {
+                div.setInnerText(REQUIRED_VALUE);
+                div.addClassName("requiredValueString");
+            } else {
+                div.setInnerText(EscapeUtils.UNICODE_NBSP);
+                div.removeClassName("requiredValueString");
+            }
         } else {
             div.setInnerText(innerText);
+            div.removeClassName("requiredValueString");
         }
     }
 }

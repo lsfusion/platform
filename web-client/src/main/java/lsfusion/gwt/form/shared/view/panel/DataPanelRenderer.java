@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -195,7 +196,7 @@ public class DataPanelRenderer implements PanelRenderer {
     }
     
     private void setLabelText(String text) {
-        label.setHTML(LABEL_TEMPLATE.title(text, property.notNull ? "*" : "")); 
+        label.setHTML(text.isEmpty() ? SafeHtmlUtils.EMPTY_SAFE_HTML : LABEL_TEMPLATE.title(text, property.notNull ? "*" : "")); 
     }
 
     @Override

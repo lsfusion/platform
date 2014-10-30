@@ -138,6 +138,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         updateDependency(this, "showEditKey");
     }
 
+    public boolean isEditableNotNull() {
+        return notNull && !isReadOnly();
+    }
+
     public boolean isReadOnly() {
         return editType == PropertyEditType.READONLY;
     }

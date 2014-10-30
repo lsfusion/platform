@@ -228,6 +228,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
         return editType == GPropertyEditType.READONLY;
     }
 
+    public boolean isEditableNotNull() {
+        return notNull && !isReadOnly();
+    }
+
     public String getMinimumWidth(GFont parentFont) {
         return getMinimumPixelWidth(parentFont) + "px";
     }

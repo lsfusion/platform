@@ -13,8 +13,13 @@ public class DynamicFormatFileRenderer extends FilePropertyRenderer {
         if (value != null) {
             byte[] union = (byte[]) value;
             setIcon(SwingUtils.getSystemIcon(new String(union, 1, union[0])));
+            setText(null);
         } else {
             setIcon(null);
+            if (property.isEditableNotNull()) {
+                setText(REQUIRED_STRING);
+                setForeground(REQUIRED_FOREGROUND);
+            }
         }
         setSelected(isSelected, hasFocus);
     }

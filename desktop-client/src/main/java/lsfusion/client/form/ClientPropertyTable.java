@@ -281,6 +281,8 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
                     if (!BaseUtils.isRedundantString(formattedValue)) {
                         return SwingUtils.toMultilineHtml(formattedValue, createToolTip().getFont());
                     }
+                } else if (cellProperty.isEditableNotNull()) {
+                    return PropertyRenderer.REQUIRED_STRING;
                 }
             }
         }

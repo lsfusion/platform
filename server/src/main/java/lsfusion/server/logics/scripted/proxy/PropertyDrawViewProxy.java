@@ -85,4 +85,8 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setToolTip(String toolTip) {
         target.toolTip = toolTip;
     }
+    
+    public void setNotNull(boolean notNull) {
+        target.notNull = notNull;
+    }
 }

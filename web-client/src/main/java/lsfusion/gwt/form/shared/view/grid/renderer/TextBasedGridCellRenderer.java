@@ -11,8 +11,6 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import static lsfusion.gwt.base.client.EscapeUtils.unicodeEscape;
 
 public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRenderer {
-    protected final String EMPTY_VALUE = "Не определено";
-
     protected final Style.TextAlign textAlign;
     protected GPropertyDraw property;
 
@@ -72,7 +70,7 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
         String text = value == null ? null : renderToString((T) value);
 
         if (text == null) {
-            div.setTitle("");
+            div.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
             setInnerText(div, null);
         } else {
             String stringValue = unicodeEscape(text);
@@ -83,11 +81,19 @@ public abstract class TextBasedGridCellRenderer<T> extends AbstractGridCellRende
 
     protected void setInnerText(DivElement div, String innerText) {
         if (innerText == null) {
-            div.setInnerText(EMPTY_VALUE);
-            div.addClassName("nullValueString");
+            if (property.isEditableNotNull()) {
+                div.setInnerText(REQUIRED_VALUE);
+                div.addClassName("requiredValueString");
+                div.removeClassName("nullValueString");
+            } else {
+                div.setInnerText(EMPTY_VALUE);
+                div.addClassName("nullValueString");
+                div.removeClassName("requiredValueString");
+            }
         } else {
             div.setInnerText(innerText);
             div.removeClassName("nullValueString");
+            div.removeClassName("requiredValueString");
         }
     }
 
