@@ -365,39 +365,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         synchronizePropertyParents();
     }
 
-    private void migrateProperties() {
-        Map<String, String> nameChanges = dbManager.getPropertyNamesChanges();
-        ImportField oldCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
-        ImportField newCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
-
-        ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertyCanonicalName.getMapping(oldCanonicalNameField));
-
-        try {
-            List<List<Object>> data = new ArrayList<List<Object>>();
-            for (String oldName : nameChanges.keySet()) {
-                    data.add(Arrays.<Object>asList(oldName, nameChanges.get(oldName)));
-            }
-
-            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-            properties.add(new ImportProperty(newCanonicalNameField, reflectionLM.canonicalNameProperty.getMapping(keyProperty)));
-
-            ImportTable table = new ImportTable(asList(oldCanonicalNameField, newCanonicalNameField), data);
-
-            DataSession session = createSession();
-
-            IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties);
-            service.synchronize(false, false);
-                        
-            session.apply(businessLogics);
-            session.close();
-        } catch (Exception e) {
-            Throwables.propagate(e);
-        }
-    }
-    
     public void synchronizePropertyEntities() {
-        migrateProperties();
-        
         ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
         ImportField dbNamePropertyField = new ImportField(reflectionLM.propertySIDValueClass);
         ImportField captionPropertyField = new ImportField(reflectionLM.propertyCaptionValueClass);

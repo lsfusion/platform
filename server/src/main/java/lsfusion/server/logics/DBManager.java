@@ -88,7 +88,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private TreeMap<DBVersion, List<SIDChange>> tableSIDChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
     private TreeMap<DBVersion, List<SIDChange>> objectSIDChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
 
-    private Map<String, String> finalPropertyNameChanges = new HashMap<String, String>();
     private Map<String, String> finalPropertyDrawNameChanges = new HashMap<String, String>();
     
     private DataAdapter adapter;
@@ -709,6 +708,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 newClass.ID = newClass.customClass.ID;
             }
 
+            migrateReflectionProperties(oldDBStructure.dbVersion);
+
             newDBStructure.writeConcreteClasses(outDB);
 
             try {
@@ -759,6 +760,36 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return sourceHashChanged;
     }
 
+    private void migrateReflectionProperties(DBVersion oldDBVersion) {
+        Map<String, String> nameChanges = getChangesAfter(oldDBVersion, propertyCNChanges);
+        ImportField oldCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
+        ImportField newCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
+
+        ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertyCanonicalName.getMapping(oldCanonicalNameField));
+
+        try {
+            List<List<Object>> data = new ArrayList<List<Object>>();
+            for (String oldName : nameChanges.keySet()) {
+                data.add(Arrays.<Object>asList(oldName, nameChanges.get(oldName)));
+            }
+
+            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+            properties.add(new ImportProperty(newCanonicalNameField, reflectionLM.canonicalNameProperty.getMapping(keyProperty)));
+
+            ImportTable table = new ImportTable(asList(oldCanonicalNameField, newCanonicalNameField), data);
+
+            DataSession session = createSession(OperationOwner.unknown); // создание сессии аналогично fillIDs
+
+            IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties);
+            service.synchronize(false, false);
+
+            session.apply(businessLogics);
+            session.close();
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
+    }
+    
     private void convertReflectionPropertyTableToVersion16(DataSession session) {
         ImportField canonicalNameNavigatorElementField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
         ImportField sidNavigatorElementField = new ImportField(reflectionLM.navigatorElementSIDClass);
@@ -1206,8 +1237,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     
     // Не разбирается с индексами. Было решено, что сохранять индексы необязательно.
     private void alterateDBStructure(OldDBStructure oldData, NewDBStructure newData, SQLSession sql) throws SQLException {
-        // Сохраним изменения имен свойств и свойств на форме для reflectionManager
-        finalPropertyNameChanges = getChangesAfter(oldData.dbVersion, propertyCNChanges);
+        // Сохраним изменения имен свойств на форме для reflectionManager
         finalPropertyDrawNameChanges = getChangesAfter(oldData.dbVersion, propertyDrawNameChanges);
         
         // Изменяем в старой структуре свойства из скрипта миграции, переименовываем поля в таблицах
@@ -1292,10 +1322,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return userSID;
     }
 
-    public Map<String, String> getPropertyNamesChanges() {
-        return finalPropertyNameChanges;
-    }
-    
     public Map<String, String> getPropertyDrawNamesChanges() {
         return finalPropertyDrawNameChanges;
     } 
