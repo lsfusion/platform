@@ -29,9 +29,9 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
             public void insertString(int offset, String str, AttributeSet attr) throws BadLocationException {
                 if (str == null) return;
 
-                if ((getLength() + str.length()) <= length) {
-                    super.insertString(offset, str, attr);
-                }
+//                if ((getLength() + str.length()) <= length) { // если длина больше вообще уходит
+                super.insertString(offset, str, attr);
+//                }
             }
         });
 
