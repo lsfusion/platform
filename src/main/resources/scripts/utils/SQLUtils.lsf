@@ -2,7 +2,8 @@ MODULE SQLUtils;
 
 REQUIRE System, Authentication;
 
-getActiveTasksAction 'Обновить список процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveTasksActionProperty' TOOLBAR;  
+getActiveTasksAction 'Обновить список активных процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveTasksActionProperty' TOOLBAR;  
+getAllTasksAction 'Обновить список всех процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetAllTasksActionProperty' TOOLBAR;  
 cancelActiveTaskAction 'Снять процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelActiveTaskActionProperty';  
 killActiveTaskAction 'Убить процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillActiveTaskActionProperty';  
 
@@ -18,7 +19,7 @@ FORM activeTasks 'Активные процессы'
     OBJECTS i = INTEGER
     PROPERTIES(i) READONLY idActiveTask, queryActiveTask, computerActiveTask, userActiveTask, addressUserActiveTask, dateTimeActiveTask
     PROPERTIES(i) TOOLBAR cancelActiveTaskAction, killActiveTaskAction
-    PROPERTIES() getActiveTasksAction TOOLBAR TODRAW i
+    PROPERTIES() getActiveTasksAction TOOLBAR TODRAW i, getAllTasksAction TOOLBAR TODRAW i
     FILTERS idActiveTask(i)
 ;
 

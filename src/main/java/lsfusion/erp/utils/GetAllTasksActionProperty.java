@@ -9,9 +9,9 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 
-public class GetActiveTasksActionProperty extends GetTasksActionProperty {
+public class GetAllTasksActionProperty extends GetTasksActionProperty {
 
-    public GetActiveTasksActionProperty(ScriptingLogicsModule LM) {
+    public GetAllTasksActionProperty(ScriptingLogicsModule LM) {
         super(LM);
     }
 
@@ -20,7 +20,7 @@ public class GetActiveTasksActionProperty extends GetTasksActionProperty {
 
         try {
             
-            getTasksFromDatabase(context, true); 
+            getTasksFromDatabase(context, false); 
 
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
