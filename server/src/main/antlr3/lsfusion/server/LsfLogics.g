@@ -743,17 +743,17 @@ formPropertyUList returns [List<String> aliases, List<PropertyUsage> properties,
 
 
 formPropertyUsage returns [PropertyUsage propUsage]
-	:	pu=propertyUsage        { $propUsage = $pu.propUsage; }
-	|	cid='OBJVALUE'	        { $propUsage = new PropertyUsage($cid.text); }
-	|	cid='ADDOBJ'	        { $propUsage = new PropertyUsage($cid.text); }
-	|	cid='ADDFORM'	        { $propUsage = new PropertyUsage($cid.text); }
-	|	cid='ADDNESTEDFORM'	    { $propUsage = new PropertyUsage($cid.text); }
+	:	pu=propertyUsage	{ $propUsage = $pu.propUsage; }
+	|	cid='OBJVALUE'		{ $propUsage = new PropertyUsage($cid.text); }
+	|	cid='ADDOBJ'		{ $propUsage = new PropertyUsage($cid.text); }
+	|	cid='ADDFORM'		{ $propUsage = new PropertyUsage($cid.text); }
+	|	cid='ADDNESTEDFORM'	{ $propUsage = new PropertyUsage($cid.text); }
 	|	cid='ADDSESSIONFORM'	{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='EDITFORM'	        { $propUsage = new PropertyUsage($cid.text); }
+	|	cid='EDITFORM'		{ $propUsage = new PropertyUsage($cid.text); }
 	|	cid='EDITNESTEDFORM'	{ $propUsage = new PropertyUsage($cid.text); }
 	|	cid='EDITSESSIONFORM'	{ $propUsage = new PropertyUsage($cid.text); }
-	|	cid='DELETE'		    { $propUsage = new PropertyUsage($cid.text); }
-	|	cid='DELETESESSION'	    { $propUsage = new PropertyUsage($cid.text); }
+	|	cid='DELETE'		{ $propUsage = new PropertyUsage($cid.text); }
+	|	cid='DELETESESSION'	{ $propUsage = new PropertyUsage($cid.text); }
 	;
 
 
@@ -827,7 +827,7 @@ filterGroupDeclaration
 		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, filters, self.getVersion());
 	}
 }
-	:   'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; }
+	:	'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; }
 		( rf=formRegularFilterDeclaration { filters.add($rf.filter); } )*
 	;
 
@@ -841,8 +841,8 @@ extendFilterGroupDeclaration
 		$formStatement::form.extendScriptedRegularFilterGroup(filterGroupSID, filters, self.getVersion());
 	}
 }
-	:	'EXTEND'
-	    'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; }
+	:	'EXTEND'	
+		'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; }
 		( rf=formRegularFilterDeclaration { filters.add($rf.filter); } )+
 	;
 	
@@ -1636,10 +1636,10 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 		|	indexSetting [property]
 		|	aggPropSetting [property]
 		|	s=notNullSetting { 
-		    notNull = new BooleanDebug($s.debugInfo);
-		    notNullResolve = $s.toResolve; 
-		    notNullEvent = $s.event; 
-        }
+		    		notNull = new BooleanDebug($s.debugInfo);
+		    		notNullResolve = $s.toResolve; 
+		    		notNullEvent = $s.event; 
+			}	
 		|	onEditEventSetting [property, context]
 		|	eventIdSetting [property]
 		)*
@@ -2563,18 +2563,18 @@ followsStatement
 	:	prop=mappedProperty { mainProp = $prop.propUsage; context = $prop.mapping; }
 		'=>'
 		fcl=followsClause[context] {
-            props.add($fcl.prop); 
-            options.add($fcl.pfollows);
-            events.add($fcl.event);
-            debugInfos.add($fcl.debug);
+			props.add($fcl.prop); 
+			options.add($fcl.pfollows);
+			events.add($fcl.event);
+			debugInfos.add($fcl.debug);
 		}		
 		(','
-    		nfcl=followsClause[context] {
-                props.add($nfcl.prop); 
-                options.add($nfcl.pfollows);
-                events.add($nfcl.event);
-                debugInfos.add($nfcl.debug);
-			}
+		nfcl=followsClause[context] {
+			props.add($nfcl.prop); 
+			options.add($nfcl.pfollows);
+			events.add($nfcl.event);
+			debugInfos.add($nfcl.debug);
+		}
 		)*
 		';'
 ;
@@ -2638,7 +2638,7 @@ eventStatement
 	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
 	boolean descending = false;
 	
-    ActionDebugInfo debug = self.getEventStackDebugInfo(); 
+	ActionDebugInfo debug = self.getEventStackDebugInfo(); 
 }
 @after {
 	if (inPropParseState()) {
@@ -2709,7 +2709,7 @@ baseEvent returns [Event event]
 		$event = self.createScriptedEvent(baseEvent, ids, puAfters);
 	}
 }
-	:	('GLOBAL' { baseEvent = SystemEvent.APPLY; } | 'SESSION'	{ baseEvent = SystemEvent.SESSION; })?
+	:	('GLOBAL' { baseEvent = SystemEvent.APPLY; } | 'SESSION' { baseEvent = SystemEvent.SESSION; })?
 		('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
 		('GOAFTER' (nePropList=nonEmptyPropertyUsageList { puAfters = $nePropList.propUsages; }) )?
 	;

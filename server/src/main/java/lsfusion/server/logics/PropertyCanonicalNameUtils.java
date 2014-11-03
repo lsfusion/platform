@@ -26,6 +26,7 @@ public final class PropertyCanonicalNameUtils {
     static public final String policyPropPrefix = "_POLICY_";
     static public final String logPropPrefix = "_LOG_";
     static public final String drillDownPrefix = "_DRILLDOWN_";
+    static public final String objValuePrefix = "_OBJVALUE_";
 
     static public String createName(String namespace, String name, List<ResolveClassSet> signature) {
         StringBuilder builder = new StringBuilder();

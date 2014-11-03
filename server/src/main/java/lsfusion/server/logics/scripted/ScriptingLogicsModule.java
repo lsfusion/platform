@@ -389,7 +389,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     private LP<?, ?> findLPByNameAndClasses(String name, List<ResolveClassSet> params, boolean onlyAbstract) throws ScriptingErrorLog.SemanticErrorException {
         LP<?, ?> property;
-        if(softMode && onlyAbstract)
+        if (softMode && onlyAbstract)
             property = implementLPResolver.resolve(name, params);
         else {
             property = directLPResolver.resolve(name, params);
@@ -2295,7 +2295,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         checkParamCount(mainProp, namedParams.size());
         checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
-        checkCalculationProperty(mainProp);
 
         List<Object> params = getParamsPlainList(asList(valueProp, whenProp));
         ((LCP)mainProp).setEventChange(this, action, params.toArray());

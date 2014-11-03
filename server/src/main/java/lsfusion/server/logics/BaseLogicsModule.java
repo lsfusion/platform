@@ -489,8 +489,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     }
 
     public class ObjectValuePropertySet extends MapClassesPropertySet<ValueClass, ObjectValueProperty> {
-        private static final String name = "objectValue";
-
         @Override
         protected boolean isInInterface(ImSet<ValueClassWrapper> classes) {
             return classes.size() == 1;
@@ -517,6 +515,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
 
             ValueClass valueClass = classes[0].getBaseClass();
             ObjectValueProperty property = new ObjectValueProperty(valueClass);
+            // Необходимо создавать свойства с разными каноническими именами. В случае с классами STRING и NUMERIC их размерность не влияет на сигнатуру,
+            // поэтому для этих классов будем создавать другие имена. включающие в себя сигнатуру
+            String name = PropertyCanonicalNameUtils.objValuePrefix;
+            if (valueClass instanceof StringClass || valueClass instanceof NumericClass) {
+                name = name + valueClass.getSID();
+            }
             property.setCanonicalName(getNamespace(), name, Arrays.asList(valueClass.getResolveSet()), property.getOrderInterfaces(), getDBNamePolicy());
             setParent(property, version);
             return property;
