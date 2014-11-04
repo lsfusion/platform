@@ -287,7 +287,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     }
 
     // с активным интерфейсом, assertion что содержит все ObjectInstance
-    ImOrderMap<OrderInstance,Boolean> orders = MapFact.EMPTYORDER();
+    public ImOrderMap<OrderInstance,Boolean> orders = MapFact.EMPTYORDER();
 
     boolean upKeys, downKeys;
     public ImOrderMap<ImMap<ObjectInstance,DataObject>,ImMap<OrderInstance,ObjectValue>> keys = MapFact.EMPTYORDER();
@@ -949,6 +949,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         return mResultSet.immutableOrder();
     }
 
+    public ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> readKeys(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass) throws SQLException, SQLHandledException {
+        return new SeekObjects(MapFact.<OrderInstance, ObjectValue>EMPTY(), false).executeOrders(session, env, modifier, baseClass, 0, true, null);
+    }
+
     public class SeekObjects {
         public ImMap<OrderInstance, ObjectValue> values;
         public boolean end;
@@ -977,7 +981,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         public SeekObjects reverse() {
             return new SeekObjects(values, !end);
         }
-
+        
         // возвращает OrderInstance из orderSeeks со значениями, а также если есть parent, то parent'ы
         public ImOrderMap<ImMap<ObjectInstance, DataObject>, ImMap<OrderInstance, ObjectValue>> executeOrders(SQLSession session, QueryEnvironment env, final Modifier modifier, BaseClass baseClass, int readSize, boolean down, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
             assert !isInTree();

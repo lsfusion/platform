@@ -1,6 +1,7 @@
 package lsfusion.server.logics.linear;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -18,7 +19,6 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.cases.AbstractCase;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
 import lsfusion.server.session.Modifier;
@@ -247,5 +247,9 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
     
     public LCP<T> getOld() {
         return new LCP<T>(property.getOld(PrevScope.DB), listInterfaces);
+    }
+    
+    public ResolveClassSet getResolveClassSet(List<ResolveClassSet> classes) {
+        return property.getResolveClassSet(listInterfaces.mapList(ListFact.fromJavaList(classes)));    
     }
 }

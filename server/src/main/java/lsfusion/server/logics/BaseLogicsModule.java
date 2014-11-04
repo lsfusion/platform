@@ -606,7 +606,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @Override
     @IdentityStrongLazy
     public LCP object(ValueClass valueClass) {
-        LCP lcp = addJProp(valueClass.toString(), and1, 1, is(valueClass), 1);
+        LCP lcp = addJProp(false, valueClass.toString(), and1, 1, is(valueClass), 1);
         ((JoinProperty)lcp.property).objectPropertyClass = valueClass;
         return lcp;
     }

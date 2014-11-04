@@ -71,9 +71,13 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return rest.isEmpty();
     }
     
-    public JoinProperty(String caption, ImOrderSet<Interface> interfaces, boolean implementChange, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
+    public JoinProperty(String caption, ImOrderSet<Interface> interfaces, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
+        this(caption, interfaces, false, false, implement);
+    }
+    public JoinProperty(String caption, ImOrderSet<Interface> interfaces, boolean implementChange, boolean user, CalcPropertyImplement<T, CalcPropertyInterfaceImplement<Interface>> implement) {
         super(caption, interfaces);
         this.implement = implement;
+        this.user = user;
         this.implementChange = implementChange || isIdentity(this.interfaces, implement);
 
         finalizeInit();
@@ -134,6 +138,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
     // разрешить менять основное свойство
     public final boolean implementChange;
+    
+    private final boolean user;
     
     @Override
     protected ImSet<CalcProperty> calculateUsedDataChanges(StructChanges propChanges) {
@@ -389,11 +395,11 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     public ValueClass objectPropertyClass; // временный хак
     @Override
     public ExClassSet calcInferValueClass(final ImMap<Interface, ExClassSet> inferred, final InferType inferType) {
-        ExClassSet result = implement.property.inferValueClass(implement.mapping.mapValues(new GetValue<ExClassSet, CalcPropertyInterfaceImplement<Interface>>() {
+        ExClassSet result = implement.property.inferJoinValueClass(implement.mapping.mapValues(new GetValue<ExClassSet, CalcPropertyInterfaceImplement<Interface>>() {
             public ExClassSet getMapValue(CalcPropertyInterfaceImplement<Interface> value) {
                 return value.mapInferValueClass(inferred, inferType);
             }
-        }), inferType);
+        }), !user, inferType);
         if(objectPropertyClass != null)
             result = ExClassSet.op(result, ExClassSet.toExValue(objectPropertyClass), false);
         return result;

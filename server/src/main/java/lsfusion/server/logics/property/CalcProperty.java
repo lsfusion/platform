@@ -203,7 +203,42 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             throw new ScriptParsingException("wrong value class of implementation " + caption +
                     " (specified " + propValueClass + ") for abstract property " + this + " (expected " + valueClass + ")");
     }
+    
+    public ExClassSet inferJoinValueClass(ImMap<T, ExClassSet> extContext, boolean useExtContext, InferType inferType) {
+        if(!useExtContext && inferType == InferType.RESOLVE) {
+            assert explicitClasses != null;
+            return ExClassSet.toEx(getResolveClassSet(explicitClasses));
+        }
+        return inferValueClass(extContext, inferType);
 
+//        ImMap<T, ExClassSet> inferred = getInferInterfaceClasses(inferType);
+//        ExClassSet newDiffClassSet;
+//        if(inferred == null) {
+//            newDiffClassSet = null;
+//        } else {
+//            newDiffClassSet = inferValueClass(inferred, inferType);
+//        }
+//
+//        ExClassSet newValueClass = ExClassSet.toEx(getResolveClassSet());
+//        if(useExtContext) {
+//            ExClassSet oldNewExtContext = inferValueClass(ExClassSet.op(interfaces, inferred, extContext, false), inferType);
+//            if(!BaseUtils.nullEquals(oldExtContext, oldNewExtContext))
+//                oldExtContext = oldExtContext;
+//        } else {
+//            if(inferType == InferType.PREVSAME && !BaseUtils.nullEquals(ExClassSet.fromEx(newValueClass),ExClassSet.fromEx(oldExtContext))) {
+//                ResolveClassSet resNew = ExClassSet.fromEx(newValueClass);
+//                ResolveClassSet resOld = ExClassSet.fromEx(oldExtContext);
+//                if(!(resNew instanceof StringClass && resOld instanceof StringClass) && !(resOld instanceof NumericClass && resNew instanceof NumericClass))
+//                    System.out.println((cnt++) + logCaption + " " + BaseUtils.nullToString(resOld) + " -> " + BaseUtils.nullToString(resNew));
+//            }
+//        }
+//        if(inferType == InferType.PREVSAME && !(BaseUtils.nullEquals(ExClassSet.fromEx(newValueClass), ExClassSet.fromEx(newDiffClassSet))))
+//            newValueClass = newValueClass;
+//        
+//        return newValueClass;
+    }
+        
+    // assert CaseUnion 
     private <P extends PropertyInterface> boolean containsAll(ImMap<T, ExClassSet> interfaceClasses, ImMap<T, ExClassSet> interfacePropClasses, boolean ignoreAbstracts) {
         ImMap<T, ResolveClassSet> inferredClasses = ExClassSet.fromEx(interfaceClasses);
         ImMap<T, ResolveClassSet> inferredPropClasses = ExClassSet.fromEx(interfacePropClasses);
@@ -232,6 +267,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
                     " (specified " + propValueClass + ") for abstract property " + this + " (expected " + valueClass + ")");
     }
 
+    // assert что CaseUnion
     public <P extends PropertyInterface> void checkAllImplementations(ImList<CalcProperty<P>> props, ImList<ImRevMap<P, T>> maps) {
         AlgType.caseCheckType.checkAllImplementations(this, props, maps);
     }
@@ -748,8 +784,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
     
     // для resolve'а
-    public ResolveClassSet getResolveClassSet() {
-        return ResolveUpClassSet.toResolve(getValueClassSet());
+    public ResolveClassSet getResolveClassSet(ImMap<T, ResolveClassSet> classes) {
+        ExClassSet set = inferValueClass(ExClassSet.toEx(classes), InferType.RESOLVE);
+        if(set != null && set.isEmpty())
+            return null;
+        return ExClassSet.fromEx(set);
     }
 
     @IdentityLazy
@@ -879,11 +918,16 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new ClassWhere<Object>(ResolveUpClassSet.toAnd(MapFact.<Object, ResolveClassSet>addExcl(ExClassSet.fromEx(inferred), "value", ExClassSet.fromEx(valueCommonClass))).removeNulls());
     }
 
+    protected static <T extends PropertyInterface> ImMap<T, ExClassSet> getInferExplicitCalcInterfaces(ImSet<T> interfaces, boolean noOld, InferType inferType, ImMap<T, ResolveClassSet> explicitInterfaces, Callable<ImMap<T,ExClassSet>> calcInterfaces, String caption, Checker<ExClassSet> checker) {
+        assert inferType != InferType.RESOLVE;
+        return getExplicitCalcInterfaces(interfaces, (inferType == InferType.PREVBASE && !noOld) || explicitInterfaces == null ? null : ExClassSet.toEx(explicitInterfaces), calcInterfaces, caption, checker);
+    }
+
     private ImMap<T, ExClassSet> getInferInterfaceClasses(final InferType inferType) {
-        return getExplicitCalcInterfaces((inferType == InferType.PREVBASE && !noOld()) || explicitClasses == null ? null : ExClassSet.toEx(explicitClasses), new Callable<ImMap<T, ExClassSet>>() {
+        return getInferExplicitCalcInterfaces(interfaces, noOld(), inferType, explicitClasses, new Callable<ImMap<T, ExClassSet>>() {
             public ImMap<T, ExClassSet> call() throws Exception {
                 return calcInferInterfaceClasses(inferType);
-            }}, "CALC", checker);
+            }}, "CALC " + this, checker);
     }
 
     private ImMap<T, ExClassSet> calcInferInterfaceClasses(InferType inferType) {

@@ -474,7 +474,7 @@ public abstract class LogicsModule {
                                 }
                             }), andProperty.objectInterface, DerivedProperty.createJoin(mapCalcImplement(derivedProp, list.subList(0, propsize))));
 
-        JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<AndFormulaProperty.Interface>(caption, listInterfaces, false,
+        JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<AndFormulaProperty.Interface>(caption, listInterfaces, 
                 new CalcPropertyImplement<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<JoinProperty.Interface>>(andProperty, mapImplement));
         LCP<JoinProperty.Interface> listProperty = new LCP<JoinProperty.Interface>(joinProperty, listInterfaces);
 
@@ -894,12 +894,12 @@ public abstract class LogicsModule {
         return addJProp((AbstractGroup) null, "sys", mainProp, params);
     }
 
-    protected LCP addJProp(String caption, LCP mainProp, Object... params) {
-        return addJProp(false, caption, mainProp, params);
+    protected LCP addJProp(boolean user, String caption, LCP mainProp, Object... params) {
+        return addJProp(false, user, caption, mainProp, params);
     }
 
-    protected LCP addJProp(boolean persistent, String caption, LCP mainProp, Object... params) {
-        return addJProp(null, false, persistent, caption, mainProp, params);
+    protected LCP addJProp(boolean persistent, boolean user, String caption, LCP mainProp, Object... params) {
+        return addJProp(null, false, persistent, user, caption, mainProp, params);
     }
 
     protected LCP addJProp(AbstractGroup group, String caption, LCP mainProp, Object... params) {
@@ -907,9 +907,13 @@ public abstract class LogicsModule {
     }
 
     protected LCP addJProp(AbstractGroup group, boolean implementChange, boolean persistent, String caption, LCP mainProp, Object... params) {
+        return addJProp(group, implementChange, persistent, false, caption, mainProp, params);
+    }
+
+    protected LCP addJProp(AbstractGroup group, boolean implementChange, boolean persistent, boolean user, String caption, LCP mainProp, Object... params) {
 
         ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(getIntNum(params));
-        JoinProperty<?> property = new JoinProperty(caption, listInterfaces, implementChange,
+        JoinProperty<?> property = new JoinProperty(caption, listInterfaces, implementChange, user,
                 mapCalcImplement(mainProp, readCalcImplements(listInterfaces, params)));
         property.inheritFixedCharWidth(mainProp.property);
         property.inheritImage(mainProp.property);
@@ -1011,7 +1015,7 @@ public abstract class LogicsModule {
                 new CalcPropertyImplement<L, CalcPropertyInterfaceImplement<PropertyInterface>>((CalcProperty<L>) ungroup.property, groupImplement), orders, ordersNotNull, restriction, over), innerInterfaces);
     }
 
-    protected <L extends PropertyInterface> LCP addPGProp(AbstractGroup group, boolean persistent, int roundlen, boolean roundfirst, String caption, int intCount, boolean ascending, boolean ordersNotNull, LCP<L> ungroup, Object... params) {
+    protected <L extends PropertyInterface> LCP addPGProp(AbstractGroup group, boolean persistent, int roundlen, boolean roundfirst, String caption, int intCount, List<ResolveClassSet> explicitInnerClasses, boolean ascending, boolean ordersNotNull, LCP<L> ungroup, Object... params) {
         int partNum = ungroup.listInterfaces.size();
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(intCount);
         final ImList<CalcPropertyInterfaceImplement<PropertyInterface>> listImplements = readCalcImplements(innerInterfaces, params);
@@ -1023,7 +1027,7 @@ public abstract class LogicsModule {
         ImOrderMap<CalcPropertyInterfaceImplement<PropertyInterface>, Boolean> orders =
                 listImplements.subList(partNum + 1, listImplements.size()).toOrderSet().toOrderMap(!ascending);
 
-        return mapLProp(group, persistent, DerivedProperty.createPGProp(caption, roundlen, roundfirst, baseLM.baseClass, innerInterfaces.getSet(),
+        return mapLProp(group, persistent, DerivedProperty.createPGProp(caption, roundlen, roundfirst, baseLM.baseClass, innerInterfaces, explicitInnerClasses,
                 new CalcPropertyImplement<L, CalcPropertyInterfaceImplement<PropertyInterface>>((CalcProperty<L>) ungroup.property, groupImplement), proportion, orders, ordersNotNull), innerInterfaces);
     }
 
@@ -1092,14 +1096,15 @@ public abstract class LogicsModule {
 
     // ------------------- GROUP SUM ----------------- //
 
-    protected LCP addSGProp(AbstractGroup group, boolean persistent, boolean notZero, String caption, int interfaces, Object... params) {
+    protected LCP addSGProp(AbstractGroup group, boolean persistent, boolean notZero, String caption, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addSGProp(group, persistent, notZero, caption, innerInterfaces, readCalcImplements(innerInterfaces, params));
+        return addSGProp(group, persistent, notZero, caption, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
     }
 
-    protected <T extends PropertyInterface> LCP addSGProp(AbstractGroup group, boolean persistent, boolean notZero, String caption, ImOrderSet<T> innerInterfaces, ImList<CalcPropertyInterfaceImplement<T>> implement) {
+    protected <T extends PropertyInterface> LCP addSGProp(AbstractGroup group, boolean persistent, boolean notZero, String caption, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<CalcPropertyInterfaceImplement<T>> implement) {
         ImList<CalcPropertyInterfaceImplement<T>> listImplements = implement.subList(1, implement.size());
         SumGroupProperty<T> property = new SumGroupProperty<T>(caption, innerInterfaces.getSet(), listImplements, implement.get(0));
+        property.setExplicitInnerClasses(innerInterfaces, explicitInnerClasses);
 
         LCP lp = mapLGProp(group, persistent, property, listImplements);
         return lp;
@@ -1107,38 +1112,39 @@ public abstract class LogicsModule {
 
     // ------------------- Override property ----------------- //
 
-    public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, boolean persist, String caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, int interfaces, Object... params) {
+    public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, boolean persist, String caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addOGProp(group, persist, caption, type, numOrders, ordersNotNull, descending, innerInterfaces, readCalcImplements(innerInterfaces, params));
+        return addOGProp(group, persist, caption, type, numOrders, ordersNotNull, descending, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
     }
-    public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, boolean persist, String caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, ImOrderSet<T> innerInterfaces, ImList<CalcPropertyInterfaceImplement<T>> listImplements) {
+    public <T extends PropertyInterface> LCP addOGProp(AbstractGroup group, boolean persist, String caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<CalcPropertyInterfaceImplement<T>> listImplements) {
         int numExprs = type.numExprs();
         ImList<CalcPropertyInterfaceImplement<T>> props = listImplements.subList(0, numExprs);
         ImOrderMap<CalcPropertyInterfaceImplement<T>, Boolean> orders = listImplements.subList(numExprs, numExprs + numOrders).toOrderSet().toOrderMap(descending);
         ImList<CalcPropertyInterfaceImplement<T>> groups = listImplements.subList(numExprs + numOrders, listImplements.size());
         OrderGroupProperty<T> property = new OrderGroupProperty<T>(caption, innerInterfaces.getSet(), groups.getCol(), props, type, orders, ordersNotNull);
+        property.setExplicitInnerClasses(innerInterfaces, explicitInnerClasses);
 
         return mapLGProp(group, persist, property, groups);
     }
 
     // ------------------- GROUP MAX ----------------- //
 
-    protected LCP addMGProp(AbstractGroup group, boolean persist, String caption, boolean min, int interfaces, Object... params) {
-        return addMGProp(group, persist, new String[]{caption}, 1, min, interfaces, params)[0];
+    protected LCP addMGProp(AbstractGroup group, boolean persist, String caption, boolean min, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
+        return addMGProp(group, persist, new String[]{caption}, 1, min, interfaces, explicitInnerClasses, params)[0];
     }
 
-    protected LCP[] addMGProp(AbstractGroup group, boolean persist, String[] captions, int exprs, boolean min, int interfaces, Object... params) {
+    protected LCP[] addMGProp(AbstractGroup group, boolean persist, String[] captions, int exprs, boolean min, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addMGProp(group, persist, captions, exprs, min, innerInterfaces, readCalcImplements(innerInterfaces, params));
+        return addMGProp(group, persist, captions, exprs, min, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
     }
 
-    protected <T extends PropertyInterface> LCP[] addMGProp(AbstractGroup group, boolean persist, String[] captions, int exprs, boolean min, ImOrderSet<T> listInterfaces, ImList<CalcPropertyInterfaceImplement<T>> listImplements) {
+    protected <T extends PropertyInterface> LCP[] addMGProp(AbstractGroup group, boolean persist, String[] captions, int exprs, boolean min, ImOrderSet<T> listInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<CalcPropertyInterfaceImplement<T>> listImplements) {
         LCP[] result = new LCP[exprs];
 
         MSet<CalcProperty> mOverridePersist = SetFact.mSet();
 
         ImList<CalcPropertyInterfaceImplement<T>> groupImplements = listImplements.subList(exprs, listImplements.size());
-        ImList<CalcPropertyImplement<?, CalcPropertyInterfaceImplement<T>>> mgProps = DerivedProperty.createMGProp(captions, listInterfaces.getSet(), baseLM.baseClass,
+        ImList<CalcPropertyImplement<?, CalcPropertyInterfaceImplement<T>>> mgProps = DerivedProperty.createMGProp(captions, listInterfaces, explicitInnerClasses, baseLM.baseClass,
                 listImplements.subList(0, exprs), groupImplements.getCol(), mOverridePersist, min);
 
         ImSet<CalcProperty> overridePersist = mOverridePersist.immutable();
@@ -1160,13 +1166,14 @@ public abstract class LogicsModule {
 
     // ------------------- CGProperty ----------------- //
 
-    protected <T extends PropertyInterface, P extends PropertyInterface> LCP addCGProp(AbstractGroup group, boolean checkChange, boolean persistent, String caption, LCP<P> dataProp, int interfaces, Object... params) {
+    protected <T extends PropertyInterface, P extends PropertyInterface> LCP addCGProp(AbstractGroup group, boolean checkChange, boolean persistent, String caption, LCP<PropertyInterface> dataProp, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addCGProp(group, checkChange, persistent, caption, dataProp, innerInterfaces, readCalcImplements(innerInterfaces, params));
+        return addCGProp(group, checkChange, persistent, caption, dataProp, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
     }
 
-    protected <T extends PropertyInterface, P extends PropertyInterface> LCP addCGProp(AbstractGroup group, boolean checkChange, boolean persistent, String caption, LCP<P> dataProp, ImOrderSet<T> innerInterfaces, ImList<CalcPropertyInterfaceImplement<T>> listImplements) {
+    protected <T extends PropertyInterface, P extends PropertyInterface> LCP addCGProp(AbstractGroup group, boolean checkChange, boolean persistent, String caption, LCP<P> dataProp, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<CalcPropertyInterfaceImplement<T>> listImplements) {
         CycleGroupProperty<T, P> property = new CycleGroupProperty<T, P>(caption, innerInterfaces.getSet(), listImplements.subList(1, listImplements.size()).getCol(), listImplements.get(0), dataProp == null ? null : (CalcProperty<P>)dataProp.property);
+        property.setExplicitInnerClasses(innerInterfaces, explicitInnerClasses);
 
         // нужно добавить ограничение на уникальность
         addConstraint(property.getConstrainedProperty(), checkChange);
@@ -1178,17 +1185,18 @@ public abstract class LogicsModule {
 
     // ------------------- GROUP AGGR ----------------- //
 
-    protected LCP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, String caption, boolean noConstraint, int interfaces, Object... props) {
+    protected LCP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, String caption, boolean noConstraint, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... props) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addAGProp(group, checkChange, persistent, caption, noConstraint, innerInterfaces, readCalcImplements(innerInterfaces, props));
+        return addAGProp(group, checkChange, persistent, caption, noConstraint, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, props));
     }
 
-    protected <T extends PropertyInterface<T>, I extends PropertyInterface> LCP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, String caption, boolean noConstraint, ImOrderSet<T> innerInterfaces, ImList<CalcPropertyInterfaceImplement<T>> listImplements) {
+    protected <T extends PropertyInterface<T>, I extends PropertyInterface> LCP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, String caption, boolean noConstraint, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<CalcPropertyInterfaceImplement<T>> listImplements) {
         T aggrInterface = (T) listImplements.get(0);
         CalcPropertyInterfaceImplement<T> whereProp = listImplements.get(1);
         ImList<CalcPropertyInterfaceImplement<T>> groupImplements = listImplements.subList(2, listImplements.size());
 
         AggregateGroupProperty<T> aggProp = AggregateGroupProperty.create(caption, innerInterfaces.getSet(), whereProp, aggrInterface, groupImplements.toOrderExclSet().getSet());
+        aggProp.setExplicitInnerClasses(innerInterfaces, explicitInnerClasses);
         return addAGProp(group, checkChange, persistent, noConstraint, aggProp, groupImplements);
     }
 

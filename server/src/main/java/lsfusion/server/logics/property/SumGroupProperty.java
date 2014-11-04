@@ -37,12 +37,6 @@ public class SumGroupProperty<I extends PropertyInterface> extends AddGroupPrope
         finalizeInit();
     }
     
-    public SumGroupProperty(String caption, ImCol<? extends CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property) {
-        super(caption, interfaces, property);
-
-        finalizeInit();
-    }
-
     public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, ImMap<Interface<I>, ? extends Expr> joinImplement, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
         return changedExpr.diff(changedPrevExpr).sum(getExpr(joinImplement));

@@ -39,6 +39,8 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.property.group.AbstractNode;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
 
@@ -478,12 +480,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         this.name = name;
         this.canonicalName = PropertyCanonicalNameUtils.createName(namespace, name, signature);
         this.dbName = policy.transformToDBName(canonicalName);
-        
-        setExplicitClasses(signatureOrder.mapList(ListFact.fromJavaList(signature)).removeNulls());
+
+        setExplicitClasses(signatureOrder, signature);
     }
-    
-    public void setExplicitClasses(ImMap<T, ResolveClassSet> explicitClasses) {
-        this.explicitClasses = explicitClasses;
+
+    protected static <T extends PropertyInterface> ImMap<T, ResolveClassSet> getPackedSignature(ImOrderSet<T> interfaces, List<ResolveClassSet> signature) {
+        return interfaces.mapList(ListFact.fromJavaList(signature)).removeNulls();
+    }
+
+    public void setExplicitClasses(ImOrderSet<T> interfaces, List<ResolveClassSet> signature) {
+        this.explicitClasses = getPackedSignature(interfaces, signature);
     }
     
     public String getSID() {
@@ -498,15 +504,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         this.local = local;
     }
 
-
-    protected ImMap<T, ResolveClassSet> explicitClasses;
+    protected ImMap<T, ResolveClassSet> explicitClasses; // без nulls
     
     protected static interface Checker<V> {
         boolean checkEquals(V expl, V calc);
     }
-    
+
     //
-    protected <V> ImMap<T, V> getExplicitCalcInterfaces(ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, String caption, Checker<V> checker) {
+    protected static <T, V> ImMap<T, V> getExplicitCalcInterfaces(ImSet<T> interfaces, ImMap<T, V> explicitInterfaces, Callable<ImMap<T,V>> calcInterfaces, String caption, Checker<V> checker) {
         
         ImMap<T, V> inferred = null;
         if (explicitInterfaces != null)
@@ -531,13 +536,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return inferred;
     }
 
-    private <V> boolean checkExplicitCalcInterfaces(Checker<V> checker, String caption, ImMap<T, V> inferred, ImMap<T, V> calcInferred) {
+    private static  <T, V> boolean checkExplicitCalcInterfaces(Checker<V> checker, String caption, ImMap<T, V> inferred, ImMap<T, V> calcInferred) {
         for(int i=0, size = inferred.size(); i<size; i++) {
             T key = inferred.getKey(i);
             V calcValue = calcInferred.get(key);
             V inferValue = inferred.getValue(i);
             if((calcValue != null || inferValue != null) && (calcValue == null || inferValue == null || !checker.checkEquals(calcValue, inferValue))) {
-                System.out.println(this + " " + caption + ", CALC : " + calcInferred + ", INF : " + inferred);
+                System.out.println(caption + ", CALC : " + calcInferred + ", INF : " + inferred);
                 return false;
             }
         }

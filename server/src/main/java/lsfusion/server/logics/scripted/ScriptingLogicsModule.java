@@ -115,6 +115,26 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private String lastOpimizedJPropSID = null;
 
+    public static List<String> getUsedNames(List<TypedParameter> context, List<Integer> usedParams) {
+        List<String> usedNames = new ArrayList<String>();
+        for (int usedIndex : usedParams) {
+            usedNames.add(context.get(usedIndex).paramName);
+        }
+        return usedNames;
+    }
+
+    public static List<ResolveClassSet> getUsedClasses(List<TypedParameter> context, List<Integer> usedParams) {
+        List<ResolveClassSet> usedClasses = new ArrayList<ResolveClassSet>();
+        for (int usedIndex : usedParams) {
+            ValueClass cls = context.get(usedIndex).cls;
+            if(cls == null)
+                usedClasses.add(null);
+            else
+                usedClasses.add(cls.getResolveSet());
+        }
+        return usedClasses;
+    }
+
     public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, LOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
     public enum InsertPosition {IN, BEFORE, AFTER, FIRST}
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
@@ -712,7 +732,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         // Если объявление имеет вид f(x, y) = g(x, y), то нужно дополнительно обернуть свойство g в join
         if (property.property.getSID().equals(lastOpimizedJPropSID)) {
-            property = addJProp("", (LCP) property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
+            property = addJProp(false, "", (LCP) property, BaseUtils.consecutiveList(property.property.interfaces.size(), 1).toArray());
         }
 
         makePropertyPublic(property, name, signature);
@@ -882,12 +902,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return classes;
     }
     
-    private List<ResolveClassSet> getParamClassesByParamProperties(List<LPWithParams> paramProps, List<TypedParameter> params) {
+    private <T extends PropertyInterface> List<ResolveClassSet> getParamClassesByParamProperties(List<LPWithParams> paramProps, List<TypedParameter> params) {
         List<ResolveClassSet> classes = new ArrayList<ResolveClassSet>();
         for (LPWithParams paramProp : paramProps) {
             if (paramProp.property != null) {
-                CalcProperty lcp = (CalcProperty) paramProp.property.property;
-                classes.add(lcp.getResolveClassSet());
+                LCP<T> lcp = (LCP<T>)paramProp.property;
+                List<ResolveClassSet> usedClasses = getUsedClasses(params, paramProp.usedParams);
+                classes.add(lcp.getResolveClassSet(usedClasses));
             } else {
                 TypedParameter param = params.get(paramProp.usedParams.get(0));
                 if (param.cls == null) {
@@ -929,12 +950,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
     
-    public LPWithParams addScriptedJProp(PropertyUsage pUsage, List<LPWithParams> paramProps, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedJProp(boolean user, PropertyUsage pUsage, List<LPWithParams> paramProps, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         LP mainProp = findJoinMainProp(pUsage, paramProps, params);
-        return addScriptedJProp(mainProp, paramProps);
+        return addScriptedJProp(user, mainProp, paramProps);
     }
     
     public LPWithParams addScriptedJProp(LP mainProp, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJProp(false, mainProp, paramProps);
+    }
+    public LPWithParams addScriptedJProp(boolean user, LP mainProp, List<LPWithParams> paramProps) throws ScriptingErrorLog.SemanticErrorException {
         checkCalculationProperty(mainProp);
         checkParamCount(mainProp, paramProps.size());
         List<Object> resultParams = getParamsPlainList(paramProps);
@@ -943,8 +967,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             prop = mainProp;
             lastOpimizedJPropSID = mainProp.property.getSID();
         } else {
-            scriptLogger.info("addScriptedJProp(" + mainProp.property.getSID() + ", " + resultParams + ");");
-            prop = addJProp("", (LCP) mainProp, resultParams.toArray());
+            scriptLogger.info("addScriptedJProp(" + user + ", " + mainProp.property.getSID() + ", " + resultParams + ");");
+            prop = addJProp(user, "", (LCP) mainProp, resultParams.toArray());
         }
         return new LPWithParams(prop, mergeAllParams(paramProps));
     }
@@ -1759,7 +1783,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LCP addScriptedGProp(GroupingType type, List<LPWithParams> mainProps, List<LPWithParams> groupProps, List<LPWithParams> orderProps,
-                                  boolean ascending, LPWithParams whereProp) throws ScriptingErrorLog.SemanticErrorException {
+                                  boolean ascending, LPWithParams whereProp, List<TypedParameter> innerInterfaces) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedGProp(" + type + ", " + mainProps + ", " + groupProps + ", " + orderProps + ", " +
                                             ascending + ", " + whereProp + ");");
 
@@ -1788,19 +1812,22 @@ public class ScriptingLogicsModule extends LogicsModule {
         boolean ordersNotNull = doesExtendContext(mergeLists(mainProps, groupProps), orderProps);
 
         int groupPropParamCount = mergeAllParams(mergeLists(mainProps, groupProps, orderProps)).size();
+        List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(innerInterfaces);
+        assert groupPropParamCount == explicitInnerClasses.size();
+        
         LCP resultProp = null;
         if (type == GroupingType.SUM) {
-            resultProp = addSGProp(null, false, false, "", groupPropParamCount, resultParams.toArray());
+            resultProp = addSGProp(null, false, false, "", groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
-            resultProp = addMGProp(null, false, "", type == GroupingType.MIN, groupPropParamCount, resultParams.toArray());
+            resultProp = addMGProp(null, false, "", type == GroupingType.MIN, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.CONCAT) {
-            resultProp = addOGProp(null, false, "", GroupType.STRING_AGG, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, resultParams.toArray());
+            resultProp = addOGProp(null, false, "", GroupType.STRING_AGG, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
-            resultProp = addAGProp(null, false, false, "", type == GroupingType.NAGGR, groupPropParamCount, resultParams.toArray());
+            resultProp = addAGProp(null, false, false, "", type == GroupingType.NAGGR, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
-            resultProp = addCGProp(null, false, false, "", null, groupPropParamCount, resultParams.toArray());
+            resultProp = addCGProp(null, false, false, "", null, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.LAST) {
-            resultProp = addOGProp(null, false, "", GroupType.LAST, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, resultParams.toArray());
+            resultProp = addOGProp(null, false, "", GroupType.LAST, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         }
         return resultProp;
     }
@@ -1845,7 +1872,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (partitionType == PartitionType.SUM || partitionType == PartitionType.PREVIOUS) {
             prop = addOProp(null, false, "", partitionType, isAscending, ordersNotNull, useLast, groupPropsCnt, resultParams.toArray());
         } else if (partitionType == PartitionType.DISTR_CUM_PROPORTION) {
-            prop = addPGProp(null, false, precision, strict, "", usedParams.size(), isAscending, ordersNotNull, (LCP) ungroupProp, resultParams.toArray());
+            List<ResolveClassSet> explicitInnerClasses = getClassesFromTypedParams(context); // для не script - временный хак
+            assert usedParams.size() == explicitInnerClasses.size();
+            prop = addPGProp(null, false, precision, strict, "", usedParams.size(), explicitInnerClasses, isAscending, ordersNotNull, (LCP) ungroupProp, resultParams.toArray());
         } else {
             prop = addUGProp(null, false, strict, "", usedParams.size(), isAscending, ordersNotNull, (LCP) ungroupProp, resultParams.toArray());
         }

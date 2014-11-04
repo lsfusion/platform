@@ -100,6 +100,16 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K, E> Map<K, E> joinKeep(Map<K, ? extends E> map, Map<E, E> joinMap) {
+        Map<K, E> result = new HashMap<K, E>();
+        for (Map.Entry<K, ? extends E> entry : map.entrySet()) {
+            E value = entry.getValue();
+            E joinValue = joinMap.get(value);
+            result.put(entry.getKey(), joinValue == null ? value : joinValue );
+        }
+        return result;
+    }
+
     public static <K, E, V, R extends E> Map<K, V> rightJoin(Map<K, E> map, Map<R, V> joinMap) {
         return BaseUtils.join(BaseUtils.filterValues(map, joinMap.keySet()), joinMap);
     }

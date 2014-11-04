@@ -716,11 +716,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), propertyCN));
             
             ActionProperty setupPolicyAction = setupPolicyLAP.property;
-            try {
-                LM.makePropertyPublic(setupPolicyLAP, setupPolicyActionName, parser.getSignature());
-            } catch (PropertyCanonicalNameParser.ParseException e) {
-                Throwables.propagate(e);
-            }
+            LM.makePropertyPublic(setupPolicyLAP, setupPolicyActionName, new ArrayList<ResolveClassSet>());
             setupPolicyAction.checkReadOnly = false;
             property.setContextMenuAction(setupPolicyAction.getSID(), setupPolicyAction.caption);
             property.setEditAction(setupPolicyAction.getSID(), setupPolicyAction.getImplement());

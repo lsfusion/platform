@@ -205,10 +205,10 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }; 
             
     private CalcPropertyMapImplement<?, P> calcClassWhereProperty() {
-        ImMap<P, ValueClass> inferred = getExplicitCalcInterfaces(getExplicitInterfaces(), new Callable<ImMap<P, ValueClass>>() {
+        ImMap<P, ValueClass> inferred = getExplicitCalcInterfaces(interfaces, getExplicitInterfaces(), new Callable<ImMap<P, ValueClass>>() {
             public ImMap<P, ValueClass> call() throws Exception {
                 return calcWhereInterfaceClasses();
-            }}, "ACTION", checker);
+            }}, "ACTION " + this, checker);
         return IsClassProperty.getMapProperty(inferred);
     }
 

@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupType;
@@ -22,6 +23,9 @@ import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.PropertyChanges;
+
+import java.util.List;
+import java.util.concurrent.Callable;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -38,14 +42,17 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
 
     protected final ImSet<I> innerInterfaces;
 
-    protected GroupProperty(String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
-        super(caption, getInterfaces(groupInterfaces));
+    private GroupProperty(String caption, ImOrderSet<Interface<I>> interfaces, ImSet<I> innerInterfaces) {
+        super(caption, interfaces);
         this.innerInterfaces = innerInterfaces;
     }
 
+    protected GroupProperty(String caption, ImSet<I> innerInterfaces, ImCol<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
+        this(caption, getInterfaces(groupInterfaces), innerInterfaces);
+    }
+
     protected GroupProperty(String caption, ImSet<I> innerInterfaces, ImList<? extends CalcPropertyInterfaceImplement<I>> groupInterfaces) {
-        super(caption, getTempInterfaces(groupInterfaces));
-        this.innerInterfaces = innerInterfaces;
+        this(caption, getTempInterfaces(groupInterfaces), innerInterfaces);
     }
     
     public ImMap<Interface<I>,CalcPropertyInterfaceImplement<I>> getMapInterfaces() {
@@ -89,9 +96,27 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
             }
         }));
     }
-    public ExClassSet calcInferValueClass(ImMap<Interface<I>, ExClassSet> inferred, InferType inferType) {
-        ImMap<I, ExClassSet> innerInferred = inferInnerInterfaceClasses(inferred, inferType).finishEx(inferType);
-        if(innerInferred == null)
+
+    protected ImMap<I, ResolveClassSet> explicitInnerClasses; // без nulls
+    
+    public void setExplicitInnerClasses(ImOrderSet<I> innerInterfaces, List<ResolveClassSet> explicitInnerClasses) {
+        this.explicitInnerClasses = getPackedSignature(innerInterfaces, explicitInnerClasses);
+        assert this.explicitInnerClasses != null;
+    }
+
+    public ExClassSet calcInferValueClass(final ImMap<Interface<I>, ExClassSet> inferred, final InferType inferType) {
+        ImMap<I, ExClassSet> innerInferred = explicitInnerClasses == null ? null : ExClassSet.toEx(explicitInnerClasses);
+        if(inferType != InferType.RESOLVE) {
+            innerInferred = getInferExplicitCalcInterfaces(innerInterfaces, noOld(), inferType, explicitInnerClasses, new Callable<ImMap<I, ExClassSet>>() {
+                public ImMap<I, ExClassSet> call() throws Exception {
+                    return inferInnerInterfaceClasses(inferred, inferType).finishEx(inferType);
+                }
+            }, "CALCINNER" + this, null);
+        } else {
+            assert explicitInnerClasses != null;
+            innerInferred = ExClassSet.toEx(explicitInnerClasses);
+        }
+        if (innerInferred == null)
             return ExClassSet.FALSE;
         return inferInnerValueClass(innerInferred, inferType);
     }

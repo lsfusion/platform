@@ -202,14 +202,6 @@ public class ScriptingFormEntity {
         return LM.getPropertyWithMapping(form, pUsage, mapping);
     }
 
-    public List<String> getUsedObjectNames(List<ScriptingLogicsModule.TypedParameter> context, List<Integer> usedParams) {
-        List<String> usedNames = new ArrayList<String>();
-        for (int usedIndex : usedParams) {
-            usedNames.add(context.get(usedIndex).paramName);
-        }
-        return usedNames;
-    }
-
     public List<GroupObjectEntity> getGroupObjectsList(List<String> mapping, Version version) throws ScriptingErrorLog.SemanticErrorException {
         List<GroupObjectEntity> groupObjects = new ArrayList<GroupObjectEntity>();
         for (String groupName : mapping) {
@@ -563,7 +555,7 @@ public class ScriptingFormEntity {
     }
 
     public ActionPropertyObjectEntity getActionPropertyObject(List<ScriptingLogicsModule.TypedParameter> context, ScriptingLogicsModule.LPWithParams action) throws ScriptingErrorLog.SemanticErrorException {
-        return form.addPropertyObject((LAP) action.property, getMappingObjectsArray(getUsedObjectNames(context, action.usedParams)));
+        return form.addPropertyObject((LAP) action.property, getMappingObjectsArray(ScriptingLogicsModule.getUsedNames(context, action.usedParams)));
     }
 
     public void addScriptedFormEvents(List<ActionPropertyObjectEntity> actions, List<Object> types, Version version) throws ScriptingErrorLog.SemanticErrorException {

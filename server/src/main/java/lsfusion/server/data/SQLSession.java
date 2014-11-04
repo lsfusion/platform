@@ -907,17 +907,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return executeDML(execute.command, execute.owner, execute.tableOwner, execute.params, execute.env, execute.queryExecEnv, execute.transactTimeout);
     }
 
-    private static Map<Integer, Boolean> explainAnalyzeUserMode = new ConcurrentHashMap<Integer, Boolean>();
     private static Map<Integer, Boolean> explainUserMode = new ConcurrentHashMap<Integer, Boolean>();
+    private static Map<Integer, Boolean> explainNoAnalyzeUserMode = new ConcurrentHashMap<Integer, Boolean>();
     private static Map<Integer, Boolean> loggerDebugEnabled = new ConcurrentHashMap<Integer, Boolean>();
     private static Map<Integer, Integer> volatileStats = new ConcurrentHashMap<Integer, Integer>();
 
     public void setExplainAnalyzeMode(Integer user, Boolean mode) {
-        explainAnalyzeUserMode.put(user, mode != null && mode);
+        explainUserMode.put(user, mode != null && mode);
     }
 
     public void setExplainMode(Integer user, Boolean mode) {
-        explainUserMode.put(user, mode != null && mode);
+        explainNoAnalyzeUserMode.put(user, mode != null && mode);
     }
 
     public void setLoggerDebugEnabled(Integer user, Boolean enabled) {
@@ -937,12 +937,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
     
     private boolean explainAnalyze() {
-        Boolean eam = explainAnalyzeUserMode.get(userProvider.getCurrentUser());
+        Boolean eam = explainUserMode.get(userProvider.getCurrentUser());
         return eam != null && eam;
     }
 
     private boolean explainNoAnalyze() {
-        Boolean ea = explainUserMode.get(userProvider.getCurrentUser());
+        Boolean ea = explainNoAnalyzeUserMode.get(userProvider.getCurrentUser());
         return ea != null && ea;
     }
 
@@ -1025,7 +1025,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 if(matcher.find()) {
                     rtime = Double.valueOf(matcher.group(1));
                 }
-                if(rtime > 100.0) {
+                if(noAnalyze || rtime > 100.0) {
                     systemLogger.info(statement.toString());
                     for(String outRow : out)
                         systemLogger.info(outRow);

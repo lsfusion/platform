@@ -862,7 +862,7 @@ formFilterDeclaration returns [LP property, List<String> mapping]
 }
 @after {
 	if (inPropParseState()) {
-		$mapping = $formStatement::form.getUsedObjectNames(context, $expr.property.usedParams);
+		$mapping = self.getUsedNames(context, $expr.property.usedParams);
 	}	
 }
 	:	expr=propertyExpression[context, false] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); $property = $expr.property.property; } }
@@ -1185,9 +1185,9 @@ joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 @after {
 	if (inPropParseState()) {
 		if (isInline) {
-			$property = self.addScriptedJProp($iProp.property, $exprList.props);
+			$property = self.addScriptedJProp(true, $iProp.property, $exprList.props);
 		} else {
-			$property = self.addScriptedJProp($uProp.propUsage, $exprList.props, context);	
+			$property = self.addScriptedJProp(true, $uProp.propUsage, $exprList.props, context);	
 		}
 	}
 }
@@ -1211,7 +1211,7 @@ groupPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @after {
 	if (inPropParseState()) {
 		$signature = self.getSignatureForGProp(groupProps, groupContext);
-		$property = self.addScriptedGProp($type.type, $mainList.props, groupProps, orderProps, ascending, $whereExpr.property);
+		$property = self.addScriptedGProp($type.type, $mainList.props, groupProps, orderProps, ascending, $whereExpr.property, groupContext);
 	}
 }
 	:	'GROUP'
@@ -1586,10 +1586,16 @@ propertyUsage returns [PropertyUsage propUsage]
 
 inlineProperty returns [LP property]
 @init {
-	List<TypedParameter> newContext = new ArrayList<TypedParameter>(); 
+	List<TypedParameter> newContext = new ArrayList<TypedParameter>();
+	List<ResolveClassSet> signature = null;
 }
-	:	'[' '='	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); $property = $expr.property.property; } }
-			|	def=expressionUnfriendlyPD[newContext, true, true] { $property = $def.property; }
+@after {
+	if (inPropParseState()) { // not native
+		property.setExplicitClasses(signature);	
+	}
+}
+	:	'[' '='	(	expr=propertyExpression[newContext, true] { if (inPropParseState()) { self.checkNecessaryProperty($expr.property); $property = $expr.property.property; signature = self.getClassesFromTypedParams(newContext); } }
+			|	def=expressionUnfriendlyPD[newContext, true, true] { $property = $def.property; signature = $def.signature; }
 			)
 		']'
 	;

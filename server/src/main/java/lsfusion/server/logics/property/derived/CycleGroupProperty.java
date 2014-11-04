@@ -37,11 +37,6 @@ public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyI
         this.toChange = toChange;
     }
 
-    public CycleGroupProperty(String caption, ImCol<CalcPropertyInterfaceImplement<I>> interfaces, CalcProperty<I> property, CalcProperty<P> toChange) {
-        super(caption, interfaces, property, false);
-        this.toChange = toChange;
-    }
-
     @IdentityInstanceLazy
     public CalcProperty getConstrainedProperty() {
         // создает ограничение на "одинаковость" всех группировочных св-в

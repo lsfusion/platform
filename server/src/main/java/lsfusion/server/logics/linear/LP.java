@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.interop.ClassViewType;
+import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.PropertyObjectEntity;
 import lsfusion.server.form.entity.PropertyObjectInterfaceEntity;
@@ -16,6 +17,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 
 import javax.swing.*;
+import java.util.List;
 
 public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
 
@@ -180,5 +182,9 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
 
     public PropertyObjectEntity<T, ?> createObjectEntity(PropertyObjectInterfaceEntity... objects) {
         return PropertyObjectEntity.create(property, getMap(objects), creationScript, creationPath);
+    }
+
+    public void setExplicitClasses(List<ResolveClassSet> signature) {
+        property.setExplicitClasses(listInterfaces, signature);
     }
 }

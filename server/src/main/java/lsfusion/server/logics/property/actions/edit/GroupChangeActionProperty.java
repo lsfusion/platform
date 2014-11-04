@@ -10,6 +10,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
+import lsfusion.server.form.instance.OrderInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
@@ -17,6 +18,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.flow.AroundAspectActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
+import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 
@@ -31,8 +33,8 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
 
     private ImOrderSet<ImMap<ObjectInstance, DataObject>> getObjectGroupKeys(ExecutionContext context) throws SQLException, SQLHandledException {
         GroupObjectInstance groupObject = context.getChangingPropertyToDraw();
-        ImRevMap<ObjectInstance, KeyExpr> groupKeys = groupObject.getMapKeys();
-        return new Query<ObjectInstance, Object>(groupKeys, groupObject.getWhere(groupKeys, context.getModifier())).executeClasses(context).keyOrderSet();
+        DataSession session = context.getSession();
+        return groupObject.readKeys(session.sql, context.getQueryEnv(), context.getModifier(), session.baseClass).keyOrderSet();
     }
 
     @Override
