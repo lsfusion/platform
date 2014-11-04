@@ -591,6 +591,7 @@
         <property name="securityManager" ref="securityManager"/>
         <property name="dbManager" ref="dbManager"/>
         <property name="clientVMOptions" ref="clientVMOptions"/>
+        <property name="timeZone" value="${timeZone:}"/>
     </bean>
 
     <bean id="clientVMOptions" class="lsfusion.interop.VMOptions">

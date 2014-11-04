@@ -19,6 +19,7 @@ import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,10 +34,7 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -190,6 +188,10 @@ public class Main {
     }
 
     private static void setupTimeZone() throws RemoteException {
+        TimeZone timeZone = TimeZone.getTimeZone(remoteLogics.getTimeZone());
+        if (timeZone != null) {
+            TimeZone.setDefault(timeZone);
+        }
 
         dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
 

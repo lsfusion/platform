@@ -53,6 +53,14 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
+    @Override
+    public String getTimeZone() throws RemoteException {
+        logRemoteMethodStartCall("getTimeZone");
+        String result = target.getTimeZone();
+        logRemoteMethodEndCall("getTimeZone", result);
+        return result;
+    }
+
     public Integer getComputer(String hostname) throws RemoteException {
         logRemoteMethodStartCall("getComputer");
         Integer result = target.getComputer(hostname);

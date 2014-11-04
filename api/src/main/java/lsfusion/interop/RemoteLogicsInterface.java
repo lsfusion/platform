@@ -19,6 +19,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     byte[] getMainIcon() throws RemoteException;
 
     byte[] getLogo() throws RemoteException;
+    
+    String getTimeZone() throws RemoteException;
 
     RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean forceCreateNew) throws RemoteException;
 

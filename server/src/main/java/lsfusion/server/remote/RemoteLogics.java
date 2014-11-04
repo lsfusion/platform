@@ -59,6 +59,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     private String displayName;
     private String name;
+    
+    private String timeZone;
 
     public void setBusinessLogics(BusinessLogics businessLogics) {
         this.businessLogics = (T) businessLogics;
@@ -94,6 +96,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
     }
 
     @Override
@@ -189,6 +195,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     public byte[] getLogo() throws RemoteException {
         return null;
+    }
+    
+    public String getTimeZone() throws RemoteException {
+        return timeZone;
     }
 
     public int generateNewID() throws RemoteException {
