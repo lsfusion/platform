@@ -188,7 +188,7 @@ public class Main {
     }
 
     private static void setupTimeZone() throws RemoteException {
-        TimeZone timeZone = TimeZone.getTimeZone(remoteLogics.getTimeZone());
+        TimeZone timeZone = TimeZone.getTimeZone(remoteLogics.getUserTimeZone());
         if (timeZone != null) {
             TimeZone.setDefault(timeZone);
         }

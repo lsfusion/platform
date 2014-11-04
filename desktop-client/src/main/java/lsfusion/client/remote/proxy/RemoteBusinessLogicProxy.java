@@ -54,10 +54,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public String getTimeZone() throws RemoteException {
-        logRemoteMethodStartCall("getTimeZone");
-        String result = target.getTimeZone();
-        logRemoteMethodEndCall("getTimeZone", result);
+    public String getUserTimeZone() throws RemoteException {
+        logRemoteMethodStartCall("getUserTimeZone");
+        String result = target.getUserTimeZone();
+        logRemoteMethodEndCall("getUserTimeZone", result);
         return result;
     }
 
