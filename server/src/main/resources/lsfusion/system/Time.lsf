@@ -22,6 +22,7 @@ toTime(dateTime) = TIME(dateTime AS DATETIME);
 toDateTime(date) = DATETIME(date AS DATE);
 
 toDateDDMMYY = FORMULA VARSTRING[8] 'to_char(($1),\'DD.MM.YY\')';
+toDateDDMMYYYY = FORMULA VARSTRING[10] 'to_char(($1),\'DD.MM.YYYY\')';
 
 currentTime 'Тек. время' = toTime(currentDateTime());
 
