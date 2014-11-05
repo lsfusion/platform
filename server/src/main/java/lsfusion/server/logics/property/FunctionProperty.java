@@ -44,6 +44,10 @@ public abstract class FunctionProperty<T extends PropertyInterface> extends Aggr
         if(aggrType.isSelect())
             return valueClass;
         
+        if(valueClass == null) {
+            assert inferType == InferType.RESOLVE;
+            return null;
+        }
         return ExClassSet.toExType(aggrType.getType(ExClassSet.fromExType(valueClass)));
     }
 
