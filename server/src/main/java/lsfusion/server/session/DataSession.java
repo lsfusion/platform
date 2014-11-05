@@ -34,6 +34,7 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.instance.ChangedData;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
@@ -1555,6 +1556,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         activeSessionEvents = null;
         sessionEventOldDepends = null;
     }
+    public ImSet<FormEntity> extraActiveForms; // временный хак, пока не появится нормальное управление событиями     
     public Iterable<FormInstance> getActiveForms() {
         return activeForms.keysIt();
     }

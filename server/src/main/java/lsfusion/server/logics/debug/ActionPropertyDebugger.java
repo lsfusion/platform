@@ -196,32 +196,33 @@ public class ActionPropertyDebugger {
         if (delegatesHolderClass == null)
             return action.executeImpl(context);
 
+        FlowResult result = null;
+        if (debugInfo.delegationType == BEFORE_DELEGATE) {
+            result = action.executeImpl(context);
+        }
+
         try {
             Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo), ActionProperty.class, ExecutionContext.class);
-
-            FlowResult result = null;
-            if (debugInfo.delegationType == BEFORE_DELEGATE) {
-                result = action.executeImpl(context);
-            }
-
             FlowResult delegateResult = (FlowResult) commonExecuteDelegate(delegatesHolderClass, method, action, context);
             if (debugInfo.delegationType == IN_DELEGATE) {
                 return delegateResult;
             }
-            
-            if (debugInfo.delegationType == AFTER_DELEGATE) {
-                return action.executeImpl(context);
-            }
-            
-            return result;
-
         } catch (InvocationTargetException e) {
             throw ExceptionUtils.propagate(e.getCause(), SQLException.class, SQLHandledException.class);
         } catch (Exception e) {
             logger.warn("Error while delegating to ActionPropertyDebugger: ", e);
             //если упало исключение в reflection, то просто вызываем оригинальный execute
-            return action.executeImpl(context);
+            if(debugInfo.delegationType == IN_DELEGATE)
+                return action.executeImpl(context);
         }
+
+        if (debugInfo.delegationType == AFTER_DELEGATE) {
+            result = action.executeImpl(context);
+        }
+
+        return result;
+
+
     }
     
     private Object commonExecuteDelegate(Class<?> clazz, Method method, ActionProperty action, ExecutionContext context) throws InvocationTargetException, IllegalAccessException {
