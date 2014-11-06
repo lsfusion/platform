@@ -20,6 +20,7 @@ public class ReportHTMLExporter extends JRHtmlExporter {
 
     protected void writeEmptyCell(JRExporterGridCell cell, int rowHeight) throws IOException
     {
+        boolean isUsingImagesToAlign = this.getCurrentConfiguration().isUsingImagesToAlign();
         if (isUsingImagesToAlign) {
             super.writeEmptyCell(cell, rowHeight);
         } else {
@@ -139,6 +140,7 @@ public class ReportHTMLExporter extends JRHtmlExporter {
 //            }
         }
 
+        boolean isWrapBreakWord = this.getCurrentItemConfiguration().isWrapBreakWord();
         if (isWrapBreakWord)
         {
             styleBuffer.append("width: " + toSizeUnit(gridCell.getWidth()) + "; ");

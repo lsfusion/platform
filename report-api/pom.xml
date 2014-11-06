@@ -29,5 +29,13 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.olap4j</groupId>
+            <artifactId>olap4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jdt.core.compiler</groupId>
+            <artifactId>ecj</artifactId>
+        </dependency>
     </dependencies>
 </project>
