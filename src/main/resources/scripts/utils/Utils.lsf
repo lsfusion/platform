@@ -46,6 +46,7 @@ rpad = FORMULA TEXT 'rpad($1,$2,$3)';
 floor = FORMULA 'floor($1)';
 ceil = FORMULA 'ceiling($1)';
 min = FORMULA '($1+$2-ABS($1-$2))/2';
+max = FORMULA '($1+$2+ABS($1-$2))/2';
 
 sqr = FORMULA '($1)*($1)';
 sqrt = FORMULA 'sqrt($1)';
