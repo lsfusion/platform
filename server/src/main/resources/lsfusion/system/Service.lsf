@@ -90,6 +90,36 @@ WHEN CHANGED(remoteLoggerDebugEnabledUser(user)) DO {
     refreshRemoteLoggerDebugEnabledUser(user);
 }
 
+// --------------- Удаление прикладных логов ------------------------ //
+
+clearApplicationLog 'Очистить прикладные логи' = ABSTRACT ACTION LIST () ;
+
+META defineLog (object, caption, container)
+    countDaysClear##object 'За сколько дней хранить лог '##caption = DATA INTEGER (); 
+    
+    EXTEND FORM options PROPERTIES countDaysClear##object();
+    EXTEND DESIGN options { container { ADD PROPERTY(countDaysClear##object());} }    
+END
+META defineLog (object, dateProp)
+    clearApplicationLog () += ACTION () NEWSESSION AUTOAPPLY {
+        IF countDaysClear##object() THEN {
+            DELETE d WHERE d IS object AND dateProp##object(d)<= subtractDate(currentDate(), countDaysClear##object());
+        }
+    }   
+END
+META defineLog (object, caption, container, dateProp)
+    @defineLog (object, caption, container);
+    @defineLog (object, dateProp);    
+END
+
+EXTEND DESIGN options {
+    pane {
+        NEW log {
+            caption = 'Логирование';
+        }
+    }
+}
+
 setVolatileStatsEnabledUser 'Установить использование nested loop' = ACTION CUSTOM 'lsfusion.server.logics.service.SetVolatileStatsEnabledUserActionProperty' (BOOLEAN, User);
 volatileStatsEnabledUser 'Не использовать nested loop' = DATA BOOLEAN (User);
 refreshVolatileStatsEnabledUser '' = ACTION (user) {
@@ -146,7 +176,8 @@ FORM admin 'Администрирование'
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
                  vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, dropLRU, makeHeapDump, 
                  TILMode, reupdateMode, singleTransaction,
-                 nameReflectionSetting, turnExplainAnalizeOnCurrentUser, valueReflectionSetting SHOWIF nameReflectionSetting()
+                 nameReflectionSetting, turnExplainAnalizeOnCurrentUser, clearApplicationLog,
+                 valueReflectionSetting SHOWIF nameReflectionSetting()
     OBJECTS u=User
     PROPERTIES(u) nameUser READONLY, explainAnalyzeModeUser, explainModeUser, loggerDebugEnabledUser, remoteLoggerDebugEnabledUser, volatileStatsEnabledUser;
 ;
@@ -222,6 +253,7 @@ DESIGN admin FROM DEFAULT {
         NEW log {
             caption = 'Логирование';
             ADD PROPERTY(turnExplainAnalizeOnCurrentUser());
+            ADD PROPERTY(clearApplicationLog());
         }
         NEW settings {
             caption = 'Настройка свойств';

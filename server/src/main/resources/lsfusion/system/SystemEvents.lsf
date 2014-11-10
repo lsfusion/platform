@@ -1,6 +1,6 @@
 MODULE SystemEvents;
 
-REQUIRE System, Reflection, Time;
+REQUIRE System, Reflection, Time, Service;
 
 CLASS ABSTRACT Exception 'Исключение';
 CLASS ClientException 'Исключение на клиенте' : Exception;
@@ -15,6 +15,7 @@ TABLE exception (Exception);
 
 messageException 'Сообщение исключения' = DATA VARSTRING[250] (Exception);
 dateException 'Время возникновения' = DATA DATETIME (Exception);
+fromDateException 'Дата возникновения' (d)= DATE(dateException(d));
 erTraceException 'След исключения'= DATA TEXT (Exception) PREFCHARWIDTH 500;
 typeException 'Тип исключения' = DATA VARSTRING[250] (Exception);
 
@@ -32,13 +33,18 @@ backgroundNonFatalException(e) = CASE
             WHEN e IS RemoteServerException THEN RGB(255, 240, 255)
             WHEN e IS ClientException THEN RGB(255, 255, 240);            
 
+@defineLog (Exception, 'ошибок', log, fromDate);
+
 CLASS Launch 'Запуск';
 TABLE launch (Launch);
 
 computerLaunch 'Компьютер' = DATA Computer (Launch);
 hostnameLaunch 'Имя компьютера' (launch) = hostnameComputer(computerLaunch(launch));
 timeLaunch 'Время запуска'= DATA DATETIME (Launch);
+dateLaunch 'Дата' (l) = DATE(timeLaunch(l));
 revisionLaunch 'Версия'= DATA VARSTRING[10] (Launch);
+
+@defineLog (Launch, 'запусков', log, date);
 
 CLASS Connection 'Подключение';
 
@@ -71,10 +77,13 @@ connectionStatusConnection 'Статус подключения' =  DATA Connect
 nameConnectionStatusConnection 'Статус подключения' (connection) = staticCaption(connectionStatusConnection(connection));
 
 connectTimeConnection 'Время подключения' = DATA DATETIME (Connection);
+connectDateConnection 'Дата подключения' (c) = DATE(connectTimeConnection(c));
 disconnectTimeConnection 'Время отключения' = DATA DATETIME (Connection);
 disconnectTimeConnection (connection) <- currentDateTime() WHEN SET(connectionStatusConnection(connection) == ConnectionStatus.disconnectedConnection);
 
 disconnectConnection 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.DisconnectActionProperty'; 
+
+@defineLog (Connection, 'подключений', log, connectDate);
 
 //заменили user на customUser
 userSession 'Пользователь сессии' = DATA CustomUser (Session);
@@ -95,6 +104,7 @@ quantityChangedClassesSession 'Количество изменённых кла�
 changesSession 'Изменения' = DATA TEXT (Session);
 
 dateTimeSession 'Время' = DATA DATETIME (Session) IN recognize;
+dateSession 'Дата' (s) = DATE(dateTimeSession(s));
 dateTimeSession(session) <- currentDateTime() WHEN SET (session IS Session);
 
 navigatorElementSession 'Элемент навигатора сессии' = DATA NavigatorElement (Session);
@@ -103,6 +113,8 @@ captionNavigatorElementSession 'Название формы' (session) = caption
 connectionSession 'Подключение сессии' = DATA Connection(Session);
 hostnameComputerConnectionSession 'Имя компьютера' = hostnameComputerConnection(connectionSession(session))IN recognize;
 userLoginConnectionSession 'Логин пользователя' = userLoginConnection(connectionSession(session)) IN recognize;
+
+@defineLog (Session, 'изменений', log, date);
 
 FORM connections 'Журнал подключений'
 

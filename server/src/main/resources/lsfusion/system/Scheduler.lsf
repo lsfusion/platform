@@ -1,6 +1,6 @@
 MODULE Scheduler;
 
-REQUIRE System, Reflection;
+REQUIRE System, Reflection, Service;
 
 
 CLASS SchedulerStartType 'Отсчёт времени' {
@@ -56,13 +56,15 @@ TABLE scheduledTaskScheduledTaskLog (ScheduledTask, ScheduledTaskLog);
 resultScheduledTaskLog 'Результат' = DATA VARSTRING[200] (ScheduledTaskLog);
 propertyScheduledTaskLog 'Свойство' = DATA VARSTRING[200] (ScheduledTaskLog);
 dateScheduledTaskLog 'Время' = DATA DATETIME (ScheduledTaskLog);
+toDateScheduledTaskLog 'Дата' (d) = DATE(dateScheduledTaskLog(d));
 scheduledTaskScheduledTaskLog 'Задание планировщика' = DATA ScheduledTask (ScheduledTaskLog);
 
+@defineLog (ScheduledTaskLog, 'планировщика', log, toDate);
 
 CLASS ScheduledClientTaskLog 'Сообщения клиента';
 TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 
-scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog);
+scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NOT NULL DELETE;
 messageScheduledClientTaskLog 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
 
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty';
