@@ -149,7 +149,7 @@ idList returns [String result]
 	
 fragment NEWLINE	:	'\r'?'\n'; 
 fragment SPACE		:	(' '|'\t');
-fragment FIRST_ID_LETTER: 	('a'..'z'|'A'..'Z');
+fragment FIRST_ID_LETTER: 	('a'..'z'|'A'..'Z'|'_');
 fragment NEXT_ID_LETTER	: 	('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 fragment DIGIT		:	'0'..'9';
 fragment DIGITS		:	('0'..'9')+;

@@ -15,8 +15,11 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.expr.formula.CastFormulaImpl;
+import lsfusion.server.form.entity.ClassFormEntity;
 import lsfusion.server.form.entity.FormEntity;
+import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.entity.PropertyFormEntity;
+import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.form.window.AbstractWindow;
 import lsfusion.server.form.window.NavigatorWindow;
@@ -29,6 +32,7 @@ import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.actions.FormAddObjectActionProperty;
 import lsfusion.server.logics.property.actions.flow.BreakActionProperty;
 import lsfusion.server.logics.property.actions.flow.ReturnActionProperty;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -681,5 +685,56 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @IdentityStrongLazy
     public <T extends PropertyInterface> LCP addClassProp(LCP<T> lp) {
         return mapLProp(null, false, lp.property.getClassProperty().cloneProp(), lp);
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
+        LAP result = addAProp(new FormAddObjectActionProperty(cls, obj));
+        if (formEntity.getCanonicalName() != null) {
+            String name = "_ADDOBJ_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
+            makePropertyPublic(result, name, cls.getResolveSet());
+        }
+        return result;
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
+        String name = "_DELETE" + (oldSession ? "SESSION" : "");
+
+        LAP res = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
+        if (!oldSession) {
+            res = addNewSessionAProp(null, res.property.caption, res, true, false, false);
+            res.setAskConfirm(true);
+        }
+        setDeleteActionOptions(res);
+        makePropertyPublic(res, name, cls.getResolveSet());
+        return res;
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope) {
+        String name = "_ADDFORM" + scope + "_" + cls.getSID();
+        ClassFormEntity form = cls.getEditForm(baseLM, getVersion());
+
+        LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
+                form.form, new ObjectEntity[]{},
+                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope);
+        makePropertyPublic(result, name, new ArrayList<ResolveClassSet>());
+
+        setAddFormActionProperties(result, form, scope);
+        return result;
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope) {
+        ClassFormEntity form = cls.getEditForm(baseLM, getVersion());
+        String name = "_EDITFORM" + scope + "_" + cls.getSID();
+        LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.edit"), form.form, new ObjectEntity[]{form.object}, scope);
+        makePropertyPublic(result, name, form.object.getResolveClassSet());
+        return result;
     }
 }

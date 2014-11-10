@@ -736,7 +736,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         makePropertyPublic(property, name, signature);
-        propClasses.put(property, signature);
         
         AbstractGroup group = (groupName == null ? null : findGroup(groupName));
         property.property.caption = (caption == null ? name : caption);
@@ -1372,7 +1371,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LCP res = addScriptedDProp(returnClassName, paramClassNames, true, false, true);
         makePropertyPublic(res, name, signature);
-        propClasses.put(res, signature);
         return res;
     }
 

@@ -214,6 +214,7 @@ public abstract class LogicsModule {
 
     protected <P extends PropertyInterface, T extends LP<P, ?>> void makePropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.property.setCanonicalName(getNamespace(), name, signature, lp.listInterfaces, baseLM.getDBNamePolicy());
+        propClasses.put(lp, signature);
         addModuleLP(lp);
     }
 
@@ -1417,6 +1418,7 @@ public abstract class LogicsModule {
 
     // ------------------- DRILLDOWN ----------------- //
 
+    @NFLazy
     public void setupDrillDownProperty(Property property, boolean isDebug) {
         if (property instanceof CalcProperty && ((CalcProperty) property).supportsDrillDown()) {
             LAP<?> drillDownFormProperty = isDebug ? addLazyAProp((CalcProperty) property) : addDDAProp((CalcProperty) property);
@@ -1536,30 +1538,14 @@ public abstract class LogicsModule {
         return getAddObjectAction((CustomClass) obj.baseClass, formEntity, obj);
     }
     
-    @IdentityStrongLazy
     public LAP getAddObjectAction(CustomClass cls, FormEntity formEntity, ObjectEntity obj) {
-        LAP result = addAProp(new FormAddObjectActionProperty(cls, obj));
-        if (formEntity.getCanonicalName() != null) {
-            String name = "_ADDOBJ_" + formEntity.getCanonicalName().replace('.', '_') + "_" + obj.getSID();
-            makePropertyPublic(result, name, cls.getResolveSet());
-        }
-        return result;
+        return baseLM.getAddObjectAction(cls, formEntity, obj);
     }
 
     // ---------------------- Delete Object ---------------------- //
 
-    @IdentityStrongLazy
     public LAP getDeleteAction(CustomClass cls, boolean oldSession) {
-        String name = "_DELETE" + (oldSession ? "SESSION" : "");
-
-        LAP res = addChangeClassAProp(baseClass.unknown, 1, 0, false, true, 1, is(cls), 1);
-        if (!oldSession) {
-            res = addNewSessionAProp(null, res.property.caption, res, true, false, false);
-            res.setAskConfirm(true);
-        }
-        setDeleteActionOptions(res);
-        makePropertyPublic(res, name, cls.getResolveSet());
-        return res;
+        return baseLM.getDeleteAction(cls, oldSession);
     }
     
     protected void setDeleteActionOptions(LAP property) {
@@ -1597,20 +1583,8 @@ public abstract class LogicsModule {
         }
     }
 
-    @IdentityStrongLazy
     public LAP getAddFormAction(CustomClass cls, FormSessionScope scope) {
-        String name = "_ADDFORM" + scope + "_" + cls.getSID();
-
-        ClassFormEntity form = cls.getEditForm(baseLM, version);
-
-        LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
-                form.form, new ObjectEntity[]{},
-                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope);
-        makePropertyPublic(result, name, new ArrayList<ResolveClassSet>());
-        
-        setAddFormActionProperties(result, form, scope);
-        
-        return result;
+        return baseLM.getAddFormAction(cls, scope);
     }
     
     public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, Version version) {
@@ -1632,15 +1606,8 @@ public abstract class LogicsModule {
         return property;
     }
 
-    @IdentityStrongLazy
     public LAP getEditFormAction(CustomClass cls, FormSessionScope scope) {
-        ClassFormEntity form = cls.getEditForm(baseLM, version);
-
-        String name = "_EDITFORM" + scope + "_" + cls.getSID();
-        LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.edit"),
-                                 form.form, new ObjectEntity[]{form.object}, scope);
-        makePropertyPublic(result, name, form.object.getResolveClassSet());
-        return result;
+        return baseLM.getEditFormAction(cls, scope);
     }
 
     protected void setEditFormActionProperties(LAP property) {

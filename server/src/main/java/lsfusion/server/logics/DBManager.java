@@ -40,10 +40,12 @@ import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.logics.service.RunService;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.*;
@@ -67,6 +69,7 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
+import static lsfusion.base.SystemUtils.write;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class DBManager extends LifecycleAdapter implements InitializingBean {
@@ -457,8 +460,41 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             ThreadLocalContext.popActionMessage();
         }
     }
+/*    
+    void checkLP(List<LP<?, ?>> lps) {
+        Set<String> names = new HashSet<String>();
+        for (LP<?, ?> lp : lps) {
+            String cn = lp.property.getCanonicalName();
+            if (cn != null) {
+                if (names.contains(cn)) {
+                    if (!cn.contains("_POLICY_")) {
+                        System.out.println("Error!!! LP. Duplicate canonical name: " + cn);
+                    }
+                }
+                names.add(cn);
+            }
+        }
+    }
 
+    void check(ImOrderSet<Property> props) {
+        Set<String> names = new HashSet<String>();
+        for (Property p : props) {
+            String cn = p.getCanonicalName();
+            if (cn != null) {
+                if (names.contains(cn)) {
+                    if (!cn.contains("_POLICY_")) {
+                        System.out.println("Error!!! Pr. Duplicate canonical name: " + cn);
+                    }
+                }
+                names.add(cn);
+            }
+        }
+    }
+*/    
     private boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+//        checkLP(businessLogics.getNamedProperties());
+//        check(businessLogics.getOrderProperties());
+        
         SQLSession sql = getThreadLocalSql();
 
         // инициализируем таблицы
@@ -1309,8 +1345,39 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     private Map<String, String> alteratePropertyChangesNewInferAlgorithm(OldDBStructure oldDBStructure, Map<String, String> map, SQLSession sql, ImOrderSet<? extends Property> props) throws SQLException, SQLHandledException {
-        if(oldDBStructure.version < 18)
-            return BaseUtils.joinKeep(alteratePropertyChangesNewInferAlgorithm(sql, props), map);
+        if(oldDBStructure.version < 18) {
+            Map<String, String> resultChanges = alteratePropertyChangesNewInferAlgorithm(sql, props);
+            Map<String, String> versionChangesMap = new HashMap<String, String>(map);
+            // todo [dale]: копипаст из getChangesAfter, нужно все это убрать после перехода всех проектов на 18 версию базы
+            
+            // Если в текущей версии есть переименование a -> b, а в предыдущих версиях есть c -> a, то заменяем c -> a на c -> b
+            for (Map.Entry<String, String> currentChanges : resultChanges.entrySet()) {
+                String renameTo = currentChanges.getValue();
+                if (versionChangesMap.containsKey(renameTo)) {
+                    currentChanges.setValue(versionChangesMap.get(renameTo));
+                    versionChangesMap.remove(renameTo);
+                }
+            }
+
+            // Добавляем оставшиеся (которые не получилось добавить к старым цепочкам) переименования из текущей версии в общий результат
+            for (Map.Entry<String, String> change : versionChangesMap.entrySet()) {
+                if (resultChanges.containsKey(change.getKey())) {
+                    throw new RuntimeException(String.format("Renaming '%s' twice", change.getKey()));
+                }
+                resultChanges.put(change.getKey(), change.getValue());
+            }
+
+            // Проверяем, чтобы не было нескольких переименований в одно и то же
+            Set<String> renameToSIDs = new HashSet<String>();
+            for (String renameTo : resultChanges.values()) {
+                if (renameToSIDs.contains(renameTo)) {
+                    throw new RuntimeException(String.format("Renaming to '%s' twice.", renameTo));
+                }
+                renameToSIDs.add(renameTo);
+            }
+            
+            return resultChanges;
+        }
         return map;
     }
 

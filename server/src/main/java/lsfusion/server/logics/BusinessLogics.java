@@ -51,6 +51,7 @@ import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormActionProperty;
@@ -707,6 +708,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
+    @NFLazy
     public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropByCN, Property property) {
         if (property.isNamed()) {
             String propertyCN = property.getCanonicalName();
