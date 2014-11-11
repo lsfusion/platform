@@ -43,7 +43,7 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.TableFactory;
 import org.antlr.runtime.RecognitionException;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -713,12 +713,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return res;
     }
 
-    @Override
     @IdentityStrongLazy
-    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope) {
-        String name = "_ADDFORM" + scope + "_" + cls.getSID();
-        ClassFormEntity form = cls.getEditForm(baseLM, getVersion());
-
+    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
+        String name = "_ADDFORM" + scope + "_" + cls.getSID() + (form.form.isNamed() ? "_" + form.form.getSID().replace('.', '_') : "");
         LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
                 form.form, new ObjectEntity[]{},
                 form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope);
@@ -728,13 +725,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         return result;
     }
 
-    @Override
     @IdentityStrongLazy
-    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope) {
-        ClassFormEntity form = cls.getEditForm(baseLM, getVersion());
-        String name = "_EDITFORM" + scope + "_" + cls.getSID();
+    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, ClassFormEntity form) {
+        String name = "_EDITFORM" + scope + "_" + cls.getSID() + (form.form.isNamed() ? "_" + form.form.getSID().replace('.', '_') : "");
         LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.edit"), form.form, new ObjectEntity[]{form.object}, scope);
         makePropertyPublic(result, name, form.object.getResolveClassSet());
         return result;
-    }
+    } 
 }

@@ -1583,12 +1583,9 @@ public abstract class LogicsModule {
         }
     }
 
-    public LAP getAddFormAction(CustomClass cls, FormSessionScope scope) {
-        return baseLM.getAddFormAction(cls, scope);
-    }
-    
     public LAP getAddFormAction(CustomClass cls, FormSessionScope scope, Version version) {
-        return getAddFormAction(cls, scope);
+        ClassFormEntity form = cls.getEditForm(baseLM, version);
+        return baseLM.getAddFormAction(cls, scope, form);
     }
 
     // ---------------------- Edit Form ---------------------- //
@@ -1601,13 +1598,10 @@ public abstract class LogicsModule {
     }
 
     public LAP getEditFormAction(CustomClass cls, FormSessionScope scope, Version version) {
-        LAP property = getEditFormAction(cls, scope);
+        ClassFormEntity form = cls.getEditForm(baseLM, version);
+        LAP property = baseLM.getEditFormAction(cls, scope, form);
         setEditFormActionProperties(property);
         return property;
-    }
-
-    public LAP getEditFormAction(CustomClass cls, FormSessionScope scope) {
-        return baseLM.getEditFormAction(cls, scope);
     }
 
     protected void setEditFormActionProperties(LAP property) {
