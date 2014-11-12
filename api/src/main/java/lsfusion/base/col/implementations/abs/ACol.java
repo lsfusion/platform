@@ -192,4 +192,11 @@ public abstract class ACol<K> extends AColObject implements ImCol<K> {
         return hash * 31;
     }
 
+
+    public K[] toArray(K[] array) {
+        assert size() == array.length;
+        for(int i=0,size=size();i<size;i++)
+            array[i] = get(i);
+        return array;
+    }
 }

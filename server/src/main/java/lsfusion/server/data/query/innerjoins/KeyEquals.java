@@ -18,6 +18,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.PartialQueryTranslator;
 import lsfusion.server.data.where.AbstractWhere;
@@ -153,7 +154,8 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
         for(int i=0,size=size();i<size;i++) {
             KeyEqual keyEqual = getKey(i); // keyEqual закидывается в статистику так как keepStat не всегда translate'ся
             Where where = getValue(i);
-            where.groupJoinsWheres(keepStat, keyEqual.getKeyStat(where), orderTop, type).compileMeans().fillList(keyEqual, result);
+            KeyStat keyStat = keyEqual.getKeyStat(where);
+            where.groupJoinsWheres(keepStat, keyStat, orderTop, type).pack(keepStat, keyStat, type, where, false).fillList(keyEqual, result);
         }
         return result.immutableCol();
     }

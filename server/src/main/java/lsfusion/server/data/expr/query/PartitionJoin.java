@@ -5,6 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.AbstractOuterContext;
+import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.Value;
@@ -45,6 +46,11 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
         public ImSet<OuterContext> calculateOuterDepends() {
             return SetFact.<OuterContext>merge(partitions, where);
         }
+    }
+    
+    @IdentityLazy
+    public Where getOrWhere() {
+        return query.where.mapWhere(group);
     }
 
     public PartitionJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Where inner, ImSet<Expr> partitions, ImMap<KeyExpr, BaseExpr> group) {

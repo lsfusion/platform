@@ -8,10 +8,8 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MFilterSet;
-import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
-import lsfusion.base.col.interfaces.mutable.SymmAddValue;
+import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
@@ -100,6 +98,7 @@ public class BaseUtils {
         return result;
     }
 
+    // есть баг
     public static <K, E> Map<K, E> joinKeep(Map<K, ? extends E> map, Map<E, E> joinMap) {
         Map<K, E> result = new HashMap<K, E>();
         for (Map.Entry<K, ? extends E> entry : map.entrySet()) {
@@ -167,7 +166,7 @@ public class BaseUtils {
     }
 
     public static <K, E, V> Map<K, V> nullInnerJoin(Map<K, ? extends E> map, Map<? extends E, V> joinMap) {
-        return joinMap==null ? null : innerJoin(map, joinMap);
+        return joinMap == null ? null : innerJoin(map, joinMap);
     }
 
     public static <K, E, V> OrderedMap<K, V> innerJoin(OrderedMap<K, E> map, Map<E, V> joinMap) {
@@ -245,7 +244,7 @@ public class BaseUtils {
     public static <K, V> Map<K, V> filterNotKeys(Map<K, V> map, ImSet<? extends K> keys) {
         Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
-            if (!((ImSet<K>)keys).contains(entry.getKey()))
+            if (!((ImSet<K>) keys).contains(entry.getKey()))
                 result.put(entry.getKey(), entry.getValue());
         }
         return result;
@@ -260,7 +259,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <BK,K extends BK> Collection<K> filter(Collection<K> col, Collection<BK> filter) {
+    public static <BK, K extends BK> Collection<K> filter(Collection<K> col, Collection<BK> filter) {
         List<K> result = new ArrayList<K>();
         for (K element : col)
             if (filter.contains(element))
@@ -308,7 +307,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <BK,K extends BK> Collection<K> filterNot(Collection<K> col, Collection<BK> filter) {
+    public static <BK, K extends BK> Collection<K> filterNot(Collection<K> col, Collection<BK> filter) {
         List<K> result = new ArrayList<K>();
         for (K element : col)
             if (!filter.contains(element))
@@ -2182,7 +2181,7 @@ public class BaseUtils {
     }
 
     public static <K> boolean containsAll(FunctionSet<K> set1, ImSet<K> set2) {
-        for(K element : set2) {
+        for (K element : set2) {
             if (!set1.contains(element))
                 return false;
         }
@@ -2310,38 +2309,38 @@ public class BaseUtils {
     public static String dateToString(String format, Date d) {
         return new SimpleDateFormat(format).format(d);
     }
-    
+
     public static String packWords(String string, int reqLength) {
-        if(string.length() <= reqLength)
+        if (string.length() <= reqLength)
             return string;
 
         String[] words = string.split("(?<!^)(?=[A-Z])");
-        float cut = (float) reqLength / (float)string.length();
-        
+        float cut = (float) reqLength / (float) string.length();
+
         int[] keepLength = new int[words.length];
         int total = 0;
-        for(int i=0;i<words.length;i++) {
+        for (int i = 0; i < words.length; i++) {
             int rounded = (int) (((float) words[i].length()) * cut);
             keepLength[i] = rounded;
             total += rounded;
         }
-        
+
         int rest = reqLength - total;
-        assert rest >= 0 && rest<=words.length;
-        for(int i=0;i<rest;i++)
+        assert rest >= 0 && rest <= words.length;
+        for (int i = 0; i < rest; i++)
             keepLength[i]++;
-        
+
         StringBuilder result = new StringBuilder();
-        for(int i=0;i<words.length;i++) {
+        for (int i = 0; i < words.length; i++) {
             result.append(words[i].substring(0, keepLength[i]));
         }
         return result.toString();
     }
-    
+
     public static boolean hasRightSpace(String string) {
         return BaseUtils.rtrim(string).length() != string.length();
     }
-    
+
     public static <T> Iterable<T> mergeIterables(final Iterable<T> it1, final Iterable<T> it2) {
         return new Iterable<T>() {
             public Iterator<T> iterator() {
@@ -2353,15 +2352,15 @@ public class BaseUtils {
     public static <T> Iterator<T> mergeIterators(final Iterator<T> it1, final Iterator<T> it2) {
         return new Iterator<T>() {
             boolean it1Running = true;
-            
+
             public boolean hasNext() {
                 return (it1Running && it1.hasNext()) || it2.hasNext();
             }
 
             @Override
             public T next() {
-                if(it1Running) {
-                    if(it1.hasNext())
+                if (it1Running) {
+                    if (it1.hasNext())
                         return it1.next();
                     else
                         it1Running = false;
@@ -2374,14 +2373,103 @@ public class BaseUtils {
             }
         };
     }
-    
+
     public static <T> Iterable<T> sort(Iterable<T> it, Comparator<T> comparator) {
         List<T> list = new ArrayList<T>();
-        for(T element : it) {
+        for (T element : it) {
             list.add(element);
         }
         Collections.sort(list, comparator);
-        return list;        
+        return list;
     }
-        
+
+    protected enum Check {
+        FIRST, CLOSEST, COMMON
+    }
+
+    public static interface ChildrenInterface<T> {
+        Iterable<T> getChildrenIt(T element);
+    }
+
+    public static interface ExChildrenInterface<T> extends ChildrenInterface<T> {
+        ImSet<T> getAllChildren(T element); // оптимизация, чтобы кэширование включать
+    }
+
+    public static abstract class SChildrenInterface<T> implements ExChildrenInterface<T> {
+        public ImSet<T> getAllChildren(T element) {
+            return BaseUtils.getAllChildren(element, this);
+        }
+    }
+
+    public static <V> ImSet<V> getAllChildren(V vthis, ChildrenInterface<V> cint) {
+        MSet<V> mChilds = SetFact.mSet();
+        fillChildren(vthis, cint, mChilds);
+        return mChilds.immutable();
+    }
+
+    public static <V> void fillChildren(V vthis, ChildrenInterface<V> cint, MSet<V> classSet) {
+        classSet.add(vthis);
+
+        for (V child : cint.getChildrenIt(vthis))
+            fillChildren(child, cint, classSet);
+    }
+
+    // получает классы у которого есть оба интерфейса
+    public static <V> ImSet<V> commonChildren(V vthis, V toCommon, ExChildrenInterface<V> cint) {
+        MAddMap<V, Check> checks = commonClassSet1(vthis, cint);
+        commonClassSet2(toCommon, cint, false, null, checks);
+
+        MSet<V> mResult = SetFact.mSet();
+        commonClassSet3(vthis, cint, mResult, null, checks);
+        return mResult.immutable();
+    }
+
+    // 1-й шаг расставляем пометки 1 
+    private static <V> MAddMap<V, Check> commonClassSet1(V vthis, ExChildrenInterface<V> cint) {
+        return MapFact.mAddOverrideMap(cint.getAllChildren(vthis).toMap(Check.FIRST));
+    }
+
+    // 2-й шаг пометки
+    // 2 - самый верхний \ нижний общий класс
+    // 3 - остальные общие классы
+    private static <V> void commonClassSet2(V vthis, ExChildrenInterface<V> cint, boolean set, MSet<V> free, MAddMap<V, Check> checks) {
+        Check check = checks.get(vthis);
+        if (!set) {
+            if (check != null) {
+                if (check != Check.FIRST) return;
+                checks.add(vthis, Check.CLOSEST);
+                set = true;
+            } else if (free != null) free.add(vthis);
+        } else {
+            if (check == Check.COMMON)
+                return;
+
+            checks.add(vthis, Check.COMMON);
+            if (check == Check.CLOSEST)
+                return;
+        }
+
+        for (V child : cint.getChildrenIt(vthis))
+            commonClassSet2(child, cint, set, free, checks);
+    }
+
+    // 3-й шаг выводит в Set, и сбрасывает пометки
+    private static <V> void commonClassSet3(V vthis, ExChildrenInterface<V> cint, MSet<V> common, MSet<V> free, MAddMap<V, Check> checks) {
+        Check check = checks.get(vthis);
+        if (check == null) return;
+        if (common != null && check == Check.CLOSEST) common.add(vthis);
+        if (free != null && check == Check.FIRST) free.add(vthis);
+
+        for (V child : cint.getChildrenIt(vthis))
+            commonClassSet3(child, cint, common, free, checks);
+    }
+
+    public static <V> void fillDiffChildren(V vthis, ExChildrenInterface<V> cint, V vdiff, MSet<V> mAdd, MSet<V> mRemove) {
+ 
+        MAddMap<V, Check> checks = commonClassSet1(vthis, cint); // check
+        if(vdiff!=null) commonClassSet2(vdiff, cint, false, mRemove, checks);
+    
+        commonClassSet3(vthis, cint, null,mAdd, checks);
+    }
+    
 }

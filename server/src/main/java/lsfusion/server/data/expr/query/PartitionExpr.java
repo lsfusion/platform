@@ -147,7 +147,9 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
     }
 
     public Where calculateOrWhere() {
-        return getInner().getFullWhere().mapWhere(group); //query.type.canBeNull() ? Where.TRUE : getInner().getFullWhere().map(group);
+        Where where = getInnerJoin().getOrWhere();
+        assert BaseUtils.hashEquals(where, getInner().getFullWhere().mapWhere(group));
+        return where; //query.type.canBeNull() ? Where.TRUE : getInner().getFullWhere().map(group);
     }
 
     public Where calculateNotNullWhere() {

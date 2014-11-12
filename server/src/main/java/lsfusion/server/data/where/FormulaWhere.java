@@ -15,7 +15,6 @@ import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.KeyStat;
-import lsfusion.server.data.query.stat.StatKeysJoin;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
@@ -125,16 +124,14 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
 
     protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type);
 
-    protected static <K extends BaseExpr> GroupJoinsWheres compactHeuristic(GroupJoinsWheres result, GroupJoinsWheres.Type type, ImSet<K> keepStat, KeyStat keyStat, Where where) {
-        if(type.isStat())
-            return new GroupJoinsWheres(new StatKeysJoin<K>(result.getStatKeys(keepStat, keyStat)), where, type);
-        return result.compileMeans(keepStat, keyStat);        
+    protected static <K extends BaseExpr> GroupJoinsWheres packIntermediate(GroupJoinsWheres result, GroupJoinsWheres.Type type, ImSet<K> keepStat, KeyStat keyStat, Where where) {
+        return result.pack(keepStat, keyStat, type, where, true);        
     }   
     
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat, orderTop, type);
-        if(result.size() > Settings.get().getLimitWhereJoinsCount() || result.getComplexity(true) > Settings.get().getLimitWhereJoinsComplexity())
-            result = compactHeuristic(result, type, keepStat, keyStat, this);
+        if(result.isExceededIntermediatePackThreshold())
+            result = packIntermediate(result, type, keepStat, keyStat, this);
         return result;
     }
 

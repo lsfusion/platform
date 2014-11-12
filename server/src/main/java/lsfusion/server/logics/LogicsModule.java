@@ -212,6 +212,7 @@ public abstract class LogicsModule {
         }
     }
 
+    @NFLazy
     protected <P extends PropertyInterface, T extends LP<P, ?>> void makePropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.property.setCanonicalName(getNamespace(), name, signature, lp.listInterfaces, baseLM.getDBNamePolicy());
         propClasses.put(lp, signature);
@@ -1418,7 +1419,6 @@ public abstract class LogicsModule {
 
     // ------------------- DRILLDOWN ----------------- //
 
-    @NFLazy
     public void setupDrillDownProperty(Property property, boolean isDebug) {
         if (property instanceof CalcProperty && ((CalcProperty) property).supportsDrillDown()) {
             LAP<?> drillDownFormProperty = isDebug ? addLazyAProp((CalcProperty) property) : addDDAProp((CalcProperty) property);

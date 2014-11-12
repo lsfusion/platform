@@ -109,9 +109,28 @@ public class Settings {
 
     private boolean useQueryExpr = true;
 
-    private int limitWhereJoinsCount = 20;
+    private int limitWhereJoinsCount = 15;
+    private int limitWhereJoinsDegree = 2;
 
-    private int limitWhereJoinsComplexity = 400;
+    public int getLimitWhereJoinsDegree() {
+        return limitWhereJoinsDegree;
+    }
+
+    public void setLimitWhereJoinsDegree(int limitWhereJoinsDegree) {
+        this.limitWhereJoinsDegree = limitWhereJoinsDegree;
+    }
+
+    private int forceWhereJoinsPack = 1; // 0 - не паковать, 1 - следствия с сохранением статистики, 2 - следствия
+
+    public int getForceWhereJoinsPack() {
+        return forceWhereJoinsPack;
+    }
+
+    public void setForceWhereJoinsPack(int forceWhereJoinsPack) {
+        this.forceWhereJoinsPack = forceWhereJoinsPack;
+    }
+
+    private int limitWhereJoinsComplexity = 300;
 
     // очень опасная эвристика - может в определенных случаях "потерять ключ", то есть образуется And в котором не хватает KeyExpr'а
     private int limitClassWhereCount = 40;

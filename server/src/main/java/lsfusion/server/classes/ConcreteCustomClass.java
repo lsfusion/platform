@@ -294,11 +294,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             fillParents(mAddClasses);
             return;
         }
-
-        MAddMap<CustomClass, Check> checks = commonClassSet1(true); // check
-        if(diffClass!=null) ((CustomClass)diffClass).commonClassSet2(false,mRemoveClasses,true,checks);
-
-        commonClassSet3(null,mAddClasses,true,checks);
+        
+        BaseUtils.fillDiffChildren(this, getParents, (CustomClass)diffClass, mAddClasses, mRemoveClasses);
     }
 
     public ImSet<CalcProperty> getChangeProps(ConcreteObjectClass cls) {

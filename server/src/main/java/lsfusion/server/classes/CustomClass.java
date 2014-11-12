@@ -171,35 +171,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return (ConcreteCustomClass) cls;
     }
 
-    public ImSet<CustomClass> commonParents(CustomClass toCommon) {
-        MAddMap<CustomClass, Check> checks = commonClassSet1(true);
-        toCommon.commonClassSet2(false,null,true,checks);
-
-        MSet<CustomClass> result = SetFact.mSet();
-        commonClassSet3(result,null,true,checks);
-        return result.immutable();
-    }
-
     private final static LRUWSVSMap<CustomClass, CustomClass, ImSet<CustomClass>> cacheChilds = new LRUWSVSMap<CustomClass, CustomClass, ImSet<CustomClass>>(LRUUtil.G2);
-
-    // получает классы у которого есть оба интерфейса
-    public ImSet<CustomClass> commonChilds(CustomClass toCommon) {
-        ImSet<CustomClass> result;
-        
-        result = cacheChilds.get(this, toCommon);
-        if(result!=null) return result;
-
-        MAddMap<CustomClass, Check> checks = commonClassSet1(false);
-        toCommon.commonClassSet2(false,null,false,checks);
-
-        MSet<CustomClass> mResult = SetFact.mSet();
-        commonClassSet3(mResult,null,false,checks);
-        result = mResult.immutable();
-
-        cacheChilds.put(this, toCommon, result);
-        return result;
-    }
-
 
     public void fillParents(MSet<CustomClass> parentSet) {
         if (parentSet.add(this)) return;
@@ -220,9 +192,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     @ManualLazy
     public ImSet<CustomClass> getAllChildren() {
         if(allChildren ==null) {
-            MSet<CustomClass> mChilds = SetFact.mSet();
-            fillChilds(mChilds);
-            allChildren = mChilds.immutable();
+            allChildren = BaseUtils.getAllChildren(this, getChildren);
         }
         return allChildren;
     }
@@ -252,56 +222,36 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     // заполняет все нижние классы имплементации
     public abstract void fillNextConcreteChilds(MSet<ConcreteCustomClass> mClassSet);
 
-    public ImSet<ConcreteCustomClass> getConcreteChildren() {
-
-        MSet<ConcreteCustomClass> mResult = SetFact.mSet();
-        fillConcreteChilds(mResult);
-        return mResult.immutable();
-    }
-
-    protected enum Check {
-        FIRST, CLOSEST, COMMON 
-    }
-    
-    // 1-й шаг расставляем пометки 1 
-    protected MAddMap<CustomClass, Check> commonClassSet1(boolean up) {
-        return MapFact.mAddOverrideMap((up ? getAllParents() : getAllChildren()).toMap(Check.FIRST));         
-    }
-
-    // 2-й шаг пометки
-    // 2 - самый верхний \ нижний общий класс
-    // 3 - остальные общие классы
-    protected void commonClassSet2(boolean set, MSet<CustomClass> free,boolean up, MAddMap<CustomClass, Check> checks) {
-        Check check = checks.get(this); 
-        if(!set) {
-            if(check!=null) {
-                if(check != Check.FIRST) return;
-                checks.add(this, Check.CLOSEST);
-                set = true;
-            } else
-                if(free!=null) free.add(this);
-        } else {
-            if(check==Check.COMMON)
-                return;
-            
-            checks.add(this, Check.COMMON);
-            if(check==Check.CLOSEST)
-                return;
+    private static BaseUtils.ExChildrenInterface<CustomClass> getChildren = new BaseUtils.ExChildrenInterface<CustomClass>() {
+        public ImSet<CustomClass> getAllChildren(CustomClass element) {
+            return element.getAllChildren();
         }
 
-        for(CustomClass child : (up? getParentsIt() : getChildrenIt()))
-            child.commonClassSet2(set,free,up,checks);
-    }
+        public Iterable<CustomClass> getChildrenIt(CustomClass element) {
+            return element.getChildrenIt();
+        }
+    };
 
-    // 3-й шаг выводит в Set, и сбрасывает пометки
-    protected void commonClassSet3(MSet<CustomClass> common,MSet<CustomClass> free,boolean up, MAddMap<CustomClass, Check> checks) {
-        Check check = checks.get(this);
-        if(check==null) return;
-        if(common!=null && check==Check.CLOSEST) common.add(this);
-        if(free!=null && check==Check.FIRST) free.add(this);
+    protected static BaseUtils.ExChildrenInterface<CustomClass> getParents = new BaseUtils.ExChildrenInterface<CustomClass>() {
+        public ImSet<CustomClass> getAllChildren(CustomClass element) {
+            return element.getAllParents();
+        }
 
-        for(CustomClass child : (up? getParentsIt() : getChildrenIt()))
-            child.commonClassSet3(common,free,up,checks);
+        public Iterable<CustomClass> getChildrenIt(CustomClass element) {
+            return element.getParentsIt();
+        }
+    };
+
+    // получает классы у которого есть оба интерфейса
+    public ImSet<CustomClass> commonChilds(CustomClass toCommon) {
+        ImSet<CustomClass> result;
+
+        result = cacheChilds.get(this, toCommon);
+        if(result!=null) return result;
+        
+        result = BaseUtils.commonChildren(this, toCommon, getChildren);
+        cacheChilds.put(this, toCommon, result);
+        return result;
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

@@ -104,19 +104,25 @@ public class UnionJoin extends CalculateJoin<Integer> {
         return result;
     }
     
-    public boolean depends(final QueryJoin dependJoin) {
+    public static boolean depends(OuterContext context, final QueryJoin dependJoin) {
         final Result<Boolean> depends = new Result<Boolean>(false);
-        for(Expr expr : exprs)
-            expr.enumerate(new ExprEnumerator() {
-                public Boolean enumerate(OuterContext join) {
-                    if(join instanceof QueryExpr && BaseUtils.hashEquals(((QueryExpr) join).getInnerJoin(), dependJoin)) {
-                        depends.set(true);
-                        return null;
-                    }
-                    return true;
+        context.enumerate(new ExprEnumerator() {
+            public Boolean enumerate(OuterContext join) {
+                if(join instanceof QueryExpr && BaseUtils.hashEquals(((QueryExpr) join).getInnerJoin(), dependJoin)) {
+                    depends.set(true);
+                    return null;
                 }
-            });
+                return true;
+            }
+        });
         return depends.result;
+    }
+    
+    public boolean depends(final QueryJoin dependJoin) {
+        for(Expr expr : exprs)
+            if(depends(expr, dependJoin))
+                return true;
+        return false;
     }
 
     public boolean calcTwins(TwinImmutableObject o) {

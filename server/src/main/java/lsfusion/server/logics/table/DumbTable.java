@@ -7,6 +7,7 @@ import lsfusion.server.data.GlobalTable;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.expr.query.PropStat;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.classes.ClassWhere;
 
@@ -25,7 +26,7 @@ public class DumbTable extends GlobalTable {
     }
 
     public StatKeys<KeyField> getStatKeys() {
-        throw new RuntimeException("not supported");
+        return new StatKeys<KeyField>(keys.getSet(), Stat.ONE); // throw new RuntimeException("not supported");
     }
 
     public ImMap<PropertyField,PropStat> getStatProps() {

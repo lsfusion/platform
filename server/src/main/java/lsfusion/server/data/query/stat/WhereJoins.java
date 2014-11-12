@@ -1,9 +1,6 @@
 package lsfusion.server.data.query.stat;
 
-import lsfusion.base.AddSet;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
-import lsfusion.base.Result;
+import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -14,12 +11,18 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.lru.LRUUtil;
+import lsfusion.base.col.lru.LRUWSSVSMap;
+import lsfusion.base.col.lru.LRUWSVSMap;
+import lsfusion.base.col.lru.LRUWVSMap;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.caches.hash.HashObject;
+import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
@@ -34,11 +37,64 @@ import lsfusion.utils.prim.UndirectedGraph;
 
 import java.util.*;
 
-public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWheres.Interface<WhereJoins>, OuterContext<WhereJoins> {
+public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoins> implements DNFWheres.Interface<WhereJoins>, OuterContext<WhereJoins> {
 
     private WhereJoins() {
     }
+
+    protected WhereJoins FALSETHIS() {
+        return WhereJoins.EMPTY;
+    }
     
+    public int getAllChildrenCount() {
+        MSet<WhereJoin> allJoins = SetFact.mSet();
+        for(WhereJoin where : wheres) {
+            allJoins.addAll(getAllChildren(where));
+        }
+        return allJoins.size();
+    }
+
+    private final static LRUWVSMap<WhereJoin, ImSet<WhereJoin>> cacheAllChildren = new LRUWVSMap<WhereJoin, ImSet<WhereJoin>>(LRUUtil.L1);
+
+    public static ImSet<WhereJoin> getAllChildren(WhereJoin where) {
+        ImSet<WhereJoin> result = cacheAllChildren.get(where);
+        if(result == null) {
+            result = BaseUtils.getAllChildren(where, getJoins);
+            cacheAllChildren.put(where, result);
+        }
+        return result;
+    }
+
+    private final static LRUWSSVSMap<WhereJoins, ImSet, KeyStat, StatKeys> cacheCompileStatKeys = new LRUWSSVSMap<WhereJoins, ImSet, KeyStat, StatKeys>(LRUUtil.L1);
+    // можно было бы локальный кэш как и сверху сделать, но также как и для children будет сильно мусорить в алгоритме
+    public <K extends BaseExpr> StatKeys<K> getCompileStatKeys(ImSet<K> groups, KeyStat keyStat) {
+        StatKeys result = cacheCompileStatKeys.get(this, groups, keyStat);
+        if(result==null) {
+            result = getStatKeys(groups, keyStat);
+            cacheCompileStatKeys.put(this, groups, keyStat, result);
+        }
+        return result;
+    }
+
+
+    private static BaseUtils.ExChildrenInterface<WhereJoin> getJoins = new BaseUtils.ExChildrenInterface<WhereJoin>() {
+        public Iterable<WhereJoin> getChildrenIt(WhereJoin element) {
+            return BaseUtils.immutableCast(element.getJoinFollows(new Result<ImMap<InnerJoin, Where>>(), null).it());
+        }
+
+        public ImSet<WhereJoin> getAllChildren(WhereJoin element) {
+            return WhereJoins.getAllChildren(element);
+        }
+    };
+    protected WhereJoin[] intersect(WhereJoin where1, WhereJoin where2) {
+        ImSet<WhereJoin> common = BaseUtils.commonChildren(where1, where2, getJoins);
+        return common.toArray(new WhereJoin[common.size()]);
+    }
+
+    protected WhereJoin add(WhereJoin addWhere, WhereJoin[] wheres, int numWheres, WhereJoin[] proceeded, int numProceeded) {
+        return null;
+    }
+
     public static WhereJoins EMPTY = new WhereJoins(); 
 
     public WhereJoins(WhereJoin[] wheres) {
@@ -67,6 +123,10 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
 
     public WhereJoins and(WhereJoins set) {
         return add(set);
+    }
+
+    public WhereJoins or(WhereJoins set) {
+        return intersect(set);
     }
 
     public boolean means(WhereJoins set) {
@@ -589,7 +649,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
 
         Where result = Where.TRUE;
         for (WhereJoin where : current)
-            result = result.and(reducedUpWheres.get(where)).and(BaseExpr.getOrWhere(where)); // чтобы не потерять or, конкретного единично кейса нет, но с логической точки зрения
+            result = result.and(reducedUpWheres.get(where)).and(BaseExpr.getOrWhere(where)); // чтобы не потерять or, правда при этом removeJoin должен "соответствовать" не TRUE calculateOrWhere 
         return result;
     }
 
@@ -614,6 +674,11 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
                 remove = true;
             if (!remove && whereJoin instanceof ExprOrderTopJoin && ((ExprOrderTopJoin)whereJoin).givesNoKeys()) // даст висячий ключ при проталкивании, вообще рекурсивно пойти не может, но смысла нет разбирать
                 remove = true;
+            // нижние проверки должны соответствовать calculateOrWhere 
+            if(!remove && whereJoin instanceof PartitionJoin) {
+                if(UnionJoin.depends(((PartitionJoin) whereJoin).getOrWhere(), removeJoin))
+                    remove = true;
+            }
             if(!remove) {
                 Result<ImSet<UnionJoin>> unionJoins = new Result<ImSet<UnionJoin>>();
                 joinUpWheres = new Result<ImMap<InnerJoin, Where>>();

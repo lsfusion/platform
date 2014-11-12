@@ -737,13 +737,16 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     sql.addIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue());
 
             systemLogger.info("Filling static objects ids");
-            fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges));
+            if(!fillIDs(getChangesAfter(oldDBStructure.dbVersion, classSIDChanges), getChangesAfter(oldDBStructure.dbVersion, objectSIDChanges)))
+                throw new RuntimeException("Error while filling static objects ids");
 
             for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
                 newClass.ID = newClass.customClass.ID;
             }
 
-            migrateReflectionProperties(oldDBStructure, sql);
+            systemLogger.info("Migrating reflection properties and actions");
+            if(!migrateReflectionProperties(oldDBStructure, sql))
+                throw new RuntimeException("Error while migrating reflection properties and actions");
 
             newDBStructure.writeConcreteClasses(outDB);
 
@@ -795,7 +798,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return sourceHashChanged;
     }
 
-    private void migrateReflectionProperties(OldDBStructure oldDBStructure, SQLSession sql) throws SQLException, SQLHandledException {
+    private boolean migrateReflectionProperties(OldDBStructure oldDBStructure, SQLSession sql) throws SQLException, SQLHandledException {
         DBVersion oldDBVersion = oldDBStructure.dbVersion;
         Map<String, String> nameChanges = alteratePropertyChangesNewInferAlgorithm(oldDBStructure, getChangesAfter(oldDBVersion, propertyCNChanges), sql, businessLogics.getOrderProperties());;
         ImportField oldCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
@@ -819,10 +822,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties);
             service.synchronize(false, false);
 
-            session.apply(businessLogics);
+            boolean result = session.apply(businessLogics);
             session.close();
+            return result;
         } catch (Exception e) {
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
         }
     }
     
@@ -860,14 +864,16 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
     
-    private void fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
+    private boolean fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
         DataSession session = createSession(OperationOwner.unknown); // по сути вложенная транзакция
 
         LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
 
-        session.apply(businessLogics);
+        boolean result = session.apply(businessLogics);
 
         session.close();
+        
+        return result;
     }
 
     private void updateClassStat(SQLSession session) throws SQLException, SQLHandledException {        

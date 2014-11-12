@@ -374,7 +374,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         commitTransaction(OperationOwner.unknown);
     }
     public void commitTransaction(OperationOwner owner) throws SQLException {
-        privateConnection.sql.commit();
+        if(inTransaction == 1)
+            privateConnection.sql.commit();
 //        fifo.add("CMT"  + getCurrentTimeStamp() + " " + this);
 
         endTransaction(owner);

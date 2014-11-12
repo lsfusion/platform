@@ -38,4 +38,6 @@ public interface ImCol<T> extends Iterable<T> {
     ImList<T> sort(Comparator<T> comparator);
     
     Collection<T> toJavaCol();
+    
+    T[] toArray(T[] array);
 }

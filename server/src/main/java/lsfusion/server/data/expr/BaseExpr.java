@@ -229,7 +229,8 @@ public abstract class BaseExpr extends Expr {
         for(BaseExpr baseExpr : join.getJoins().valueIt())
             result = result.and(baseExpr.getOrWhere());
         return result;
-    } 
+    }
+    // для всех не TRUE реализаций, должны быть соответствующие проверки в removeJoin
     public Where calculateOrWhere() {
         return getOrWhere(getBaseJoin());
     }
