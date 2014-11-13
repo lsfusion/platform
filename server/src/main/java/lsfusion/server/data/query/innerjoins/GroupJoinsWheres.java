@@ -226,7 +226,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     
     // минимум изменения, абсолютной статистики, количества сршдвкутэjd    
     private static long getPriority(int r, int m, int c) {
-        return (r * Stat.MAX.getWeight() + (r == 0 ? 0 : m)) * 100 + c;
+        return (((long)r) * Stat.MAX.getWeight() + (r == 0 ? 0 : m)) * 100l + c;
     }
 
     private static long getMaxPriority() {
