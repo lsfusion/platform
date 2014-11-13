@@ -130,6 +130,8 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             Value value = result.singleValue();
             if(!BaseUtils.hashEquals(value.where, where)) {
                 assert value.where.means(where) && where.means(value.where);
+                if(value.where.getComplexity(false) < where.getComplexity(false))
+                    where = value.where;
                 result = new GroupJoinsWheres(result.singleKey(), new Value(value.upWheres, where), type);
             }
         }

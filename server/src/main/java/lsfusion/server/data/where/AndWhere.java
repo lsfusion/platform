@@ -95,8 +95,8 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         for(int i=0;i<wheres.length;i++) {
             // приходится и промежуточные группировать, так как при большом количестве операндов, complexity может до миллиона дорасти
             if(result.isExceededIntermediatePackThreshold()) {
-                OrObjectWhere[] procWheres = newArray(i + 1);
-                System.arraycopy(wheres, 0, procWheres, 0, i+1);
+                OrObjectWhere[] procWheres = newArray(i);
+                System.arraycopy(wheres, 0, procWheres, 0, i);
                 result = packIntermediate(result, type, keepStat, keyStat, toWhere(procWheres, true));
             }
             result = result.and(wheres[i].groupJoinsWheres(keepStat, keyStat, orderTop, type));
@@ -116,8 +116,8 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
                 if(useNots)
                     return groupMeanClassWheres(false);
                 else { // приходится и промежуточные группировать, так как при большом количестве операндов, complexity может до миллиона дорасти
-                    OrObjectWhere[] procWheres = newArray(i + 1);
-                    System.arraycopy(wheres, 0, procWheres, 0, i+1);
+                    OrObjectWhere[] procWheres = newArray(i);
+                    System.arraycopy(wheres, 0, procWheres, 0, i);
                     result = compactHeuristic(result, toWhere(procWheres, true));
                 }
             }
