@@ -87,6 +87,11 @@ public class GridTable extends ClientPropertyTable {
     private boolean tabVertical = false;
 
     private int viewMoveInterval = 0;
+
+    protected int oldRowScrollTop;
+    private int scrollToIndex = -1;
+    private boolean selectOldObject = true; // не скроллить при ctrl+home/ctrl+end (синхронный запрос)
+    
     private ClientGroupObject groupObject;
     private TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>> sortableHeaderManager;
 
@@ -503,30 +508,21 @@ public class GridTable extends ClientPropertyTable {
 
     private void adjustSelection() {
         //надо сдвинуть ViewPort - иначе дергаться будет
+        int currentInd = scrollToIndex;
+        if (selectOldObject && oldRowScrollTop != -1) {
+            ClientGroupObjectValue currentKey = getCurrentObject();
+            if (currentKey != null && currentInd >= 0 && currentInd < getRowCount()) {
+                int newVerticalScrollPosition = max(0, currentInd * getRowHeight() - oldRowScrollTop);
 
-        int currentRow = getCurrentRow();
-        if (currentRow >= 0) {
-            final int dltpos = viewMoveInterval * getRowHeight();
-            final Rectangle viewRect = ((JViewport) getParent()).getViewRect();
-
-            viewRect.y += dltpos;
-            if (viewRect.y < 0) {
-                viewRect.y = 0;
+                final Rectangle viewRect = ((JViewport) getParent()).getViewRect();
+                viewRect.y = newVerticalScrollPosition;
+                ((JViewport) getParent()).setViewPosition(viewRect.getLocation());
             }
-
-            int currentRowTop = currentRow * getRowHeight();
-            int currentRowBottom = currentRowTop + getRowHeight() - 1;
-
-            if (currentRowTop < viewRect.getMinY()) {
-                viewRect.y = currentRowTop;
-            } else if (currentRowBottom > viewRect.getMaxY()) {
-                viewRect.y = currentRowBottom - viewRect.height;
-            }
-            ((JViewport) getParent()).setViewPosition(viewRect.getLocation());
-            selectRow(currentRow);
+            oldRowScrollTop = -1;
         }
-
-        viewMoveInterval = 0;
+        selectRow(currentInd);
+        scrollToIndex = -1;
+        selectOldObject = true;
     }
     
     private void selectColumn(int columnNumber) {
@@ -582,15 +578,18 @@ public class GridTable extends ClientPropertyTable {
         int oldIndex = rowKeys.indexOf(currentObject);
         int newIndex = irowKeys.indexOf(currentObject);
 
-        if ((oldIndex == -1 || newIndex == -1) && newCurrentObject != null) {
+        if ((!selectOldObject || (oldIndex == -1 || newIndex == -1)) && newCurrentObject != null) {
             //если старого объекта не нашли, то позиционируем новый
             oldIndex = rowKeys.indexOf(newCurrentObject);
             newIndex = irowKeys.indexOf(newCurrentObject);
         }
 
         if (oldIndex != -1 && newIndex != -1) {
+            final Rectangle viewRect = ((JViewport) getParent()).getViewRect();
+            oldRowScrollTop = getSelectedRow() * getRowHeight() - viewRect.y;
             viewMoveInterval = newIndex - oldIndex;
         }
+        scrollToIndex = newIndex;
 
         rowKeys = irowKeys;
 
@@ -1537,6 +1536,7 @@ public class GridTable extends ClientPropertyTable {
         public void actionPerformed(ActionEvent e) {
             try {
                 if (groupObject.pageSize != 0) {
+                    selectOldObject = false;
                     form.changeGroupObject(groupObject, direction);
                 } else if (!rowKeys.isEmpty()) {
                     switch (direction) {
