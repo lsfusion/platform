@@ -648,6 +648,7 @@ META defineDocumentInterface (object)
 
     @defineDocumentInterfaceRelation(object);
     @defineDocumentInterfaceDetailIndex(object);
+    @defineDocumentDetailSortOrder(user###object);
 
     @defineDocumentInterfaceTime(object);
     @defineDocumentInterfaceHeaderNote(###object);
