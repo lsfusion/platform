@@ -42,6 +42,7 @@ currentUserName 'Имя Тек. Польз.' () = nameContact(currentUser());
 nameUser 'Имя пользователя' (User user) = IF user IS SystemUser 
                         THEN 'Системный пользователь'
                         ELSE nameContact(user);
+nameCustomUser (user) = nameUser(user);
 
 currentComputer = NATIVE Computer ();
 hostnameCurrentComputer 'Текущий компьютер' () = hostnameComputer(currentComputer());
