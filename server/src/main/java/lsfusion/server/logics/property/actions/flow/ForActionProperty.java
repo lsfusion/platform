@@ -289,7 +289,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             // сначала проверим если первый в списке CHANGE CLASS, тогда заберем его в FOR
             ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
 
-            if(list.size() > 0) {
+            if (list.size() > 0) {
                 ActionPropertyMapImplement<?, I> first = list.get(0);
                 if (first.mapping.size() == 1 && first.mapping.singleValue().equals(addObject) && first.property instanceof ChangeClassActionProperty) {
                     ChangeClassActionProperty changeClassProperty = (ChangeClassActionProperty) first.property;
@@ -299,6 +299,13 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                                 (CustomClass) changeClassProperty.valueClass, changeClassProperty.forceDialog, recursive, noInline, forceInline);
                 }
             }
+        }
+
+        // проталкиваем for'ы
+        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.VOLATILE))
+            return null;
+
+        if(addObject != null) {
             assert !hackAdd; // должен отработать сверху
 
             CalcPropertyMapImplement<?, I> result = DerivedProperty.createForDataProp(getExtendClasses(), addClass);
@@ -307,10 +314,6 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                     DerivedProperty.createForAction(innerInterfaces, context, DerivedProperty.<I>createCompare(
                             addObject, result, Compare.EQUALS), MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>singletonOrder(addObject, false), false, action, elseAction, null, null, false, allNoInline ? noInline.addExcl(addObject) : noInline, forceInline)));
         }
-
-        // проталкиваем for'ы
-        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.VOLATILE))
-            return null;
 
         ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
 
