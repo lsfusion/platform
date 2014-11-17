@@ -188,6 +188,7 @@ public class RecursiveExpr extends QueryExpr<KeyExpr, RecursiveExpr.Query, Recur
         }
     }
 
+    // пока как и в PartitionExpr классы не пакуются, так как их predicate push down с большой вероятностью спакует, но видимо потом придется доделать
     @Override
     public Expr packFollowFalse(Where falseWhere) {
         ImMap<KeyExpr, Expr> packedGroup = packPushFollowFalse(group, falseWhere);

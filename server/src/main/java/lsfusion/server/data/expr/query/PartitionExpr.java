@@ -170,6 +170,7 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
         return "ORDER(" + query + "," + group + ")";
     }
 
+    // пока как и в RecursiveExpr классы не пакуются, так как их predicate push down с большой вероятностью спакует, но видимо потом придется доделать
     @Override
     public Expr packFollowFalse(Where falseWhere) {
         ImMap<KeyExpr, Expr> packedGroup = packPushFollowFalse(group, falseWhere);
