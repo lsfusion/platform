@@ -35,10 +35,9 @@ public class RemoteLoggerAspect {
         }
         long startTime = System.currentTimeMillis();
         Object result = thisJoinPoint.proceed();
-        long endTime = System.currentTimeMillis();
-        long runTime = endTime - startTime;
+        long runTime = System.currentTimeMillis() - startTime;
         
-        userActivityMap.put(user, endTime);
+        userActivityMap.put(user, startTime);
         
         boolean debugEnabled = user != null && isRemoteLoggerDebugEnabled(user);
 

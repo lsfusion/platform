@@ -388,9 +388,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             DataSession session = ThreadLocalContext.getDbManager().createSession();
 
             Map<Integer, Long> userActivityMap;
-            synchronized (RemoteLoggerAspect.userActivityMap) {
-                userActivityMap = new HashMap<Integer, Long>(RemoteLoggerAspect.userActivityMap);
-            }
+            userActivityMap = new HashMap<Integer, Long>(RemoteLoggerAspect.userActivityMap);
             RemoteLoggerAspect.userActivityMap.clear();
             
             try {
