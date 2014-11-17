@@ -422,17 +422,17 @@ META defineDocumentDetailIndex (object, detailClass)
     index##detailClass 'Номер строки' (d) = OVERRIDE defaultIndex##detailClass(d), dataIndex##detailClass(d) IN recognize;  
 END
 
-META defineDocumentDetailSort (object, detailClass)
-    sort##detailClass 'Порядок сортировки' (d) = ABSTRACT VARSTRING[100] (detailClass);
-    sort##detailClass###object = GROUP SUM 1 IF sort##detailClass(d) BY object##detailClass(d);
+META defineDocumentDetailSortOrder (object, detailClass)
+    sortOrder##detailClass 'Порядок сортировки' (d) = ABSTRACT VARSTRING[100] (detailClass);
+    sortOrder##detailClass###object = GROUP SUM 1 IF sortOrder##detailClass(d) BY object##detailClass(d);
     
-    sort###detailClass 'Сортировать для всех' = ACTION (detail) {
-        IF sort##detailClass###object(object##detailClass(detail)) THEN {    
+    updateSortOrder###detailClass 'Сортировать для всех' = ACTION (detail) {
+        IF sortOrder##detailClass###object(object##detailClass(detail)) THEN {    
             LOCAL int = INTEGER();
             int() <- NULL;
             int() <-1;
             
-            FOR object###detailClass(detail) == object###detailClass(d) ORDER sort##detailClass(d) DO {
+            FOR object###detailClass(detail) == object###detailClass(d) ORDER sortOrder##detailClass(d) DO {
                 dataIndex##detailClass(d) <- int();
                  int() <-  int()+1;
             }  
@@ -442,8 +442,8 @@ META defineDocumentDetailSort (object, detailClass)
     } SHORTCUT index##detailClass;  
     
 END
-META defineDocumentDetailSort(object)
-    @defineDocumentDetailSort (object, ###object###detail);
+META defineDocumentDetailSortOrder(object)
+    @defineDocumentDetailSortOrder (object, ###object###detail);
 END
 
 META defineDocumentAbstractDetailIndex(detailClass)
@@ -621,7 +621,7 @@ META defineDocument (object)
 
     @defineDocumentRelation(object);
     @defineDocumentDetailIndex(object);
-    @defineDocumentDetailSort(object);
+    @defineDocumentDetailSortOrder(object);
 
     @defineDocumentTime(object);
     @defineDocumentHeaderNote(###object);
