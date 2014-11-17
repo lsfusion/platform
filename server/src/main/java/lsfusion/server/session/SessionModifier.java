@@ -140,12 +140,16 @@ public abstract class SessionModifier implements Modifier {
         return increment.getProperties().merge(getPrereadProps());
     }
 
+    // должно цеплять все views, чтобы не получилось что increment'ы создались до начала транзакции, а удалялись по eventChange (который цепляет все views), тогда rollbacktransaction вернет назад записи в старые таблицы
     public void clearHints(SQLSession session, OperationOwner owner) throws SQLException {
         eventSourceChanges(getIncrementProps());
         increment.clear(session, owner);
         preread.clear();
         eventDataChanges(noUpdate.immutableCopy());
         noUpdate = SetFact.mAddSet();
+
+        for(OverrideSessionModifier view : views)
+            view.clearHints(session, owner);
     }
 
     public void clearPrereads() throws SQLException {

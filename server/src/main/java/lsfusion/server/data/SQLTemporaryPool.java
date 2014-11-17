@@ -66,7 +66,7 @@ public class SQLTemporaryPool {
 //                    ServerLoggers.assertLog(false, "TEMPORARY TABLE NOT EMPTY");
 //                    session.truncateSession(matchTable, opOwner, TableOwner.none);
 //                }
-                assert session.getSessionCount(matchTable, opOwner) == 0;
+                assert session.getSessionCount(matchTable, opOwner) == 0; // си. clearHints
                 assert !used.containsKey(matchTable);
                 used.put(matchTable, new WeakReference<TableOwner>(owner));
 //                SQLSession.addUsed(matchTable, owner, used, usedStacks);

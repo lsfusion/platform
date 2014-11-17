@@ -153,12 +153,6 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     @Override
-    public void clearHints(SQLSession session, OperationOwner owner) throws SQLException {
-        super.clearHints(session, owner);
-        modifier.clearHints(session, owner);
-    }
-
-    @Override
     public void clearPrereads() throws SQLException {
         super.clearPrereads();
         modifier.clearPrereads();

@@ -268,7 +268,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         try {
             if(Settings.get().isApplyVolatileStats())
                 pushVolatileStats(null, owner);
-    
+//            fifo.add("ST"  + getCurrentTimeStamp() + " " + this + " " + ExceptionUtils.getStackTrace());
             if(inTransaction++ == 0) {
                 transStartTime = System.currentTimeMillis();
 
@@ -376,7 +376,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public void commitTransaction(OperationOwner owner) throws SQLException {
         if(inTransaction == 1)
             privateConnection.sql.commit();
-//        fifo.add("CMT"  + getCurrentTimeStamp() + " " + this);
+//        fifo.add("CMT"  + getCurrentTimeStamp() + " " + this + " " + ExceptionUtils.getStackTrace());
 
         endTransaction(owner);
     }
