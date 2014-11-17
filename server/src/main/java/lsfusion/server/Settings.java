@@ -168,6 +168,8 @@ public class Settings {
     private int limitApplyHintIncrementStat = 1000;
 
     private int updateFormCountPeriod = 5000;
+    
+    private int updateUserLastActivity = 5000;
 
     private boolean autoAnalyzeTempStats = true; // автоматически анализировать статистику после каждого заполнения временной таблицы (прикол в том что после удаления таблицы и добавления новых записей статистика сама увеличивается)
 
@@ -709,6 +711,14 @@ public class Settings {
 
     public void setUpdateFormCountPeriod(int updateFormCountPeriod) {
         this.updateFormCountPeriod = updateFormCountPeriod;
+    }
+
+    public int getUpdateUserLastActivity() {
+        return updateUserLastActivity;
+    }
+
+    public void setUpdateUserLastActivity(int updateUserLastActivity) {
+        this.updateUserLastActivity = updateUserLastActivity;
     }
 
     public boolean isAutoAnalyzeTempStats() {

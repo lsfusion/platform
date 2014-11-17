@@ -41,6 +41,7 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.remote.ContextAwarePendingRemoteObject;
 import lsfusion.server.remote.RemoteForm;
+import lsfusion.server.remote.RemoteLoggerAspect;
 import lsfusion.server.remote.RemotePausableInvocation;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
@@ -55,6 +56,7 @@ import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.rmi.server.Unreferenced;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -377,6 +379,32 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         } catch (SQLException e) {
             throw Throwables.propagate(e);
         } catch (SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static void updateUserLastActivity(BusinessLogics businessLogics) {
+        try {
+            DataSession session = ThreadLocalContext.getDbManager().createSession();
+
+            Map<Integer, Long> userActivityMap;
+            synchronized (RemoteLoggerAspect.userActivityMap) {
+                userActivityMap = new HashMap<Integer, Long>(RemoteLoggerAspect.userActivityMap);
+            }
+            RemoteLoggerAspect.userActivityMap.clear();
+            
+            try {
+
+                for (Map.Entry<Integer, Long> userActivity : userActivityMap.entrySet()) {
+                    DataObject customUserObject = new DataObject(userActivity.getKey(), businessLogics.authenticationLM.customUser);
+                    businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue()), session, customUserObject);
+                    
+                }
+                session.apply(businessLogics);
+            } finally {
+                session.close();
+            }
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }

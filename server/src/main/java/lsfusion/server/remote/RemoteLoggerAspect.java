@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RemoteLoggerAspect {
     private final static Logger logger = ServerLoggers.remoteLogger;
 
+    public static final Map<Integer, Long> userActivityMap = new ConcurrentHashMap<Integer, Long>();
     private static Map<Integer, Boolean> remoteLoggerDebugEnabled = new ConcurrentHashMap<Integer, Boolean>();
 
     @Around("(execution(* lsfusion.interop.RemoteLogicsInterface.*(..))" +
@@ -34,7 +35,10 @@ public class RemoteLoggerAspect {
         }
         long startTime = System.currentTimeMillis();
         Object result = thisJoinPoint.proceed();
-        long runTime = System.currentTimeMillis() - startTime;
+        long endTime = System.currentTimeMillis();
+        long runTime = endTime - startTime;
+        
+        userActivityMap.put(user, endTime);
         
         boolean debugEnabled = user != null && isRemoteLoggerDebugEnabled(user);
 

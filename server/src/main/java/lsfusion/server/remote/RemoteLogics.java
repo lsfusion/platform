@@ -129,6 +129,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
             this.baseLM = businessLogics.LM;
         } else if (LifecycleEvent.STARTED.equals(event.getType())) {
             initOpenFormCountUpdate();
+            initUserLastActivityUpdate();
         }
     }
 
@@ -145,6 +146,21 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 }
             }
         }, Settings.get().getUpdateFormCountPeriod(), Settings.get().getUpdateFormCountPeriod(), TimeUnit.MILLISECONDS);
+    }
+
+    private void initUserLastActivityUpdate() {
+        ScheduledExecutorService userLastActivityUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "user-last-activity-daemon"));
+        userLastActivityUpdateExecutor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    RemoteNavigator.updateUserLastActivity(businessLogics);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
+        }, Settings.get().getUpdateUserLastActivity(), Settings.get().getUpdateUserLastActivity(), TimeUnit.MILLISECONDS);
     }
 
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean reuseSession) {

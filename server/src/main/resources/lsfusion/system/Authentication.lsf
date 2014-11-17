@@ -55,6 +55,8 @@ calculatedHash 'Значение хэш' = DATA SESSION VARSTRING[100] ();
 forbidChangePasswordCustomUser 'Запретить пользователю изменять пароль' = DATA BOOLEAN (CustomUser);
 forbidEditProfileCustomUser 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (CustomUser);
 
+lastActivityCustomUser 'Последняя активность' = DATA DATETIME (CustomUser);
+
 calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty';
 logOut 'Выйти' = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty';
 reloginUser 'Сменить пользователя' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty';
@@ -77,7 +79,7 @@ FORM customUser 'Пользователь'
     OBJECTS u=CustomUser FIXED PANEL
     PROPERTIES(u) firstNameContact, lastNameContact, loginCustomUser,
     sha256PasswordCustomUser ON CHANGE changeSHA256PasswordCustomUser(u), emailContact,
-    forbidChangePasswordCustomUser, forbidEditProfileCustomUser, isLockedCustomUser
+    forbidChangePasswordCustomUser, forbidEditProfileCustomUser, isLockedCustomUser, lastActivityCustomUser
 
     EDIT CustomUser OBJECT u
 ;
@@ -100,7 +102,7 @@ FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY nameContact, loginCustomUser, emailContact
     PROPERTIES(u) forbidChangePasswordCustomUser, forbidEditProfileCustomUser, isLockedCustomUser READONLY,
-                  ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
+                  lastActivityCustomUser, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
 

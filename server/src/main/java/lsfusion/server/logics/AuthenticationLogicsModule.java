@@ -29,6 +29,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP customUserLogin;
     public LCP sha256PasswordCustomUser;
     public LCP calculatedHash;
+    public LCP lastActivityCustomUser;
     public LCP currentUser;
     public LCP currentUserName;
 
@@ -91,6 +92,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         sha256PasswordCustomUser.setEchoSymbols(true);
 
         calculatedHash = findProperty("calculatedHash");
+
+        lastActivityCustomUser = findProperty("lastActivityCustomUser");
 
         useLDAP = findProperty("useLDAP");
         serverLDAP = findProperty("serverLDAP");
