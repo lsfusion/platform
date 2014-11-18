@@ -13,7 +13,7 @@ levelPropertyGroupPropertyGroup 'Уровень' (child, parent) = RECURSION 1l 
 captionPropertyGroup 'Имя' = DATA VARSTRING[250] (PropertyGroup);
 numberPropertyGroup 'Номер' = DATA INTEGER (PropertyGroup);
 SIDPropertyGroup 'Код свойства' = DATA VARSTRING[100] (PropertyGroup);
-propertyGroupSID 'Свойство' (sid) = GROUP AGGR propertyGroup BY SIDPropertyGroup(propertyGroup) WHERE propertyGroup IS PropertyGroup;
+propertyGroupSID 'Свойство' (sID) = GROUP AGGR propertyGroup BY SIDPropertyGroup(propertyGroup) WHERE propertyGroup IS PropertyGroup;
 
 CLASS NavigatorElement 'Элемент навигатора';
 CLASS NavigatorAction 'Действие' : NavigatorElement;
@@ -24,7 +24,7 @@ captionNavigatorElement 'Название формы' = DATA VARSTRING[250] (Nav
 sidNavigatorElement 'Код формы' = DATA VARSTRING[50] (NavigatorElement);
 canonicalNameNavigatorElement 'Каноническое имя формы' = DATA VARSTRING[100] (NavigatorElement);
 numberNavigatorElement 'Номер' = DATA INTEGER (NavigatorElement);
-navigatorElementSID 'Форма' (sid) = GROUP AGGR navigatorElement BY sidNavigatorElement(navigatorElement) WHERE navigatorElement IS NavigatorElement;
+navigatorElementSID 'Форма' (sID) = GROUP AGGR navigatorElement BY sidNavigatorElement(navigatorElement) WHERE navigatorElement IS NavigatorElement;
 navigatorElementCanonicalName 'Форма' (sid) = GROUP AGGR navigatorElement BY canonicalNameNavigatorElement(navigatorElement) WHERE navigatorElement IS NavigatorElement;
 parentNavigatorElement 'Родит. форма' = DATA NavigatorElement (NavigatorElement);
 isNavigatorElement (navigatorElement) = navigatorElement IS NavigatorElement AND NOT navigatorElement IS Form AND NOT navigatorElement IS NavigatorAction;
@@ -50,9 +50,9 @@ complexityProperty 'Сложность свойства' = DATA LONG (Property);
 captionProperty 'Заголовок' = DATA VARSTRING[250] (Property) IN base;
 tableSIDProperty 'Таблица' = DATA VARSTRING[100] (Property);
 
-propertySID 'Свойство' (sid) = GROUP NAGGR property BY dbNameProperty(property) WHERE property IS Property; // todo [dale]: временно, нужно для миграции на 15 версию БД
+propertySID 'Свойство' (sID) = GROUP NAGGR property BY dbNameProperty(property) WHERE property IS Property; // todo [dale]: временно, нужно для миграции на 15 версию БД
 propertyCanonicalName 'Свойство' (cn) = GROUP AGGR property BY canonicalNameProperty(property) WHERE property IS Property;
-propertyTableSID 'Свойство' = GROUP AGGR property BY tableSIDProperty(property), dbNameProperty(property) WHERE storedProperty(property);
+propertyTableSID 'Свойство' (string, sID) = GROUP AGGR property BY tableSIDProperty(property), dbNameProperty(property) WHERE storedProperty(property);
 
 CLASS PropertyDraw 'Свойство на форме';
 
@@ -74,7 +74,7 @@ sidPropertyDraw 'Код свойства на форме' = DATA VARSTRING[100] 
 captionPropertyDraw 'Название свойства на форме' = DATA VARSTRING[250] (PropertyDraw);
 formPropertyDraw 'Форма' = DATA Form (PropertyDraw) INDEXED;
 groupObjectPropertyDraw 'Группа объектов' = DATA GroupObject (PropertyDraw);
-propertyDrawFormSID 'Свойство на форме' = GROUP AGGR propertyDraw BY formPropertyDraw (propertyDraw), sidPropertyDraw (propertyDraw) WHERE propertyDraw IS PropertyDraw;
+propertyDrawFormSID 'Свойство на форме' (form, sID) = GROUP AGGR propertyDraw BY formPropertyDraw (propertyDraw), sidPropertyDraw (propertyDraw) WHERE propertyDraw IS PropertyDraw;
 propertyDrawSIDNavigatorElementNamePropertyDraw 'Код формы' (str1, str2) = propertyDrawFormSID (navigatorElementCanonicalName(str1), str2);
 
 showPropertyDraw 'Показ свойства' = DATA PropertyDrawShowStatus (PropertyDraw);
@@ -125,7 +125,7 @@ CLASS Table 'Таблица';
 TABLE tables (Table);
 
 sidTable 'Имя таблицы' = DATA VARSTRING[100] (Table);
-tableSID 'Имя таблицы' (sid) = GROUP AGGR table BY sidTable (table) WHERE table IS Table;
+tableSID 'Имя таблицы' (sID) = GROUP AGGR table BY sidTable (table) WHERE table IS Table;
 rowsTable 'Количество записей' = DATA INTEGER (Table);
 tableTableKey 'Таблица' = DATA Table (TableKey);
 
@@ -133,7 +133,7 @@ CLASS TableKey 'Ключ';
 TABLE tableKey (TableKey);
 
 sidTableKey 'Код ключа' = DATA VARSTRING[100] (TableKey);
-tableKeySID 'Ключ' = GROUP AGGR tableKey BY sidTableKey (tableKey) WHERE tableKey IS TableKey;
+tableKeySID 'Ключ' (sID) = GROUP AGGR tableKey BY sidTableKey (tableKey) WHERE tableKey IS TableKey;
 classTableKey 'Класс ключа' = DATA VARSTRING[40] (TableKey);
 nameTableKey 'Имя ключа' = DATA VARSTRING[20] (TableKey);
 quantityTableKey 'Количество разновидностей' = DATA INTEGER (TableKey);
@@ -145,7 +145,7 @@ tableTableColumn 'Таблица' = DATA Table(TableColumn);
 sidTableColumn 'Имя колонки' = DATA VARSTRING[100] (TableColumn);
 
 longSIDTableColumn(tableColumn) = sidTable(tableTableColumn(tableColumn)) + '.' + sidTableColumn(tableColumn);
-tableColumnSID 'Колонка' = GROUP AGGR tableColumn BY longSIDTableColumn(tableColumn) WHERE tableColumn IS TableColumn; 
+tableColumnSID 'Колонка' (sID) = GROUP AGGR tableColumn BY longSIDTableColumn(tableColumn) WHERE tableColumn IS TableColumn; 
 propertyTableColumn 'Свойство' (tableColumn) = propertyTableSID(sidTable(tableTableColumn(tableColumn)), sidTableColumn(tableColumn));
 captionTableColumn 'Заголовок свойства' (tableColumn) = captionProperty(propertyTableColumn(tableColumn));
 canonicalNameTableColumn 'Каноническое имя свойства' (tableColumn) = canonicalNameProperty(propertyTableColumn(tableColumn));
@@ -176,7 +176,7 @@ CLASS DropColumn 'Удалённая колонка';
 TABLE dropColumn (DropColumn);
 
 sidDropColumn 'Имя колонки' = DATA VARSTRING[100] (DropColumn);
-dropColumnSID 'Удалённая колонка' (sid) = GROUP NAGGR dropColumn BY sidDropColumn (dropColumn) WHERE dropColumn IS DropColumn;
+dropColumnSID 'Удалённая колонка' (sID) = GROUP NAGGR dropColumn BY sidDropColumn (dropColumn) WHERE dropColumn IS DropColumn;
 sidTableDropColumn 'Имя таблицы' = DATA VARSTRING[100] (DropColumn);
 timeDropColumn 'Время удаления' = DATA DATETIME (DropColumn);
 revisionDropColumn 'Версия' = DATA VARSTRING[10] (DropColumn);
