@@ -244,6 +244,35 @@ META defineAggregation (prim1Object, prim2Object, prim3Object, aggrObject, aggrP
     @defineAggregationClass(prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, aggrObject, ###aggrObject, aggrProperty);
 END
 
+// -- Агрегации для 4х объектов -- //   
+META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim4Property, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty)
+    aggrObject###prim1Object###prim2Object###prim3Object###prim4Object (prim1Object, prim2Object, prim3Object, prim4Object) =
+        GROUP AGGR aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject), prim4Property(aggrObject) 
+        WHERE aggrObject IS aggrClass;// PERSISTENT INDEXED;
+
+    aggrProperty###prim1Class###prim2Class###prim3Object###prim4Object(prim1Object, prim2Object, prim3Object, prim4Object) => aggrObject###prim1Object###prim2Object###prim3Object###prim4Object(prim1Object, prim2Object, prim3Object, prim4Object) RESOLVE TRUE;
+
+    is###aggrObject(aggrObject) = aggrObject IS aggrClass;
+    is###aggrObject(aggrObject) => aggrProperty###prim1Class###prim2Class###prim3Object###prim4Object(prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject), prim4Property(aggrObject)) RESOLVE FALSE;
+END
+
+META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim4Property, prim1Object, prim2Object, prim3Object, prim4Object, aggrObject, aggrProperty)
+    @defineAggregationCustom(prim1Property, prim2Property, prim3Property, prim4Property, prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, prim4Object, ###prim4Object, aggrObject, ###aggrObject, aggrProperty);
+END
+
+META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty)
+    prim1Object###aggrObject = DATA prim1Class (aggrClass);
+    prim2Object###aggrObject = DATA prim2Class (aggrClass);
+    prim3Object###aggrObject = DATA prim3Class (aggrClass);
+    prim4Object###aggrObject = DATA prim4Class (aggrClass);
+
+    @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim4Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty);
+END
+
+META defineAggregation (prim1Object, prim2Object, prim3Object, prim4Object, aggrObject, aggrProperty)
+    @defineAggregationClass(prim1Object, ###prim1Object, prim2Object, ###prim2Object, prim3Object, ###prim3Object, prim4Object, ###prim4Object, aggrObject, ###aggrObject, aggrProperty);
+END
+
 // --------------------------- Групповая корректировка на форме --------------------------------- //
 
 isEditable 'Включить корректировку на форме' = DATA SESSION BOOLEAN();
