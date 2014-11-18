@@ -12,7 +12,7 @@ import java.sql.SQLException;
 
 public class LogOutActionProperty extends ScriptingActionProperty {
     public LogOutActionProperty(AuthenticationLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override

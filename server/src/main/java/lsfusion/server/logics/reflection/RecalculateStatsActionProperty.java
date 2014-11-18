@@ -12,7 +12,7 @@ import java.sql.SQLException;
 
 public class RecalculateStatsActionProperty extends ScriptingActionProperty {
     public RecalculateStatsActionProperty(ReflectionLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override

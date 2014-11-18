@@ -18,7 +18,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class ServiceDBActionProperty extends ScriptingActionProperty {
     public ServiceDBActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override

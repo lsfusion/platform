@@ -14,7 +14,7 @@ import java.sql.SQLException;
 public class DropLRUActionProperty extends ScriptingActionProperty {
 
     public DropLRUActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override

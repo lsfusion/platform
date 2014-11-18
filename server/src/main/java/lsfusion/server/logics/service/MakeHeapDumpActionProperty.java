@@ -19,7 +19,7 @@ import java.util.Calendar;
 public class MakeHeapDumpActionProperty extends ScriptingActionProperty {
 
     public MakeHeapDumpActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override

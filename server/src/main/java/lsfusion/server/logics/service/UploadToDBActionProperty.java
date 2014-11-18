@@ -21,7 +21,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 public class UploadToDBActionProperty extends ScriptingActionProperty {
 
     public UploadToDBActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override

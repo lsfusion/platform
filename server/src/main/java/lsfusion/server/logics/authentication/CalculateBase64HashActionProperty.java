@@ -19,7 +19,7 @@ public class CalculateBase64HashActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface passwordInterface;
 
     public CalculateBase64HashActionProperty(AuthenticationLogicsModule LM) {
-        super(LM, new ValueClass[]{StringClass.get(10), StringClass.get(30)});
+        super(LM, StringClass.get(10), StringClass.get(30));
         this.LM = LM;
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         algorithmInterface = i.next();

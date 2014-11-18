@@ -15,7 +15,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RecalculateActionProperty extends ScriptingActionProperty {
     public RecalculateActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override

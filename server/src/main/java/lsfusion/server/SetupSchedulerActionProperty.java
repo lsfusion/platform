@@ -14,7 +14,7 @@ import java.sql.SQLException;
 public class SetupSchedulerActionProperty extends ScriptingActionProperty {
 
     public SetupSchedulerActionProperty(SchedulerLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
 
     }
 

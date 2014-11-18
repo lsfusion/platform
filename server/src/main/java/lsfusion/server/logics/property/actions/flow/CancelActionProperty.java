@@ -1,6 +1,5 @@
 package lsfusion.server.logics.property.actions.flow;
 
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -11,8 +10,8 @@ import java.sql.SQLException;
 
 public class CancelActionProperty extends ScriptingActionProperty {
 
-    public CancelActionProperty(BaseLogicsModule lm) {
-        super(lm, new ValueClass[] {});
+    public CancelActionProperty(BaseLogicsModule LM) {
+        super(LM);
     }
 
     @Override

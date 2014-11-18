@@ -3,7 +3,6 @@ package lsfusion.server.logics.property.actions;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.remote.UserInfo;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.AuthenticationLogicsModule;
 import lsfusion.server.logics.DataObject;
@@ -26,8 +25,8 @@ public class GenerateLoginPasswordActionProperty extends ScriptingActionProperty
 
     private final ClassPropertyInterface customUserInterface;
 
-    public GenerateLoginPasswordActionProperty(AuthenticationLogicsModule lm) throws ScriptingErrorLog.SemanticErrorException {
-        super(lm, lm.findClass("CustomUser"));
+    public GenerateLoginPasswordActionProperty(AuthenticationLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, LM.findClass("CustomUser"));
 
         try {
             this.email = findProperty("Contact.emailContact");

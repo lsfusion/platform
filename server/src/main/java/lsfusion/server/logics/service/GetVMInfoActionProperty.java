@@ -15,7 +15,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class GetVMInfoActionProperty extends ScriptingActionProperty {
     public GetVMInfoActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override

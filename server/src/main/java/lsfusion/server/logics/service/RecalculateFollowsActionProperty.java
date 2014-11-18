@@ -18,7 +18,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RecalculateFollowsActionProperty extends ScriptingActionProperty {
     public RecalculateFollowsActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

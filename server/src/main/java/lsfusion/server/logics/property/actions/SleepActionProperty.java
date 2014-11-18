@@ -15,7 +15,7 @@ import static lsfusion.base.BaseUtils.serializeObject;
 public class SleepActionProperty extends ScriptingActionProperty {
 
     public SleepActionProperty(BaseLogicsModule lm) {
-        super(lm, new ValueClass[]{LongClass.instance});
+        super(lm, LongClass.instance);
     }
 
     @Override

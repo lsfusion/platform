@@ -17,7 +17,7 @@ import java.sql.SQLException;
 public class DisconnectActionProperty extends ScriptingActionProperty {
 
     public DisconnectActionProperty(SystemEventsLogicsModule lm) throws ScriptingErrorLog.SemanticErrorException {
-        super(lm, new ValueClass[] {lm.findClass("Connection")});
+        super(lm, lm.findClass("Connection"));
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

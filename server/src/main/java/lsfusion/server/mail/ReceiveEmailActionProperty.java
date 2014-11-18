@@ -28,7 +28,7 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
 
 
     public ReceiveEmailActionProperty(EmailLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{});
+        super(LM);
         this.emailLM = LM;
 
         askConfirm = true;

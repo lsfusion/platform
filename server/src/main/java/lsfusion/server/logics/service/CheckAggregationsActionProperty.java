@@ -16,7 +16,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class CheckAggregationsActionProperty extends ScriptingActionProperty {
     public CheckAggregationsActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override

@@ -18,7 +18,7 @@ public class DropColumnActionProperty extends ScriptingActionProperty {
     LAP delete;
 
     public DropColumnActionProperty(ReflectionLogicsModule LM) {
-        super(LM, new ValueClass[]{LM.dropColumn});
+        super(LM, LM.dropColumn);
         delete = LM.getDeleteAction(LM.dropColumn, true);
     }
 

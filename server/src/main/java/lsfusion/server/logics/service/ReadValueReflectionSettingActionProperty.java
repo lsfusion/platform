@@ -17,7 +17,7 @@ import java.sql.SQLException;
 public class ReadValueReflectionSettingActionProperty extends ScriptingActionProperty {
 
     public ReadValueReflectionSettingActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override

@@ -16,7 +16,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class VacuumDBActionProperty extends ScriptingActionProperty {
     public VacuumDBActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override

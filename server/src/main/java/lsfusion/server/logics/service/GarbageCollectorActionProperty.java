@@ -11,7 +11,7 @@ import java.sql.SQLException;
 
 public class GarbageCollectorActionProperty extends ScriptingActionProperty {
     public GarbageCollectorActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

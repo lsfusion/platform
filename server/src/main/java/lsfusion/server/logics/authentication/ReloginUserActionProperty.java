@@ -19,7 +19,7 @@ import java.util.ResourceBundle;
 public class ReloginUserActionProperty extends ScriptingActionProperty {
 
     public ReloginUserActionProperty(AuthenticationLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, "reloginUser", new ValueClass[]{LM.findClass("CustomUser")});
+        super(LM, "reloginUser", LM.findClass("CustomUser"));
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

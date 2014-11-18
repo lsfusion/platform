@@ -18,7 +18,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class CheckClassesActionProperty extends ScriptingActionProperty {
     public CheckClassesActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override

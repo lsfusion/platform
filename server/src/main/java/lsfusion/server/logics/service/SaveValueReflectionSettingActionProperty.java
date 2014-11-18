@@ -17,7 +17,7 @@ import java.sql.SQLException;
 public class SaveValueReflectionSettingActionProperty extends ScriptingActionProperty {
 
     public SaveValueReflectionSettingActionProperty(ServiceLogicsModule LM) {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     @Override
