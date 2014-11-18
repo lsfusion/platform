@@ -60,7 +60,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
 
     public static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = new ConcurrentWeakHashMap<SQLSession, Integer>();
-    
+
+    // [todo]: переопределен из-за того, что используется ConcurrentWeakHashMap (желательно какой-нибудь ConcurrentIdentityHashMap)
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj;
+    }
+
     private static interface SQLRunnable {
         void run() throws SQLException, SQLHandledException;
     }
