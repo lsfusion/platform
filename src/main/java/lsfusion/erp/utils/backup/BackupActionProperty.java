@@ -32,7 +32,7 @@ import static lsfusion.base.IOUtils.readFileToString;
 public class BackupActionProperty extends ScriptingActionProperty {
 
     public BackupActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

@@ -29,7 +29,7 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
     private final ClassPropertyInterface mapProviderInterface;
 
     public GetCoordinatesAddressActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{StringClass.get(255), LM.findClass("MapProvider")});
+        super(LM, StringClass.get(255), LM.findClass("MapProvider"));
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         POIInterface = i.next();

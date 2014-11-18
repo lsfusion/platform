@@ -21,7 +21,7 @@ public class SaveBackupActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface backupInterface;
 
     public SaveBackupActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{LM.findClass("Backup")});
+        super(LM, LM.findClass("Backup"));
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         backupInterface = i.next();

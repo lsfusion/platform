@@ -26,7 +26,7 @@ import java.util.Calendar;
 public class DecimateBackupsActionProperty extends ScriptingActionProperty {
 
     public DecimateBackupsActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

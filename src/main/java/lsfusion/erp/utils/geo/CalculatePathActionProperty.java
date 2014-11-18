@@ -29,7 +29,7 @@ import java.util.*;
 public class CalculatePathActionProperty extends ScriptingActionProperty {
 
     public CalculatePathActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, new ValueClass[]{});
+        super(LM);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
