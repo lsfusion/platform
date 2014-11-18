@@ -28,7 +28,7 @@ GROUP propertyPolicy 'Свойства политики безопасности
 canceled 'Canceled' = DATA SESSION BOOLEAN ();
 
 apply = ACTION APPLY {};
-cancel = ACTION CUSTOM 'lsfusion.server.logics.property.actions.flow.CancelActionProperty';
+cancel = ACTION CUSTOM 'lsfusion.server.logics.property.actions.flow.CancelActionProperty' ();
 onStarted = ABSTRACT ACTION LIST ();
 
 upper = FORMULA 'upper($1)';
@@ -38,24 +38,24 @@ leftTo = FORMULA PG 'left($1, strpos($1, $2) - 1)' MS 'LEFT($1, CHARINDEX($2, $1
 
 subtractInteger(dateFrom, dateTo) = [= FORMULA INTEGER PG '(($1)-($2))' MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
 
-formApply 'Сохранить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty';
-formCancel 'Отменить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty';
-formPrint 'Печать' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.PrintActionProperty';
-formEdit 'Редактировать' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.EditActionProperty';
-formXls 'Экспорт в xls' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.XlsActionProperty';
-formDrop 'Сбросить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.DropActionProperty';
-formRefresh 'Обновить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RefreshActionProperty';
-formOk 'OK' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.OkActionProperty';
-formClose 'Закрыть' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.CloseActionProperty';
+formApply 'Сохранить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
+formCancel 'Отменить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();
+formPrint 'Печать' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.PrintActionProperty' ();
+formEdit 'Редактировать' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.EditActionProperty' ();
+formXls 'Экспорт в xls' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.XlsActionProperty' ();
+formDrop 'Сбросить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.DropActionProperty' ();
+formRefresh 'Обновить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.RefreshActionProperty' ();
+formOk 'OK' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.OkActionProperty' ();
+formClose 'Закрыть' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.CloseActionProperty' ();
 
-seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekActionProperty';
+seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekActionProperty' ();
 
-sleep 'Sleep' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty';
+sleep 'Sleep' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
 
-applyOnlyWithoutRecalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyWithoutRecalcActionProperty';
-applyOnlyCalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyCalcActionProperty';
-applyOnlyData = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyDataActionProperty';
-applyAll = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyAllActionProperty';
+applyOnlyWithoutRecalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyWithoutRecalcActionProperty' ();
+applyOnlyCalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyCalcActionProperty' ();
+applyOnlyData = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyDataActionProperty' ();
+applyAll = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyAllActionProperty' ();
 
 staticName 'Статическое имя' = DATA STRING[250] (Object);
 nameStatic (name) = GROUP MAX object BY staticName(object);

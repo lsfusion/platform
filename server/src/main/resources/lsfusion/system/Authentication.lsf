@@ -57,11 +57,11 @@ forbidEditProfileCustomUser 'Запретить пользователю ред�
 
 lastActivityCustomUser 'Последняя активность' = DATA DATETIME (CustomUser);
 
-calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty';
-logOut 'Выйти' = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty';
-reloginUser 'Сменить пользователя' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty';
+calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
+logOut 'Выйти' = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty' ();
+reloginUser 'Сменить пользователя' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
 
-generateLoginPassword 'Сгенерировать логин и пароль' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty';
+generateLoginPassword 'Сгенерировать логин и пароль' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
 
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
 serverLDAP 'Сервер' = DATA VARSTRING[100] ();

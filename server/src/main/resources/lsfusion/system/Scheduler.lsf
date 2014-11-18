@@ -67,7 +67,7 @@ TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NOT NULL DELETE;
 messageScheduledClientTaskLog 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
 
-runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty';
+runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty' ();
 
 WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t)) OR CHANGED (periodScheduledTask(t)) 
     OR CHANGED (schedulerStartTypeScheduledTask(t)) OR CHANGED (schedulerStartTypeScheduledTask(t))) AND activeScheduledTask(t)

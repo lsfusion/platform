@@ -4,16 +4,16 @@ REQUIRE System, Reflection, Time;
 
 NAMESPACE Service;
 
-checkAggregationsAction 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsActionProperty';
-checkClassesAction 'Проверить классы' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesActionProperty';
-recalculateClassesAction 'Пересчитать классы' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesActionProperty';
-recalculateAction 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateActionProperty';
-recalculateFollowsAction 'Пересчитать следствия и ограничения' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty';
-analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'lsfusion.server.logics.service.AnalyzeDBActionProperty';
-vacuumDBAction 'Упаковать БД' = ACTION CUSTOM 'lsfusion.server.logics.service.VacuumDBActionProperty';
-packAction 'Упаковать таблицы' = ACTION CUSTOM 'lsfusion.server.logics.service.PackActionProperty';
-serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBActionProperty';
-getVMInfo 'Данные виртуальной машины' = ACTION CUSTOM 'lsfusion.server.logics.service.GetVMInfoActionProperty';
+checkAggregationsAction 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsActionProperty' ();
+checkClassesAction 'Проверить классы' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesActionProperty' ();
+recalculateClassesAction 'Пересчитать классы' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesActionProperty' ();
+recalculateAction 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateActionProperty' ();
+recalculateFollowsAction 'Пересчитать следствия и ограничения' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty' ();
+analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'lsfusion.server.logics.service.AnalyzeDBActionProperty' ();
+vacuumDBAction 'Упаковать БД' = ACTION CUSTOM 'lsfusion.server.logics.service.VacuumDBActionProperty' ();
+packAction 'Упаковать таблицы' = ACTION CUSTOM 'lsfusion.server.logics.service.PackActionProperty' ();
+serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBActionProperty' ();
+getVMInfo 'Данные виртуальной машины' = ACTION CUSTOM 'lsfusion.server.logics.service.GetVMInfoActionProperty' ();
 
 singleTransaction 'Перерасчет одной транзакцией' = DATA BOOLEAN ();
 
@@ -36,7 +36,7 @@ onStarted() += ACTION {
     uploadInstance() <- 'SQLEXPRESS';
 }
 uploadDB 'Имя базы' = DATA VARSTRING[100] (); 
-uploadToDBAction 'Загрузить' = ACTION CUSTOM 'lsfusion.server.logics.service.UploadToDBActionProperty';
+uploadToDBAction 'Загрузить' = ACTION CUSTOM 'lsfusion.server.logics.service.UploadToDBActionProperty' ();
 
 setRepeatableReadTILMode 'Включить SERIALIZABLE' = ACTION CUSTOM 'lsfusion.server.logics.service.SetRepeatableReadTILModeActionProperty' (BOOLEAN);
 TILMode 'Включен SERIALIZABLE' = DATA BOOLEAN ();
@@ -151,19 +151,19 @@ onStarted() += ACTION {
     refreshReupdateMode();
 } 
 
-restartServerAction 'Остановить сервер' = ACTION CUSTOM 'lsfusion.server.logics.service.RestartActionProperty';
-runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'lsfusion.server.logics.service.GarbageCollectorActionProperty';
-cancelRestartServerAction 'Отменить остановку сервера' = ACTION CUSTOM 'lsfusion.server.logics.service.CancelRestartActionProperty';
-dropLRU 'Очистить LRU' = ACTION CUSTOM 'lsfusion.server.logics.service.DropLRUActionProperty';
-makeHeapDump 'Сделать Heap Dump' = ACTION CUSTOM 'lsfusion.server.logics.service.MakeHeapDumpActionProperty';
+restartServerAction 'Остановить сервер' = ACTION CUSTOM 'lsfusion.server.logics.service.RestartActionProperty' ();
+runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'lsfusion.server.logics.service.GarbageCollectorActionProperty' ();
+cancelRestartServerAction 'Отменить остановку сервера' = ACTION CUSTOM 'lsfusion.server.logics.service.CancelRestartActionProperty' ();
+dropLRU 'Очистить LRU' = ACTION CUSTOM 'lsfusion.server.logics.service.DropLRUActionProperty' ();
+makeHeapDump 'Сделать Heap Dump' = ACTION CUSTOM 'lsfusion.server.logics.service.MakeHeapDumpActionProperty' ();
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
 
 nameReflectionSetting 'Имя настройки' = DATA SESSION VARSTRING[100] ();
 valueReflectionSetting 'Значение настройки' = DATA SESSION VARSTRING[100] ();
 
-readValueReflectionSetting = ACTION CUSTOM 'lsfusion.server.logics.service.ReadValueReflectionSettingActionProperty';
-saveValueReflectionSetting = ACTION CUSTOM 'lsfusion.server.logics.service.SaveValueReflectionSettingActionProperty';
+readValueReflectionSetting = ACTION CUSTOM 'lsfusion.server.logics.service.ReadValueReflectionSettingActionProperty' ();
+saveValueReflectionSetting = ACTION CUSTOM 'lsfusion.server.logics.service.SaveValueReflectionSettingActionProperty' ();
 
 WHEN SESSION CHANGED(nameReflectionSetting()) DO readValueReflectionSetting(); 
 WHEN SESSION CHANGED(valueReflectionSetting()) DO saveValueReflectionSetting(); 

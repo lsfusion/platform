@@ -80,7 +80,7 @@ messageEmail 'Сообщение' = DATA RICHTEXT (Email);
 emlFileEmail 'Файл EML' = DATA CUSTOMFILE (Email);
 openEMLFileEmail 'Открыть файл EML' (email) = ACTION OPENFILE emlFileEmail (email);
 
-receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty';
+receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
 
 FORM account 'E-mail аккаунт'
     OBJECTS a = Account FIXED PANEL

@@ -158,13 +158,13 @@ percentNotNullTableColumn 'Не null, %' (tableColumn) = IF rowsTable (tableTabl
                                                           ELSE toNumeric15p2(notNullQuantityTableColumn(tableColumn)) / rowsTable (tableTableColumn(tableColumn)) * 100;
 sparseColumnsTable 'Количество разреженных колонок' (table) = GROUP SUM 1 BY tableTableColumn(tableColumn) IF percentNotNullTableColumn(tableColumn) < 50;
 
-recalculateAggregationTableColumn 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty';
-recalculateAggregationWithDependenciesTableColumn 'Пересчитать агрегации (+зависимости)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty';
-recalculateAggregationWithDependentsTableColumn 'Пересчитать агрегации (+зависимые)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty';
-checkAggregationTableColumn 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableColumnActionProperty';
-dropDropColumn 'Окончательно удалить колонку' = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty';
+recalculateAggregationTableColumn 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
+recalculateAggregationWithDependenciesTableColumn 'Пересчитать агрегации (+зависимости)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
+recalculateAggregationWithDependentsTableColumn 'Пересчитать агрегации (+зависимые)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
+checkAggregationTableColumn 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
+dropDropColumn 'Окончательно удалить колонку' = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
 
-recalculateStats 'Пересчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateStatsActionProperty';
+recalculateStats 'Пересчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateStatsActionProperty' ();
 
 recalculateColumnsAggregationsTable 'Пересчитать агрегации колонок' (table) = ACTION {
     FOR table == tableTableColumn(tableColumn) AND tableColumn IS TableColumn DO {

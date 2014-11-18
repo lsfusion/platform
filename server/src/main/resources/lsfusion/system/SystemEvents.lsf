@@ -81,7 +81,7 @@ connectDateConnection 'Дата подключения' (c) = DATE(connectTimeCo
 disconnectTimeConnection 'Время отключения' = DATA DATETIME (Connection);
 disconnectTimeConnection (connection) <- currentDateTime() WHEN SET(connectionStatusConnection(connection) == ConnectionStatus.disconnectedConnection);
 
-disconnectConnection 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.DisconnectActionProperty'; 
+disconnectConnection 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.DisconnectActionProperty' (Connection); 
 
 @defineLog (Connection, 'подключений', log, connectDate);
 
