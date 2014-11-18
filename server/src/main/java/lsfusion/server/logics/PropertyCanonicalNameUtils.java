@@ -56,6 +56,10 @@ public final class PropertyCanonicalNameUtils {
         return builder.toString();
     }
 
+    static public String makeSafeName(String s) {
+        return s.replaceAll("[^A-Za-z0-9_]", "_");    
+    }
+    
     static public String createName(String namespace, String name, ResolveClassSet... signature) {
         return createName(namespace, name, Arrays.asList(signature));
     }
