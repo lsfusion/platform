@@ -68,7 +68,7 @@ nameLanguageFromTranslation 'С языка'() = nameLanguage(languageFromTransla
 languageToTranslation = DATA Language ();
 nameLanguageToTranslation 'На язык'() = nameLanguage(languageToTranslation());
 
-translate  = ACTION CUSTOM 'lsfusion.erp.utils.i18n.TranslateActionProperty';
+translate  = ACTION CUSTOM 'lsfusion.erp.utils.i18n.TranslateActionProperty' (TEXT, Language, Language);
 
 translateTermDictionaryEntry 'Перевести' = ACTION (dictionaryEntry) {
 
@@ -84,7 +84,7 @@ translateText 'Перевести' = ACTION () {
 
 // ------------------------------------ Перевод через словарь -------------------------------- //
 
-translateDictionary  = ACTION CUSTOM 'lsfusion.erp.utils.i18n.TranslateDictionaryActionProperty';
+translateDictionary  = ACTION CUSTOM 'lsfusion.erp.utils.i18n.TranslateDictionaryActionProperty' (Dictionary, TEXT);
 
 WHEN SESSION CHANGED (translationInput()) AND dictionary IS Dictionary DO EXEC translateDictionary(dictionary, translationInput());
 

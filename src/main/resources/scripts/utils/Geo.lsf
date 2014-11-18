@@ -35,7 +35,7 @@ longitudePOI 'Координата Y' = ABSTRACT NUMERIC[10,5] (POI);
 readLatitude 'Координата X' = DATA SESSION NUMERIC[10,5] ();
 readLongitude 'Координата Y' = DATA SESSION NUMERIC[10,5] ();
 
-getCoordinatesAddressMapProvider = ACTION CUSTOM 'lsfusion.erp.utils.geo.GetCoordinatesAddressActionProperty';
+getCoordinatesAddressMapProvider = ACTION CUSTOM 'lsfusion.erp.utils.geo.GetCoordinatesAddressActionProperty' (STRING[255], MapProvider);
 getCoordinatesAddress(address) = ACTION getCoordinatesAddressMapProvider(address, mapProvider());
 
 changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
@@ -48,7 +48,7 @@ changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
 WHEN SESSION (SETCHANGED(nameCountryPOI(POI)) OR SETCHANGED(addressPOI(POI))) AND autoSynchronizeCoordinates() DO EXEC changeCoordinatesPOI(POI);
 
 // Показать на карте одну точку
-showOnMapMapProvider 'Показать на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapActionProperty';
+showOnMapMapProvider 'Показать на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapActionProperty' (DOUBLE, DOUBLE, MapProvider, STRING[100]);
 showOnMap(latitude, longitude, address) = ACTION showOnMapMapProvider (latitude, longitude, mapProvider(), address);
 
 showOnMapPOI 'Показать на карте'= ACTION (POI) {
@@ -59,11 +59,11 @@ showOnMapPOI 'Показать на карте'= ACTION (POI) {
 numberPathPOI 'Номер' = DATA SESSION INTEGER (POI);
 descriptionPathPOI 'Описание' = DATA SESSION VARSTRING[200] (POI);
 
-showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapPathActionProperty';
+showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapPathActionProperty' ();
 
 inPathPOI 'Вкл' = DATA SESSION BOOLEAN (POI);
 startPathPOI 'Место старта'= DATA SESSION POI();
-calculatePath 'Рассчитать путь'= ACTION CUSTOM 'lsfusion.erp.utils.geo.CalculatePathActionProperty';
+calculatePath 'Рассчитать путь'= ACTION CUSTOM 'lsfusion.erp.utils.geo.CalculatePathActionProperty' ();
 
 EXTEND FORM options
     PROPERTIES() autoSynchronizeCoordinates, nameUserMapProvider

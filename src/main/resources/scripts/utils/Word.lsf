@@ -11,7 +11,7 @@ loadFileTemplate 'Загрузить шаблон'(t) = ACTION LOADFILE fileTemp
 openFileTemplate 'Открыть шаблон'(t) = ACTION OPENFILE fileTemplate(t);
 idTemplate 'Идентификатор' = DATA VARSTRING[20] (Template) MINCHARWIDTH 5 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 
-processTemplate = ACTION CUSTOM 'lsfusion.erp.utils.word.ProcessTemplateActionProperty';
+processTemplate = ACTION CUSTOM 'lsfusion.erp.utils.word.ProcessTemplateActionProperty' (Template);
 
 resultTemplate = DATA SESSION WORDFILE ();
 openResultTemplate () = ACTION OPENFILE resultTemplate();

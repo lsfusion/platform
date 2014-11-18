@@ -2,10 +2,10 @@ MODULE SQLUtils;
 
 REQUIRE System, Authentication;
 
-getActiveTasksAction 'Обновить список активных процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveTasksActionProperty' TOOLBAR;  
-getAllTasksAction 'Обновить список всех процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetAllTasksActionProperty' TOOLBAR;  
-cancelActiveTaskAction 'Снять процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelActiveTaskActionProperty';  
-killActiveTaskAction 'Убить процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillActiveTaskActionProperty';  
+getActiveTasksAction 'Обновить список активных процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveTasksActionProperty' () TOOLBAR;  
+getAllTasksAction 'Обновить список всех процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetAllTasksActionProperty' () TOOLBAR;  
+cancelActiveTaskAction 'Снять процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelActiveTaskActionProperty' (INTEGER);  
+killActiveTaskAction 'Убить процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillActiveTaskActionProperty' (INTEGER);  
 
 previousCountActiveTask =  DATA SESSION INTEGER();
 idActiveTask 'ID процесса' = DATA SESSION INTEGER (INTEGER);
@@ -23,7 +23,7 @@ FORM activeTasks 'Активные процессы'
     FILTERS idActiveTask(i)
 ;
 
-getActiveBlocksAction 'Обновить список блокировок' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveBlocksActionProperty' TOOLBAR;  
+getActiveBlocksAction 'Обновить список блокировок' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveBlocksActionProperty' () TOOLBAR;  
 
 previousCountActiveBlock =  DATA SESSION INTEGER();
 processIdActiveBlock 'ID процесса блокировки' = DATA SESSION INTEGER (INTEGER);
