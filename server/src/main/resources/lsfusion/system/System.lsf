@@ -48,7 +48,7 @@ formRefresh 'Обновить' = ACTION CUSTOM 'lsfusion.server.logics.property.
 formOk 'OK' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.OkActionProperty' ();
 formClose 'Закрыть' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.CloseActionProperty' ();
 
-seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekActionProperty' ();
+seek 'Найти объект' = ACTION CUSTOM 'lsfusion.server.logics.SeekActionProperty' (Object);
 
 sleep 'Sleep' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.SleepActionProperty' (LONG);
 
