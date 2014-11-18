@@ -347,7 +347,7 @@ public class Main {
     }
 
     public static String getMainTitle() {
-        return BaseUtils.nvl(logicsDisplayName, LSFUSION_TITLE);
+        return BaseUtils.nvl(BaseUtils.nullEmpty(logicsDisplayName), LSFUSION_TITLE);
     }
 
     public static void shutdown() {

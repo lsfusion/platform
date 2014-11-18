@@ -419,7 +419,7 @@ public class DockableMainFrame extends MainFrame {
                 contentPane.add(new JSeparator(JSeparator.HORIZONTAL));
 
                 String text = Main.logicsDisplayName;
-                if (text == null) {
+                if (text == null || text.isEmpty()) {
                     text = Main.LSFUSION_TITLE;
                 } else {
                     text = "<html><b>" + text + "</b> powered by " + Main.LSFUSION_TITLE + "</html>";
