@@ -37,7 +37,7 @@ TABLE property (Property);
 parentProperty 'Родит. группа' = DATA PropertyGroup (Property);
 numberProperty 'Номер' = DATA INTEGER (Property);
 dbNameProperty 'Код свойства' = DATA VARSTRING[100] (Property) IN base;
-canonicalNameProperty 'Имя свойства' = DATA VARSTRING[512] (Property) IN base IN recognize;
+canonicalNameProperty 'Имя свойства' = DATA VARSTRING[512] (Property) IN recognize;
 shortNameProperty 'Имя свойства' (Property p) = leftTo(canonicalNameProperty(p), '[');
 loggableProperty 'Логируется' = DATA BOOLEAN (Property);
 userLoggableProperty 'Логируется пользователем' = DATA BOOLEAN (Property);

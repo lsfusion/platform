@@ -712,8 +712,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void setupPropertyPolicyForms(LAP<?> setupPolicyForPropByCN, Property property) {
         if (property.isNamed()) {
             String propertyCN = property.getCanonicalName();
-            PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, propertyCN);
-            String setupPolicyActionName = PropertyCanonicalNameUtils.policyPropPrefix + property.getName(); 
+            
+            // todo [dale]: тут есть потенциальное пересечение канонических имен, так как приходится разделять эти свойства только по имени
+            // и имя приходится создавать из канонического имени базового свойства, заменив спецсимволы на подчеркивания
+            String setupPolicyActionName = PropertyCanonicalNameUtils.policyPropPrefix + PropertyCanonicalNameUtils.makeSafeName(propertyCN); 
             LAP<?> setupPolicyLAP = LM.addJoinAProp(LM.propertyPolicyGroup, getString("logics.property.propertypolicy.action"),
                     setupPolicyForPropByCN, LM.addCProp(StringClass.get(propertyCN.length()), propertyCN));
             
@@ -1520,6 +1522,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return mResult.immutable();
     }
 
+    // в том числе и приватные
+    public ImSet<NavigatorElement> getAllNavigatorElements() {
+        MExclSet<NavigatorElement> mResult = SetFact.mExclSet();
+        for(LogicsModule logicsModule : logicModules) {
+            for(NavigatorElement entry : logicsModule.getAllModuleNavigators())
+                mResult.exclAdd(entry);
+        }
+        return mResult.immutable();
+    }
+    
     public FormEntity getFormEntityBySID(String formSID){
         for (LogicsModule logicsModule : logicModules) {
             for (NavigatorElement element : logicsModule.getModuleNavigators()) {

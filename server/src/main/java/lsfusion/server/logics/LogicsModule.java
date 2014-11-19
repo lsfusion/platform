@@ -120,6 +120,8 @@ public abstract class LogicsModule {
     protected final Map<String, NavigatorElement<?>> moduleNavigators = new HashMap<String, NavigatorElement<?>>();
     protected final Map<String, ImplementTable> moduleTables = new HashMap<String, ImplementTable>();
 
+    private final Set<NavigatorElement<?>> privateNavigators = new HashSet<NavigatorElement<?>>();
+    
     public final Map<LP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<LP<?, ?>, List<ResolveClassSet>>();
     
     protected final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<Pair<String, Integer>, MetaCodeFragment>();
@@ -1901,6 +1903,14 @@ public abstract class LogicsModule {
         return moduleNavigators.values();
     }
 
+    // в том числе и приватные 
+    public Collection<NavigatorElement<?>> getAllModuleNavigators() {
+        List<NavigatorElement<?>> elements = new ArrayList<NavigatorElement<?>>();
+        elements.addAll(privateNavigators);
+        elements.addAll(moduleNavigators.values());
+        return elements;
+    }
+    
     public NavigatorElement getNavigatorElement(String name) {
         String canonicalName = NavigatorElementCanonicalNameUtils.createNavigatorElementCanonicalName(getNamespace(), name);
         return getNavigatorElementByCanonicalName(canonicalName);
@@ -1913,6 +1923,8 @@ public abstract class LogicsModule {
     public <T extends FormEntity> T addFormEntity(T form) {
         if (form.isNamed()) {
             addModuleNavigator(form);
+        } else {
+            addPrivateModuleNavigator(form);
         }
         return form;
     }
@@ -1923,6 +1935,11 @@ public abstract class LogicsModule {
         moduleNavigators.put(element.getCanonicalName(), element);
     }
 
+    @NFLazy
+    private void addPrivateModuleNavigator(NavigatorElement<?> element) {
+        privateNavigators.add(element);
+    }
+    
     public void addObjectActions(FormEntity form, ObjectEntity object) {
         addObjectActions(form, object, true);
     }

@@ -16,6 +16,6 @@ public abstract class GroupNavigatorElementsTask extends GroupSingleSplitTask<Na
 
     @Override
     protected ImSet<NavigatorElement> getObjects(BusinessLogics<?> BL) {
-        return BL.getNavigatorElements();
+        return BL.getAllNavigatorElements();
     }
 }
