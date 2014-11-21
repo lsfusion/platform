@@ -39,6 +39,8 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     private CheckBox boldBox;
     private CheckBox italicBox;
 
+    private TextBox columnCaptionBox;
+
     public GUserPreferencesDialog(GGridTable grid, GGroupObjectController groupController, boolean canBeSaved) {
         super("Настройка таблицы");
 
@@ -50,7 +52,12 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         preferencesPanel.setSize("100%", "100%");
 
         // columns
-        columnsDualListBox = new ColumnsDualListBox();
+        columnsDualListBox = new ColumnsDualListBox() {
+            @Override
+            public void setColumnCaptionBoxText(String text) {
+                columnCaptionBox.setText(text);
+            }
+        };
         columnsDualListBox.getDragController().addDragHandler(new DragHandlerAdapter());
         columnsDualListBox.addStyleName(CSS_USER_PREFERENCES_DUAL_LIST);
 
@@ -59,6 +66,28 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
         preferencesPanel.add(GwtClientUtils.createVerticalStrut(3));
 
+        // column caption settings        
+        columnCaptionBox = new TextBox();
+        columnCaptionBox.setSize("100%", "100%");
+        columnCaptionBox.addChangeHandler(new ChangeHandler() {
+            @Override
+            public void onChange(ChangeEvent changeEvent) {
+                String columnCaption = columnCaptionBox.getText();
+                if (!columnCaption.isEmpty()) {
+                    columnsDualListBox.columnCaptionBoxTextChanged(columnCaption);
+                }
+            }
+        });
+
+        FlexPanel columnCaptionPanel = new FlexPanel();
+        columnCaptionPanel.add(new Label("Заголовок колонки " + ": "), GFlexAlignment.CENTER);
+        columnCaptionPanel.add(columnCaptionBox, GFlexAlignment.CENTER);
+
+        GCaptionPanel columnCaptionSettingsPanel = new GCaptionPanel("Настройки выбранной колонки", columnCaptionPanel);
+        preferencesPanel.add(columnCaptionSettingsPanel);
+        
+        preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
+        
         //page size settings
 
         Label pageSizeLabel = new Label("Размер страницы: ");
@@ -71,6 +100,8 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
         GCaptionPanel pageSizeSettingsPanel = new GCaptionPanel("Настройки размера страницы", pageSizePanel);
         preferencesPanel.add(pageSizeSettingsPanel);
+
+        preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
         
         // font settings
         Label sizeLabel = new Label("Размер: ");
@@ -202,8 +233,6 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
     }
 
     public void showDialog() {
-        center();
-        setContentSize(430, 400);
         center();
         focusPanel.setFocus(true);
     }
