@@ -12,6 +12,8 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.SumUnionDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.PropertyChanges;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -72,5 +74,10 @@ public class SumUnionProperty extends IncrementUnionProperty {
         return new SumUnionDrillDownFormEntity(
                 canonicalName, getString("logics.property.drilldown.form.sum.union"), this, LM
         );
+    }
+
+    @Override
+    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
+        return ExClassSet.removeValues(super.calcInferValueClass(inferred, inferType));
     }
 }

@@ -14,6 +14,8 @@ import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.XorUnionDrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
@@ -109,5 +111,10 @@ public class XorUnionProperty extends IncrementUnionProperty {
         return new XorUnionDrillDownFormEntity(
                 canonicalName, getString("logics.property.drilldown.form.xor.union"), this, LM
         );
+    }
+
+    @Override
+    public ExClassSet calcInferValueClass(ImMap<Interface, ExClassSet> inferred, InferType inferType) {
+        return ExClassSet.removeValues(super.calcInferValueClass(inferred, inferType));
     }
 }
