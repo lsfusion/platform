@@ -18,10 +18,13 @@ import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.ExecuteEnvironment;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.stat.FormulaJoin;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.sql.PostgreDataAdapter;
+import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.Type;
@@ -66,7 +69,29 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
     }
 
     public static String toString(FormulaExprInterface expr) {
-        return expr.getFormula().toString() + "(" + expr.getFParams() + ")";
+        final ImList<BaseExpr> params = expr.getFParams();
+        final Where where = expr.getWhere();
+        return expr.getFormula().getSource(new ExprSource() {
+            public String getSource(int i) {
+                return params.get(i).toString();
+            }
+
+            public SQLSyntax getSyntax() {
+                return PostgreDataAdapter.debugSyntax;
+            }
+
+            public ExecuteEnvironment getEnv() {
+                return ExecuteEnvironment.EMPTY;
+            }
+
+            public int getExprCount() {
+                return params.size();
+            }
+
+            public Type getType(int i) {
+                return params.get(i).getType(where);
+            }
+        });
     }
     public static String getSource(FormulaExprInterface expr, final CompileSource compile) {
         if(compile instanceof ToString)

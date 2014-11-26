@@ -129,7 +129,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         if(result.size() == 1) { // оптимизация
             Value value = result.singleValue();
             if(!BaseUtils.hashEquals(value.where, where)) {
-                assert value.where.means(where) && where.means(value.where);
+                assert (value.where.means(where) && where.means(value.where)) || where.hasUnionExpr(); // не будет выполняться так как groupJoinsWheres - через getCommonWhere может залазить внутрь UnionExpr и терять "следствия" тем самым
                 if(value.where.getComplexity(false) < where.getComplexity(false))
                     where = value.where;
                 result = new GroupJoinsWheres(result.singleKey(), new Value(value.upWheres, where), type);

@@ -1,11 +1,13 @@
 package lsfusion.server.caches;
 
+import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.StaticValueExpr;
+import lsfusion.server.data.expr.UnionExpr;
 import lsfusion.server.data.query.ExprEnumerator;
 import lsfusion.server.data.translator.MapTranslate;
 
@@ -143,6 +145,20 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
 
     public boolean enumerate(ExprEnumerator enumerator) {
         return enumerate(this, enumerator);
+    }
+
+    public boolean hasUnionExpr() {
+        final Result<Boolean> has = new Result<Boolean>(false);
+        enumerate(new ExprEnumerator() {
+            public Boolean enumerate(OuterContext join) {
+                if(join instanceof UnionExpr) {
+                    has.set(true);
+                    return null;
+                }
+                return true;
+            }
+        });
+        return has.result;
     }
 
     public static long getComplexity(OuterContext<?> context, boolean outer) {
