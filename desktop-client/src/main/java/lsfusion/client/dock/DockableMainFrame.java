@@ -266,6 +266,9 @@ public class DockableMainFrame extends MainFrame {
         try {
             dockableManager.openForm(mainNavigator, canonicalName, formSID, remoteForm, closeListener);
         } catch (Exception e) {
+            if(closeListener != null)
+                closeListener.formClosed();
+
             Throwables.propagate(e);
         }
     }
