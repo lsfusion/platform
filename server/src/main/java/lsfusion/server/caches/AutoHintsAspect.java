@@ -43,6 +43,7 @@ public class AutoHintsAspect {
     public static ThreadLocal<SessionModifier> catchAutoHint = new ThreadLocal<SessionModifier>();
     public static ThreadLocal<Boolean> catchNotFirst = new ThreadLocal<Boolean>();
 
+    // limitHints - тоже надо включать
     public static class AutoHintImplement<P extends PropertyInterface> extends AbstractInnerContext<AutoHintImplement<P>> {
         private final PropertyChanges usedChanges;
         private final ImMap<P, Expr> joinImplement;

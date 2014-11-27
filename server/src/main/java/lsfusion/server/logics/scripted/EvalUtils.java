@@ -103,7 +103,6 @@ public class EvalUtils {
         }
 
         strBuilder.append(script);
-        System.out.println(strBuilder.toString());
         return strBuilder.toString();
     }
 }
