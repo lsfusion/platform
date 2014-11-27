@@ -28,13 +28,13 @@ public class EvalUtils {
     }
 
     public static ScriptingLogicsModule evaluate(BusinessLogics BL, String script) throws EvaluationException {
-        return evaluate(BL, null, null, script);
+        return evaluate(BL, null, null, null, null, script);
     }
     
-    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String require, ImSet<Pair<LP, List<ResolveClassSet>>> locals, String script) throws EvaluationException {
+    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String namespace, String require, String priorities, ImSet<Pair<LP, List<ResolveClassSet>>> locals, String script) throws EvaluationException {
         String name = getUniqueName();
 
-        ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(BL, require, script, name));
+        ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(BL, namespace, require, priorities, script, name));
         module.order = BL.getOrderedModules().size() + 1;
         module.visible = FullFunctionSet.<Version>instance();
         String errString = "";
@@ -69,7 +69,7 @@ public class EvalUtils {
         return module;
     }
 
-    private static String wrapScript(BusinessLogics<?> BL, String require, String script, String name) {
+    private static String wrapScript(BusinessLogics<?> BL, String namespace, String require, String priorities, String script, String name) {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("MODULE ");
         strBuilder.append(name);
@@ -89,7 +89,21 @@ public class EvalUtils {
             }
         }
         strBuilder.append(";\n");
+
+        if(priorities != null) {
+            strBuilder.append("PRIORITY ");
+            strBuilder.append(priorities);
+            strBuilder.append(";\n");
+        }
+
+        if(namespace != null) {
+            strBuilder.append("NAMESPACE ");
+            strBuilder.append(namespace);
+            strBuilder.append(";\n");
+        }
+
         strBuilder.append(script);
+        System.out.println(strBuilder.toString());
         return strBuilder.toString();
     }
 }

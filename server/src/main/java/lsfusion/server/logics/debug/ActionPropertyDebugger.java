@@ -232,13 +232,13 @@ public class ActionPropertyDebugger {
     public static ThreadLocal<Boolean> watchHack = new ThreadLocal<Boolean>();
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
-    private Object evalAction(ActionProperty action, ExecutionContext context, String require, String statements)
+    private Object evalAction(ActionProperty action, ExecutionContext context, String namespace, String require, String priorities, String statements)
             throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
-        return evalAction(context, require, "{" + statements + "}", null);
+        return evalAction(context, namespace, require, priorities, "{" + statements + "}", null);
     }
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
-    private Object eval(ActionProperty action, ExecutionContext<?> context, String require, String expression)
+    private Object eval(ActionProperty action, ExecutionContext<?> context, String namespace, String require, String priorities, String expression)
         throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
 //        context.showStack();
@@ -252,17 +252,17 @@ public class ActionPropertyDebugger {
         if (!expression.contains("ORDER")) // жестковато конечно пока, но будет работать
             expression = "(" + expression + ")";
         String actionText = "FOR " + valueName + " == " + expression + " DO watch();";
-        return evalAction(context, require, actionText, valueName);
+        return evalAction(context, namespace, require, priorities, actionText, valueName);
     }
 
-    private Object evalAction(ExecutionContext<?> context, String require, String expression, final String valueName) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    private Object evalAction(ExecutionContext<?> context, String namespace, String require, String priorities, String expression, final String valueName) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
         //используем все доступные в контексте параметры
         ImOrderMap<String, String> paramsWithClasses = context.getAllParamsWithClassesInStack().toOrderMap();
         ImMap<String, ObjectValue> paramsWithValues = context.getAllParamsWithValuesInStack();
 
         ImSet<Pair<LP, List<ResolveClassSet>>> locals = context.getAllLocalsInStack();
 
-        Pair<LAP<PropertyInterface>, Boolean> evalResult = evalAction(require, expression, paramsWithClasses, locals, context.getBL());
+        Pair<LAP<PropertyInterface>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, context.getBL());
         LAP<PropertyInterface> evalAction = evalResult.first;
         boolean forExHack = evalResult.second;
 
@@ -298,7 +298,7 @@ public class ActionPropertyDebugger {
     }
 
     @IdentityLazy
-    private Pair<LAP<PropertyInterface>, Boolean> evalAction(String require, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
+    private Pair<LAP<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
         
         String paramString = "";
         for (int i = 0, size = paramWithClasses.size(); i < size; i++) {
@@ -320,12 +320,12 @@ public class ActionPropertyDebugger {
 
         watchHack.set(false);
 
-        ScriptingLogicsModule module = EvalUtils.evaluate(bl, require, locals, script);
+        ScriptingLogicsModule module = EvalUtils.evaluate(bl, namespace, require, priorities, locals, script);
 
         boolean forExHack = watchHack.get();
         watchHack.set(null);
 
-        String evalPropName = module.getName() + "." + "evalStub";
+        String evalPropName = module.getNamespace() + "." + "evalStub";
 
         return new Pair<LAP<PropertyInterface>, Boolean>((LAP<PropertyInterface>) module.findAction(evalPropName), forExHack);
     }
