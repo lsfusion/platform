@@ -920,5 +920,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             regularFilter.finalizeAroundInit();
                 
         mainContainer.finalizeAroundInit();
+        componentSIDHandler.finalizeChanges();
     }
 }

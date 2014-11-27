@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.base.ListPermutations;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
@@ -47,6 +48,7 @@ import lsfusion.server.session.PropertyChanges;
 import javax.swing.*;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static lsfusion.interop.form.ServerResponse.*;
 
@@ -184,6 +186,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         this.caption = caption;
         this.interfaces = interfaces.getSet();
         this.orderInterfaces = interfaces;
+
+//        notFinalized.put(this, ExceptionUtils.getStackTrace());
     }
 
     public final ImSet<T> interfaces;
@@ -401,8 +405,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         finalized = true;
     }
 
+//    private static ConcurrentHashMap<Property, String> notFinalized = new ConcurrentHashMap<Property, String>();
+
     public void finalizeAroundInit() {
         super.finalizeAroundInit();
+
+//        notFinalized.remove(this);
         
         editActions = editActions == null ? MapFact.EMPTY() : ((MMap)editActions).immutable();
         keyBindings = keyBindings == null ? MapFact.EMPTY() : ((MMap)keyBindings).immutable();

@@ -37,4 +37,7 @@ public abstract class SIDHandler<K> {
         sidToObject.removeAll(getSID(object), version);
     }
 
+    public void finalizeChanges() {
+        sidToObject.finalizeChanges();
+    }
 }
