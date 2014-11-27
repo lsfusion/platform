@@ -4,13 +4,9 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.query.Query;
 import lsfusion.server.form.instance.GroupObjectInstance;
 import lsfusion.server.form.instance.ObjectInstance;
-import lsfusion.server.form.instance.OrderInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ActionPropertyMapImplement;
@@ -19,6 +15,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.flow.AroundAspectActionProperty;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.session.UpdateInputListener;
 
 import java.sql.SQLException;
 
@@ -37,21 +34,35 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
         return groupObject.readKeys(session.sql, context.getQueryEnv(), context.getModifier(), session.baseClass).keyOrderSet();
     }
 
+    ObjectValue latestUserInput;
+    boolean wasUserInput = false;
     @Override
     protected FlowResult aroundAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ImOrderSet<ImMap<ObjectInstance, DataObject>> groupKeys = getObjectGroupKeys(context); // читаем вначале, чтобы избежать эффекта последействия и влияния его на хинты
 
-        FlowResult flowResult = proceed(context);// вызываем CHANGE (для текущего)
-        if(!flowResult.equals(FlowResult.FINISH))
-            return flowResult;
-
-        if(context.getWasUserInput()) {
-            ObjectValue lastObject; // запоминаем его значение, если не cancel
-            if((lastObject = context.getLastUserInput())==null)
-                return FlowResult.FINISH;
-            context = context.pushUserInput(lastObject);
+        context.pushUpdateInput(new UpdateInputListener() {
+            @Override
+            public void userInputUpdated(ObjectValue value) {
+                latestUserInput = value;
+                wasUserInput = true;
+            }
+        });
+        
+        try {
+            FlowResult flowResult = proceed(context);// вызываем CHANGE (для текущего)
+            if (!flowResult.equals(FlowResult.FINISH))
+                return flowResult;
+        } finally {
+            context.popUpdateInput();
         }
-        for(ImMap<ObjectInstance, DataObject> row : groupKeys) { // бежим по всем
+            
+        if (wasUserInput) {
+            if (latestUserInput == null)
+                return FlowResult.FINISH;
+            context = context.pushUserInput(latestUserInput);
+        }
+
+        for (ImMap<ObjectInstance, DataObject> row : groupKeys) { // бежим по всем
             ImMap<PropertyInterface, ObjectValue> override = MapFact.override(context.getKeys(), context.getObjectInstances().innerJoin(row));
             if (!BaseUtils.hashEquals(override, context.getKeys())) { // кроме текущего
                 proceed(context.override(override));

@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -56,6 +55,17 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
     public void popUpdate() {
         updateClasses.pop();
+    }
+
+    private Stack<UpdateInputListener> updateInputListeners;
+    public void pushUpdateInput(UpdateInputListener push) {
+        if (updateInputListeners == null) {
+            updateInputListeners = new Stack<UpdateInputListener>();
+        }
+        updateInputListeners.push(push);
+    }
+    public void popUpdateInput() {
+        updateInputListeners.pop();
     }
 
     private final ObjectValue pushedUserInput;
@@ -424,24 +434,35 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     // чтение пользователя
     public ObjectValue requestUserObject(DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
         ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserObject(dialog);
-        env.setLastUserInput(userInput);
+        setLastUserInput(userInput);
         return userInput;
     }
 
     public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
         ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserData(dataClass, oldValue);
-        env.setLastUserInput(userInput);
+        setLastUserInput(userInput);
         return userInput;
     }
 
     public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {
         ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete);
-        env.setLastUserInput(userInput);
+        setLastUserInput(userInput);
         return userInput;
     }
 
     public void setLastUserInput(ObjectValue userInput) {
-        env.setLastUserInput(userInput);
+        updateLastUserInput(userInput);
+    }
+
+    public void updateLastUserInput(final ObjectValue userInput) {
+        if (updateInputListeners != null) {
+            for (UpdateInputListener inputListener : updateInputListeners) {
+                inputListener.userInputUpdated(userInput);
+            }
+        }
+
+        if(stack != null)
+            stack.updateLastUserInput(userInput);
     }
 
     // для подмены ввода и обеспечания WYSIWYG механизмов
