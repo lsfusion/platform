@@ -492,7 +492,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
     public final static boolean implicitCast = false; // для детерминированности
     // на самом деле wheres чисто из object where состоит
-    static boolean[] checkObjectTrue(AndObjectWhere[] wheres, int numWheres) {
+    private static boolean[] checkObjectTrue(AndObjectWhere[] wheres, int numWheres) {
 /*        if(Settings.instance.isCheckFollowsWhenObjects()) {
             AndObjectWhere[] noFollowWheres = wheres.clone(); int nf = 0;
             for(int i=0;i<numWheres;i++)
@@ -529,9 +529,11 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
         boolean[] result = new boolean[numWheres];
 
+        // !!!! ВАЖНО бежать с более поздних скобок чтобы работала оптимизация на used при checkTrue
+
         // проверяем классовую логику - если из and'а.getClassWhere() всех not'ов => or всех IsClassWhere тогда это true
         ClassExprWhere classesNot = ClassExprWhere.TRUE;
-        for(int i=0;i<numWheres;i++) {
+        for(int i=numWheres-1;i>=0;i--) {
             if(wheres[i] instanceof NotWhere) {
                 ClassExprWhere andClassesNot = classesNot.and(((NotWhere) wheres[i]).where.getClassWhere());
                 if(!BaseUtils.hashEquals(andClassesNot, classesNot)) {
@@ -545,7 +547,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
         // сначала объединим все EqualsWhere в группы - если найдем разные ValueExpr'ы в группе вывалимся, assert что нету CompareWhere
         EqualMap equals = new EqualMap(numWheres*2);
-        for(int i=0;i<numWheres;i++)
+        for(int i=numWheres-1;i>=0;i--)
             if(wheres[i] instanceof NotWhere && ((NotWhere) wheres[i]).where instanceof EqualsWhere) {
                 EqualsWhere equalsWhere = (EqualsWhere) ((NotWhere) wheres[i]).where;
                 result[i] = true;
@@ -559,7 +561,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
         if(!equalsClassesNot.isTrue()) {
             ClassExprWhere classesOr = ClassExprWhere.FALSE;
-            for(int i=0;i<numWheres;i++) {
+            for(int i=numWheres-1;i>=0;i--) {
                 if((wheres[i] instanceof IsClassWhere && !((IsClassWhere)wheres[i]).inconsistent) || wheres[i] instanceof PackClassWhere) {
                     ClassExprWhere classWhere = wheres[i].getClassWhere();
                     if(!equalsClassesNot.and(classWhere).isFalse()) {
@@ -574,7 +576,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
         // возьмем все GreaterWhere и построим граф, assert что нету CompareWhere
         CompareMap compare = new CompareMap();
-        for(int i=0;i<numWheres;i++)
+        for(int i=numWheres-1;i>=0;i--)
             if(wheres[i] instanceof NotWhere && ((NotWhere) wheres[i]).where instanceof GreaterWhere) {
                 GreaterWhere greaterWhere = (GreaterWhere) ((NotWhere) wheres[i]).where;
                 result[i] = true;
@@ -604,7 +606,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return null;
     }
 
-    static boolean[] checkTrue(AndObjectWhere[] wheres, int numWheres, boolean check) {
+    private static boolean[] checkTrue(AndObjectWhere[] wheres, int numWheres, boolean check) {
         // ищем максимальную по высоте вершину and
         int maxWhere = -1;
         for(int i=0;i<numWheres;i++)
@@ -655,6 +657,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
             AndObjectWhere[] mergeBrackets = new AndObjectWhere[brackets.length+siblings.length]; int mnum = 0;
 
+            // ! ВАЖНО что скобки записываются в начало, а checkObjectTrue идет с конца, так как иначе оптимизация на used значительно хуже работает
             for(AndObjectWhere bracket : brackets)
                 if(!siblingWhere.directMeansFrom(bracket))
                     mergeBrackets[mnum++] = bracket;
