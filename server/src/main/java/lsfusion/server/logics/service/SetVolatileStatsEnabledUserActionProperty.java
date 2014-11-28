@@ -2,6 +2,7 @@ package lsfusion.server.logics.service;
 
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -28,7 +29,7 @@ public class SetVolatileStatsEnabledUserActionProperty extends ScriptingActionPr
         }
 
         Boolean enabled = (Boolean) params.get(0);
-        session.sql.setVolatileStats((Integer) params.get(1), enabled != null && enabled, session.getOwner());
+        SQLSession.setVolatileStats((Integer) params.get(1), enabled != null && enabled, session.getOwner());
     }
 
     @Override

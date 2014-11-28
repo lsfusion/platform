@@ -2,6 +2,7 @@ package lsfusion.server.logics.service;
 
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -25,7 +26,7 @@ public class SetExplainAnalyzeModeUserActionProperty extends ScriptingActionProp
             params.add(context.getKeyObject(classPropertyInterface));
         }
         
-        context.getSession().sql.setExplainAnalyzeMode((Integer) params.get(1), (Boolean) params.get(0));
+        SQLSession.setExplainAnalyzeMode((Integer) params.get(1), (Boolean) params.get(0));
     }
 
     @Override
