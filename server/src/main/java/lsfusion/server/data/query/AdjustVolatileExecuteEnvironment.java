@@ -3,9 +3,7 @@ package lsfusion.server.data.query;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.Settings;
 import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.SQLTimeoutException;
 
 import java.sql.SQLException;
 
@@ -24,14 +22,14 @@ public class AdjustVolatileExecuteEnvironment extends QueryExecuteEnvironment {
             return null;
         
         if(volatileStats)
-            sqlSession.pushVolatileStats(null, opOwner);
+            sqlSession.pushVolatileStats(opOwner);
 
         return new AdjustState(timeout, volatileStats, getTransAdjust(sqlSession));
     }
 
     public void after(AdjustState queryExecState, SQLSession sqlSession, OperationOwner opOwner) throws SQLException {
         if(queryExecState.volatileStats)
-            sqlSession.popVolatileStats(null, opOwner);
+            sqlSession.popVolatileStats(opOwner);
     }
 
     public void succeeded(AdjustState state) {

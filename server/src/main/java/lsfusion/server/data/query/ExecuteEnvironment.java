@@ -18,7 +18,6 @@ import lsfusion.server.data.type.ArrayClass;
 import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 
-import java.lang.reflect.Array;
 import java.sql.SQLException;
 
 public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironment> implements TypeEnvironment {
@@ -132,14 +131,14 @@ public class ExecuteEnvironment extends AbstractTranslateValues<ExecuteEnvironme
         if(noReadOnly)
             sqlSession.pushNoReadOnly(connection.sql);
         if(volatileStats || command.length() > Settings.get().getCommandLengthVolatileStats())
-            sqlSession.pushVolatileStats(connection.sql, owner);
+            sqlSession.pushVolatileStats(owner);
     }
 
     public void after(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
         if(noReadOnly)
             sqlSession.popNoReadOnly(connection.sql);
         if(volatileStats || command.length() > Settings.get().getCommandLengthVolatileStats())
-            sqlSession.popVolatileStats(connection.sql, owner);
+            sqlSession.popVolatileStats(owner);
     }
 
     public boolean isNoPrepare() {

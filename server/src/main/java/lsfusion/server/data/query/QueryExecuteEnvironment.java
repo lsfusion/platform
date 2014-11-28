@@ -11,15 +11,19 @@ public abstract class QueryExecuteEnvironment {
 
     public abstract QueryExecuteInfo getInfo(SQLSession session, int transactTimeout);
     
-    public void beforeConnection(SQLSession session, QueryExecuteInfo info) throws SQLException {
+    public void beforeConnection(SQLSession session, OperationOwner owner, QueryExecuteInfo info) throws SQLException {
         if(info.timeout > 0) // из-за бага в драйвере postgresql
             session.lockNeedPrivate();
+        if(info.isUserVolatileStats)
+            session.pushVolatileStats(owner);
     }
     
     public void afterConnection(SQLSession session, OperationOwner owner, QueryExecuteInfo info) throws SQLException {
+        if(info.isUserVolatileStats)
+            session.popVolatileStats(owner);
         if(info.timeout > 0)
             session.lockTryCommon(owner);
-    }    
+    }
     
     public void beforeStatement(Statement statement, SQLSession session, QueryExecuteInfo info) throws SQLException {
         if(info.timeout > 0)

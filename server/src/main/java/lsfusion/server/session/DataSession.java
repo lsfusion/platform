@@ -2090,12 +2090,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private boolean pushed = false;
     public void pushVolatileStats(String id) throws SQLException {
         if(pushed = !id.matches(Settings.get().getDisableExplicitVolatileStats()))
-            sql.pushVolatileStats(null, getOwner());
+            sql.pushVolatileStats(getOwner());
     }
 
     public void popVolatileStats() throws SQLException {
         if(pushed)
-            sql.popVolatileStats(null, getOwner());
+            sql.popVolatileStats(getOwner());
     }
 
     @Override

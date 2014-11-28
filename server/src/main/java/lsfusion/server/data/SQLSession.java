@@ -171,7 +171,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         removeUnusedTemporaryTables(false, owner);
         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
         assertLock();
-        if(inTransaction == 0 && getVolatileStats() == 0 && sessionTablesMap.isEmpty() && !explicitNeedPrivate) { // вернемся к commonConnection'у
+        if(inTransaction == 0 && volatileStats.get() == 0 && sessionTablesMap.isEmpty() && !explicitNeedPrivate) { // вернемся к commonConnection'у
             ServerLoggers.assertLog(privateConnection != null, "BRACES NEEDPRIVATE - TRYCOMMON SHOULD MATCH");
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
@@ -273,7 +273,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         assert isInTransaction() || transactionTables.isEmpty();
         try {
             if(Settings.get().isApplyVolatileStats())
-                pushVolatileStats(null, owner);
+                pushVolatileStats(owner);
 //            fifo.add("ST"  + getCurrentTimeStamp() + " " + this + " " + ExceptionUtils.getStackTrace());
             if(inTransaction++ == 0) {
                 transStartTime = System.currentTimeMillis();
@@ -308,7 +308,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 transactionTables.clear();
 
                 if(Settings.get().isApplyVolatileStats())
-                    popVolatileStats(null, owner);
+                    popVolatileStats(owner);
             }}, firstException);
 
         runSuppressed(new SQLRunnable() {
@@ -783,24 +783,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return noQueryLimit.get() > 0;
     }
 
+    private AtomicInteger volatileStats = new AtomicInteger(0);
+
     public boolean isVolatileStats() {
-        return getVolatileStats() > 0;
+        return volatileStats.get() > 0;
     }
 
-    public void pushVolatileStats(Connection connection, OperationOwner owner) throws SQLException {
-        pushVolatileStats(owner, userProvider.getCurrentUser());
-    }
-
-    public void pushVolatileStats(OperationOwner owner, Integer user) throws SQLException {
-        if(syntax.supportsVolatileStats()) {
-            Integer vs = getVolatileStats(user);
-            setVolatileStats(user, vs + 1);
-            if (vs == 0) {
+    public void pushVolatileStats(OperationOwner owner) throws SQLException {
+        if(syntax.supportsVolatileStats())
+            if(volatileStats.getAndIncrement() == 0) {
                 envNeedPrivate(owner);
 
                 executeDDL("SET enable_nestloop=off", owner);
             }
-        }
     }
 
     private void envNeedPrivate(OperationOwner owner) throws SQLException {
@@ -814,20 +809,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
-    public void popVolatileStats(Connection connection, OperationOwner opOwner) throws SQLException {
-        popVolatileStats(opOwner, userProvider.getCurrentUser());
-    }
-
-    public void popVolatileStats(OperationOwner opOwner, Integer user) throws SQLException {
+    public void popVolatileStats(OperationOwner opOwner) throws SQLException {
         if (syntax.supportsVolatileStats())
-            setVolatileStats(user, getVolatileStats(user) - 1);
-        if (getVolatileStats(user) == 0) {
-            if(problemInTransaction == null) {
-                executeDDL("SET enable_nestloop=on", opOwner);
-            }
+            if (volatileStats.decrementAndGet() == 0) {
+                if(problemInTransaction == null)
+                    executeDDL("SET enable_nestloop=on", opOwner);
 
-            envTryCommon(opOwner);
-        }
+                envTryCommon(opOwner);
+            }
     }
 
     private void envTryCommon(OperationOwner opOwner) throws SQLException {
@@ -917,32 +906,28 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static Map<Integer, Boolean> explainUserMode = new ConcurrentHashMap<Integer, Boolean>();
     private static Map<Integer, Boolean> explainNoAnalyzeUserMode = new ConcurrentHashMap<Integer, Boolean>();
     private static Map<Integer, Boolean> loggerDebugEnabled = new ConcurrentHashMap<Integer, Boolean>();
-    private static Map<Integer, Integer> volatileStats = new ConcurrentHashMap<Integer, Integer>();
+    private static Map<Integer, Boolean> userVolatileStats = new ConcurrentHashMap<Integer, Boolean>();
 
-    public void setExplainAnalyzeMode(Integer user, Boolean mode) {
+    public static void setExplainAnalyzeMode(Integer user, Boolean mode) {
         explainUserMode.put(user, mode != null && mode);
     }
 
-    public void setExplainMode(Integer user, Boolean mode) {
+    public static void setExplainMode(Integer user, Boolean mode) {
         explainNoAnalyzeUserMode.put(user, mode != null && mode);
     }
 
-    public void setLoggerDebugEnabled(Integer user, Boolean enabled) {
+    public static void setLoggerDebugEnabled(Integer user, Boolean enabled) {
         loggerDebugEnabled.put(user, enabled != null && enabled);
     }
     
-    public void setVolatileStats(Integer user, Boolean enabled, OperationOwner owner) throws SQLException {
-        if (enabled) {
-            pushVolatileStats(owner, user);
-        } else if (getVolatileStats(user) != 0) {
-            popVolatileStats(owner, user);
-        }
+    public static void setVolatileStats(Integer user, Boolean enabled, OperationOwner owner) throws SQLException {
+        userVolatileStats.put(user, enabled != null && enabled);
     }
-    
-    private void setVolatileStats(Integer user, Integer vs) {
-        volatileStats.put(user, vs);   
+
+    public boolean getVolatileStats() {
+        return getVolatileStats(userProvider.getCurrentUser());
     }
-    
+
     private boolean explainAnalyze() {
         Boolean eam = explainUserMode.get(userProvider.getCurrentUser());
         return eam != null && eam;
@@ -958,13 +943,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return lde != null && lde;
     }
     
-    public Integer getVolatileStats(Integer user) {
-        Integer vs = volatileStats.get(user);
-        return vs == null ? 0 : vs;    
-    }
-    
-    public Integer getVolatileStats() {
-        return getVolatileStats(userProvider.getCurrentUser());    
+    public boolean getVolatileStats(Integer user) {
+        Boolean vs = userVolatileStats.get(user);
+        return vs != null && vs;
     }
     
     // причины медленных запросов:
@@ -1106,6 +1087,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         QueryExecuteInfo info;
         try {
             info = queryExecEnv.getInfo(this, transactTimeout);
+
+            if(getVolatileStats())
+                info = info.withVolatileStats();
         } catch (Throwable e) {
             unlockRead();
             throw Throwables.propagate(e);
@@ -1143,7 +1127,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     @Message("message.sql.execute")
     public int executeDML(@ParamMessage String command, OperationOwner owner, TableOwner tableOwner, ImMap<String, ParseInterface> paramObjects, ExecuteEnvironment env, QueryExecuteEnvironment queryExecEnv, int transactTimeout) throws SQLException, SQLHandledException { // public для аспекта
         QueryExecuteInfo execInfo = lockQueryExec(queryExecEnv, transactTimeout, owner);
-        queryExecEnv.beforeConnection(this, execInfo);
+        queryExecEnv.beforeConnection(this, owner, execInfo);
 
         ExConnection connection = getConnection();
 
@@ -1326,7 +1310,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     @Message("message.sql.execute")
     public <K,V> void executeSelect(@ParamMessage String select, OperationOwner owner, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, QueryExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
         QueryExecuteInfo execInfo = lockQueryExec(queryExecEnv, transactTimeout, owner);
-        queryExecEnv.beforeConnection(this, execInfo);
+        queryExecEnv.beforeConnection(this, owner, execInfo);
 
         ExConnection connection = getConnection();
 

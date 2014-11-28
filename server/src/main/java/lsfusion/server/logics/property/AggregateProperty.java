@@ -2,7 +2,6 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -10,19 +9,14 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.Message;
-import lsfusion.server.Settings;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.BaseClass;
-import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NotNullKeyExpr;
-import lsfusion.server.data.expr.ValueExpr;
-import lsfusion.server.data.expr.query.GroupExpr;
-import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
@@ -35,8 +29,6 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChanges;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends CalcProperty<T> {
 
@@ -53,7 +45,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     @ThisMessage
     @Message("logics.info.checking.aggregated.property")
     public String checkAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-        session.pushVolatileStats(null, OperationOwner.unknown);
+        session.pushVolatileStats(OperationOwner.unknown);
         
         try {
     
@@ -68,7 +60,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
             return message;
         } finally {
-            session.popVolatileStats(null, OperationOwner.unknown);
+            session.popVolatileStats(OperationOwner.unknown);
         }
     }
 
@@ -148,12 +140,12 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     @Message("logics.info.recalculation.of.aggregated.property")
     @ThisMessage
     public void recalculateAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-        session.pushVolatileStats(null, OperationOwner.unknown);
+        session.pushVolatileStats(OperationOwner.unknown);
         try {
             session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass).map(
                     mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), OperationOwner.unknown, TableOwner.global));
         } finally {
-            session.popVolatileStats(null, OperationOwner.unknown);
+            session.popVolatileStats(OperationOwner.unknown);
         }
     }
     
