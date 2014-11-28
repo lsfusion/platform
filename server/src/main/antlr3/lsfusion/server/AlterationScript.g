@@ -140,7 +140,7 @@ staticObjectID returns [String sid]
 	
 idList returns [String result]
 	:	{ $result = ""; }
-		(first=ID { $result = $result + $first.text; } (',' next=ID { $result = $result + $next.text; })*)?
+		(first=ID { $result = $result + $first.text; } (',' next=ID { $result = $result + ',' + $next.text; })*)?
 	;
 	
 /////////////////////////////////////////////////////////////////////////////////
