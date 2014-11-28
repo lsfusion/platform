@@ -90,7 +90,7 @@ onStarted() += ACTION (){
     numberMonth(d) <- 12 WHERE d == Month.december; 
 }
 
-monthNumber 'Месяц (ИД)' (month) = GROUP AGGR month BY numberMonth(month);
+monthNumber 'Месяц (ИД)' (number) = GROUP AGGR month BY numberMonth(month);
 
 extractMonthNumber = [= FORMULA INTEGER PG '(extract(month from ($1)))' MS 'DATEPART(mm, $1)'](date AS DATE);
 extractMonth 'Месяц (ИД)' (date) = monthNumber(extractMonthNumber(date));
@@ -129,7 +129,7 @@ FORM DOWs 'Дни недели'
     DIALOG DOW OBJECT d
 ;
 
-DOWNumber 'День недели (ИД)' (dow) = GROUP AGGR dow BY numberDOW(dow);
+DOWNumber 'День недели (ИД)' (number) = GROUP AGGR dow BY numberDOW(dow);
 
 extractDOWNumber = [= FORMULA INTEGER PG '(extract(dow from ($1)))' MS '(DATEPART(dw, $1)-1)'](date AS DATE);
 extractDOW 'День недели (ИД)' (date) = DOWNumber(extractDOWNumber(date));
