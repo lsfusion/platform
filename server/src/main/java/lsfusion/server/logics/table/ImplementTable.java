@@ -317,7 +317,7 @@ public class ImplementTable extends GlobalTable {
             else
                 mvDistinctKeys.mapValue(i, new Stat(BaseUtils.nvl(keyStats.get(keySID), 0)));
         }
-        statKeys = new StatKeys<KeyField>(rowStat, new DistinctKeys<KeyField>(mvDistinctKeys.immutableValue()));
+        statKeys = StatKeys.create(rowStat, new DistinctKeys<KeyField>(mvDistinctKeys.immutableValue()));
 
         ImValueMap<PropertyField, PropStat> mvUpdateStatProps = properties.mapItValues();
         for(int i=0,size=properties.size();i<size;i++) {

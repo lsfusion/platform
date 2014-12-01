@@ -82,7 +82,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             }});
         DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>(statMap);
 
-        return new StatKeys<KeyField>(distinctKeys.getMax().min(stat), distinctKeys);
+        return StatKeys.create(stat, distinctKeys);
     }
 
     protected static ImMap<PropertyField, PropStat> getStatProps(Table table, final Stat stat) { // для мн-го наследования

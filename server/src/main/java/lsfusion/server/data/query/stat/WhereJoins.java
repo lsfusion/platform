@@ -396,7 +396,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             public Stat getMapValue(K value) { // для groups, берем min(из статистики значения, статистики его join'а)
                 return getPropStat(value, joinStats, exprStats).min(finalStat);
             }}));
-        return new StatKeys<K>(distinct.getMax().min(finalStat), distinct); // возвращаем min(суммы groups, расчитанного результата)
+        return StatKeys.create(finalStat, distinct); // возвращаем min(суммы groups, расчитанного результата)
     }
 
     private Stat getEdgeRowStat(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats) {

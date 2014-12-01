@@ -27,13 +27,17 @@ public class StatKeys<K> extends TwinImmutableObject {
     }
 
     public StatKeys(ImSet<K> allKeys, Stat stat) {
-        rows = stat;
-        distinct = new DistinctKeys<K>(allKeys.toMap(stat));
+        this(stat, new DistinctKeys<K>(allKeys.toMap(stat)));
     }
 
     public StatKeys(Stat rows, DistinctKeys<K> distinct) {
         this.rows = rows;
         this.distinct = distinct;
+        assert distinct.isEmpty() || rows.equals(Stat.MIN) || rows.lessEquals(distinct.getMax());
+    }
+
+    public static <K> StatKeys<K> create(Stat rows, DistinctKeys<K> distinct) {
+        return new StatKeys<K>(distinct.getMax().min(rows), distinct);
     }
 
     public <T> StatKeys<T> mapBack(ImMap<T, K> map) {
