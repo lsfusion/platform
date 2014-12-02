@@ -174,9 +174,9 @@ public abstract class GetTasksActionProperty extends ScriptingActionProperty {
                     String computerActiveTask = null;
                     if (sqlSession != null) {
                         userActiveTask = (String) findProperty("nameUser").read(session,
-                                session.getObjectValue(LM.baseLM.baseClass, sqlSession.userProvider.getCurrentUser()));
+                                session.getObjectValue(context.getBL().authenticationLM.user, sqlSession.userProvider.getCurrentUser()));
                         computerActiveTask = (String) findProperty("hostnameComputer").read(session,
-                                session.getObjectValue(LM.baseLM.baseClass, sqlSession.userProvider.getCurrentComputer()));
+                                session.getObjectValue(context.getBL().authenticationLM.computer, sqlSession.userProvider.getCurrentComputer()));
                     }
                     findProperty("idActiveTask").change(processId, session, currentObject);
                     findProperty("queryActiveTask").change(query, session, currentObject);
