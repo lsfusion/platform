@@ -471,9 +471,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             String cn = lp.property.getCanonicalName();
             if (cn != null) {
                 if (names.contains(cn)) {
-                    if (!cn.contains("_POLICY_")) {
-                        System.out.println("Error!!! LP. Duplicate canonical name: " + cn);
-                    }
+                    System.out.println("Error!!! LP. Duplicate canonical name: " + cn);
                 }
                 names.add(cn);
             }
@@ -486,9 +484,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             String cn = p.getCanonicalName();
             if (cn != null) {
                 if (names.contains(cn)) {
-                    if (!cn.contains("_POLICY_")) {
-                        System.out.println("Error!!! Pr. Duplicate canonical name: " + cn);
-                    }
+                    System.out.println("Error!!! Pr. Duplicate canonical name: " + cn);
                 }
                 names.add(cn);
             }
@@ -1325,18 +1321,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         Expr key1Expr = query.getMapExprs().get("key1");
         Expr key2Expr = query.getMapExprs().get("key2");
 
-//        Expr nameExpr = getSystemExpr(key1Expr, "dffddfdffsdrff");
-        Expr nameExpr = businessLogics.reflectionLM.canonicalNameProperty.getExpr(key1Expr);
-
-//        Expr captionExpr = getSystemExpr(key1Expr, "dffddfdfffkgjrs");
-//        Expr captionExpr = FormulaExpr.create(FormulaExpr.createCustomFormulaImpl(new CustomFormulaSyntax("left(prm1, strpos(prm1, \'[\') - 1)"), StringClass.get(100), false, SetFact.singletonOrder("prm1")), ListFact.singleton(key1Expr));
-        Expr captionExpr = businessLogics.reflectionLM.shortNameProperty.getExpr(key1Expr);
+        Expr nameExpr = getSystemExpr(key1Expr, "reflection_canonicalnameproperty_property");
+        Expr shortNameExpr = FormulaExpr.create(FormulaExpr.createCustomFormulaImpl(new CustomFormulaSyntax("left(prm1, strpos(prm1, '[') - 1)"), StringClass.getv(400), false, SetFact.singletonOrder("prm1")), ListFact.singleton(nameExpr));
 
         Join<String> tableJoin = table.join(key2Expr);
         Expr maskExpr = tableJoin.getExpr("mask");
         Expr tableCaptionExpr = tableJoin.getExpr("shortname");
         query.addProperty("prevname", nameExpr);
-        query.and(nameExpr.compare(maskExpr, Compare.LIKE).and(captionExpr.compare(tableCaptionExpr, Compare.EQUALS)).and(nameExpr.compare(key2Expr, Compare.EQUALS).not()));
+        query.and(nameExpr.compare(maskExpr, Compare.LIKE).and(shortNameExpr.compare(tableCaptionExpr, Compare.EQUALS)).and(nameExpr.compare(key2Expr, Compare.EQUALS).not()));
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> queryResult = query.execute(sql, opOwner);
         for(int i=0,size=queryResult.size();i<size;i++) {
             String prevName = (String)queryResult.getValue(i).get("prevname");
@@ -1358,12 +1350,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private Expr getSystemExpr(Expr key1Expr, String fieldName) {
         KeyField kf = new KeyField("key0", ObjectType.instance);
-        PropertyField pf = new PropertyField(fieldName, StringClass.get(100));
-        return new SerializedTable("dsdsds", SetFact.singletonOrder(kf), SetFact.singleton(pf), LM.baseClass).join(MapFact.singleton(kf, key1Expr)).getExpr(pf);
+        PropertyField pf = new PropertyField(fieldName, StringClass.getv(400));
+        return new SerializedTable("reflection_property", SetFact.singletonOrder(kf), SetFact.singleton(pf), LM.baseClass).join(MapFact.singleton(kf, key1Expr)).getExpr(pf);
     }
 
     private Map<String, String> alteratePropertyChangesNewInferAlgorithm(OldDBStructure oldDBStructure, Map<String, String> map, SQLSession sql, ImOrderSet<? extends Property> props) throws SQLException, SQLHandledException {
-        if(oldDBStructure.version < 18) {
+        if(oldDBStructure.version < 18 && oldDBStructure.version > 0) {
             Map<String, String> resultChanges = alteratePropertyChangesNewInferAlgorithm(sql, props);
             Map<String, String> versionChangesMap = new HashMap<String, String>(map);
             // todo [dale]: копипаст из getChangesAfter, нужно все это убрать после перехода всех проектов на 18 версию базы
