@@ -453,7 +453,8 @@
     <bean id="syncPropertyParentsTask" class="lsfusion.server.logics.tasks.impl.SyncPropertyParentsTask">
         <property name="dependencies">
             <set>
-                <ref bean="executeOnStartedTask"/>
+                <ref bean="syncPropertyEntitiesTask"/>
+                <ref bean="syncGroupPropertiesTask"/>
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
