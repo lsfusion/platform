@@ -1412,7 +1412,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             System.out.println('"' + testCase + "\": error (" + e.getMessage() + ")");
         }
     }
-    
+
+    public LP findSafeProperty(String canonicalName) {
+        LP lp = null;
+        try {
+            lp = findProperty(canonicalName);
+        } catch (Exception e) {
+        }
+        return lp;
+    }
+
     public LP findProperty(String canonicalName) {
         PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, canonicalName);
         try {
