@@ -33,6 +33,7 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.navigator.*;
@@ -1317,14 +1318,15 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         Map<String, String> result = new HashMap<String, String>();
 
-        LCP canonicalNameProperty = businessLogics.reflectionLM.canonicalNameProperty;
-        LCP captionProperty = businessLogics.reflectionLM.shortNameProperty;
-        
         QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.toSet("key1", "key2"));
         Expr key1Expr = query.getMapExprs().get("key1");
         Expr key2Expr = query.getMapExprs().get("key2");
-        Expr nameExpr = canonicalNameProperty.getExpr(key1Expr);
-        Expr captionExpr = captionProperty.getExpr(key1Expr);
+
+//        Expr nameExpr = getSystemExpr(key1Expr, "dffddfdffsdrff");
+        Expr nameExpr = businessLogics.reflectionLM.canonicalNameProperty.getExpr(key1Expr);
+
+//        Expr captionExpr = getSystemExpr(key1Expr, "dffddfdfffkgjrs");
+        Expr captionExpr = businessLogics.reflectionLM.shortNameProperty.getExpr(key1Expr);
 
         Join<String> tableJoin = table.join(key2Expr);
         Expr maskExpr = tableJoin.getExpr("mask");
@@ -1348,6 +1350,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         table.drop(sql, opOwner);
 
         return result;
+    }
+
+    private Expr getSystemExpr(Expr key1Expr, String fieldName) {
+        KeyField kf = new KeyField("key0", ObjectType.instance);
+        PropertyField pf = new PropertyField(fieldName, StringClass.get(100));
+        return new SerializedTable("dsdsds", SetFact.singletonOrder(kf), SetFact.singleton(pf), LM.baseClass).join(MapFact.singleton(kf, key1Expr)).getExpr(pf);
     }
 
     private Map<String, String> alteratePropertyChangesNewInferAlgorithm(OldDBStructure oldDBStructure, Map<String, String> map, SQLSession sql, ImOrderSet<? extends Property> props) throws SQLException, SQLHandledException {
