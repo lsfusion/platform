@@ -2,6 +2,7 @@ package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.AMap;
@@ -24,6 +25,8 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
+import lsfusion.server.data.expr.formula.FormulaExpr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
@@ -1326,6 +1329,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         Expr nameExpr = businessLogics.reflectionLM.canonicalNameProperty.getExpr(key1Expr);
 
 //        Expr captionExpr = getSystemExpr(key1Expr, "dffddfdfffkgjrs");
+//        Expr captionExpr = FormulaExpr.create(FormulaExpr.createCustomFormulaImpl(new CustomFormulaSyntax("left(prm1, strpos(prm1, \'[\') - 1)"), StringClass.get(100), false, SetFact.singletonOrder("prm1")), ListFact.singleton(key1Expr));
         Expr captionExpr = businessLogics.reflectionLM.shortNameProperty.getExpr(key1Expr);
 
         Join<String> tableJoin = table.join(key2Expr);
