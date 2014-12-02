@@ -465,14 +465,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
             stack.updateLastUserInput(userInput);
     }
 
-    // для подмены ввода и обеспечания WYSIWYG механизмов
-    public ObjectValue getLastUserInput() {
-        return env.getLastUserInput();
-    }
-    public boolean getWasUserInput() {
-        return env.getWasUserInput();
-    }
-
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters) throws SQLException, SQLHandledException {
         return createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, null, null);
     }

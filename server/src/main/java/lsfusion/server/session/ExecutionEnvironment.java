@@ -20,9 +20,6 @@ import java.sql.SQLException;
 
 public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
 
-    private ObjectValue lastUserInput;
-    private boolean wasUserInput = false;
-
     public abstract DataSession getSession();
 
     public abstract QueryEnvironment getQueryEnv();
@@ -82,16 +79,4 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException;
     
     public abstract void cancel(ImSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
-
-    public ObjectValue getLastUserInput() {
-        return lastUserInput;
-    }
-    public boolean getWasUserInput() {
-        return wasUserInput;
-    }
-
-    public void setLastUserInput(ObjectValue lastUserInput) {
-        this.lastUserInput = lastUserInput;
-        this.wasUserInput = true;
-    }
 }
