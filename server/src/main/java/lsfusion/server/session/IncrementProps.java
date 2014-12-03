@@ -39,4 +39,6 @@ public abstract class IncrementProps {
     
     public abstract <P extends PropertyInterface> PropertyChange<P> getPropertyChange(CalcProperty<P> property);
     public abstract ImSet<CalcProperty> getProperties();
+
+    public abstract int getMaxCount(CalcProperty property);
 }

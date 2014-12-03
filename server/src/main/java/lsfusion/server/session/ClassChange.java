@@ -85,7 +85,7 @@ public class ClassChange extends ImmutableObject {
         return where.needMaterialize() || expr.needMaterialize();
     }
     public boolean needMaterialize(SessionTableUsage usage) { // из-за множественного использования
-        return usage.table.used(getQuery());
+        return usage.used(getQuery());
     }
 
     public SingleKeyPropertyUsage materialize(SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {

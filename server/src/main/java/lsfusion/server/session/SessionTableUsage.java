@@ -7,6 +7,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.caches.InnerContext;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
@@ -28,10 +29,14 @@ import java.util.Map;
 
 public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
-    public SessionData<?> table;
+    protected SessionData<?> table;
     protected ImRevMap<KeyField, K> mapKeys;
     protected ImRevMap<PropertyField, V> mapProps;
-    
+
+    public boolean used(InnerContext context) {
+        return table.used(context);
+    }
+
     public ImSet<K> getKeys() {
         return mapKeys.valuesSet();
     }

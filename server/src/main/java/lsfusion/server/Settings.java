@@ -153,9 +153,9 @@ public class Settings {
 
     private int limitHintIncrementComplexity = 50;
 
-    private double limitGrowthIncrementComplexity = 1.5;
+    private double limitComplexityGrowthCoeff = 1.5;
 
-    private int limitHintIncrementStat = 1000;
+    private long limitHintIncrementStat = 1000;
 
     private int limitHintNoUpdateComplexity = 4000;
 
@@ -165,7 +165,7 @@ public class Settings {
 
     private int limitApplyHintIncrementComplexity = 100;
 
-    private int limitApplyHintIncrementStat = 1000;
+    private long limitApplyHintIncrementStat = 1000;
 
     private int updateFormCountPeriod = 30000;
     
@@ -625,15 +625,15 @@ public class Settings {
         this.limitApplyHintIncrementComplexity = limitApplyHintIncrementComplexity;
     }
 
-    public int getLimitHintIncrementStat() {
+    public long getLimitHintIncrementStat() {
         return limitHintIncrementStat;
     }
 
-    public void setLimitHintIncrementStat(int limitHintIncrementStat) {
+    public void setLimitHintIncrementStat(long limitHintIncrementStat) {
         this.limitHintIncrementStat = limitHintIncrementStat;
     }
 
-    public int getLimitApplyHintIncrementStat() {
+    public long getLimitApplyHintIncrementStat() {
         return limitApplyHintIncrementStat;
     }
 
@@ -657,12 +657,12 @@ public class Settings {
         this.limitWrapComplexity = limitWrapComplexity;
     }
 
-    public double getLimitGrowthIncrementComplexity() {
-        return limitGrowthIncrementComplexity;
+    public double getLimitComplexityGrowthCoeff() {
+        return limitComplexityGrowthCoeff;
     }
 
-    public void setLimitGrowthIncrementComplexity(double limitGrowthIncrementComplexity) {
-        this.limitGrowthIncrementComplexity = limitGrowthIncrementComplexity;
+    public void setLimitComplexityGrowthCoeff(double limitComplexityGrowthCoeff) {
+        this.limitComplexityGrowthCoeff = limitComplexityGrowthCoeff;
     }
 
     public int getLimitExclusiveCount() {

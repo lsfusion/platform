@@ -37,6 +37,15 @@ public abstract class SessionModifier implements Modifier {
         modifier.eventDataChanges(getPropertyChanges().getProperties());
     }
 
+    public int getMaxCountUsed(CalcProperty<?> property) {
+        int result = 0;
+        for(CalcProperty depend : property.getRecDepends()) {
+            result = BaseUtils.max(result, getMaxCount(depend));
+        }
+        return result;
+    }
+    public abstract int getMaxCount(CalcProperty recDepends);
+
     public void unregisterView(OverrideSessionModifier modifier) { // protected
         views.remove(modifier);
     }
@@ -241,11 +250,11 @@ public abstract class SessionModifier implements Modifier {
         return Settings.get().getLimitHintIncrementComplexity();
     }
 
-    public double getLimitGrowthIncrementComplexity() {
-        return Settings.get().getLimitGrowthIncrementComplexity();
+    public double getLimitComplexityGrowthCoeff() {
+        return Settings.get().getLimitComplexityGrowthCoeff();
     }
 
-    public int getLimitHintIncrementStat() {
+    public long getLimitHintIncrementStat() {
         return Settings.get().getLimitHintIncrementStat();
     }
 

@@ -62,7 +62,7 @@
                 <entry key="limitApplyHintIncrementStat" value="${settings.limitApplyHintIncrementStat:}"/>
                 <entry key="limitHintNoUpdateComplexity" value="${settings.limitHintNoUpdateComplexity:}"/>
                 <entry key="limitWrapComplexity" value="${settings.limitWrapComplexity:}"/>
-                <entry key="limitGrowthIncrementComplexity" value="${settings.limitGrowthIncrementComplexity:}"/>
+                <entry key="limitComplexityGrowthCoeff" value="${settings.limitComplexityGrowthCoeff:}"/>
                 <entry key="limitExclusiveCount" value="${settings.limitExclusiveCount:}"/>
                 <entry key="limitExclusiveSimpleCount" value="${settings.limitExclusiveSimpleCount:}"/>
                 <entry key="limitExclusiveSimpleComplexity" value="${settings.limitExclusiveSimpleComplexity:}"/>

@@ -138,6 +138,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         public ImSet<CalcProperty> calculateProperties() {
             return getChangedProps();
         }
+
+        public int getMaxCount(CalcProperty recDepends) {
+            return DataSession.this.getMaxDataUsed(recDepends);
+        }
     }
     private final DataModifier dataModifier = new DataModifier();
 
@@ -1222,6 +1226,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         public QueryEnvironment getQueryEnv() {
             return env;
         }
+
+        public int getMaxCount(CalcProperty recDepends) {
+            return 0;
+        }
     }
     public final EmptyModifier emptyModifier = new EmptyModifier();
 
@@ -1432,6 +1440,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         action.property.singleApply = singleApply; // жестко конечно, но пока так
         recursiveActions.add(action);
         recursiveUsed.addAll(sessionUsed.toJavaSet());
+    }
+
+    private int getMaxDataUsed(CalcProperty prop) {
+        SinglePropertyTableUsage<ClassPropertyInterface> tableUsage;
+        int count = 0;
+        if (prop instanceof DataProperty && (tableUsage = data.get((DataProperty) prop)) != null)
+            count = tableUsage.getCount();
+        if (news != null && (prop instanceof IsClassProperty || prop instanceof ObjectClassProperty || prop instanceof ClassDataProperty))
+            count = news.getCount();
+        return count;
     }
 
     public boolean apply(final BusinessLogics<?> BL, FormInstance form, UpdateCurrentClasses update, UserInteraction interaction,

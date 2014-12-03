@@ -1,5 +1,6 @@
 package lsfusion.server.session;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -33,5 +34,9 @@ public class OverrideIncrementProps extends IncrementProps {
     @Override
     public ImSet<CalcProperty> getProperties() {
         return override.getProperties().merge(increment.getProperties());
+    }
+
+    public int getMaxCount(CalcProperty property) {
+        return BaseUtils.max(override.getMaxCount(property), increment.getMaxCount(property));
     }
 }

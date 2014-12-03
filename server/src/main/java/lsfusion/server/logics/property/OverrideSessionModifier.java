@@ -1,14 +1,12 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.FullFunctionSet;
 import lsfusion.base.FunctionSet;
-import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.lru.LRUUtil;
-import lsfusion.base.col.lru.LRUWSVSMap;
-import lsfusion.base.col.lru.LRUWVSMap;
 import lsfusion.base.col.lru.LRUWWVSMap;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
@@ -22,8 +20,6 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.session.*;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static lsfusion.base.BaseUtils.merge;
 
@@ -38,7 +34,7 @@ public class OverrideSessionModifier extends SessionModifier {
     private final FunctionSet<CalcProperty> forceNoUpdate;
 
     private Integer limitHintIncrementComplexity = null;
-    private Integer limitHintIncrementStat = null;
+    private Long limitHintIncrementStat = null;
 
     @Override
     public ImSet<CalcProperty> getHintProps() {
@@ -47,6 +43,10 @@ public class OverrideSessionModifier extends SessionModifier {
 
     private FunctionSet<CalcProperty> pushHints() {
         return merge(override.getProperties(), forceHintIncrement, forceNoUpdate);
+    }
+
+    public int getMaxCount(CalcProperty property) {
+        return BaseUtils.max(override.getMaxCount(property), modifier.getMaxCount(property));
     }
 
     private static LRUWWVSMap<OverrideSessionModifier, CalcProperty, Boolean> pushHint = new LRUWWVSMap<OverrideSessionModifier, CalcProperty, Boolean>(LRUUtil.L2);
@@ -121,7 +121,7 @@ public class OverrideSessionModifier extends SessionModifier {
     }
 
     @Override
-    public int getLimitHintIncrementStat() {
+    public long getLimitHintIncrementStat() {
         if(limitHintIncrementStat!=null)
             return limitHintIncrementStat;
 

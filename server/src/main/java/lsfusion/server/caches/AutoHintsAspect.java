@@ -250,13 +250,18 @@ public class AutoHintsAspect {
                 if(changed!=null)
                     whereComplexity = changed.getComplexity(false);
                 long complexity = max(exprComplexity, whereComplexity);
-                if(complexity > catchHint.getLimitHintIncrementComplexity() && property.hasChanges(propChanges)) // сложность большая, если нет изменений то ничем не поможешь
+                int limitComplexity = catchHint.getLimitHintIncrementComplexity();
+                if(complexity > limitComplexity && property.hasChanges(propChanges)) // сложность большая, если нет изменений то ничем не поможешь
                     if(interfaceValues.isEmpty() && queryType == PropertyQueryType.FULLCHANGED) {
                         ImRevMap<?, KeyExpr> mapKeys = result.getMapKeys();
-                        Expr prevExpr = property.getExpr(mapKeys);
-                        if(whereComplexity > catchHint.getLimitHintIncrementComplexity() || exprComplexity > prevExpr.getComplexity(false) * catchHint.getLimitGrowthIncrementComplexity()) {
-                            if (changed.isFalse() || changed.getFullStatKeys(mapKeys.valuesSet()).rows.lessEquals(new Stat(catchHint.getLimitHintIncrementStat()))) // временно, из за отсутствия оптимизации в некоторых Expr внутренн
+                        if(whereComplexity > limitComplexity || exprComplexity > property.getExpr(mapKeys).getComplexity(false) * catchHint.getLimitComplexityGrowthCoeff()) { // вторая проверка как и использование limitComplexity а не prevComplexity (max с ним), чтобы заставить ее более агрессивно hint'ить, когда общая complexity зашкаливает (min не используется чтобы не hint'ить раньше времени)
+                            long baseLimit = catchHint.getLimitHintIncrementStat();
+                            int maxCountUsed = catchHint.getMaxCountUsed(property);
+                            // будем считать что рост сложности полиномиальный (квадратичный с учетом того что A x B, выполняется за условно AB операций), в то же время сложность агрегации условно линейный (если быть более точным логарифмический)
+                            long limit = BaseUtils.max(maxCountUsed / Settings.get().getStatDegree(), baseLimit) * complexity * complexity / limitComplexity / limitComplexity;
+                            if (changed.isFalse() || changed.getFullStatKeys(mapKeys.valuesSet()).rows.lessEquals(new Stat(limit))) { // changed.isFalse() временно
                                 throw new HintException(new IncrementHint(property, true));
+                            }
                             if(allowNoUpdate && complexity > catchHint.getLimitHintNoUpdateComplexity()) {
                                 System.out.println("AUTO HINT NOUPDATE" + property);
                                 throw new HintException(new IncrementHint(property, false));
