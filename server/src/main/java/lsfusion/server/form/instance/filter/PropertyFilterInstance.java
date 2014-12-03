@@ -75,9 +75,12 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         for(int i=0,size=mapObjects.size();i<size;i++) {
             PropertyObjectInterfaceInstance mapObject = mapObjects.getKey(i); KeyExpr mapKey = mapObjects.getValue(i);
             Where mapWhere;
-            if(mapObject.getApplyObject() != object.groupTo)
-                mapWhere = mapKey.compare(mapObject.getDataObject(), Compare.EQUALS);
-            else // assert что тогда sibObject instanceof ObjectInstance потому как ApplyObject = null а object.groupTo !=null
+            if(mapObject.getApplyObject() != object.groupTo) {
+                if(mapObject.isNull())
+                    mapWhere = Where.FALSE;
+                else
+                    mapWhere = mapKey.compare(mapObject.getDataObject(), Compare.EQUALS);
+            } else // assert что тогда sibObject instanceof ObjectInstance потому как ApplyObject = null а object.groupTo !=null
                 if(!mapObject.equals(object))
                     mapWhere = mapKey.isUpClass(((ObjectInstance)mapObject).getGridClass());
                 else

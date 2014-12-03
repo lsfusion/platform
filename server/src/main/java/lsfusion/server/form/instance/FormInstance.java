@@ -789,7 +789,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         ImSet<FilterInstance> setFilters = groupTo.getSetFilters();
         return setFilters.filterFn(new SFunctionSet<FilterInstance>() {
             public boolean contains(FilterInstance filter) {
-                return !FilterInstance.ignoreInInterface || filter.isInInterface(groupTo);
+                return FilterInstance.ignoreInInterface || filter.isInInterface(groupTo);
             }
         }).equals(groupTo.filters);
     }
