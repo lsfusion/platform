@@ -360,11 +360,6 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         return property.isNamed() && (property instanceof ActionProperty || (((CalcProperty)property).isFull(AlgType.syncType) && !(((CalcProperty)property).isEmpty(AlgType.syncType))));
     }
 
-    private void synchronizeProperties() {
-        synchronizePropertyEntities();
-        synchronizePropertyParents();
-    }
-
     public void synchronizePropertyEntities() {
         ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
         ImportField dbNamePropertyField = new ImportField(reflectionLM.propertySIDValueClass);
