@@ -37,31 +37,34 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        try {
+        if(context.getDbManager().isServer()) {
 
-            ObjectValue accountObject = findProperty("defaultInboxAccount").readClasses(context);
-            if (accountObject instanceof NullValue) {
-                logError(context, getString("mail.default.email.not.specified"));
-                return;
+            try {
+
+                ObjectValue accountObject = findProperty("defaultInboxAccount").readClasses(context);
+                if (accountObject instanceof NullValue) {
+                    logError(context, getString("mail.default.email.not.specified"));
+                    return;
+                }
+                if (emailLM.disableAccount.read(context, accountObject) != null) {
+                    logError(context, getString("mail.disabled"));
+                    return;
+                }
+
+                String receiveHostAccount = (String) emailLM.receiveHostAccount.read(context, accountObject);
+                String nameAccount = (String) emailLM.nameAccount.read(context, accountObject);
+                String passwordAccount = (String) emailLM.passwordAccount.read(context, accountObject);
+                String nameReceiveAccountTypeAccount = (String) emailLM.nameReceiveAccountTypeAccount.read(context, accountObject);
+                boolean isPop3Account = nameReceiveAccountTypeAccount == null || nullTrim(nameReceiveAccountTypeAccount).equals("POP3");
+                boolean deleteMessagesAccount = emailLM.deleteMessagesAccount.read(context, accountObject) != null;
+
+                receiveEmail(context, (DataObject) accountObject, receiveHostAccount, nameAccount, passwordAccount,
+                        isPop3Account, deleteMessagesAccount);
+
+            } catch (Exception e) {
+                logError(context, getString("mail.failed.to.receive.mail") + " : " + e.toString());
+                e.printStackTrace();
             }
-            if (emailLM.disableAccount.read(context, accountObject) != null) {
-                logError(context, getString("mail.disabled"));
-                return;
-            }
-
-            String receiveHostAccount = (String) emailLM.receiveHostAccount.read(context, accountObject);
-            String nameAccount = (String) emailLM.nameAccount.read(context, accountObject);
-            String passwordAccount = (String) emailLM.passwordAccount.read(context, accountObject);
-            String nameReceiveAccountTypeAccount = (String) emailLM.nameReceiveAccountTypeAccount.read(context, accountObject);
-            boolean isPop3Account = nameReceiveAccountTypeAccount == null || nullTrim(nameReceiveAccountTypeAccount).equals("POP3");
-            boolean deleteMessagesAccount = emailLM.deleteMessagesAccount.read(context, accountObject) != null;
-
-            receiveEmail(context, (DataObject) accountObject, receiveHostAccount, nameAccount, passwordAccount,
-                    isPop3Account, deleteMessagesAccount);
-
-        } catch (Exception e) {
-            logError(context, getString("mail.failed.to.receive.mail") + " : " + e.toString());
-            e.printStackTrace();
         }
     }
 

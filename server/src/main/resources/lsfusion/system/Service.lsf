@@ -38,17 +38,26 @@ onStarted() += ACTION {
 uploadDB 'Имя базы' = DATA VARSTRING[100] (); 
 uploadToDBAction 'Загрузить' = ACTION CUSTOM 'lsfusion.server.logics.service.UploadToDBActionProperty' ();
 
-setRepeatableReadTILMode 'Включить SERIALIZABLE' = ACTION CUSTOM 'lsfusion.server.logics.service.SetRepeatableReadTILModeActionProperty' (BOOLEAN);
+META defineMode(property, action, type, caption1, caption2)
+    setRepeatableRead###property caption1 = ACTION CUSTOM action (type);
+    refreshRepeatableRead###property caption2() = ACTION {
+        setRepeatableRead###property(property());
+    }
+    WHEN CHANGED(property()) DO {
+        refreshRepeatableRead###property();
+    }
+    onStarted() += ACTION {
+        refreshRepeatableRead###property();
+    } 
+END
+
 TILMode 'Включен SERIALIZABLE' = DATA BOOLEAN ();
-refreshRepeatableReadTILMode 'Обновить SERIALIZABLE в VM'() = ACTION {
-    setRepeatableReadTILMode(TILMode());
-}
-WHEN CHANGED(TILMode()) DO {
-    refreshRepeatableReadTILMode();
-}
-onStarted() += ACTION {
-    refreshRepeatableReadTILMode();
-} 
+serverComputer 'Сервер' = DATA Computer();
+hostnameServerComputer 'Сервер' () = hostnameComputer(serverComputer());
+
+@defineMode(TILMode, 'lsfusion.server.logics.service.SetRepeatableReadTILModeActionProperty', BOOLEAN, 'Включить SERIALIZABLE', 'Обновить SERIALIZABLE в VM');
+
+@defineMode(hostnameServerComputer, 'lsfusion.server.logics.service.SetHostnameServerComputerActionProperty', VARSTRING[100], 'Записать Hostname Server', 'Обновить Hostname Server');
 
 setExplainAnalyzeModeUser 'Выводить в лог EXPLAIN ANALYZE запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.SetExplainAnalyzeModeUserActionProperty' (BOOLEAN, User);
 explainAnalyzeModeUser 'Включён Explain Analyze' = DATA BOOLEAN (User);
@@ -175,7 +184,7 @@ FORM admin 'Администрирование'
                  restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, checkClassesAction, 
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
                  vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, dropLRU, makeHeapDump, 
-                 TILMode, reupdateMode, singleTransaction,
+                 TILMode, hostnameServerComputer, reupdateMode, singleTransaction,
                  nameReflectionSetting, turnExplainAnalizeOnCurrentUser, clearApplicationLog,
                  valueReflectionSetting SHOWIF nameReflectionSetting()
     OBJECTS u=User
@@ -212,6 +221,7 @@ DESIGN admin FROM DEFAULT {
             ADD PROPERTY(restartServerAction());
             ADD PROPERTY(cancelRestartServerAction());
             ADD PROPERTY(serviceDBAction());
+            ADD PROPERTY(hostnameServerComputer());
         }
         NEW recalculate {
             caption = 'Исправление целостности базы данных';

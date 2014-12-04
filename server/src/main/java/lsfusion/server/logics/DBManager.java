@@ -309,6 +309,16 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
 
+    public boolean isServer() {
+        try {
+            String localhostName = SystemUtils.getLocalHostName();
+            return DBManager.HOSTNAME_COMPUTER == null || (localhostName != null && localhostName.equals(DBManager.HOSTNAME_COMPUTER));
+        } catch (Exception e) {
+            logger.error("Error reading computer: ", e);
+            throw new RuntimeException(e);
+        }
+    }            
+    
     public DataObject getServerComputerObject() {
         return new DataObject(getComputer(SystemUtils.getLocalHostName()), businessLogics.authenticationLM.computer);
     }
@@ -1565,6 +1575,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public static int RECALC_TIL = -1;
     public static int SESSION_TIL = -1;
     public static int ID_TIL = Connection.TRANSACTION_REPEATABLE_READ;
+    
+    public static String HOSTNAME_COMPUTER;
 
     public static boolean RECALC_REUPDATE = false;
     public static boolean PROPERTY_REUPDATE = false;

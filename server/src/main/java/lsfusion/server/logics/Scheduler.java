@@ -86,17 +86,19 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
     @Override
     protected void onStarted(LifecycleEvent event) {
-        logger.info("Starting Scheduler.");
+        if(dbManager.isServer()) {
+            logger.info("Starting Scheduler.");
 
-        try {
-            setupScheduledTasks(dbManager.createSession());
-            setupCurrentDateSynchronization();
-        } catch (SQLException e) {
-            throw new RuntimeException("Error starting Scheduler: ", e);
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RuntimeException("Error starting Scheduler: ", e);
-        } catch (SQLHandledException e) {
-            throw new RuntimeException("Error starting Scheduler: ", e);
+            try {
+                setupScheduledTasks(dbManager.createSession());
+                setupCurrentDateSynchronization();
+            } catch (SQLException e) {
+                throw new RuntimeException("Error starting Scheduler: ", e);
+            } catch (ScriptingErrorLog.SemanticErrorException e) {
+                throw new RuntimeException("Error starting Scheduler: ", e);
+            } catch (SQLHandledException e) {
+                throw new RuntimeException("Error starting Scheduler: ", e);
+            }
         }
     }
 
