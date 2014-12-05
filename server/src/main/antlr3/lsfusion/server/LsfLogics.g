@@ -419,20 +419,24 @@ formDeclaration returns [ScriptingFormEntity form]
 	ModalityType modalityType = null;
 	int autoRefresh = 0;
 	boolean keepSessionProperties = false;
+	String image = null;
+	String title = null;
 }
 @after {
 	if (inPropParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, $title.val, $img.val, modalityType, autoRefresh, keepSessionProperties);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, title, image, modalityType, autoRefresh, keepSessionProperties);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
-		('TITLE' title=stringLiteral)?
-		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
-		('IMAGE' img=stringLiteral)?
-		('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })?
-		('KEEPSESSIONPROPERTIES' { keepSessionProperties = true; })?
+		(	('TITLE' t=stringLiteral { title = $t.val; })
+		|	(modality=modalityTypeLiteral { modalityType = $modality.val; })
+		|	('IMAGE' img=stringLiteral { image = $img.val; })
+		|	('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })
+		|	('KEEPSESSIONPROPERTIES' { keepSessionProperties = true; })
+		)*
 	;
+
 
 extendingFormDeclaration returns [ScriptingFormEntity form]
 @after {
@@ -475,16 +479,20 @@ formTreeGroupObjectList
 	;
 
 formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
-	:	(object = formCommonGroupObject { $groupObject = $object.groupObject; })	
-		(viewType = formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.isInitType); } )?
-		(pageSize = formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); })?
-		(update = formGroupObjectUpdateList { $groupObject.setUpdate($update.infos); })?
-		(relative = formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); })?
+	:	object=formCommonGroupObject { $groupObject = $object.groupObject; } formGroupObjectOptions[$groupObject]		
 	; 
 
+formGroupObjectOptions[ScriptingGroupObject groupObject]
+	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.isInitType); }
+		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
+		|	update=formGroupObjectUpdateList { $groupObject.setUpdate($update.infos); }
+		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
+		)*
+	;
+
 formTreeGroupObjectDeclaration returns [ScriptingGroupObject groupObject, List<PropertyUsage> properties]
-	:	(object = formCommonGroupObject { $groupObject = $object.groupObject; })
-		(parent = treeGroupParentDeclaration { $properties = $parent.properties; })?
+	:	(object=formCommonGroupObject { $groupObject = $object.groupObject; })
+		(parent=treeGroupParentDeclaration { $properties = $parent.properties; })?
 	; 
 
 treeGroupParentDeclaration returns [List<PropertyUsage> properties = new ArrayList<PropertyUsage>()]
@@ -517,12 +525,12 @@ classViewType returns [ClassViewType type]
 	;
 
 formGroupObjectPageSize returns [Integer value = null]
-	:	'PAGESIZE' size = intLiteral { $value = $size.val; }
+	:	'PAGESIZE' size=intLiteral { $value = $size.val; }
 	;
 
 formGroupObjectUpdateList returns [List<ObjectUpdateInfo> infos = new ArrayList<ObjectUpdateInfo>()]
-	:	info = formGroupObjectUpdate { infos.add(new ObjectUpdateInfo($info.updateType, $info.value, $info.isStaticObject)); }
-		(',' info = formGroupObjectUpdate { infos.add(new ObjectUpdateInfo($info.updateType, $info.value, $info.isStaticObject)); })*
+	:	info=formGroupObjectUpdate { infos.add(new ObjectUpdateInfo($info.updateType, $info.value, $info.isStaticObject)); }
+		(',' info=formGroupObjectUpdate { infos.add(new ObjectUpdateInfo($info.updateType, $info.value, $info.isStaticObject)); })*
 	;
 	
 formGroupObjectRelativePosition returns [GroupObjectEntity groupObject, boolean isRightNeighbour]
@@ -535,7 +543,7 @@ formGroupObjectUpdate returns [ObjectUpdateInfo.UpdateType updateType, Object va
 }
 	:	'FIRST' { $updateType = ObjectUpdateInfo.UpdateType.FIRST; }
 	|	'LAST' { $updateType = ObjectUpdateInfo.UpdateType.LAST; }
-	|	'STATIC' lit = literal { $updateType = ObjectUpdateInfo.UpdateType.STATIC; $value = $lit.value; $isStaticObject = $lit.cls == ScriptingLogicsModule.ConstType.STATIC; }
+	|	'STATIC' lit=literal { $updateType = ObjectUpdateInfo.UpdateType.STATIC; $value = $lit.value; $isStaticObject = $lit.cls == ScriptingLogicsModule.ConstType.STATIC; }
 	;
 
 formSingleGroupObjectDeclaration returns [String name, String className, String caption, ActionPropertyObjectEntity event] 
@@ -2527,18 +2535,18 @@ constraintStatement
 	}
 }
 	:	'CONSTRAINT'
-		et=baseEvent
-        	{
-	            if (inPropParseState()) {
-        	        self.setPrevScope($et.event);
-	            }
-	        }
+		et=baseEvent	
+		{
+			if (inPropParseState()) {
+				self.setPrevScope($et.event);
+			}
+		}
 		expr=propertyExpression[new ArrayList<TypedParameter>(), true] { if (inPropParseState()) self.checkNecessaryProperty($expr.property); }
 		{
 			if (inPropParseState()) {
 				self.dropPrevScope($et.event);
 			}
-	        }
+		}
 		('CHECKED' { checked = true; }
 			('BY' list=nonEmptyPropertyUsageList { propUsages = $list.propUsages; })? 
 		)?
@@ -2629,7 +2637,7 @@ writeWhenStatement
 		'<-'
 		valueExpr=propertyExpression[$mainProp.mapping, false] 
 		'WHEN'
-		('DO' { action = true; })?
+		('DO' { action = true; })? // DO - undocumented syntax
 		whenExpr=propertyExpression[$mainProp.mapping, false]
 		';'
 	;
