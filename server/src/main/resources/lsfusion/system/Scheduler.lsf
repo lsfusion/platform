@@ -129,7 +129,6 @@ FORM scheduledTaskProperties 'Свойства'
     PROPERTIES(p) READONLY captionProperty, canonicalNameProperty, classProperty, returnProperty
     FILTERS signatureProperty(p) == '',
             returnProperty(p) == 'ActionClass'
-    DIALOG Property OBJECT p
 ;
 
 NAVIGATOR {
