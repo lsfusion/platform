@@ -23,6 +23,7 @@ public class ListActionProperty extends ListCaseActionProperty {
 
     private Object actions;
     public void addAction(ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
+        assert action != null;
         ((MList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).add(action);
 
         addWhereOperand(action, null, version);

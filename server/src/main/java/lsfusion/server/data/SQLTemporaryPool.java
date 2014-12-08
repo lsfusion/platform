@@ -61,14 +61,14 @@ public class SQLTemporaryPool {
 
         for(String matchTable : matchTables) // ищем нужную таблицу
             if(!used.containsKey(matchTable)) { // если не используется
+                assert !used.containsKey(matchTable);
+                used.put(matchTable, new WeakReference<TableOwner>(owner));
 //                session.truncate(matchTable); // удаляем старые данные
 //                if(session.getCount(matchTable, opOwner) != 0) {
 //                    ServerLoggers.assertLog(false, "TEMPORARY TABLE NOT EMPTY");
 //                    session.truncateSession(matchTable, opOwner, TableOwner.none);
 //                }
-                assert session.getSessionCount(matchTable, opOwner) == 0; // си. clearHints
-                assert !used.containsKey(matchTable);
-                used.put(matchTable, new WeakReference<TableOwner>(owner));
+                assert session.getSessionCount(matchTable, opOwner) == 0; // си. clearHints, после used !!! потому как выполняет sql, и например может выполнится tryCommon который вернет privateConnection
 //                SQLSession.addUsed(matchTable, owner, used, usedStacks);
                 isNew.set(false);
                 return matchTable;
@@ -76,10 +76,10 @@ public class SQLTemporaryPool {
 
         // если нет, "создаем" таблицу
         String table = getTableName(counter);
+        assert !used.containsKey(table);
+        used.put(table, new WeakReference<TableOwner>(owner)); // до всех sql, см. выше
         session.createTemporaryTable(table, keys, properties, opOwner);
         counter++;
-        assert !used.containsKey(table);
-        used.put(table, new WeakReference<TableOwner>(owner));
         //        SQLSession.addUsed(table, owner, used, usedStacks);
         matchTables.add(table);
         isNew.set(true);

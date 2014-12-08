@@ -183,9 +183,10 @@ public class OverrideSessionModifier extends SessionModifier {
 
     @Override
     public void clean(SQLSession sql, OperationOwner owner) throws SQLException {
-        super.clean(sql, owner);
         override.unregisterView(this);
         modifier.unregisterView(this);
+
+        super.clean(sql, owner);
     }
 
     public OverrideSessionModifier(IncrementProps override, FunctionSet<CalcProperty> forceDisableHintIncrement, FunctionSet<CalcProperty> forceDisableNoUpdate, FunctionSet<CalcProperty> forceHintIncrement, FunctionSet<CalcProperty> forceNoUpdate, SessionModifier modifier) { // нужно clean вызывать после такого modifier'а

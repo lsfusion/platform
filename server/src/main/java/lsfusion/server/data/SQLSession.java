@@ -164,6 +164,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         if(privateConnection ==null) {
             assert transactionTables.isEmpty();
             privateConnection = connectionPool.getPrivate(this);
+//            System.out.println(this + " : NULL -> " + privateConnection + " " + " " + sessionTablesMap.keySet() + ExceptionUtils.getStackTrace());
         }
     }
 
@@ -174,6 +175,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         if(inTransaction == 0 && volatileStats.get() == 0 && sessionTablesMap.isEmpty() && !explicitNeedPrivate) { // вернемся к commonConnection'у
             ServerLoggers.assertLog(privateConnection != null, "BRACES NEEDPRIVATE - TRYCOMMON SHOULD MATCH");
             connectionPool.returnPrivate(this, privateConnection);
+//            System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() +  ExceptionUtils.getStackTrace());
             privateConnection = null;
         }
     }
@@ -1014,7 +1016,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     rtime = Double.valueOf(matcher.group(1));
                 }
                 if(noAnalyze || rtime > 100.0) {
-                    systemLogger.info(statement.toString());
+                    systemLogger.info(statement.toString() + " volatile : " + isVolatileStats());
                     for(String outRow : out)
                         systemLogger.info(outRow);
                 } //else {
@@ -1943,6 +1945,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 } finally {
                     ServerLoggers.assertLog(sessionTablesMap.isEmpty(), "AT CLOSE USED TABLES SHOULD NOT EXIST " + this);
                     connectionPool.returnPrivate(this, privateConnection);
+//                    System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() + ExceptionUtils.getStackTrace());
                     privateConnection = null;
                 }
             }
