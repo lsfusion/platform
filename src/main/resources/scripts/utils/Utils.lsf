@@ -167,10 +167,10 @@ META defineAggregationCustom1 (primProperty, primObject, primClass, aggrObject, 
         GROUP AGGR aggrObject BY primProperty(aggrObject)
         WHERE aggrObject IS aggrClass PERSISTENT INDEXED;
 
-    aggrProperty###primClass(primObject) => aggrObject###primObject(primObject) RESOLVE TRUE;
+    aggrProperty###primClass(primObject) => aggrObject###primObject(primObject) RESOLVE LEFT;
 
     is###aggrObject(aggrObject) = aggrObject IS aggrClass;
-    is###aggrObject(aggrObject) => aggrProperty###primClass(primProperty(aggrObject)) RESOLVE FALSE;
+    is###aggrObject(aggrObject) => aggrProperty###primClass(primProperty(aggrObject)) RESOLVE RIGHT;
 END
 
 META defineAggregationCustom (primProperty, primObject, aggrObject, aggrProperty)
@@ -194,10 +194,10 @@ META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim1Cl
         GROUP AGGR aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject)
         WHERE aggrObject IS aggrClass;
 
-    aggrProperty###prim1Class###prim2Class(prim1Object, prim2Object) => aggrObject###prim1Object###prim2Object(prim1Object, prim2Object) RESOLVE TRUE;
+    aggrProperty###prim1Class###prim2Class(prim1Object, prim2Object) => aggrObject###prim1Object###prim2Object(prim1Object, prim2Object) RESOLVE LEFT;
 
     is###aggrObject(aggrObject) = aggrObject IS aggrClass;
-    is###aggrObject(aggrObject) => aggrProperty###prim1Class###prim2Class(prim1Property(aggrObject), prim2Property(aggrObject)) RESOLVE FALSE;
+    is###aggrObject(aggrObject) => aggrProperty###prim1Class###prim2Class(prim1Property(aggrObject), prim2Property(aggrObject)) RESOLVE RIGHT;
 END
 
 META defineAggregationCustom (prim1Property, prim2Property, prim1Object, prim2Object, aggrObject, aggrProperty)
@@ -222,10 +222,10 @@ META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1
         GROUP AGGR aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)
         WHERE aggrObject IS aggrClass PERSISTENT INDEXED;
 
-    aggrProperty(prim1Object, prim2Object, prim3Object) => aggrObject###prim1Object###prim2Object###prim3Object(prim1Object, prim2Object, prim3Object) RESOLVE TRUE;
+    aggrProperty(prim1Object, prim2Object, prim3Object) => aggrObject###prim1Object###prim2Object###prim3Object(prim1Object, prim2Object, prim3Object) RESOLVE LEFT;
 
     is###aggrObject(aggrObject) = aggrObject IS aggrClass;
-    is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)) RESOLVE FALSE;
+    is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)) RESOLVE RIGHT;
 END
 
 META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
@@ -250,10 +250,10 @@ META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim4
         GROUP AGGR aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject), prim4Property(aggrObject) 
         WHERE aggrObject IS aggrClass;// PERSISTENT INDEXED;
 
-    aggrProperty###prim1Class###prim2Class###prim3Object###prim4Object(prim1Object, prim2Object, prim3Object, prim4Object) => aggrObject###prim1Object###prim2Object###prim3Object###prim4Object(prim1Object, prim2Object, prim3Object, prim4Object) RESOLVE TRUE;
+    aggrProperty###prim1Class###prim2Class###prim3Object###prim4Object(prim1Object, prim2Object, prim3Object, prim4Object) => aggrObject###prim1Object###prim2Object###prim3Object###prim4Object(prim1Object, prim2Object, prim3Object, prim4Object) RESOLVE LEFT;
 
     is###aggrObject(aggrObject) = aggrObject IS aggrClass;
-    is###aggrObject(aggrObject) => aggrProperty###prim1Class###prim2Class###prim3Object###prim4Object(prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject), prim4Property(aggrObject)) RESOLVE FALSE;
+    is###aggrObject(aggrObject) => aggrProperty###prim1Class###prim2Class###prim3Object###prim4Object(prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject), prim4Property(aggrObject)) RESOLVE RIGHT;
 END
 
 META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim4Property, prim1Object, prim2Object, prim3Object, prim4Object, aggrObject, aggrProperty)
