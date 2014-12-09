@@ -2563,33 +2563,16 @@ followsStatement
 @init {
 	List<TypedParameter> context;
 	PropertyUsage mainProp;
-	List<LPWithParams> props = new ArrayList<LPWithParams>();
-	List<List<PropertyFollowsDebug>> options = new ArrayList<List<PropertyFollowsDebug>>();
-	List<Event> events = new ArrayList<Event>();
 	Event event = Event.APPLY;
-	List<ActionDebugInfo> debugInfos = new ArrayList<ActionDebugInfo>(); 
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedFollows(mainProp, context, options, props, events, debugInfos);
+		self.addScriptedFollows(mainProp, context, $fcl.pfollows, $fcl.prop, $fcl.event, $fcl.debug);
 	}
 }
 	:	prop=mappedProperty { mainProp = $prop.propUsage; context = $prop.mapping; }
 		'=>'
-		fcl=followsClause[context] {
-			props.add($fcl.prop); 
-			options.add($fcl.pfollows);
-			events.add($fcl.event);
-			debugInfos.add($fcl.debug);
-		}		
-		(','
-		nfcl=followsClause[context] {
-			props.add($nfcl.prop); 
-			options.add($nfcl.pfollows);
-			events.add($nfcl.event);
-			debugInfos.add($nfcl.debug);
-		}
-		)*
+		fcl=followsClause[context] 
 		';'
 ;
 	
@@ -2598,27 +2581,12 @@ followsClause[List<TypedParameter> context] returns [LPWithParams prop, Event ev
     $debug = self.getEventStackDebugInfo();
 }
     :   expr = propertyExpression[context, false] 
-        ('RESOLVE' (ct = followsClauseType {$pfollows.add($ct.type); } )+ 
-                   et=baseEvent { $event = $et.event; } 
+        ('RESOLVE' 
+        	('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, self.getEventStackDebugInfo()));})?
+        	('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, self.getEventStackDebugInfo()));})?
+                et=baseEvent { $event = $et.event; } 
         )? { $prop = $expr.property; }
 ;
-
-followsClauseType returns [PropertyFollowsDebug type]
-@init {
-	ActionDebugInfo debugInfo = self.getEventStackDebugInfo(); 
-}
-    :	lit=LOGICAL_LITERAL	
-        { 
-            $type = new PropertyFollowsDebug($lit.text.equals("TRUE"), debugInfo); 
-        }
-;
-
-followsResolveType returns [Integer type]
-	:	lit=LOGICAL_LITERAL	{ $type = $lit.text.equals("TRUE") ? PropertyFollows.RESOLVE_TRUE : PropertyFollows.RESOLVE_FALSE; }
-	|	'ALL'			{ $type = PropertyFollows.RESOLVE_ALL; }
-	|	'NOTHING'		{ $type = PropertyFollows.RESOLVE_NOTHING; }
-	;
-
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// WRITE STATEMENT /////////////////////////////

@@ -2298,20 +2298,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(newProp, property.usedParams);
     }
 
-    public void addScriptedFollows(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<List<PropertyFollowsDebug>> options, List<LPWithParams> props, List<Event> sessions, List<ActionDebugInfo> debugInfos) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedFollows(" + mainPropUsage + ", " + namedParams + ", " + options + ", " + props + ", " + sessions + ");");
+    public void addScriptedFollows(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, List<PropertyFollowsDebug> resolveOptions, LPWithParams rightProp, Event event, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedFollows(" + mainPropUsage + ", " + namedParams + ", " + resolveOptions + ", " + rightProp + ", " + event + ");");
         LCP mainProp = (LCP) findJoinMainProp(mainPropUsage, namedParams);
-        checkProperty(mainProp, mainPropUsage.name);
         checkParamCount(mainProp, namedParams.size());
         checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
 
-        for (int i = 0; i < props.size(); i++) {
-            Integer[] params = new Integer[props.get(i).usedParams.size()];
-            for (int j = 0; j < params.length; j++) {
-                params[j] = props.get(i).usedParams.get(j) + 1;
-            }
-            follows(mainProp, debugInfos.get(i), ListFact.fromJavaList(options.get(i)), sessions.get(i), (LCP) props.get(i).property, params);
+        Integer[] params = new Integer[rightProp.usedParams.size()];
+        for (int j = 0; j < params.length; j++) {
+            params[j] = rightProp.usedParams.get(j) + 1;
         }
+        follows(mainProp, debugInfo, ListFact.fromJavaList(resolveOptions), event, (LCP) rightProp.property, params);
     }
 
     public void addScriptedWriteWhen(PropertyUsage mainPropUsage, List<TypedParameter> namedParams, LPWithParams valueProp, LPWithParams whenProp, boolean action) throws ScriptingErrorLog.SemanticErrorException {
