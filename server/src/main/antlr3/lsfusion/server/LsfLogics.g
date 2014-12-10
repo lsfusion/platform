@@ -359,7 +359,6 @@ scope {
 		|	formOrderByList
 		|	dialogFormDeclaration
 		|	editFormDeclaration
-		|	listFormDeclaration
 		|	reportFilesDeclaration
 		)*
 		';'
@@ -383,15 +382,6 @@ editFormDeclaration
 		}
 	;
 	
-listFormDeclaration
-	:	'LIST' cid=classId 'OBJECT' oid=ID
-		{
-			if (inPropParseState()) {
-				$formStatement::form.setAsListForm($cid.sid, $oid.text, self.getVersion());
-			}
-		}
-	;
-
 reportFilesDeclaration
 	:	'REPORTFILES' reportPath (',' reportPath)*
 	;
