@@ -521,7 +521,7 @@ formGroupObjectViewType returns [ClassViewType type, boolean isInitType]
 	;
 
 classViewType returns [ClassViewType type]
-	: 	('PANEL' {$type = ClassViewType.PANEL;} | 'HIDE' {$type = ClassViewType.HIDE;} | 'GRID' {$type = ClassViewType.GRID;})
+	: 	('PANEL' {$type = ClassViewType.PANEL;} | 'GRID' {$type = ClassViewType.GRID;})
 	;
 
 formGroupObjectPageSize returns [Integer value = null]
