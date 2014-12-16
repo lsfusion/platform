@@ -1,7 +1,10 @@
 package lsfusion.server.logics.debug;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.ExceptionUtils;
+import lsfusion.base.Pair;
+import lsfusion.base.Processor;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -23,7 +26,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -43,13 +45,18 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Arrays.asList;
 import static lsfusion.server.logics.debug.ActionDelegationType.*;
 
-public class ActionPropertyDebugger {
+public class ActionPropertyDebugger implements DebuggerService {
     public static final String DELEGATES_HOLDER_CLASS_PACKAGE = "lsfusion.server.logics.debug";
     public static final String DELEGATES_HOLDER_CLASS_NAME_PREFIX = "DebugDelegatesHolder_";
     public static final String DELEGATES_HOLDER_CLASS_FQN_PREFIX = DELEGATES_HOLDER_CLASS_PACKAGE + "." + DELEGATES_HOLDER_CLASS_NAME_PREFIX;
@@ -61,6 +68,8 @@ public class ActionPropertyDebugger {
     public static ActionPropertyDebugger getInstance() {
         return instance;
     }
+    
+    public boolean steppingMode = false;
 
     public boolean isEnabled() {
 //        return true;
@@ -81,17 +90,24 @@ public class ActionPropertyDebugger {
     private Map<String, Class> delegatesHolderClasses = new HashMap<String, Class>();
 
     private ActionPropertyDebugger() {
+        try {
+            DebuggerService stub = (DebuggerService) UnicastRemoteObject.exportObject(this, 0);
+            Registry registry = LocateRegistry.createRegistry(1299);
+            registry.bind("lsfDebuggerService", stub);
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
     } //singleton
 
     private Set<ActionDebugInfo> delegates = new HashSet<ActionDebugInfo>();
-    
+
     public ImMap<String, ImSet<ActionDebugInfo>> getGroupDelegates() {
         return SetFact.fromJavaSet(delegates).group(new BaseUtils.Group<String, ActionDebugInfo>() {
-                @Override
-                public String group(ActionDebugInfo key) {
-                    return key.moduleName;
-                }
-            });
+            @Override
+            public String group(ActionDebugInfo key) {
+                return key.moduleName;
+            }
+        });
     }
 
     public synchronized <P extends PropertyInterface> void addDelegate(ActionProperty<P> property, ActionDebugInfo debugInfo) {
@@ -344,6 +360,37 @@ public class ActionPropertyDebugger {
                 return new ActionWatchEntry.Param(key, value);
             }
         }).toJavaList(), value);
+    }
+    
+    private Map<Pair<String, Integer>, Object> breakpoints = new ConcurrentHashMap<Pair<String, Integer>, Object>();
+
+    @Override
+    public void registerBreakpoint(String module, Integer line) throws RemoteException {
+        breakpoints.put(new Pair<String, Integer>(module, line), null);
+    }
+
+    @Override
+    public void unregisterBreakpoint(String module, Integer line) throws RemoteException {
+        breakpoints.remove(new Pair<String, Integer>(module, line));
+    }
+    
+    public boolean hasBreakpoint(ImSet<Pair<String, Integer>> actions) {
+        for (Pair<String, Integer> breakpoint : breakpoints.keySet()) {
+            if (actions.contains(breakpoint)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void registerStepping() throws RemoteException {
+        steppingMode = true;
+    }
+
+    @Override
+    public void unregisterStepping() throws RemoteException {
+        steppingMode = false;
     }
 
     public static class InMemoryJavaFileObject extends SimpleJavaFileObject {

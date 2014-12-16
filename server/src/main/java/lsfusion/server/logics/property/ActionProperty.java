@@ -189,6 +189,18 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     }
 
     public abstract ImSet<ActionProperty> getDependActions();
+    
+    @IdentityLazy
+    private ImSet<Pair<String, Integer>> getInnerDebugActions() {
+        MSet<Pair<String, Integer>> result = SetFact.mSet();
+        if (debugInfo != null) {
+            result.add(new Pair<String, Integer>(debugInfo.moduleName, debugInfo.line));
+            for (ActionProperty actionProperty : getDependActions()) {
+                result.addAll(actionProperty.getInnerDebugActions());
+            }
+        }
+        return result.immutable();
+    }
 
     public ClassWhere<P> getClassWhere(ClassType type) {
         return getWhereProperty().mapClassWhere(type);
@@ -439,7 +451,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     private ActionPropertyMapImplement<?, P> callCompile(boolean forExecution) {
         //не включаем компиляцию экшенов при дебаге
         if (forExecution && debugger.isEnabled() && !forceCompile()) {
-            return null;
+            if (debugger.steppingMode || debugger.hasBreakpoint(getInnerDebugActions())) {
+                return null;
+            }
         }
         return compile();
     }
