@@ -490,9 +490,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         fillNameToModules();
 
         LogicsModule startModule = nameToModule.get(startModuleName);
-        if(startModule == null)
-            logger.error(String.format("Module %s not found.", startModuleName));
-        assert startModule != null;
+        if (startModule == null) {
+            throw new RuntimeException(String.format("Module %s not found.", startModuleName));
+        }
         queue.add(startModule);
         was.add(startModule);
 
@@ -501,6 +501,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             for (String nextModuleName : current.getRequiredModules()) {
                 LogicsModule nextModule = nameToModule.get(nextModuleName);
+                if (nextModule == null) {
+                    throw new RuntimeException(String.format("Module %s not found.", nextModuleName));
+                }
                 if (!was.contains(nextModule)) {
                     was.add(nextModule);
                     queue.add(nextModule);
