@@ -1,7 +1,6 @@
 package lsfusion.server.logics.service;
 
-import com.microsoft.sqlserver.jdbc.SQLServerConnection;
-import lsfusion.server.classes.LogicalClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.ServiceLogicsModule;
@@ -15,8 +14,8 @@ import java.sql.SQLException;
 
 public class SetRepeatableReadTILModeActionProperty extends ScriptingActionProperty {
 
-    public SetRepeatableReadTILModeActionProperty(ServiceLogicsModule LM) {
-        super(LM, LogicalClass.instance);
+    public SetRepeatableReadTILModeActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
+        super(LM, classes);
     }
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

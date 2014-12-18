@@ -18,8 +18,8 @@ import java.util.ResourceBundle;
 
 public class ReloginUserActionProperty extends ScriptingActionProperty {
 
-    public ReloginUserActionProperty(AuthenticationLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, "reloginUser", LM.findClass("CustomUser"));
+    public ReloginUserActionProperty(AuthenticationLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, "reloginUser", classes);
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

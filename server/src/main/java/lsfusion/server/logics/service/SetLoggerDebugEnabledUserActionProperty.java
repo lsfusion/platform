@@ -1,6 +1,6 @@
 package lsfusion.server.logics.service;
 
-import lsfusion.server.classes.LogicalClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.ServiceLogicsModule;
@@ -15,8 +15,8 @@ import java.util.List;
 
 public class SetLoggerDebugEnabledUserActionProperty extends ScriptingActionProperty {
 
-    public SetLoggerDebugEnabledUserActionProperty(ServiceLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LogicalClass.instance, LM.findClass("User"));
+    public SetLoggerDebugEnabledUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, classes);
     }
 
     @Override

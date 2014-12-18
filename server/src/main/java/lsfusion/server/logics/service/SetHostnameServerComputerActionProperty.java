@@ -1,6 +1,6 @@
 package lsfusion.server.logics.service;
 
-import lsfusion.server.classes.StringClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.ServiceLogicsModule;
@@ -12,8 +12,8 @@ import java.sql.SQLException;
 
 public class SetHostnameServerComputerActionProperty extends ScriptingActionProperty {
 
-    public SetHostnameServerComputerActionProperty(ServiceLogicsModule LM) {
-        super(LM, StringClass.get(100));
+    public SetHostnameServerComputerActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
+        super(LM, classes);
     }
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

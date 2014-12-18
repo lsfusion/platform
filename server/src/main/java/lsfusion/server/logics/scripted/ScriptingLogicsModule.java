@@ -1135,10 +1135,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(res, property.usedParams);
     }
 
-    public LP addScriptedCustomActionProp(String javaClassName) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedCustomActionProp(String javaClassName, List<String> classes) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedCustomActionProp(" + javaClassName + ");");
         try {
-            return baseLM.addAProp(null, (ActionProperty) Class.forName(javaClassName).getConstructor(this.getClass()).newInstance(this));
+            ValueClass[] classList = new ValueClass[classes.size()];
+            for (int i = 0; i < classes.size(); i++) {
+                classList[i] = findClass(classes.get(i));
+            }
+            if (classes.isEmpty()) {
+                return baseLM.addAProp(null, (ActionProperty) Class.forName(javaClassName).getConstructor(this.getClass()).newInstance(this));
+            } else {
+                return baseLM.addAProp(null, (ActionProperty) Class.forName(javaClassName).getConstructor(new Class[] {this.getClass(), ValueClass[].class}).newInstance(this, classList));
+            }
         } catch (ClassNotFoundException e) {
             errLog.emitClassNotFoundError(parser, javaClassName);
         } catch (Exception e) {

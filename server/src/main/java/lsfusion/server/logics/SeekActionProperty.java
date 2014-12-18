@@ -22,8 +22,8 @@ public class SeekActionProperty extends ScriptingActionProperty {
     private final ObjectEntity object;
 
     @SuppressWarnings("UnusedDeclaration")
-    public SeekActionProperty(BaseLogicsModule lm) {
-        super(lm, lm.baseClass);
+    public SeekActionProperty(BaseLogicsModule lm, ValueClass... classes) {
+        super(lm, classes);
 
         object = null;
     }

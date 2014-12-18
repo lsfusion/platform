@@ -1,6 +1,6 @@
 package lsfusion.server.logics.service;
 
-import lsfusion.server.classes.LogicalClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -15,8 +15,8 @@ import java.util.List;
 
 public class SetRemoteLoggerDebugEnabledUserActionProperty extends ScriptingActionProperty {
 
-    public SetRemoteLoggerDebugEnabledUserActionProperty(ServiceLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LogicalClass.instance, LM.findClass("User"));
+    public SetRemoteLoggerDebugEnabledUserActionProperty(ServiceLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, classes);
     }
 
     @Override

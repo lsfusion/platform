@@ -2,7 +2,6 @@ package lsfusion.server.logics.authentication;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.remote.UserInfo;
-import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.AuthenticationLogicsModule;
@@ -18,8 +17,8 @@ public class CalculateBase64HashActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface algorithmInterface;
     private final ClassPropertyInterface passwordInterface;
 
-    public CalculateBase64HashActionProperty(AuthenticationLogicsModule LM) {
-        super(LM, StringClass.get(10), StringClass.get(30));
+    public CalculateBase64HashActionProperty(AuthenticationLogicsModule LM, ValueClass... classes) {
+        super(LM, classes);
         this.LM = LM;
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         algorithmInterface = i.next();

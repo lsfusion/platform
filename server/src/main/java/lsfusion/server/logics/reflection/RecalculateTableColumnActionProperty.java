@@ -23,8 +23,8 @@ public class RecalculateTableColumnActionProperty extends ScriptingActionPropert
 
     private final ClassPropertyInterface tableColumnInterface;
 
-    public RecalculateTableColumnActionProperty(ReflectionLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LM.findClass("TableColumn"));
+    public RecalculateTableColumnActionProperty(ReflectionLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, classes);
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         tableColumnInterface = i.next();
     }

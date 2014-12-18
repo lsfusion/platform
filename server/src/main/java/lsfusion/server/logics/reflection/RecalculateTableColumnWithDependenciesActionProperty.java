@@ -1,6 +1,7 @@
 package lsfusion.server.logics.reflection;
 
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.DataObject;
@@ -21,8 +22,8 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 public class RecalculateTableColumnWithDependenciesActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface tableColumnInterface;
 
-    public RecalculateTableColumnWithDependenciesActionProperty(ReflectionLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LM.findClass("TableColumn"));
+    public RecalculateTableColumnWithDependenciesActionProperty(ReflectionLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, classes);
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         tableColumnInterface = i.next();
     }

@@ -2007,11 +2007,11 @@ formActionObjectList[List<TypedParameter> context, boolean dynamic] returns [Lis
 customActionPropertyDefinitionBody returns [LP property, List<ResolveClassSet> signature]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedCustomActionProp($classN.val);	
+		$property = self.addScriptedCustomActionProp($classN.val, $classes.ids);	
 		$signature = Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null); 
 	}
 }
-	:	'CUSTOM' classN = stringLiteral ('(' classIdList ')')? 
+	:	'CUSTOM' classN = stringLiteral ('(' classes = classIdList ')')?		
 	;
 
 

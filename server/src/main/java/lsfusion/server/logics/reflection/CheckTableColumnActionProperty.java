@@ -24,8 +24,8 @@ public class CheckTableColumnActionProperty extends ScriptingActionProperty {
 
     private final ClassPropertyInterface tableColumnInterface;
 
-    public CheckTableColumnActionProperty(ReflectionLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LM.findClass("TableColumn"));
+    public CheckTableColumnActionProperty(ReflectionLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, classes);
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         tableColumnInterface = i.next();
     }
