@@ -3546,6 +3546,7 @@ emailAttachFormat returns [AttachmentFormat val]
 	|	'HTML'	{ $val = AttachmentFormat.HTML; }
 	|	'RTF'	{ $val = AttachmentFormat.RTF; }
 	|	'XLSX'	{ $val = AttachmentFormat.XLSX; }
+	|	'DBF'	{ $val = AttachmentFormat.DBF; }
 	;
 
 udoubleLiteral returns [double val]

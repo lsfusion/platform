@@ -116,6 +116,8 @@ public class EmailSender {
                 return "text/rtf; charset=utf-8";
             case XLSX:
                 return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=utf-8";
+            case DBF:
+                return "application/dbf; charset=utf-8";
             default:
                 return "text/html; charset=utf-8";
         }
@@ -175,6 +177,35 @@ public class EmailSender {
 
         message.setContent(mp);
         sendMail(message, subject);
+    }
+
+    public void sendSimpleMail(String subject, List<AttachmentProperties> attachments) throws MessagingException, IOException {
+        assert attachments != null;
+
+        setMessageHeading();
+        message.setSubject(subject, "utf-8");
+        for (AttachmentProperties attachment : attachments) {
+            attachFile(attachment);
+        }
+        message.setContent(mp);
+        
+        String messageInfo = subject.trim();
+        try {
+            Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
+            if (addressesTo == null || addressesTo.length == 0) {
+                logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail")+" " + messageInfo + " : "+ServerResourceBundle.getString("mail.recipient.not.specified"));
+                throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo + " : "+ServerResourceBundle.getString("mail.recipient.not.specified"));
+            }
+            messageInfo += " "+ServerResourceBundle.getString("mail.recipients")+" : " + BaseUtils.toString(",", addressesTo);
+        } catch (MessagingException me) {
+            messageInfo += " "+ServerResourceBundle.getString("mail.failed.to.get.list.of.recipients")+" " + me.toString();
+        }
+
+        try {
+            Transport.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo, e);
+        }
     }
 
     public void sendPlainMail(String subject, String inlineForms, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException {
