@@ -1,6 +1,7 @@
 package lsfusion.erp.utils.i18n;
 
 import lsfusion.server.classes.StringClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.linear.LCP;
@@ -18,8 +19,8 @@ public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface dictionaryInterface;
     public final ClassPropertyInterface termInterface;
 
-    public TranslateDictionaryActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LM.findClass("Dictionary"), StringClass.text);
+    public TranslateDictionaryActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         dictionaryInterface = i.next();

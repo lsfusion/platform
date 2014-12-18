@@ -20,8 +20,8 @@ import java.util.Iterator;
 public class SaveBackupActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface backupInterface;
 
-    public SaveBackupActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LM.findClass("Backup"));
+    public SaveBackupActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         backupInterface = i.next();

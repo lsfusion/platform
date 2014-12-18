@@ -23,8 +23,8 @@ public class ShowOnMapActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface mapProviderInterface;
     private final ClassPropertyInterface addressInterface;
 
-    public ShowOnMapActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, DoubleClass.instance, DoubleClass.instance, LM.findClass("MapProvider"), StringClass.get(100));
+    public ShowOnMapActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
         latitudeInterface = i.next();

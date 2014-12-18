@@ -1,6 +1,7 @@
 package lsfusion.erp.utils.backup;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -17,8 +18,8 @@ import java.util.Iterator;
 public class DeleteBackupActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface backupInterface;
 
-    public DeleteBackupActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LM.findClass("Backup"));
+    public DeleteBackupActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         backupInterface = i.next();

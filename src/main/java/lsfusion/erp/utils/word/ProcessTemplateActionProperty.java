@@ -33,8 +33,8 @@ import java.util.Map;
 public class ProcessTemplateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface templateInterface;
 
-    public ProcessTemplateActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, LM.findClass("Template"));
+    public ProcessTemplateActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         templateInterface = i.next();

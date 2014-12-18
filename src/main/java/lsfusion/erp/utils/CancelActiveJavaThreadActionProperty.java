@@ -1,7 +1,7 @@
 package lsfusion.erp.utils;
 
 import com.google.common.base.Throwables;
-import lsfusion.server.classes.IntegerClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -18,8 +18,8 @@ import java.util.Iterator;
 public class CancelActiveJavaThreadActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface integerInterface;
 
-    public CancelActiveJavaThreadActionProperty(ScriptingLogicsModule LM) {
-        super(LM, IntegerClass.instance);
+    public CancelActiveJavaThreadActionProperty(ScriptingLogicsModule LM, ValueClass... classes) {
+        super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         integerInterface = i.next();

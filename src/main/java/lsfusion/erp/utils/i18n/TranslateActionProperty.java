@@ -1,6 +1,6 @@
 package lsfusion.erp.utils.i18n;
 
-import lsfusion.server.classes.StringClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -27,8 +27,8 @@ public class TranslateActionProperty extends ScriptingActionProperty {
     public final ClassPropertyInterface languageFromInterface;
     public final ClassPropertyInterface languageToInterface;
 
-    public TranslateActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM, StringClass.text, LM.findClass("Language"), LM.findClass("Language"));
+    public TranslateActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         translationInterface = i.next();
