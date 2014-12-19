@@ -165,6 +165,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     public boolean sourceHashChanged; 
+    public String hashModules;
     @Override
     protected void onInit(LifecycleEvent event) {
         this.LM = businessLogics.LM;
@@ -501,7 +502,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 */    
-    private boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    public boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 //        checkLP(businessLogics.getNamedProperties());
 //        check(businessLogics.getOrderProperties());
         
@@ -534,9 +535,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         checkModules(oldDBStructure);
 
-        String hashModules = calculateHashModules();
-        boolean sourceHashChanged = checkHashModulesChanged(oldDBStructure.hashModules, hashModules);
-
         runAlterationScript();
 
         Map<String, String> columnsToDrop = new HashMap<String, String>();
@@ -554,7 +552,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             
             checkUniqueDBName(newDBStructure);
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
-            newDBStructure.write(outDB, hashModules);
+            newDBStructure.write(outDB);
 
             checkIndices(sql, oldDBStructure, newDBStructure);
             
@@ -804,8 +802,20 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         session.close();
 
         initSystemUser();
-        
-        return sourceHashChanged;
+
+        String oldHashModules = (String) businessLogics.LM.findProperty("hashModules").read(session);
+        hashModules = calculateHashModules();
+        return checkHashModulesChanged(oldHashModules, hashModules);
+    }
+
+    public void writeModulesHash() {
+        try {
+            DataSession session = createSession();
+            businessLogics.LM.findProperty("hashModules").change(hashModules, session);
+            session.apply(businessLogics);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     private boolean migrateReflectionProperties(OldDBStructure oldDBStructure, SQLSession sql) throws SQLException, SQLHandledException {
@@ -1365,7 +1375,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     private Map<String, String> alteratePropertyChangesNewInferAlgorithm(OldDBStructure oldDBStructure, Map<String, String> map, SQLSession sql, ImOrderSet<? extends Property> props) throws SQLException, SQLHandledException {
-        if(oldDBStructure.version < 18 && oldDBStructure.version > 0) {
+        if(oldDBStructure.version < 19 && oldDBStructure.version > 0) {
             Map<String, String> resultChanges = alteratePropertyChangesNewInferAlgorithm(sql, props);
             Map<String, String> versionChangesMap = new HashMap<String, String>(map);
             // todo [dale]: копипаст из getChangesAfter, нужно все это убрать после перехода всех проектов на 18 версию базы
@@ -1763,7 +1773,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         public int version;
         public DBVersion dbVersion;
         public List<String> modulesList = new ArrayList<String>();
-        public String hashModules;
         public Map<Table, Map<List<F>, Boolean>> tables = new HashMap<Table, Map<List<F>, Boolean>>();
         public List<DBStoredProperty> storedProperties = new ArrayList<DBStoredProperty>();
         public Set<DBConcreteClass> concreteClasses = new HashSet<DBConcreteClass>();
@@ -1799,7 +1808,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public NewDBStructure(DBVersion dbVersion) {
-            version = 18;
+            version = 19;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {
@@ -1840,7 +1849,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
         }
 
-        public void write(DataOutputStream outDB, String hashModules) throws IOException {
+        public void write(DataOutputStream outDB) throws IOException {
             outDB.write('v' + version);  //для поддержки обратной совместимости
             outDB.writeUTF(dbVersion.toString());
 
@@ -1848,9 +1857,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             outDB.writeInt(businessLogics.getLogicModules().size());
             for (LogicsModule logicsModule : businessLogics.getLogicModules())
                 outDB.writeUTF(logicsModule.getName());
-
-            //записываем хэш всех модулей
-            outDB.writeUTF(hashModules);
 
             outDB.writeInt(tables.size());
             for (Map.Entry<Table, Map<List<Field>, Boolean>> tableIndices : tables.entrySet()) {
@@ -1894,7 +1900,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     for (int i = 0; i < modulesCount; i++)
                         modulesList.add(inputDB.readUTF());
                 }
-                hashModules = inputDB.readUTF();
+                if(version <= 18)
+                /*hashModules = */inputDB.readUTF();
 
                 for (int i = inputDB.readInt(); i > 0; i--) {
                     SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass);

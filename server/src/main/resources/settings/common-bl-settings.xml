@@ -137,6 +137,13 @@
         <property name="initTask" ref="initReflectionTask"/>
     </bean>
 
+    <bean id="modulesHashManager" class="lsfusion.server.logics.ModulesHashManager">
+        <property name="businessLogics" ref="businessLogics"/>
+        <property name="dbManager" ref="dbManager"/>
+
+        <property name="initTask" ref="writeModulesHashTask"/>
+    </bean>
+
     <bean id="restartManager" class="lsfusion.server.logics.RestartManager">
         <property name="businessLogics" ref="businessLogics"/>
         <property name="navigatorsManager" ref="navigatorsManager"/>
@@ -559,6 +566,14 @@
         </property>
     </bean>
 
+    <bean id="writeModulesHashTask" class="lsfusion.server.logics.tasks.impl.simple.WriteModulesHashTask">
+        <property name="dependencies">
+            <set>
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
     <!-- Список для переопределения custom-объектов -->
     <bean id="instanceCustomObjects" class="lsfusion.spring.SpringListsMergerFactory">
         <property name="listsToMerge">
@@ -634,6 +649,7 @@
         <ref bean="remoteLogics"/>
         <ref bean="remoteLogicsLoader"/>
         <ref bean="reflectionManager"/>
+        <ref bean="modulesHashManager"/>
         <ref bean="scheduler"/>
     </util:list>
 

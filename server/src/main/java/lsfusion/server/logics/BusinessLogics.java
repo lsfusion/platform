@@ -1597,7 +1597,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return getModuleContainingObject(namespaceName, name, paramCnt, new MetaCodeNameModuleFinder());
     }
 
-    protected DBManager getDbManager() {
+    public DBManager getDbManager() {
         return ThreadLocalContext.getDbManager();
     }
     
