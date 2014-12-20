@@ -1,6 +1,7 @@
 package lsfusion.erp.utils;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.navigator.LogInfo;
@@ -47,6 +48,8 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
             Integer previousCount = (Integer) findProperty("previousCountActiveJavaThread").read(session);
         previousCount = previousCount == null ? 0 : previousCount;
 
+        ServerLoggers.systemLogger.info("GetActiveJavaThreads: reset started");
+        
         for (int i = 0; i < previousCount; i++) {
             DataObject currentObject = new DataObject(i);
             findProperty("idActiveJavaThread").change((Object) null, session, currentObject);
@@ -56,7 +59,10 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
             findProperty("lockNameActiveJavaThread").change((Object) null, session, currentObject);
             findProperty("computerActiveJavaThread").change((Object) null, session, currentObject);
             findProperty("userActiveJavaThread").change((Object) null, session, currentObject);
-        }        
+        }
+
+        ServerLoggers.systemLogger.info("GetActiveJavaThreads: update started");
+        
         int max = 0;
         for(ThreadInfo threadInfo : threadsInfo) {
             int id = (int) threadInfo.getThreadId();
@@ -70,7 +76,9 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
             LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
             String computer = logInfo == null ? null : logInfo.hostnameComputer;
             String user = logInfo == null ? null : logInfo.userName;
-            
+
+            ServerLoggers.systemLogger.info("GetActiveJavaThreads: thread " + name);
+
             findProperty("idActiveJavaThread").change(id, session, currentObject);
             findProperty("stackTraceActiveJavaThread").change(stackTrace, session, currentObject);
             findProperty("nameActiveJavaThread").change(name, session, currentObject);
@@ -82,6 +90,8 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
                 max = id;
         }        
         findProperty("previousCountActiveJavaThread").change(max, session);
+        
+        ServerLoggers.systemLogger.info("GetActiveJavaThreads: finished");
     }
 
     private Thread getThreadById(int id) {
