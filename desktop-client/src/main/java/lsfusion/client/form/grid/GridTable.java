@@ -1,6 +1,7 @@
 package lsfusion.client.form.grid;
 
 import com.google.common.base.Throwables;
+import com.sun.java.swing.plaf.windows.WindowsTableHeaderUI;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.Main;
@@ -159,6 +160,8 @@ public class GridTable extends ClientPropertyTable {
             }
 
         };
+
+        getTableHeader().setUI(new GridTableHeaderUI());
 
         tableHeader.setDefaultRenderer(new MultiLineHeaderRenderer(tableHeader.getDefaultRenderer(), sortableHeaderManager) {
             @Override
@@ -454,12 +457,8 @@ public class GridTable extends ClientPropertyTable {
             column.setPreferredWidth(getUserWidth(cell) != null ? getUserWidth(cell) :
                     ((getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) ? cell.getMinimumWidth(this) : cell.getPreferredWidth(this)));
             column.setMaxWidth(cell.getMaximumWidth(this));
-
-            if (cell.notNull) {
-                column.setHeaderValue("<html><font>" + getColumnCaption(i) + "</font><font color=red>*</font></html>");
-            } else {
-                column.setHeaderValue(getColumnCaption(i)); 
-            }
+            
+            column.setHeaderValue(getColumnCaption(i));
 
             rowHeight = max(rowHeight, cell.getPreferredHeight(this));
 
@@ -1573,6 +1572,35 @@ public class GridTable extends ClientPropertyTable {
         @Override
         public Dimension getPreferredSize() {
             return new Dimension(columnModel.getTotalColumnWidth(), 34);
+        }
+    }
+    
+    private class GridTableHeaderUI extends WindowsTableHeaderUI {
+        @Override
+        public void installUI(JComponent c) {
+            super.installUI(c);
+
+            header.remove(rendererPane);
+            rendererPane = new CellRendererPane() {
+                @Override
+                public void paintComponent(Graphics g, Component c, Container p, int x, int y, int w, int h, boolean shouldValidate) {
+                    super.paintComponent(g, c, p, x, y, w, h, shouldValidate);
+
+                    int index = columnModel.getColumnIndexAtX(x);
+                    if (index == -1) {
+                        return;
+                    }
+                    int modelIndex = columnModel.getColumn(index).getModelIndex();
+
+                    ClientPropertyDraw property = model.getColumnProperty(modelIndex);
+                    if (property.notNull) {
+                        SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 5, Color.RED, x - 2, -3, w, h); // -2/-3 - не залазим на границы
+                    } else if (property.hasChangeAction) {
+                        SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 5, new Color(120, 170, 208), x - 2, -3, w, h);
+                    }
+                }
+            };
+            header.add(rendererPane);
         }
     }
 

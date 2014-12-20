@@ -184,11 +184,7 @@ public class DataPanelView extends JPanel implements PanelView {
     }
     
     public void setLabelText(String text) {
-        if (!property.notNull || text.isEmpty()) {
-            label.setText(text);
-        } else {
-            label.setText("<html>" + text + "<font color=red>*</font></html>");
-        }   
+        label.setText(text);
     }
 
     @Override

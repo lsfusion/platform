@@ -1,5 +1,6 @@
 package lsfusion.client.form.cell;
 
+import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
@@ -50,5 +51,16 @@ public class DataPanelViewTable extends SingleCellTable {
 
     public ClientFormController getForm() {
         return form;
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        if (getProperty().notNull) {
+            SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 7, Color.RED, 0, 0, getWidth(), getHeight());
+        } else if (getProperty().hasChangeAction) {
+            SwingUtils.paintRightBottomCornerTriangle((Graphics2D) g, 7, new Color(120, 170, 208), 0, 0, getWidth(), getHeight());
+        }
     }
 }

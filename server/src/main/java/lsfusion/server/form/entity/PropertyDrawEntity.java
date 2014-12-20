@@ -114,8 +114,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    public boolean hasEditAction() {
+    public boolean hasEditObjectAction() {
         return (editActions != null && editActions.containsKey(EDIT_OBJECT)) || propertyObject.property.isEditObjectActionDefined();
+    }
+    
+    public boolean hasChangeAction(FormEntity entity) {
+        return editActions != null && getEditAction(CHANGE, entity) != null;
     }
 
     public ActionPropertyObjectEntity<?> getEditAction(String actionId, FormEntity entity) {

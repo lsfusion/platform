@@ -3,12 +3,12 @@ package lsfusion.client;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import org.jdesktop.swingx.SwingXUtilities;
 import lsfusion.base.ERunnable;
-import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.TableTransferHandler;
+import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.interop.KeyStrokes;
+import org.jdesktop.swingx.SwingXUtilities;
 import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
@@ -496,5 +496,30 @@ public class SwingUtils {
 
     public static boolean almostEquals(int a, int b) {
         return Math.abs(a - b) < 3;
+    }
+
+    public static void paintRightBottomCornerTriangle(Graphics2D graphics, int triangleSize, Color color, int x, int y, int w, int h) {
+        paintCornerTriangle(graphics, triangleSize, color, x, y, w, h, false, false);
+    }
+    
+    public static void paintCornerTriangle(Graphics2D graphics, int triangleSize, Color color, int x, int y, int w, int h, boolean left, boolean top) {
+        int compRight = x + w;
+        int compBottom = y + h;
+        
+        int[] xs;
+        int[] ys;
+
+        if (left) {
+            xs = new int[]{x + triangleSize, x, x};
+            ys = top ? new int[]{y, y, y + triangleSize} : new int[]{compBottom, compBottom, compBottom - triangleSize};
+        } else {
+            xs = new int[]{compRight, compRight, compRight - triangleSize};
+            ys = top ? new int[]{y, y + triangleSize, y} : new int[]{compBottom - triangleSize, compBottom, compBottom};
+        }
+
+        Polygon polygon = new Polygon(xs, ys, 3);
+
+        graphics.setColor(color);
+        graphics.fillPolygon(polygon);
     }
 }

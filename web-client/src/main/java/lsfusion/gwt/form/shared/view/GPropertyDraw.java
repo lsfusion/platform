@@ -44,7 +44,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public AddRemove addRemove;
     public boolean askConfirm;
     public String askConfirmMessage;
-    public boolean hasEditAction;
+    
+    public boolean hasEditObjectAction;
+    public boolean hasChangeAction;
 
     public GEditBindingMap editBindingMap;
 

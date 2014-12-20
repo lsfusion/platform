@@ -34,6 +34,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     private String toolTip;
     
     private boolean notNull;
+    private boolean hasChangeAction;
 
     public GGridPropertyTableHeader(GGridPropertyTable table) {
         this(table, null);
@@ -51,9 +52,10 @@ public class GGridPropertyTableHeader extends Header<String> {
         this.toolTip = toolTip;
     }
 
-    public void setCaption(String caption, boolean notNull) {
+    public void setCaption(String caption, boolean notNull, boolean hasChangeAction) {
         this.caption = caption;
         this.notNull = notNull;
+        this.hasChangeAction = hasChangeAction;
     }
 
     public void setToolTip(String toolTip) {
@@ -115,6 +117,8 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     @Override
     public void renderDom(TableCellElement th) {
+        th.addClassName("positionRelative");
+        
         Boolean sortDir = table.getSortDirection(this);
         String escapedCaption = getEscapedCaption();
 
@@ -124,13 +128,6 @@ public class GGridPropertyTableHeader extends Header<String> {
         div.getStyle().setTextAlign(Style.TextAlign.CENTER);
         div.getStyle().setWhiteSpace(Style.WhiteSpace.NOWRAP);
 
-        SpanElement notNullSign = null;
-        if (notNull) {
-            notNullSign = Document.get().createSpanElement();
-            notNullSign.getStyle().setColor("red");
-            notNullSign.setInnerText("*");
-        }
-        
         if (sortDir != null) {
             ImageElement img = Document.get().createImageElement();
             img.getStyle().setHeight(15, Style.Unit.PX);
@@ -146,24 +143,25 @@ public class GGridPropertyTableHeader extends Header<String> {
 
             div.appendChild(img);
             div.appendChild(span);
-            if (notNullSign != null) {
-                div.appendChild(notNullSign);
-            }
+            
             th.appendChild(div);
         } else {
-            if (notNullSign == null) {
-                div.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
-                div.setInnerText(escapedCaption);
-            } else {
-                SpanElement span = Document.get().createSpanElement();
-                span.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
-                span.setInnerText(escapedCaption);
-
-                div.appendChild(span);
-                div.appendChild(notNullSign);
-            }
+            div.getStyle().setWhiteSpace(Style.WhiteSpace.NORMAL);
+            div.setInnerText(escapedCaption);
             renderedCaptionElement = div;
             th.appendChild(div);
+        }
+
+        if (notNull) {
+            DivElement notNullSign = Document.get().createDivElement();
+            notNullSign.addClassName("rightBottomCornerTriangle");
+            notNullSign.addClassName("notNullCornerTriangle");
+            th.appendChild(notNullSign);
+        } else if (hasChangeAction) {
+            DivElement changeActionSign = Document.get().createDivElement();
+            changeActionSign.addClassName("rightBottomCornerTriangle");
+            changeActionSign.addClassName("changeActionCornerTriangle");
+            th.appendChild(changeActionSign);
         }
 
         setRendered(caption, sortDir);

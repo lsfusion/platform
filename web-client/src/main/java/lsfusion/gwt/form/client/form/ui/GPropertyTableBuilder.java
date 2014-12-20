@@ -7,6 +7,7 @@ import lsfusion.gwt.cellview.client.AbstractDataGridBuilder;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;
 import lsfusion.gwt.cellview.client.cell.Cell;
+import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 import java.util.List;
 
@@ -87,6 +88,21 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             renderCell(div, new Cell.Context(rowIndex, columnIndex, rowValue), column, rowValue);
 
             td.appendChild(div);
+
+            if (cellTable instanceof GSinglePropertyTable) {
+                GPropertyDraw property = ((GSinglePropertyTable) cellTable).getProperty(column);
+                if (property.notNull) {
+                    DivElement changeEventSign = Document.get().createDivElement();
+                    changeEventSign.addClassName("rightBottomCornerTriangle");
+                    changeEventSign.addClassName("notNullCornerTriangle");
+                    td.appendChild(changeEventSign);
+                } else if (property.hasChangeAction) {
+                    DivElement changeEventSign = Document.get().createDivElement();
+                    changeEventSign.addClassName("rightBottomCornerTriangle");
+                    changeEventSign.addClassName("changeActionCornerTriangle");
+                    td.appendChild(changeEventSign);
+                }
+            }
         }
     }
 

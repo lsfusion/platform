@@ -332,7 +332,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                 }
 
                 GGridPropertyTableHeader header = headers.get(i);
-                header.setCaption(columnCaption, property.notNull);
+                header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
                 header.setToolTip(property.getTooltipText(columnCaption));
 
                 putToColumnsMap(newColumnsMap, property, columnKey, column);
@@ -407,7 +407,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
                     columnCaption = property.getCaptionOrEmpty();
                 }
 
-                headers.get(i).setCaption(columnCaption, property.notNull);
+                headers.get(i).setCaption(columnCaption, property.notNull, property.hasChangeAction);
             }
             refreshHeaders();
             captionsUpdated = false;

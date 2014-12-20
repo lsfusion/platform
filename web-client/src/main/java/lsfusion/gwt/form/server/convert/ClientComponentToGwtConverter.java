@@ -294,7 +294,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.askConfirm = clientPropertyDraw.askConfirm;
         propertyDraw.askConfirmMessage = clientPropertyDraw.askConfirmMessage;
 
-        propertyDraw.hasEditAction = clientPropertyDraw.hasEditAction;
+        propertyDraw.hasEditObjectAction = clientPropertyDraw.hasEditObjectAction;
+        propertyDraw.hasChangeAction = clientPropertyDraw.hasChangeAction;
 
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 

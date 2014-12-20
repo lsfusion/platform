@@ -124,11 +124,11 @@ public class GEditBindingMap implements Serializable {
 
         String actionSID = null;
         if (property.editBindingMap != null) {
-            actionSID = property.editBindingMap.getAction(e, eventFilter, property.hasEditAction);
+            actionSID = property.editBindingMap.getAction(e, eventFilter, property.hasEditObjectAction);
         }
 
         if (actionSID == null) {
-            actionSID = overrideMap.getAction(e, eventFilter, property.hasEditAction);
+            actionSID = overrideMap.getAction(e, eventFilter, property.hasEditObjectAction);
         }
         return actionSID;
     }

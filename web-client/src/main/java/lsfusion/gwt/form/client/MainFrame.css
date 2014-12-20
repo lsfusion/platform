@@ -461,6 +461,25 @@ textarea {
     width: 3em;    
 }
 
+/* ------------ Colored corner triangles  ------------ */
+.notNullCornerTriangle {
+    border-color: transparent transparent #ff0000 transparent;
+}
+
+.changeActionCornerTriangle {
+    border-color: transparent transparent #78AAD0 transparent;
+}
+
+.rightBottomCornerTriangle {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 0 5px 5px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
 /* ------------ Other components  ------------ */
 .gridResizePanel{
     min-height: 130px !important;
@@ -512,4 +531,8 @@ textarea {
 
 .floatRight {
     float: right;
+}
+
+.positionRelative {
+    position: relative;
 }
