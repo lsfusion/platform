@@ -1586,6 +1586,20 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public static int SESSION_TIL = -1;
     public static int ID_TIL = Connection.TRANSACTION_REPEATABLE_READ;
     
+    private static Stack<Integer> STACK_TIL = new Stack<Integer>();
+    
+    public static void pushTIL(Integer TIL) {
+        STACK_TIL.push(TIL);
+    }
+    
+    public static Integer popTIL() {
+        return STACK_TIL.isEmpty() ? null : STACK_TIL.pop();
+    }
+    
+    public static Integer getCurrentTIL() {
+        return STACK_TIL.isEmpty() ? SESSION_TIL : STACK_TIL.peek();
+    }
+    
     public static String HOSTNAME_COMPUTER;
 
     public static boolean RECALC_REUPDATE = false;

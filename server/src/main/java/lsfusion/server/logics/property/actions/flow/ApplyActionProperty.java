@@ -12,12 +12,14 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 public class ApplyActionProperty extends KeepContextActionProperty {
@@ -25,13 +27,15 @@ public class ApplyActionProperty extends KeepContextActionProperty {
     private final CalcProperty canceled;
     private final boolean keepAllSessionProperties;
     private final ImSet<SessionDataProperty> keepSessionProperties;
+    private final boolean serializable;
 
     public <I extends PropertyInterface> ApplyActionProperty(BaseLogicsModule LM, ActionPropertyMapImplement<?, I> action,
                                                              String caption, ImOrderSet<I> innerInterfaces,
-                                                             boolean keepAllSessionProperties, ImSet<SessionDataProperty> keepSessionProperties) {
+                                                             boolean keepAllSessionProperties, ImSet<SessionDataProperty> keepSessionProperties, boolean serializable) {
         super(caption, innerInterfaces.size());
         this.keepAllSessionProperties = keepAllSessionProperties;
         this.keepSessionProperties = keepSessionProperties;
+        this.serializable = serializable;
 
         this.action = action.map(getMapInterfaces(innerInterfaces).reverse());
         this.canceled = getCanceled(LM).property;
@@ -76,12 +80,20 @@ public class ApplyActionProperty extends KeepContextActionProperty {
 
     @Override
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        ImSet<SessionDataProperty> keepProperties = getKeepProperties(context.getSession());
+        
+        try {
+            if (serializable)
+                DBManager.pushTIL(Connection.TRANSACTION_REPEATABLE_READ);
 
-        if (!context.apply(action == null ? null : action.getValueImplement(context.getKeys()), keepProperties))
-            if(canceled != null)
-                canceled.change(context, true);
+            ImSet<SessionDataProperty> keepProperties = getKeepProperties(context.getSession());
 
+            if (!context.apply(action == null ? null : action.getValueImplement(context.getKeys()), keepProperties))
+                if (canceled != null)
+                    canceled.change(context, true);
+        } finally {
+            if (serializable)
+                DBManager.popTIL();
+        }
         return FlowResult.FINISH;
     }
 

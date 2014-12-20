@@ -2402,15 +2402,17 @@ applyActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic]
 	boolean single = false;
 	List<PropertyUsage> keepSessionProps = Collections.emptyList();
 	boolean keepAllSessionProps = false;
+	boolean serializable = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedApplyAProp($applyPDB.property, single, keepSessionProps, keepAllSessionProps);
+		$property = self.addScriptedApplyAProp($applyPDB.property, single, keepSessionProps, keepAllSessionProps, serializable);
 	}
 }
 	:	'APPLY' 
         (mps=migratePropertiesSelector { keepAllSessionProps = $mps.all; keepSessionProps = $mps.props; })?
         ('SINGLE' { single = true; })?
+        ('SERIALIZABLE' { serializable = true; })?
         applyPDB=innerActionPropertyDefinitionBody[context, dynamic]
 	;
 

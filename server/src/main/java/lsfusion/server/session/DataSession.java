@@ -50,6 +50,7 @@ import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 
 import javax.swing.*;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -247,7 +248,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private void startTransaction(UpdateCurrentClasses update, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
         assert !isInTransaction;
-        sql.startTransaction(DBManager.SESSION_TIL, getOwner());
+        sql.startTransaction(DBManager.getCurrentTIL(), getOwner());
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
             onlyDataModifier = new OverrideSessionModifier(new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);

@@ -1660,7 +1660,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     }
 
-    public LPWithParams addScriptedApplyAProp(LPWithParams action, boolean singleApply, List<PropertyUsage> keepSessionProps, boolean keepAllSessionProps) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedApplyAProp(LPWithParams action, boolean singleApply, List<PropertyUsage> keepSessionProps, boolean keepAllSessionProps, boolean serializable) 
+            throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedApplyAProp(" + action + ");");
         List<LPWithParams> propParams = new ArrayList<LPWithParams>();
         if (action != null) {
@@ -1674,7 +1675,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             mKeepProps.exclAdd((SessionDataProperty) prop.property);
         }
 
-        LP result = addApplyAProp(null, "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null, singleApply, keepAllSessionProps, mKeepProps.immutable());
+        LP result = addApplyAProp(null, "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null, singleApply, keepAllSessionProps, mKeepProps.immutable(), serializable);
         return new LPWithParams(result, mergeAllParams(propParams));
     }
 

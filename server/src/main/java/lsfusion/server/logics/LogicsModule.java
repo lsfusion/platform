@@ -726,12 +726,12 @@ public abstract class LogicsModule {
     // ------------------------ APPLY ----------------- //
 
     protected LAP addApplyAProp(AbstractGroup group, String caption, LAP action, boolean singleApply,
-                                boolean keepAllSessionProps, ImSet<SessionDataProperty> keepSessionProps) {
+                                boolean keepAllSessionProps, ImSet<SessionDataProperty> keepSessionProps, boolean serializable) {
         
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
-        ApplyActionProperty applyAction = new ApplyActionProperty(baseLM, actionImplement, caption, listInterfaces, keepAllSessionProps, keepSessionProps);
+        ApplyActionProperty applyAction = new ApplyActionProperty(baseLM, actionImplement, caption, listInterfaces, keepAllSessionProps, keepSessionProps, serializable);
         actionImplement.property.singleApply = singleApply;
         return addProperty(group, new LAP(applyAction));
     }
