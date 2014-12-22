@@ -69,6 +69,27 @@ portLDAP 'Порт' = DATA INTEGER ();
 baseDNLDAP 'Base DN' = DATA VARSTRING[100] ();
 userDNSuffixLDAP 'Суффикс для User DN' = DATA VARSTRING[100] ();
 
+locked = DATA User (Object);
+lockResult = DATA SESSION BOOLEAN ();
+
+lock(object) = ACTION NEWSESSION (lockResult) {    
+    lockResult() <- NULL;
+    APPLY (lockResult) SERIALIZABLE {
+        IF NOT object THEN
+            RETURN;
+        IF locked(object) THEN {
+            cancel();
+        } ELSE {
+            locked(object) <- currentUser();
+            lockResult() <- TRUE;
+        }
+    }
+}
+
+unlock(object) = ACTION NEWSESSION (lockResult) { 
+    IF lockResult() THEN APPLY locked(object) <- NULL;
+}
+
 changeSHA256PasswordCustomUser = ACTION(customUser) {
     REQUEST STRING[30] INPUT;
     EXEC calculateBase64Hash('SHA-256', requestedString());
