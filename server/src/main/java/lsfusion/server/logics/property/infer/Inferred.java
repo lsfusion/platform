@@ -160,7 +160,7 @@ public class Inferred<T extends PropertyInterface> {
         return result;
     }
 
-    private static <T> ImMap<T, ExClassSet> checkNull(ImMap<T, ExClassSet> result) {
+    public static <T> ImMap<T, ExClassSet> checkNull(ImMap<T, ExClassSet> result) {
         for(ExClassSet exClass : result.valueIt())
             if(exClass != null && exClass.isEmpty())
                 return null;

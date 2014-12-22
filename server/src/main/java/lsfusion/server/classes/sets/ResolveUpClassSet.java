@@ -36,8 +36,17 @@ public class ResolveUpClassSet extends AUpClassSet<ResolveUpClassSet> implements
     }
 
     public boolean containsAll(ResolveClassSet set, boolean implicitCast) {
-//        if(set instanceof ResolveOrObjectClassSet)
+        if(set instanceof ResolveOrObjectClassSet) {
+            ResolveOrObjectClassSet orSet = (ResolveOrObjectClassSet)set;
+            if(!containsAll(orSet.up, implicitCast))
+                return false;
+            for(ConcreteCustomClass customClass : orSet.set) {
+                if(!has(customClass))
+                    return false;
+            }
+            return true;
 //            return new ResolveOrObjectClassSet(this, SetFact.<ConcreteCustomClass>EMPTY()).containsAll(set, implicitCast);
+        }
         
         if(!(set instanceof ResolveUpClassSet))
             return false;
@@ -87,6 +96,14 @@ public class ResolveUpClassSet extends AUpClassSet<ResolveUpClassSet> implements
         return set.mapValues(new GetValue<AndClassSet, ResolveClassSet>() {
             public AndClassSet getMapValue(ResolveClassSet value) {
                 return toAnd(value);
+            }
+        });
+    }
+
+    public static <T> ImMap<T, ResolveClassSet> toResolve(ImMap<T, AndClassSet> set) {
+        return set.mapValues(new GetValue<ResolveClassSet, AndClassSet>() {
+            public ResolveClassSet getMapValue(AndClassSet value) {
+                return toResolve(value);
             }
         });
     }

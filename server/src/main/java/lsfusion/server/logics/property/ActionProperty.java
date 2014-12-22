@@ -15,8 +15,8 @@ import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -35,6 +35,8 @@ import lsfusion.server.logics.property.actions.edit.GroupChangeActionProperty;
 import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
+import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
@@ -202,10 +204,15 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return result.immutable();
     }
 
-    public ClassWhere<P> getClassWhere(ClassType type) {
-        return getWhereProperty().mapClassWhere(type);
+    public boolean isInInterface(ImMap<P, ? extends AndClassSet> interfaceClasses, boolean isAny) {
+        return getWhereProperty().mapIsInInterface(interfaceClasses, isAny);
     }
 
+    public ImMap<P, ValueClass> getInterfaceClasses(ClassType type) {
+        return getWhereProperty().mapGetInterfaceClasses(type);
+    }
+
+    @IdentityLazy
     public CalcPropertyMapImplement<?, P> getWhereProperty() {
         return getWhereProperty(false);
     }
@@ -227,7 +234,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     private ImMap<P, ValueClass> getExplicitInterfaces() {
         if(explicitClasses == null)
             return null;
-        return new ClassWhere<P>(ResolveUpClassSet.toAnd(explicitClasses)).getCommonParent(interfaces);
+        return ExClassSet.fromResolveValue(explicitClasses);
     }
 
     private ImMap<P, ValueClass> calcWhereInterfaceClasses() {

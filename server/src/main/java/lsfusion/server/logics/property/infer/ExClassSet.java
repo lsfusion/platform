@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.DataClass;
@@ -11,7 +12,13 @@ import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.classes.sets.ResolveUpClassSet;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.property.PropertyInterface;
+
+import java.util.List;
 
 public class ExClassSet extends TwinImmutableObject {
     private final ResolveClassSet classSet;
@@ -20,6 +27,24 @@ public class ExClassSet extends TwinImmutableObject {
     public final boolean orAny;
 
     public static final ExClassSet FALSE = new ExClassSet(null);
+
+    public static <T> boolean containsAll(ImSet<T> keys, ImMap<T, ExClassSet> classes1, ImMap<T, ExClassSet> classes2, boolean ignoreAbstracts) {
+        ImMap<T, ResolveClassSet> exClasses1 = ExClassSet.fromEx(classes1);
+        ImMap<T, ResolveClassSet> exClasses2 = ExClassSet.fromEx(classes2);
+
+        if(ignoreAbstracts) {
+            return new ClassWhere<T>(ResolveUpClassSet.toAnd(exClasses2)).meansCompatible(new ClassWhere<T>(ResolveUpClassSet.toAnd(exClasses1)));
+        } else {
+            ImOrderSet<T> orderKeys = keys.toOrderSet();
+            List<ResolveClassSet> listClasses = orderKeys.mapListValues(exClasses1.fnGetValue()).toJavaList();
+            List<ResolveClassSet> listPropClasses = orderKeys.mapListValues(exClasses2.fnGetValue()).toJavaList();
+            return LogicsModule.match(listClasses, listPropClasses, true, true);
+        }
+    }
+
+    public static <T> boolean intersect(ImSet<T> keys, ImMap<T, ExClassSet> classes1, ImMap<T, ExClassSet> classes2) {
+        return Inferred.checkNull(op(keys, classes1, classes2, false)) != null;
+    }
 
     public static <T> ImMap<T, ExClassSet> op(ImSet<T> keys, final ImMap<T, ExClassSet> op1, final ImMap<T, ExClassSet> op2, final boolean or) {
         return keys.mapValues(new GetValue<ExClassSet, T>() {
@@ -111,7 +136,12 @@ public class ExClassSet extends TwinImmutableObject {
         if(orSet == null) return null;
         return orSet.getCommonClass();
     }
-    
+
+    public static ValueClass fromResolveValue(ResolveClassSet set) {
+        if(set == null) return null;
+        return set.getCommonClass();
+    }
+
     public final static ExClassSet logical = new ExClassSet(LogicalClass.instance);
 
     public ExClassSet(ResolveClassSet classSet, ImSet<Object> values, boolean orAny) {
@@ -154,6 +184,14 @@ public class ExClassSet extends TwinImmutableObject {
         return classes.mapValues(new GetValue<ValueClass, ExClassSet>() {
             public ValueClass getMapValue(ExClassSet value) {
                 return fromExValue(value);
+            }
+        });
+    }
+
+    public static <T> ImMap<T, ValueClass> fromResolveValue(ImMap<T, ResolveClassSet> classes) {
+        return classes.mapValues(new GetValue<ValueClass, ResolveClassSet>() {
+            public ValueClass getMapValue(ResolveClassSet value) {
+                return fromResolveValue(value);
             }
         });
     }

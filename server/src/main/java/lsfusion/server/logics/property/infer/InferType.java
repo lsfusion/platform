@@ -1,8 +1,10 @@
 package lsfusion.server.logics.property.infer;
 
-import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.property.*;
 
@@ -17,6 +19,19 @@ public class InferType implements AlgType {
     public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(CalcProperty<P> property) {
         assert this != RESOLVE;
         return property.inferClassValueWhere(this);
+    }
+
+    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(CalcProperty<P> property) {
+        return property.inferGetInterfaceClasses(this);
+    }
+
+    public <P extends PropertyInterface> ValueClass getValueClass(CalcProperty<P> property) {
+        return property.inferGetValueClass(this);
+    }
+
+    public <P extends PropertyInterface> boolean isInInterface(CalcProperty<P> property, ImMap<P, ? extends AndClassSet> interfaceClasses, boolean isAny) {
+        assert this != RESOLVE;
+        return property.inferIsInInterface(interfaceClasses, isAny, this);
     }
 
     public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(CalcProperty<T> property, String caption, CalcProperty<P> intersect, String intersectCaption, ImRevMap<P, T> map) {

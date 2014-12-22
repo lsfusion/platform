@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.CallableWithParam;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.ListPermutations;
 import lsfusion.base.Pair;
@@ -160,26 +161,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public ValueClass[] getInterfaceClasses(ImOrderSet<T> listInterfaces, ClassType classType) { // notification, load, lazy, dc, obsolete, в конструкторах при определении классов действий в основном
         return listInterfaces.mapOrder(getInterfaceClasses(classType)).toArray(new ValueClass[listInterfaces.size()]);
     }
-    @IdentityLazy
-    public ImMap<T, ValueClass> getInterfaceClasses(ClassType type) {
-        return getClassWhere(type).getCommonParent(interfaces);
-    }
-    public abstract ClassWhere<T> getClassWhere(ClassType type);
+    public abstract ImMap<T, ValueClass> getInterfaceClasses(ClassType type);
 
     @IdentityLazy
     public boolean cacheIsInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny) { // для всех подряд свойств не имеет смысла
         return isInInterface(interfaceClasses, isAny);
     }
 
-    public boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny) {
-        ClassWhere<T> interfaceClassWhere = new ClassWhere<T>(interfaceClasses);
-        ClassWhere<T> fullClassWhere = getClassWhere(ClassType.formPolicy);
-
-        if(isAny)
-            return !fullClassWhere.andCompatible(interfaceClassWhere).isFalse();
-        else
-            return interfaceClassWhere.meansCompatible(fullClassWhere);
-    }
+    public abstract boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny);
 
     public Property(String caption, ImOrderSet<T> interfaces) {
         this.ID = BaseLogicsModule.generateStaticNewID();
@@ -513,7 +502,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     protected ImMap<T, ResolveClassSet> explicitClasses; // без nulls
-    
+
     protected static interface Checker<V> {
         boolean checkEquals(V expl, V calc);
     }

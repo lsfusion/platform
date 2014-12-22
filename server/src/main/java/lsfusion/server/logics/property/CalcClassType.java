@@ -1,7 +1,10 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.where.classes.ClassWhere;
 
 public class CalcClassType extends CalcType implements AlgType {
@@ -15,6 +18,18 @@ public class CalcClassType extends CalcType implements AlgType {
 
     public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(CalcProperty<P> property) {
         return property.calcClassValueWhere(this);
+    }
+
+    public <P extends PropertyInterface> ImMap<P, ValueClass> getInterfaceClasses(CalcProperty<P> property) {
+        return property.calcInterfaceClasses(this);
+    }
+
+    public <P extends PropertyInterface> ValueClass getValueClass(CalcProperty<P> property) {
+        return property.calcValueClass(this);
+    }
+
+    public <P extends PropertyInterface> boolean isInInterface(CalcProperty<P> property, ImMap<P, ? extends AndClassSet> interfaceClasses, boolean isAny) {
+        return property.calcIsInInterface(interfaceClasses, isAny, this);
     }
 
     public <T extends PropertyInterface, P extends PropertyInterface> void checkExclusiveness(CalcProperty<T> property, String caption, CalcProperty<P> intersect, String intersectCaption, ImRevMap<P, T> map) {

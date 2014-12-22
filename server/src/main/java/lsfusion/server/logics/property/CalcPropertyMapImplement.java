@@ -79,6 +79,14 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         return new ClassWhere<T>(property.getClassWhere(type),mapping);
     }
 
+    public boolean mapIsInInterface(ImMap<T, ? extends AndClassSet> classes, boolean isAny) {
+        return property.isInInterface(mapping.join(classes), isAny);
+    }
+
+    public ImMap<T, ValueClass> mapGetInterfaceClasses(ClassType classType) {
+        return mapping.rightCrossJoin(property.getInterfaceClasses(classType));
+    }
+
     public boolean mapIsFull(ImSet<T> interfaces) {
         if(interfaces.isEmpty()) // оптимизация
             return true;

@@ -59,7 +59,6 @@ import lsfusion.server.session.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> implements MapKeysInterface<T> {
@@ -238,21 +237,13 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 //        return newValueClass;
     }
         
-    // assert CaseUnion 
     private <P extends PropertyInterface> boolean containsAll(ImMap<T, ExClassSet> interfaceClasses, ImMap<T, ExClassSet> interfacePropClasses, boolean ignoreAbstracts) {
-        ImMap<T, ResolveClassSet> inferredClasses = ExClassSet.fromEx(interfaceClasses);
-        ImMap<T, ResolveClassSet> inferredPropClasses = ExClassSet.fromEx(interfacePropClasses);
-
-        if(ignoreAbstracts) {
-            return new ClassWhere<T>(ResolveUpClassSet.toAnd(inferredPropClasses)).meansCompatible(new ClassWhere<T>(ResolveUpClassSet.toAnd(inferredClasses)));
-        } else {
-            ImOrderSet<T> orderInterfaces = getOrderInterfaces();
-            List<ResolveClassSet> listClasses = orderInterfaces.mapListValues(inferredClasses.fnGetValue()).toJavaList();
-            List<ResolveClassSet> listPropClasses = orderInterfaces.mapListValues(inferredPropClasses.fnGetValue()).toJavaList();
-            return LogicsModule.match(listClasses, listPropClasses, true, true);
-        }
+        return ExClassSet.containsAll(interfaces, interfaceClasses, interfacePropClasses, ignoreAbstracts);
     }
-    
+    private <P extends PropertyInterface> boolean intersect(ImMap<T, ExClassSet> interfaceClasses, ImMap<T, ExClassSet> interfacePropClasses) {
+        return ExClassSet.intersect(interfaces, interfaceClasses, interfacePropClasses);
+    }
+
     public <P extends PropertyInterface> void calcCheckContainsAll(CalcProperty<P> property, ImRevMap<P, T> map, CalcClassType calcType, CalcPropertyInterfaceImplement<T> value) {
         ClassWhere<T> classes = getClassWhere(calcType);
         ClassWhere<T> propClasses = new ClassWhere<T>(property.getClassWhere(calcType),map);
@@ -410,6 +401,52 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public boolean usePrevHeur() {
         return getExpr(getMapKeys(), CalcClassType.PREVSAME_KEEPIS).isNull();
+    }
+
+    public ImMap<T, ValueClass> calcInterfaceClasses(CalcClassType calcClassType) {
+        return getClassWhere(calcClassType).getCommonParent(interfaces);
+    }
+
+    public ValueClass calcValueClass(CalcClassType classType) {
+        return getClassValueWhere(classType).getCommonParent(SetFact.singleton("value")).get("value");
+    }
+
+    public ValueClass inferGetValueClass(InferType inferType) {
+        ImMap<T, ExClassSet> inferred = getInferInterfaceClasses(inferType);
+        if(inferred == null)
+            return null;
+        return ExClassSet.fromResolveValue(ExClassSet.fromEx(inferValueClass(inferred, inferType)));
+    }
+
+    public boolean isInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny) {
+        return ClassType.formPolicy.getAlg().isInInterface(this, interfaceClasses, isAny);
+    }
+
+    public boolean calcIsInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny, CalcClassType calcClassType) {
+        ClassWhere<T> interfaceClassWhere = new ClassWhere<T>(interfaceClasses);
+        ClassWhere<T> fullClassWhere = getClassWhere(calcClassType); // вообще надо из CalcClassType вытянуть
+
+        if(isAny)
+            return !fullClassWhere.andCompatible(interfaceClassWhere).isFalse();
+        else
+            return interfaceClassWhere.meansCompatible(fullClassWhere);
+    }
+
+    public boolean inferIsInInterface(ImMap<T, ? extends AndClassSet> interfaceClasses, boolean isAny, InferType inferType) {
+        ImMap<T, ExClassSet> exInterfaceClasses = ExClassSet.toEx(ResolveUpClassSet.toResolve((ImMap<T, AndClassSet>) interfaceClasses));
+        ImMap<T, ExClassSet> inferredClasses = getInferInterfaceClasses(inferType);
+
+        if(isAny)
+            return intersect(inferredClasses, exInterfaceClasses);
+        else
+            return containsAll(inferredClasses, exInterfaceClasses, false);
+    }
+
+    public ImMap<T, ValueClass> inferGetInterfaceClasses(InferType inferType) {
+        ImMap<T, ExClassSet> inferred = getInferInterfaceClasses(inferType);
+        if(inferred == null)
+            return MapFact.EMPTY();
+        return ExClassSet.fromExValue(inferred).removeNulls();
     }
 
     public static class ClassTable<P extends PropertyInterface> extends Table {
@@ -774,11 +811,6 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         this.field = field;
     }
 
-    @IdentityLazy
-    public ValueClass getValueClass(ClassType classType) {
-        return getClassValueWhere(classType).getCommonParent(SetFact.singleton("value")).get("value");
-    }
-
     public AndClassSet getValueClassSet() {
         return getClassValueWhere(ClassType.resolvePolicy).getCommonClass("value");
     }
@@ -792,25 +824,47 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     @IdentityLazy
-    public ImMap<T, ValueClass> getInterfaceClasses(ClassType type) {
-        return getClassWhere(type).getCommonParent(interfaces);
-    }
-    @IdentityLazy
     public ClassWhere<T> getClassWhere(ClassType type) {
         return getClassValueWhere(type).filterKeys(interfaces); // не полностью, собсно для этого и есть full
     }
 
-    public ClassWhere<Object> getClassValueWhere(ClassType type) {
+    public ClassWhere<Object> getClassValueWhere(final ClassType type) {
+        return classToAlg(type, new CallableWithParam<AlgType, ClassWhere<Object>>() {
+            public ClassWhere<Object> call(AlgType arg) {
+                if(AlgType.checkInferCalc) checkInferClasses(type);
+                return getClassValueWhere(arg);
+            }
+        });
+    }
+
+    @IdentityLazy
+    public ImMap<T, ValueClass> getInterfaceClasses(ClassType type) {
+        return classToAlg(type, new CallableWithParam<AlgType, ImMap<T, ValueClass>>() {
+            public ImMap<T, ValueClass> call(AlgType arg) {
+                return arg.getInterfaceClasses(CalcProperty.this);
+            }
+        });
+    }
+
+    @IdentityLazy
+    public ValueClass getValueClass(ClassType classType) {
+        return classToAlg(classType, new CallableWithParam<AlgType, ValueClass>() {
+            public ValueClass call(AlgType arg) {
+                return arg.getValueClass(CalcProperty.this);
+            }
+        });
+    }
+
+    protected <V> V classToAlg(ClassType type, CallableWithParam<AlgType, V> call) {
         boolean assertFull = false;
         if(type == ClassType.ASSERTFULL_NOPREV) {
             type = ClassType.useInsteadOfAssert;
             assertFull = true;
-        } 
-        if(AlgType.checkInferCalc) checkInferClasses(type);
+        }
 
         AlgType algType = type.getAlg();
         assert !assertFull || isFull(algType.getAlgInfo());
-        return getClassValueWhere(algType);
+        return call.call(algType);
     }
 
     @IdentityLazy
@@ -826,8 +880,9 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     private boolean checkInferClasses(ClassType type) {
         if(this instanceof NullValueProperty)
             return true;
-        
-        assert type != ClassType.ASSERTFULL_NOPREV;
+
+        if(type == ClassType.ASSERTFULL_NOPREV)
+            type = ClassType.useInsteadOfAssert;
 
         CalcClassType calcType = type.getCalc();
         InferType inferType = type.getInfer();
