@@ -259,7 +259,11 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         else {
             MCol<GroupJoinsWhere> mResult = ListFact.mColFilter(whereJoins);
             MList<Where> mRecPacks = ListFact.mListMax(whereJoins.size());
-            if(!exclusive) mRecPacks.add(Where.FALSE);
+            long currentComplexity = 0;
+            if(!exclusive) {
+                currentComplexity = getComplexity(false);
+                mRecPacks.add(Where.FALSE);
+            }
             for(GroupJoinsWhere innerJoin : whereJoins) {
                 if(innerJoin.isComplex())
                     mResult.add(innerJoin);
@@ -271,8 +275,14 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
                     else {
                         if(exclusive)
                             mRecPacks.add(fullPackWhere); // если не exclusive
-                        else
-                            mRecPacks.set(0, mRecPacks.get(0).or(fullPackWhere));
+                        else {
+                            int last = mRecPacks.size() - 1;
+                            Where merged = mRecPacks.get(last).or(fullPackWhere);
+                            if(merged.getComplexity(false) < currentComplexity) // предотвращение бесконечной рекурсии
+                                mRecPacks.set(last, merged);
+                            else
+                                mRecPacks.add(fullPackWhere);
+                        }
                     }
                 }
             }
