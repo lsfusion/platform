@@ -297,7 +297,7 @@ FORM forms 'Формы'
         groupObjectFormGrouping(fg)==g 
 
     FILTERGROUP filtersForm
-        FILTER 'Свойства только текущей группы объектов' 'F8' groupObjectPropertyDraw(p)==g
+        FILTER 'Свойства только текущей группы объектов' groupObjectPropertyDraw(p)==g 'F8'
 ;
 
 EXTEND DESIGN forms {

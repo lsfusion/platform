@@ -101,7 +101,7 @@ FORM scheduledTask 'Планировщик'
             scheduledTaskLogScheduledClientTaskLog(ctl) == tl
 
     FILTERGROUP filtersScheduler
-            FILTER 'Только активные' 'F9' activeScheduledTaskDetail(td)
+            FILTER 'Только активные' activeScheduledTaskDetail(td) 'F9'
 ;
 
 EXTEND DESIGN scheduledTask {

@@ -141,7 +141,7 @@ FORM scriptsLog 'Скрипты'
     PROPERTIES(s) DELETE FORCE PANEL TOOLBAR
     ORDER BY dateTimeScript(s) DESC
 
-    FILTERGROUP user FILTER 'Только пользовательские' 'F9' nameScript(s)
+    FILTERGROUP user FILTER 'Только пользовательские' nameScript(s) 'F9'
 
     DIALOG Script OBJECT s
 ;

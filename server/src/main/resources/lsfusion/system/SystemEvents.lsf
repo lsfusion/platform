@@ -133,9 +133,9 @@ FORM connections 'Журнал подключений'
     FILTERS connectionFormCount(c, n)>0
     FILTERS connectionSession(s)==c
     FILTERGROUP filtersConnection
-                FILTER 'Активные подключения' 'F8' connectionStatusConnection(c) == ConnectionStatus.connectedConnection
+                FILTER 'Активные подключения' connectionStatusConnection(c) == ConnectionStatus.connectedConnection 'F8'
     FILTERGROUP filtersNavigatorElement
-                FILTER 'Только выбранной формы' 'F9' navigatorElementSession(s)==n
+                FILTER 'Только выбранной формы' navigatorElementSession(s)==n 'F9'
 ;
 
 EXTEND DESIGN connections{
@@ -188,7 +188,7 @@ FORM changes 'Журнал изменений'
                             userLoginConnectionSession, quantityAddedClassesSession, quantityRemovedClassesSession,
                             quantityChangedClassesSession, gChanges = changesSession, dateTimeSession, pChanges = changesSession FORCE PANEL
     FILTERGROUP filtersChange
-                    FILTER 'Только изменения пользователей' 'F8' userLoginConnectionSession(s) DEFAULT
+                    FILTER 'Только изменения пользователей' userLoginConnectionSession(s) 'F8' DEFAULT
 ;
 
 EXTEND DESIGN changes {

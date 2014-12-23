@@ -156,7 +156,7 @@ FORM mail 'Почта'
     ORDER BY canonicalNameProperty(p)
         
     FILTERGROUP emailFilter
-        FILTER 'Только отмеченные' 'F9' inNotificationProperty(n, p)
+        FILTER 'Только отмеченные' inNotificationProperty(n, p) 'F9'
 ;
 
 EXTEND DESIGN mail {

@@ -845,7 +845,7 @@ extendFilterGroupDeclaration
 	;
 	
 formRegularFilterDeclaration returns [RegularFilterInfo filter]
-    :   'FILTER' caption=stringLiteral keystroke=stringLiteral fd=formFilterDeclaration setDefault=filterSetDefault
+    :   'FILTER' caption=stringLiteral fd=formFilterDeclaration (keystroke=stringLiteral)? setDefault=filterSetDefault
         {
             $filter = new RegularFilterInfo($caption.val, $keystroke.val, $fd.property, $fd.mapping, $setDefault.isDefault);
         }
