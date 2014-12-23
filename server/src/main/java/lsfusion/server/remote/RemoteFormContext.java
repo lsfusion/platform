@@ -3,6 +3,7 @@ package lsfusion.server.remote;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.AbstractContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.FormEntity;
@@ -11,11 +12,16 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
+import lsfusion.server.form.instance.listener.CustomClassListener;
+import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.PullChangeProperty;
+import lsfusion.server.session.CompoundUpdateCurrentClasses;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.UpdateCurrentClasses;
 
@@ -63,8 +69,28 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
         }
     }
 
+    public SecurityPolicy getSecurityPolicy() {
+        return form.form.securityPolicy;
+    }
+
+    public FocusListener getFocusListener() {
+        return form.form.getFocusListener();
+    }
+
+    public CustomClassListener getClassListener() {
+        return form.form.getClassListener();
+    }
+
+    public PropertyObjectInterfaceInstance getComputer() {
+        return form.form.instanceFactory.computer;
+    }
+
+    public DataObject getConnection() {
+        return form.form.instanceFactory.connection;
+    }
+
     @Override
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, UpdateCurrentClasses outerUpdateCurrentClasses, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
-        return form.form.createForm(formEntity, mapObjects, outerUpdateCurrentClasses, session, isModal, sessionScope, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
+    public UpdateCurrentClasses getUpdateCurrentClasses(UpdateCurrentClasses outerUpdateCurrentClasses) {
+        return CompoundUpdateCurrentClasses.merge(outerUpdateCurrentClasses, form.form.outerUpdateCurrentClasses);
     }
 }

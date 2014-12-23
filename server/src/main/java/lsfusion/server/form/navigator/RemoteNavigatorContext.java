@@ -1,24 +1,15 @@
 package lsfusion.server.form.navigator;
 
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.context.AbstractContext;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
+import lsfusion.server.form.instance.listener.CustomClassListener;
+import lsfusion.server.form.instance.listener.FocusListener;
+import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.UpdateCurrentClasses;
-
-import java.sql.SQLException;
 
 public class RemoteNavigatorContext extends AbstractContext {
     private final RemoteNavigator navigator;
@@ -50,14 +41,24 @@ public class RemoteNavigatorContext extends AbstractContext {
         return navigator.requestUserInteraction(actions);
     }
 
-    @Override
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, UpdateCurrentClasses outerUpdateCurrentClasses, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
-        return new FormInstance(formEntity, navigator.logicsInstance,
-                                sessionScope.createSession(session),
-                                navigator.securityPolicy, navigator, navigator,
-                                navigator.getComputer(), navigator.getConnection(), mapObjects, outerUpdateCurrentClasses, isModal,
-                                sessionScope,
-                                checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
+    public SecurityPolicy getSecurityPolicy() {
+        return navigator.securityPolicy;
+    }
+
+    public FocusListener getFocusListener() {
+        return navigator;
+    }
+
+    public CustomClassListener getClassListener() {
+        return navigator;
+    }
+
+    public PropertyObjectInterfaceInstance getComputer() {
+        return navigator.getComputer();
+    }
+
+    public DataObject getConnection() {
+        return navigator.getConnection();
     }
 
     @Override

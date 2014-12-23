@@ -135,19 +135,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private final boolean showDrop;
 
-    private final UpdateCurrentClasses outerUpdateCurrentClasses;
+    public final UpdateCurrentClasses outerUpdateCurrentClasses;
 
     private boolean interactive = true; // важно для assertion'а в endApply
 
     private ImSet<ObjectInstance> objects;
-
-    // для импорта конструктор, объекты пустые
-    public FormInstance(FormEntity <T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
-                        FocusListener<T> focusListener, CustomClassListener classListener,
-                        PropertyObjectInterfaceInstance computer, DataObject connection) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, MapFact.<ObjectEntity, ObjectValue>EMPTY(),
-             null, false, FormSessionScope.NEWSESSION, false, false, false, null, null, null);
-    }
 
     public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener<T> focusListener, CustomClassListener classListener,
@@ -1175,15 +1167,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
-        if (entity.isSynchronizedApply)
-            synchronized (entity) {
-                return syncApply(update, interaction, applyAction, keepProperties);
-            }
-        else
-            return syncApply(update, interaction, applyAction, keepProperties);
-    }
-
-    private boolean syncApply(UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
         update = CompoundUpdateCurrentClasses.merge(update, outerUpdateCurrentClasses);
         
         boolean succeeded = session.apply(BL, this, update, interaction, applyAction, keepProperties);
@@ -1258,17 +1241,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return null;
 
         return ((CustomObjectInstance) object).currentClass;
-    }
-
-    public FormInstance<T> createForm(FormEntity<T> form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, UpdateCurrentClasses outerUpdate, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOK, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity filterPropertyDraw, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
-        UpdateCurrentClasses update = CompoundUpdateCurrentClasses.merge(outerUpdate, outerUpdateCurrentClasses);
-
-        return new FormInstance<T>(form, logicsInstance,
-                sessionScope.createSession(session),
-                securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, instanceFactory.connection, mapObjects,
-                update, isModal,
-                sessionScope,
-                checkOnOK, showDrop, interactive, contextFilters, filterPropertyDraw, pullProps);
     }
 
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException, SQLHandledException {

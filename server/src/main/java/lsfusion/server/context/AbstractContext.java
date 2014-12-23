@@ -10,6 +10,7 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.form.UserInputResult;
+import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
@@ -20,6 +21,9 @@ import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormCloseType;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
+import lsfusion.server.form.instance.listener.CustomClassListener;
+import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.NullValue;
@@ -118,8 +122,27 @@ public abstract class AbstractContext implements Context {
         throw new UnsupportedOperationException("requestUserInteraction is not supported");
     }
 
+    public abstract SecurityPolicy getSecurityPolicy();
+
+    public abstract FocusListener getFocusListener();
+
+    public abstract CustomClassListener getClassListener();
+
+    public abstract PropertyObjectInterfaceInstance getComputer();
+
+    public abstract DataObject getConnection();
+
+    public UpdateCurrentClasses getUpdateCurrentClasses(UpdateCurrentClasses outerUpdateCurrentClasses) {
+        return outerUpdateCurrentClasses;
+    }
+
     public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, UpdateCurrentClasses outerUpdateCurrentClasses, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
-        throw new UnsupportedOperationException("createFormInstance is not supported");
+        return new FormInstance(formEntity, getLogicsInstance(),
+                sessionScope.createSession(session),
+                getSecurityPolicy(), getFocusListener(), getClassListener(),
+                getComputer(), getConnection(), mapObjects, getUpdateCurrentClasses(outerUpdateCurrentClasses), isModal,
+                sessionScope,
+                checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance) {

@@ -3,6 +3,7 @@ package lsfusion.server.context;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.SQLHandledException;
@@ -12,7 +13,11 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
+import lsfusion.server.form.instance.listener.CustomClassListener;
+import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
+import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.DialogRequest;
@@ -48,4 +53,13 @@ public interface Context {
     void pushActionMessage(String segment);
     String popActionMessage();
     ScheduledExecutorService getExecutorService();
+
+    // для создания форм
+    SecurityPolicy getSecurityPolicy();
+    FocusListener getFocusListener();
+    CustomClassListener getClassListener();
+    PropertyObjectInterfaceInstance getComputer();
+    DataObject getConnection();
+    UpdateCurrentClasses getUpdateCurrentClasses(UpdateCurrentClasses outerUpdateCurrentClasses);
+
 }

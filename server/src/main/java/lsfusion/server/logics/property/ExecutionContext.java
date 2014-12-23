@@ -368,7 +368,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
 
     public ExecutionContext<P> override(ExecutionEnvironment newEnv) {
-        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form, null);
+        return new ExecutionContext<P>(keys, pushedUserInput, pushedAddObject, newEnv, form, this);
     }
 
     public <T extends PropertyInterface> ExecutionContext<T> override(ImMap<T, ? extends ObjectValue> keys, ImMap<T, ? extends CalcPropertyInterfaceImplement<P>> mapInterfaces) {
@@ -401,7 +401,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
             for(UpdateCurrentClasses update : updateClasses)
                 update.update(session);
         }
-        if(stack != null)
+        if(stack != null && env == stack.env)
             stack.update(session);
     }
     
@@ -461,7 +461,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
             }
         }
 
-        if(stack != null)
+        if(stack != null && env == stack.env)
             stack.updateLastUserInput(userInput);
     }
 

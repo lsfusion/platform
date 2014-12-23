@@ -1,27 +1,19 @@
 package lsfusion.server.context;
 
-import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.form.entity.PropertyDrawEntity;
-import lsfusion.server.form.entity.filter.FilterEntity;
+import lsfusion.server.auth.SecurityPolicy;
+import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
+import lsfusion.server.form.instance.listener.CustomClassListener;
+import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.SecurityManager;
-import lsfusion.server.logics.property.PullChangeProperty;
-import lsfusion.server.session.UpdateCurrentClasses;
 import org.apache.log4j.Logger;
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.form.entity.FormEntity;
-import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.FormInstance;
-import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.remote.RemoteForm;
-import lsfusion.server.session.DataSession;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,14 +35,24 @@ public class LogicsInstanceContext extends AbstractContext {
         return logicsInstance;
     }
 
-    @Override
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, UpdateCurrentClasses outerUpdateCurrentClasses, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
-        DataObject serverComputer = logicsInstance.getDbManager().getServerComputerObject();
-        return new FormInstance(formEntity,
-                                logicsInstance, sessionScope.createSession(session), SecurityManager.serverSecurityPolicy, null, null,
-                                serverComputer,
-                                null, mapObjects, outerUpdateCurrentClasses, isModal, sessionScope,
-                                checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
+    public SecurityPolicy getSecurityPolicy() {
+        return SecurityManager.serverSecurityPolicy;
+    }
+
+    public FocusListener getFocusListener() {
+        return null;
+    }
+
+    public CustomClassListener getClassListener() {
+        return null;
+    }
+
+    public PropertyObjectInterfaceInstance getComputer() {
+        return logicsInstance.getDbManager().getServerComputerObject();
+    }
+
+    public DataObject getConnection() {
+        return null;
     }
 
     @Override

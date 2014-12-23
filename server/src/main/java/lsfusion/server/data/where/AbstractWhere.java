@@ -278,7 +278,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
                         else {
                             int last = mRecPacks.size() - 1;
                             Where merged = mRecPacks.get(last).or(fullPackWhere);
-                            if(merged.getComplexity(false) < currentComplexity) // предотвращение бесконечной рекурсии
+                            if(merged.getComplexity(false) < currentComplexity) // предотвращение бесконечной рекурсии, через getCommonWhere может залазить внутрь UnionExpr потом их опять собирать и проверка на hashEquals не сработает
                                 mRecPacks.set(last, merged);
                             else
                                 mRecPacks.add(fullPackWhere);

@@ -3,6 +3,7 @@ package lsfusion.server;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.context.AbstractContext;
@@ -14,7 +15,11 @@ import lsfusion.server.form.entity.PropertyDrawEntity;
 import lsfusion.server.form.entity.filter.FilterEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.FormSessionScope;
+import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
+import lsfusion.server.form.instance.listener.CustomClassListener;
+import lsfusion.server.form.instance.listener.FocusListener;
 import lsfusion.server.form.navigator.LogInfo;
+import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.DialogRequest;
@@ -41,8 +46,24 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.getFormInstance();
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, UpdateCurrentClasses outerUpdateCurrentClasses, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
-        return wrappedContext.createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, outerUpdateCurrentClasses, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
+    public SecurityPolicy getSecurityPolicy() {
+        return wrappedContext.getSecurityPolicy();
+    }
+
+    public FocusListener getFocusListener() {
+        return wrappedContext.getFocusListener();
+    }
+
+    public CustomClassListener getClassListener() {
+        return wrappedContext.getClassListener();
+    }
+
+    public PropertyObjectInterfaceInstance getComputer() {
+        return wrappedContext.getComputer();
+    }
+
+    public DataObject getConnection() {
+        return wrappedContext.getConnection();
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance) {
