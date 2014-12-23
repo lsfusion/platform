@@ -261,7 +261,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             MList<Where> mRecPacks = ListFact.mListMax(whereJoins.size());
             long currentComplexity = 0;
             if(!exclusive) {
-                currentComplexity = getComplexity(false);
+                currentComplexity = hasUnionExpr() ? getComplexity(false) : Long.MAX_VALUE;
                 mRecPacks.add(Where.FALSE);
             }
             for(GroupJoinsWhere innerJoin : whereJoins) {
