@@ -439,7 +439,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         if(isAny)
             return intersect(inferredClasses, exInterfaceClasses);
         else
-            return containsAll(inferredClasses, exInterfaceClasses, false);
+            return containsAll(inferredClasses, exInterfaceClasses, true); // тут вопрос с последним параметром, так как при false - A : C MULTI B : C пойдет в панель, с другой стороны при добавлении D : C поведение изменится
     }
 
     public ImMap<T, ValueClass> inferGetInterfaceClasses(InferType inferType) {
