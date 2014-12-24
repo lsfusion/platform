@@ -533,10 +533,10 @@ public class ScriptingFormEntity {
     public void addRegularFilters(RegularFilterGroupEntity filterGroup, List<RegularFilterInfo> filters, Version version, boolean extend) throws ScriptingErrorLog.SemanticErrorException {
         for (RegularFilterInfo info : filters) {
             String caption = info.caption;
-            KeyStroke keyStroke = KeyStroke.getKeyStroke(info.keystroke);
+            KeyStroke keyStroke = (info.keystroke != null ? KeyStroke.getKeyStroke(info.keystroke) : null);
             boolean isDefault = info.isDefault;
 
-            if (keyStroke == null) {
+            if (info.keystroke != null && keyStroke == null) {
                 LM.getErrLog().emitWrongKeyStrokeFormat(LM.getParser(), info.keystroke);
             }
 
