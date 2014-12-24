@@ -398,6 +398,9 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     @Override
     public ResolveClassSet toResolve() {
         assert !unknown;
-        return new ResolveOrObjectClassSet(up.toResolve(), set);
+        ResolveUpClassSet upResolve = up.toResolve();
+        if(set.isEmpty()) // оптимизация
+            return upResolve;
+        return new ResolveOrObjectClassSet(upResolve, set);
     }
 }

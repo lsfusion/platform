@@ -31,6 +31,8 @@ public class ResolveOrObjectClassSet extends TwinImmutableObject implements Reso
 
     @Override
     public boolean containsAll(ResolveClassSet set, boolean implicitCast) {
+        if(this.set.isEmpty())
+            return up.containsAll(set, implicitCast);
         throw new UnsupportedOperationException();
 //        return toAnd().containsAll(set.toAnd(), implicitCast); // жестко, но пока используется только для check
     }

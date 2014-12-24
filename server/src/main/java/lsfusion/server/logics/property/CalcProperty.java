@@ -1200,10 +1200,26 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new CalcPropertyMapImplement<T, V>(this, getMapInterfaces(list));
     }
 
+    // важно для подсветки
+    public boolean canBeChanged() {
+        ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
+        Modifier modifier = Property.defaultModifier;
+        try {
+            return !getDataChanges(new PropertyChange<T>(mapKeys, getChangeExpr(), getClassProperty().mapExpr(mapKeys, modifier).getWhere()), modifier).isEmpty();
+        } catch (SQLException e) { // по идее не должно быть, но на всякий случай
+            return false;
+        } catch (SQLHandledException e) { // по идее не должно быть
+            return false;
+        }
+    }
+
     @IdentityInstanceLazy
     public ActionPropertyMapImplement<?, T> getDefaultEditAction(String editActionSID, CalcProperty filterProperty) {
         ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
         if(interfaceClasses.size() < interfaces.size()) // не все классы есть
+            return null;
+
+        if(!canBeChanged())
             return null;
 
         ImOrderSet<T> listInterfaces = interfaceClasses.keys().toOrderSet();
