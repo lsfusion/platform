@@ -34,11 +34,14 @@ public abstract class SingleClassExpr extends VariableClassExpr {
         assert !isTrueWhere();
         OrClassSet result = null;
         for(ImMap<VariableSingleClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds()) {
-            OrClassSet classSet = getAndClassSet(where).getOr();
-            if(result==null)
-                result = classSet;
-            else
-                result = result.or(classSet);
+            AndClassSet andClassSet = getAndClassSet(where);
+            if (andClassSet != null) {
+                OrClassSet classSet = andClassSet.getOr();
+                if (result == null)
+                    result = classSet;
+                else
+                    result = result.or(classSet);
+            }
         }
         assert result!=null;
         return result;
