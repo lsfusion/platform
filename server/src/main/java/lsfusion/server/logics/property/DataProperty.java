@@ -69,12 +69,6 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         return IsClassProperty.getProperty(interfaces);
     }
 
-    @IdentityInstanceLazy
-    protected CalcPropertyRevImplement<?, String> getValueClassProperty() {
-        assert !noClasses();
-        return IsClassProperty.getProperty(value, "value");
-    }
-
     // для for'а hack, так как там unknown может быть
     protected boolean noClasses() {
         return false;
@@ -85,7 +79,7 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         if(noClasses())
             return SetFact.EMPTY();
         
-        return propChanges.getUsedChanges(SetFact.toSet((CalcProperty) getInterfaceClassProperty().property, (CalcProperty) getValueClassProperty().property));
+        return propChanges.getUsedChanges(SetFact.toSet((CalcProperty) getClassProperty().property, (CalcProperty) getValueClassProperty().property));
     }
 
     @Override
@@ -95,8 +89,8 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
 
     @Override
     protected DataChanges calculateDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, PropertyChanges propChanges) {
-        if(!noClasses())
-            change = change.and(getInterfaceClassProperty().mapExpr(change.getMapExprs(), propChanges, null).getWhere().and(getValueClassProperty().mapExpr(MapFact.singleton("value", change.expr), propChanges, null).getWhere().or(change.expr.getWhere().not())));
+        if(!noClasses()) // нижнее условие по аналогии с canBeChanged
+            change = change.and(getClassProperty().mapExpr(change.getMapExprs(), propChanges, null).getWhere().and(getValueClassProperty().mapExpr(MapFact.singleton("value", change.expr), propChanges, null).getWhere().or(change.expr.getWhere().not())));
         
         if(change.where.isFalse()) // чтобы не плодить пустые change'и
             return DataChanges.EMPTY;

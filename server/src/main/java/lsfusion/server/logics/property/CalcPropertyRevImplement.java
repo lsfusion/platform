@@ -3,9 +3,13 @@ package lsfusion.server.logics.property;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
+
+import java.sql.SQLException;
 
 public class CalcPropertyRevImplement<P extends PropertyInterface, T> {
     
@@ -36,6 +40,10 @@ public class CalcPropertyRevImplement<P extends PropertyInterface, T> {
 
     public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, PropertyChanges changes, WhereBuilder changedWhere) {
         return mapExpr(joinImplement, CalcType.EXPR, changes, changedWhere);
+    }
+
+    public Expr mapExpr(ImMap<T, ? extends Expr> joinImplement, Modifier modifier) throws SQLException, SQLHandledException {
+        return property.getExpr(mapping.join(joinImplement), modifier);
     }
 
     public String toString() {

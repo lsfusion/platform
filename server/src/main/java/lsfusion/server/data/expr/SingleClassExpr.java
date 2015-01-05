@@ -54,6 +54,7 @@ public abstract class SingleClassExpr extends VariableClassExpr {
             for(ImMap<VariableSingleClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds()) {
                 AndClassSet andClassSet = getAndClassSet(where);
                 if (andClassSet == null) {
+                    assert false;
                     return !set.isEmpty();
                 }
                 if(!andClassSet.and(set).isEmpty()) return true; // тут наверное тоже надо getAndClassSet на не null проверять для не полных случаев

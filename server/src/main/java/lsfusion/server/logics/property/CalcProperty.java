@@ -1205,7 +1205,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         Modifier modifier = Property.defaultModifier;
         try {
-            return !getDataChanges(new PropertyChange<T>(mapKeys, getChangeExpr(), getClassProperty().mapExpr(mapKeys, modifier).getWhere()), modifier).isEmpty();
+            Expr changeExpr = getChangeExpr(); // нижнее условие по аналогии с DataProperty
+            return !getDataChanges(new PropertyChange<T>(mapKeys, changeExpr, getClassProperty().mapExpr(mapKeys, modifier).getWhere().and(getValueClassProperty().mapExpr(MapFact.singleton("value", changeExpr), modifier).getWhere())), modifier).isEmpty();
         } catch (SQLException e) { // по идее не должно быть, но на всякий случай
             return false;
         } catch (SQLHandledException e) { // по идее не должно быть
@@ -1503,8 +1504,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             getQuery(CalcType.EXPR, PropertyChanges.EMPTY, PropertyQueryType.FULLCHANGED, MapFact.<T, Expr>EMPTY()).pack();
     }
 
+    @IdentityInstanceLazy
     public CalcPropertyMapImplement<?, T> getClassProperty() {
         return IsClassProperty.getMapProperty(getInterfaceClasses(ClassType.signaturePolicy));
+    }
+
+    @IdentityInstanceLazy
+    protected CalcPropertyRevImplement<?, String> getValueClassProperty() {
+        return IsClassProperty.getProperty(getValueClass(ClassType.signaturePolicy), "value");
     }
 
     public boolean isFull(ImCol<T> checkInterfaces, AlgInfoType algType) {
