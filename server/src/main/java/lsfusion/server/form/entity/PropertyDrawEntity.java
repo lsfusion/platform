@@ -14,7 +14,6 @@ import lsfusion.interop.ClassViewType;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.instance.InstanceFactory;
 import lsfusion.server.form.instance.Instantiable;
@@ -27,7 +26,6 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.ExplicitActionProperty;
-import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -120,8 +118,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return (editActions != null && editActions.containsKey(EDIT_OBJECT)) || propertyObject.property.isEditObjectActionDefined();
     }
     
-    public boolean hasChangeAction(FormEntity entity) {
-        return getEditAction(CHANGE, entity) != null;
+    public ActionPropertyObjectEntity getChangeAction(FormEntity entity) {
+        return getEditAction(CHANGE, entity);
     }
 
     public ActionPropertyObjectEntity<?> getEditAction(String actionId, FormEntity entity) {

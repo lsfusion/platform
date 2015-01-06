@@ -1,9 +1,6 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.Inferred;
 
 abstract public class FormulaProperty<T extends PropertyInterface> extends NoIncrementProperty<T> {
 
@@ -12,7 +9,7 @@ abstract public class FormulaProperty<T extends PropertyInterface> extends NoInc
     }
 
     @Override
-    public boolean check(boolean constraint) {
+    public boolean checkAlwaysNull(boolean constraint) {
         return true;
     }
 }

@@ -1592,7 +1592,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return inferClassValueWhere(inferType).isFalse();
     }
 
-    public boolean check(boolean constraint) {
+    public boolean checkAlwaysNull(boolean constraint) {
         return !isEmpty(AlgType.checkType);
     }
 

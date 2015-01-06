@@ -7,12 +7,14 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenConstraints;
+import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.classes.ActionClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.view.report.ReportDrawField;
+import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassType;
 import lsfusion.server.logics.property.PropertyInterface;
@@ -225,7 +227,7 @@ public class PropertyDrawView extends ComponentView {
         if(entity.askConfirm)
             pool.writeString(outStream, getAskConfirmMessage());
         outStream.writeBoolean(entity.hasEditObjectAction());
-        outStream.writeBoolean(entity.hasChangeAction(pool.context.view.entity));
+        outStream.writeBoolean(hasChangeAction(pool.context));
 
         pool.writeString(outStream, entity.getSID());
         pool.writeString(outStream, toolTip);
@@ -388,5 +390,16 @@ public class PropertyDrawView extends ComponentView {
         }
 
         return msg;
+    }
+    
+    public boolean hasChangeAction(ServerContext context) {
+        ActionPropertyObjectEntity<?> editAction = entity.getChangeAction(context.entity);
+        if (editAction != null) {
+            boolean readOnly = entity.isReadOnly() || (((ActionProperty) editAction.property).checkReadOnly && entity.propertyReadOnly != null && entity.propertyReadOnly.property.checkAlwaysNull(false));
+            ChangePropertySecurityPolicy changePropertySecurityPolicy = context.securityPolicy.property.change;
+            boolean securityPermission = changePropertySecurityPolicy.checkPermission(editAction.property) && changePropertySecurityPolicy.checkPermission(entity.propertyObject.property);
+            return !readOnly && securityPermission;
+        }
+        return false;    
     }
 }
