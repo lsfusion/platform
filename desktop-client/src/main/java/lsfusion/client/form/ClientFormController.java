@@ -321,11 +321,13 @@ public class ClientFormController implements AsyncListener {
         comboBox.addItem(new ClientRegularFilterWrapper(getString("form.all")));
         for (final ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapper(filter));
-            formLayout.addBinding(filter.key, "regularFilter" + filterGroup.getID() + filter.getID(), new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
-                    comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
-                }
-            });
+            if(filter.key != null) {
+                formLayout.addBinding(filter.key, "regularFilter" + filterGroup.getID() + filter.getID(), new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        comboBox.setSelectedItem(new ClientRegularFilterWrapper(filter));
+                    }
+                });
+            }
         }
 
         if (filterGroup.defaultFilterIndex >= 0) {
@@ -370,11 +372,13 @@ public class ClientFormController implements AsyncListener {
 
         addFilterView(filterGroup, checkBox);
 
-        formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.getID() + singleFilter.getID(), new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                checkBox.setSelected(!checkBox.isSelected());
-            }
-        });
+        if(singleFilter.key != null) {
+            formLayout.addBinding(singleFilter.key, "regularFilter" + filterGroup.getID() + singleFilter.getID(), new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    checkBox.setSelected(!checkBox.isSelected());
+                }
+            });
+        }
     }
 
     private void addFilterView(ClientRegularFilterGroup filterGroup, JComponent filterView) {
