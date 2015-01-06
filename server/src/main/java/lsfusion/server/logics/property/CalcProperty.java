@@ -1206,7 +1206,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         Modifier modifier = Property.defaultModifier;
         try {
             Expr changeExpr = getChangeExpr(); // нижнее условие по аналогии с DataProperty
-            return !getDataChanges(new PropertyChange<T>(mapKeys, changeExpr, getClassProperty().mapExpr(mapKeys, modifier).getWhere().and(getValueClassProperty().mapExpr(MapFact.singleton("value", changeExpr), modifier).getWhere())), modifier).isEmpty();
+            Where classWhere = getClassProperty().mapExpr(mapKeys, modifier).getWhere();
+            CalcPropertyRevImplement<?, String> valueProperty = getValueClassProperty();
+            if(valueProperty != null)
+                classWhere = classWhere.and(valueProperty.mapExpr(MapFact.singleton("value", changeExpr), modifier).getWhere()); 
+            return !getDataChanges(new PropertyChange<T>(mapKeys, changeExpr, classWhere), modifier).isEmpty();
         } catch (SQLException e) { // по идее не должно быть, но на всякий случай
             return false;
         } catch (SQLHandledException e) { // по идее не должно быть
@@ -1511,7 +1515,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     @IdentityInstanceLazy
     protected CalcPropertyRevImplement<?, String> getValueClassProperty() {
-        return IsClassProperty.getProperty(getValueClass(ClassType.signaturePolicy), "value");
+        ValueClass valueClass = getValueClass(ClassType.signaturePolicy);
+        if(valueClass instanceof ConcatenateValueClass) // getClassProperty not supported
+            return null;
+        return IsClassProperty.getProperty(valueClass, "value");
     }
 
     public boolean isFull(ImCol<T> checkInterfaces, AlgInfoType algType) {
