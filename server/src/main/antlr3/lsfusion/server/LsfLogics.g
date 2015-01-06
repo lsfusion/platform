@@ -889,7 +889,7 @@ formOrderByList
 	;
 	
 formPropertyDrawWithOrder returns [PropertyDrawEntity property, boolean order = true]
-	:	pDraw=formPropertyDraw { $property = $pDraw.property; } ('ASC' | 'DESC' { $order = false; })?
+	:	pDraw=formPropertyDraw { $property = $pDraw.property; } ('DESC' { $order = false; })?
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
