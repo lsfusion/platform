@@ -7,6 +7,7 @@ import bibliothek.gui.dock.common.action.predefined.CCloseAction;
 import bibliothek.gui.dock.common.event.CDockableAdapter;
 import bibliothek.gui.dock.common.event.CFocusListener;
 import bibliothek.gui.dock.common.intern.CDockable;
+import bibliothek.gui.dock.control.focus.DefaultFocusRequest;
 import com.jhlabs.image.PointFilter;
 import org.jdesktop.jxlayer.JXLayer;
 import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;
@@ -100,7 +101,7 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
         closeAction.setEnabled(true);
         contentLayerUI.setLocked(false);
 
-        getControl().getController().setFocusedDockable(intern(), null, true, true, true);
+        getControl().getController().setFocusedDockable(new DefaultFocusRequest(intern(), null, true, true, true, true));
     }
 
     public void onClosing() {

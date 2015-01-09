@@ -22,10 +22,10 @@ public class ClientFormDockable extends ClientDockable {
         clientForm = new ClientFormController(canonicalName, formSID, remoteForm, navigator) {
             @Override
             public void hideForm() {
+                setVisible(false);
                 if (closeListener != null) {
                     closeListener.formClosed();
                 }
-                setVisible(false);
                 super.hideForm();
             }
 
