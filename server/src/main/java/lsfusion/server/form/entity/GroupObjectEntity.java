@@ -36,6 +36,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
     
     public boolean noClassFilter = false;
 
+    public UpdateType updateType = UpdateType.FIRST;
+
     public GroupObjectEntity() {
     }
 

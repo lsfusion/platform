@@ -11,7 +11,6 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.ObjectEntity;
-import lsfusion.server.form.entity.ObjectUpdateInfo;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
@@ -107,9 +106,5 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
 
     public ImSet<ObjectInstance> getObjectInstances() {
         return SetFact.singleton(this);
-    }
-    
-    public ObjectUpdateInfo getUpdateInfo() {
-        return entity.updateInfo;
     }
 }

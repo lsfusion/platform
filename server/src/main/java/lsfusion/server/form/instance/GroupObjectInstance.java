@@ -33,7 +33,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.GroupObjectProp;
-import lsfusion.server.form.entity.ObjectUpdateInfo;
+import lsfusion.server.form.entity.UpdateType;
 import lsfusion.server.form.instance.filter.AndFilterInstance;
 import lsfusion.server.form.instance.filter.FilterInstance;
 import lsfusion.server.form.instance.filter.OrFilterInstance;
@@ -739,20 +739,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 currentObject = MapFact.EMPTY();
             } else if (updateKeys) {
                 if (objectsUpdated) {
-                    for (ObjectInstance obj : getOrderObjects()) { // проставляем FIRST или LAST, если есть
-                        ObjectUpdateInfo info = obj.getUpdateInfo();
-                        orderSeeks = info.isLast() ? SEEK_END : info.isFirst() ? SEEK_HOME : null;
-                    }
-                    
-                    // добавляем поиск статичных объектов
-                    ImMap<ObjectInstance, DataObject> staticObjs = getStaticObjectsSeek(false);
-                    if (orderSeeks == null) {
-                        orderSeeks = new SeekObjects(false, staticObjs);
-                    } else {
-                        for (int i = 0; i < staticObjs.size(); i++) {
-                            orderSeeks = orderSeeks.add(staticObjs.getKey(i), staticObjs.getValue(i), false);
-                        }
-                    }
+                    orderSeeks = entity.updateType == UpdateType.LAST ? SEEK_END : entity.updateType == UpdateType.FIRST ? SEEK_HOME : null;
                 } else {  // изменились фильтры, порядки, вид, ищем текущий объект
                     orderSeeks = new SeekObjects(false, currentObject);
                 }
@@ -1062,26 +1049,6 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 return key.getType();
             }
         });                
-    }
-    
-    public ImMap<ObjectInstance, DataObject> getStaticObjectsSeek(boolean checkNoUpdate) {
-        MExclMap<ObjectInstance, DataObject> result = MapFact.mExclMap();
-        for (ObjectInstance object : objects) {
-            ObjectUpdateInfo updateInfo = object.getUpdateInfo();
-            if (updateInfo.isStatic() && (!checkNoUpdate || !updateInfo.onUpdate)) {
-                Object value = null;
-                if (updateInfo.staticObject) {
-                    if (object.getBaseClass() instanceof ConcreteCustomClass) {
-                        value = ((ConcreteCustomClass) object.getBaseClass()).getObjectID((String) updateInfo.literal);
-                    }
-                } else {
-                    value = updateInfo.literal;
-                }
-                DataObject dataObject = new DataObject(value, object.getCurrentClass());
-                result.exclAdd(object, dataObject);
-            }
-        }
-        return result.immutable();
     }
 
     public class RowBackgroundReaderInstance implements PropertyReaderInstance {

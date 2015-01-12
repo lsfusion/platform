@@ -475,7 +475,7 @@ formGroupObjectDeclaration returns [ScriptingGroupObject groupObject]
 formGroupObjectOptions[ScriptingGroupObject groupObject]
 	:	(	viewType=formGroupObjectViewType { $groupObject.setViewType($viewType.type, $viewType.isInitType); }
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
-		|	update=formGroupObjectUpdateList { $groupObject.setUpdate($update.infos); }
+		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
 		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.isRightNeighbour); }
 		)*
 	;
@@ -517,23 +517,17 @@ classViewType returns [ClassViewType type]
 formGroupObjectPageSize returns [Integer value = null]
 	:	'PAGESIZE' size=intLiteral { $value = $size.val; }
 	;
-
-formGroupObjectUpdateList returns [List<ObjectUpdateInfo> infos = new ArrayList<ObjectUpdateInfo>()]
-	:	info=formGroupObjectUpdate { infos.add(new ObjectUpdateInfo($info.updateType, $info.value, $info.isStaticObject)); }
-		(',' info=formGroupObjectUpdate { infos.add(new ObjectUpdateInfo($info.updateType, $info.value, $info.isStaticObject)); })*
-	;
 	
 formGroupObjectRelativePosition returns [GroupObjectEntity groupObject, boolean isRightNeighbour]
 	:	'AFTER' go=formGroupObjectEntity { $groupObject = $go.groupObject; $isRightNeighbour = true; }
 	|	'BEFORE' go=formGroupObjectEntity { $groupObject = $go.groupObject; $isRightNeighbour = false; }
 	;
 
-formGroupObjectUpdate returns [ObjectUpdateInfo.UpdateType updateType, Object value, boolean isStaticObject]
+formGroupObjectUpdate returns [UpdateType updateType]
 @init {
 }
-	:	'FIRST' { $updateType = ObjectUpdateInfo.UpdateType.FIRST; }
-	|	'LAST' { $updateType = ObjectUpdateInfo.UpdateType.LAST; }
-	|	'STATIC' lit=literal { $updateType = ObjectUpdateInfo.UpdateType.STATIC; $value = $lit.value; $isStaticObject = $lit.cls == ScriptingLogicsModule.ConstType.STATIC; }
+	:	'FIRST' { $updateType = UpdateType.FIRST; }
+	|	'LAST' { $updateType = UpdateType.LAST; }
 	;
 
 formSingleGroupObjectDeclaration returns [String name, String className, String caption, ActionPropertyObjectEntity event] 

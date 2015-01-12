@@ -249,25 +249,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
 
         for (GroupObjectInstance groupObject : groupObjects) {
-            for (ObjectInstance object : groupObject.objects) {
-                ObjectUpdateInfo updateInfo = object.getUpdateInfo();
-                if (!updateInfo.onUpdate && (updateInfo.isLast() || updateInfo.isFirst())) { // проставляем FIRST или LAST, если есть
-                    groupObject.seek(updateInfo.isLast());
-                }
-            }
-
-            ImMap<ObjectInstance, DataObject> staticObjs = groupObject.getStaticObjectsSeek(true);
-            for (int i = 0; i < staticObjs.size(); i++) {
-                groupObject.addSeek(staticObjs.getKey(i), staticObjs.getValue(i), false);
-            }
-            
-            for (ObjectInstance object : groupObject.objects) {
-                // ставим на объекты из cache'а
-                if (object.getBaseClass() instanceof CustomClass && classListener != null) {
-                    CustomClass cacheClass = (CustomClass) object.getBaseClass();
-                    Integer objectID = classListener.getObject(cacheClass);
-                    if (objectID != null) {
-                        groupObject.addSeek(object, session.getDataObject(cacheClass, objectID), false);
+            if (!groupObject.fixedFilters.isEmpty()) {
+                groupObject.seek(groupObject.entity.updateType == UpdateType.LAST);
+            } else {
+                for (ObjectInstance object : groupObject.objects) {
+                    // ставим на объекты из cache'а
+                    if (object.getBaseClass() instanceof CustomClass && classListener != null) {
+                        CustomClass cacheClass = (CustomClass) object.getBaseClass();
+                        Integer objectID = classListener.getObject(cacheClass);
+                        if (objectID != null) {
+                            groupObject.addSeek(object, session.getDataObject(cacheClass, objectID), false);
+                        }
                     }
                 }
             }

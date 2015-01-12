@@ -95,15 +95,9 @@ public class ScriptingFormEntity {
             if (groupObject.pageSize != null) {
                 groupObj.pageSize = groupObject.pageSize;
             }
-
-            if (groupObject.updateInfos != null) {
-                if (groupObject.updateInfos.size() != groupObject.objects.size()) {
-                    LM.getErrLog().emitElementCountError(LM.getParser(), "Objects update modifier(s)", groupObject.objects.size(), groupObject.updateInfos.size());
-                } else {
-                    for (ObjectEntity objectEntity : groupObj.getOrderObjects()) {
-                        objectEntity.updateInfo = groupObject.updateInfos.get(groupObj.getOrderObjects().indexOf(objectEntity));
-                    }
-                }
+            
+            if (groupObject.updateType != null) {
+                groupObj.updateType = groupObject.updateType;
             }
 
             addGroupObjectEntity(groupName, groupObj, groupObject.neighbourGroupObject, groupObject.isRightNeighbour, version);
