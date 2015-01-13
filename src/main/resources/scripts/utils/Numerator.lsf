@@ -90,9 +90,23 @@ META defineNumberedAbstract(class)
         
 END
 
+useUpperedSeries 'Использовать верхний регистр для серии' = DATA BOOLEAN (); 
+
+EXTEND FORM options
+    PROPERTIES () useUpperedSeries
+;
+EXTEND DESIGN options{
+    commons {
+        ADD PROPERTY (useUpperedSeries());
+    }    
+}
+
 META defineNumbered(class)
     number###class 'Номер' = DATA STRING[18] (class) IN numbered MINCHARWIDTH 7;
-    series###class 'Серия' = DATA STRING[2] (class) IN numbered FIXEDCHARWIDTH 3; 
+    series###class 'Серия' = DATA STRING[2] (class) IN numbered FIXEDCHARWIDTH 3;
+     
+    WHEN useUpperedSeries() AND CHANGED(series###class(o))
+         DO series###class(o) <- upper(series###class(o));
 
     seriesNumber###class 'Серия/Номер' (o) = 
         CONCAT '', series###class(o), number###class(o) 
