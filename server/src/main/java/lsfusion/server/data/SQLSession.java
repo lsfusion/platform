@@ -22,6 +22,9 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.query.DistinctKeys;
+import lsfusion.server.data.expr.query.PropStat;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.extra.BinaryWhere;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.sql.DataAdapter;
@@ -576,9 +579,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 //    
     private int sessionCounter = 0;
 
-    public SessionTable createTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> queryClasses, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
+    public SessionTable createTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, Integer count, DistinctKeys<KeyField> distinctKeys, ImMap<PropertyField, PropStat> statProps, FillTemporaryTable fill, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> queryClasses, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
         Result<Integer> actual = new Result<Integer>();
-        return new SessionTable(getTemporaryTable(keys, properties, fill, count, actual, owner, opOwner), keys, properties, queryClasses.first, queryClasses.second, actual.result).checkClasses(this, null);
+        return new SessionTable(getTemporaryTable(keys, properties, fill, count, actual, owner, opOwner), keys, properties, queryClasses.first, queryClasses.second, actual.result, distinctKeys, statProps).checkClasses(this, null);
     }
 
     private final Set<String> transactionTables = SetFact.mAddRemoveSet();
@@ -1747,7 +1750,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     // в явную без query так как часто выполняется
-    public void readSingleValues(SessionTable table, Result<ImMap<KeyField, Object>> keyValues, Result<ImMap<PropertyField, Object>> propValues, OperationOwner opOwner) throws SQLException {
+    public void readSingleValues(SessionTable table, Result<ImMap<KeyField, Object>> keyValues, Result<ImMap<PropertyField, Object>> propValues, Result<DistinctKeys<KeyField>> statKeys, Result<ImMap<PropertyField, PropStat>> statProps, OperationOwner opOwner) throws SQLException {
         ImSet<KeyField> tableKeys = table.getTableKeys();
         ExecuteEnvironment env = new ExecuteEnvironment();
 
@@ -1759,12 +1762,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 mReadKeys.exclAdd(getCntDist(field.getName()), syntax.getCountDistinct(fieldName));
                 field.type.readDeconc(syntax.getAnyValueFunc() + "(" + fieldName + ")", field.getName(), mReadKeys, syntax, env);
             }
-        else 
-            if(table.properties.isEmpty()) {
+        else {
+            statKeys.set(new DistinctKeys<KeyField>(tableKeys.isEmpty() ? MapFact.<KeyField, Stat>EMPTY() : MapFact.singleton(tableKeys.single(), new Stat(table.count))));
+            if (table.properties.isEmpty()) {
                 keyValues.set(MapFact.<KeyField, Object>EMPTY());
                 propValues.set(MapFact.<PropertyField, Object>EMPTY());
+                statProps.set(MapFact.<PropertyField, PropStat>EMPTY());
                 return;
             }
+        }
         ImMap<String, String> readKeys = mReadKeys.immutable();
 
         MExclMap<String, String> mReadProps = MapFact.mExclMap();
@@ -1794,28 +1800,34 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 int totalCnt = readInt(result.getObject(getCnt("")));
                 if(tableKeys.size() > 1) {
                     ImFilterValueMap<KeyField, Object> mKeyValues = tableKeys.mapFilterValues();
+                    ImFilterValueMap<KeyField, Stat> mStatKeys = tableKeys.mapFilterValues();
                     for(int i=0,size=tableKeys.size();i<size;i++) {
                         KeyField tableKey = tableKeys.get(i);
                         String fieldName = tableKey.getName();
-                        Integer cnt = readInt(result.getObject(getCntDist(fieldName)));
+                        int cnt = readInt(result.getObject(getCntDist(fieldName)));
                         if(cnt == 1)
                             mKeyValues.mapValue(i, tableKey.type.read(result, syntax, fieldName));
+                        mStatKeys.mapValue(i, new Stat(cnt));
                     }
                     keyValues.set(mKeyValues.immutableValue());
+                    statKeys.set(new DistinctKeys<KeyField>(mStatKeys.immutableValue()));
                 } else
                     keyValues.set(MapFact.<KeyField, Object>EMPTY());
 
                 ImFilterValueMap<PropertyField, Object> mvPropValues = table.properties.mapFilterValues();
+                ImFilterValueMap<PropertyField, PropStat> mvStatProps = table.properties.mapFilterValues();
                 for(int i=0,size=table.properties.size();i<size;i++) {
                     PropertyField tableProperty = table.properties.get(i);
                     String fieldName = tableProperty.getName();
-                    Integer cntDistinct = readInt(result.getObject(getCntDist(fieldName)));
+                    int cntDistinct = readInt(result.getObject(getCntDist(fieldName)));
                     if(cntDistinct==0)
                         mvPropValues.mapValue(i, null);
                     if(cntDistinct==1 && totalCnt==readInt(result.getObject(getCnt(fieldName))))
                         mvPropValues.mapValue(i, tableProperty.type.read(result, syntax, fieldName));
+                    mvStatProps.mapValue(i, new PropStat(new Stat(cntDistinct)));
                 }
                 propValues.set(mvPropValues.immutableValue());
+                statProps.set(mvStatProps.immutableValue());
 
                 assert !result.next();
             } finally {

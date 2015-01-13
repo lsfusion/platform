@@ -7,7 +7,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractValuesContext;
 import lsfusion.server.caches.InnerContext;
@@ -16,6 +15,8 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.query.DistinctKeys;
+import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.query.AbstractJoin;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.Join;
@@ -132,7 +133,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         final OperationOwner opOwner = env.getOpOwner();
 
         final IQuery<KeyField, PropertyField> insertQuery = query;
-        SessionTable table = session.createTemporaryTable(keys.filterOrderIncl(query.getMapKeys().keys()), query.getProperties(), null, new FillTemporaryTable() {
+        SessionTable table = session.createTemporaryTable(keys.filterOrderIncl(query.getMapKeys().keys()), query.getProperties(), null, null, null, new FillTemporaryTable() { // статистика обновится в readSingleValues / removeFields
             public Integer fill(String name) throws SQLException, SQLHandledException {
 //                ServerLoggers.assertLog(session.getCount(name, opOwner)==0, "TEMPORARY TABLE SHOULD BE EMPTY");
                 return session.insertSessionSelect(name, insertQuery, env, owner);
@@ -142,16 +143,16 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         // нужно прочитать то что записано
         if(table.count > SessionRows.MAX_ROWS) {
             if(!Settings.get().isDisableReadSingleValues()) { // чтение singleValues
-                Result<ImMap<KeyField, Object>> actualKeyValues = new Result<ImMap<KeyField, Object>>();
-                Result<ImMap<PropertyField, Object>> actualPropValues = new Result<ImMap<PropertyField, Object>>();
-                session.readSingleValues(table, actualKeyValues, actualPropValues, opOwner);
+                Result<ImMap<KeyField, Object>> actualKeyValues = new Result<ImMap<KeyField, Object>>(); Result<DistinctKeys<KeyField>> statKeys = new Result<DistinctKeys<KeyField>>();
+                Result<ImMap<PropertyField, Object>> actualPropValues = new Result<ImMap<PropertyField, Object>>(); Result<ImMap<PropertyField, PropStat>> statProps = new Result<ImMap<PropertyField, PropStat>>();
+                session.readSingleValues(table, actualKeyValues, actualPropValues, statKeys, statProps, opOwner);
                 keyValues.set(baseClass.getDataObjects(session, actualKeyValues.result, table.classes.getCommonClasses(actualKeyValues.result.keys()), opOwner).addExcl(keyValues.result));
                 final ImMap<PropertyField,ClassWhere<Field>> fPropertyClasses = table.propertyClasses;
                 propValues.set(baseClass.getObjectValues(session, actualPropValues.result, actualPropValues.result.mapKeyValues(new GetValue<AndClassSet, PropertyField>() {
                     public AndClassSet getMapValue(PropertyField value) {
                         return fPropertyClasses.get(value).getCommonClass(value);
                     }}), opOwner).addExcl(propValues.result));
-                table = table.removeFields(session, actualKeyValues.result.keys(), actualPropValues.result.keys(), owner, opOwner);
+                table = table.removeFields(session, actualKeyValues.result.keys(), actualPropValues.result.keys(), owner, opOwner).updateKeyPropStats(statKeys.result, statProps.result);
             }
 
             return new SessionDataTable(table, keys, keyValues.result, propValues.result);

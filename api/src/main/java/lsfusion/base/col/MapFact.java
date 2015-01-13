@@ -660,4 +660,14 @@ public class MapFact {
         }
         return mResult.immutableOrder();
     }
+
+    private final static GetValue<ImSet<Object>, Object> toSingleton = new GetValue<ImSet<Object>, Object>() {
+            public ImSet<Object> getMapValue(Object value) {
+                return SetFact.singleton(value);
+            }
+        };
+
+    public static <V> GetValue<ImSet<V>, V> toSingleton() {
+        return BaseUtils.immutableCast(toSingleton);
+    }
 }
