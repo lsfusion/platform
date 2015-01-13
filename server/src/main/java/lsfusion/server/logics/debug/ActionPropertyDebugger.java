@@ -92,7 +92,8 @@ public class ActionPropertyDebugger implements DebuggerService {
     private ActionPropertyDebugger() {
         try {
             DebuggerService stub = (DebuggerService) UnicastRemoteObject.exportObject(this, 0);
-            Registry registry = LocateRegistry.createRegistry(1299);
+            int port = SystemProperties.getDebuggerPort();
+            Registry registry = LocateRegistry.createRegistry(port);
             registry.bind("lsfDebuggerService", stub);
         } catch (Exception e) {
             Throwables.propagate(e);

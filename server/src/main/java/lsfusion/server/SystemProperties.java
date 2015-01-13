@@ -1,6 +1,7 @@
 package lsfusion.server;
 
 public class SystemProperties {
+    private static final int DEFAULT_DEBUGGER_PORT = 1299;
     
     public static final boolean isActionDebugEnabled = System.getProperty("lsfusion.server.debug.actions") != null;
 
@@ -25,5 +26,16 @@ public class SystemProperties {
 
     public static void enableMailEncodeFileName() {
         System.setProperty("mail.mime.encodefilename", "true");
+    }
+    
+    public static int getDebuggerPort() {
+        String stringPort = System.getProperty("lsfusion.debugger.port");
+        try {
+            Integer port = Integer.valueOf(stringPort);
+            if (port != null) {
+                return port;
+            }
+        } catch (NumberFormatException ignored) {}
+        return DEFAULT_DEBUGGER_PORT;
     }
 }
