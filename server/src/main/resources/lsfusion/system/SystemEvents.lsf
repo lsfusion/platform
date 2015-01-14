@@ -150,7 +150,7 @@ EXTEND DESIGN connections{
 
 FORM  exceptions 'Журнал ошибок'
 
-    OBJECTS e=Exception
+    OBJECTS e=Exception LAST
     PROPERTIES(e) FOREGROUND foregroundNonFatalException(e) BACKGROUND backgroundNonFatalException(e) READONLY messageException, clientClientException FORCE GRID, loginClientException FORCE GRID, typeException, dateException, reqIdHandledException, countNonFatalHandledException, abandonedNonFatalHandledException
     PROPERTIES(e) READONLY erTraceException FORCE PANEL
 ;
