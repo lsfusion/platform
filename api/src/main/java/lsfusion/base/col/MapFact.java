@@ -670,4 +670,14 @@ public class MapFact {
     public static <V> GetValue<ImSet<V>, V> toSingleton() {
         return BaseUtils.immutableCast(toSingleton);
     }
+
+    private final static GetValue<MSet<Object>, Object> mSet = new GetValue<MSet<Object>, Object>() {
+        public MSet<Object> getMapValue(Object value) {
+            return SetFact.mSet();
+        }
+    };
+
+    public static <K, V> GetValue<MSet<V>, K> mSet() {
+        return BaseUtils.immutableCast(mSet);
+    }
 }

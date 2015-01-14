@@ -1,14 +1,14 @@
 package lsfusion.server.data;
 
 import lsfusion.base.*;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.abs.ASet;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.SymmAddValue;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.AbstractValuesContext;
@@ -89,29 +89,34 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
 
-    private static Pair<DistinctKeys<KeyField>, ImMap<PropertyField, PropStat>> getStats(final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) {
-        MMap<KeyField, ImSet<DataObject>> distinctKeyValues = MapFact.mMap(ASet.<KeyField, DataObject>addMergeSet());
-        MMap<PropertyField, ImSet<ObjectValue>> distinctPropValues = MapFact.mMap(ASet.<PropertyField, ObjectValue>addMergeSet());
+    private static Pair<DistinctKeys<KeyField>, ImMap<PropertyField, PropStat>> getStats(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) {
+        final ImList<MSet<DataObject>> distinctKeyValues = ListFact.toList(keys.size(), ListFact.<DataObject>mSet());
+        ImOrderSet<PropertyField> propList = properties.toOrderSet();
+        final ImList<MSet<ObjectValue>> distinctPropValues = ListFact.toList(propList.size(), ListFact.<ObjectValue>mSet());
+
         for(int i=0,size=rows.size();i<size;i++) {
-            distinctKeyValues.addAll(rows.getKey(i).mapValues(MapFact.<DataObject>toSingleton()));
-            distinctPropValues.addAll(rows.getValue(i).mapValues(MapFact.<ObjectValue>toSingleton()));
+            ImMap<KeyField, DataObject> keyValues = rows.getKey(i);
+            for(int j=0,sizeJ=keys.size();j<sizeJ;j++)
+                distinctKeyValues.get(j).add(keyValues.get(keys.get(j)));
+            ImMap<PropertyField, ObjectValue> propValues = rows.getValue(i);
+            for(int j=0,sizeJ=propList.size();j<sizeJ;j++)
+                distinctPropValues.get(j).add(propValues.get(propList.get(j)));
         }
-        DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>(distinctKeyValues.immutable().mapValues(new GetValue<Stat, ImSet<DataObject>>() {
-            public Stat getMapValue(ImSet<DataObject> value) {
-                return new Stat(value.size());
+        DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>(keys.mapOrderValues(new GetIndex<Stat>() {
+            public Stat getMapValue(int i) {
+                return new Stat(distinctKeyValues.get(i).size());
             }}));
-        ImMap<PropertyField, PropStat> distinctProps = distinctPropValues.immutable().mapValues(new GetValue<PropStat, ImSet<ObjectValue>>() {
-            public PropStat getMapValue(ImSet<ObjectValue> value) {
-                return new PropStat(new Stat(value.size()));
-            }
-        });
+        ImMap<PropertyField, PropStat> distinctProps = propList.mapOrderValues(new GetIndex<PropStat>() {
+            public PropStat getMapValue(int i) {
+                return new PropStat(new Stat(distinctPropValues.get(i).size()));
+            }});
         return new Pair<DistinctKeys<KeyField>, ImMap<PropertyField, PropStat>>(distinctKeys, distinctProps);
     }
 
     // создает таблицу batch'ем
     public static SessionTable create(final SQLSession session, final ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows, final TableOwner owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
         // прочитаем статистику
-        Pair<DistinctKeys<KeyField>, ImMap<PropertyField, PropStat>> stats = getStats(rows);
+        Pair<DistinctKeys<KeyField>, ImMap<PropertyField, PropStat>> stats = getStats(keys, properties, rows);
 
         // прочитаем классы
         return session.createTemporaryTable(keys, properties, rows.size(), stats.first, stats.second, new FillTemporaryTable() {

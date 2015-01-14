@@ -4,10 +4,12 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.implementations.ArCol;
 import lsfusion.base.col.implementations.order.ArList;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 
 import java.util.*;
 
@@ -191,4 +193,15 @@ public class ListFact {
         for(int i=0,size=list.size();i<size;i++)
             mList.add(list.get(i));
     }
+
+    private final static GetIndex<MSet<Object>> mSet = new GetIndex<MSet<Object>>() {
+        public MSet<Object> getMapValue(int i) {
+            return SetFact.mSet();
+        }
+    };
+
+    public static <V> GetIndex<MSet<V>> mSet() {
+        return BaseUtils.immutableCast(mSet);
+    }
+
 }
