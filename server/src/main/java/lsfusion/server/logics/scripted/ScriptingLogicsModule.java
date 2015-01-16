@@ -527,7 +527,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ScriptingFormEntity(this, form);
     }
 
-    public LCP addScriptedDProp(String returnClass, List<String> paramClasses, boolean sessionProp, boolean innerProp, boolean isLocal) throws ScriptingErrorLog.SemanticErrorException {
+    public LCP addScriptedDProp(String returnClass, List<String> paramClasses, boolean localProp, boolean innerProp, boolean isLocalScope) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedDProp(" + returnClass + ", " + paramClasses + ", " + innerProp + ");");
 
         ValueClass value = findClass(returnClass);
@@ -536,8 +536,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             params[i] = findClass(paramClasses.get(i));
         }
 
-        if (sessionProp) {
-            return addSDProp("", isLocal, value, params);
+        if (localProp) {
+            return addSDProp("", isLocalScope, value, params);
         } else {
             if (innerProp) {
                 return addDProp("", value, params);

@@ -25,7 +25,7 @@ GROUP recognize 'Идентифицирующие свойства' : base;
 GROUP drillDown 'Действия детализации' : root;
 GROUP propertyPolicy 'Свойства политики безопасности' : root;
 
-canceled 'Canceled' = DATA SESSION BOOLEAN ();
+canceled 'Canceled' = DATA LOCAL BOOLEAN ();
 
 apply = ACTION APPLY {};
 cancel = ACTION CUSTOM 'lsfusion.server.logics.property.actions.flow.CancelActionProperty' ();
@@ -93,29 +93,29 @@ reportToStretch 'Растягивать поле по вертикали' = NOT 
 
 hashModules 'Хэш модулей' = DATA VARSTRING[200] ();
   
-addedObject() = DATA SESSION Object ();
-confirmed() = DATA SESSION BOOLEAN ();
-requestCanceled() = DATA SESSION BOOLEAN ();
-formResult() = DATA SESSION FormResult ();
+addedObject() = DATA LOCAL Object ();
+confirmed() = DATA LOCAL BOOLEAN ();
+requestCanceled() = DATA LOCAL BOOLEAN ();
+formResult() = DATA LOCAL FormResult ();
 
 META defineAnyValue(name, param) 
-    name##Object = DATA SESSION Object (param);
-    name##String = DATA SESSION STRING[2000] (param);
-    name##Integer = DATA SESSION INTEGER (param);
-    name##Long = DATA SESSION LONG (param);
-    name##Double = DATA SESSION DOUBLE (param);
-    name##Numeric = DATA SESSION NUMERIC[20,7] (param);
-    name##Year = DATA SESSION YEAR (param);
-    name##DateTime = DATA SESSION DATETIME (param);
-    name##Logical = DATA SESSION BOOLEAN (param);
-    name##Date = DATA SESSION DATE (param);
-    name##Time = DATA SESSION TIME (param);
-    name##Color = DATA SESSION COLOR (param);
-    name##WordFile = DATA SESSION WORDFILE (param);
-    name##ImageFile = DATA SESSION IMAGEFILE (param);
-    name##PdfFile = DATA SESSION PDFFILE (param);
-    name##CustomFile = DATA SESSION CUSTOMFILE (param);
-    name##ExcelFile = DATA SESSION EXCELFILE (param);
+    name##Object = DATA LOCAL Object (param);
+    name##String = DATA LOCAL STRING[2000] (param);
+    name##Integer = DATA LOCAL INTEGER (param);
+    name##Long = DATA LOCAL LONG (param);
+    name##Double = DATA LOCAL DOUBLE (param);
+    name##Numeric = DATA LOCAL NUMERIC[20,7] (param);
+    name##Year = DATA LOCAL YEAR (param);
+    name##DateTime = DATA LOCAL DATETIME (param);
+    name##Logical = DATA LOCAL BOOLEAN (param);
+    name##Date = DATA LOCAL DATE (param);
+    name##Time = DATA LOCAL TIME (param);
+    name##Color = DATA LOCAL COLOR (param);
+    name##WordFile = DATA LOCAL WORDFILE (param);
+    name##ImageFile = DATA LOCAL IMAGEFILE (param);
+    name##PdfFile = DATA LOCAL PDFFILE (param);
+    name##CustomFile = DATA LOCAL CUSTOMFILE (param);
+    name##ExcelFile = DATA LOCAL EXCELFILE (param);
 END
 
 @defineAnyValue(requested, );

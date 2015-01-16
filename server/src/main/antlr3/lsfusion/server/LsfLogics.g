@@ -1276,16 +1276,16 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 
 dataPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
-	boolean sessionProp = false;
+	boolean localProp = false;
 }
 @after {
 	if (inPropParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, sessionProp, innerPD, false);
+		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, localProp, innerPD, false);
 	}
 }
 	:	'DATA'
-		('SESSION' { sessionProp = true; } )?
+		('LOCAL' { localProp = true; } )?
 		returnClass=classId
 		'('
 			paramClassNames=classIdList

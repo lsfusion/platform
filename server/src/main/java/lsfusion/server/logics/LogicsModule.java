@@ -506,13 +506,13 @@ public abstract class LogicsModule {
 
     // ------------------- Scripted DATA ----------------- //
 
-    protected LCP addSDProp(String caption, boolean isLocal, ValueClass value, ValueClass... params) {
-        return addSDProp(null, false, caption, isLocal, value, params);
+    protected LCP addSDProp(String caption, boolean isLocalScope, ValueClass value, ValueClass... params) {
+        return addSDProp(null, false, caption, isLocalScope, value, params);
     }
 
-    protected LCP addSDProp(AbstractGroup group, boolean persistent, String caption, boolean isLocal, ValueClass value, ValueClass... params) {
+    protected LCP addSDProp(AbstractGroup group, boolean persistent, String caption, boolean isLocalScope, ValueClass value, ValueClass... params) {
         SessionDataProperty prop = new SessionDataProperty(caption, params, value);
-        if (isLocal) {
+        if (isLocalScope) {
             prop.setLocal(true);
         }
         return addProperty(group, persistent, new LCP<ClassPropertyInterface>(prop));

@@ -51,7 +51,7 @@ isLockedCustomUser 'Заблокирован' = DATA BOOLEAN (CustomUser);
 loginCustomUser 'Логин' = DATA STRING[30] (CustomUser);
 customUserLogin 'Обычный пользователь' (login) = GROUP AGGR customUser BY loginCustomUser(customUser) WHERE customUser IS CustomUser;
 sha256PasswordCustomUser 'Пароль' = DATA VARSTRING[100] (CustomUser) ECHO;
-calculatedHash 'Значение хэш' = DATA SESSION VARSTRING[100] ();
+calculatedHash 'Значение хэш' = DATA LOCAL VARSTRING[100] ();
 forbidChangePasswordCustomUser 'Запретить пользователю изменять пароль' = DATA BOOLEAN (CustomUser);
 forbidEditProfileCustomUser 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (CustomUser);
 
@@ -70,7 +70,7 @@ baseDNLDAP 'Base DN' = DATA VARSTRING[100] ();
 userDNSuffixLDAP 'Суффикс для User DN' = DATA VARSTRING[100] ();
 
 locked = DATA User (Object);
-lockResult = DATA SESSION BOOLEAN ();
+lockResult = DATA LOCAL BOOLEAN ();
 
 lock(object) = ACTION NEWSESSION (lockResult) {    
     lockResult() <- NULL;
@@ -146,7 +146,7 @@ EXTEND DESIGN editProfile {
 
 // ---------------- Действия по изменению пользователя ------------------- //
 
-userChanged() = DATA SESSION BOOLEAN();
+userChanged() = DATA LOCAL BOOLEAN();
 
 // Смена пользователя по логину и паролю
 FORM reloginLoginUser 'Сменить пользователя'

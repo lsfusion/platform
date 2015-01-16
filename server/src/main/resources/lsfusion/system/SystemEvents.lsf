@@ -96,7 +96,7 @@ CLASS Session 'Сессия';
 TABLE session(Session);
 TABLE sessionObject(Session, Object);
 
-currentSession = DATA SESSION Session();
+currentSession = DATA LOCAL Session();
 
 quantityAddedClassesSession 'Количество добавленных классов' = DATA INTEGER (Session);
 quantityRemovedClassesSession 'Количество удалённых классов' = DATA INTEGER (Session);

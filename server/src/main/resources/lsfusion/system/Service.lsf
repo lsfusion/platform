@@ -168,8 +168,8 @@ makeHeapDump 'Сделать Heap Dump' = ACTION CUSTOM 'lsfusion.server.logics.
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
 
-nameReflectionSetting 'Имя настройки' = DATA SESSION VARSTRING[100] ();
-valueReflectionSetting 'Значение настройки' = DATA SESSION VARSTRING[100] ();
+nameReflectionSetting 'Имя настройки' = DATA LOCAL VARSTRING[100] ();
+valueReflectionSetting 'Значение настройки' = DATA LOCAL VARSTRING[100] ();
 
 readValueReflectionSetting = ACTION CUSTOM 'lsfusion.server.logics.service.ReadValueReflectionSettingActionProperty' ();
 saveValueReflectionSetting = ACTION CUSTOM 'lsfusion.server.logics.service.SaveValueReflectionSettingActionProperty' ();
