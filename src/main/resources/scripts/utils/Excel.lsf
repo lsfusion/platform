@@ -13,7 +13,7 @@ idTemplate 'Идентификатор' = DATA STRING[20] (Template) MINCHARWIDT
 
 processTemplate = ACTION CUSTOM 'lsfusion.erp.utils.excel.ProcessTemplateActionProperty' (Template);
 
-resultTemplate = DATA SESSION EXCELFILE ();
+resultTemplate = DATA LOCAL EXCELFILE ();
 openResultTemplate () = ACTION OPENFILE resultTemplate();
 
 openProcessTemplate 'Сгенерировать документ' = ACTION (template) {
@@ -26,7 +26,7 @@ TABLE templateEntry(TemplateEntry);
 
 templateTemplateEntry 'Шаблон' = DATA Template (TemplateEntry);
 keyTemplateEntry 'Параметр' = DATA VARSTRING[100](TemplateEntry);
-valueTemplateEntry 'Значение' = DATA SESSION TEXT (TemplateEntry);
+valueTemplateEntry 'Значение' = DATA LOCAL TEXT (TemplateEntry);
 
 FORM template 'Шаблон Excel'
 

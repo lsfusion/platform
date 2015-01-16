@@ -7,13 +7,13 @@ getAllTasksAction 'Обновить список всех процессов' = 
 cancelActiveTaskAction 'Снять процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelActiveTaskActionProperty' (INTEGER);  
 killActiveTaskAction 'Убить процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillActiveTaskActionProperty' (INTEGER);  
 
-previousCountActiveTask =  DATA SESSION INTEGER();
-idActiveTask 'ID процесса' = DATA SESSION INTEGER (INTEGER);
-queryActiveTask 'Запрос' = DATA SESSION TEXT (INTEGER);
-computerActiveTask 'Компьютер' = DATA SESSION VARSTRING[100] (INTEGER);
-userActiveTask 'Пользователь' = DATA SESSION VARSTRING[100] (INTEGER);
-addressUserActiveTask 'Адрес пользователя' = DATA SESSION VARSTRING[100] (INTEGER);
-dateTimeActiveTask 'Время запуска' = DATA SESSION DATETIME (INTEGER);
+previousCountActiveTask =  DATA LOCAL INTEGER();
+idActiveTask 'ID процесса' = DATA LOCAL INTEGER (INTEGER);
+queryActiveTask 'Запрос' = DATA LOCAL TEXT (INTEGER);
+computerActiveTask 'Компьютер' = DATA LOCAL VARSTRING[100] (INTEGER);
+userActiveTask 'Пользователь' = DATA LOCAL VARSTRING[100] (INTEGER);
+addressUserActiveTask 'Адрес пользователя' = DATA LOCAL VARSTRING[100] (INTEGER);
+dateTimeActiveTask 'Время запуска' = DATA LOCAL DATETIME (INTEGER);
 
 FORM activeTasks 'Активные процессы' 
     OBJECTS i = INTEGER
@@ -25,12 +25,12 @@ FORM activeTasks 'Активные процессы'
 
 getActiveBlocksAction 'Обновить список блокировок' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveBlocksActionProperty' () TOOLBAR;  
 
-previousCountActiveBlock =  DATA SESSION INTEGER();
-processIdActiveBlock 'ID процесса блокировки' = DATA SESSION INTEGER (INTEGER);
-typeLockedObjectActiveBlock 'Тип заблокированного объекта' = DATA SESSION VARSTRING[100] (INTEGER);
-idLockedObjectActiveBlock 'ID заблокированного объекта' = DATA SESSION VARSTRING[100] (INTEGER);
-modeActiveBlock 'Уровень блокировки' = DATA SESSION VARSTRING[100] (INTEGER);
-grantedActiveBlock 'Granted' = DATA SESSION BOOLEAN (INTEGER);
+previousCountActiveBlock =  DATA LOCAL INTEGER();
+processIdActiveBlock 'ID процесса блокировки' = DATA LOCAL INTEGER (INTEGER);
+typeLockedObjectActiveBlock 'Тип заблокированного объекта' = DATA LOCAL VARSTRING[100] (INTEGER);
+idLockedObjectActiveBlock 'ID заблокированного объекта' = DATA LOCAL VARSTRING[100] (INTEGER);
+modeActiveBlock 'Уровень блокировки' = DATA LOCAL VARSTRING[100] (INTEGER);
+grantedActiveBlock 'Granted' = DATA LOCAL BOOLEAN (INTEGER);
 
 FORM activeBlocks 'Активные блокировки' 
     OBJECTS i = INTEGER

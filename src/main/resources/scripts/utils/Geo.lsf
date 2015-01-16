@@ -32,8 +32,8 @@ latitudePOI 'Координата X' = ABSTRACT NUMERIC[10,5] (POI);
 longitudePOI 'Координата Y' = ABSTRACT NUMERIC[10,5] (POI);
 
 // Получение координат
-readLatitude 'Координата X' = DATA SESSION NUMERIC[10,5] ();
-readLongitude 'Координата Y' = DATA SESSION NUMERIC[10,5] ();
+readLatitude 'Координата X' = DATA LOCAL NUMERIC[10,5] ();
+readLongitude 'Координата Y' = DATA LOCAL NUMERIC[10,5] ();
 
 getCoordinatesAddressMapProvider = ACTION CUSTOM 'lsfusion.erp.utils.geo.GetCoordinatesAddressActionProperty' (STRING[255], MapProvider);
 getCoordinatesAddress(address) = ACTION getCoordinatesAddressMapProvider(address, mapProvider());
@@ -56,13 +56,13 @@ showOnMapPOI 'Показать на карте'= ACTION (POI) {
 }
 
 // Показать на карте путь
-numberPathPOI 'Номер' = DATA SESSION INTEGER (POI);
-descriptionPathPOI 'Описание' = DATA SESSION VARSTRING[200] (POI);
+numberPathPOI 'Номер' = DATA LOCAL INTEGER (POI);
+descriptionPathPOI 'Описание' = DATA LOCAL VARSTRING[200] (POI);
 
 showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapPathActionProperty' ();
 
-inPathPOI 'Вкл' = DATA SESSION BOOLEAN (POI);
-startPathPOI 'Место старта'= DATA SESSION POI();
+inPathPOI 'Вкл' = DATA LOCAL BOOLEAN (POI);
+startPathPOI 'Место старта'= DATA LOCAL POI();
 calculatePath 'Рассчитать путь'= ACTION CUSTOM 'lsfusion.erp.utils.geo.CalculatePathActionProperty' ();
 
 EXTEND FORM options

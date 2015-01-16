@@ -18,10 +18,10 @@ fileLogBackup 'Адрес лога файла' = DATA VARSTRING[200] (Backup);
 fileDeletedBackup 'Файл удалён' = DATA BOOLEAN (Backup);
 logBackup 'Лог' = DATA TEXT (Backup);
 
-backupFileName 'Имя файла резервной копии' = DATA SESSION VARSTRING[100] ();
-backupFilePath 'Файл резервной копии' = DATA SESSION VARSTRING[200]();
+backupFileName 'Имя файла резервной копии' = DATA LOCAL VARSTRING[100] ();
+backupFilePath 'Файл резервной копии' = DATA LOCAL VARSTRING[200]();
 
-excludeTable 'Исключить' = DATA SESSION BOOLEAN (Table);
+excludeTable 'Исключить' = DATA LOCAL BOOLEAN (Table);
 
 TABLE backupTable(Backup, Table);
 excludeBackupTable 'Исключена' = DATA BOOLEAN (Backup, Table);

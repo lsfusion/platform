@@ -5,14 +5,14 @@ REQUIRE System;
 getActiveJavaThreadsAction 'Обновить список java-потоков' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveJavaThreadsActionProperty' () TOOLBAR;  
 cancelActiveJavaThreadAction 'Остановить java-поток' = ACTION CUSTOM 'lsfusion.erp.utils.CancelActiveJavaThreadActionProperty' (INTEGER);  
 
-previousCountActiveJavaThread =  DATA SESSION INTEGER();
-idActiveJavaThread 'ID java-потока' = DATA SESSION INTEGER (INTEGER);
-stackTraceActiveJavaThread 'След java-потока' = DATA SESSION TEXT (INTEGER);
-nameActiveJavaThread 'Имя java-потока' = DATA SESSION VARSTRING[100] (INTEGER);
-statusActiveJavaThread 'Статус' = DATA SESSION VARSTRING[100] (INTEGER);
-lockNameActiveJavaThread 'Блокировка' = DATA SESSION VARSTRING[100] (INTEGER);     
-computerActiveJavaThread 'Компьютер' = DATA SESSION VARSTRING[100] (INTEGER);
-userActiveJavaThread 'Пользователь' = DATA SESSION VARSTRING[100] (INTEGER);      
+previousCountActiveJavaThread =  DATA LOCAL INTEGER();
+idActiveJavaThread 'ID java-потока' = DATA LOCAL INTEGER (INTEGER);
+stackTraceActiveJavaThread 'След java-потока' = DATA LOCAL TEXT (INTEGER);
+nameActiveJavaThread 'Имя java-потока' = DATA LOCAL VARSTRING[100] (INTEGER);
+statusActiveJavaThread 'Статус' = DATA LOCAL VARSTRING[100] (INTEGER);
+lockNameActiveJavaThread 'Блокировка' = DATA LOCAL VARSTRING[100] (INTEGER);     
+computerActiveJavaThread 'Компьютер' = DATA LOCAL VARSTRING[100] (INTEGER);
+userActiveJavaThread 'Пользователь' = DATA LOCAL VARSTRING[100] (INTEGER);      
 
 FORM activeJavaThreads 'Активные java-потоки' 
     OBJECTS i = INTEGER

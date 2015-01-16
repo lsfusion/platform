@@ -13,7 +13,7 @@ idTemplate 'Идентификатор' = DATA VARSTRING[20] (Template) MINCHARW
 
 processTemplate = ACTION CUSTOM 'lsfusion.erp.utils.word.ProcessTemplateActionProperty' (Template);
 
-resultTemplate = DATA SESSION WORDFILE ();
+resultTemplate = DATA LOCAL WORDFILE ();
 openResultTemplate () = ACTION OPENFILE resultTemplate();
 
 openProcessTemplate 'Сгенерировать документ' = ACTION (template) {
@@ -28,7 +28,7 @@ TABLE templateEntry(TemplateEntry);
 
 templateTemplateEntry 'Шаблон' = DATA Template (TemplateEntry);
 keyTemplateEntry 'Параметр' = DATA VARSTRING[100](TemplateEntry);
-valueTemplateEntry 'Значение' = DATA SESSION TEXT (TemplateEntry);
+valueTemplateEntry 'Значение' = DATA LOCAL TEXT (TemplateEntry);
 
 templateEntryKeyEntryIdTemplate (string1, string2) = GROUP AGGR templateEntry BY  keyTemplateEntry(templateEntry), idTemplate(templateTemplateEntry(templateEntry)) WHERE templateEntry IS TemplateEntry;
 

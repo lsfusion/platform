@@ -58,8 +58,8 @@ nameLanguageFromDictionary 'С языка'(dictionary) = nameLanguage(languageFr
 languageToDictionary = DATA Language (Dictionary);
 nameLanguageToDictionary 'На язык'(dictionary) = nameLanguage(languageToDictionary(dictionary));
 
-translationInput 'Текст для перевода' = DATA SESSION TEXT ();
-translationResult 'Переведённый текст' = DATA SESSION TEXT ();
+translationInput 'Текст для перевода' = DATA LOCAL TEXT ();
+translationResult 'Переведённый текст' = DATA LOCAL TEXT ();
 
 // ------------------------------------ Перевод через Google Translate -------------------------------- //
 
