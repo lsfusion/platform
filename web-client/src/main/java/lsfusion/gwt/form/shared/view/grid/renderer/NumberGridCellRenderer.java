@@ -7,7 +7,7 @@ import lsfusion.gwt.base.client.EscapeUtils;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
 public class NumberGridCellRenderer extends TextBasedGridCellRenderer<Number> {
-    private final NumberFormat format;
+    protected final NumberFormat format;
 
     public NumberGridCellRenderer(GPropertyDraw property) {
         this(property, NumberFormat.getDecimalFormat());

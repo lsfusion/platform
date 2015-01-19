@@ -11,12 +11,17 @@ import java.text.ParseException;
 public class IntegralGridCellEditor extends TextBasedGridCellEditor {
     private final static String UNBREAKABLE_SPACE = "\u00a0";
     
-    protected static final NumberFormat format = NumberFormat.getDecimalFormat();
+    protected final NumberFormat format;
 
     protected final GIntegralType type;
 
     public IntegralGridCellEditor(GIntegralType type, EditManager editManager, GPropertyDraw property) {
+        this(type, editManager, property, NumberFormat.getDecimalFormat());
+    }
+
+    public IntegralGridCellEditor(GIntegralType type, EditManager editManager, GPropertyDraw property, NumberFormat format) {
         super(editManager, property, Style.TextAlign.RIGHT);
+        this.format = format;
         this.type = type;
     }
 

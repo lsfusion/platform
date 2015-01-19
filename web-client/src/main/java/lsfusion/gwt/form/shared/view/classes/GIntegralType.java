@@ -16,9 +16,8 @@ public abstract class GIntegralType extends GDataType {
 
     protected Double parseToDouble(String s) throws ParseException {
         assert s != null;
-        NumberFormat numberFormat = NumberFormat.getDecimalFormat();
         try {
-            return numberFormat.parse(s);
+            return getFormat().parse(s);
         } catch (NumberFormatException e) {
             throw new ParseException("string " + s + "can not be converted to double", 0);
         }
@@ -37,5 +36,9 @@ public abstract class GIntegralType extends GDataType {
     @Override
     public GEditBindingMap.EditEventFilter getEditEventFilter() {
         return GEditBindingMap.numberEventFilter;
+    }
+
+    public NumberFormat getFormat() {
+        return NumberFormat.getDecimalFormat();
     }
 }

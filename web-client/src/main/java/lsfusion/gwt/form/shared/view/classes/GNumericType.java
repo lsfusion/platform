@@ -5,6 +5,8 @@ import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.grid.EditManager;
 import lsfusion.gwt.form.shared.view.grid.editor.GridCellEditor;
 import lsfusion.gwt.form.shared.view.grid.editor.NumericGridCellEditor;
+import lsfusion.gwt.form.shared.view.grid.renderer.GridCellRenderer;
+import lsfusion.gwt.form.shared.view.grid.renderer.NumberGridCellRenderer;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -18,11 +20,29 @@ public class GNumericType extends GDoubleType {
     public GNumericType(int length, int precision) {
         this.length = length;
         this.precision = precision;
+        formatPattern = getPattern();
+    }
+
+    @Override
+    public GridCellRenderer createGridCellRenderer(GPropertyDraw property) {
+        return new NumberGridCellRenderer(property, getFormat());
+    }
+    
+    private String getPattern() {
+        String pattern = "#,###";
+        if (precision > 0) {
+            pattern += ".";
+            
+            for (int i = 0; i < precision; i++) {
+                pattern += "#";
+            }
+        }
+        return pattern;
     }
 
     @Override
     public GridCellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty) {
-        return new NumericGridCellEditor(this, editManager, editProperty);
+        return new NumericGridCellEditor(this, editManager, editProperty, getFormat());
     }
 
     @Override
