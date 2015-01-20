@@ -70,11 +70,11 @@ baseDNLDAP 'Base DN' = DATA VARSTRING[100] ();
 userDNSuffixLDAP 'Суффикс для User DN' = DATA VARSTRING[100] ();
 
 locked = DATA User (Object);
-lockResult = DATA LOCAL BOOLEAN ();
+lockResult = DATA LOCAL NESTED BOOLEAN ();
 
-lock(object) = ACTION NEWSESSION (lockResult) {    
+lock(object) = ACTION NEWSESSION {    
     lockResult() <- NULL;
-    APPLY (lockResult) SERIALIZABLE {
+    APPLY SERIALIZABLE {
         IF NOT object THEN
             RETURN;
         IF locked(object) THEN {
@@ -86,7 +86,7 @@ lock(object) = ACTION NEWSESSION (lockResult) {
     }
 }
 
-unlock(object) = ACTION NEWSESSION (lockResult) { 
+unlock(object) = ACTION NEWSESSION { 
     IF lockResult() THEN APPLY locked(object) <- NULL;
 }
 

@@ -2294,11 +2294,10 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	;
 
 nestedPropertiesSelector returns[boolean all = false, List<PropertyUsage> props = new ArrayList<PropertyUsage>()]
-    :   '('
-            (   MULT { $all = true; }
+    :   'NESTED'
+            (   'LOCAL' { $all = true; }
             |   list=nonEmptyPropertyUsageList { $props = $list.propUsages; }
             )
-        ')'
     ;
 	
 localDataPropertyDefinition returns [LP property]
