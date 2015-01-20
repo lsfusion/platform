@@ -437,7 +437,7 @@ public class DefaultFormView extends FormView {
                 currentGroupContainer.setType(ContainerType.COLUMNS);
                 currentGroupContainer.columns = 4;
 
-                panelContainers.get(groupObject).add(currentGroupContainer, version);
+                panelContainers.get(groupObject).add(currentGroupContainer, Version.GLOBAL);
             }
             
             putGroupPropertyContainer(groupObject, currentGroup, currentGroupContainer);
