@@ -340,10 +340,6 @@ public class Query<K,V> extends IQuery<K,V> {
         return execute(session, DataSession.emptyEnv(owner));
     }
 
-    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(SQLSession session, OperationOwner owner, ImOrderMap<V, Boolean> orders) throws SQLException, SQLHandledException {
-        return execute(session, orders, 0, DataSession.emptyEnv(owner));
-    }
-
     public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execute(DataSession session) throws SQLException, SQLHandledException {
         return execute(session, MapFact.<V, Boolean>EMPTYORDER(), 0);
     }

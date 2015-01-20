@@ -527,7 +527,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ScriptingFormEntity(this, form);
     }
 
-    public LCP addScriptedDProp(String returnClass, List<String> paramClasses, boolean localProp, boolean innerProp, boolean isLocalScope) throws ScriptingErrorLog.SemanticErrorException {
+    public LCP addScriptedDProp(String returnClass, List<String> paramClasses, boolean sessionProp, boolean innerProp, boolean isLocalScope, boolean isNested) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedDProp(" + returnClass + ", " + paramClasses + ", " + innerProp + ");");
 
         ValueClass value = findClass(returnClass);
@@ -536,9 +536,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             params[i] = findClass(paramClasses.get(i));
         }
 
-        if (localProp) {
-            return addSDProp("", isLocalScope, value, params);
+        if (sessionProp) {
+            return addSDProp("", isLocalScope, value, isNested, params);
         } else {
+            assert !isNested;
             if (innerProp) {
                 return addDProp("", value, params);
             } else {
@@ -1316,33 +1317,29 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<Object> resultParams = getParamsPlainList(properties);
 
-        LAP<?> listLP = addListAProp(resultParams.toArray());
-
         MExclSet<Pair<LP, List<ResolveClassSet>>> mDebugLocals = null;
         if(debugger.isEnabled()) {
             mDebugLocals = SetFact.mExclSet(localProps.size());
         }
-
+        MSet<SessionDataProperty> mLocals = SetFact.mSet();
         for (LP<?, ?> localProp : localProps) {
             List<ResolveClassSet> localSignature = propClasses.remove(localProp);
             removeModuleLP(localProp);
             
             if(mDebugLocals != null)
                 mDebugLocals.exclAdd(new Pair<LP, List<ResolveClassSet>>(localProp, localSignature));
+
+            mLocals.add((SessionDataProperty) localProp.property);
         }
+
+        LAP<?> listLP = addListAProp(mLocals.immutable(), resultParams.toArray());
+
         if(mDebugLocals != null) {
             listLP.property.setDebugLocals(mDebugLocals.immutable());
         }
 
-        MExclSet<SessionDataProperty> mMigrateProps = SetFact.mExclSet(migrateSessionProps.size());
-        for (PropertyUsage migratePropUsage : migrateSessionProps) {
-            LP<?, ?> prop = findLPByPropertyUsage(migratePropUsage);
-            checkSessionProperty(prop);
-            mMigrateProps.exclAdd((SessionDataProperty) prop.property);
-        }
-
         if (newSession) {
-            listLP = addNewSessionAProp(null, "", listLP, doApply, isNested, singleApply, migrateAllSessionProps, mMigrateProps.immutable());
+            listLP = addNewSessionAProp(null, "", listLP, doApply, isNested, singleApply, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
         }
 
         if (newThread) {
@@ -1370,14 +1367,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return prop;
     }
 
-    public LCP addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames) throws ScriptingErrorLog.SemanticErrorException {
+    public LCP addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames, boolean isNested) throws ScriptingErrorLog.SemanticErrorException {
         List<ResolveClassSet> signature = new ArrayList<ResolveClassSet>();
         for (String className : paramClassNames) {
             signature.add(findClass(className).getResolveSet());
         }
         checkDuplicateProperty(name, signature);
 
-        LCP res = addScriptedDProp(returnClassName, paramClassNames, true, false, true);
+        LCP res = addScriptedDProp(returnClassName, paramClassNames, true, false, true, isNested);
         makePropertyPublic(res, name, signature);
         return res;
     }
@@ -1668,15 +1665,26 @@ public class ScriptingLogicsModule extends LogicsModule {
             propParams.add(action);
         }
 
-        MExclSet<SessionDataProperty> mKeepProps = SetFact.mExclSet(keepSessionProps.size());
-        for (PropertyUsage migratePropUsage : keepSessionProps) {
-            LP<?, ?> prop = findLPByPropertyUsage(migratePropUsage);
-            checkSessionProperty(prop);
-            mKeepProps.exclAdd((SessionDataProperty) prop.property);
-        }
+        LP result = addApplyAProp(null, "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null, singleApply,
+                getMigrateProps(keepSessionProps, keepAllSessionProps), serializable);
 
-        LP result = addApplyAProp(null, "", (action != null && action.property instanceof LAP) ? (LAP) action.property : null, singleApply, keepAllSessionProps, mKeepProps.immutable(), serializable);
         return new LPWithParams(result, mergeAllParams(propParams));
+    }
+
+    private FunctionSet<SessionDataProperty> getMigrateProps(List<PropertyUsage> keepSessionProps, boolean keepAllSessionProps) throws ScriptingErrorLog.SemanticErrorException {
+        FunctionSet<SessionDataProperty> keepProps;
+        if(keepAllSessionProps) {
+            keepProps = DataSession.keepAllSessionProperties;
+        } else {
+            MExclSet<SessionDataProperty> mKeepProps = SetFact.mExclSet(keepSessionProps.size());
+            for (PropertyUsage migratePropUsage : keepSessionProps) {
+                LP<?, ?> prop = findLPByPropertyUsage(migratePropUsage);
+                checkSessionProperty(prop);
+                mKeepProps.exclAdd((SessionDataProperty) prop.property);
+            }
+            keepProps = mKeepProps.immutable();
+        }
+        return keepProps;
     }
 
     public LPWithParams addScriptedForAProp(List<TypedParameter> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending, List<LPWithParams> noInline, boolean forceInline, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {

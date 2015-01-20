@@ -11,10 +11,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.CalcPropertyInterfaceImplement;
-import lsfusion.server.logics.property.CalcPropertyMapImplement;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.session.PropertyChanges;
 
 // связь один к одному

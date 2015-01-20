@@ -5,6 +5,7 @@ import oracle.jdbc.driver.OracleConnection;
 import oracle.jdbc.driver.OracleDriver;
 
 import java.sql.*;
+import java.util.Locale;
 import java.util.Properties;
 
 class OracleDataAdapter extends DataAdapter {
@@ -38,8 +39,8 @@ class OracleDataAdapter extends DataAdapter {
         return true;
     }
 
-    public OracleDataAdapter(String database, String server, String userID, String password) throws Exception, SQLException, InstantiationException, IllegalAccessException {
-        super(database, server, null, userID, password, null, false);
+    public OracleDataAdapter(String database, String server, String userID, String password, String instance) throws Exception, SQLException, InstantiationException, IllegalAccessException {
+        super(database, server, instance, userID, password, null, false);
     }
 
     public boolean allowViews() {
@@ -79,22 +80,32 @@ class OracleDataAdapter extends DataAdapter {
     
     public void ensureDB(boolean cleanDB) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection connect = DriverManager.getConnection("jdbc:oracle:thin:sys as sysdba/11111@localhost:1521:orcl");
-        try {                                                                  
-            connect.createStatement().execute("DROP USER " + dataBase + " CASCADE");
+        Connection connect;
+        if(cleanDB) {
+            connect = DriverManager.getConnection("jdbc:oracle:thin:sys as sysdba/"+password+"@" + server + ":1521:"+instance);
+            try {
+                connect.createStatement().execute("DROP USER " + dataBase + " CASCADE");
 //            connect.createStatement().execute("ALTER DATABASE CLOSE");
 //            connect.createStatement().execute("ALTER SYSTEM ENABLE RESTRICTED SESSION");
 //            connect.createStatement().execute("DROP DATABASE");
-         } catch(Exception e) {
-            e = e;
+            } catch (Exception e) {
+                e = e;
+            }
+            connect.close();
         }
-        connect.close();
 
 //        OracleConnection prelcon = getPrelimAuthConnection();
 //        prelcon.startup(OracleConnection.DatabaseStartupMode.NO_RESTRICTION);
 //        prelcon.close();
 //
-        connect = DriverManager.getConnection("jdbc:oracle:thin:sys as sysdba/11111@localhost:1521:orcl");
+
+//        OracleConnection connection = (OracleConnection)DriverManager.getConnection("jdbc:oracle:thin:"+dataBase+"/" + password + "@" + server + ":1521:" + instance);
+//        ResultSet resultSet = connection.createStatement().executeQuery("SELECT short_name FROM uslugi");
+//        while(resultSet.next()) {
+//            System.out.println(resultSet.getString(1));
+//        }
+
+        connect = DriverManager.getConnection("jdbc:oracle:thin:sys as sysdba/"+password+"@"+server+":1521:"+instance);
         try {
             connect.createStatement().execute("CREATE USER " + dataBase + " IDENTIFIED BY 11111");
             connect.createStatement().execute("GRANT ALL PRIVILEGES TO " + dataBase);
@@ -107,7 +118,7 @@ class OracleDataAdapter extends DataAdapter {
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         //        Connect.createStatement().execute("USE testplat");
-        OracleConnection connection = (OracleConnection)DriverManager.getConnection("jdbc:oracle:thin:"+dataBase+"/11111@localhost:1521:orcl");
+        OracleConnection connection = (OracleConnection)DriverManager.getConnection("jdbc:oracle:thin:"+dataBase+"/" + password + "@" + server + ":1521:" + instance);
 //        Statement statement = connection.createStatement();
 //        statement.execute("ALTER SESSION SET current_schema=" + dataBase);
 //        statement.close();

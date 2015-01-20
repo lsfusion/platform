@@ -367,7 +367,7 @@ public class ActionPropertyDebugger implements DebuggerService {
 
     @Override
     public void registerBreakpoint(String module, Integer line) throws RemoteException {
-        breakpoints.put(new Pair<String, Integer>(module, line), null);
+        breakpoints.put(new Pair<String, Integer>(module, line), 0);
     }
 
     @Override

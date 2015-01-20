@@ -715,11 +715,12 @@ public class DerivedProperty {
         return DerivedProperty.createXUnion(innerInterfaces, ifTrue, ifFalse);
     }
 
-    public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createForDataProp(ImMap<T, ValueClass> interfaces, ValueClass valueClass) {
+    public static <T extends PropertyInterface> CalcPropertyMapImplement<ClassPropertyInterface, T> createForDataProp(ImMap<T, ValueClass> interfaces, ValueClass valueClass, MSet<SessionDataProperty> mLocals) {
         ImOrderMap<T, ValueClass> orderInterfaces = interfaces.toOrderMap();
         ImOrderSet<T> listInterfaces = orderInterfaces.keyOrderSet();
         ValueClass[] interfaceClasses = orderInterfaces.valuesList().toArray(new ValueClass[orderInterfaces.size()]);
-        DataProperty dataProperty = new SessionDataProperty("sys", interfaceClasses, valueClass, true);
+        SessionDataProperty dataProperty = new SessionDataProperty("sys", interfaceClasses, valueClass, true);
+        mLocals.add(dataProperty);
         return dataProperty.getImplement(listInterfaces);
     }
 
@@ -744,11 +745,15 @@ public class DerivedProperty {
     }
 
     public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createListAction(ImSet<L> innerInterfaces, ImList<ActionPropertyMapImplement<?, L>> actions) {
+        return createListAction(innerInterfaces, actions, SetFact.<SessionDataProperty>EMPTY());
+    }
+
+    public static <L extends PropertyInterface> ActionPropertyMapImplement<?, L> createListAction(ImSet<L> innerInterfaces, ImList<ActionPropertyMapImplement<?, L>> actions, ImSet<SessionDataProperty> localsInScope) {
         if(actions.size()==1)
             return actions.single();
 
         ImOrderSet<L> listInterfaces = innerInterfaces.toOrderSet();
-        ListActionProperty actionProperty = new ListActionProperty("sys", listInterfaces, actions);
+        ListActionProperty actionProperty = new ListActionProperty("sys", listInterfaces, actions, localsInScope);
         return actionProperty.getImplement(listInterfaces);
     }
 

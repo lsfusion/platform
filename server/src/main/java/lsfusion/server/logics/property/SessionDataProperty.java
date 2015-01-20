@@ -18,6 +18,8 @@ public class SessionDataProperty extends DataProperty {
         this(caption, new ValueClass[0], value);
     }
 
+    public boolean isNested = false;
+
     public SessionDataProperty(String caption, ValueClass[] classes, ValueClass value) {
         this(caption, classes, value, false);
     }

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -12,7 +13,6 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.debug.ActionDelegationType;
-import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -33,19 +33,24 @@ public class ListActionProperty extends ListCaseActionProperty {
         return (ImList<ActionPropertyMapImplement<?, PropertyInterface>>)actions;
     }
 
+    private final ImSet<SessionDataProperty> localsInScope;
+
     // так, а не как в Join'е, потому как нужны ClassPropertyInterface'ы а там нужны классы
-    public <I extends PropertyInterface> ListActionProperty(String caption, ImOrderSet<I> innerInterfaces, ImList<ActionPropertyMapImplement<?, I>> actions)  {
+    public <I extends PropertyInterface> ListActionProperty(String caption, ImOrderSet<I> innerInterfaces, ImList<ActionPropertyMapImplement<?, I>> actions, ImSet<SessionDataProperty> localsInScope)  {
         super(caption, false, innerInterfaces);
 
         this.actions = DerivedProperty.mapActionImplements(getMapInterfaces(innerInterfaces).reverse(), actions);
+        this.localsInScope = localsInScope;
 
         finalizeInit();
     }
 
+    // abstract конструктор без finalize'а
     public <I extends PropertyInterface> ListActionProperty(String caption, boolean isChecked, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
         super(caption, false, isChecked, AbstractType.LIST, innerInterfaces, mapClasses);
 
         actions = ListFact.mList();
+        localsInScope = SetFact.EMPTY();
     }
 
     public CalcPropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty() {
@@ -72,6 +77,8 @@ public class ListActionProperty extends ListCaseActionProperty {
                 break;
             }
         }
+
+        context.getSession().dropSessionChanges(localsInScope);
 
         return result;
     }

@@ -1,5 +1,6 @@
 package lsfusion.server.session;
 
+import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.ConcreteObjectClass;
@@ -17,7 +18,7 @@ import java.sql.SQLException;
 
 public interface SessionChanges {
 
-    public void restart(boolean cancel, ImSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
+    public void restart(boolean cancel, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
 
     public void changeClass(DataObject change, ConcreteObjectClass toClass) throws SQLException, SQLHandledException;
 

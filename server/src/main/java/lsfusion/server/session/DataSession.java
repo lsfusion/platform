@@ -1,8 +1,6 @@
 package lsfusion.server.session;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -50,7 +48,6 @@ import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 
 import javax.swing.*;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -98,15 +95,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
     public ImSet<CalcProperty> getChangedProps() {
         return getChangedProps(fromJavaSet(add), fromJavaSet(remove), fromJavaSet(usedOldClasses), fromJavaSet(usedNewClasses), fromJavaSet(data.keySet()));
-    }
-    
-    public Map<SessionDataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> getSessionDataChanges() {
-        return (Map)Maps.filterKeys(data, new Predicate<DataProperty>() {
-            @Override
-            public boolean apply(DataProperty input) {
-                return input instanceof SessionDataProperty;
-            }
-        });
     }
 
     private class DataModifier extends SessionModifier {
@@ -519,7 +507,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return new DataSession(sql, user, computer, timeout, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
     }
 
-    public void restart(boolean cancel, ImSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
+    // по хорошему надо было в класс оформить чтоб избежать ошибок, но абстракция получится слишком дырявой
+    public static FunctionSet<SessionDataProperty> adjustKeep(final FunctionSet<SessionDataProperty> operationKeep) {
+        return new SFunctionSet<SessionDataProperty>() {
+            public boolean contains(SessionDataProperty element) {
+                return element.isNested || operationKeep.contains(element);
+            }
+        };
+    }
+
+    public void restart(boolean cancel, FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
 
         // apply
         //      по кому был restart : добавляем changes -> applied
@@ -546,7 +543,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         singleRemove.clear();
         newClasses.clear();
 
-        BaseUtils.clearNotKeys(data, keep);
+        clearNotSessionData(keep);
         news = null;
         isStoredDataChanged = false;
 
@@ -1161,7 +1158,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 
-    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
+    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
         return apply(BL, null, update, interaction, applyAction, keepProperties);
     }
 
@@ -1435,12 +1432,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return dataModifier;
     }
 
-    public Set<SessionDataProperty> recursiveUsed = SetFact.mAddRemoveSet();
+    public FunctionSet<SessionDataProperty> recursiveUsed = SetFact.EMPTY();
     public List<ActionPropertyValueImplement> recursiveActions = ListFact.mAddRemoveList();
-    public void addRecursion(ActionPropertyValueImplement action, ImSet<SessionDataProperty> sessionUsed, boolean singleApply) {
+    public void addRecursion(ActionPropertyValueImplement action, FunctionSet<SessionDataProperty> sessionUsed, boolean singleApply) {
         action.property.singleApply = singleApply; // жестко конечно, но пока так
         recursiveActions.add(action);
-        recursiveUsed.addAll(sessionUsed.toJavaSet());
+        recursiveUsed = BaseUtils.merge(recursiveUsed, sessionUsed);
     }
 
     private int getMaxDataUsed(CalcProperty prop) {
@@ -1454,14 +1451,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public boolean apply(final BusinessLogics<?> BL, FormInstance form, UpdateCurrentClasses update, UserInteraction interaction,
-                         ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+                         ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         if(!hasChanges() && applyAction == null)
             return true;
+
+        keepProps = adjustKeep(keepProps);
 
         if (parentSession != null) {
             assert !isInTransaction() && !isInSessionEvent();
 
-            copyDataTo(parentSession, false);
+            NotFunctionSet<SessionDataProperty> notKeepProps = new NotFunctionSet<SessionDataProperty>(keepProps);
+            copyDataTo(parentSession, false, notKeepProps); // те которые не keep не копируем наверх, более того копируем их обратно как при не вложенной newSession
+            parentSession.copyDataTo(this, notKeepProps);
 
             cleanIsDataChangedProperty();
 
@@ -1506,7 +1507,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private boolean transactApply(BusinessLogics<?> BL, UpdateCurrentClasses update,
                                   UserInteraction interaction,
                                   int attemptCount, int autoAttemptCount,
-                                  ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+                                  ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
         startTransaction(update, BL);
 
@@ -1598,7 +1599,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         rollbackInfo.add(run);
     }
 
-    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, UpdateCurrentClasses update, ImSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+    private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, UpdateCurrentClasses update, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         ImOrderSet<Object> execActions = SetFact.addOrderExcl(actions, BL.getAppliedProperties(this));
         for (int i=0,size=execActions.size();i<size;i++) {
@@ -1635,15 +1636,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     
             apply.clear(sql, owner); // все сохраненные хинты обнуляем
             dataModifier.clearHints(sql, owner); // drop'ем hint'ы (можно и без sql но пока не важно)
-            restart(false, fromJavaSet(recursiveUsed).merge(keepProps)); // оставляем usedSessiona
+            restart(false, BaseUtils.merge(recursiveUsed,keepProps)); // оставляем usedSessiona
         } finally {
             sql.inconsistent = false;
         }
 
         if(recursiveActions.size() > 0) {
-            recursiveUsed.clear();
+            recursiveUsed = SetFact.EMPTY();
             recursiveActions.clear();
-            return recursiveApply(updatedRecursiveActions, BL, update, SetFact.<SessionDataProperty>EMPTY());
+            return recursiveApply(updatedRecursiveActions, BL, update, keepProps);
         }
 
         commitTransaction();
@@ -1654,9 +1655,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private ImOrderSet<ActionPropertyValueImplement> updateRecursiveActions() throws SQLException, SQLHandledException {
         ImOrderSet<ActionPropertyValueImplement> updatedRecursiveActions = null;
         if(recursiveActions.size()>0) {
-            recursiveUsed.add((SessionDataProperty) currentSession.property);
+            recursiveUsed = BaseUtils.merge(recursiveUsed, SetFact.singleton((SessionDataProperty) currentSession.property));
 
-            updateCurrentClasses(filterKeys(data, recursiveUsed).values()); // обновить классы sessionDataProperty, которые остались
+            updateCurrentClasses(filterSessionData(recursiveUsed).values()); // обновить классы sessionDataProperty, которые остались
 
             MOrderExclSet<ActionPropertyValueImplement> mUpdatedRecursiveActions = SetFact.mOrderExclSet();
             for(ActionPropertyValueImplement recursiveAction : recursiveActions)
@@ -1918,34 +1919,56 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return result;
     }
 
-    public void dropTables(ImSet<SessionDataProperty> keep) throws SQLException {
+    public void dropTables(FunctionSet<SessionDataProperty> keep) throws SQLException {
         OperationOwner owner = getOwner();
-        for(SinglePropertyTableUsage<ClassPropertyInterface> dataTable : BaseUtils.filterNotKeys(data, keep).values())
+        for(SinglePropertyTableUsage<ClassPropertyInterface> dataTable : filterNotSessionData(keep).values())
             dataTable.drop(sql, owner);
         if(news !=null)
             news.drop(sql, owner);
 
         dataModifier.eventDataChanges(getChangedProps());
     }
-    
-    private void copyDataTo(DataSession other, boolean cleanIsDataChangedProp) throws SQLException, SQLHandledException {
+
+    // тут вообще вопрос нужны или нет keepSessionProps так как речь идет о вложенных сессиях
+    private void copyDataTo(DataSession other, boolean cleanIsDataChangedProp, FunctionSet<SessionDataProperty> ignoreSessionProps) throws SQLException, SQLHandledException {
         other.cleanChanges();
 
         if (news != null) {
             other.changeClass(news.getChange());
         }
         for (Map.Entry<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : data.entrySet()) {
-            //не копируем isDataChanged
-            if (e.getKey() != isDataChanged) {
-                other.change(e.getKey(), SinglePropertyTableUsage.getChange(e.getValue()));
-            }
+            DataProperty property = e.getKey();
+            if(!(property instanceof SessionDataProperty && ignoreSessionProps.contains((SessionDataProperty) property)))
+                other.change(property, SinglePropertyTableUsage.getChange(e.getValue()));
         }
         
         if (cleanIsDataChangedProp) {
             other.cleanIsDataChangedProperty();
         }
     }
-    
+
+    // assertion что для sessionData уже adjustKeep выполнился
+    private Map<DataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> filterNotSessionData(FunctionSet<SessionDataProperty> sessionData) {
+        return BaseUtils.filterNotKeys(data, sessionData, SessionDataProperty.class);
+    }
+    private void clearNotSessionData(FunctionSet<SessionDataProperty> sessionData) {
+        BaseUtils.clearNotKeys(data, sessionData, SessionDataProperty.class);
+    }
+    private Map<SessionDataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> filterSessionData(FunctionSet<SessionDataProperty> sessionData) {
+        return BaseUtils.filterKeys(data, sessionData, SessionDataProperty.class);
+    }
+    public void copyDataTo(DataSession other, FunctionSet<SessionDataProperty> toCopy) throws SQLException, SQLHandledException {
+        for (Map.Entry<SessionDataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : filterSessionData(toCopy).entrySet()) {
+            other.dropChanges(e.getKey());
+            other.change(e.getKey(), SinglePropertyTableUsage.getChange(e.getValue()));
+        }
+    }
+    public void dropSessionChanges(ImSet<SessionDataProperty> props) throws SQLException, SQLHandledException {
+        for (SessionDataProperty prop : props.filterFn(new NotFunctionSet<SessionDataProperty>(recursiveUsed))) { // recursiveUsed не drop'аем
+            dropChanges(prop);
+        }
+    }
+
     private void cleanChanges() throws SQLException, SQLHandledException {
         dropClassChanges();
         dropAllDataChanges();
@@ -1956,7 +1979,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         assert parentSession != null;
         
         activeForms.putAll(parentSession.activeForms);        
-        parentSession.copyDataTo(this, true);
+        parentSession.copyDataTo(this, true, SetFact.<SessionDataProperty>EMPTY()); // копируем все local'ы
 
         this.parentSession = parentSession;
     }
@@ -1974,7 +1997,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @Override
-    public void cancel(ImSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
+    public void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
         if(isInSessionEvent()) {
             inSessionEvent = false;
         }
@@ -1984,10 +2007,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return;
         }
 
+        keep = adjustKeep(keep);
+
         restart(true, keep);
 
         if (parentSession != null) {
-            parentSession.copyDataTo(this, true);
+            parentSession.copyDataTo(this, true, keep);
         }
     }
 
@@ -2002,7 +2027,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 assert !flush;
             }
     
-            recursiveUsed.clear();
+            recursiveUsed = SetFact.EMPTY();
             recursiveActions.clear();
     
             // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
@@ -2116,6 +2141,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(pushed)
             sql.popVolatileStats(getOwner());
     }
+
+    public final static FunctionSet<SessionDataProperty> keepAllSessionProperties = new SFunctionSet<SessionDataProperty>() {
+        public boolean contains(SessionDataProperty element) {
+            return element != isDataChanged;
+        }
+    };
 
     @Override
     public String toString() {

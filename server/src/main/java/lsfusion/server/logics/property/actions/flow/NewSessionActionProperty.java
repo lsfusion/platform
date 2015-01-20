@@ -1,40 +1,37 @@
 package lsfusion.server.logics.property.actions.flow;
 
-import lsfusion.base.col.SetFact;
+import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataSession;
-import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.SinglePropertyTableUsage;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final boolean doApply;
-    private final boolean migrateAllSessionProperties;
-    private final ImSet<SessionDataProperty> migrateSessionProperties;
+    private final FunctionSet<SessionDataProperty> migrateSessionProperties;
     private final boolean isNested;
     private final boolean singleApply;
 
     public <I extends PropertyInterface> NewSessionActionProperty(String caption, ImOrderSet<I> innerInterfaces,
                                                                   ActionPropertyMapImplement<?, I> action, boolean doApply, boolean singleApply,
-                                                                  boolean migrateAllSessionProperties, ImSet<SessionDataProperty> migrateSessionProperties,
+                                                                  FunctionSet<SessionDataProperty> migrateSessionProperties,
                                                                   boolean isNested) {
         super(caption, innerInterfaces, action);
 
         this.doApply = doApply;
         this.singleApply = singleApply;
-        this.migrateAllSessionProperties = migrateAllSessionProperties;
-        this.migrateSessionProperties = migrateSessionProperties;
+
+        assert !(isNested && !migrateSessionProperties.isEmpty());
+
         this.isNested = isNested;
+        this.migrateSessionProperties = DataSession.adjustKeep(migrateSessionProperties);
+
 
         finalizeInit();
     }
@@ -55,28 +52,10 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
                 super.calcWhereProperty().mapInterfaceClasses(ClassType.wherePolicy)); // нет смысла делать mapOld и нарушать , все равно весь механизм во многом эвристичен
     }
 
-    @IdentityLazy
-    private ImSet<SessionDataProperty> getUsed(ExecutionContext<PropertyInterface> context) {
-//        return CalcProperty.used(localUsed, aspectActionImplement.property.getUsedProps()).merge(migrateSessionProperties);
-
-        if (migrateAllSessionProperties) {
-            DataSession session = context.getSession();
-
-            MExclSet<SessionDataProperty> mMigrateProps = SetFact.mExclSet();
-            for (SessionDataProperty changedProp : session.getSessionDataChanges().keySet()) {
-                mMigrateProps.exclAdd(changedProp);
-            }
-
-            return mMigrateProps.immutable();
-        } else {
-            return migrateSessionProperties;
-        }
-    }
-
     protected ExecutionContext<PropertyInterface> beforeAspect(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         DataSession session = context.getSession();
         if(session.isInTransaction()) { // если в транзацкции
-            session.addRecursion(aspectActionImplement.getValueImplement(context.getKeys()), getUsed(context), singleApply);
+            session.addRecursion(aspectActionImplement.getValueImplement(context.getKeys()), migrateSessionProperties, singleApply);
             return null;
         }
 
@@ -114,22 +93,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     }
 
     private void migrateSessionProperties(DataSession migrateFrom, DataSession migrateTo) throws SQLException, SQLHandledException {
-        if (migrateAllSessionProperties) {
-            for (Map.Entry<SessionDataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : migrateFrom.getSessionDataChanges().entrySet()) {
-                migrateTo.change(e.getKey(), SinglePropertyTableUsage.getChange(e.getValue()));
-            }
-        } else {
-            int migrateCount = migrateSessionProperties.size();
-            for (int i = 0; i < migrateCount; ++i) {
-                SessionDataProperty migrateProp = migrateSessionProperties.get(i);
-
-                PropertyChange<ClassPropertyInterface> propChange = migrateFrom.getDataChange(migrateProp);
-                if (propChange != null) {
-                    migrateTo.dropChanges(migrateProp);
-                    migrateTo.change(migrateProp, propChange);
-                }
-            }
-        }
+        migrateFrom.copyDataTo(migrateTo, migrateSessionProperties);
     }
 
     protected void finallyAspect(ExecutionContext<PropertyInterface> context, ExecutionContext<PropertyInterface> innerContext) throws SQLException, SQLHandledException {

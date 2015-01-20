@@ -1,5 +1,6 @@
 package lsfusion.server.session;
 
+import lsfusion.base.FunctionSet;
 import lsfusion.base.MutableClosedObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -71,7 +72,7 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
         cancel(SetFact.<SessionDataProperty>EMPTY());
     }
 
-    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException;
+    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException;
     
-    public abstract void cancel(ImSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
+    public abstract void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
 }

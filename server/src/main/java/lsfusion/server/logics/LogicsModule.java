@@ -18,6 +18,7 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.SessionData;
 import lsfusion.server.data.Time;
 import lsfusion.server.data.Union;
 import lsfusion.server.data.expr.StringAggUnionProperty;
@@ -506,14 +507,17 @@ public abstract class LogicsModule {
 
     // ------------------- Scripted DATA ----------------- //
 
-    protected LCP addSDProp(String caption, boolean isLocalScope, ValueClass value, ValueClass... params) {
-        return addSDProp(null, false, caption, isLocalScope, value, params);
+    protected LCP addSDProp(String caption, boolean isLocalScope, ValueClass value, boolean isNested, ValueClass... params) {
+        return addSDProp(null, false, caption, isLocalScope, value, isNested, params);
     }
 
-    protected LCP addSDProp(AbstractGroup group, boolean persistent, String caption, boolean isLocalScope, ValueClass value, ValueClass... params) {
+    protected LCP addSDProp(AbstractGroup group, boolean persistent, String caption, boolean isLocalScope, ValueClass value, boolean isNested, ValueClass... params) {
         SessionDataProperty prop = new SessionDataProperty(caption, params, value);
         if (isLocalScope) {
             prop.setLocal(true);
+        }
+        if (isNested) {
+            prop.isNested = true;
         }
         return addProperty(group, persistent, new LCP<ClassPropertyInterface>(prop));
     }
@@ -599,19 +603,17 @@ public abstract class LogicsModule {
 
     // ------------------- List action ----------------- //
 
-    protected LAP addListAProp(Object... params) {
-        return addListAProp(null, "sys", params);
+    protected LAP addListAProp(ImSet<SessionDataProperty> localsInScope, Object... params) {
+        return addListAProp(null, 0, "sys", localsInScope, params);
     }
     protected LAP addListAProp(int removeLast, Object... params) {
-        return addListAProp(null, removeLast, "sys", params);
+        return addListAProp(null, removeLast, "sys", SetFact.<SessionDataProperty>EMPTY(), params);
     }
-    protected LAP addListAProp(AbstractGroup group, String caption, Object... params) {
-        return addListAProp(group, 0, caption, params);
-    }
-    protected LAP addListAProp(AbstractGroup group, int removeLast, String caption, Object... params) {
+
+    protected LAP addListAProp(AbstractGroup group, int removeLast, String caption, ImSet<SessionDataProperty> localsInScope, Object... params) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(getIntNum(params));
         return addProperty(group, new LAP(new ListActionProperty(caption, listInterfaces,
-                readActionImplements(listInterfaces, removeLast > 0 ? Arrays.copyOf(params, params.length - removeLast) : params))));
+                readActionImplements(listInterfaces, removeLast > 0 ? Arrays.copyOf(params, params.length - removeLast) : params), localsInScope)));
     }
 
     protected LAP addAbstractListAProp(boolean isChecked, ValueClass[] params) {
@@ -726,12 +728,12 @@ public abstract class LogicsModule {
     // ------------------------ APPLY ----------------- //
 
     protected LAP addApplyAProp(AbstractGroup group, String caption, LAP action, boolean singleApply,
-                                boolean keepAllSessionProps, ImSet<SessionDataProperty> keepSessionProps, boolean serializable) {
+                                FunctionSet<SessionDataProperty> keepSessionProps, boolean serializable) {
         
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
-        ApplyActionProperty applyAction = new ApplyActionProperty(baseLM, actionImplement, caption, listInterfaces, keepAllSessionProps, keepSessionProps, serializable);
+        ApplyActionProperty applyAction = new ApplyActionProperty(baseLM, actionImplement, caption, listInterfaces, keepSessionProps, serializable);
         actionImplement.property.singleApply = singleApply;
         return addProperty(group, new LAP(applyAction));
     }
@@ -739,18 +741,18 @@ public abstract class LogicsModule {
     // ------------------- NEWSESSION ----------------- //
 
     protected LAP addNewSessionAProp(AbstractGroup group, String caption, LAP action, boolean doApply, boolean singleApply, boolean isNested) {
-        return addNewSessionAProp(group, caption, action, doApply, isNested, singleApply, false, SetFact.<SessionDataProperty>EMPTY());
+        return addNewSessionAProp(group, caption, action, doApply, isNested, singleApply, SetFact.<SessionDataProperty>EMPTY());
     }
     
     protected LAP addNewSessionAProp(AbstractGroup group, String caption,
                                      LAP action, boolean doApply, boolean isNested, boolean singleApply,
-                                     boolean migrateAllSessionProps, ImSet<SessionDataProperty> migrateSessionProps) {
+                                     FunctionSet<SessionDataProperty> migrateSessionProps) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
         return addProperty(group, new LAP(
                 new NewSessionActionProperty(
-                        caption, listInterfaces, actionImplement, doApply, singleApply, migrateAllSessionProps, migrateSessionProps, isNested)));
+                        caption, listInterfaces, actionImplement, doApply, singleApply, migrateSessionProps, isNested)));
     }
 
     protected LAP addNewThreadAProp(AbstractGroup group, String caption, LAP action, long delay, Long period) {

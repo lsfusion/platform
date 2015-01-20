@@ -1281,17 +1281,21 @@ dataPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveClassS
 @after {
 	if (inPropParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, localProp, innerPD, false);
+		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, localProp, innerPD, false, $nlm.isNested);
 	}
 }
 	:	'DATA'
 		('LOCAL' { localProp = true; } )?
+		nlm = nestedLocalModifier
 		returnClass=classId
 		'('
 			paramClassNames=classIdList
 		')'
 	;
 
+nestedLocalModifier returns[boolean isNested = false]
+	:   (   'NESTED' { $isNested = true; }	)?
+	;
 
 abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
@@ -2270,7 +2274,7 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	:   (
             (
                 (   'NEWSESSION'
-                    (   mps=migratePropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; }
+                    (   mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; }
                     |   'NESTED' { isNested = true; }
                     )?
                 )
@@ -2289,7 +2293,7 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 		'}'
 	;
 
-migratePropertiesSelector returns[boolean all = false, List<PropertyUsage> props = new ArrayList<PropertyUsage>()]
+nestedPropertiesSelector returns[boolean all = false, List<PropertyUsage> props = new ArrayList<PropertyUsage>()]
     :   '('
             (   MULT { $all = true; }
             |   list=nonEmptyPropertyUsageList { $props = $list.propUsages; }
@@ -2300,10 +2304,12 @@ migratePropertiesSelector returns[boolean all = false, List<PropertyUsage> props
 localDataPropertyDefinition returns [LP property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addLocalDataProperty($propName.text, $returnClass.sid, $paramClasses.ids);
+		$property = self.addLocalDataProperty($propName.text, $returnClass.sid, $paramClasses.ids, $nlm.isNested);
 	}
 }
-	:	'LOCAL' propName=ID 
+	:	'LOCAL'
+		nlm = nestedLocalModifier
+		propName=ID
 		'=' returnClass=classId
 		'('
 			paramClasses=classIdList
@@ -2407,7 +2413,7 @@ applyActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic]
 	}
 }
 	:	'APPLY' 
-        (mps=migratePropertiesSelector { keepAllSessionProps = $mps.all; keepSessionProps = $mps.props; })?
+        (mps=nestedPropertiesSelector { keepAllSessionProps = $mps.all; keepSessionProps = $mps.props; })?
         ('SINGLE' { single = true; })?
         ('SERIALIZABLE' { serializable = true; })?
         applyPDB=innerActionPropertyDefinitionBody[context, dynamic]

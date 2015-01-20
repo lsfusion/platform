@@ -205,6 +205,19 @@ public class BaseUtils {
         return result;
     }
 
+    public static <BK, K extends BK, V> Map<K, V> filterKeys(Map<BK, V> map, FunctionSet<K> filter, Class<K> aClass) {
+        Map<K, V> result = new HashMap<K, V>();
+        for (Map.Entry<BK, V> entry : map.entrySet()) {
+            if (aClass.isInstance(entry.getKey())) {
+                K key = (K) entry.getKey();
+                if (filter.contains(key)) {
+                    result.put(key, entry.getValue());
+                }
+            }
+        }
+        return result;
+    }
+
     public static <BK, K extends BK, V> Map<K, V> filterKeys(Iterable<BK> keys, Map<K, V> map) {
         Map<K, V> result = new HashMap<K, V>();
         for (BK key : keys) {
@@ -241,10 +254,10 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K, V> Map<K, V> filterNotKeys(Map<K, V> map, ImSet<? extends K> keys) {
+    public static <K, T extends K, V> Map<K, V> filterNotKeys(Map<K, V> map, FunctionSet<T> keys, Class<T> aClass) {
         Map<K, V> result = new HashMap<K, V>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
-            if (!((ImSet<K>) keys).contains(entry.getKey()))
+            if (!aClass.isInstance(entry.getKey()) || !((FunctionSet<K>) keys).contains(entry.getKey()))
                 result.put(entry.getKey(), entry.getValue());
         }
         return result;
@@ -1087,13 +1100,15 @@ public class BaseUtils {
         else return Integer.parseInt(s);
     }
 
-    public static <K, V> void clearNotKeys(Map<K, V> map, ImSet<? extends K> keep) {
+    public static <K, T extends K, V> void clearNotKeys(Map<K, V> map, FunctionSet<T> keep, Class<T> aClass) {
         if (keep.isEmpty())
             map.clear();
         else {
-            for (Iterator<K> it = map.keySet().iterator(); it.hasNext(); )
-                if (!((ImSet<K>) keep).contains(it.next()))
+            for (Iterator<K> it = map.keySet().iterator(); it.hasNext(); ) {
+                K element = it.next();
+                if (!aClass.isInstance(element) || !((FunctionSet<K>) keep).contains(element))
                     it.remove();
+            }
         }
     }
 

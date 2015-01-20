@@ -1158,7 +1158,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return session.check(BL, this, interaction);
     }
 
-    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, ImSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
+    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
         update = CompoundUpdateCurrentClasses.merge(update, outerUpdateCurrentClasses);
         
         boolean succeeded = session.apply(BL, this, update, interaction, applyAction, keepProperties);
@@ -1180,7 +1180,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     @Override
-    public void cancel(ImSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
+    public void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
         session.cancel(keep);
 
         // пробежим по всем объектам
@@ -2070,20 +2070,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         apply(BL, null, interaction, null, getKeepSessionProperties());
     }
 
-    private ImSet<SessionDataProperty> getKeepSessionProperties() {
-        ImSet<SessionDataProperty> keepProperties;
-        if (entity.keepSessionProperties) {
-            MExclSet<SessionDataProperty> mKeepProps = SetFact.mExclSet();
-            for (SessionDataProperty prop : session.getSessionDataChanges().keySet()) {
-                if (prop != DataSession.isDataChanged) {
-                    mKeepProps.exclAdd(prop);
-                }
-            }
-            keepProperties = mKeepProps.immutable();
-        } else {
-            keepProperties = SetFact.EMPTY();
-        }
-        return keepProperties;
+    private FunctionSet<SessionDataProperty> getKeepSessionProperties() {
+        if (entity.keepSessionProperties)
+            return DataSession.keepAllSessionProperties;
+        return SetFact.EMPTY();
     }
 
     public void formCancel(UserInteraction interfaction) throws SQLException, SQLHandledException {

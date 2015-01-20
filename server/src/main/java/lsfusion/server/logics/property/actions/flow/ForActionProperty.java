@@ -265,8 +265,9 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
             CalcPropertyMapImplement<?, I> noInlineIfProp = ifProp;
             ImSet<I> noInlineInterfaces = extNoInline;
+            MSet<SessionDataProperty> mLocals = SetFact.mSet();
             if(CalcProperty.depends(ifProp.property, StoredDataProperty.set)) { // нужно создать сначала материалайзить условие for по аналогии с проталкиванием
-                noInlineIfProp = DerivedProperty.createForDataProp(getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy));// делаем SET в session свойство, и подменяем условие на это свойство
+                noInlineIfProp = DerivedProperty.createForDataProp(getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy), mLocals);// делаем SET в session свойство, и подменяем условие на это свойство
                 mResult.add(DerivedProperty.createSetAction(innerInterfaces, context, null, noInlineIfProp, ifProp));
                 noInlineInterfaces = noInline;
             }
@@ -278,7 +279,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                     action, null, addObject, addClass, forceDialog, recursive, SetFact.<I>EMPTY(), forceInline);
             mResult.add(createForAction(extNoInline, context, groupNoInline, MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>EMPTYORDER(), false,
                     cleanAction, elseAction, false, noInline, false));
-            return DerivedProperty.createListAction(context, mResult.immutableList());
+            return DerivedProperty.createListAction(context, mResult.immutableList(), mLocals.immutable());
         }
 
         boolean hackAdd = isHackAdd();
@@ -308,11 +309,12 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
         if(addObject != null) {
             assert !hackAdd; // должен отработать сверху
 
-            CalcPropertyMapImplement<?, I> result = DerivedProperty.createForDataProp(getExtendClasses(), addClass);
+            MSet<SessionDataProperty> mLocals = SetFact.mSet();
+            CalcPropertyMapImplement<?, I> result = DerivedProperty.createForDataProp(getExtendClasses(), addClass, mLocals);
             return DerivedProperty.createListAction(context, ListFact.<ActionPropertyMapImplement<?, I>>toList(
                     DerivedProperty.createAddAction(addClass, forceDialog, innerInterfaces.removeIncl(addObject), context, ifProp, result, orders, ordersNotNull),
                     DerivedProperty.createForAction(innerInterfaces, context, DerivedProperty.<I>createCompare(
-                            addObject, result, Compare.EQUALS), MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>singletonOrder(addObject, false), false, action, elseAction, null, null, false, allNoInline ? noInline.addExcl(addObject) : noInline, forceInline)));
+                            addObject, result, Compare.EQUALS), MapFact.<CalcPropertyInterfaceImplement<I>, Boolean>singletonOrder(addObject, false), false, action, elseAction, null, null, false, allNoInline ? noInline.addExcl(addObject) : noInline, forceInline)), mLocals.immutable());
         }
 
         ImList<ActionPropertyMapImplement<?, I>> list = action.getList();
@@ -365,6 +367,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             return null;
 
         MList<ActionPropertyMapImplement<?, I>> mResult = ListFact.mList();
+        MSet<SessionDataProperty> mLocals = SetFact.mSet();
 
         CalcPropertyMapImplement<?, I> pushProp = ifProp;
         if ((canBePushed.size() + (rest.size() > 0 ? 1 : 0) > 1)) {// если кол-во(вытаскиваемые+оставшиеся) > 1
@@ -373,7 +376,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
 
             if (CalcProperty.depends(ifProp.property, pushChangedProps) || // если есть stored свойства (а не чисто session) или меняет условия
                     CalcProperty.depends(ifProp.property, StoredDataProperty.set)) {
-                pushProp = DerivedProperty.createForDataProp(getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy)); // делаем SET в session свойство, и подменяем условие на это свойство
+                pushProp = DerivedProperty.createForDataProp(getExtendClasses(), ifProp.property.getValueClass(ClassType.forPolicy), mLocals); // делаем SET в session свойство, и подменяем условие на это свойство
                 mResult.add(DerivedProperty.createSetAction(innerInterfaces, context, null, pushProp, ifProp));
             }
         }
@@ -387,7 +390,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             mResult.add(DerivedProperty.createForAction(innerInterfaces, context, pushProp, orders,
                     ordersNotNull, DerivedProperty.createListAction(innerInterfaces, rest), elseAction, false, innerInterfaces.remove(context), false));
 
-        return DerivedProperty.createListAction(context, mResult.immutableList());
+        return DerivedProperty.createListAction(context, mResult.immutableList(), mLocals.immutable());
     }
 
     @Override

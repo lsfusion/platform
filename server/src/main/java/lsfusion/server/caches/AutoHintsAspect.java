@@ -257,8 +257,8 @@ public class AutoHintsAspect {
                         if(whereComplexity > limitComplexity || exprComplexity > property.getExpr(mapKeys).getComplexity(false) * catchHint.getLimitComplexityGrowthCoeff()) { // вторая проверка как и использование limitComplexity а не prevComplexity (max с ним), чтобы заставить ее более агрессивно hint'ить, когда общая complexity зашкаливает (min не используется чтобы не hint'ить раньше времени)
                             long baseLimit = catchHint.getLimitHintIncrementStat();
                             int maxCountUsed = catchHint.getMaxCountUsed(property);
-                            // будем считать что рост сложности полиномиальный (квадратичный с учетом того что A x B, выполняется за условно AB операций), в то же время сложность агрегации условно линейный (если быть более точным логарифмический)
-                            long limit = BaseUtils.max(maxCountUsed / Settings.get().getStatDegree(), baseLimit) * complexity * complexity / limitComplexity / limitComplexity;
+                            // будем считать что рост сложности полиномиальный (квадратичный с учетом того что A x B, выполняется за условно AB операций), в то же время сложность агрегации условно линейный
+                            long limit = BaseUtils.max(maxCountUsed / Settings.get().getStatDegree(), baseLimit) * complexity / limitComplexity;
                             if (changed.isFalse() || changed.getFullStatKeys(mapKeys.valuesSet()).rows.lessEquals(new Stat(limit))) { // changed.isFalse() временно
                                 throw new HintException(new IncrementHint(property, true));
                             }
