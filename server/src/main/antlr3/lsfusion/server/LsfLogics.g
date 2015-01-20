@@ -2271,19 +2271,14 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 		$property = self.addScriptedListAProp(newSession, migrateSessionProps, migrateAllSessionProps, isNested, doApply, singleApply, props, localProps, newThread, ldelay, lperiod);
 	}
 }
-	:   (
-            (
-                (   'NEWSESSION'
-                    (   mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; }
-                    |   'NESTED' { isNested = true; }
-                    )?
-                )
-                |
-                ('NEWTHREAD' { newThread = true; } (period=intLiteral { lperiod = (long)$period.val; })? ('DELAY' delay=intLiteral { ldelay = $delay.val; })? ) 
-            ) { newSession = true; }
-            ('AUTOAPPLY' {doApply = true; } )?
-            ('SINGLE' { singleApply = true; })? 
-        )?
+	:	(
+			(	'NEWSESSION' (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
+			|	'NESTEDSESSION' { isNested = true; }
+			|	('NEWTHREAD' { newThread = true; } (period=intLiteral { lperiod = (long)$period.val; })? ('DELAY' delay=intLiteral { ldelay = $delay.val; })? ) 
+			)	{ newSession = true; }
+			('AUTOAPPLY' {doApply = true; } )?
+			('SINGLE' { singleApply = true; })? 
+		)?
 		'{'
 			(	(PDB=innerActionPropertyDefinitionBody[context, dynamic] { props.add($PDB.property); }
 				( {!self.semicolonNeeded()}?=>  | ';'))
