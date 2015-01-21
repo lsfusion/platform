@@ -3,6 +3,7 @@ package lsfusion.erp.utils;
 import com.google.common.base.Throwables;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -41,9 +42,13 @@ public class CancelActiveTaskActionProperty extends ScriptingActionProperty {
 
         DataObject currentObject = context.getDataKeyValue(integerInterface);
         Integer pid = (Integer) findProperty("idActiveTask").read(context, currentObject);
-        
+
+        SQLSession cancelSession = SQLSession.getSQLSessionMap().get(pid);
+        if (cancelSession != null)
+            cancelSession.setForcedCancel();
+
         context.getSession().sql.executeDDL(context.getDbManager().getAdapter().getCancelActiveTaskQuery(pid));
-        
+
         findAction("getActiveTasksAction").execute(context);
 
     }

@@ -1,6 +1,5 @@
 package lsfusion.erp.utils;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.HMap;
@@ -12,7 +11,6 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.StringClass;
-import lsfusion.server.data.ExConnection;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -27,11 +25,9 @@ import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
-import org.postgresql.PGConnection;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.Map;
 
 public abstract class GetTasksActionProperty extends ScriptingActionProperty {
@@ -148,12 +144,7 @@ public abstract class GetTasksActionProperty extends ScriptingActionProperty {
             ImOrderMap rs = session.sql.executeSelect(originalQuery, OperationOwner.unknown, ExecuteEnvironment.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
                     QueryExecuteEnvironment.DEFAULT, 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
-            Map<Integer, SQLSession> sessionMap = new HashMap<Integer, SQLSession>();
-            for(SQLSession sqlSession : session.sql.sqlSessionMap.keySet()) {
-                ExConnection connection = sqlSession.getDebugConnection();
-                if(connection != null)
-                    sessionMap.put(((PGConnection) connection.sql).getBackendPID(), sqlSession);
-            }
+            Map<Integer, SQLSession> sessionMap = SQLSession.getSQLSessionMap();
             
             int i = 0;
             for (Object rsValue : rs.values()) {
