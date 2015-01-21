@@ -408,13 +408,12 @@ formDeclaration returns [ScriptingFormEntity form]
 @init {
 	ModalityType modalityType = null;
 	int autoRefresh = 0;
-	boolean keepSessionProperties = false;
 	String image = null;
 	String title = null;
 }
 @after {
 	if (inPropParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, title, image, modalityType, autoRefresh, keepSessionProperties);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, title, image, modalityType, autoRefresh);
 	}
 }
 	:	'FORM' 
@@ -423,7 +422,6 @@ formDeclaration returns [ScriptingFormEntity form]
 		|	(modality=modalityTypeLiteral { modalityType = $modality.val; })
 		|	('IMAGE' img=stringLiteral { image = $img.val; })
 		|	('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })
-		|	('KEEPSESSIONPROPERTIES' { keepSessionProperties = true; })
 		)*
 	;
 
@@ -2260,7 +2258,6 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	List<PropertyUsage> migrateSessionProps = Collections.emptyList();
 	boolean migrateAllSessionProps = false;
 	boolean isNested = false;
-	boolean doApply = false;
 	boolean singleApply = false;
 	boolean newThread = false;
 	long ldelay = 0;
@@ -2268,7 +2265,7 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedListAProp(newSession, migrateSessionProps, migrateAllSessionProps, isNested, doApply, singleApply, props, localProps, newThread, ldelay, lperiod);
+		$property = self.addScriptedListAProp(newSession, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, props, localProps, newThread, ldelay, lperiod);
 	}
 }
 	:	(
@@ -2276,8 +2273,7 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 			|	'NESTEDSESSION' { isNested = true; }
 			|	('NEWTHREAD' { newThread = true; } (period=intLiteral { lperiod = (long)$period.val; })? ('DELAY' delay=intLiteral { ldelay = $delay.val; })? ) 
 			)	{ newSession = true; }
-			('AUTOAPPLY' {doApply = true; } )?
-			('SINGLE' { singleApply = true; })? 
+			('SINGLE' { singleApply = true; })?
 		)?
 		'{'
 			(	(PDB=innerActionPropertyDefinitionBody[context, dynamic] { props.add($PDB.property); }

@@ -2067,19 +2067,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formApply(UserInteraction interaction) throws SQLException, SQLHandledException {
-        apply(BL, null, interaction, null, getKeepSessionProperties());
-    }
-
-    private FunctionSet<SessionDataProperty> getKeepSessionProperties() {
-        if (entity.keepSessionProperties)
-            return DataSession.keepAllSessionProperties;
-        return SetFact.EMPTY();
+        apply(BL, interaction);
     }
 
     public void formCancel(UserInteraction interfaction) throws SQLException, SQLHandledException {
         int result = (Integer) interfaction.requestUserInteraction(new ConfirmClientAction("lsFusion", getString("form.do.you.really.want.to.undo.changes")));
         if (result == JOptionPane.YES_OPTION) {
-            cancel(getKeepSessionProperties());
+            cancel();
         }
     }
 

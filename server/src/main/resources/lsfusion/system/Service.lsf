@@ -110,10 +110,11 @@ META defineLog (object, caption, container)
     EXTEND DESIGN options { container { ADD PROPERTY(countDaysClear##object());} }    
 END
 META defineLog (object, dateProp)
-    clearApplicationLog () += ACTION () NEWSESSION AUTOAPPLY {
+    clearApplicationLog () += ACTION () NEWSESSION {
         IF countDaysClear##object() THEN {
             DELETE d WHERE d IS object AND dateProp##object(d)<= subtractDate(currentDate(), countDaysClear##object());
         }
+        apply();
     }   
 END
 META defineLog (object, caption, container, dateProp)

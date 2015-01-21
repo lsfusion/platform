@@ -477,7 +477,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, String caption, String title, String icon,
-                                                  ModalityType modalityType, int autoRefresh, boolean keepSessionProperties) throws ScriptingErrorLog.SemanticErrorException {
+                                                  ModalityType modalityType, int autoRefresh) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ", " + title + ");");
         checkDuplicateNavigatorElement(formName);
         caption = (caption == null ? formName : caption);
@@ -487,8 +487,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ScriptingFormEntity form = new ScriptingFormEntity(this, new FormEntity(canonicalName, caption, title, icon, getVersion()));
         form.setModalityType(modalityType);
         form.setAutoRefresh(autoRefresh);
-        form.setKeepSessionProperties(keepSessionProperties);
-        
+
         return form;
     }
 
@@ -1311,9 +1310,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedListAProp(boolean newSession, List<PropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
-                                             boolean isNested, boolean doApply, boolean singleApply, List<LPWithParams> properties,
+                                             boolean isNested, boolean singleApply, List<LPWithParams> properties,
                                              List<LP> localProps, boolean newThread, long delay, Long period) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedListAProp(" + newSession + ", " + doApply + ", " + properties + ");");
+        scriptLogger.info("addScriptedListAProp(" + newSession + ", " + properties + ");");
 
         List<Object> resultParams = getParamsPlainList(properties);
 
@@ -1339,7 +1338,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (newSession) {
-            listLP = addNewSessionAProp(null, "", listLP, doApply, isNested, singleApply, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
+            listLP = addNewSessionAProp(null, "", listLP, isNested, singleApply, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
         }
 
         if (newThread) {

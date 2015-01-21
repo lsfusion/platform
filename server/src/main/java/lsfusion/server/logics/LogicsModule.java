@@ -18,7 +18,6 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.SessionData;
 import lsfusion.server.data.Time;
 import lsfusion.server.data.Union;
 import lsfusion.server.data.expr.StringAggUnionProperty;
@@ -741,18 +740,18 @@ public abstract class LogicsModule {
     // ------------------- NEWSESSION ----------------- //
 
     protected LAP addNewSessionAProp(AbstractGroup group, String caption, LAP action, boolean doApply, boolean singleApply, boolean isNested) {
-        return addNewSessionAProp(group, caption, action, doApply, isNested, singleApply, SetFact.<SessionDataProperty>EMPTY());
+        return addNewSessionAProp(group, caption, action, isNested, singleApply, SetFact.<SessionDataProperty>EMPTY());
     }
     
     protected LAP addNewSessionAProp(AbstractGroup group, String caption,
-                                     LAP action, boolean doApply, boolean isNested, boolean singleApply,
+                                     LAP action, boolean isNested, boolean singleApply,
                                      FunctionSet<SessionDataProperty> migrateSessionProps) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(action.listInterfaces.size());
         ActionPropertyMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(action, listInterfaces);
 
         return addProperty(group, new LAP(
                 new NewSessionActionProperty(
-                        caption, listInterfaces, actionImplement, doApply, singleApply, migrateSessionProps, isNested)));
+                        caption, listInterfaces, actionImplement, singleApply, migrateSessionProps, isNested)));
     }
 
     protected LAP addNewThreadAProp(AbstractGroup group, String caption, LAP action, long delay, Long period) {

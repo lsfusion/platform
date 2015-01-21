@@ -156,7 +156,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public String title;
     public ModalityType modalityType = ModalityType.DOCKED;
     public int autoRefresh = 0;
-    public boolean keepSessionProperties = false;
 
     public boolean isSynchronizedApply = false;
 

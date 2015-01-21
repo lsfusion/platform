@@ -13,18 +13,16 @@ import lsfusion.server.session.DataSession;
 import java.sql.SQLException;
 
 public class NewSessionActionProperty extends AroundAspectActionProperty {
-    private final boolean doApply;
     private final FunctionSet<SessionDataProperty> migrateSessionProperties;
     private final boolean isNested;
     private final boolean singleApply;
 
     public <I extends PropertyInterface> NewSessionActionProperty(String caption, ImOrderSet<I> innerInterfaces,
-                                                                  ActionPropertyMapImplement<?, I> action, boolean doApply, boolean singleApply,
+                                                                  ActionPropertyMapImplement<?, I> action, boolean singleApply,
                                                                   FunctionSet<SessionDataProperty> migrateSessionProperties,
                                                                   boolean isNested) {
         super(caption, innerInterfaces, action);
 
-        this.doApply = doApply;
         this.singleApply = singleApply;
 
         assert !(isNested && !migrateSessionProperties.isEmpty());
@@ -80,10 +78,6 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
             if (!isNested) {
                 migrateSessionProperties(innerContext.getSession(), context.getSession());
             }
-        }
-
-        if (doApply) {
-            innerContext.apply();
         }
 
         FormInstance<?> formInstance = context.getFormInstance();
