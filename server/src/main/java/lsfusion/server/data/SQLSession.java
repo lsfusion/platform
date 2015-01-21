@@ -40,6 +40,7 @@ import org.apache.commons.collections.Buffer;
 import org.apache.commons.collections.BufferUtils;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.log4j.Logger;
+import org.postgresql.PGConnection;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -62,7 +63,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static final Logger logger = ServerLoggers.sqlLogger;
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
 
-    public static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = new ConcurrentWeakHashMap<SQLSession, Integer>();
+    private static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = new ConcurrentWeakHashMap<SQLSession, Integer>();
+
+    public static Map<Integer, SQLSession> getSQLSessionMap() {
+        Map<Integer, SQLSession> sessionMap = new HashMap<Integer, SQLSession>();
+        for(SQLSession sqlSession : sqlSessionMap.keySet()) {
+            ExConnection connection = sqlSession.getDebugConnection();
+            if(connection != null)
+                sessionMap.put(((PGConnection) connection.sql).getBackendPID(), sqlSession);
+        }
+        return sessionMap;
+    }
 
     // [todo]: переопределен из-за того, что используется ConcurrentWeakHashMap (желательно какой-нибудь ConcurrentIdentityHashMap)
     @Override
@@ -865,6 +876,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         noTransactTimeout.decrementAndGet();
     }
 
+    private boolean forcedCancel = false;
+
+    public void setForcedCancel() {
+        forcedCancel = true;
+    }
+
+    public boolean isForcedCancel() {
+        if(forcedCancel) {
+            forcedCancel = false;
+            return true;
+        }
+        return false;
+    }
+
     public void executeDDL(String DDL) throws SQLException {
         executeDDL(DDL, ExecuteEnvironment.EMPTY);
     }
@@ -1068,7 +1093,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         if(syntax.isUniqueViolation(e))
             handled = new SQLUniqueViolationException(inTransaction, false);
 
-        if(syntax.isTimeout(e))
+        if(syntax.isTimeout(e) && !isForcedCancel()) // если forced cancel не перезапускаем, а просто вываливаемся с ошибкой
             handled = new SQLTimeoutException(isTransactTimeout, inTransaction);
         
         if(syntax.isConnectionClosed(e)) {
