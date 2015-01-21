@@ -98,13 +98,14 @@ public class ImportProperty <P extends PropertyInterface> {
         ImMap<ImportField,Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
 
         Expr importExpr;
+        SessionModifier modifier = session.getModifier();
         if (converter != null)
-            importExpr = converter.property.getExpr(getImplementExprs(converter.mapping, addedKeys, importExprs, session.getModifier()), session.getModifier());
+            importExpr = converter.property.getExpr(getImplementExprs(converter.mapping, addedKeys, importExprs, modifier), modifier);
         else
             importExpr = importField.getExpr(importExprs);
 
         ImRevMap<P, KeyExpr> mapKeys = implement.property.getMapKeys();
-        ImMap<P, Expr> importKeyExprs = getImplementExprs(implement.mapping, addedKeys, importExprs, session.getModifier());
+        ImMap<P, Expr> importKeyExprs = getImplementExprs(implement.mapping, addedKeys, importExprs, modifier);
 
         Expr changeExpr = GroupExpr.create(importKeyExprs, importExpr, groupType != null ? groupType : GroupType.ANY, mapKeys);
 
@@ -115,13 +116,13 @@ public class ImportProperty <P extends PropertyInterface> {
             changeWhere = changeExpr.getWhere();
 
         if (!replaceEqual) {
-            changeWhere = changeWhere.and(implement.property.getExpr(mapKeys).compare(changeExpr, Compare.EQUALS).not());
+            changeWhere = changeWhere.and(implement.property.getExpr(mapKeys, modifier).compare(changeExpr, Compare.EQUALS).not());
         }
         
         if(replaceOnlyNull) {
-            changeWhere = changeWhere.and(implement.property.getExpr(mapKeys).getWhere().not());
+            changeWhere = changeWhere.and(implement.property.getExpr(mapKeys, modifier).getWhere().not());
         }
 
-        return ((CalcProperty<P>)implement.property).getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), session.getModifier());
+        return ((CalcProperty<P>)implement.property).getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), modifier);
     }
 }
