@@ -309,10 +309,10 @@ META defineDocumentHeaderPosted(objectClass)
 
     prePost##objectClass 'Провести' (o) = ACTION isPosted##objectClass(o) <- TRUE;
     post##objectClass 'Провести' (o) = 
-        ACTION NEWSESSION AUTOAPPLY { isPosted##objectClass(o) <- TRUE; } TOOLBAR CONFIRM;
+        ACTION NEWSESSION { isPosted##objectClass(o) <- TRUE; apply(); } TOOLBAR CONFIRM;
 
     unpost##objectClass 'Распровести' (o) = 
-        ACTION NEWSESSION AUTOAPPLY { isPosted##objectClass(o) <- NULL; } TOOLBAR CONFIRM;
+        ACTION NEWSESSION { isPosted##objectClass(o) <- NULL; apply(); } TOOLBAR CONFIRM;
 END
 
 META defineDocumentAbstractHeaderPosted (objectClass)
@@ -372,9 +372,9 @@ META defineDocumentHeaderClosed (objectClass)
     isClosed##objectClass 'Закрыт' = DATA BOOLEAN (objectClass);
     isOpened##objectClass 'Не закрыт' (o) = o IS objectClass AND NOT isClosed##objectClass(o) PERSISTENT;
 
-    close##objectClass 'Закрыть' (o) = ACTION NEWSESSION AUTOAPPLY { isClosed##objectClass(o) <- TRUE; } TOOLBAR CONFIRM;
+    close##objectClass 'Закрыть' (o) = ACTION NEWSESSION { isClosed##objectClass(o) <- TRUE; apply(); } TOOLBAR CONFIRM;
 
-    open##objectClass 'Открыть' (o) = ACTION NEWSESSION AUTOAPPLY { isClosed##objectClass(o) <- NULL; } TOOLBAR CONFIRM;
+    open##objectClass 'Открыть' (o) = ACTION NEWSESSION { isClosed##objectClass(o) <- NULL; apply(); } TOOLBAR CONFIRM;
     
     closeDocumentsDate(date) += ACTION isClosed###objectClass(o) <- TRUE WHERE date###objectClass(o) < date AND date IS DATE;
 END
