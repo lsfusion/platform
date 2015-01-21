@@ -66,6 +66,7 @@ public class RequestUserInputActionProperty extends AroundAspectActionProperty {
                     updateRequestedValue(context, chosenValue);
                 } else {
                     requestCanceledProperty.change(true, context);
+                    context.setLastUserInput(null);
                 }
             }
         } else {

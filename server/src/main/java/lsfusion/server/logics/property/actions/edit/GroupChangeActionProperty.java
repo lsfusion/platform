@@ -57,7 +57,7 @@ public class GroupChangeActionProperty extends AroundAspectActionProperty {
         }
             
         if (wasUserInput) {
-            if (latestUserInput == null)
+            if (latestUserInput == null) // cancel
                 return FlowResult.FINISH;
             context = context.pushUserInput(latestUserInput);
         }
