@@ -1338,7 +1338,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         if (newSession) {
-            listLP = addNewSessionAProp(null, "", listLP, isNested, singleApply, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
+            listLP = addNewSessionAProp(null, "", listLP, isNested, false, singleApply, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
         }
 
         if (newThread) {

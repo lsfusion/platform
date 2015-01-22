@@ -16,9 +16,10 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
     private final FunctionSet<SessionDataProperty> migrateSessionProperties;
     private final boolean isNested;
     private final boolean singleApply;
+    private final boolean doApply;
 
     public <I extends PropertyInterface> NewSessionActionProperty(String caption, ImOrderSet<I> innerInterfaces,
-                                                                  ActionPropertyMapImplement<?, I> action, boolean singleApply,
+                                                                  ActionPropertyMapImplement<?, I> action, boolean singleApply, boolean doApply,
                                                                   FunctionSet<SessionDataProperty> migrateSessionProperties,
                                                                   boolean isNested) {
         super(caption, innerInterfaces, action);
@@ -28,6 +29,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         assert !(isNested && !migrateSessionProperties.isEmpty());
 
         this.isNested = isNested;
+        this.doApply = doApply;
         this.migrateSessionProperties = DataSession.adjustKeep(migrateSessionProperties);
 
 
@@ -78,6 +80,10 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
             if (!isNested) {
                 migrateSessionProperties(innerContext.getSession(), context.getSession());
             }
+        }
+
+        if (doApply) {
+            innerContext.apply();
         }
 
         FormInstance<?> formInstance = context.getFormInstance();
