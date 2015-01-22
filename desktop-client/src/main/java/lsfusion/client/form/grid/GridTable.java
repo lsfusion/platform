@@ -91,7 +91,8 @@ public class GridTable extends ClientPropertyTable {
 
     protected int oldRowScrollTop;
     private int scrollToIndex = -1;
-    private boolean selectOldObject = true; // не скроллить при ctrl+home/ctrl+end (синхронный запрос)
+    private int selectIndex = -1;
+    private boolean scrollToOldObject = true; // не скроллить при ctrl+home/ctrl+end (синхронный запрос)
     
     private ClientGroupObject groupObject;
     private TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>> sortableHeaderManager;
@@ -507,8 +508,8 @@ public class GridTable extends ClientPropertyTable {
 
     private void adjustSelection() {
         //надо сдвинуть ViewPort - иначе дергаться будет
-        int currentInd = scrollToIndex;
-        if (selectOldObject && oldRowScrollTop != -1) {
+        final int currentInd = scrollToIndex;
+        if (scrollToOldObject && oldRowScrollTop != -1) {
             ClientGroupObjectValue currentKey = getCurrentObject();
             if (currentKey != null && currentInd >= 0 && currentInd < getRowCount()) {
                 int newVerticalScrollPosition = max(0, currentInd * getRowHeight() - oldRowScrollTop);
@@ -519,9 +520,10 @@ public class GridTable extends ClientPropertyTable {
             }
             oldRowScrollTop = -1;
         }
-        selectRow(currentInd);
+        selectRow(selectIndex);
         scrollToIndex = -1;
-        selectOldObject = true;
+        selectIndex = -1;
+        scrollToOldObject = true;
     }
     
     private void selectColumn(int columnNumber) {
@@ -577,7 +579,7 @@ public class GridTable extends ClientPropertyTable {
         int oldIndex = rowKeys.indexOf(currentObject);
         int newIndex = irowKeys.indexOf(currentObject);
 
-        if ((!selectOldObject || (oldIndex == -1 || newIndex == -1)) && newCurrentObject != null) {
+        if ((!scrollToOldObject || (oldIndex == -1 || newIndex == -1)) && newCurrentObject != null) {
             //если старого объекта не нашли, то позиционируем новый
             oldIndex = rowKeys.indexOf(newCurrentObject);
             newIndex = irowKeys.indexOf(newCurrentObject);
@@ -589,6 +591,7 @@ public class GridTable extends ClientPropertyTable {
             viewMoveInterval = newIndex - oldIndex;
         }
         scrollToIndex = newIndex;
+        selectIndex = newCurrentObject != null ? irowKeys.indexOf(newCurrentObject) : newIndex;
 
         rowKeys = irowKeys;
 
@@ -1535,7 +1538,7 @@ public class GridTable extends ClientPropertyTable {
         public void actionPerformed(ActionEvent e) {
             try {
                 if (groupObject.pageSize != 0) {
-                    selectOldObject = false;
+                    scrollToOldObject = false;
                     form.changeGroupObject(groupObject, direction);
                 } else if (!rowKeys.isEmpty()) {
                     switch (direction) {
