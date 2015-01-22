@@ -2,8 +2,8 @@
 <jnlp spec="1.5+" codebase="${jnlp.codebase}" href="${jnlp.url}">
     <information>
         <title>${jnlp.appName}</title>
-        <vendor>Nomosoft Ltd.</vendor>
-        <description>Fusion</description>
+        <vendor>Luxsoft Ltd.</vendor>
+        <description>lsFusion</description>
         <icon href="default.png" kind="default"/>
         <icon href="splash.jpg" kind="splash"/>
         <shortcut online="true">
