@@ -104,9 +104,9 @@
         <keystore.pass>f7y45cnb</keystore.pass>
 
         <!-- Repositories properties -->
-        <lsfusion.releases.repo>http://lsfusion.ru/nexus/content/repositories/releases</lsfusion.releases.repo>
-        <lsfusion.public.repo>http://lsfusion.ru/nexus/content/groups/public</lsfusion.public.repo>
-        <lsfusion.snapshots.repo>http://lsfusion.ru/nexus/content/repositories/snapshots</lsfusion.snapshots.repo>
+        <lsfusion.releases.repo>http://lsfusion.ru:8080/nexus/content/repositories/releases</lsfusion.releases.repo>
+        <lsfusion.public.repo>http://lsfusion.ru:8080/nexus/content/groups/public</lsfusion.public.repo>
+        <lsfusion.snapshots.repo>http://lsfusion.ru:8080/nexus/content/repositories/snapshots</lsfusion.snapshots.repo>
     </properties>
 
     <repositories>

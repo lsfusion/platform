@@ -7,7 +7,7 @@ set POM=dockingFramesCore-1.1.2p10f.pom
 set SRC_JAR=dockingFramesCore-1.1.2p10f-sources.jar
 
 set REPO_ID=lsfusion.thirdparty
-set REPO_URL=http://lsfusion.ru/nexus/content/repositories/thirdparty/
+set REPO_URL=http://lsfusion.ru:8080/nexus/content/repositories/thirdparty/
 
 if "%SRC_JAR%" == "" (
     @echo "no sources"
