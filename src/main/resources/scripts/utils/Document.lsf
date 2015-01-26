@@ -96,6 +96,15 @@ META deriveDocumentHeaderTimePrefix (objectClass, prefix)
         IF o IS objectClass AND NOT prefix###date##objectClass(o) THEN prefix###date##objectClass(o) <- currentDate();
         IF o IS objectClass AND NOT prefix###time##objectClass(o) THEN prefix###time##objectClass(o) <- currentTime();
     };
+    WHEN SESSION CHANGED(prefix###date##objectClass(o)) AND NOT CHANGED(prefix###time##objectClass(o)) DO {
+        prefix###time##objectClass(o) <- IF prefix###date##objectClass(o) > currentDate() THEN 00:00 ELSE currentTime();
+    } 
+END
+
+META deriveDocumentHeaderTimeBeforePrefix (objectClass, prefix)
+    WHEN SESSION CHANGED(prefix###date##objectClass(o)) AND NOT prefix###time##objectClass(o) DO {
+        prefix###time##objectClass(o) <- 23:59;
+    } 
 END
 
 META defineDocumentAbstractHeaderTimePrefix (objectClass, prefix, caption)
