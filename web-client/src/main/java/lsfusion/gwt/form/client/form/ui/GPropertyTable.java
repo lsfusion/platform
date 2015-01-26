@@ -174,6 +174,15 @@ public abstract class GPropertyTable<T> extends DataGrid<T> implements EditManag
 
     private Element getCellParent(int row, int column) {
         TableCellElement td = getChildElement(row).getCells().getItem(column);
+        
+        // желательно предоставить здесь не сам td, а вложенный в него div, как при обычном редактировании
+        // или до конца разобраться, почему наличие треугольника в углу мешает редактированию по hotkey 
+        for (int i = 0; i < td.getChildCount(); i++) {
+            Element elem = td.getChild(i).cast();
+            if (!elem.hasClassName("rightBottomCornerTriangle") && getTableBuilder().isColumn(elem)) {
+                return elem;
+            }
+        }
         return getCellParentElement(td);
     }
 
