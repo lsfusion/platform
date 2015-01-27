@@ -249,7 +249,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
 
         for (GroupObjectInstance groupObject : groupObjects) {
-            if (!groupObject.fixedFilters.isEmpty()) {
+            if (groupObject.entity.updateType != null && !groupObject.fixedFilters.isEmpty()) {
                 groupObject.seek(groupObject.entity.updateType == UpdateType.LAST);
             } else {
                 for (ObjectInstance object : groupObject.objects) {

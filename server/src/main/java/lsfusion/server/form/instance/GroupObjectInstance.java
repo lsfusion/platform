@@ -738,7 +738,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 updateKeys = true;
                 currentObject = MapFact.EMPTY();
             } else if (updateKeys) {
-                if (objectsUpdated) {
+                if (entity.updateType != null && objectsUpdated) {
                     orderSeeks = entity.updateType == UpdateType.LAST ? SEEK_END : entity.updateType == UpdateType.FIRST ? SEEK_HOME : null;
                 } else {  // изменились фильтры, порядки, вид, ищем текущий объект
                     orderSeeks = new SeekObjects(false, currentObject);
