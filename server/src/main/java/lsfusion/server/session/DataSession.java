@@ -1958,13 +1958,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return BaseUtils.filterKeys(data, sessionData, SessionDataProperty.class);
     }
     public void copyDataTo(DataSession other, FunctionSet<SessionDataProperty> toCopy) throws SQLException, SQLHandledException {
+        dropChanges(other.filterSessionData(toCopy).keySet());
         for (Map.Entry<SessionDataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : filterSessionData(toCopy).entrySet()) {
-            other.dropChanges(e.getKey());
             other.change(e.getKey(), SinglePropertyTableUsage.getChange(e.getValue()));
         }
     }
     public void dropSessionChanges(ImSet<SessionDataProperty> props) throws SQLException, SQLHandledException {
-        for (SessionDataProperty prop : props.filterFn(new NotFunctionSet<SessionDataProperty>(recursiveUsed))) { // recursiveUsed не drop'аем
+        dropChanges(props.filterFn(new NotFunctionSet<SessionDataProperty>(recursiveUsed)));
+    }
+    public void dropChanges(Iterable<SessionDataProperty> props) throws SQLException, SQLHandledException {
+        for (SessionDataProperty prop : props) { // recursiveUsed не drop'аем
             dropChanges(prop);
         }
     }
