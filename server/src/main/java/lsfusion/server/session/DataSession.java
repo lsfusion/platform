@@ -1958,7 +1958,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return BaseUtils.filterKeys(data, sessionData, SessionDataProperty.class);
     }
     public void copyDataTo(DataSession other, FunctionSet<SessionDataProperty> toCopy) throws SQLException, SQLHandledException {
-        dropChanges(other.filterSessionData(toCopy).keySet());
+        other.dropChanges(other.filterSessionData(toCopy).keySet());
         for (Map.Entry<SessionDataProperty, SinglePropertyTableUsage<ClassPropertyInterface>> e : filterSessionData(toCopy).entrySet()) {
             other.change(e.getKey(), SinglePropertyTableUsage.getChange(e.getValue()));
         }
