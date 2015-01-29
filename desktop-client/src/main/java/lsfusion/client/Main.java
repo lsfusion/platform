@@ -10,6 +10,7 @@ import lsfusion.client.form.editor.rich.RichEditorPane;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.client.rmi.RMITimeoutSocketFactory;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.event.EventBus;
@@ -459,7 +460,7 @@ public class Main {
             }
 
             public void openInExcel(ReportGenerationData generationData) {
-                ReportGenerator.exportToExcelAndOpen(generationData);
+                ReportGenerator.exportToExcelAndOpen(generationData, FormPrintType.XLSX);
             }
 
             public boolean isFull() {

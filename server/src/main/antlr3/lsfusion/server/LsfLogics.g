@@ -3515,8 +3515,8 @@ formPrintTypeLiteral returns [FormPrintType val]
 	$val = FormPrintType.PRINT;
 } 
 	:	'PRINT'
-		(
-			'AUTO' { $val = FormPrintType.AUTO; }
+		(	'AUTO' { $val = FormPrintType.AUTO; }
+		|	'XLS'  { $val = FormPrintType.XLS; }
 		|	'XLSX' { $val = FormPrintType.XLSX; }
 		|	'PDF' { $val = FormPrintType.PDF; }
 		)?

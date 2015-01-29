@@ -3,12 +3,14 @@ package jasperapi;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
 import lsfusion.base.Pair;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportConstants;
 import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
+import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 
 import javax.print.attribute.standard.MediaTray;
@@ -376,16 +378,16 @@ public class ReportGenerator {
         return res;
     }
 
-    public static void exportToExcelAndOpen(ReportGenerationData generationData) {
+    public static void exportToExcelAndOpen(ReportGenerationData generationData, FormPrintType type) {
         try {
-            File tempFile = exportToExcel(generationData);
-
+            assert type == FormPrintType.XLS || type == FormPrintType.XLSX;
+            File tempFile = (type == FormPrintType.XLSX ? exportToXlsx(generationData) : exportToXls(generationData));
+            
             if (Desktop.isDesktopSupported()) {
                 Desktop.getDesktop().open(tempFile);
             }
 
             tempFile.deleteOnExit();
-
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при экспорте в Excel", e);
         }
@@ -406,7 +408,11 @@ public class ReportGenerator {
         }
     }
 
-    public static File exportToExcel(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
+    public static File exportToXls(ReportGenerationData generationData) throws ClassNotFoundException, IOException, JRException {
+        return exportToFile(generationData, new JRXlsExporter(), "xls");
+    }
+    
+    public static File exportToXlsx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
         return exportToFile(generationData, new JRXlsxExporter(), "xlsx");
     }
     
@@ -431,7 +437,7 @@ public class ReportGenerator {
 
     public static byte[] exportToExcelByteArray(ReportGenerationData generationData) {
         try {
-            File tempFile = exportToExcel(generationData);
+            File tempFile = exportToXlsx(generationData);
             FileInputStream fis = new FileInputStream(tempFile);
             byte[] array = new byte[(int) tempFile.length()];
             fis.read(array);

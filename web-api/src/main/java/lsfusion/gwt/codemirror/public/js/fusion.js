@@ -35,7 +35,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                            "SHOWIF SINGLE SPLITH SPLITV STEP STRETCH STRICT STRUCT SUBJECT " +
                            "SUM TABBED TABLE TEXTHALIGN TEXTVALIGN THEN TIME TITLE TO TODRAW " +
                            "TOOLBAR TOP TRAILING TREE TRUE UNGROUP UPDATE VALIGN " +
-                           "VERTICAL WHEN WHERE WHILE WINDOW WORDFILE XLSX XOR YES");
+                           "VERTICAL WHEN WHERE WHILE WINDOW WORDFILE XLS XLSX XOR YES");
 
     var isOperatorChar = /[+\-*&%=<>!?|@#]/;
 

@@ -2,5 +2,5 @@ package lsfusion.interop;
 
 
 public enum FormPrintType {
-    PRINT, AUTO, XLSX, PDF
+    PRINT, AUTO, XLSX, XLS, PDF
 }
