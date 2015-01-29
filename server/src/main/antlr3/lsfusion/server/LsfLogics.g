@@ -1937,7 +1937,7 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	casePDB=caseActionPropertyDefinitionBody[context, dynamic] { $property = $casePDB.property; }
 	|	multiPDB=multiActionPropertyDefinitionBody[context, dynamic] { $property = $multiPDB.property; }	
 	|	termPDB=terminalFlowActionPropertyDefinitionBody { $property = $termPDB.property; }
-	|   applyPDB=applyActionPropertyDefinitionBody[context, dynamic] { $property = $applyPDB.property; }
+	|  	applyPDB=applyActionPropertyDefinitionBody[context, dynamic] { $property = $applyPDB.property; }
 	
 	|	formPDB=formActionPropertyDefinitionBody[context, dynamic] { $property = $formPDB.property; }
 	|	msgPDB=messageActionPropertyDefinitionBody[context, dynamic] { $property = $msgPDB.property; }
@@ -2852,10 +2852,10 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 	;
 
 addNavigatorElementStatement[NavigatorElement parentElement]
-	:	'ADD' elem=navigatorElementSelector (caption=stringLiteral)? posSelector=navigatorElementInsertPositionSelector[parentElement] ('TO' wid=compoundID)?
+	:	'ADD' elem=navigatorElementSelector (caption=stringLiteral)? posSelector=navigatorElementInsertPosition ('TO' wid=compoundID)?
 		{
 			if (inPropParseState()) {
-				self.setupNavigatorElement($elem.element, $caption.val, $posSelector.parent, $posSelector.position, $posSelector.anchor, $wid.sid);
+				self.setupNavigatorElement($elem.element, $caption.val, parentElement, $posSelector.position, $posSelector.anchor, $wid.sid);
 			}
 		}
 		navigatorElementStatementBody[$elem.element]
@@ -2865,27 +2865,29 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 @init {
 	NavigatorElement newElement = null;
 }
-	:	'NEW' id=ID ('ACTION' au=propertyUsage)? caption=stringLiteral posSelector=navigatorElementInsertPositionSelector[parentElement] ('TO' wid=compoundID)? ('IMAGE' path=stringLiteral)?
+	:	'NEW' id=ID ('ACTION' au=propertyUsage)? caption=stringLiteral posSelector=navigatorElementInsertPosition ('TO' wid=compoundID)? ('IMAGE' path=stringLiteral)?
 		{
 			if (inPropParseState()) {
-				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, $posSelector.parent, $posSelector.position, $posSelector.anchor, $wid.sid, $au.propUsage, $path.val);
+				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, parentElement, $posSelector.position, $posSelector.anchor, $wid.sid, $au.propUsage, $path.val);
 			}
 		}
 		navigatorElementStatementBody[newElement]
 	;
+
+//navigatorElementOptions
+//	:	
+//	(	'TO' wid=compoundID
+//	|	navigatorElementInsertPosition
+//	|	'IMAGE' path=stringLiteral	
+//	)*
+//	;
 	
-navigatorElementInsertPositionSelector[NavigatorElement parentElement] returns [NavigatorElement parent, InsertPosition position, NavigatorElement anchor]
+navigatorElementInsertPosition returns [InsertPosition position, NavigatorElement anchor]
 @init {
-	$parent = parentElement;
 	$position = InsertPosition.IN;
 	$anchor = null;
 }
-	:	(	'IN' { $position = InsertPosition.IN; }
-			elem=navigatorElementSelector { $parent = $elem.element; }
-		)?
-		(
-			(pos=insertRelativePositionLiteral { $position = $pos.val; }
-			elem=navigatorElementSelector { $anchor = $elem.element; })
+	:	(	(pos=insertRelativePositionLiteral { $position = $pos.val; } elem=navigatorElementSelector { $anchor = $elem.element; })
 		|	'FIRST' { $position = InsertPosition.FIRST; }
 		)?
 	;
@@ -2991,10 +2993,10 @@ newComponentStatement[ComponentView parentComponent]
 @init {
 	ComponentView newComp = null;
 }
-	:	'NEW' cid=multiCompoundID insPosition=componentInsertPositionSelector[parentComponent]
+	:	'NEW' cid=multiCompoundID insPosition=componentInsertPosition
 		{
 			if (inPropParseState()) {
-				newComp = $designStatement::design.createNewComponent($cid.sid, insPosition.parent, insPosition.position, insPosition.anchor, self.getVersion());
+				newComp = $designStatement::design.createNewComponent($cid.sid, parentComponent, insPosition.position, insPosition.anchor, self.getVersion());
 			}
 		}
 		componentStatementBody[newComp, newComp]
@@ -3004,27 +3006,21 @@ addComponentStatement[ComponentView parentComponent]
 @init {
 	ComponentView insComp = null;
 }
-	:	'ADD' insSelector=componentSelector { insComp = $insSelector.component; } insPosition=componentInsertPositionSelector[parentComponent]
+	:	'ADD' insSelector=componentSelector { insComp = $insSelector.component; } insPosition=componentInsertPosition
 		{
 			if (inPropParseState()) {
-				$designStatement::design.moveComponent(insComp, insPosition.parent, insPosition.position, insPosition.anchor, self.getVersion());
+				$designStatement::design.moveComponent(insComp, parentComponent, insPosition.position, insPosition.anchor, self.getVersion());
 			}
 		}
 		componentStatementBody[insComp, insComp]
 	;
 	
-componentInsertPositionSelector[ComponentView parentComponent] returns [ComponentView parent, InsertPosition position, ComponentView anchor]
+componentInsertPosition returns [InsertPosition position, ComponentView anchor]
 @init {
-	$parent = parentComponent;
 	$position = InsertPosition.IN;
 	$anchor = null;
 }
-	:	(	'IN' { $position = InsertPosition.IN; }
-			comp=componentSelector { $parent = $comp.component; }
-		)?
-		(
-			(pos=insertRelativePositionLiteral { $position = $pos.val; }
-			comp=componentSelector { $anchor = $comp.component; })
+	:	(	(pos=insertRelativePositionLiteral { $position = $pos.val; } comp=componentSelector { $anchor = $comp.component; })
 		|	'FIRST' { $position = InsertPosition.FIRST; }
 		)?
 	;
