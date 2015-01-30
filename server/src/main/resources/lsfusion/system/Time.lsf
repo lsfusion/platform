@@ -41,6 +41,8 @@ sumDateTimeSeconds(dateTime, secs) = [= FORMULA DATETIME PG '(($1)+($2)*CAST(\'1
 
 subtractDateTimeSeconds(dateTime, secs) = [= FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 seconds\' AS INTERVAL))' MS 'DATEADD(ss, -($2), $1)'](dateTime AS DATETIME, secs AS LONG);
 
+subtractDateTimeDay(dateTime, days) = [= FORMULA DATETIME PG '(($1)-($2)*CAST(\'1 days\' AS INTERVAL))' MS 'DATEADD(dd, -($2), $1)'](dateTime AS DATETIME, days AS LONG);
+
 dateTimeToDateTime = FORMULA DATETIME PG 'to_timestamp(CAST($1 as char(10)) || CAST($2 as char(12)), \'YYYY-MM-DDHH24:MI:SS.MS\')'
                                       MS 'CAST($1 AS DATETIME) + CAST($2 AS DATETIME)';
 
