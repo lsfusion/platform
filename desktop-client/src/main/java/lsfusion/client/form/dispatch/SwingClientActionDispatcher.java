@@ -142,11 +142,11 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         ModalityType modality = action.modalityType;
         if (modality == ModalityType.DOCKED_MODAL) {
             pauseDispatching();
-            beforeShowDockedModalForm();
+            beforeModalActionInSameEDT();
             Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, new MainFrame.FormCloseListener() {
                 @Override
                 public void formClosed() {
-                    afterHideDockedModalForm();
+                    afterModalActionInSameEDT();
                     continueDispatching();
                 }
             });
@@ -158,10 +158,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         }
     }
 
-    protected void beforeShowDockedModalForm() {
+    protected void beforeModalActionInSameEDT() {
     }
 
-    protected void afterHideDockedModalForm() {
+    protected void afterModalActionInSameEDT() {
     }
 
     public void execute(ReportClientAction action) {
@@ -318,10 +318,15 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(MessageClientAction action) {
-        if (!action.extended) {
-            JOptionPane.showMessageDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            new ExtendedMessageDialog(getDialogParentContainer(), action.caption, action.message).setVisible(true);
+        beforeModalActionInSameEDT();
+        try {
+            if (!action.extended) {
+                JOptionPane.showMessageDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                new ExtendedMessageDialog(getDialogParentContainer(), action.caption, action.message).setVisible(true);
+            }
+        } finally {
+            afterModalActionInSameEDT();
         }
     }
 

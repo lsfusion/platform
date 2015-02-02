@@ -42,12 +42,12 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     @Override
-    protected void beforeShowDockedModalForm() {
+    protected void beforeModalActionInSameEDT() {
         getFormController().block();
     }
 
     @Override
-    protected void afterHideDockedModalForm() {
+    protected void afterModalActionInSameEDT() {
         getFormController().unblock();
     }
 
