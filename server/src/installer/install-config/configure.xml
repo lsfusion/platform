@@ -40,7 +40,7 @@
     </target>
 
     <target name="configureIdea">
-        <copy file="../${idea.plugin}" tofile="${idea.dir}/plugins/${idea.plugin}" />
+        <unzip src="../${idea.plugin}" tofile="${idea.dir}/plugins" />
         
         <replace file="jdk.table.xml" token="java.home" value="${jdk.home}" />
         <copy file="jdk.table.xml" tofile="${user.home}/.IdeaIC13/config/options/jdk.table.xml" />
