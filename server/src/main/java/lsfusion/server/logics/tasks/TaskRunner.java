@@ -1,6 +1,7 @@
 package lsfusion.server.logics.tasks;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.MultiCauseException;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.context.ThreadLocalContext;
@@ -15,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TaskRunner {
 
     public static int availableProcessors() {
-        return Runtime.getRuntime().availableProcessors() / 2;
+        return BaseUtils.max(Runtime.getRuntime().availableProcessors() / 2, 1);
     }
 
     public static void runTask(PublicTask task, Logger logger) throws InterruptedException {
