@@ -44,6 +44,7 @@ Function javaExistingDirPageLeave
     StrCpy $javaExe "$0\bin\java.exe"
     StrCpy $jvmDll "$2"
 
+    MessageBox $jvmDll
 FunctionEnd
 
 ; ====================
