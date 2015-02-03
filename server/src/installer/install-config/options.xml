@@ -5,6 +5,7 @@
     <property name="lsfusion.dbport.key" value="db.port" />
     <property name="lsfusion.dbuser.key" value="db.user" />
     <property name="lsfusion.dbpass.key" value="db.pass" />
+    <property name="lsfusion.adminpass.key" value="admin.pass" />
   </component>
 </application>
 

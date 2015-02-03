@@ -379,6 +379,7 @@ Function execAntConfiguration
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "db.port=" "$pgPort" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "db.user=" "$pgUser" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "db.pass=" "$pgPassword" $R0
+        ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "admin.pass=" "$platformServerPassword" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.dir=" "$ideaDir" $R0
         ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "idea.plugin=" "${IDEA_PLUGIN}" $R0
         nsExec::ExecToLog '"${INSTCONFDIR}\configure.bat" configureIdea'

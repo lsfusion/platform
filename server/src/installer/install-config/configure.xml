@@ -55,6 +55,7 @@
         <replace file="options.xml" token="db.port" value="${db.port}" />
         <replace file="options.xml" token="db.user" value="${db.user}" />
         <replace file="options.xml" token="db.pass" value="${db.pass}" />
+        <replace file="options.xml" token="admin.pass" value="${admin.pass}" />
         <copy file="options.xml" tofile="${user.home}/.IdeaIC${idea.majorversion}/config/options/options.xml" />
     </target>
 </project>
