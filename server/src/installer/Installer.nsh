@@ -14,10 +14,10 @@ SetCompressor lzma
 !define WEBCLIENT_SECTION_NAME "lsFusion Web Client"
 !define MENU_SECTION_NAME "Start Menu Items"
 !define SERVICES_SECTION_NAME "Create services"
-!define PG_SECTION_NAME "PostgreSQL 9.2"
-!define JAVA_SECTION_NAME "JDK 1.7.0_45"
+!define PG_SECTION_NAME "PostgreSQL ${PG_VERSION}"
+!define JAVA_SECTION_NAME "JDK ${JDK_VERSION}"
 !define TOMCAT_SECTION_NAME "Apache Tomcat 7.0.47"
-!define IDEA_SECTION_NAME "IntelliJ IDEA Community Edition 13.0.1 with lsFusion plugin"
+!define IDEA_SECTION_NAME "IntelliJ IDEA Community Edition ${IDEA_VERSION} with lsFusion plugin"
 
 !define CLIENT_JAR "lsfusion-client-${VERSION}.jar"
 !define SERVER_JAR "lsfusion-server-${VERSION}.jar"
@@ -197,16 +197,16 @@ Function .onInit
     Pop $R1
     Pop $R1
     
-    StrCpy $javaDir "$ProgramFiles${ARCH}\Java\jdk1.7.0_45"
+    StrCpy $javaDir "$ProgramFiles${ARCH}\Java\jdk${JDK_VERSION}"
 
-    StrCpy $ideaDir "$ProgramFiles32\JetBrains\IDEA Community Edition 13.0.1"
+    StrCpy $ideaDir "$ProgramFiles32\JetBrains\IDEA Community Edition ${IDEA_VERSION}"
 
-    StrCpy $pgDir "$ProgramFiles${ARCH}\PostgreSQL\9.2"
+    StrCpy $pgDir "$ProgramFiles${ARCH}\PostgreSQL\${PG_VERSION}"
     StrCpy $pgHost "localhost"
     StrCpy $pgPort "5432"
     StrCpy $pgUser "postgres"
     StrCpy $pgDbName "lsfusion"
-    StrCpy $pgServiceName "postgresql-9.2"
+    StrCpy $pgServiceName "postgresql-${PG_VERSION}"
 
     StrCpy $tomcatDir "$ProgramFiles${ARCH}\apache-tomcat-7.0.47"
     StrCpy $tomcatShutdownPort "8005"
@@ -240,8 +240,8 @@ Function .onInit
     ${if} $1 != ""
         ReadRegStr $pgVersion HKLM "SOFTWARE\PostgreSQL\Installations\$1" "Version"
         ReadRegStr $pgDir HKLM "SOFTWARE\PostgreSQL\Installations\$1" "Base Directory"
-        ; if installed version is < 9.2 then abort
-        ${VersionCompare} $pgVersion "9.2" $0
+        ; if installed version is < PG_VERSION then abort
+        ${VersionCompare} $pgVersion "${PG_VERSION}" $0
         ${if} $0 == "2"
             MessageBox MB_ICONEXCLAMATION|MB_OK $(strOldPostgreMessage)
             Abort
@@ -477,8 +477,8 @@ Function createShortcuts
     
     ${if} ${SectionIsSelected} ${SecIdea}
         SetOutPath "$ideaDir"
-        CreateShortCut "$SMPROGRAMS\JetBrains\IntelliJ IDEA Community Edition 13.0.1.lnk" "$ideaDir\bin\${IDEA_EXE}" "" "$ideaDir\bin\${IDEA_EXE}"
-        CreateShortCut "$DESKTOP\IntelliJ IDEA Community Edition 13.0.1.lnk" "$ideaDir\bin\${IDEA_EXE}" "" "$ideaDir\bin\${IDEA_EXE}"
+        CreateShortCut "$SMPROGRAMS\JetBrains\IntelliJ IDEA Community Edition ${IDEA_VERSION}.lnk" "$ideaDir\bin\${IDEA_EXE}" "" "$ideaDir\bin\${IDEA_EXE}"
+        CreateShortCut "$DESKTOP\IntelliJ IDEA Community Edition ${IDEA_VERSION}.lnk" "$ideaDir\bin\${IDEA_EXE}" "" "$ideaDir\bin\${IDEA_EXE}"
     ${endIf}
 
 FunctionEnd

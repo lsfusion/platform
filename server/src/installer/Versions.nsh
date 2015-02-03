@@ -1,0 +1,7 @@
+
+!define PG_VERSION 9.4
+!define JDK_VERSION 1.7.0_75
+!define IDEA_VERSION 14.0.3
+
+!define PG_MINORVERSION .0
+!define JDK_DISTRVERSION 7u75

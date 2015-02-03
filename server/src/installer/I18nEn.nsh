@@ -8,24 +8,24 @@ LangString strWebClientSectionDescription ${LANG_ENGLISH} "lsFusion WebClient"
 LangString strServicesSectionDescription ${LANG_ENGLISH} "Install server applications as window services"
 LangString strShortcutsSectionDescription ${LANG_ENGLISH} "Install shortcuts"
 LangString strPgSectionDescription ${LANG_ENGLISH} "PostgresSQL database"
-LangString strJavaSectionDescription ${LANG_ENGLISH} "Java Development Kit 1.7.0_45"
+LangString strJavaSectionDescription ${LANG_ENGLISH} "Java Development Kit ${JDK_VERSION}"
 LangString strTomcatSectionDescription ${LANG_ENGLISH} "Apache Tomcat 7.0.47"
-LangString strIdeaSectionDescription ${LANG_ENGLISH} "IntelliJ IDEA Community Edition 13.0.1 with bundled lsFusion plugin"
+LangString strIdeaSectionDescription ${LANG_ENGLISH} "IntelliJ IDEA Community Edition ${IDEA_VERSION} with bundled lsFusion plugin"
 
 LangString strPlatformUnSectionDescription ${LANG_ENGLISH} "Uninstall lsFusion Platform"
 LangString strPgUnSectionDescription ${LANG_ENGLISH} "Uninstall PostgresSQL database"
-LangString strJavaUnSectionDescription ${LANG_ENGLISH} "Java Development Kit 1.7.0_45 can't be uninstalled automatically, please uninstall it manually from 'Add or remove programs' console"
+LangString strJavaUnSectionDescription ${LANG_ENGLISH} "Java Development Kit ${JDK_VERSION} can't be uninstalled automatically, please uninstall it manually from 'Add or remove programs' console"
 LangString strTomcatUnSectionDescription ${LANG_ENGLISH} "Uninstall Apache Tomcat 7.0.47"
-LangString strIdeaUnSectionDescription ${LANG_ENGLISH} "Uninstall IntelliJ IDEA Community Edition 13.0.1"
+LangString strIdeaUnSectionDescription ${LANG_ENGLISH} "Uninstall IntelliJ IDEA Community Edition ${IDEA_VERSION}"
 
 LangString strPlatformIsNotSelected ${LANG_ENGLISH} "You have to select at least one of lsFusion Platform components to install."
 
 LangString strPostgreDirHeader ${LANG_ENGLISH} "Choose the folder in which to install IntelliJ IDEA Community Edition 13.0.1."
-LangString strPostgreDirTextTop ${LANG_ENGLISH} "Setup will install IntelliJ IDEA Community Edition 13.0.1 to the folowing folder."
+LangString strPostgreDirTextTop ${LANG_ENGLISH} "Setup will install IntelliJ IDEA Community Edition ${IDEA_VERSION} to the folowing folder."
 LangString strDestinationFolder ${LANG_ENGLISH} "Destination Folder"
 
-LangString strJavaDirHeader ${LANG_ENGLISH} "Choose the folder in which to install JDK 1.7.0_45."
-LangString strJavaDirTextTop ${LANG_ENGLISH} "Setup will install JDK 1.7.0_45 to the folowing folder."
+LangString strJavaDirHeader ${LANG_ENGLISH} "Choose the folder in which to install JDK ${JDK_VERSION}."
+LangString strJavaDirTextTop ${LANG_ENGLISH} "Setup will install JDK ${JDK_VERSION} to the folowing folder."
 LangString strJavaTitle ${LANG_ENGLISH} "Java Virtual Machine"
 LangString strJavaSubtitle ${LANG_ENGLISH} "Java Virtual Machine path selection."
 LangString strSelectJavaMessage ${LANG_ENGLISH} "Please select the path of a Java SE 6.0 or later JDK installed on your system."
@@ -63,7 +63,7 @@ LangString strWebClientDirectory ${LANG_ENGLISH} "Select directory to copy WebCl
 LangString strInvalidWebClientContext ${LANG_ENGLISH} 'The WebClient WebApp context may not contain a space or any of the following characters: <>:"/\:|?*'
 LangString strContinueOnEmptyPassword ${LANG_ENGLISH} "Do you really want to continue and use empty password?"
 
-LangString strOldPostgreMessage ${LANG_ENGLISH} "The installed version of PostgreSQL is too old (<9.2). Please uninstall this version or try a manual installation of PostgreSQL."
+LangString strOldPostgreMessage ${LANG_ENGLISH} "The installed version of PostgreSQL is too old (<${PG_VERSION}). Please uninstall this version or try a manual installation of PostgreSQL."
 
 LangString strPostgreOptions ${LANG_ENGLISH} "PostgreSQL Server options."
 LangString strPasswordMessage ${LANG_ENGLISH} "Please provide a password for the database superuser."

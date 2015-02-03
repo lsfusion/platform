@@ -1,8 +1,10 @@
 !define ARCH 64
 
-!define JAVA_INSTALLER "jdk-7u45-windows-x64.exe"
-!define PG_INSTALLER "postgresql-9.2.5-1-windows-x64.exe"
-!define IDEA_INSTALLER "ideaIC-13.0.1.exe"
+!include Versions.nsh
+
+!define JAVA_INSTALLER "jdk-${JDK_DISTRVERSION}-windows-x64.exe"
+!define PG_INSTALLER "postgresql-${PG_VERSION}${PG_MINORVERSION}-1-windows-x64.exe"
+!define IDEA_INSTALLER "ideaIC-${IDEA_VERSION}.exe"
 !define IDEA_PLUGIN "lsfusion-idea-plugin.zip"
 !define IDEA_EXE "idea64.exe"
 !define TOMCAT_ARCHIVE "apache-tomcat-7.0.47-windows-x64.zip"

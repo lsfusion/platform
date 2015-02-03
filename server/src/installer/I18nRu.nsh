@@ -7,25 +7,25 @@ LangString strClientSectionDescription ${LANG_RUSSIAN} "lsFusion Client"
 LangString strWebClientSectionDescription ${LANG_RUSSIAN} "lsFusion WebClient"
 LangString strServicesSectionDescription ${LANG_RUSSIAN} "Зарегистрировать серверные приложения как сервисы"
 LangString strShortcutsSectionDescription ${LANG_RUSSIAN} "Создать ярлыки"
-LangString strPgSectionDescription ${LANG_RUSSIAN} "База данных PostgresSQL 9.2"
-LangString strJavaSectionDescription ${LANG_RUSSIAN} "Java Development Kit 1.7.0_45"
+LangString strPgSectionDescription ${LANG_RUSSIAN} "База данных PostgresSQL ${PG_VERSION}"
+LangString strJavaSectionDescription ${LANG_RUSSIAN} "Java Development Kit ${JDK_VERSION}"
 LangString strTomcatSectionDescription ${LANG_RUSSIAN} "Apache Tomcat 7.0.47"
-LangString strIdeaSectionDescription ${LANG_RUSSIAN} "IntelliJ IDEA Community Edition 13.0.1 с встроенным плагином lsFusion"
+LangString strIdeaSectionDescription ${LANG_RUSSIAN} "IntelliJ IDEA Community Edition ${IDEA_VERSION} с встроенным плагином lsFusion"
 
 LangString strPlatformUnSectionDescription ${LANG_RUSSIAN} "Удалить lsFusion Platform"
 LangString strPgUnSectionDescription ${LANG_RUSSIAN} "Удалить PostgresSQL database"
-LangString strJavaUnSectionDescription ${LANG_RUSSIAN} "Java Development Kit 1.7.0_45 не может быть удалена автоматически, поэтому удалите её вручную с помощью консоли 'Удаление программ'"
+LangString strJavaUnSectionDescription ${LANG_RUSSIAN} "Java Development Kit ${JDK_VERSION} не может быть удалена автоматически, поэтому удалите её вручную с помощью консоли 'Удаление программ'"
 LangString strTomcatUnSectionDescription ${LANG_RUSSIAN} "Удалить Apache Tomcat 7.0.47"
-LangString strIdeaUnSectionDescription ${LANG_RUSSIAN} "Удалить IntelliJ IDEA Community Edition 13.0.1"
+LangString strIdeaUnSectionDescription ${LANG_RUSSIAN} "Удалить IntelliJ IDEA Community Edition ${IDEA_VERSION}"
 
 LangString strPlatformIsNotSelected ${LANG_RUSSIAN} "Пожалуйста выберите хотя бы один компонент lsFusion Platform для установки."
 
-LangString strPostgreDirHeader ${LANG_RUSSIAN} "Выберите папку для установки PotgreSQL 9.2."
-LangString strPostgreDirTextTop ${LANG_RUSSIAN} "Программа установит PostgreSQL 9.2 в указанную папку."
+LangString strPostgreDirHeader ${LANG_RUSSIAN} "Выберите папку для установки PotgreSQL ${PG_VERSION}."
+LangString strPostgreDirTextTop ${LANG_RUSSIAN} "Программа установит PostgreSQL ${PG_VERSION} в указанную папку."
 LangString strDestinationFolder ${LANG_RUSSIAN} "Папка установки"
 
-LangString strJavaDirHeader ${LANG_RUSSIAN} "Выберите папку для установки JDK 1.7.0_45."
-LangString strJavaDirTextTop ${LANG_RUSSIAN} "Программа установит JDK 1.7.0_45 в указанную папку."
+LangString strJavaDirHeader ${LANG_RUSSIAN} "Выберите папку для установки JDK ${JDK_VERSION}."
+LangString strJavaDirTextTop ${LANG_RUSSIAN} "Программа установит JDK ${JDK_VERSION} в указанную папку."
 LangString strJavaTitle ${LANG_RUSSIAN} "Виртуальная машина Java"
 LangString strJavaSubtitle ${LANG_RUSSIAN} "Выбор папки установленной JVM."
 LangString strSelectJavaMessage ${LANG_RUSSIAN} "Выберите пожалуйста папку с установленной Java SE 6.0 или новее."
@@ -35,8 +35,8 @@ LangString strTomcatDirHeader ${LANG_RUSSIAN} "Выберите папку дл�
 LangString strTomcatDirTextTop ${LANG_RUSSIAN} "Программа установит Apache Tomcat 7.0.47 в указанную папку."
 LangString strTomcatOptions ${LANG_RUSSIAN} "Настройки для установки Apached Tomcat."
 
-LangString strIdeaDirHeader ${LANG_RUSSIAN} "Выберите папку для установки IntelliJ IDEA Community Edition 13.0.1."
-LangString strIdeaDirTextTop ${LANG_RUSSIAN} "Программа установит IntelliJ IDEA Community Edition 13.0.1 в указанную папку."
+LangString strIdeaDirHeader ${LANG_RUSSIAN} "Выберите папку для установки IntelliJ IDEA Community Edition ${IDEA_VERSION}."
+LangString strIdeaDirTextTop ${LANG_RUSSIAN} "Программа установит IntelliJ IDEA Community Edition ${IDEA_VERSION} в указанную папку."
 
 LangString strTomcatShutdownPort ${LANG_RUSSIAN} "Порт закрытия"
 LangString strTomcatHttpPort ${LANG_RUSSIAN} "HTTP/1.1 порт"
@@ -63,7 +63,7 @@ LangString strWebClientDirectory ${LANG_RUSSIAN} "Выберите папку, �
 LangString strInvalidWebClientContext ${LANG_RUSSIAN} 'Веб-контекст Web Client приложения не должен содержать пробелы или любые из следующих символов: <>:"/\:|?*'
 LangString strContinueOnEmptyPassword ${LANG_RUSSIAN} "Вы действительно хотите продолжить и использовать пустой пароль?"
 
-LangString strOldPostgreMessage ${LANG_RUSSIAN} "Установленная версия PostgreSQL устарела (<9.2). Пожалуйста деинсталлируйте эту версию или попробуйте произвести установку PostgreSQL вручную."
+LangString strOldPostgreMessage ${LANG_RUSSIAN} "Установленная версия PostgreSQL устарела (<${PG_VERSION). Пожалуйста деинсталлируйте эту версию или попробуйте произвести установку PostgreSQL вручную."
 
 LangString strPostgreOptions ${LANG_RUSSIAN} "Настройки для установки PostgreSQL"
 LangString strPasswordMessage ${LANG_RUSSIAN} "Введите пароль, который будет использоваться для суперпользователя базы данных."
