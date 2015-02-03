@@ -394,7 +394,7 @@ Function createServices
     ${if} ${SectionIsSelected} ${SecTomcat}
         ClearErrors
         DetailPrint "Installing Tomcat service"
-        MessageBox $jvmDll
+        DetailPrint $jvmDll
         nsExec::ExecToStack '"$tomcatDir\bin\tomcat7.exe" //IS//$tomcatServiceName --DisplayName "Apache Tomcat 7.0.47 $tomcatServiceName" --Description "Apache Tomcat 7 Server - http://tomcat.apache.org/" --LogPath "$tomcatDir\logs" --Install "$tomcatDir\bin\tomcat7.exe" --Jvm "$jvmDll" --StartPath "$tomcatDir" --StopPath "$tomcatDir"'
         Pop $0
         Pop $1
