@@ -4,7 +4,7 @@
         <jdk version="2">
             <name value="1.7" />
             <type value="JavaSDK" />
-            <version value="java version &quot;1.7.0_45&quot;" />
+            <version value="java version &quot;java.version&quot;" />
             <homePath value="java.home" />
             <roots>
                 <annotationsPath>
