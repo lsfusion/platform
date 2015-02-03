@@ -43,6 +43,7 @@
         <unzip src="../${idea.plugin}" dest="${idea.dir}/plugins/" />
         
         <replace file="jdk.table.xml" token="java.home" value="${jdk.home}" />
+        <replace file="jdk.table.xml" token="java.majorversion" value="${jdk.majorversion}" />
         <replace file="jdk.table.xml" token="java.version" value="${jdk.version}" />
         <copy file="jdk.table.xml" tofile="${user.home}/.IdeaIC${idea.majorversion}/config/options/jdk.table.xml" />
 

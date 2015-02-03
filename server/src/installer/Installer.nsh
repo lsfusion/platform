@@ -308,7 +308,7 @@ Function initJavaFromRegistry
     ReadRegStr $javaVersion HKLM "SOFTWARE\JavaSoft\Java Development Kit" "CurrentVersion"
     ReadRegStr $javaHome HKLM "SOFTWARE\JavaSoft\Java Development Kit\$javaVersion" "JavaHome"
     ReadRegStr $jvmDll HKLM "SOFTWARE\JavaSoft\Java Runtime Environment\$javaVersion" "RuntimeLib"
-    ${VersionCompare} $javaVersion "1.7" $0
+    ${VersionCompare} $javaVersion "${JDK_MAJORVERSION}" $0
     
     ${if} $0 == "2"
     ${orIf} ${Errors}
@@ -327,6 +327,7 @@ Function execAntConfiguration
     ${ConfigWriteS} "${INSTCONFDIR}\configure.bat" "set JAVA_HOME=" "$javaHome" $R0
 
     ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "jdk.home=" "$javaHome" $R0
+    ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "jdk.majorversion=" "${JDK_MAJORVERSION}" $R0
     ${ConfigWriteSE} "${INSTCONFDIR}\configure.properties" "jdk.version=" "${JDK_VERSION}" $R0
 
     ${if} ${SectionIsSelected} ${SecTomcat}

@@ -2,7 +2,7 @@
 <application>
     <component name="ProjectJdkTable">
         <jdk version="2">
-            <name value="1.7" />
+            <name value="java.majorversion" />
             <type value="JavaSDK" />
             <version value="java version &quot;java.version&quot;" />
             <homePath value="java.home" />
