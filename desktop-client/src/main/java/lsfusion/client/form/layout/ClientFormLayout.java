@@ -112,7 +112,7 @@ public class ClientFormLayout extends JPanel {
 
     private void autoShowHideContainers(ClientContainer container) {
         ClientContainerView containerView = containerViews.get(container);
-        if (!containerView.getView().isValid()) {
+//        if (!containerView.getView().isValid()) { // непонятная проверка, valid достаточно непредсказуемая штука и логически не сильно связано с логикой visibility container'ов + вызывается огранич
             int childCnt = containerView.getChildrenCount();
             boolean hasVisible = false;
             for (int i = 0; i < childCnt; ++i) {
@@ -128,7 +128,7 @@ public class ClientFormLayout extends JPanel {
             }
             containerView.getView().setVisible(hasVisible);
             containerView.updateLayout();
-        }
+//        }
     }
 
     // добавляем визуальный компонент
