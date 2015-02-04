@@ -1,6 +1,8 @@
 # Macro for selecting uninstaller sections
 !macro HideUnsection SECTION_NAME UNSECTION_ID
     ReadRegStr $0 HKLM "${REGKEY}\Components" "${SECTION_NAME}"
+    MessageBox MB_OK "${SECTION_NAME} VAL $0"
+
     ${if} ${Errors}
     ${orIf} $0 == ""
         !insertmacro HideSection ${UNSECTION_ID}
@@ -104,7 +106,7 @@ Function un.onInit
     !insertmacro MUI_UNGETLANGUAGE
     
     !insertmacro HideUnsection "${PG_SECTION_NAME}" ${UnSecPG}
-    !insertmacro HideUnsection "${IDEA_SECTION_NAME}" ${UnSecPG}
+    !insertmacro HideUnsection "${IDEA_SECTION_NAME}" ${UnSecIdea}
     !insertmacro HideUnsection "${JAVA_SECTION_NAME}" ${UnSecJava}
     !insertmacro HideUnsection "${TOMCAT_SECTION_NAME}" ${UnSecTomcat}
 FunctionEnd
