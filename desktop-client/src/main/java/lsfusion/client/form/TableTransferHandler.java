@@ -65,7 +65,7 @@ public class TableTransferHandler extends TransferHandler {
     }
 
     /**
-     * should allways be consistent with lsfusion.gwt.base.client.GwtClientUtils#getClipboardTable(java.lang.String)
+     * should always be consistent with lsfusion.gwt.base.client.GwtClientUtils#getClipboardTable(java.lang.String)
      */
     public static List<List<String>> getClipboardTable(String line) {
         List<List<String>> table = new ArrayList<List<String>>();
@@ -97,46 +97,43 @@ public class TableTransferHandler extends TransferHandler {
             }
 
             if (quotesOpened) {
-                if (isQuote)
+                if (isQuote) {
                     quotesCount++;
-                else {
+                } else {
                     if (isSeparator) {
-                        if (quotesCount % 2 == 1 || isLast) {
-                            quotesOpened = false;
-                            String cell = line.substring(hasSeparator ? start : (start - 1), hasSeparator ? (i - 1) : i).replace("\"\"", "\"");
+                        if (quotesCount % 2 == 0 || isLast) {
+                            String cell = line.substring(hasSeparator ? (start + 1) : start, hasSeparator ? (i - 1) : i);
                             row.add(BaseUtils.nullEmpty(cell));
-                            start = i;
                             if (isRowEnd) {
                                 table.add(row);
                                 row = new ArrayList<String>();
                             }
+
+                            start = i;
+                            quotesOpened = false;
                             isFirst = true;
                             hasSeparator = false;
                         } else {
                             hasSeparator = true;
                         }
-                    } else
-                        quotesCount = 0;
-                }
-
-            } else {
-                if (isSeparator) {
-                    row.add(BaseUtils.nullEmpty(line.substring(start, i)));
-                    start = i;
-                    if (isRowEnd) {
-                        table.add(row);
-                        row = new ArrayList<String>();
                     }
-                    isFirst = true;
-                } else if (isFirst) {
-                    if (isQuote) {
-                        start = i + 1;
-                        quotesOpened = true;
-                    } else {
-                        start = i;
-                    }
-                    isFirst = false;
                 }
+            } else if (isSeparator) {
+                row.add(BaseUtils.nullEmpty(line.substring(start, i)));
+                if (isRowEnd) {
+                    table.add(row);
+                    row = new ArrayList<String>();
+                }
+                
+                start = i;
+                isFirst = true;
+            } else if (isFirst) {
+                if (isQuote) {
+                    quotesOpened = true;
+                    quotesCount = 1;
+                }
+                start = i;
+                isFirst = false;
             }
         }
 

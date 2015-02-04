@@ -298,7 +298,7 @@ public class GwtClientUtils {
     }
 
     /**
-     * should allways be consistent with lsfusion.client.form.TableTransferHandler#getClipboardTable(java.lang.String)
+     * should always be consistent with lsfusion.client.form.TableTransferHandler#getClipboardTable(java.lang.String)
      */
     public static List<List<String>> getClipboardTable(String line) {
         List<List<String>> table = new ArrayList<List<String>>();
@@ -323,9 +323,8 @@ public class GwtClientUtils {
                 isQuote = charline[i] == '"';
                 isSeparator = isCellEnd || isRowEnd;
             } else {
-                if (isFirst) {
+                if (isFirst)
                     break;
-                }
                 isRowEnd = true;
                 isSeparator = true;
             }
@@ -335,43 +334,39 @@ public class GwtClientUtils {
                     quotesCount++;
                 } else {
                     if (isSeparator) {
-                        if (quotesCount % 2 == 1 || isLast) {
-                            quotesOpened = false;
-                            String cell = line.substring(hasSeparator ? start : (start - 1), hasSeparator ? (i - 1) : i).replace("\"\"", "\"");
+                        if (quotesCount % 2 == 0 || isLast) {
+                            String cell = line.substring(hasSeparator ? (start + 1) : start, hasSeparator ? (i - 1) : i);
                             row.add(GwtSharedUtils.nullEmpty(cell));
-                            start = i;
                             if (isRowEnd) {
                                 table.add(row);
                                 row = new ArrayList<String>();
                             }
+
+                            start = i;
+                            quotesOpened = false;
                             isFirst = true;
                             hasSeparator = false;
                         } else {
                             hasSeparator = true;
                         }
-                    } else {
-                        quotesCount = 0;
                     }
+                }
+            } else if (isSeparator) {
+                row.add(GwtSharedUtils.nullEmpty(line.substring(start, i)));
+                if (isRowEnd) {
+                    table.add(row);
+                    row = new ArrayList<String>();
                 }
 
-            } else {
-                if (isSeparator) {
-                    row.add(GwtSharedUtils.nullEmpty(line.substring(start, i)));
-                    start = i;
-                    if (isRowEnd) {
-                        table.add(row);
-                        row = new ArrayList<String>();
-                    }
-                    isFirst = true;
-                } else if (isFirst) {
-                    if (isQuote) {
-                        start = i + 1;
-                        quotesOpened = true;
-                    } else {
-                        start = i;
-                    }
-                    isFirst = false;
+                start = i;
+                isFirst = true;
+            } else if (isFirst) {
+                if (isQuote) {
+                    quotesOpened = true;
+                    quotesCount = 1;
                 }
+                start = i;
+                isFirst = false;
             }
         }
 
