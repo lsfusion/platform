@@ -102,9 +102,20 @@ SectionEnd
 # Uninstaller functions
 Function un.onInit
     ReadRegStr $INSTDIR HKLM "${REGKEY}" Path
+
+    MessageBox MB_OK "INSTDIR $INSTDIR"
     
     !insertmacro MUI_UNGETLANGUAGE
-    
+
+    ReadRegStr $0 HKLM "${REGKEY}\Components" "${PG_SECTION_NAME}"
+    MessageBox MB_OK "READ $0"
+
+    ReadRegStr $0 HKLM "${REGKEY}\Components" ${PG_SECTION_NAME}
+    MessageBox MB_OK "READ2 $0"
+
+    ReadRegStr $0 HKLM "${REGKEY}\Components" PostgreSQL 9.4
+    MessageBox MB_OK "READ3 $0"
+
     !insertmacro HideUnsection "${PG_SECTION_NAME}" ${UnSecPG}
     !insertmacro HideUnsection "${IDEA_SECTION_NAME}" ${UnSecIdea}
     !insertmacro HideUnsection "${JAVA_SECTION_NAME}" ${UnSecJava}
