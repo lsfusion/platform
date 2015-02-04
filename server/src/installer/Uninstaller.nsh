@@ -113,7 +113,7 @@ Function un.onInit
     ReadRegStr $0 HKLM "${REGKEY}\Components" ${PG_SECTION_NAME}
     MessageBox MB_OK "READ2 $0"
 
-    ReadRegStr $0 HKLM "${REGKEY}\Components" PostgreSQL 9.4
+    ReadRegStr $0 HKLM "${REGKEY}\Components" "PostgreSQL 9.4"
     MessageBox MB_OK "READ3 $0"
 
     !insertmacro HideUnsection "${PG_SECTION_NAME}" ${UnSecPG}
