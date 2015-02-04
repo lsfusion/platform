@@ -9,6 +9,8 @@
     ${endIf}
 !macroend
 
+Var tst
+
 # Uninstaller sections
 Section "!un.${PLATFORM_SECTION_NAME}" UnSecPlatform
     SectionIn RO
@@ -118,6 +120,9 @@ Function un.onInit
 
     ReadRegStr $0 HKLM "${REGKEY}\Components" JDK3
     MessageBox MB_OK "READ4 $0"
+
+    ReadRegStr $tst HKLM "SOFTWARE\JavaSoft\Java Runtime Environment\1.7.0_75" "RuntimeLib"
+    MessageBox MB_OK "READ5 $tst"
 
     ReadRegStr $0 HKLM "${REGKEY}\Components" "PostgreSQL 9.4"
     MessageBox MB_OK "READ5 $0"

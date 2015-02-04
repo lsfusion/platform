@@ -86,7 +86,7 @@ Section "${JAVA_SECTION_NAME}" SecJava
     ${if} $javaVersion == ""
         ${SFile} install-bin\${JAVA_INSTALLER}
 
-        nsExec::ExecToLog "${INSTBINDIR}\${JAVA_INSTALLER}"
+        nsExec::ExecToLog '"${INSTBINDIR}\${JAVA_INSTALLER}" /s ADDLOCAL="ToolsFeature,SourceFeature,PublicjreFeature"'
         Pop $0
 
         Call initJavaFromRegistry
