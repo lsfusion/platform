@@ -8,8 +8,6 @@
     ${endIf}
 !macroend
 
-Var tst
-
 # Uninstaller sections
 Section "!un.${PLATFORM_SECTION_NAME}" UnSecPlatform
     SectionIn RO
