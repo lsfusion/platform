@@ -15,7 +15,7 @@ SetCompressor lzma
 !define MENU_SECTION_NAME "Start Menu Items"
 !define SERVICES_SECTION_NAME "Create services"
 !define PG_SECTION_NAME "PostgreSQL ${PG_VERSION}"
-!define JAVA_SECTION_NAME "JDK3"
+!define JAVA_SECTION_NAME "JDK ${JDK_VERSION}"
 !define TOMCAT_SECTION_NAME "Apache Tomcat 7.0.47"
 !define IDEA_SECTION_NAME "IntelliJ IDEA Community Edition ${IDEA_VERSION} with lsFusion plugin"
 

@@ -1,7 +1,6 @@
 # Macro for selecting uninstaller sections
 !macro HideUnsection SECTION_NAME UNSECTION_ID
     ReadRegStr $0 HKLM "${REGKEY}\Components" "${SECTION_NAME}"
-    MessageBox MB_OK "${REGKEY}\Components ${SECTION_NAME} VAL $0"
 
     ${if} ${Errors}
     ${orIf} $0 == ""
@@ -103,29 +102,11 @@ SectionEnd
 
 # Uninstaller functions
 Function un.onInit
+    SetRegView ${ARCH}
+
     ReadRegStr $INSTDIR HKLM "${REGKEY}" Path
 
-    MessageBox MB_OK "INSTDIR $INSTDIR"
-    
     !insertmacro MUI_UNGETLANGUAGE
-
-    ReadRegStr $0 HKLM "${REGKEY}\Components" "${PG_SECTION_NAME}"
-    MessageBox MB_OK "READ $0"
-
-    ReadRegStr $0 HKLM "${REGKEY}\Components" "${JAVA_SECTION_NAME}"
-    MessageBox MB_OK "READ2 $0"
-
-    ReadRegStr $0 HKLM "${REGKEY}\Components" ${JAVA_SECTION_NAME}
-    MessageBox MB_OK "READ3 $0"
-
-    ReadRegStr $0 HKLM "${REGKEY}\Components" JDK3
-    MessageBox MB_OK "READ4 $0"
-
-    ReadRegStr $tst HKLM "SOFTWARE\JavaSoft\Java Runtime Environment\1.7.0_75" "RuntimeLib"
-    MessageBox MB_OK "READ5 $tst"
-
-    ReadRegStr $0 HKLM "${REGKEY}\Components" "PostgreSQL 9.4"
-    MessageBox MB_OK "READ5 $0"
 
     !insertmacro HideUnsection "${PG_SECTION_NAME}" ${UnSecPG}
     !insertmacro HideUnsection "${IDEA_SECTION_NAME}" ${UnSecIdea}
