@@ -1,7 +1,7 @@
 # Macro for selecting uninstaller sections
 !macro HideUnsection SECTION_NAME UNSECTION_ID
     ReadRegStr $0 HKLM "${REGKEY}\Components" "${SECTION_NAME}"
-    MessageBox MB_OK "${SECTION_NAME} VAL $0"
+    MessageBox MB_OK "${REGKEY}\Components ${SECTION_NAME} VAL $0"
 
     ${if} ${Errors}
     ${orIf} $0 == ""
