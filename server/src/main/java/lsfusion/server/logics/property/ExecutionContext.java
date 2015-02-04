@@ -355,7 +355,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
     
     public boolean apply(ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
-        return getEnv().apply(getBL(), this, this, applyAction, keepProperties);
+        return getEnv().apply(getBL(), this, this, applyAction, keepProperties, getFormInstance());
     }
 
     public void cancel() throws SQLException, SQLHandledException {

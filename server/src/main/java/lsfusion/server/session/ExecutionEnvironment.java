@@ -4,7 +4,6 @@ import lsfusion.base.FunctionSet;
 import lsfusion.base.MutableClosedObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
@@ -65,14 +64,14 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     }
 
     public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction) throws SQLException, SQLHandledException {
-        return apply(BL, update, interaction, null, SetFact.<SessionDataProperty>EMPTY());
+        return apply(BL, update, interaction, null, SetFact.<SessionDataProperty>EMPTY(), null);
     }
 
     public void cancel() throws SQLException, SQLHandledException {
         cancel(SetFact.<SessionDataProperty>EMPTY());
     }
 
-    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException;
+    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException;
     
     public abstract void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
 }
