@@ -310,7 +310,18 @@ Function initJavaFromRegistry
     ReadRegStr $jvmDll HKLM "SOFTWARE\JavaSoft\Java Runtime Environment\$javaVersion" "RuntimeLib"
     ${VersionCompare} $javaVersion "${JDK_MAJORVERSION}" $0
 
-    MessageBox MB_OK $jvmDll
+    IfFileExists $jvmDll noProblem
+
+    ; there is a bug, when RuntimeLib refers client instead of server folder
+
+    StrCpy $0 $javaHome
+
+    Call setJvmPath
+
+    StrCpy $javaHome $0
+    StrCpy $jvmDll $2
+
+    noProblem:
 
     ${if} $0 == "2"
     ${orIf} ${Errors}
@@ -397,7 +408,6 @@ Function createServices
     ${if} ${SectionIsSelected} ${SecTomcat}
         ClearErrors
         DetailPrint "Installing Tomcat service"
-        MessageBox MB_OK "VM DLL $jvmDll "
         nsExec::ExecToStack '"$tomcatDir\bin\tomcat7.exe" //IS//$tomcatServiceName --DisplayName "Apache Tomcat 7.0.47 $tomcatServiceName" --Description "Apache Tomcat 7 Server - http://tomcat.apache.org/" --LogPath "$tomcatDir\logs" --Install "$tomcatDir\bin\tomcat7.exe" --Jvm "$jvmDll" --StartPath "$tomcatDir" --StopPath "$tomcatDir"'
         Pop $0
         Pop $1
