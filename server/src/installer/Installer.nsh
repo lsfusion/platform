@@ -309,7 +309,9 @@ Function initJavaFromRegistry
     ReadRegStr $javaHome HKLM "SOFTWARE\JavaSoft\Java Development Kit\$javaVersion" "JavaHome"
     ReadRegStr $jvmDll HKLM "SOFTWARE\JavaSoft\Java Runtime Environment\$javaVersion" "RuntimeLib"
     ${VersionCompare} $javaVersion "${JDK_MAJORVERSION}" $0
-    
+
+    MessageBox MB_OK $jvmDll
+
     ${if} $0 == "2"
     ${orIf} ${Errors}
        StrCpy $javaVersion ""

@@ -43,8 +43,6 @@ Function javaExistingDirPageLeave
     StrCpy $javaHome $0
     StrCpy $javaExe "$0\bin\java.exe"
     StrCpy $jvmDll "$2"
-
-    MessageBox MB_OK $jvmDll
 FunctionEnd
 
 ; ====================
