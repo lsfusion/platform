@@ -118,7 +118,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
 
     @Override
     public SessionData modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, Modify type, QueryEnvironment env, TableOwner owner, Result<Boolean> changed) throws SQLException, SQLHandledException {
-        if(keyValues.isEmpty() && propertyValues.isEmpty() && (Settings.get().isModifySessionTableInsteadOfRewrite() || type == Modify.LEFT || type== Modify.ADD || type==Modify.DELETE)) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
+        if(keyValues.isEmpty() && propertyValues.isEmpty() && (type == Modify.LEFT || type== Modify.ADD || type==Modify.DELETE || (Settings.get().isModifySessionTableInsteadOfRewrite() && !used(query)))) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
             return new SessionDataTable(table.modifyRows(session, query, type, env, owner, changed), keys, keyValues, propertyValues);
         return super.modifyRows(session, query, baseClass, type, env, owner, changed);
     }
