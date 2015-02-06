@@ -461,6 +461,11 @@ textarea {
     width: 3em;    
 }
 
+.userPreferencesColumnCaptionTextBox {
+    padding: 2px;
+    width: 28em;
+}
+
 /* ------------ Colored corner triangles  ------------ */
 .notNullCornerTriangle {
     border-color: transparent transparent #ff0000 transparent;

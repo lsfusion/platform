@@ -1,11 +1,12 @@
 package lsfusion.gwt.form.client.form.ui.layout.table;
 
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.CellPanel;
+import com.google.gwt.user.client.ui.InsertPanel;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.*;
-import lsfusion.gwt.base.client.ui.DivWidget;
 import lsfusion.gwt.form.client.form.ui.layout.GAbstractContainerView;
 import lsfusion.gwt.form.shared.view.GComponent;
 import lsfusion.gwt.form.shared.view.GContainer;
@@ -186,11 +187,12 @@ public class TableLinearContainerView extends GAbstractContainerView {
     }
 
     private void setCellSize(boolean height, Widget child, String size) {
-        //this will not work in IE for some cases: https://code.google.com/p/google-web-toolkit/issues/detail?id=2065
+        // replacement of setCellHeight(-Width). td size attributes are deprecated - '0', '*', 'auto' cause crash in IE
+        Style style = child.getElement().getParentElement().getStyle();
         if (height) {
-            panel.setCellHeight(child, size);
+            style.setProperty("height", size);
         } else {
-            panel.setCellWidth(child, size);
+            style.setProperty("width", size);
         }
     }
 

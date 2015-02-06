@@ -68,7 +68,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
         // column caption settings        
         columnCaptionBox = new TextBox();
-        columnCaptionBox.setSize("100%", "100%");
+        columnCaptionBox.addStyleName("userPreferencesColumnCaptionTextBox");
         columnCaptionBox.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent changeEvent) {
@@ -80,7 +80,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         });
 
         FlexPanel columnCaptionPanel = new FlexPanel();
-        columnCaptionPanel.add(new Label("Заголовок колонки " + ": "), GFlexAlignment.CENTER);
+        columnCaptionPanel.add(new Label("Заголовок колонки: "), GFlexAlignment.CENTER);
         columnCaptionPanel.add(columnCaptionBox, GFlexAlignment.CENTER);
 
         GCaptionPanel columnCaptionSettingsPanel = new GCaptionPanel("Настройки выбранной колонки", columnCaptionPanel);
@@ -94,7 +94,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         pageSizeBox = new TextBox();
         pageSizeBox.addStyleName("userPreferencesFontSizeTextBox");
 
-        FlexPanel pageSizePanel = new FlexPanel(FlexPanel.Justify.CENTER);
+        FlexPanel pageSizePanel = new FlexPanel();
         pageSizePanel.add(pageSizeLabel, GFlexAlignment.CENTER);
         pageSizePanel.add(pageSizeBox, GFlexAlignment.CENTER);
 
@@ -213,7 +213,7 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
         focusPanel = new FocusPanel(preferencesPanel);
         focusPanel.addStyleName("noOutline");
-        focusPanel.setHeight("100%");
+        focusPanel.setSize("100%", "100%");
         focusPanel.addKeyDownHandler(new KeyDownHandler() {
             @Override
             public void onKeyDown(KeyDownEvent event) {

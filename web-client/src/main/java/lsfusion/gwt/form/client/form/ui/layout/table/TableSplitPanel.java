@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.client.form.ui.layout.table;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -56,10 +57,12 @@ public class TableSplitPanel extends SplitPanelBase<CellPanel> {
     }
 
     private void setCellSize(boolean height, Widget w, String size) {
+        // replacement of setCellHeight(-Width). td size attributes are deprecated - '0', '*', 'auto' cause crash in IE
+        Style style = w.getElement().getParentElement().getStyle();
         if (height) {
-            panel.setCellHeight(w, size);
+            style.setProperty("height", size);
         } else {
-            panel.setCellWidth(w, size);
+            style.setProperty("width", size);
         }
     }
 }
