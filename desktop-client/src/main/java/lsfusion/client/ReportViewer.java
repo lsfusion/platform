@@ -7,8 +7,7 @@ import net.sf.jasperreports.view.JRViewer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.rmi.RemoteException;
 
 public class ReportViewer extends JRViewer {
@@ -49,6 +48,10 @@ public class ReportViewer extends JRViewer {
             });
             tlbToolBar.add(editReportButton);
         }
+    }
+    
+    public void clickBtnPrint() {
+        btnPrint.doClick();
     }
 
     public double getRealZoom() {

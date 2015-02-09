@@ -1,5 +1,7 @@
 package lsfusion.client.dock;
 
+import bibliothek.gui.dock.common.event.CKeyboardListener;
+import bibliothek.gui.dock.common.intern.CDockable;
 import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
 import lsfusion.client.EditReportInvoker;
@@ -12,6 +14,8 @@ import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
 
 import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 
@@ -20,10 +24,31 @@ public class ClientReportDockable extends ClientDockable {
         super(null, dockableManager);
 
         try {
-            JasperPrint print = new ReportGenerator(generationData).createReport(false, null);
+            final JasperPrint print = new ReportGenerator(generationData).createReport(false, null);
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
+            final ReportViewer reportViewer = new ReportViewer(print, editInvoker);
+            setContent(print.getName(), prepareViewer(reportViewer));
+            addKeyboardListener(new CKeyboardListener() {
+                @Override
+                public boolean keyPressed(CDockable cDockable, KeyEvent keyEvent) {
+                    return false;
+                }
 
-            setContent(print.getName(), prepareViewer(new ReportViewer(print, editInvoker)));
+                @Override
+                public boolean keyReleased(CDockable cDockable, KeyEvent keyEvent) {
+                    int KEY_P = 80;
+                    boolean ctrlPressed = (keyEvent.getModifiers() & InputEvent.CTRL_MASK) != 0;
+                    if(keyEvent.getKeyCode() == KEY_P && ctrlPressed) {
+                        reportViewer.clickBtnPrint();
+                    }
+                    return false;
+                }
+
+                @Override
+                public boolean keyTyped(CDockable cDockable, KeyEvent keyEvent) {
+                    return false;
+                }
+            });
         } catch (JRException e) {
             Throwables.propagate(e);
         }
