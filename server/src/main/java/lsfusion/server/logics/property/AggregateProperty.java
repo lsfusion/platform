@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.Message;
+import lsfusion.server.Settings;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
@@ -48,12 +49,19 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         session.pushVolatileStats(OperationOwner.unknown);
         
         try {
-    
+
+            boolean useRecalculate = Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr();
+
             String message = "";
+
+            String checkClasses = "";
+            if(useRecalculate)
+                checkClasses = DataSession.checkClasses(this, session, baseClass);
     
-            ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = getRecalculateQuery(true, baseClass).execute(session, OperationOwner.unknown);
-            if(checkResult.size() > 0) {
+            ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = getRecalculateQuery(true, baseClass, !useRecalculate).execute(session, OperationOwner.unknown);
+            if(checkResult.size() > 0 || !checkClasses.isEmpty()) {
                 message += "---- Checking Aggregations : " + this + "-----" + '\n';
+                message += checkClasses;
                 for(int i=0,size=checkResult.size();i<size;i++)
                     message += "Keys : " + checkResult.getKey(i) + " : " + checkResult.getValue(i) + '\n';
             }
@@ -119,12 +127,12 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         return calculateExpr(joinImplement, CalcType.STAT, PropertyChanges.EMPTY, null);
     }
 
-    private Query<T, String> getRecalculateQuery(boolean outDB, BaseClass baseClass) {
+    private Query<T, String> getRecalculateQuery(boolean outDB, BaseClass baseClass, boolean checkInconsistence) {
         assert isStored();
         
         QueryBuilder<T, String> query = new QueryBuilder<T, String>(this);
 
-        Expr dbExpr = getInconsistentExpr(query.getMapExprs(), baseClass);
+        Expr dbExpr = checkInconsistence ? getInconsistentExpr(query.getMapExprs(), baseClass) : getExpr(query.getMapExprs());
         Expr calculateExpr = calculateExpr(query.getMapExprs());
         if(outDB)
             query.addProperty("dbvalue", dbExpr);
@@ -140,9 +148,13 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     @Message("logics.info.recalculation.of.aggregated.property")
     @ThisMessage
     public void recalculateAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
+        boolean useRecalculate = Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr();
+        if(useRecalculate)
+            recalculateClasses(session, baseClass);
+
         session.pushVolatileStats(OperationOwner.unknown);
         try {
-            session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass).map(
+            session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass, !useRecalculate).map(
                     mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), OperationOwner.unknown, TableOwner.global));
         } finally {
             session.popVolatileStats(OperationOwner.unknown);

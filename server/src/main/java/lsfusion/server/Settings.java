@@ -1139,4 +1139,15 @@ public class Settings {
     public void setPessStatType(int pessStatType) {
         this.pessStatType = pessStatType;
     }
+
+    // в перерасчете / проверке агрегаций можно использовать InconsistentExpr, но тогда появляются лишние join'ы (а значит нужно еще больше памяти)
+    private boolean useRecalculateClassesInsteadOfInconsisentExpr = true;
+
+    public boolean isUseRecalculateClassesInsteadOfInconsisentExpr() {
+        return useRecalculateClassesInsteadOfInconsisentExpr;
+    }
+
+    public void setUseRecalculateClassesInsteadOfInconsisentExpr(boolean useRecalculateClassesInsteadOfInconsisentExpr) {
+        this.useRecalculateClassesInsteadOfInconsisentExpr = useRecalculateClassesInsteadOfInconsisentExpr;
+    }
 }
