@@ -34,6 +34,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.LPWithParams;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.TypedParameter;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.PropertyUsage;
+	import lsfusion.server.logics.scripted.ScriptingLogicsModule.NavigatorElementOptions;
 	import lsfusion.server.logics.scripted.ScriptingFormEntity.RegularFilterInfo;
 	import lsfusion.server.mail.SendEmailActionProperty.FormStorageType;
 	import lsfusion.server.mail.AttachmentFormat;
@@ -2844,7 +2845,7 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 	:	'{'
 			(	addNavigatorElementStatement[parentElement]
 			|	newNavigatorElementStatement[parentElement]
-			|	setupNavigatorElementStatement
+			|	setupNavigatorElementStatement[parentElement]
 			|	emptyStatement
 			)*
 		'}'
@@ -2852,10 +2853,10 @@ navigatorElementStatementBody[NavigatorElement parentElement]
 	;
 
 addNavigatorElementStatement[NavigatorElement parentElement]
-	:	'ADD' elem=navigatorElementSelector (caption=stringLiteral)? posSelector=navigatorElementInsertPosition ('TO' wid=compoundID)?
+	:	'ADD' elem=navigatorElementSelector (caption=stringLiteral)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
-				self.setupNavigatorElement($elem.element, $caption.val, parentElement, $posSelector.position, $posSelector.anchor, $wid.sid);
+				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, true);
 			}
 		}
 		navigatorElementStatementBody[$elem.element]
@@ -2865,38 +2866,40 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 @init {
 	NavigatorElement newElement = null;
 }
-	:	'NEW' id=ID ('ACTION' au=propertyUsage)? caption=stringLiteral posSelector=navigatorElementInsertPosition ('TO' wid=compoundID)? ('IMAGE' path=stringLiteral)?
+	:	'NEW' id=ID (caption=stringLiteral)? ('ACTION' au=propertyUsage)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
-				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, parentElement, $posSelector.position, $posSelector.anchor, $wid.sid, $au.propUsage, $path.val);
+				newElement = self.createScriptedNavigatorElement($id.text, $caption.val, $parentElement, $opts.options, $au.propUsage);
 			}
 		}
 		navigatorElementStatementBody[newElement]
 	;
 
-//navigatorElementOptions
-//	:	
-//	(	'TO' wid=compoundID
-//	|	navigatorElementInsertPosition
-//	|	'IMAGE' path=stringLiteral	
-//	)*
-//	;
+navigatorElementOptions returns [NavigatorElementOptions options] 
+@init {
+	$options = new NavigatorElementOptions();
+	$options.position = InsertPosition.IN;
+}
+	:	
+	(	'WINDOW' wid=compoundID { $options.windowName = $wid.sid; }
+	|	pos=navigatorElementInsertPosition { $options.position = $pos.position; $options.anchor = $pos.anchor; }
+	|	'IMAGE' path=stringLiteral { $options.imagePath = $path.val; }	
+	)*
+	;
 	
 navigatorElementInsertPosition returns [InsertPosition position, NavigatorElement anchor]
 @init {
-	$position = InsertPosition.IN;
 	$anchor = null;
 }
-	:	(	(pos=insertRelativePositionLiteral { $position = $pos.val; } elem=navigatorElementSelector { $anchor = $elem.element; })
-		|	'FIRST' { $position = InsertPosition.FIRST; }
-		)?
+	:	pos=insertRelativePositionLiteral { $position = $pos.val; } elem=navigatorElementSelector { $anchor = $elem.element; }
+	|	'FIRST' { $position = InsertPosition.FIRST; }
 	;
 
-setupNavigatorElementStatement
-	:	elem=navigatorElementSelector (caption=stringLiteral)? ('TO' wid=compoundID)?
+setupNavigatorElementStatement[NavigatorElement parentElement]
+	:	elem=navigatorElementSelector (caption=stringLiteral)? opts=navigatorElementOptions
 		{
 			if (inPropParseState()) {
-				self.setupNavigatorElement($elem.element, $caption.val, null, null, null, $wid.sid);
+				self.setupNavigatorElement($elem.element, $caption.val, $parentElement, $opts.options, false);
 			}
 		}
 		navigatorElementStatementBody[$elem.element]

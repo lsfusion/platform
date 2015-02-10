@@ -24,7 +24,7 @@ import java.util.*;
 import static lsfusion.base.col.MapFact.mergeOrderMapsExcl;
 import static lsfusion.base.col.MapFact.singletonOrder;
 
-public class NavigatorElement<T extends BusinessLogics<T>> {//extends IdentityObject {
+public class NavigatorElement<T extends BusinessLogics<T>> {
     
     public static final String NAVIGATOR_ANONYMOUS_SID_PREFIX = "_NAVIGATORELEMENT_";
     public static final String ACTION_ANONYMOUS_SID_PREFIX = "_NAVIGATORACTION_";

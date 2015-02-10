@@ -422,7 +422,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     public LP<?, ?> findLPByPropertyUsage(PropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
-        return  findLPByNameAndClasses(pUsage.name, getParamClasses(pUsage));
+        return findLPByNameAndClasses(pUsage.name, getParamClasses(pUsage));
     }
     
     public AbstractWindow findWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
@@ -2554,57 +2554,73 @@ public class ScriptingLogicsModule extends LogicsModule {
         findWindow(name).visible = false;
     }
 
-    public NavigatorElement createScriptedNavigatorElement(String name, String caption, NavigatorElement<?> parentElement, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName, PropertyUsage actionUsage, String icon) throws ScriptingErrorLog.SemanticErrorException {
+    public static class NavigatorElementOptions {
+        public String imagePath;
+        public NavigatorElement anchor;
+        public InsertPosition position;
+        public String windowName;
+    }
+    
+    public NavigatorElement createScriptedNavigatorElement(String name, String caption, NavigatorElement<?> parentElement, NavigatorElementOptions options, PropertyUsage actionUsage) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("createScriptedNavigatorElement(" + name + ", " + caption + ");");
-
-        assert name != null && caption != null;
 
         checkDuplicateNavigatorElement(name);
 
         NavigatorElement newElement;
 
+        if (caption == null) {
+            caption = name;
+        }
+        
         if (actionUsage != null) {
             LP findResult = findLPByPropertyUsage(actionUsage);
-            checkActionProperty(findResult);
-            LAP<?> actionProperty = (LAP<?>) findResult;
-
-            newElement = addNavigatorAction(name, caption, actionProperty, icon);
+            checkNavigatorAction(findResult);
+            newElement = addNavigatorAction(name, caption, (LAP<?>)findResult);
         } else {
-            newElement = addNavigatorElement(name, caption, icon);
+            newElement = addNavigatorElement(name, caption);
         }
 
-        setupNavigatorElement(newElement, caption, parentElement, pos, anchorElement, windowName);
-
+        setupNavigatorElement(newElement, caption, parentElement, options, true);
         return newElement;
     }
 
-    public void setupNavigatorElement(NavigatorElement<?> element, String caption, NavigatorElement<?> parentElement, InsertPosition pos, NavigatorElement<?> anchorElement, String windowName) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("setupNavigatorElement(" + element.getCanonicalName() + ", " + caption + ", " + parentElement + ", " + pos + ", " + anchorElement + ", " + windowName + ");");
-
-        assert element != null;
+    public void setupNavigatorElement(NavigatorElement<?> element, String caption, NavigatorElement<?> parentElement, NavigatorElementOptions options, boolean adding) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("setupNavigatorElement(" + element.getCanonicalName() + ", " + caption + ", " + parentElement + ", " + options + ");");
 
         if (caption != null) {
             element.caption = caption;
         }
 
-        if (windowName != null) {
-            setNavigatorElementWindow(element, windowName);
-        }
-
-        if (parentElement != null) {
-            moveElement(element, parentElement, pos, anchorElement);
-        }
+        applyNavigatorElementOptions(element, parentElement, options, adding);
     }
+    
+    public void applyNavigatorElementOptions(NavigatorElement<?> element, NavigatorElement<?> parent, NavigatorElementOptions options, boolean adding) throws ScriptingErrorLog.SemanticErrorException {
+        if (options.windowName != null) {
+            setNavigatorElementWindow(element, options.windowName);    
+        }
+        
+        if (options.imagePath != null) {
+            element.setImage(options.imagePath);
+        }
+        
+        if (parent != null && (adding || options.position != InsertPosition.IN)) {
+            moveElement(element, parent, options.position, options.anchor, adding);
+        }
+    } 
 
-    private void moveElement(NavigatorElement element, NavigatorElement parentElement, InsertPosition pos, NavigatorElement anchorElement) throws ScriptingErrorLog.SemanticErrorException {
+    private void moveElement(NavigatorElement element, NavigatorElement parentElement, InsertPosition pos, NavigatorElement anchorElement, boolean adding) throws ScriptingErrorLog.SemanticErrorException {
         Version version = getVersion();
         
+        if (!adding && !parentElement.equals(element.getNFParent(version))) {
+            errLog.emitIllegalNavigatorElementMove(parser, element.getCanonicalName(), parentElement.getCanonicalName());
+        }
+        
         if (anchorElement != null && !parentElement.equals(anchorElement.getNFParent(version))) {
-            errLog.emitIllegalInsertBeforeAfterComponentElement(parser, element.getCanonicalName(), parentElement.getCanonicalName(), anchorElement.getCanonicalName());
+            errLog.emitIllegalInsertBeforeAfterElement(parser, element.getCanonicalName(), parentElement.getCanonicalName(), anchorElement.getCanonicalName());
         }
 
         if (element.isAncestorOf(parentElement, version)) {
-            errLog.emitIllegalMoveNavigatorToSubnavigator(parser, element.getCanonicalName(), parentElement.getCanonicalName());
+            errLog.emitIllegalAddNavigatorToSubnavigator(parser, element.getCanonicalName(), parentElement.getCanonicalName());
         }
 
         switch (pos) {
@@ -2627,9 +2643,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         assert element != null && windowName != null;
 
         AbstractWindow window = findWindow(windowName);
-        if (window == null) {
-            errLog.emitWindowNotFoundError(parser, windowName);
-        }
 
         if (window instanceof NavigatorWindow) {
             element.window = (NavigatorWindow) window;
@@ -2991,6 +3004,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public void checkNavigatorAction(LP property) throws ScriptingErrorLog.SemanticErrorException {
+        checkActionProperty(property);
+        if (property.listInterfaces.size() > 0) {
+            errLog.emitWrongNavigatorAction(parser);
+        }
+    }
+    
     public void checkAddActionsClass(ValueClass cls) throws ScriptingErrorLog.SemanticErrorException {
         if (!(cls instanceof CustomClass)) {
             errLog.emitAddActionsClassError(parser);

@@ -147,8 +147,8 @@ WINDOW toolbar 'Тулбар' TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE;
 WINDOW tree 'Дерево' TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE;
 
 NAVIGATOR {
-    NEW root 'Формы' TO root {
-        NEW administration 'Администрирование' TO toolbar IMAGE '/images/tools.png' {
+    NEW root 'Формы' WINDOW root {
+        NEW administration 'Администрирование' WINDOW toolbar IMAGE '/images/tools.png' {
             NEW application 'Приложение' {
                 ADD options;
                 ADD integrationData;
@@ -156,7 +156,7 @@ NAVIGATOR {
             }
             NEW configuration 'Система';
             NEW systemEvents 'Просмотр событий';
-            NEW objects 'Объекты' TO tree; 
+            NEW objects 'Объекты' WINDOW tree; 
         }
     }
 }

@@ -312,10 +312,10 @@ NAVIGATOR {
             ADD computers;
         }
     }
-    NEW account 'Учётная запись' TO toolbar IMAGE '/images/lock.png' {
-        NEW reloginLoginUserAction ACTION reloginLoginUser 'Сменить пользователя' IMAGE '/images/relogin.png';
+    NEW account 'Учётная запись' WINDOW toolbar IMAGE '/images/lock.png' {
+        NEW reloginLoginUserAction 'Сменить пользователя' ACTION reloginLoginUser IMAGE '/images/relogin.png';
         ADD editProfile;
-        NEW changePasswordAction ACTION changePassword 'Сменить пароль' IMAGE '/images/change_password.png';
-        NEW logOutAction ACTION logOut 'Выйти' IMAGE '/images/logout.png';
+        NEW changePasswordAction 'Сменить пароль' ACTION changePassword IMAGE '/images/change_password.png';
+        NEW logOutAction 'Выйти' ACTION logOut IMAGE '/images/logout.png';
     }
 }
