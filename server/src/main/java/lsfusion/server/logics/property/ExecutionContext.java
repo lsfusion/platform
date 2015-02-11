@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ConcreteObjectClass;
@@ -420,7 +421,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         ThreadLocalContext.delayUserInteraction(action);
     }
 
+    private void assertNotUserInteractionInTransaction() {
+        ServerLoggers.assertLog(!getSession().isInTransaction(), "USER INTERACTION IN TRANSACTION");
+    }
     public Object requestUserInteraction(ClientAction action) {
+        assertNotUserInteractionInTransaction();
         return ThreadLocalContext.requestUserInteraction(action);
     }
 
@@ -434,18 +439,21 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
 
     // чтение пользователя
     public ObjectValue requestUserObject(DialogRequest dialog) throws SQLException, SQLHandledException { // null если canceled
+        assertNotUserInteractionInTransaction();
         ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserObject(dialog);
         setLastUserInput(userInput);
         return userInput;
     }
 
     public ObjectValue requestUserData(DataClass dataClass, Object oldValue) {
+        assertNotUserInteractionInTransaction();
         ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserData(dataClass, oldValue);
         setLastUserInput(userInput);
         return userInput;
     }
 
     public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {
+        assertNotUserInteractionInTransaction();
         ObjectValue userInput = pushedUserInput != null ? pushedUserInput : ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete);
         setLastUserInput(userInput);
         return userInput;
