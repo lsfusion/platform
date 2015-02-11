@@ -1887,7 +1887,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return new DialogRequestAdapter() {
             @Override
             public FormInstance doCreateDialog() throws SQLException, SQLHandledException {
-                ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
+                ClassFormEntity<T> classForm = objectClass.getDialogForm(BL.LM);
                 dialogObject = classForm.object;
                 return createDialogInstance(classForm.form, dialogObject, NullValue.instance, null, null, null, update);
             }
