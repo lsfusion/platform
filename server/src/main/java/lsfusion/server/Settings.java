@@ -1150,4 +1150,14 @@ public class Settings {
     public void setUseRecalculateClassesInsteadOfInconsisentExpr(boolean useRecalculateClassesInsteadOfInconsisentExpr) {
         this.useRecalculateClassesInsteadOfInconsisentExpr = useRecalculateClassesInsteadOfInconsisentExpr;
     }
+
+    private int pageSizeDefaultValue = 50;
+
+    public int getPageSizeDefaultValue() {
+        return pageSizeDefaultValue;
+    }
+
+    public void setPageSizeDefaultValue(int pageSizeDefaultValue) {
+        this.pageSizeDefaultValue = pageSizeDefaultValue;
+    }
 }

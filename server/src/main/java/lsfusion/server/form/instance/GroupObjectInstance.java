@@ -11,6 +11,7 @@ import lsfusion.interop.Compare;
 import lsfusion.interop.Order;
 import lsfusion.interop.form.PropertyReadType;
 import lsfusion.server.Message;
+import lsfusion.server.Settings;
 import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.BaseClass;
@@ -137,7 +138,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         if(entity.pageSize != null) {
             this.pageSize = entity.pageSize;
         } else {
-            this.pageSize = GroupObjectEntity.PAGE_SIZE_DEFAULT_VALUE;
+            this.pageSize = Settings.get().getPageSizeDefaultValue();
         }
         
         this.noClassFilter = entity.noClassFilter;
