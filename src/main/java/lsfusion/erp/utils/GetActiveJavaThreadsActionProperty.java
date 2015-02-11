@@ -57,6 +57,8 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
             findProperty("nameActiveJavaThread").change((Object) null, session, currentObject);
             findProperty("statusActiveJavaThread").change((Object) null, session, currentObject);
             findProperty("lockNameActiveJavaThread").change((Object) null, session, currentObject);
+            findProperty("lockOwnerIdActiveJavaThread").change((Object) null, session, currentObject);
+            findProperty("lockOwnerNameActiveJavaThread").change((Object) null, session, currentObject);
             findProperty("computerActiveJavaThread").change((Object) null, session, currentObject);
             findProperty("userActiveJavaThread").change((Object) null, session, currentObject);
         }
@@ -73,6 +75,8 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
             String stackTrace = stackTraceToString(threadInfo.getStackTrace());
             String name = threadInfo.getThreadName();
             String lockName = threadInfo.getLockName();
+            int lockOwnerId = (int) threadInfo.getLockOwnerId();
+            String lockOwnerName = threadInfo.getLockOwnerName();
             LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
             String computer = logInfo == null ? null : logInfo.hostnameComputer;
             String user = logInfo == null ? null : logInfo.userName;
@@ -84,6 +88,8 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
             findProperty("nameActiveJavaThread").change(name, session, currentObject);
             findProperty("statusActiveJavaThread").change(status, session, currentObject);
             findProperty("lockNameActiveJavaThread").change(lockName, session, currentObject);
+            findProperty("lockOwnerIdActiveJavaThread").change(lockOwnerId, session, currentObject);
+            findProperty("lockOwnerNameActiveJavaThread").change(lockOwnerName, session, currentObject);
             findProperty("computerActiveJavaThread").change(computer, session, currentObject);
             findProperty("userActiveJavaThread").change(user, session, currentObject);
             if(id>max)

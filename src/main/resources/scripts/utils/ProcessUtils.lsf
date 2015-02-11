@@ -11,13 +11,15 @@ stackTraceActiveJavaThread 'След java-потока' = DATA LOCAL TEXT (INTEG
 nameActiveJavaThread 'Имя java-потока' = DATA LOCAL VARSTRING[100] (INTEGER);
 statusActiveJavaThread 'Статус' = DATA LOCAL VARSTRING[100] (INTEGER);
 lockNameActiveJavaThread 'Блокировка' = DATA LOCAL VARSTRING[100] (INTEGER);     
+lockOwnerIdActiveJavaThread 'ID блокирующего потока' = DATA LOCAL INTEGER (INTEGER);     
+lockOwnerNameActiveJavaThread 'Имя блокирующего потока' = DATA LOCAL VARSTRING[100] (INTEGER);     
 computerActiveJavaThread 'Компьютер' = DATA LOCAL VARSTRING[100] (INTEGER);
 userActiveJavaThread 'Пользователь' = DATA LOCAL VARSTRING[100] (INTEGER);      
 
 FORM activeJavaThreads 'Активные java-потоки' 
     OBJECTS i = INTEGER
     PROPERTIES(i) READONLY idActiveJavaThread, stackTraceActiveJavaThread, nameActiveJavaThread, computerActiveJavaThread, 
-                           userActiveJavaThread, statusActiveJavaThread, lockNameActiveJavaThread
+                           userActiveJavaThread, statusActiveJavaThread, lockNameActiveJavaThread, lockOwnerIdActiveJavaThread, lockOwnerNameActiveJavaThread
     PROPERTIES(i) cancelActiveJavaThreadAction
     PROPERTIES() getActiveJavaThreadsAction TOOLBAR TODRAW i
     FILTERS idActiveJavaThread(i)
