@@ -235,7 +235,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private boolean isInTransaction;
 
     private void startTransaction(UpdateCurrentClasses update, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
-        assert !isInTransaction;
+        ServerLoggers.assertLog(!isInTransaction, "NESTED APPLY");
         sql.startTransaction(DBManager.getCurrentTIL(), getOwner());
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
@@ -1048,6 +1048,34 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 return dataExpr;
             }}, true);
         return dataExpr.getWhere().and(correctClasses.not());
+    }
+
+    public static <P extends PropertyInterface> Where getIncorrectWhere(ImplementTable table, BaseClass baseClass, final ImRevMap<KeyField, KeyExpr> mapKeys) {
+        final Where inTable = baseClass.getInconsistentTable(table).join(mapKeys).getWhere();
+        Where correctClasses = table.getClasses().getWhere(mapKeys, true);
+        return inTable.and(correctClasses.not());
+    }
+
+    public static String checkTableClasses(@ParamMessage ImplementTable table, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+        Query<KeyField, PropertyField> query = getIncorrectQuery(table, baseClass);
+
+        String incorrect = query.readSelect(sql);
+        if(!incorrect.isEmpty())
+            return "---- Checking Classes for table : " + table + "-----" + '\n' + incorrect;
+        return "";
+    }
+
+    private static Query<KeyField, PropertyField> getIncorrectQuery(ImplementTable table, BaseClass baseClass) {
+        ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
+        Where where = getIncorrectWhere(table, baseClass, mapKeys);
+        return new Query<KeyField, PropertyField>(mapKeys, where);
+    }
+
+    @Message("logics.recalculating.data.classes")
+    public static void recalculateTableClasses(ImplementTable table, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+        Query<KeyField, PropertyField> query = getIncorrectQuery(table, baseClass);
+
+        sql.deleteRecords(new ModifyQuery(table, query, OperationOwner.unknown, TableOwner.global));
     }
 
     // для оптимизации

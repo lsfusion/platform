@@ -1080,7 +1080,22 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
         return businessLogics.formatMessageList(messageList);
     }
-        
+
+    public void recalculateTableClasses(SQLSession session, String tableName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        for (ImplementTable table : businessLogics.LM.tableFactory.getImplementTables())
+            if (tableName.equals(table.getName())) {
+                runTableClassesRecalculation(session, table, isolatedTransaction);
+            }
+    }
+
+    private void runTableClassesRecalculation(SQLSession session, final ImplementTable implementTable, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        run(session, isolatedTransaction, new RunService() {
+            public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                DataSession.recalculateTableClasses(implementTable, sql, LM.baseClass);
+            }});
+    }
+
+
     public void recalculateAggregationTableColumn(SQLSession session, String propertyCanonicalName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         for (AggregateProperty property : businessLogics.getAggregateStoredProperties())
             if (propertyCanonicalName.equals(property.getCanonicalName())) {

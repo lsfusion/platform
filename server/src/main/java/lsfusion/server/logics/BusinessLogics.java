@@ -1326,6 +1326,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public String checkClasses(SQLSession session) throws SQLException, SQLHandledException {
         String message = DataSession.checkClasses(session, LM.baseClass);
+        for(ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
+            message += DataSession.checkTableClasses(implementTable, session, LM.baseClass);
+        }
         for (CalcProperty property : getStoredDataProperties()) // getStoredProperties()
             message += DataSession.checkClasses(property, session, LM.baseClass);
         return message;
@@ -1390,6 +1393,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         final List<String> messageList = new ArrayList<String>();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
+        for(final ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
+            DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
+                public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                    long start = System.currentTimeMillis();
+                    DataSession.recalculateTableClasses(implementTable, sql, LM.baseClass);
+                    long time = System.currentTimeMillis() - start;
+                    String message = String.format("Recalculate Table Classes: %s, %s", implementTable.toString(), time);
+                    systemLogger.info(message);
+                    if(time > maxRecalculateTime)
+                        messageList.add(message);
+                }
+            });
+        }
+
         for (final CalcProperty property : getStoredDataProperties())
             DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {

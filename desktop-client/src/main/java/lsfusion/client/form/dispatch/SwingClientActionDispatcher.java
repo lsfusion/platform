@@ -318,7 +318,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(MessageClientAction action) {
-//        beforeModalActionInSameEDT();
+        beforeModalActionInSameEDT();
         try {
             if (!action.extended) {
                 JOptionPane.showMessageDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.INFORMATION_MESSAGE);
@@ -326,7 +326,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 new ExtendedMessageDialog(getDialogParentContainer(), action.caption, action.message).setVisible(true);
             }
         } finally {
-//            afterModalActionInSameEDT();
+            afterModalActionInSameEDT();
         }
     }
 
