@@ -235,10 +235,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private boolean isInTransaction;
 
     private void startTransaction(UpdateCurrentClasses update, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
-        if(!isInTransaction()) {
-            ServerLoggers.assertLog(false, "NESTED APPLY");
-            throw new RuntimeException("NESTED APPLY");
-        }
+//        if(!isInTransaction()) {
+        ServerLoggers.assertLog(!isInTransaction(), "NESTED APPLY");
+//            throw new RuntimeException("NESTED APPLY");
+//        }
         sql.startTransaction(DBManager.getCurrentTIL(), getOwner());
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
