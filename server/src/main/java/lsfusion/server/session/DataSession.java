@@ -1486,6 +1486,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(!hasChanges() && applyAction == null)
             return true;
 
+        if(isInTransaction()) {
+            ServerLoggers.assertLog(false, "NESTED APPLY");
+            if(applyAction != null)
+                applyAction.execute(this);
+            return true;
+        }
+
         keepProps = adjustKeep(keepProps);
 
         if (parentSession != null) {
