@@ -19,6 +19,7 @@ public class ComBridge {
         try {
             SystemUtils.loadLibrary("libjssc", "/lsfusion/client/", ComBridge.class);
         } catch (FileNotFoundException ignored) {
+        } catch (UnsatisfiedLinkError ignored) {
         }
 
     }
