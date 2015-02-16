@@ -27,6 +27,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.linear.LCP;
 	import lsfusion.server.logics.property.PropertyFollows;
 	import lsfusion.server.logics.property.Cycle;
+	import lsfusion.server.logics.property.actions.ImportSourceFormat;
 	import lsfusion.server.logics.scripted.*;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.WindowType;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.InsertPosition;
@@ -1557,6 +1558,19 @@ filterPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 		gobj=groupObjectID
 	;
 
+importActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.propUsages);
+	}
+} 
+	:	'IMPORT' type=importSourceFormat 'TO' plist=nonEmptyPropertyUsageList 'FROM' expr=propertyExpression[context, dynamic]
+	;
+
+importSourceFormat returns [ImportSourceFormat format]
+	:
+		'XLS' { $format = ImportSourceFormat.XLS; }
+	;
 
 typePropertyDefinition returns [LP property] 
 @init {
@@ -1950,6 +1964,7 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	evalPDB=evalActionPropertyDefinitionBody[context, dynamic] { $property = $evalPDB.property; }
 	|	drillDownPDB=drillDownActionPropertyDefinitionBody[context, dynamic] { $property = $drillDownPDB.property; }
 	|	focusPDB=focusActionPropertyDefinitionBody[context, dynamic] { $property = $focusPDB.property; }
+	|	importProp=importActionPropertyDefinitionBody[context, dynamic] { $property = $importProp.property; }
 	;
 	
 contextIndependentActionPDB returns [LPWithParams property, List<ResolveClassSet> signature]

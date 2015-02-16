@@ -47,6 +47,8 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.actions.BaseEvent;
+import lsfusion.server.logics.property.actions.ImportDataActionProperty;
+import lsfusion.server.logics.property.actions.ImportSourceFormat;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -2250,6 +2252,19 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedFocusActionProp(PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
         return new LPWithParams(addFocusActionProp(property.getID()), new ArrayList<Integer>());
+    }
+    
+    public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+        List<LCP> props = new ArrayList<LCP>();
+        for (PropertyUsage propUsage : propUsages) {
+            LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
+            List<ResolveClassSet> paramClasses = getParamClasses(lcp);
+            
+            assert paramClasses.size() == 1 && paramClasses.get(0).getType() == IntegerClass.instance : "Integer class as interface expected in " + propUsage.name;
+            
+            props.add(lcp);
+        }
+        return addScriptedJoinAProp(addAProp(new ImportDataActionProperty(fileProp.property.property.getValueClass(ClassType.filePolicy), format, this, props)), Collections.singletonList(fileProp));
     }
 
     public LCP addScriptedTypeProp(String className, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {

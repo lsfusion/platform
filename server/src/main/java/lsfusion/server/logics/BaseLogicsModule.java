@@ -43,7 +43,7 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.TableFactory;
 import org.antlr.runtime.RecognitionException;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -133,6 +133,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     private LCP confirmed;
     private LCP requestCanceled;
     private LCP formResultProp;
+
+    public LCP imported;
 
     public LCP defaultBackgroundColor;
     public LCP defaultOverrideBackgroundColor;
@@ -392,6 +394,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         confirmed = findProperty("confirmed");
         requestCanceled = findProperty("requestCanceled");
         formResultProp = findProperty("formResult");
+        
+        imported = findProperty("imported");
 
         sleep = findAction("sleep");
         applyOnlyWithoutRecalc = findAction("applyOnlyWithoutRecalc");

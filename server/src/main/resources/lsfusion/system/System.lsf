@@ -98,6 +98,8 @@ confirmed() = DATA LOCAL BOOLEAN ();
 requestCanceled() = DATA LOCAL BOOLEAN ();
 formResult() = DATA LOCAL FormResult ();
 
+imported = DATA LOCAL BOOLEAN (INTEGER);
+
 META defineAnyValue(name, param) 
     name##Object = DATA LOCAL Object (param);
     name##String = DATA LOCAL STRING[2000] (param);
