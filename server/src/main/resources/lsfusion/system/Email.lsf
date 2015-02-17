@@ -159,7 +159,7 @@ FORM mail 'Почта'
         FILTER 'Только отмеченные' inNotificationProperty(n, p) 'F9'
 ;
 
-EXTEND DESIGN mail {
+DESIGN mail {
     main {
         NEW specContainer {
             fill = 1;

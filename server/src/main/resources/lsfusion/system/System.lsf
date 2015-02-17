@@ -126,7 +126,7 @@ END
 META applicationForm(sid, name)
     FORM sid name;
     
-    DESIGN sid FROM DEFAULT {
+    DESIGN sid {
         main {
             NEW pane BEFORE functions.box {
                 type = TABBED;

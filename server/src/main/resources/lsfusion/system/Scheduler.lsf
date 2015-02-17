@@ -14,7 +14,7 @@ FORM schedulerStartTypes 'Способ отсчета времени'
     DIALOG SchedulerStartType OBJECT s
 ;
 
-EXTEND DESIGN schedulerStartTypes {
+DESIGN schedulerStartTypes {
     main {
         PROPERTY(staticCaption(s)) {
             caption = 'Отсчёт времени';
@@ -104,7 +104,7 @@ FORM scheduledTask 'Планировщик'
             FILTER 'Только активные' activeScheduledTaskDetail(td) 'F9'
 ;
 
-EXTEND DESIGN scheduledTask {
+DESIGN scheduledTask {
     NEW specContainer {
         fill = 1; 
         type = SPLITV;

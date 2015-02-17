@@ -138,7 +138,7 @@ FORM connections 'Журнал подключений'
                 FILTER 'Только выбранной формы' navigatorElementSession(s)==n 'F9'
 ;
 
-EXTEND DESIGN connections{
+DESIGN connections{
     NEW boxes BEFORE functions.box {
         fill = 1;
         type = CONTAINERH;
@@ -155,7 +155,7 @@ FORM  exceptions 'Журнал ошибок'
     PROPERTIES(e) READONLY erTraceException FORCE PANEL
 ;
 
-EXTEND DESIGN exceptions {
+DESIGN exceptions {
     main {
         NEW specContainer {
             fill = 1;
@@ -191,7 +191,7 @@ FORM changes 'Журнал изменений'
                     FILTER 'Только изменения пользователей' userLoginConnectionSession(s) 'F8' DEFAULT
 ;
 
-EXTEND DESIGN changes {
+DESIGN changes {
     main {
         NEW specContainer {
             fill = 1;

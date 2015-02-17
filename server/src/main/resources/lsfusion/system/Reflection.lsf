@@ -231,7 +231,7 @@ FORM physicalModel 'Таблицы'
         tableTableColumn(tc)==t
 ;
 
-EXTEND DESIGN physicalModel {
+DESIGN physicalModel {
     main{
         NEW container BEFORE functions.box{
             fill = 1;
@@ -301,7 +301,7 @@ FORM forms 'Формы'
         FILTER 'Свойства только текущей группы объектов' groupObjectPropertyDraw(p)==g 'F8'
 ;
 
-EXTEND DESIGN forms {
+DESIGN forms {
     main {
         NEW groupingContainer BEFORE p.box {
             type = CONTAINERH;
@@ -333,7 +333,7 @@ FORM properties 'Свойства'
         parentProperty(ps)==tps
 ;
 
-EXTEND DESIGN properties {
+DESIGN properties {
     main {
         NEW container BEFORE functions.box {
             fill = 1;

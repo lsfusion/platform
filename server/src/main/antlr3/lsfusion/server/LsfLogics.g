@@ -2041,10 +2041,10 @@ addFormActionPropertyDefinitionBody returns [LP property, List<ResolveClassSet> 
 	}
 }
 	:	'ADDFORM'
-	    (   'SESSION' { scope = FormSessionScope.OLDSESSION; }
-	    |   'NESTED'  { scope = FormSessionScope.NESTEDSESSION; }
-        )?
-        cls=classId
+		(   'SESSION' { scope = FormSessionScope.OLDSESSION; }
+		|   'NESTED'  { scope = FormSessionScope.NESTEDSESSION; }
+		)?
+		cls=classId
 	;
 
 editFormActionPropertyDefinitionBody returns [LP property, List<ResolveClassSet> signature]
@@ -2942,32 +2942,21 @@ scope {
 	ScriptingFormView formView = null;
 	boolean applyDefault = false;
 }
-	:	(	decl=designDeclaration		{ $designStatement::design = formView = $decl.view; }
-		|	edecl=extendDesignDeclaration	{ $designStatement::design = formView = $edecl.view; }	
-		)
+	:	header=designHeader	{ $designStatement::design = formView = $header.view; }
 		componentStatementBody[formView == null ? null : formView.getView(), formView == null ? null : formView.getMainContainer()]
 	;
 
-designDeclaration returns [ScriptingFormView view]
+designHeader returns [ScriptingFormView view]
 @init {
-	boolean applyDefault = false;
+	boolean customDesign = false;
 }
 @after {
 	if (inPropParseState()) {
-		$view = self.createScriptedFormView($cid.sid, $caption.val, applyDefault);
+		$view = self.getFormDesign($cid.sid, customDesign);
 	}
 }
-	:	'DESIGN' cid=compoundID (caption=stringLiteral)? ('FROM' 'DEFAULT' { applyDefault = true; })?
+	:	'DESIGN' cid=compoundID ('CUSTOM' { customDesign = true; })?
 	;
-
-extendDesignDeclaration returns [ScriptingFormView view]
-@after {
-	if (inPropParseState()) {
-		$view = self.getDesignForExtending($cid.sid);
-	}
-}
-	:	'EXTEND' 'DESIGN' cid=compoundID 
-	;	
 
 componentStatementBody [Object propertyReceiver, ComponentView parentComponent]
 	:	'{'

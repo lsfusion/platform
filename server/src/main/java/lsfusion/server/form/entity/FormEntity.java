@@ -194,7 +194,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public void finalizeInit(Version version) {
 //        getNFRichDesign(version);
-        richDesign.set(createDefaultRichDesign(version), version);
+        setRichDesign(createDefaultRichDesign(version), version);
     }
 
     @Override

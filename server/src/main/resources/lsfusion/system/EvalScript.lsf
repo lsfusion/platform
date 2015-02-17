@@ -28,7 +28,7 @@ FORM chooseScriptName 'Сохранить как'
     PROPERTIES valueName = OBJVALUE(name)
 ;
 
-EXTEND DESIGN chooseScriptName {
+DESIGN chooseScriptName {
     main{
         caption = 'Сохранить как';
         PROPERTY(valueName){
@@ -94,7 +94,7 @@ FORM script 'Скрипт'
     PROPERTIES(r) ADDOBJ, DELETESESSION
 ;
 
-DESIGN script FROM DEFAULT {
+DESIGN script {
     NEW pane {
         fill = 1;
         type = TABBED;

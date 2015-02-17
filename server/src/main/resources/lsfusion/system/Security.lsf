@@ -199,7 +199,7 @@ EXTEND FORM customUser
     PROPERTIES(u,ur) inUserRole
 ;
 
-EXTEND DESIGN customUser {
+DESIGN customUser {
     container {
         ADD ur.box {
             flex = 1.0;
@@ -315,7 +315,7 @@ FORM securityPolicy 'Политика безопасности'
     FILTERS parentProperty(prs)==tprs, parentProperty(dprs)==tdprs
 ;
 
-EXTEND DESIGN securityPolicy {
+DESIGN securityPolicy {
     NEW container {
         fill = 1;
         type = TABBED;
@@ -396,7 +396,7 @@ FORM propertyPolicy 'Политика безопасности для свойс
     PROPERTIES(ur, p) permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty
 ;
 
-EXTEND DESIGN propertyPolicy {
+DESIGN propertyPolicy {
     NEW property {
         type = CONTAINERH;
         caption = 'Свойства';

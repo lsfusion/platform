@@ -33,7 +33,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.form.entity.*;
 import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.navigator.NavigatorElement;
-import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.window.*;
 import lsfusion.server.logics.*;
@@ -489,28 +488,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         return form;
     }
 
-    public ScriptingFormView createScriptedFormView(String formName, String caption, boolean applyDefault) throws ScriptingErrorLog.SemanticErrorException {
+    public ScriptingFormView getFormDesign(String formName, boolean custom) throws ScriptingErrorLog.SemanticErrorException {
         Version version = getVersion();
-        
+
         FormEntity form = findForm(formName);
-        FormView formView = applyDefault ? new DefaultFormView(form, version) : new FormView(form, version);
-        ScriptingFormView scriptingView = new ScriptingFormView(formView, this);
-        if (caption != null) {
-            formView.caption = caption;
+        FormView view;
+        if (custom) {
+            view = new FormView(form, version);
+            form.setRichDesign(view, version);
+        } else {
+            view = form.getNFRichDesign(version);
         }
-
-        form.setRichDesign(formView, version);
-
-        return scriptingView;
+        return new ScriptingFormView(view, this);
     }
-
-    public ScriptingFormView getDesignForExtending(String formName) throws ScriptingErrorLog.SemanticErrorException {
-        Version version = getVersion();
-
-        FormEntity form = findForm(formName);
-        return new ScriptingFormView(form.getNFRichDesign(version), this);
-    }
-
+    
     public void addScriptedForm(ScriptingFormEntity form) {
         addFormEntity(form.getForm()).finalizeInit(getVersion());
     }

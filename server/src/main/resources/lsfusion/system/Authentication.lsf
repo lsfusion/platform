@@ -105,7 +105,7 @@ FORM customUser 'Пользователь'
     EDIT CustomUser OBJECT u
 ;
 
-EXTEND DESIGN customUser {
+DESIGN customUser {
     NEW container BEFORE functions.box {
         type = SPLITH;
         fill = 1;
@@ -138,7 +138,7 @@ FORM editProfile 'Редактировать профиль' IMAGE '/images/edit
     FILTERS u==currentUser()
 ;
 
-EXTEND DESIGN editProfile {
+DESIGN editProfile {
     main{
         type = CONTAINERH;
     }
@@ -154,7 +154,7 @@ FORM reloginLoginUser 'Сменить пользователя'
     PROPERTIES valueLogin = OBJVALUE(login), valuePassword = OBJVALUE(password)
 ;
 
-EXTEND DESIGN reloginLoginUser {
+DESIGN reloginLoginUser {
     main{
         data.box {
             caption = 'Смена пользователя';
@@ -204,7 +204,7 @@ FORM reloginPasswordUser 'Сменить пользователя'
     PROPERTIES valuePassword = OBJVALUE(password)
 ;
 
-EXTEND DESIGN reloginPasswordUser {
+DESIGN reloginPasswordUser {
     main{
         password.box {
             caption = 'Смена пользователя';
@@ -249,7 +249,7 @@ FORM changePasswordUser 'Сменить пароль'
     FILTERS u==currentUser()
 ;
 
-EXTEND DESIGN changePasswordUser {
+DESIGN changePasswordUser {
     main{
         passwords.box {
             ADD PROPERTY(loginCustomUser(u)) FIRST {
