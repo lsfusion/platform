@@ -43,7 +43,7 @@ META defineHistorizable(property, propPostfix, caption, type, object, objectIden
         OBJECTS a=###object FIXED PANEL, d=DATE FIXED PANEL
         PROPERTIES objectIdentity(a) READONLY, OBJVALUE(d), data###property###object###propPostfix##Date(a, d)
     ;
-    DESIGN add###property###object###propPostfix FROM DEFAULT {
+    DESIGN add###property###object###propPostfix {
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
     }
 
@@ -54,7 +54,7 @@ META defineHistorizable(property, propPostfix, caption, type, object, objectIden
         PROPERTIES objectIdentity(a) READONLY, add###property###object###propPostfix(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property###object###propPostfix##Date(a, d)
         FILTERS data###property###object###propPostfix##Date(a, d)
     ;
-    DESIGN dialog###property###object###propPostfix FROM DEFAULT {
+    DESIGN dialog###property###object###propPostfix {
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
     }
 
@@ -79,7 +79,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, classIdenti
         OBJECTS a=###object FIXED PANEL, d=DATE FIXED PANEL
         PROPERTIES objectIdentity(a) READONLY, OBJVALUE(d), data###typeIdentity###classIdentity###property###object##Date(a, d)
     ;
-    DESIGN add###property###object FROM DEFAULT {
+    DESIGN add###property###object {
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
     }
 
@@ -90,7 +90,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, classIdenti
         PROPERTIES objectIdentity(a) READONLY, add###property###object(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeIdentity###classIdentity###property###object##Date(a, d)
         FILTERS data###property###object##Date(a, d)
     ;
-    DESIGN dialog###property###object FROM DEFAULT {
+    DESIGN dialog###property###object {
         PROPERTY(objectIdentity(a)) { focusable = FALSE; }
     }
 
@@ -115,7 +115,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
         OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, d=DATE FIXED PANEL
         PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, OBJVALUE(d), data###property###object1###object2##Date(a, b, d)
     ;
-    DESIGN add###property###object1###object2 FROM DEFAULT {
+    DESIGN add###property###object1###object2 {
         PROPERTY(object1Identity(a)) { focusable = FALSE; }
         PROPERTY(object2Identity(b)) { focusable = FALSE; }
     }
@@ -127,7 +127,7 @@ META defineHistorizable(property, caption, type, object1, object1Identity, objec
         PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, add###property###object1###object2(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property###object1###object2##Date(a, b, d)
         FILTERS data###property###object1###object2##Date(a, b, d)
     ;
-    DESIGN dialog###property###object1###object2 FROM DEFAULT {
+    DESIGN dialog###property###object1###object2 {
         PROPERTY(object1Identity(a)) { focusable = FALSE; }
         PROPERTY(object2Identity(b)) { focusable = FALSE; }
     }

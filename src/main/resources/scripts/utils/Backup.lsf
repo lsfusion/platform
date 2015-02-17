@@ -41,7 +41,7 @@ FORM backup 'Резервное копирование'
         PROPERTIES(b,t2) excludeBackupTable
 ;
 
-DESIGN backup FROM DEFAULT {
+DESIGN backup {
     NEW pane {
         fill = 1;
         type = CONTAINERH;

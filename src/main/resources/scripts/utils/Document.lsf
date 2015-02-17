@@ -371,7 +371,7 @@ EXTEND FORM options
     PROPERTIES dialogCloseDocumentsDate()
 ;
 
-EXTEND DESIGN options {
+DESIGN options {
     commons{
         ADD PROPERTY(dialogCloseDocumentsDate());
     }

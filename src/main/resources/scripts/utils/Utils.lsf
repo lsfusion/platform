@@ -96,7 +96,7 @@ FORM dialogString 'Выбор строку'
     PROPERTIES(s) objValue = OBJVALUE
 ;
 
-DESIGN dialogString FROM DEFAULT {
+DESIGN dialogString {
     NEW string BEFORE functions.box {
         fill = 1;
         ADD PROPERTY (objValue) {
@@ -113,7 +113,7 @@ FORM dialogDate 'Выбор даты'
     PROPERTIES(d) objValue = OBJVALUE
 ;
 
-DESIGN dialogDate FROM DEFAULT {
+DESIGN dialogDate {
     NEW date BEFORE functions.box {
         fill = 1;
         ADD PROPERTY (objValue) {
@@ -131,7 +131,7 @@ FORM dialogInteger 'Выбор числа'
     PROPERTIES(i) objValue = OBJVALUE
 ;
 
-DESIGN dialogInteger FROM DEFAULT {
+DESIGN dialogInteger {
     PROPERTY (objValue) {
         caption = 'Введите число';
         font = 'bold 64';
@@ -144,7 +144,7 @@ FORM dialogNumeric 'Выбор числа'
     PROPERTIES(n) objValue = OBJVALUE
 ;
 
-DESIGN dialogNumeric FROM DEFAULT {
+DESIGN dialogNumeric {
     PROPERTY (objValue) {
         caption = 'Введите число';
         font = 'bold 64';
@@ -283,7 +283,7 @@ META extendFormEditable (form)
     EXTEND FORM form
         PROPERTIES() isEditable
     ;
-    EXTEND DESIGN form {
+    DESIGN form {
         functions.box {
             ADD PROPERTY(isEditable()) BEFORE rightControls;
         }

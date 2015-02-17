@@ -93,7 +93,7 @@ FORM translation 'Перевод'
                  translateText
 ;
 
-EXTEND DESIGN translation {
+DESIGN translation {
     NEW languages {
         caption = 'Языки';
         type = CONTAINERH;
@@ -144,7 +144,7 @@ FORM dictionary 'Словарь'
     PROPERTIES() translationInput, translationResult
 ;
 
-DESIGN dictionary FROM DEFAULT {
+DESIGN dictionary {
     main {
         type = CONTAINERV;
         ADD d.box;

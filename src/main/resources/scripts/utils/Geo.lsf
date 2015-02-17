@@ -69,7 +69,7 @@ EXTEND FORM options
     PROPERTIES() autoSynchronizeCoordinates, nameUserMapProvider
 ;
 
-EXTEND DESIGN options {
+DESIGN options {
     commons {
         ADD PROPERTY(autoSynchronizeCoordinates());
         ADD PROPERTY(nameUserMapProvider());

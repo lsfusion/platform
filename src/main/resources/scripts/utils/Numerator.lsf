@@ -60,7 +60,7 @@ FORM defaultNumerators 'Нумераторы'
     PROPERTIES(n)          ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
 ;
 
-DESIGN defaultNumerators FROM DEFAULT {
+DESIGN defaultNumerators {
     main {
         NEW defaultContainer AFTER n.box {
             type = COLUMNS;
@@ -95,7 +95,7 @@ useUpperedSeries 'Использовать верхний регистр для 
 EXTEND FORM options
     PROPERTIES () useUpperedSeries
 ;
-EXTEND DESIGN options{
+DESIGN options{
     commons {
         ADD PROPERTY (useUpperedSeries());
     }    
@@ -197,7 +197,7 @@ META defineNumeratedDefault (object1, object2, property, captionV, seriesV)
     EXTEND FORM defaultNumerators
         PROPERTIES() nameDefaultNumerator###object1###object2
     ;
-    EXTEND DESIGN defaultNumerators {
+    DESIGN defaultNumerators {
         defaultContainer {
             ADD PROPERTY(nameDefaultNumerator###object1###object2);
         }

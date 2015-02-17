@@ -23,7 +23,7 @@ META defineExternalizableAbstract (object, type, prefix)
 END
 
 EXTEND FORM options PROPERTIES() showIDs;
-EXTEND DESIGN options {
+DESIGN options {
     commons {
         ADD PROPERTY(showIDs());
     }

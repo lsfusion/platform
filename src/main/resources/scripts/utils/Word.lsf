@@ -47,7 +47,7 @@ FORM template 'Шаблон Word'
     EDIT Template OBJECT t
 ;
 
-DESIGN template FROM DEFAULT{
+DESIGN template {
     main{
         preferredSize = (1024, 768);
         type = CONTAINERV;
@@ -88,7 +88,7 @@ FORM dialogTemplates 'Шаблоны Word'
 
     DIALOG Template OBJECT t
 ;
-DESIGN dialogTemplates FROM DEFAULT{
+DESIGN dialogTemplates {
     main {
         preferredSize = (1024, 768);
     }
