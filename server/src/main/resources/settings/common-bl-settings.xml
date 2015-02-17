@@ -618,6 +618,7 @@
         <property name="clientVMOptions" ref="clientVMOptions"/>
         <property name="userTimeZone" value="${user.timeZone:}"/>
         <property name="displayName" value="${logics.displayName:}"/>
+        <property name="clientHideMenu" value="${client.hideMenu:}"/>
     </bean>
 
     <bean id="clientVMOptions" class="lsfusion.interop.VMOptions">

@@ -11,6 +11,7 @@ import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.client.rmi.RMITimeoutSocketFactory;
 import lsfusion.interop.FormPrintType;
+import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.event.EventBus;
@@ -64,6 +65,8 @@ public class Main {
     public static String logicsDisplayName;
     public static byte[] logicsMainIcon;
     public static byte[] logicsLogo;
+    
+    public static boolean hideMenu;
 
     public static int computerId;
     public static DateFormat dateFormat;
@@ -136,10 +139,12 @@ public class Main {
 
                     remoteLogics = loginAction.getRemoteLogics();
 
-                    logicsName = remoteLogics.getName();
-                    logicsDisplayName = remoteLogics.getDisplayName();
-                    logicsMainIcon = remoteLogics.getMainIcon();
-                    logicsLogo = remoteLogics.getLogo();
+                    GUIPreferences prefs = remoteLogics.getGUIPreferences();
+                    logicsName = prefs.logicsName;
+                    logicsDisplayName = prefs.logicsDisplayName;
+                    logicsMainIcon = prefs.logicsMainIcon;
+                    logicsLogo = prefs.logicsLogo;
+                    hideMenu = prefs.hideMenu;
 
                     setupTimeZone();
 

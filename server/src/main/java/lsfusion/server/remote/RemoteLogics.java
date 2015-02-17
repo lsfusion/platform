@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.event.IDaemonTask;
@@ -61,6 +62,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     private String name;
     
     private String userTimeZone;
+    
+    private String clientHideMenu;
 
     public void setBusinessLogics(BusinessLogics businessLogics) {
         this.businessLogics = (T) businessLogics;
@@ -100,6 +103,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     
     public void setUserTimeZone(String userTimeZone) {
         this.userTimeZone = userTimeZone;
+    }
+    
+    public void setClientHideMenu(String clientHideMenu) {
+        this.clientHideMenu = clientHideMenu;
     }
 
     @Override
@@ -175,11 +182,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return dbManager.createSession();
     }
 
-    @Override
-    public String getName() throws RemoteException {
-        return name;
-    }
-
     public Integer getComputer(String strHostName) {
         return dbManager.getComputer(strHostName);
     }
@@ -201,16 +203,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         //for filterIncl-alive
     }
 
-    public String getDisplayName() throws RemoteException {
-        return displayName;
-    }
-
-    public byte[] getMainIcon() throws RemoteException {
-        return null;
-    }
-
-    public byte[] getLogo() throws RemoteException {
-        return null;
+    public GUIPreferences getGUIPreferences() throws RemoteException {
+        return new GUIPreferences(name, displayName, null, null, Boolean.parseBoolean(clientHideMenu));
     }
     
     public String getUserTimeZone() throws RemoteException {

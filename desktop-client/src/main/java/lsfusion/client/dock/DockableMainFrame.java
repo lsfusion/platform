@@ -91,8 +91,10 @@ public class DockableMainFrame extends MainFrame {
         dockableManager = new DockableManager(mainControl, mainNavigator);
 
         initDockStations();
-
-        setupMenu();
+        
+        if (!Main.hideMenu) {
+            setupMenu();
+        }
 
         navigatorController.update();
 

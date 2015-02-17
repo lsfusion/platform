@@ -11,14 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface RemoteLogicsInterface extends PendingRemoteInterface {
-
-    String getName() throws RemoteException;
-
-    String getDisplayName() throws RemoteException;
-
-    byte[] getMainIcon() throws RemoteException;
-
-    byte[] getLogo() throws RemoteException;
+    
+    GUIPreferences getGUIPreferences() throws RemoteException;
     
     String getUserTimeZone() throws RemoteException;
 

@@ -1,5 +1,6 @@
 package lsfusion.client.remote.proxy;
 
+import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.event.IDaemonTask;
@@ -25,32 +26,11 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return new RemoteNavigatorProxy(remote);
     }
 
-    public String getName() throws RemoteException {
-        logRemoteMethodStartCall("getName");
-        String result = target.getName();
-        logRemoteMethodEndCall("getName", result);
-        return result;
-    }
-
-    public String getDisplayName() throws RemoteException {
-        logRemoteMethodStartCall("getDisplayName");
-        String result = target.getDisplayName();
-        logRemoteMethodEndCall("getDisplayName", result);
-        return result;
-    }
-
-    public byte[] getMainIcon() throws RemoteException {
-        logRemoteMethodStartCall("getMainIcon");
-        byte[] result = target.getMainIcon();
-        logRemoteMethodEndCall("getMainIcon", result);
-        return result;
-    }
-
-    public byte[] getLogo() throws RemoteException {
-        logRemoteMethodStartCall("getLogo");
-        byte[] result = target.getLogo();
-        logRemoteMethodEndCall("getLogo", result);
-        return result;
+    public GUIPreferences getGUIPreferences() throws RemoteException {
+        logRemoteMethodStartCall("getGUIPreferences");
+        GUIPreferences result = target.getGUIPreferences();
+        logRemoteMethodEndCall("getGUIPreferences", result);
+        return result;    
     }
 
     @Override
