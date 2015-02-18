@@ -153,7 +153,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return fixedOrders.getListMap();
     }
 
-    public String title;
     public ModalityType modalityType = ModalityType.DOCKED;
     public int autoRefresh = 0;
 
@@ -162,19 +161,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public CalcPropertyObjectEntity<?> reportPathProp;
 
     protected FormEntity(String canonicalName, String caption, Version version) {
-        this(null, canonicalName, caption, null, null, version);
+        this(null, canonicalName, caption, null, version);
     }
 
-    public FormEntity(String canonicalName, String caption, String ititle, String icon, Version version) {
-        this(null, canonicalName, caption, ititle, icon, version);
+    public FormEntity(String canonicalName, String caption, String icon, Version version) {
+        this(null, canonicalName, caption, icon, version);
     }
 
-    private FormEntity(NavigatorElement<T> parent, String canonicalName, String caption, String ititle, String icon, Version version) {
+    private FormEntity(NavigatorElement<T> parent, String canonicalName, String caption, String icon, Version version) {
         super(parent, canonicalName, caption, null, version);
         setImage(icon != null ? icon : "/images/form.png");
         logger.debug("Initializing form " + caption + "...");
-
-        title = ititle;
 
         BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
 
@@ -1273,9 +1270,5 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             for (ObjectEntity object : group.getObjects())
                 objects.add(object);
         return objects;
-    }
-    
-    public String getTitle(){
-        return title!=null ? title : caption;
     }
 }

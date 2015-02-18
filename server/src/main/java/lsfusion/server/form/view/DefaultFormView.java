@@ -88,7 +88,7 @@ public class DefaultFormView extends FormView {
     public DefaultFormView(FormEntity<?> formEntity, Version version) {
         super(formEntity, version);
 
-        caption = entity.getTitle();
+        caption = entity.caption;
         autoRefresh = entity.autoRefresh;
 
         FormContainerSet<ContainerView, ComponentView> formSet = FormContainerSet.fillContainers(this, containerFactory, new ContainerView.VersionContainerAdder(version));

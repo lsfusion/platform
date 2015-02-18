@@ -415,13 +415,12 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 @after {
 	if (inPropParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, title, image, modalityType, autoRefresh);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, image, modalityType, autoRefresh);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
-		(	('TITLE' t=stringLiteral { title = $t.val; })
-		|	(modality=modalityTypeLiteral { modalityType = $modality.val; })
+		(	(modality=modalityTypeLiteral { modalityType = $modality.val; })
 		|	('IMAGE' img=stringLiteral { image = $img.val; })
 		|	('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })
 		)*
