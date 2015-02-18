@@ -251,7 +251,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     }
 
     public String getDateTime() {
-        return "CURRENT_TIMESTAMP";
+        return "DATE_TRUNC('second', CURRENT_TIMESTAMP)";
     }
 
     public String getTypeChange(Type oldType, Type type, String name, ExecuteEnvironment env) {

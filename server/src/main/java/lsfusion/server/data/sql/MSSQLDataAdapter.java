@@ -17,7 +17,10 @@ import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityStrongLazy;
-import lsfusion.server.classes.*;
+import lsfusion.server.classes.ByteArrayClass;
+import lsfusion.server.classes.DateClass;
+import lsfusion.server.classes.IntegerClass;
+import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.Field;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.SessionTable;
@@ -28,14 +31,18 @@ import lsfusion.server.data.query.ExecuteEnvironment;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.query.TypeFunc;
 import lsfusion.server.data.type.*;
-import lsfusion.server.data.type.Reader;
 import lsfusion.server.logics.BusinessLogics;
-import org.apache.commons.exec.*;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.Executor;
+import org.apache.commons.exec.PumpStreamHandler;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.*;
 
 public class MSSQLDataAdapter extends DataAdapter {
@@ -1079,7 +1086,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
 
     public String getDateTime() {
-        return "GETDATE()";
+        return "DATEADD(second, DATEDIFF(second, 0, GETDATE()), 0)";
     }
 
     @Override
