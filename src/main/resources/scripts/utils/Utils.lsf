@@ -222,10 +222,10 @@ META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1
         GROUP AGGR aggrObject BY prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)
         WHERE aggrObject IS aggrClass PERSISTENT INDEXED;
 
-    aggrProperty(prim1Object, prim2Object, prim3Object) => aggrObject###prim1Object###prim2Object###prim3Object(prim1Object, prim2Object, prim3Object) RESOLVE LEFT;
+    aggrProperty###prim1Class###prim2Class###prim3Class(prim1Object, prim2Object, prim3Object) => aggrObject###prim1Object###prim2Object###prim3Object(prim1Object, prim2Object, prim3Object) RESOLVE LEFT;
 
     is###aggrObject(aggrObject) = aggrObject IS aggrClass;
-    is###aggrObject(aggrObject) => aggrProperty(prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)) RESOLVE RIGHT;
+    is###aggrObject(aggrObject) => aggrProperty###prim1Class###prim2Class###prim3Class(prim1Property(aggrObject), prim2Property(aggrObject), prim3Property(aggrObject)) RESOLVE RIGHT;
 END
 
 META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim1Object, prim2Object, prim3Object, aggrObject, aggrProperty)
