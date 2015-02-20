@@ -1567,8 +1567,10 @@ importActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic
 	;
 
 importSourceFormat returns [ImportSourceFormat format]
-	:
-		'XLS' { $format = ImportSourceFormat.XLS; }
+	: 'XLS'  { $format = ImportSourceFormat.XLS; }
+	| 'XLSX' { $format = ImportSourceFormat.XLSX; }
+	| 'DBF'  { $format = ImportSourceFormat.DBF; }
+	| 'CSV'  { $format = ImportSourceFormat.CSV; }
 	;
 
 typePropertyDefinition returns [LP property] 
