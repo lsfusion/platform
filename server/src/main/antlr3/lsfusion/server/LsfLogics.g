@@ -27,7 +27,8 @@ grammar LsfLogics;
 	import lsfusion.server.logics.linear.LCP;
 	import lsfusion.server.logics.property.PropertyFollows;
 	import lsfusion.server.logics.property.Cycle;
-	import lsfusion.server.logics.property.actions.ImportSourceFormat;
+	import lsfusion.server.logics.property.ImportSourceFormat;
+	import lsfusion.server.logics.property.ReadSourceType;
 	import lsfusion.server.logics.scripted.*;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.WindowType;
 	import lsfusion.server.logics.scripted.ScriptingLogicsModule.InsertPosition;
@@ -1557,6 +1558,19 @@ filterPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 		gobj=groupObjectID
 	;
 
+readActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedReadActionProperty($type.type, $expr.property, $pUsage.propUsage);
+	}
+}
+	:	'READ' type=readSourceType expr=propertyExpression[context, dynamic] 'TO' pUsage=propertyUsage
+	;
+	
+readSourceType returns[ReadSourceType type]
+	:	'FILE' { $type = ReadSourceType.FILE; }
+	;
+
 importActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
@@ -1965,6 +1979,7 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	evalPDB=evalActionPropertyDefinitionBody[context, dynamic] { $property = $evalPDB.property; }
 	|	drillDownPDB=drillDownActionPropertyDefinitionBody[context, dynamic] { $property = $drillDownPDB.property; }
 	|	focusPDB=focusActionPropertyDefinitionBody[context, dynamic] { $property = $focusPDB.property; }
+	|	readPDB=readActionPropertyDefinitionBody[context, dynamic] { $property = $readPDB.property; }
 	|	importProp=importActionPropertyDefinitionBody[context, dynamic] { $property = $importProp.property; }
 	;
 	

@@ -11,6 +11,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.ImportSourceFormat;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -90,11 +91,13 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
         
         for (int i = 0; i < sheet.getLastRowNum(); i++) {
             HSSFRow row = sheet.getRow(i);
-            List<String> listRow = new ArrayList<String>();
-            for (int j = 0; j < Math.min(properties.size(), row.getLastCellNum()); j++) {
-                listRow.add(getXLSFieldValue(sheet, i, j, null));
+            if (row != null) {
+                List<String> listRow = new ArrayList<String>();
+                for (int j = 0; j < Math.min(properties.size(), row.getLastCellNum()); j++) {
+                    listRow.add(getXLSFieldValue(sheet, i, j, null));
+                }
+                result.add(listRow);
             }
-            result.add(listRow);
         }
         
         return result;
@@ -108,11 +111,13 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
 
         for (int i = 0; i < sheet.getLastRowNum(); i++) {
             XSSFRow row = sheet.getRow(i);
-            List<String> listRow = new ArrayList<String>();
-            for (int j = 0; j < Math.min(properties.size(), row.getLastCellNum()); j++) {
-                listRow.add(getXLSXFieldValue(sheet, i, j, null));
+            if (row != null) {
+                List<String> listRow = new ArrayList<String>();
+                for (int j = 0; j < Math.min(properties.size(), row.getLastCellNum()); j++) {
+                    listRow.add(getXLSXFieldValue(sheet, i, j, null));
+                }
+                result.add(listRow);
             }
-            result.add(listRow);
         }
 
         return result;

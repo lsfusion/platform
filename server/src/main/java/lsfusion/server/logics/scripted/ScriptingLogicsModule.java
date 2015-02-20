@@ -47,7 +47,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.actions.BaseEvent;
 import lsfusion.server.logics.property.actions.ImportDataActionProperty;
-import lsfusion.server.logics.property.actions.ImportSourceFormat;
+import lsfusion.server.logics.property.actions.ReadActionProperty;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -2177,6 +2177,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedFocusActionProp(PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
         return new LPWithParams(addFocusActionProp(property.getID()), new ArrayList<Integer>());
+    }
+    
+    public LPWithParams addScriptedReadActionProperty(ReadSourceType type, LPWithParams sourcePathProp, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+        LCP<?> targetProp = (LCP<?>) findLPByPropertyUsage(propUsage);
+        return addScriptedJoinAProp(addAProp(new ReadActionProperty(this, type, sourcePathProp.property.property.getValueClass(ClassType.valuePolicy), targetProp)), Collections.singletonList(sourcePathProp));
     }
     
     public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
