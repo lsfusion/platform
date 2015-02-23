@@ -23,6 +23,11 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jdom.input.SAXBuilder;
+import org.jdom.Attribute;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
 
@@ -63,6 +68,8 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
                     table = getDBFTable((byte[]) file);
                 } else if (format == ImportSourceFormat.CSV) {
                     table = getCSVTable((byte[]) file);
+                } else if (format == ImportSourceFormat.XML) {
+                    table = getXMLTable((byte[]) file);
                 }
                 
                 if (table != null) {
@@ -169,6 +176,27 @@ public class ImportDataActionProperty extends ScriptingActionProperty {
                 listRow.add(field);
             }
             result.add(listRow);
+        }
+        return result;
+    }
+
+    private List<List<String>> getXMLTable(byte[] file) throws JDOMException, IOException {
+
+        List<List<String>> result = new ArrayList<List<String>>();
+
+        SAXBuilder builder = new SAXBuilder();
+        Document document = builder.build(new ByteArrayInputStream(file));
+        Element rootNode = document.getRootElement();
+        List childrenList = rootNode.getChildren();
+        for (Object childNode : childrenList) {
+            List attributes = ((Element)childNode).getAttributes();
+            List<String> listRow = new ArrayList<String>();
+            for(Object attribute : attributes) {
+                String attributeValue = ((Attribute) attribute).getValue();
+                listRow.add(attributeValue);
+            }
+            result.add(listRow);
+            
         }
         return result;
     }

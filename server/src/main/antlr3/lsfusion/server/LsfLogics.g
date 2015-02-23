@@ -1585,6 +1585,7 @@ importSourceFormat returns [ImportSourceFormat format]
 	| 'XLSX' { $format = ImportSourceFormat.XLSX; }
 	| 'DBF'  { $format = ImportSourceFormat.DBF; }
 	| 'CSV'  { $format = ImportSourceFormat.CSV; }
+	| 'XML'  { $format = ImportSourceFormat.XML; }
 	;
 
 typePropertyDefinition returns [LP property] 
