@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.DBManager;
+import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -98,5 +99,10 @@ public class ApplyActionProperty extends KeepContextActionProperty {
             result = result.merge(action.property);
         }        
         return result;
+    }
+
+    @Override
+    public ActionDelegationType getDelegationType(boolean modifyContext) {
+        return ActionDelegationType.IN_DELEGATE; // важно, чтобы можно было нормально STEPOUT из событий делать
     }
 }

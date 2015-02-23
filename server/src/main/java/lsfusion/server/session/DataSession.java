@@ -1653,7 +1653,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         sql.inconsistent = true;
         
         ImOrderSet<ActionPropertyValueImplement> updatedRecursiveActions;
-        updatedRecursiveActions = updateRecursiveActions();
+        updatedRecursiveActions = updateCurrentClasses(keepProps);
         if(update != null)
             update.update(this);
 
@@ -1690,18 +1690,19 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return true;
     }
 
-    private ImOrderSet<ActionPropertyValueImplement> updateRecursiveActions() throws SQLException, SQLHandledException {
+    private ImOrderSet<ActionPropertyValueImplement> updateCurrentClasses(FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         ImOrderSet<ActionPropertyValueImplement> updatedRecursiveActions = null;
         if(recursiveActions.size()>0) {
             recursiveUsed = BaseUtils.merge(recursiveUsed, SetFact.singleton((SessionDataProperty) currentSession.property));
-
-            updateCurrentClasses(filterSessionData(recursiveUsed).values()); // обновить классы sessionDataProperty, которые остались
 
             MOrderExclSet<ActionPropertyValueImplement> mUpdatedRecursiveActions = SetFact.mOrderExclSet();
             for(ActionPropertyValueImplement recursiveAction : recursiveActions)
                 mUpdatedRecursiveActions.exclAdd(recursiveAction.updateCurrentClasses(this));
             updatedRecursiveActions = mUpdatedRecursiveActions.immutableOrder();
         }
+
+        updateCurrentClasses(filterSessionData(BaseUtils.merge(recursiveUsed, keepProps)).values());
+
         return updatedRecursiveActions;
     }
 
