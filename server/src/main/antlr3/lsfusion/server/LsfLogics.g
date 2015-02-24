@@ -1568,7 +1568,7 @@ readActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	;
 	
 readSourceType returns[ReadSourceType type]
-	:	'FILE' { $type = ReadSourceType.FILE; }
+	:	'URL' { $type = ReadSourceType.URL; }
 	;
 
 importActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

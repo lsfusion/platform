@@ -63,7 +63,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <scope>test</scope>
+            <!--<scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
@@ -187,6 +187,11 @@
         <dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <version>3.3</version>
         </dependency>
     </dependencies>
 </project>
