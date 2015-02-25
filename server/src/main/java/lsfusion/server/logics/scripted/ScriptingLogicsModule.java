@@ -488,7 +488,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return form;
     }
 
-    public ScriptingFormView getFormDesign(String formName, boolean custom) throws ScriptingErrorLog.SemanticErrorException {
+    public ScriptingFormView getFormDesign(String formName, String caption, boolean custom) throws ScriptingErrorLog.SemanticErrorException {
         Version version = getVersion();
 
         FormEntity form = findForm(formName);
@@ -499,6 +499,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             view = form.getNFRichDesign(version);
         }
+        
+        if (view != null && caption != null) {
+            view.setCaption(caption);
+        }
+        
         return new ScriptingFormView(view, this);
     }
     

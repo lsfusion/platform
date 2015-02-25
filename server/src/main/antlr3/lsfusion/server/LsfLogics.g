@@ -1538,7 +1538,7 @@ formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 	}
 }
 	:	'FORMULA'
-	    ('NULL' { hasNotNull = true; })?
+		('NULL' { hasNotNull = true; })?
 		(clsName=classId { className = $clsName.sid; })?
 		synt = formulaPropertySyntax
 	;
@@ -2960,37 +2960,38 @@ scope {
 	boolean applyDefault = false;
 }
 	:	header=designHeader	{ $designStatement::design = formView = $header.view; }
-		componentStatementBody[formView == null ? null : formView.getView(), formView == null ? null : formView.getMainContainer()]
+		componentStatementBody[formView == null ? null : formView.getMainContainer()]
 	;
 
 designHeader returns [ScriptingFormView view]
 @init {
 	boolean customDesign = false;
+	String caption = null;
 }
 @after {
 	if (inPropParseState()) {
-		$view = self.getFormDesign($cid.sid, customDesign);
+		$view = self.getFormDesign($cid.sid, caption, customDesign);
 	}
 }
-	:	'DESIGN' cid=compoundID ('CUSTOM' { customDesign = true; })?
+	:	'DESIGN' cid=compoundID (s=stringLiteral { caption = s.val; })? ('CUSTOM' { customDesign = true; })?
 	;
 
-componentStatementBody [Object propertyReceiver, ComponentView parentComponent]
+componentStatementBody [ComponentView parentComponent]
 	:	'{'
-			(	setObjectPropertyStatement[propertyReceiver]
-			|	setupComponentStatement
-			|	setupGroupObjectStatement
-			|	newComponentStatement[parentComponent]
-			|	addComponentStatement[parentComponent]
-			|	removeComponentStatement
-			|	emptyStatement
-			)*
+		(	setObjectPropertyStatement[parentComponent]
+		|	setupComponentStatement
+		|	setupGroupObjectStatement
+		|	newComponentStatement[parentComponent]
+		|	addComponentStatement[parentComponent]
+		|	removeComponentStatement
+		|	emptyStatement
+		)*
 		'}'
 	|	emptyStatement
 	;
 
 setupComponentStatement
-	:	comp=componentSelector componentStatementBody[$comp.component, $comp.component]
+	:	comp=componentSelector componentStatementBody[$comp.component]
 	;
 
 setupGroupObjectStatement
@@ -3023,7 +3024,7 @@ newComponentStatement[ComponentView parentComponent]
 				newComp = $designStatement::design.createNewComponent($cid.sid, parentComponent, insPosition.position, insPosition.anchor, self.getVersion());
 			}
 		}
-		componentStatementBody[newComp, newComp]
+		componentStatementBody[newComp]
 	;
 	
 addComponentStatement[ComponentView parentComponent]
@@ -3036,7 +3037,7 @@ addComponentStatement[ComponentView parentComponent]
 				$designStatement::design.moveComponent(insComp, parentComponent, insPosition.position, insPosition.anchor, self.getVersion());
 			}
 		}
-		componentStatementBody[insComp, insComp]
+		componentStatementBody[insComp]
 	;
 	
 componentInsertPosition returns [InsertPosition position, ComponentView anchor]
