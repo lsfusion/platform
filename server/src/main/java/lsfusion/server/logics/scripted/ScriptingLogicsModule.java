@@ -46,10 +46,10 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.actions.BaseEvent;
-import lsfusion.server.logics.property.actions.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.ReadActionProperty;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
+import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.mail.AttachmentFormat;
@@ -2189,7 +2189,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(new ReadActionProperty(this, type, sourcePathProp.property.property.getValueClass(ClassType.valuePolicy), targetProp)), Collections.singletonList(sourcePathProp));
     }
     
-    public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = new ArrayList<LCP>();
         for (PropertyUsage propUsage : propUsages) {
             LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
@@ -2199,7 +2199,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             
             props.add(lcp);
         }
-        return addScriptedJoinAProp(addAProp(new ImportDataActionProperty(fileProp.property.property.getValueClass(ClassType.filePolicy), format, this, props)), Collections.singletonList(fileProp));
+        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), format, this, ids, props)), Collections.singletonList(fileProp));
     }
 
     public LCP addScriptedTypeProp(String className, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {

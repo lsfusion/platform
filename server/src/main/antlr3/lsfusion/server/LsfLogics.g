@@ -1574,10 +1574,23 @@ readSourceType returns[ReadSourceType type]
 importActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.propUsages);
+		$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages);
 	}
 } 
-	:	'IMPORT' type=importSourceFormat 'TO' plist=nonEmptyPropertyUsageList 'FROM' expr=propertyExpression[context, dynamic]
+	:	'IMPORT' type=importSourceFormat 'TO' plist=nonEmptyPropertyUsageListWithIds 'FROM' expr=propertyExpression[context, dynamic]
+	;
+
+nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<PropertyUsage> propUsages]
+@init {
+	$ids = new ArrayList<String>();
+	$propUsages = new ArrayList<PropertyUsage>();
+}
+	:	usage = propertyUsageWithId { $ids.add($usage.id); $propUsages.add($usage.propUsage); }
+		(',' usage = propertyUsageWithId { $ids.add($usage.id); $propUsages.add($usage.propUsage); })*
+	;
+
+propertyUsageWithId returns [String id = null, PropertyUsage propUsage]
+	:	(pid=ID '=' { $id = $pid.text; } )? pu=propertyUsage { $propUsage = $pu.propUsage; }
 	;
 
 importSourceFormat returns [ImportSourceFormat format]
