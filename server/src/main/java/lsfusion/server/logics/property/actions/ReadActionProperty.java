@@ -9,7 +9,6 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.ReadSourceType;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
@@ -27,12 +26,10 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 
 public class ReadActionProperty extends ScriptingActionProperty {
-    private final ReadSourceType type;
     private final LCP<?> targetProp;
 
-    public ReadActionProperty(ScriptingLogicsModule LM, ReadSourceType type, ValueClass valueClass, LCP<?> targetProp) {
+    public ReadActionProperty(ScriptingLogicsModule LM, ValueClass valueClass, LCP<?> targetProp) {
         super(LM, valueClass);
-        this.type = type;
         this.targetProp = targetProp;
     }
 
@@ -43,7 +40,7 @@ public class ReadActionProperty extends ScriptingActionProperty {
 
         String path = (String) value.object;
         try {
-            if (path != null && type == ReadSourceType.URL) {
+            if (path != null) {
                 Pattern p = Pattern.compile("(file|ftp|http):\\/\\/(.*)");
                 Matcher m = p.matcher(path);
                 if (m.matches()) {

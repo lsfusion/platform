@@ -2185,9 +2185,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(addFocusActionProp(property.getID()), new ArrayList<Integer>());
     }
     
-    public LPWithParams addScriptedReadActionProperty(ReadSourceType type, LPWithParams sourcePathProp, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedReadActionProperty(LPWithParams sourcePathProp, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
         LCP<?> targetProp = (LCP<?>) findLPByPropertyUsage(propUsage);
-        return addScriptedJoinAProp(addAProp(new ReadActionProperty(this, type, sourcePathProp.property.property.getValueClass(ClassType.valuePolicy), targetProp)), Collections.singletonList(sourcePathProp));
+        return addScriptedJoinAProp(addAProp(new ReadActionProperty(this, sourcePathProp.property.property.getValueClass(ClassType.valuePolicy), targetProp)), Collections.singletonList(sourcePathProp));
     }
 
     public LPWithParams addScriptedWriteActionProperty(LPWithParams sourcePathProp, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
