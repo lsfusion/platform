@@ -1571,6 +1571,15 @@ readSourceType returns[ReadSourceType type]
 	:	'URL' { $type = ReadSourceType.URL; }
 	;
 
+writeActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedWriteActionProperty($expr.property, $pUsage.propUsage);
+	}
+}
+	:	'WRITE' expr=propertyExpression[context, dynamic] 'FROM' pUsage=propertyUsage
+	;
+
 importActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
@@ -1994,6 +2003,7 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	drillDownPDB=drillDownActionPropertyDefinitionBody[context, dynamic] { $property = $drillDownPDB.property; }
 	|	focusPDB=focusActionPropertyDefinitionBody[context, dynamic] { $property = $focusPDB.property; }
 	|	readPDB=readActionPropertyDefinitionBody[context, dynamic] { $property = $readPDB.property; }
+	|	writePDB=writeActionPropertyDefinitionBody[context, dynamic] { $property = $writePDB.property; }
 	|	importProp=importActionPropertyDefinitionBody[context, dynamic] { $property = $importProp.property; }
 	;
 	

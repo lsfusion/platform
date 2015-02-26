@@ -48,6 +48,7 @@ import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.actions.BaseEvent;
 import lsfusion.server.logics.property.actions.ReadActionProperty;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
+import lsfusion.server.logics.property.actions.WriteActionProperty;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
@@ -2187,6 +2188,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedReadActionProperty(ReadSourceType type, LPWithParams sourcePathProp, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
         LCP<?> targetProp = (LCP<?>) findLPByPropertyUsage(propUsage);
         return addScriptedJoinAProp(addAProp(new ReadActionProperty(this, type, sourcePathProp.property.property.getValueClass(ClassType.valuePolicy), targetProp)), Collections.singletonList(sourcePathProp));
+    }
+
+    public LPWithParams addScriptedWriteActionProperty(LPWithParams sourcePathProp, PropertyUsage propUsage) throws ScriptingErrorLog.SemanticErrorException {
+        LCP<?> sourceProp = (LCP<?>) findLPByPropertyUsage(propUsage);
+        return addScriptedJoinAProp(addAProp(new WriteActionProperty(this, sourcePathProp.property.property.getValueClass(ClassType.valuePolicy), sourceProp)), Collections.singletonList(sourcePathProp));
     }
     
     public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
