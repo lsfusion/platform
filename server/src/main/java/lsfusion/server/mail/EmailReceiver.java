@@ -1,6 +1,7 @@
 package lsfusion.server.mail;
 
 
+import com.sun.mail.util.BASE64DecoderStream;
 import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
@@ -180,7 +181,14 @@ public class EmailReceiver {
             String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
             String idEmail = String.valueOf(dateTimeSentEmail.getTime()) + fromAddressEmail;
             String subjectEmail = message.getSubject();
-            MultipartBody messageEmail = message.getContent() instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) message.getContent()) : new MultipartBody((String) message.getContent(), null);
+            Object messageContent = message.getContent();
+            MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) : 
+                                         messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, message.getFileName()) : 
+                                         messageContent instanceof String ? new MultipartBody((String) message.getContent(), null) : null;
+            if(messageEmail == null) {
+                messageEmail = new MultipartBody(String.valueOf(message.getContent()), null);
+                ServerLoggers.systemLogger.error("Warning: missing attachment '" + String.valueOf(message.getContent() + "' from email '" + subjectEmail + "'"));
+            }
             byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
             dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
                     fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
@@ -239,6 +247,15 @@ public class EmailReceiver {
             }
         }
         return new MultipartBody(body, attachments);
+    }
+
+    private MultipartBody getMultipartBody64(String subjectEmail, BASE64DecoderStream base64InputStream, String filename) throws IOException, MessagingException {
+        byte[] byteArray = IOUtils.readBytesFromStream(base64InputStream);
+        Map<String, byte[]> attachments = new HashMap<String, byte[]>();
+        String[] fileNameAndExt = filename.split("\\.");
+        String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
+        attachments.put(filename, BaseUtils.mergeFileAndExtension(byteArray, fileExtension.getBytes()));
+        return new MultipartBody(subjectEmail, attachments);
     }
 
     private class MultipartBody {
