@@ -62,8 +62,14 @@ public class ReadActionProperty extends ScriptingActionProperty {
                         targetProp.change(IOUtils.getFileBytes(file), context);
                         if (!type.equals("file"))
                             file.delete();
+                    } else {
+                        throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. File not found: " + path));
                     }
+                } else {
+                    throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Incorrect path: " + path));
                 }
+            } else {
+                throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Path not specified."));
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);

@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.actions.importing;
+package lsfusion.server.logics.property.actions.importing.xlsx;
 
 import lsfusion.server.classes.DateClass;
 import lsfusion.server.classes.DateTimeClass;
@@ -6,12 +6,17 @@ import lsfusion.server.classes.TimeClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassType;
+import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.ImportIterator;
+import lsfusion.server.logics.property.actions.importing.xls.ImportXLSDataActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jdom.JDOMException;
+import org.xBaseJ.xBaseJException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,7 +32,11 @@ public class ImportXLSXDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public List<List<String>> getTable(byte[] file) throws IOException, ParseException {
+    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException {
+        return new ImportXLSXIterator(getTable(file));
+    }
+    
+    private List<List<String>> getTable(byte[] file) throws IOException, ParseException {
         XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(file));
         XSSFSheet sheet = wb.getSheetAt(0);
 

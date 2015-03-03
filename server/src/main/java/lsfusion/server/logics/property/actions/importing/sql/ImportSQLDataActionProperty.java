@@ -1,19 +1,17 @@
-package lsfusion.server.logics.property.actions.importing;
+package lsfusion.server.logics.property.actions.importing.sql;
 
 import com.google.common.base.Throwables;
 import com.sun.rowset.CachedRowSetImpl;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import org.jdom.JDOMException;
-import org.xBaseJ.xBaseJException;
 
 import java.io.IOException;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +22,7 @@ public class ImportSQLDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public List<List<String>> getTable(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException {
-        List<List<String>> result = new ArrayList<List<String>>();
+    public ImportIterator getIterator(byte[] file) {
 
         try {
             CachedRowSetImpl rs = BaseUtils.deserializeResultSet(file);
@@ -35,22 +32,16 @@ public class ImportSQLDataActionProperty extends ImportDataActionProperty {
             for (int i = 1; i <= rsmd.getColumnCount(); i++) {
                 fieldMapping.put(rsmd.getColumnName(i), i);
             }
-
             List<Integer> sourceColumns = getSourceColumns(fieldMapping);
-
-            while (rs.next()) {
-                List<String> listRow = new ArrayList<String>();
-                for (Integer column : sourceColumns) {
-                    listRow.add(rs.getString(column));
-                }
-                result.add(listRow);
-            }
-
+            
+            return new ImportSQLIterator(rs, sourceColumns);
+            
         } catch (ClassNotFoundException e) {
             throw Throwables.propagate(e);
         } catch (SQLException e) {
             throw Throwables.propagate(e);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         }
-        return result;
     }
 }

@@ -1,8 +1,11 @@
-package lsfusion.server.logics.property.actions.importing;
+package lsfusion.server.logics.property.actions.importing.csv;
 
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import org.jdom.JDOMException;
 import org.xBaseJ.xBaseJException;
 
 import java.io.ByteArrayInputStream;
@@ -18,7 +21,11 @@ public class ImportCSVDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public List<List<String>> getTable(byte[] file) throws IOException, ParseException, xBaseJException {
+    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException {
+        return new ImportCSVIterator(getTable(file));
+    }
+    
+    private List<List<String>> getTable(byte[] file) throws IOException, ParseException, xBaseJException {
         List<List<String>> result = new ArrayList<List<String>>();
 
         Scanner scanner = new Scanner(new ByteArrayInputStream(file));

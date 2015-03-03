@@ -13,6 +13,12 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.ImportSourceFormat;
+import lsfusion.server.logics.property.actions.importing.csv.ImportCSVDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.sql.ImportSQLDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.xls.ImportXLSDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.xlsx.ImportXLSXDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.xml.ImportXMLDataActionProperty;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.jdom.JDOMException;
@@ -65,25 +71,28 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
                 if (value.getType() instanceof DynamicFormatFileClass) {
                     file = BaseUtils.getFile((byte[]) file);
                 }
-                List<List<String>> table = getTable((byte[]) file);
+                ImportIterator iterator = getIterator((byte[]) file);
 
-                if (table != null) {
-                    for (int i = 0; i < table.size(); i++) {
-                        List<String> row = table.get(i);
-
-                        DataObject rowKey = new DataObject(i, IntegerClass.instance);
-                        LM.baseLM.imported.change(true, context, rowKey);
-                        for (int j = 0; j < Math.min(properties.size(), row.size()); j++) {
-                            LCP property = properties.get(j);
-                            Type type = property.property.getType();
-                            Object parsedObject = null;
-                            try {
-                                parsedObject = type.parseString(row.get(j));
-                            } catch (lsfusion.server.data.type.ParseException ignored) {}
-                            property.change(parsedObject, context, rowKey);
+                List<String> row;
+                int i = 0;
+                while ((row = iterator.nextRow()) != null) {
+                    DataObject rowKey = new DataObject(i, IntegerClass.instance);
+                    LM.baseLM.imported.change(true, context, rowKey);
+                    for (int j = 0; j < Math.min(properties.size(), row.size()); j++) {
+                        LCP property = properties.get(j);
+                        Type type = property.property.getType();
+                        Object parsedObject = null;
+                        try {
+                            parsedObject = type.parseString(row.get(j));
+                        } catch (lsfusion.server.data.type.ParseException ignored) {
                         }
+                        property.change(parsedObject, context, rowKey);
                     }
+                    i++;
                 }
+                
+                iterator.release();
+                
             } catch (Exception e) {
                 Throwables.propagate(e);
             }
@@ -117,5 +126,5 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
         return 0;
     }
 
-    public abstract List<List<String>> getTable(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException;
+    public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException;
 }
