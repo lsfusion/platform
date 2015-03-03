@@ -1518,6 +1518,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 rowName += StringUtils.rightPad(BaseUtils.nullToString(rowMap.getValue(j)), propertyReaders.get(rowMap.getKey(j)).getCharLength().getAprValue());
 
             resultString += rowName + '\n';
+            if (resultString.length() > 1000000) {
+                resultString += "and more...\n";
+                break;
+            }
         }
         return resultString;
     }
