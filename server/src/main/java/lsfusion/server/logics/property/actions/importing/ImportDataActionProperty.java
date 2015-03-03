@@ -42,6 +42,8 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
             return new ImportCSVDataActionProperty(valueClass, LM, ids, properties);
         } else if (format == ImportSourceFormat.XML) {
             return new ImportXMLDataActionProperty(valueClass, LM, ids, properties);
+        } else if (format == ImportSourceFormat.SQL) {
+            return new ImportSQLDataActionProperty(valueClass, LM, ids, properties);
         }
         return null;
     }

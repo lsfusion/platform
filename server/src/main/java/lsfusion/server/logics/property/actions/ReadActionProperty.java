@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
@@ -11,19 +12,16 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URL;
-import java.sql.SQLException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+
+import java.io.*;
+import java.net.SocketException;
+import java.net.URL;
+import java.sql.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ReadActionProperty extends ScriptingActionProperty {
     private final LCP<?> targetProp;
@@ -41,12 +39,12 @@ public class ReadActionProperty extends ScriptingActionProperty {
         String path = (String) value.object;
         try {
             if (path != null) {
-                Pattern p = Pattern.compile("(file|ftp|http):\\/\\/(.*)");
+                Pattern p = Pattern.compile("(file|ftp|http|sql):\\/\\/(.*)");
                 Matcher m = p.matcher(path);
                 if (m.matches()) {
                     String type = m.group(1).toLowerCase();
                     String url = m.group(2);
-                    
+
                     File file = null;
                     if (type.equals("file")) {
                         file = new File(url);
@@ -56,6 +54,9 @@ public class ReadActionProperty extends ScriptingActionProperty {
                     } else if (type.equals("ftp")) {
                         file = File.createTempFile("downloaded", "tmp");
                         copyFTPToFile(path, file);
+                    } else if (type.equals("sql")) {
+                        file = File.createTempFile("downloaded", "tmp");
+                        copySQLToFile(path, file);
                     }
                     if (file != null && file.exists()) {
                         targetProp.change(IOUtils.getFileBytes(file), context);
@@ -94,18 +95,76 @@ public class ReadActionProperty extends ScriptingActionProperty {
                 if (!done) {
                     throw Throwables.propagate(new RuntimeException("Some error occurred while downloading file from ftp"));
                 }
+            } catch (FileNotFoundException e) {
+                throw Throwables.propagate(e);
+            } catch (SocketException e) {
+                throw Throwables.propagate(e);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             } finally {
-                try {
-                    if (ftpClient.isConnected()) {
-                        ftpClient.logout();
-                        ftpClient.disconnect();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (ftpClient.isConnected()) {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
                 }
             }
         } else {
             throw Throwables.propagate(new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password@host:port/path_to_file"));
         }
+    }
+
+    private void copySQLToFile(String query, File file) throws SQLException {
+        /*sql://username:password@host:port;dbName;query*/
+        Pattern queryPattern = Pattern.compile("sql:\\/\\/(.*):(.*)@([^:]*)(?::(\\d*))?;([^;]*);(.*)");
+        Matcher queryMatcher = queryPattern.matcher(query);
+        if (queryMatcher.matches()) {
+            Connection conn = null;
+
+            try {
+                String sqlUsername = queryMatcher.group(1);
+                String sqlPassword = queryMatcher.group(2);
+                String sqlHost = queryMatcher.group(3);
+                Integer sqlPort = queryMatcher.group(4) == null ? 1433 : Integer.parseInt(queryMatcher.group(4));
+                String sqlDBName = queryMatcher.group(5);
+                String sqlQuery = queryMatcher.group(6);
+                conn = getConnection(sqlHost, sqlPort, sqlDBName, sqlUsername, sqlPassword);
+
+                Statement statement = null;
+                try {
+                    statement = conn.createStatement();
+                    ResultSet rs = statement.executeQuery(sqlQuery);
+
+                    FileUtils.writeByteArrayToFile(file, BaseUtils.serializeResultSet(rs));
+
+                } finally {
+                    if (statement != null)
+                        statement.close();
+                }
+
+            } catch (ClassNotFoundException e) {
+                throw Throwables.propagate(e);
+            } catch (SQLException e) {
+                throw Throwables.propagate(e);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            } finally {
+                if (conn != null)
+                    conn.close();
+            }
+
+        } else {
+            throw Throwables.propagate(new RuntimeException("Incorrect sql url. Please use format: sql://username:password@host:port;dbName;query"));
+        }
+    }
+
+    protected Connection getConnection(String sqlHost, Integer sqlPort, String sqlDBName, String sqlUsername, String sqlPassword) throws ClassNotFoundException, SQLException {
+        String url;
+        //we specify instance OR port
+        if (sqlHost != null && sqlHost.contains("\\")) {
+            url = String.format("jdbc:sqlserver://%s;databaseName=%s;User=%s;Password=%s", sqlHost, sqlDBName, sqlUsername, sqlPassword);
+        } else {
+            url = String.format("jdbc:sqlserver://%s:%s;databaseName=%s;User=%s;Password=%s", sqlHost, sqlPort, sqlDBName, sqlUsername, sqlPassword);
+        }
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        return DriverManager.getConnection(url);
     }
 }

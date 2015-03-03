@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import com.sun.rowset.CachedRowSetImpl;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.HMap;
@@ -22,6 +23,8 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
@@ -660,6 +663,21 @@ public class BaseUtils {
         throw new IOException();
     }// -------------------------------------- Сериализация классов -------------------------------------------- //
 
+    public static byte[] serializeResultSet(ResultSet rs) throws IOException, SQLException {
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        ObjectOutputStream o = new ObjectOutputStream(b);
+        CachedRowSetImpl crs=new CachedRowSetImpl();
+        crs.populate(rs);
+        o.writeObject(crs);
+        return b.toByteArray();
+    }
+
+    public static CachedRowSetImpl deserializeResultSet(byte[] bytes) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream b = new ByteArrayInputStream(bytes);
+        ObjectInputStream o = new ObjectInputStream(b);
+        return (CachedRowSetImpl) o.readObject();
+    }
+    
     public static void serializeString(DataOutputStream outStream, String str) throws IOException {
         assert str != null;
 

@@ -1603,6 +1603,7 @@ importSourceFormat returns [ImportSourceFormat format]
 	| 'DBF'  { $format = ImportSourceFormat.DBF; }
 	| 'CSV'  { $format = ImportSourceFormat.CSV; }
 	| 'XML'  { $format = ImportSourceFormat.XML; }
+	| 'SQL'  { $format = ImportSourceFormat.SQL; }
 	;
 
 typePropertyDefinition returns [LP property] 
