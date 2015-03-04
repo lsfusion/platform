@@ -44,4 +44,9 @@ public class ImportSQLDataActionProperty extends ImportDataActionProperty {
             throw Throwables.propagate(e);
         }
     }
+
+    @Override
+    protected int columnsNumberBase() {
+        return 1;
+    }
 }
