@@ -111,7 +111,7 @@ public class GroupingTreeTable extends JXTreeTable {
             if (columnProperty != null) {
                 if (columnProperty.baseType instanceof ClientDateClass || columnProperty.baseType instanceof ClientTimeClass
                     || columnProperty.baseType instanceof ClientDateTimeClass) {
-                    treeTableModel.changeOrder(i + 1);
+                    treeTableModel.addOrder(i + 1);
                 }
             }
         }
@@ -327,7 +327,7 @@ public class GroupingTreeTable extends JXTreeTable {
             }
         }
         
-        public void changeOrder(int columnIndex) {
+        public void addOrder(int columnIndex) {
             if (sortedColumns.containsKey(columnIndex))
                 sortedColumns.put(columnIndex, !sortedColumns.get(columnIndex));
             else {
@@ -336,6 +336,16 @@ public class GroupingTreeTable extends JXTreeTable {
             if (columnIndex < 1)
                 return;
 
+            refreshColumnsAndSorting();
+        }
+        
+        public void removeOrder(int columnIndex) {
+            if (sortedColumns.remove(columnIndex) != null) {
+                refreshColumnsAndSorting();
+            }
+        } 
+        
+        private void refreshColumnsAndSorting() {
             TableColumnModel colModel = getColumnModel();
             for (int i = 0; i < getColumnCount(); i++) {
                 TableColumn column = colModel.getColumn(i);
@@ -401,7 +411,12 @@ public class GroupingTreeTable extends JXTreeTable {
 
     private class ColumnListener extends MouseAdapter {
         public void mouseClicked(MouseEvent e) {
-            treeTableModel.changeOrder(getColumnModel().getColumnIndexAtX(e.getX()));
+            int columnIndex = getColumnModel().getColumnIndexAtX(e.getX());
+            if (e.getButton() == MouseEvent.BUTTON1) {
+                treeTableModel.addOrder(columnIndex);
+            } else if (e.getButton() == MouseEvent.BUTTON3) {
+                treeTableModel.removeOrder(columnIndex);
+            }
         }
     }
     
