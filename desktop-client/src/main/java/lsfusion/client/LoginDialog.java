@@ -43,14 +43,14 @@ public class LoginDialog extends JDialog {
     private JLabel imageLabel;
 
     public LoginDialog(LoginInfo defaultLoginInfo) {
+        super(null, "lsFusion", java.awt.Dialog.ModalityType.TOOLKIT_MODAL);
         imageLabel.setIcon(Main.getLogo());
 
         loginInfo = restoreLoginData(defaultLoginInfo);
         setContentPane(contentPane);
         setAlwaysOnTop(true);
-        setUndecorated(true);
         setModal(true);
-
+        setIconImage(Main.getLogo().getImage());
         initServerHostList((MutableComboBoxModel) serverHost.getModel());
 
         initUIHandlers();
