@@ -52,6 +52,7 @@ public class LoginDialog extends JDialog {
         setModal(true);
         setIconImage(Main.getLogo().getImage());
         initServerHostList((MutableComboBoxModel) serverHost.getModel());
+        setResizable(false);
 
         initUIHandlers();
 
