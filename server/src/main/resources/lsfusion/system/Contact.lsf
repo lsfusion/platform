@@ -10,7 +10,7 @@ lastNameContact 'Фамилия' = DATA VARSTRING[30] (Contact) MINCHARWIDTH 10 
 nameContact 'Имя' (contact) = CONCAT ' ', firstNameContact(contact), lastNameContact(contact) IN recognize;
 
 phoneContact 'Телефон' = DATA VARSTRING[30] (Contact) MINCHARWIDTH 10;
-postAddressContact 'Почтовый адрес' = DATA VARSTRING[100] (Contact) MINCHARWIDTH 20;
+postAddressContact 'Почтовый адрес' = DATA VARSTRING[150] (Contact) MINCHARWIDTH 20;
 birthdayContact 'День рождения' = DATA DATE (Contact);
 
 emailContact 'E-mail'= DATA VARSTRING[50] (Contact);
