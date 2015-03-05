@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static lsfusion.interop.form.layout.ContainerType.*;
@@ -64,8 +65,9 @@ public class ClientContainer extends ClientComponent implements AbstractContaine
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        children = pool.deserializeList(inStream);
-
+        List<ClientComponent> components = pool.deserializeList(inStream);
+        children = new ArrayList<ClientComponent>(new LinkedHashSet<ClientComponent>(components)); 
+        
         caption = pool.readString(inStream);
         description = pool.readString(inStream);
 
