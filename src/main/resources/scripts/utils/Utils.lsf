@@ -64,6 +64,7 @@ iterate(i, from, to) = RECURSION i==from AND from IS INTEGER AND to IS INTEGER S
 count(i, count) = iterate(i, 1, count);
 
 toInteger (i) = FORMULA INTEGER PG 'convert_to_integer($1)' MS 'dbo.convert_to_integer($1)';
+toNumeric (i) = FORMULA NUMERIC[38,19] PG 'convert_to_integer($1)' MS 'dbo.convert_to_integer($1)';
 
 // --------------------------------------------- Округления --------------------------------- //
 roundM1 (number) = round(number, -1);
