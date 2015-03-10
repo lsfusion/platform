@@ -53,4 +53,5 @@ META defineHierarchyPlain(object)
     object##3###object (child) = object###object##LevelRoot(child, 3) PERSISTENT;    
     object##4###object (child) = object###object##LevelRoot(child, 4) PERSISTENT;    
     object##5###object (child) = object###object##LevelRoot(child, 5) PERSISTENT;    
+    object##6###object (child) = object###object##LevelRoot(child, 6) PERSISTENT;    
 END
