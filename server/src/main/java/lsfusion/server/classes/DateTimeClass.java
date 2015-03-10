@@ -122,7 +122,11 @@ public class DateTimeClass extends DataClass<Timestamp> {
         try {
             return DateConverter.dateToStamp(getDateTimeFormat().parse(s));
         } catch (Exception e) {
-            throw new ParseException("error parsing datetime", e);
+            try {
+                return DateConverter.dateToStamp(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(s));
+            } catch (Exception e2) {
+                throw new ParseException("error parsing datetime", e);
+            }
         }
     }
 
