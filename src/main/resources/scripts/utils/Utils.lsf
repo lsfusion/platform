@@ -74,6 +74,14 @@ round2 (number) = round(number, 2);
 round3 (number) = round(number, 3);
 round6 (number) = round(number, 6);
 
+// -------------------------------------------- Свойства под файлы ---------------------------- //
+
+customFile = DATA LOCAL CUSTOMFILE ();
+wordFile = DATA LOCAL WORDFILE ();
+imageFile = DATA LOCAL IMAGEFILE ();
+pdfFile = DATA LOCAL PDFFILE ();
+excelFile = DATA LOCAL EXCELFILE();
+
 // --------------------------------------------- Yes/No --------------------------------- //
 CLASS YesNo 'Логическое' {
     yes 'ДА',
