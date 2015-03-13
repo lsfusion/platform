@@ -1578,10 +1578,10 @@ writeActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic]
 importActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages);
+		$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages, $separator.val);
 	}
 } 
-	:	'IMPORT' type=importSourceFormat 'TO' plist=nonEmptyPropertyUsageListWithIds 'FROM' expr=propertyExpression[context, dynamic]
+	:	'IMPORT' type=importSourceFormat (separator = stringLiteral)? 'TO' plist=nonEmptyPropertyUsageListWithIds 'FROM' expr=propertyExpression[context, dynamic]
 	;
 
 nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<PropertyUsage> propUsages]

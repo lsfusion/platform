@@ -37,7 +37,8 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
     protected final List<String> ids;
     protected final List<LCP> properties;
 
-    public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
+    public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM, 
+                                                          List<String> ids, List<LCP> properties, String separator) {
         if (format == ImportSourceFormat.XLS) {
             return new ImportXLSDataActionProperty(valueClass, LM, ids, properties);
         } else if (format == ImportSourceFormat.XLSX) {
@@ -45,7 +46,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
         } else if (format == ImportSourceFormat.DBF) {
             return new ImportDBFDataActionProperty(valueClass, LM, ids, properties);
         } else if (format == ImportSourceFormat.CSV) {
-            return new ImportCSVDataActionProperty(valueClass, LM, ids, properties);
+            return new ImportCSVDataActionProperty(valueClass, LM, ids, properties, separator);
         } else if (format == ImportSourceFormat.XML) {
             return new ImportXMLDataActionProperty(valueClass, LM, ids, properties);
         } else if (format == ImportSourceFormat.SQL) {

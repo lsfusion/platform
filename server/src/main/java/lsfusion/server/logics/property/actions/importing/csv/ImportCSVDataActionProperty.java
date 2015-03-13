@@ -16,8 +16,10 @@ import java.util.List;
 import java.util.Scanner;
 
 public class ImportCSVDataActionProperty extends ImportDataActionProperty {
-    public ImportCSVDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
+    private String separator;
+    public ImportCSVDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties, String separator) {
         super(valueClass, LM, ids, properties);
+        this.separator = separator == null ? "|" : separator;
     }
 
     @Override
@@ -32,7 +34,7 @@ public class ImportCSVDataActionProperty extends ImportDataActionProperty {
         scanner.nextLine();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            String[] splittedLine = line.split("\\||;");
+            String[] splittedLine = line.split(String.format("\\%s|;", separator));
             List<String> listRow = new ArrayList<String>();
             for (int i = 0; i < Math.min(splittedLine.length, properties.size()); i++) {
                 listRow.add(splittedLine[i]);
