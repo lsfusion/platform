@@ -99,7 +99,7 @@ public class Settings {
 
     private int splitIncrementApply = 10;
 
-    private int statDegree = 12;
+    private int statDegree = 9;
 
     private int barcodeLength = 13;
 
