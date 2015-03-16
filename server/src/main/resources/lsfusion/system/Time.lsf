@@ -68,12 +68,6 @@ CLASS Month 'Месяц' {
     december 'Декабрь'
 }
 
-FORM months
-    OBJECTS m = Month
-    PROPERTIES(m) staticCaption
-    DIALOG Month OBJECT m
-;
-
 TABLE month (Month);
 
 numberMonth 'Номер месяца' = DATA INTEGER (Month);
@@ -99,6 +93,13 @@ extractMonth 'Месяц (ИД)' (date) = monthNumber(extractMonthNumber(date));
 extractMonthName 'Месяц' (date) = staticCaption(extractMonth(date));
 
 currentMonth 'Тек. месяц' = extractMonthNumber (currentDate());
+
+FORM months 'Месяца'
+    OBJECTS m = Month
+    PROPERTIES(m) staticCaption, numberMonth
+    ORDER BY numberMonth(m)
+    DIALOG Month OBJECT m
+;
 
 // --------------------------------- Дни недели ------------------------ //
 
