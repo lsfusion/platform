@@ -118,6 +118,11 @@ public abstract class AbstractContext implements Context {
     }
 
     @Override
+    public boolean canBeProcessed() {
+        return false;
+    }
+
+    @Override
     public Object[] requestUserInteraction(ClientAction... actions) {
         throw new UnsupportedOperationException("requestUserInteraction is not supported");
     }

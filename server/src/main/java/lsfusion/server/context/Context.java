@@ -46,6 +46,7 @@ public interface Context {
     LogInfo getLogInfo();
     void delayUserInteraction(ClientAction action);
     Object requestUserInteraction(ClientAction action);
+    boolean canBeProcessed();
     Object[] requestUserInteraction(ClientAction... actions);
 
     void setActionMessage(String message);

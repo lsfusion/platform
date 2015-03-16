@@ -118,6 +118,10 @@ public class ThreadLocalContext {
         return get().requestUserInteraction(action);
     }
 
+    public static boolean canBeProcessed() {
+        return get().canBeProcessed();
+    }
+
     public static ScheduledExecutorService getExecutorService() {
         return get().getExecutorService();
     }

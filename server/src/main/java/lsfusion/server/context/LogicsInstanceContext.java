@@ -85,6 +85,11 @@ public class LogicsInstanceContext extends AbstractContext {
     }
 
     @Override
+    public boolean canBeProcessed() {
+        return true;
+    }
+
+    @Override
     public Object[] requestUserInteraction(ClientAction... actions) {
         for (ClientAction action : actions) {
             if (!proccessClientAction(action)) {

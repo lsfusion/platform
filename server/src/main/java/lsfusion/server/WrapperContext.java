@@ -98,6 +98,11 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.requestUserInteraction(action);
     }
 
+    @Override
+    public boolean canBeProcessed() {
+        return false;
+    }
+
     public Object[] requestUserInteraction(ClientAction... actions) {
         return wrappedContext.requestUserInteraction(actions);
     }
