@@ -2195,7 +2195,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(new WriteActionProperty(this, sourcePathProp.property.property.getValueClass(ClassType.valuePolicy), sourceProp)), Collections.singletonList(sourcePathProp));
     }
     
-    public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, String separator) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, String separator, boolean noHeader) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = new ArrayList<LCP>();
         for (PropertyUsage propUsage : propUsages) {
             LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
@@ -2205,7 +2205,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             
             props.add(lcp);
         }
-        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), format, this, ids, props, separator)), Collections.singletonList(fileProp));
+        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), format, this, ids, props, separator, noHeader)), Collections.singletonList(fileProp));
     }
 
     public LCP addScriptedTypeProp(String className, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {

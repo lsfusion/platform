@@ -17,9 +17,13 @@ import java.util.Scanner;
 
 public class ImportCSVDataActionProperty extends ImportDataActionProperty {
     private String separator;
-    public ImportCSVDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties, String separator) {
+    private boolean noHeader;
+    
+    public ImportCSVDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties, 
+                                       String separator, boolean noHeader) {
         super(valueClass, LM, ids, properties);
         this.separator = separator == null ? "|" : separator;
+        this.noHeader = noHeader;
     }
 
     @Override
@@ -31,7 +35,8 @@ public class ImportCSVDataActionProperty extends ImportDataActionProperty {
         List<List<String>> result = new ArrayList<List<String>>();
 
         Scanner scanner = new Scanner(new ByteArrayInputStream(file));
-        scanner.nextLine();
+        if(!noHeader)
+            scanner.nextLine();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             String[] splittedLine = line.split(String.format("\\%s|;", separator));
