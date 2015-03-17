@@ -1,5 +1,6 @@
 package lsfusion.server.context;
 
+import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
@@ -71,14 +72,14 @@ public class LogicsInstanceContext extends AbstractContext {
 
     @Override
     public void delayUserInteraction(ClientAction action) {
-        if (!proccessClientAction(action)) {
+        if (!processClientAction(action)) {
             super.delayUserInteraction(action);
         }
     }
 
     @Override
     public Object requestUserInteraction(ClientAction action) {
-        if (proccessClientAction(action)) {
+        if (processClientAction(action)) {
             return null;
         }
         return super.requestUserInteraction(action);
@@ -92,14 +93,14 @@ public class LogicsInstanceContext extends AbstractContext {
     @Override
     public Object[] requestUserInteraction(ClientAction... actions) {
         for (ClientAction action : actions) {
-            if (!proccessClientAction(action)) {
+            if (!processClientAction(action)) {
                 throw new UnsupportedOperationException("requestUserInteraction is not supported for action" + (action == null ? "" : ": " + action.getClass()));
             }
         }
         return new Object[actions.length];
     }
 
-    private boolean proccessClientAction(ClientAction action) {
+    private boolean processClientAction(ClientAction action) {
         if (action instanceof LogMessageClientAction) {
             LogMessageClientAction logAction = (LogMessageClientAction) action;
             if (logAction.failed) {
@@ -111,6 +112,10 @@ public class LogicsInstanceContext extends AbstractContext {
         } else if (action instanceof MessageClientAction) {
             MessageClientAction msgAction = (MessageClientAction) action;
             systemLogger.info("Server message: " + msgAction.message);
+            return true;
+        } else if (action instanceof ConfirmClientAction) {
+            ConfirmClientAction confirmAction = (ConfirmClientAction) action;
+            systemLogger.info("Server message: " + confirmAction.message);
             return true;
         }
         return false;

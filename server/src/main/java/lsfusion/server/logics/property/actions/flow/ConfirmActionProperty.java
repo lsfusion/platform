@@ -21,9 +21,9 @@ public class ConfirmActionProperty extends MessageActionProperty {
 
     @Override
     protected void showMessage(ExecutionContext<PropertyInterface> context, Object msgValue) throws SQLException, SQLHandledException {
-        int result = (Integer)context.requestUserInteraction(
+        Integer result = (Integer)context.requestUserInteraction(
                 new ConfirmClientAction(toCaption(title), String.valueOf(msgValue))
         );
-        confirmedProperty.change(result == JOptionPane.YES_OPTION ? true : null, context);
+        confirmedProperty.change(result != null && result == JOptionPane.YES_OPTION ? true : null, context);
     }
 }
