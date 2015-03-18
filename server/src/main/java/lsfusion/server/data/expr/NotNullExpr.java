@@ -61,7 +61,7 @@ public abstract class NotNullExpr extends VariableSingleClassExpr implements Not
     }
 
     @Override
-    public boolean hasExprFollowsWithoutNotNull() {
+    protected boolean hasExprFollowsWithoutNotNull() {
         if(!hasNotNull())
             return true;
         return super.hasExprFollowsWithoutNotNull();
@@ -75,6 +75,13 @@ public abstract class NotNullExpr extends VariableSingleClassExpr implements Not
     
     public void fillFollowSet(MSet<DataWhere> fillSet) {
         fillFollowSet(this, fillSet);
+    }
+
+    public static ImSet<NotNullExprInterface> getExprFollows(ImCol<BaseExpr> exprs, boolean includeInnerWithoutNotNull, boolean recursive) {
+        MSet<NotNullExprInterface> set = SetFact.mSet();
+        for(int i=0,size=exprs.size();i<size;i++)
+            set.addAll(exprs.get(i).getExprFollows(true, includeInnerWithoutNotNull, recursive));
+        return set.immutable();
     }
 
     public static boolean hasExprFollowsWithoutNotNull(ImCol<BaseExpr> exprs) {

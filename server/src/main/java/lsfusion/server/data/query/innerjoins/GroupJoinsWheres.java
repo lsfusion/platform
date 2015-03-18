@@ -6,7 +6,6 @@ import lsfusion.base.SymmPair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MCol;
@@ -16,7 +15,6 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.PackInterface;
 import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.where.DNFWheres;
@@ -122,7 +120,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         this(map, type.noWhere());
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, Type type, Where where, boolean intermediate, ImOrderSet<Expr> orderTop) {
+    public <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, Type type, Where where, boolean intermediate) {
         assert !intermediate || isExceededIntermediatePackThreshold();
         if(intermediate && type.isStat()) // самый быстрый способ сохранить статистику, проверка на intermediate чтобы не было рекурсии
             return new GroupJoinsWheres(new StatKeysJoin<K>(getStatKeys(keepStat, keyStat)), where, type);
@@ -131,7 +129,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         if(result.size() == 1) { // оптимизация
             Value value = result.singleValue();
             if(!BaseUtils.hashEquals(value.where, where)) {
-                assert !orderTop.isEmpty() || (value.where.means(where) && where.means(value.where)) || where.hasUnionExpr(); // hasUnionExpr - через getCommonWhere может залазить внутрь UnionExpr и терять "следствия" тем самым, !orderTop.isEmpty из-за symmetricWhere в groupNotJoinsWheres
+                assert (value.where.means(where) && where.means(value.where)) || where.hasUnionExpr(); // не будет выполняться так как groupJoinsWheres - через getCommonWhere может залазить внутрь UnionExpr и терять "следствия" тем самым
                 if(value.where.getComplexity(false) < where.getComplexity(false))
                     where = value.where;
                 result = new GroupJoinsWheres(result.singleKey(), new Value(value.upWheres, where), type);
@@ -206,14 +204,12 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     private abstract static class CEntry extends ImmutableObject {
         public final WhereJoins where;
         public final int rows;
-        public final int orderTopCount;
         public final int childrenCount;
 
         public <K extends BaseExpr> CEntry(WhereJoins where, ImSet<K> keepStat, KeyStat keyStat) {
             this.where = where;
             
             rows = where.getCompileStatKeys(keepStat, keyStat).rows.getWeight();
-            orderTopCount = where.getOrderTopCount();
             childrenCount = where.getAllChildrenCount();
         }
         
@@ -231,12 +227,12 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }    
     
     // минимум изменения, абсолютной статистики, количества сршдвкутэjd    
-    private static long getPriority(int r, int m, int oc, int c) {
-        return (((long)r) * Stat.MAX.getWeight() + (r == 0 ? 0 : m)) * 100l + oc * 100 + c;
+    private static long getPriority(int r, int m, int c) {
+        return (((long)r) * Stat.MAX.getWeight() + (r == 0 ? 0 : m)) * 100l + c;
     }
 
     private static long getMaxPriority() {
-        return getPriority(Stat.AGGR.getWeight(), 0, 0, 0);
+        return getPriority(Stat.AGGR.getWeight(), 0, 0);
     }
 
     private static class CMerged extends CEntry implements Comparable<CMerged> {
@@ -245,19 +241,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         public <K extends BaseExpr> CMerged(SymmPair<CEntry, CEntry> original, WhereJoins where, ImSet<K> keepStat, KeyStat keyStat) {
             super(where, keepStat, keyStat);
             this.original = original;
-
-//            assert assertMeansOriginal(where);
         }
-
-//        private boolean assertMeansOriginal(WhereJoins where) {
-//            MExclSet<WhereJoins> mOrigs = SetFact.mExclSet();
-//            fillOriginal(mOrigs);
-//
-//            for(WhereJoins orig : mOrigs.immutable()) {
-//                assert orig.means(where);
-//            }
-//            return true;
-//        }
 
         protected int getRowDiff() {
             int w1 = original.first.rows;
@@ -271,13 +255,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             int c1 = original.first.childrenCount;
             int c2 = original.second.childrenCount;
             assert cm <= c1 && cm <= c2;
-
-            int ocm = orderTopCount;
-            int oc1 = original.first.orderTopCount;
-            int oc2 = original.second.orderTopCount;
-            assert ocm <= oc1 && ocm <= oc2;
-
-            return GroupJoinsWheres.getPriority(getRowDiff(), rows, BaseUtils.max(oc1 - ocm, oc2 - ocm), BaseUtils.min(c1 - cm, c2 - cm));
+            return GroupJoinsWheres.getPriority(getRowDiff(), rows, BaseUtils.min(c1 - cm, c2 - cm));
         }
         
         @Override
@@ -344,7 +322,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             long currentPriority = entry.getPriority();
             if(currentPriority >= maxPriority)
                 break;
-            if(currentPriority != 0 && current.size() <= limit) { // проверка на не !=0 имеет мало смысла так как все равно packMeans есть до (перенести этот коммент к minprioirity)
+            if(currentPriority != 0 && current.size() <= limit) {
                 break;
             }
             
@@ -390,10 +368,10 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             }}), noWhere);
     }
 
-    public void fillList(KeyEqual keyEqual, MCol<GroupJoinsWhere> col, ImOrderSet<Expr> orderTop) {
+    public void fillList(KeyEqual keyEqual, MCol<GroupJoinsWhere> col) {
         for(int i=0,size=size();i<size;i++) {
             Value value = getValue(i);
-            col.add(new GroupJoinsWhere(keyEqual, getKey(i), value.upWheres, value.where, orderTop));
+            col.add(new GroupJoinsWhere(keyEqual, getKey(i), value.upWheres, value.where));
         }
     }
     

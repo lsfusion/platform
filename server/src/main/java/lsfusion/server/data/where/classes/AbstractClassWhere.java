@@ -128,9 +128,6 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         public <T> And<T> remap(ImRevMap<K, ? extends T> remap) {
             return new And<T>((ImMap<T,AndClassSet>) remap.rightCrossJoin(map));
         }
-        public <T> And<T> remap(GetValue<T, K> remap) {
-            return new And<T>((ImMap<T,AndClassSet>) map.mapKeys(remap));
-        }
         public <T> And<T> innerRemap(ImRevMap<K, ? extends T> remap) {
             return new And<T>((ImMap<T,AndClassSet>) remap.innerCrossJoin(map));
         }

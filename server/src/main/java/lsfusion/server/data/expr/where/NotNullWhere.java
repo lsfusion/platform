@@ -3,23 +3,15 @@ package lsfusion.server.data.expr.where;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.interop.Compare;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NotNullExpr;
-import lsfusion.server.data.expr.NotNullExprInterface;
-import lsfusion.server.data.expr.where.extra.BinaryWhere;
-import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.CompileSource;
-import lsfusion.server.data.query.ExprOrderTopJoin;
 import lsfusion.server.data.query.JoinData;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.DataWhere;
@@ -45,14 +37,6 @@ public abstract class NotNullWhere extends DataWhere {
 
     protected Where translate(MapTranslate translator) {
         return getExpr().translateOuter(translator).getNotNullWhere();
-    }
-
-    @Override
-    public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-        BaseExpr expr = getExpr();
-        if(BinaryWhere.needOrderTopJoin(expr, orderTop, null)) // вопрос что возможно аналогичная проверка пригодилась бы в compareWhere но не понятно какую степень брать
-            return new GroupJoinsWheres(new ExprOrderTopJoin(expr, Compare.LESS_EQUALS, Expr.NULL, true), not(), type); // кривовато конечно, но пока достаточно
-        return super.groupNotJoinsWheres(keepStat, keyStat, orderTop, type);
     }
 
     @Override
@@ -90,8 +74,8 @@ public abstract class NotNullWhere extends DataWhere {
         return getExpr().hashOuter(hashContext);
     }
 
-    protected ImSet<NotNullExprInterface> getExprFollows() {
-        return getExpr().getExprFollows(false, NotNullExpr.FOLLOW, true);
+    protected ImSet<DataWhere> calculateFollows() {
+        return NotNullExpr.getFollows(getExpr().getExprFollows(false, NotNullExpr.FOLLOW, true));
     }
 
     public boolean calcTwins(TwinImmutableObject o) {

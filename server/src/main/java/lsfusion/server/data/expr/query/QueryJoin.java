@@ -3,7 +3,6 @@ package lsfusion.server.data.expr.query;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.*;
@@ -11,7 +10,6 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.query.ExprEnumerator;
-import lsfusion.server.data.query.InnerExprFollows;
 import lsfusion.server.data.query.InnerJoin;
 import lsfusion.server.data.query.InnerJoins;
 import lsfusion.server.data.query.stat.UnionJoin;
@@ -21,38 +19,13 @@ import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
 
 // query именно Outer а не Inner, потому как его контекст "связан" с group, и его нельзя прозрачно подменять
-public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, T extends QueryJoin<K, I, T, OC>,
+public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>, T extends QueryJoin<K, I, T, OC>,
         OC extends QueryJoin.QueryOuterContext<K,I,T,OC>> extends AbstractInnerContext<T> implements InnerJoin<K, T> {
 
     protected final I query;
     public final ImMap<K, BaseExpr> group; // вообще гря не reverseable
 
-    protected abstract static class Query<K extends Expr, Q extends Query<K, Q>> extends AbstractOuterContext<Q> {
-
-        protected final InnerExprFollows<K> follows;
-
-        public Query(InnerExprFollows<K> follows) {
-            this.follows = follows;
-        }
-
-        public Query(Q query, MapTranslate translate) {
-            this.follows = query.follows.translateOuter(translate);
-        }
-
-        public boolean calcTwins(TwinImmutableObject o) {
-            return follows.equals(((Query) o).follows);
-        }
-
-        protected int hash(HashContext hashContext) {
-            return follows.hashOuter(hashContext);
-        }
-
-        public ImSet<OuterContext> calculateOuterDepends() {
-            return SetFact.<OuterContext>singleton(follows);
-        }
-    }
-
-    public abstract static class QueryOuterContext<K extends Expr,I extends QueryJoin.Query<K, I>, T extends QueryJoin<K, I, T, OC>,
+    public abstract static class QueryOuterContext<K extends Expr,I extends OuterContext<I>, T extends QueryJoin<K, I, T, OC>,
             OC extends QueryJoin.QueryOuterContext<K,I,T,OC>> extends AbstractOuterContext<OC> {
 
         protected final T thisObj;
@@ -216,11 +189,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
         this.group = group;
     }
 
-    public InnerExprFollows<K> getInnerFollows() {
-        return query.follows;
-    }
-
-    protected abstract static class QueryInnerHashContext<K extends Expr,I extends QueryJoin.Query<K, I>> extends AbstractInnerHashContext {
+    protected abstract static class QueryInnerHashContext<K extends Expr,I extends OuterContext<I>> extends AbstractInnerHashContext {
 
         protected final QueryJoin<K, I, ?, ?> thisObj;
         protected QueryInnerHashContext(QueryJoin<K, I, ?, ?> thisObj) {

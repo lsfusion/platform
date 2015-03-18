@@ -92,11 +92,6 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }
     public abstract Expr classExpr(ImSet<ClassField> classes, IsClassType type); // classes - за пределами которых можно (и нужно ?) возвращать null
 
-    @IdentityLazy
-    public Expr classExpr(ClassField field) {
-        return classExpr(SetFact.singleton(field), IsClassType.CONSISTENT);
-    }
-
     public Where isClass(ValueClassSet set) {
         return isClass(set, false);
     }

@@ -295,7 +295,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             for(Where recPack : recPacks) {
                 Pair<ImCol<GroupJoinsWhere>, Boolean> recWhereJoins = recPack.getPackWhereJoins(exclusive, keepStat, orderTop);
                 exclusive = exclusive && recWhereJoins.second;
-                result = KeyEquals.merge(result, recWhereJoins.first, orderTop);
+                result = KeyEquals.merge(result, recWhereJoins.first);
             }
             return new Pair<ImCol<GroupJoinsWhere>, Boolean>(result, exclusive);
         }

@@ -9,7 +9,7 @@ public interface NotNullExprInterface {
 
     ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive);
 
-    void fillFollowSet(MSet<DataWhere> result); // default реализация есть
+    void fillFollowSet(MSet<DataWhere> result);
 
     boolean hasNotNull();
     Where getNotNullWhere();

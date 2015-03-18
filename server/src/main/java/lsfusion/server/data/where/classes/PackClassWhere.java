@@ -10,7 +10,6 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NotNullExpr;
-import lsfusion.server.data.expr.NotNullExprInterface;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
@@ -32,8 +31,8 @@ public class PackClassWhere extends DataWhere {
         assert !packWhere.isTrue();
     }
 
-    protected ImSet<NotNullExprInterface> getExprFollows() {
-        return packWhere.getExprFollows();
+    protected ImSet<DataWhere> calculateFollows() {
+        return NotNullExpr.getFollows(packWhere.getExprFollows());
     }
 
     public ImSet<OuterContext> calculateOuterDepends() {

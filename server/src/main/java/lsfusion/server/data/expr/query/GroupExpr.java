@@ -181,7 +181,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
             return thisObj.query.getWhere().and(getGroupWhere());
         }
 
-        protected ImMap<KeyExpr, Type> getInnerKeyTypes() { // не делаем IdentityLazy так как только при конструировании InnerJoin используется
+        protected ImMap<KeyExpr, Type> getInnerKeyTypes() {
             final KeyType contextType = getFullWhere();
             return SetFact.removeSet(getQueryKeys(), thisObj.group.keys()).mapValues(new GetValue<Type, KeyExpr>() { // те, по которым группируется не интересует, так как инвариант типов придет "сверху"
                 public Type getMapValue(KeyExpr value) {
@@ -274,7 +274,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         }
 
         return new GroupJoin(innerKeys, getInner().getInnerValues(), getInner().getInnerKeyTypes(),
-                getInner().getInnerFollows(), groupWhere, groupJoins,
+                groupWhere, groupJoins,
                 statKeys, group);
     }
 

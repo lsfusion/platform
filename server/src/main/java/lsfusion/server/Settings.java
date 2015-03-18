@@ -1160,14 +1160,4 @@ public class Settings {
     public void setPageSizeDefaultValue(int pageSizeDefaultValue) {
         this.pageSizeDefaultValue = pageSizeDefaultValue;
     }
-
-    private boolean disableInnerFollows = false;
-
-    public boolean isDisableInnerFollows() {
-        return disableInnerFollows;
-    }
-
-    public void setDisableInnerFollows(boolean disableInnerFollows) {
-        this.disableInnerFollows = disableInnerFollows;
-    }
 }

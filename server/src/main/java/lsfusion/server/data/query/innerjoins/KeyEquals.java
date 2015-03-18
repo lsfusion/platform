@@ -155,7 +155,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
             KeyEqual keyEqual = getKey(i); // keyEqual закидывается в статистику так как keepStat не всегда translate'ся
             Where where = getValue(i);
             KeyStat keyStat = keyEqual.getKeyStat(where);
-            where.groupJoinsWheres(keepStat, keyStat, orderTop, type).pack(keepStat, keyStat, type, where, false, orderTop).fillList(keyEqual, result, orderTop);
+            where.groupJoinsWheres(keepStat, keyStat, orderTop, type).pack(keepStat, keyStat, type, where, false).fillList(keyEqual, result);
         }
         return result.immutableCol();
     }
@@ -171,11 +171,11 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
     }
 
     //по аналогии с GroupStatType, сливает одинаковые
-    public static ImCol<GroupJoinsWhere> merge(ImCol<GroupJoinsWhere> whereJoins, GroupJoinsWhere join, ImOrderSet<Expr> orderTop) {
-        return merge(whereJoins, SetFact.singleton(join), orderTop);
+    public static ImCol<GroupJoinsWhere> merge(ImCol<GroupJoinsWhere> whereJoins, GroupJoinsWhere join) {
+        return merge(whereJoins, SetFact.singleton(join));
     }
 
-    public static ImCol<GroupJoinsWhere> merge(ImCol<GroupJoinsWhere> whereJoins, ImCol<GroupJoinsWhere> joins, ImOrderSet<Expr> orderTop) {
+    public static ImCol<GroupJoinsWhere> merge(ImCol<GroupJoinsWhere> whereJoins, ImCol<GroupJoinsWhere> joins) {
         Collection<GroupJoinsWhere> result = ListFact.mAddRemoveCol();
         ListFact.addJavaAll(whereJoins, result);
 
@@ -184,7 +184,7 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
                 GroupJoinsWhere where = i.next();
                 if(where.keyEqual.equals(join.keyEqual) && where.joins.equals(join.joins)) {
                     i.remove();
-                    join = new GroupJoinsWhere(join.keyEqual, join.joins, join.joins.orUpWheres(join.upWheres, where.upWheres), join.where.or(where.where), orderTop);
+                    join = new GroupJoinsWhere(join.keyEqual, join.joins, join.joins.orUpWheres(join.upWheres, where.upWheres), join.where.or(where.where));
                     break;
                 }
             }
@@ -207,14 +207,14 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
             MCol<GroupJoinsWhere> exclJoins = ListFact.mCol(sortedWhereJoins.size()); // есть последействие
             Where prevWhere = Where.FALSE;
             for(GroupJoinsWhere whereJoin : sortedWhereJoins) {
-                exclJoins.add(new GroupJoinsWhere(whereJoin.keyEqual, whereJoin.joins, whereJoin.upWheres, whereJoin.where.and(prevWhere.not()), orderTop));
+                exclJoins.add(new GroupJoinsWhere(whereJoin.keyEqual, whereJoin.joins, whereJoin.upWheres, whereJoin.where.and(prevWhere.not())));
                 prevWhere.or(whereJoin.getFullWhere());
             }
             return new Pair<ImCol<GroupJoinsWhere>, Boolean>(exclJoins.immutableCol(), true);
         } else { // иначе запускаем рекурсию
             GroupJoinsWhere firstJoin = sortedWhereJoins.iterator().next();
             Pair<ImCol<GroupJoinsWhere>, Boolean> recWhereJoins = getWhere().and(firstJoin.getFullWhere().not()).getWhereJoins(true, keepStat, orderTop);
-            return new Pair<ImCol<GroupJoinsWhere>, Boolean>(merge(recWhereJoins.first, firstJoin, orderTop), recWhereJoins.second); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
+            return new Pair<ImCol<GroupJoinsWhere>, Boolean>(merge(recWhereJoins.first, firstJoin), recWhereJoins.second); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
         }
     }
 

@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.Settings;
+import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
@@ -22,7 +22,6 @@ import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.CompiledQuery;
-import lsfusion.server.data.query.InnerExprFollows;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.RemapJoin;
 import lsfusion.server.data.query.stat.KeyStat;
@@ -34,24 +33,22 @@ import lsfusion.server.data.where.classes.ClassExprWhere;
 
 public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, RecursiveJoin, RecursiveJoin.QueryOuterContext> {
 
-    public static class Query extends QueryJoin.Query<KeyExpr, Query> {
+    public static class Query extends AbstractOuterContext<Query> {
         private final Where initialWhere;
         private final Where stepWhere;
         private final boolean cyclePossible;
         private final boolean isLogical;
         private final ImRevMap<KeyExpr, KeyExpr> mapIterate;
 
-        public Query(InnerExprFollows<KeyExpr> follows, Where initialWhere, Where stepWhere, boolean cyclePossible, boolean isLogical, ImRevMap<KeyExpr, KeyExpr> mapIterate) {
-            super(follows);
+        public Query(Where initialWhere, Where stepWhere, ImRevMap<KeyExpr, KeyExpr> mapIterate, boolean cyclePossible, boolean isLogical) {
             this.initialWhere = initialWhere;
             this.stepWhere = stepWhere;
+            this.mapIterate = mapIterate;
             this.cyclePossible = cyclePossible;
             this.isLogical = isLogical;
-            this.mapIterate = mapIterate;
         }
 
         public Query(Query query, Where initialWhere) {
-            super(query.follows);
             this.initialWhere = initialWhere;
             stepWhere = query.stepWhere;
             mapIterate = query.mapIterate;
@@ -59,30 +56,21 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
             isLogical = query.isLogical;
         }
 
-        public Query(Query query, MapTranslate translator) {
-            super(query, translator);
-            this.initialWhere = query.initialWhere.translateOuter(translator);
-            this.stepWhere = query.stepWhere.translateOuter(translator);
-            this.cyclePossible = query.cyclePossible;
-            this.isLogical = query.isLogical;
-            this.mapIterate = translator.translateRevMap(query.mapIterate);
-        }
-
         public boolean calcTwins(TwinImmutableObject o) {
-            return super.calcTwins(o) && initialWhere.equals(((Query) o).initialWhere) && stepWhere.equals(((Query) o).stepWhere) && mapIterate.equals(((Query) o).mapIterate) && cyclePossible==((Query)o).cyclePossible && isLogical==((Query)o).isLogical;
+            return initialWhere.equals(((Query) o).initialWhere) && stepWhere.equals(((Query) o).stepWhere) && mapIterate.equals(((Query) o).mapIterate) && cyclePossible==((Query)o).cyclePossible && isLogical==((Query)o).isLogical;
         }
 
         protected boolean isComplex() {
             return true;
         }
         protected int hash(HashContext hash) {
-            return 31 * (31 * (31 * (31 * (31 * super.hash(hash) + hashMapOuter(mapIterate, hash)) + initialWhere.hashOuter(hash)) + stepWhere.hashOuter(hash)) + (isLogical ? 1 : 0)) + (cyclePossible ? 1 : 0);
+            return 31 * (31 * (31 * (31 * hashMapOuter(mapIterate, hash) + initialWhere.hashOuter(hash)) + stepWhere.hashOuter(hash)) + (isLogical ? 1 : 0)) + (cyclePossible ? 1 : 0);
         }
         protected Query translate(MapTranslate translator) {
-            return new Query(this, translator);
+            return new Query(initialWhere.translateOuter(translator),stepWhere.translateOuter(translator), translator.translateRevMap(mapIterate), cyclePossible, isLogical);
         }
         public ImSet<OuterContext> calculateOuterDepends() {
-            return super.calculateOuterDepends().merge(SetFact.<OuterContext>toSet(initialWhere, stepWhere));
+            return SetFact.<OuterContext>toSet(initialWhere, stepWhere);
         }
     }
 
@@ -96,7 +84,7 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     }
 
     public RecursiveJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Where initialWhere, Where stepWhere, ImRevMap<KeyExpr, KeyExpr> mapIterate, boolean cyclePossible, boolean isLogical, ImMap<KeyExpr, BaseExpr> group) {
-        super(keys, values, new Query(InnerExprFollows.<KeyExpr>EMPTYEXPR(), initialWhere, stepWhere, cyclePossible, isLogical, mapIterate), group);
+        super(keys, values, new Query(initialWhere, stepWhere, mapIterate, cyclePossible, isLogical), group);
     }
 
     public RecursiveJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Query inner, ImMap<KeyExpr, BaseExpr> group) {
@@ -130,15 +118,6 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
 
     public ClassExprWhere getClassWhere() {
         return getRecClassesStats().first.first;
-    }
-
-    @IdentityLazy
-    public InnerExprFollows<KeyExpr> getInnerFollows() {
-        if(Settings.get().isDisableInnerFollows())
-            return InnerExprFollows.EMPTYEXPR();
-
-        ImSet<KeyExpr> groupKeys = group.keys();
-        return new InnerExprFollows<KeyExpr>(getClassWhere().get(groupKeys.toRevMap()), groupKeys);
     }
 
     public StatKeys<KeyExpr> getStatKeys() {

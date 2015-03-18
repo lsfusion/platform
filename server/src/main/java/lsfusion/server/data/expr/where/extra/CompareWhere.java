@@ -2,7 +2,6 @@ package lsfusion.server.data.expr.where.extra;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.Compare;
@@ -10,11 +9,7 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.expr.*;
-import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.query.ExprOrderTopJoin;
-import lsfusion.server.data.query.ExprStatJoin;
-import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.where.OrObjectWhere;
 import lsfusion.server.data.where.OrWhere;
 import lsfusion.server.data.where.Where;
@@ -37,19 +32,17 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
         if(symmetricWhere==null) {
             GreaterWhere backCompare = new GreaterWhere(operator2, operator1, false);
             CompareWhere signCompare;
-            boolean orExtra = true;
             if (this instanceof GreaterWhere) {
-                orExtra = !((GreaterWhere)this).orEquals;
+                assert !((GreaterWhere)this).orEquals;
                 signCompare = new EqualsWhere(operator1, operator2);
             } else
                 signCompare = new GreaterWhere(operator1, operator2, false);
 
             OrObjectWhere[] operators = getOperandWhere().getOr();
-            OrObjectWhere[] symmetricOrs = new OrObjectWhere[operators.length + (orExtra ? 2 : 1)];
+            OrObjectWhere[] symmetricOrs = new OrObjectWhere[operators.length+2];
             System.arraycopy(operators, 0, symmetricOrs, 0, operators.length);
             symmetricOrs[operators.length] = backCompare.not();
-            if(orExtra)
-                symmetricOrs[operators.length+1] = signCompare.not();
+            symmetricOrs[operators.length+1] = signCompare.not(); 
 
             symmetricWhere = toWhere(symmetricOrs);
         }
@@ -103,14 +96,5 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
     @Override
     public ClassExprWhere calculateClassWhere() {
         return getMeanClassWhere().getClassWhere(operator1, operator2, isEquals()); // именно так а не как Formula потому как иначе бесконечный цикл getMeanClassWheres -> MeanClassWhere.getClassWhere -> means(isFalse) и т.д. пойдет
-    }
-
-    @Override
-    public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-        if (!getCompare().equals(Compare.EQUALS) && (needOrderTopJoin(operator2, orderTop, operator1) || // избаляемся от not'ов, NOT EQUALS не интересует так как в индексе не помогает
-                needOrderTopJoin(operator1, orderTop, operator2)))
-            return getSymmetricWhere().not().groupJoinsWheres(keepStat, keyStat, orderTop, type);
-
-        return super.groupNotJoinsWheres(keepStat, keyStat, orderTop, type);
     }
 }

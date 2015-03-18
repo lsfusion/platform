@@ -124,14 +124,14 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
 
     protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type);
 
-    protected static <K extends BaseExpr> GroupJoinsWheres packIntermediate(GroupJoinsWheres result, GroupJoinsWheres.Type type, ImSet<K> keepStat, KeyStat keyStat, Where where, ImOrderSet<Expr> orderTop) {
-        return result.pack(keepStat, keyStat, type, where, true, orderTop);
+    protected static <K extends BaseExpr> GroupJoinsWheres packIntermediate(GroupJoinsWheres result, GroupJoinsWheres.Type type, ImSet<K> keepStat, KeyStat keyStat, Where where) {
+        return result.pack(keepStat, keyStat, type, where, true);        
     }   
     
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat, orderTop, type);
         if(result.isExceededIntermediatePackThreshold())
-            result = packIntermediate(result, type, keepStat, keyStat, this, orderTop);
+            result = packIntermediate(result, type, keepStat, keyStat, this);
         return result;
     }
 

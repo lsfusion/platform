@@ -13,7 +13,6 @@ import lsfusion.server.data.query.Query;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.PropertyChanges;
 
 import java.sql.SQLException;
@@ -62,10 +61,6 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
 
     public ObjectValueClassSet getObjectSet() {
         return set;
-    }
-
-    public ImplementTable getTable() {
-        return mapTable.table;
     }
 
     protected boolean useSimpleIncrement() {

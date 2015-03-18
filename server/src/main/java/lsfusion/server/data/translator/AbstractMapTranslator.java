@@ -11,7 +11,6 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.VariableClassExpr;
 import lsfusion.server.data.expr.VariableSingleClassExpr;
-import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 
 public abstract class AbstractMapTranslator extends TwinImmutableObject implements MapTranslate {
@@ -36,10 +35,6 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
     }
 
     public <K, E extends Expr> ImMap<E, K> translateExprKeys(ImMap<E, K> map) {
-        return map.mapKeys(this.<E>TRANS());
-    }
-
-    public <K, E extends TranslateContext> ImMap<E, K> translateOuterKeys(ImMap<E, K> map) {
         return map.mapKeys(this.<E>TRANS());
     }
 
@@ -119,7 +114,4 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
             }});
     }
 
-    public <K extends Expr> ClassWhere<K> translate(ClassWhere<K> classes) {
-        return classes.remap(this.<K>TRANS());
-    }
 }

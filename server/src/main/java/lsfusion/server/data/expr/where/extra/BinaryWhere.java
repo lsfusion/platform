@@ -4,7 +4,10 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityLazy;
@@ -13,7 +16,6 @@ import lsfusion.server.caches.ParamLazy;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NotNullExpr;
-import lsfusion.server.data.expr.NotNullExprInterface;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
@@ -45,8 +47,8 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         operator2.fillJoinWheres(joins,andWhere);
     }
 
-    protected ImSet<NotNullExprInterface> getExprFollows() {
-        return operator1.getExprFollows(true, NotNullExpr.FOLLOW, true).merge(operator2.getExprFollows(true, NotNullExpr.FOLLOW, true));
+    public ImSet<DataWhere> calculateFollows() {
+        return NotNullExpr.getFollows(NotNullExpr.getExprFollows(SetFact.toSet(operator1, operator2), NotNullExpr.FOLLOW, true));
     }
 
     protected abstract This createThis(BaseExpr operator1, BaseExpr operator2);
@@ -70,32 +72,25 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return packOpMap.get(0).compare(packOpMap.get(1), getCompare());
     }
 
-    public static boolean needOrderTopJoin(BaseExpr expr, ImOrderSet<Expr> orderTop, BaseExpr valueExpr) {
-        if((valueExpr == null || valueExpr.isValue()) && orderTop.contains(expr) && expr.isTableIndexed()) {
-            if(valueExpr == null)
-                return !expr.hasALotOfNulls();
-            else
-                return true; // тут надо смотреть на то сколько distinct'ов, хотя может и не надо, разве что если их очень мало и для одного distinct значения в n раз больше записей чем в окнет
+    public WhereJoin groupJoinsWheres(ImOrderSet<Expr> orderTop, boolean not) {
+        if(operator1.isValue()) {
+            if(operator2.isTableIndexed() && orderTop.contains(operator2))
+                return new ExprOrderTopJoin(operator2, getCompare().reverse(), operator1, not);
+            if(getCompare().equals(Compare.EQUALS) && !not)
+                return new ExprStatJoin(operator2, Stat.ONE, operator1);
         }
-        return false;
-    }
-
-    public WhereJoin groupJoinsWheres(ImOrderSet<Expr> orderTop) {
-        if(needOrderTopJoin(operator2, orderTop, operator1))
-            return new ExprOrderTopJoin(operator2, getCompare().reverse(), operator1, false);
-        if(needOrderTopJoin(operator1, orderTop, operator2))
-            return new ExprOrderTopJoin(operator1, getCompare(), operator2, false);
-
-        if (operator1.isValue() && getCompare().equals(Compare.EQUALS))
-            return new ExprStatJoin(operator2, Stat.ONE, operator1);
-        if (operator2.isValue() && getCompare().equals(Compare.EQUALS))
-            return new ExprStatJoin(operator1, Stat.ONE, operator2);
-        if(getCompare().equals(Compare.EQUALS))
+        if(operator2.isValue()) {
+            if(operator1.isTableIndexed() && orderTop.contains(operator1))
+                return new ExprOrderTopJoin(operator1, getCompare(), operator2, not);
+            if(getCompare().equals(Compare.EQUALS) && !not)
+                return new ExprStatJoin(operator1, Stat.ONE, operator2);
+        }
+        if(getCompare().equals(Compare.EQUALS) && !not)
             return new ExprEqualsJoin(operator1, operator2);
         return null;        
     }
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-        WhereJoin exprJoin = groupJoinsWheres(orderTop);
+        WhereJoin exprJoin = groupJoinsWheres(orderTop, false);
         if(exprJoin!=null)
             return new GroupJoinsWheres(exprJoin, this, type);
         return getOperandWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type).and(new GroupJoinsWheres(this, type));
