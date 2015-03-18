@@ -6,11 +6,13 @@ import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.server.Settings;
 import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.InnerJoin;
 import lsfusion.server.data.query.InnerJoins;
 import lsfusion.server.data.query.stat.StatKeys;
@@ -24,10 +26,10 @@ public class GroupJoinsWhere extends GroupWhere<GroupJoinsWhere> {
 
     public final ImMap<WhereJoin, Where> upWheres;
 
-    public GroupJoinsWhere(KeyEqual keyEqual, WhereJoins joins, ImMap<WhereJoin, Where> upWheres, Where where) {
+    public GroupJoinsWhere(KeyEqual keyEqual, WhereJoins joins, ImMap<WhereJoin, Where> upWheres, Where where, ImOrderSet<Expr> orderTop) {
         this(keyEqual, joins, where, upWheres);
 
-        assert where.getKeyEquals().singleKey().isEmpty();
+        assert !orderTop.isEmpty() || where.getKeyEquals().singleKey().isEmpty(); // из-за symmetricWhere в groupNotJoinsWheres
     }
 
     // конструктор паковки для assertion'а

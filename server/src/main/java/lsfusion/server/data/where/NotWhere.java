@@ -76,9 +76,9 @@ public class NotWhere extends ObjectWhere {
     }
 
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-        WhereJoin exprJoin;
-        if(where instanceof BinaryWhere && (exprJoin=((BinaryWhere)where).groupJoinsWheres(orderTop, true))!=null)
-            return new GroupJoinsWheres(exprJoin, this, type);
+        GroupJoinsWheres notGroup;
+        if((notGroup=where.groupNotJoinsWheres(keepStat, keyStat, orderTop, type))!=null)
+            return notGroup;
         return new GroupJoinsWheres(this, type);
     }
 

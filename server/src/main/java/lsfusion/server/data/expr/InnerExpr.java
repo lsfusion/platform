@@ -2,15 +2,13 @@ package lsfusion.server.data.expr;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.data.expr.query.PropStat;
-import lsfusion.server.data.query.ExprStatJoin;
-import lsfusion.server.data.query.InnerJoin;
-import lsfusion.server.data.query.InnerJoins;
-import lsfusion.server.data.query.JoinData;
+import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.stat.BaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
@@ -50,13 +48,17 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
         }
     }
 
+    private static <K> InnerFollows<K> getInnerFollows(BaseJoin<K> join) {
+        if(join instanceof InnerJoin)
+            return ((InnerJoin<K, ?>) join).getInnerFollows();
+        return InnerFollows.EMPTY();
+    }
     // множественное наследование
     public static <K> ImSet<NotNullExprInterface> getExprFollows(BaseJoin<K> join, boolean includeInnerWithoutNotNull, boolean recursive) { // куда-то надо же положить
-        return getExprFollows(join.getJoins().values(), includeInnerWithoutNotNull, recursive);
+        return getInnerFollows(join).getExprFollows(join.getJoins(), includeInnerWithoutNotNull, recursive);
     }
-
-    public static <K> boolean hasExprFollowsWithoutNotNull(BaseJoin<K> join) { // куда-то надо же положить
-        return hasExprFollowsWithoutNotNull(join.getJoins().values());
+    public static <K> boolean hasExprFollowsWithoutNotNull(BaseJoin<K> join) { // куда-то надо же положить, проверяет "нужен" ли параметр includeInnerWithoutNotNull или можно считать его равным false
+        return getInnerFollows(join).hasExprFollowsWithoutNotNull(join.getJoins());
     }
 
     // множественное наследование

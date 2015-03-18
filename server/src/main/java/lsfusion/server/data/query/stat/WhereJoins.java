@@ -54,6 +54,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return allJoins.size();
     }
 
+    public int getOrderTopCount() {
+        int orderTopCount = 0;
+        for(WhereJoin where : wheres)
+            if(where instanceof ExprOrderTopJoin)
+                orderTopCount++;
+        return orderTopCount;
+    }
+
     private final static LRUWVSMap<WhereJoin, ImSet<WhereJoin>> cacheAllChildren = new LRUWVSMap<WhereJoin, ImSet<WhereJoin>>(LRUUtil.L1);
 
     public static ImSet<WhereJoin> getAllChildren(WhereJoin where) {

@@ -8,6 +8,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.VariableClassExpr;
 import lsfusion.server.data.expr.VariableSingleClassExpr;
+import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 
 public interface MapTranslate extends MapObject {
@@ -33,6 +34,8 @@ public interface MapTranslate extends MapObject {
 
     <K, E extends Expr> ImMap<E, K> translateExprKeys(ImMap<E, K> map);
     <K, E extends Expr> ImRevMap<E, K> translateExprRevKeys(ImRevMap<E, K> map);
+
+    <K, E extends TranslateContext> ImMap<E, K> translateOuterKeys(ImMap<E, K> map);
 
     <K extends TranslateContext, V extends TranslateContext> ImMap<K, V> translateMap(ImMap<? extends K, ? extends V> map);
 
@@ -62,6 +65,8 @@ public interface MapTranslate extends MapObject {
     ImList<Expr> translate(ImList<Expr> list);
 
     ImSet<Expr> translate(ImSet<Expr> set);
+
+    <K extends Expr> ClassWhere<K> translate(ClassWhere<K> classes);
 
     MapTranslate reverseMap();
 

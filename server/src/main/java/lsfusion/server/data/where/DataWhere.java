@@ -1,9 +1,18 @@
 package lsfusion.server.data.where;
 
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.ManualLazy;
+import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.NotNullExprInterface;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.ExprOrderTopJoin;
+import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
 
@@ -39,7 +48,15 @@ abstract public class DataWhere extends ObjectWhere {
     }
 
     // определяет все
-    protected abstract ImSet<DataWhere> calculateFollows();
+    protected ImSet<DataWhere> calculateFollows() {
+        ImSet<NotNullExprInterface> exprFollows = getExprFollows();
+        MSet<DataWhere> result = SetFact.mSet();
+        for(int i=0,size=exprFollows.size();i<size;i++)
+            exprFollows.get(i).fillFollowSet(result);
+        return result.immutable();
+    }
+
+    protected abstract ImSet<NotNullExprInterface> getExprFollows();
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
@@ -60,6 +77,10 @@ abstract public class DataWhere extends ObjectWhere {
             return Where.FALSE;
         else
             return where;
+    }
+
+    public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+        return null;
     }
 
     public boolean isNot() {

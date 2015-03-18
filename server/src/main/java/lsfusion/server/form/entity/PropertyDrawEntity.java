@@ -141,7 +141,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         Property<P> property = propertyObject.property;
         if (GROUP_CHANGE.equals(actionId)) {
-            return getEditAction(CHANGE, entity).getGroupChange();
+            ActionPropertyObjectEntity<?> editAction = getEditAction(CHANGE, entity);
+            if(editAction == null)
+                return null;
+            return editAction.getGroupChange();
         }
 
         if (isSelector()) {

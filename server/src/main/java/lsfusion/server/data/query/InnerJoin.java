@@ -6,5 +6,7 @@ import lsfusion.server.data.query.stat.WhereJoin;
 
 public interface InnerJoin<K, IJ extends InnerJoin<K, IJ>> extends WhereJoin<K, IJ>, InnerBaseJoin<K> {
 
+    InnerFollows<K> getInnerFollows();
+
     InnerExpr getInnerExpr(WhereJoin join);
 }

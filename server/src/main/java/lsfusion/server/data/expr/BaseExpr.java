@@ -55,7 +55,7 @@ public abstract class BaseExpr extends Expr {
     private ImSet<NotNullExprInterface> exprFollows = null;
     @ManualLazy
     public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {
-        if(recursive && (!includeInnerWithoutNotNull || !hasExprFollowsWithoutNotNull())) {
+        if(recursive && (!includeInnerWithoutNotNull || !hasExprFollowsWithoutNotNull())) {  // кэшированиие
             if(exprFollows==null)
                 exprFollows = getBaseJoin().getExprFollows(includeInnerWithoutNotNull, recursive);
             return exprFollows;
@@ -66,7 +66,7 @@ public abstract class BaseExpr extends Expr {
     
     private Boolean hasExprFollowsWithoutNotNull; 
     @ManualLazy
-    protected boolean hasExprFollowsWithoutNotNull() {
+    public boolean hasExprFollowsWithoutNotNull() {
         if(hasExprFollowsWithoutNotNull==null)
             hasExprFollowsWithoutNotNull = getBaseJoin().hasExprFollowsWithoutNotNull();
         return hasExprFollowsWithoutNotNull;        
@@ -268,6 +268,11 @@ public abstract class BaseExpr extends Expr {
     }
 
     public boolean isTableIndexed() {
+        return false;
+    }
+
+    public boolean hasALotOfNulls() {
+        assert isTableIndexed();
         return false;
     }
     

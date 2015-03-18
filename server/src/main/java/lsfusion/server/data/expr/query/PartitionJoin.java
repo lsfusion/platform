@@ -4,7 +4,6 @@ import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
@@ -12,6 +11,7 @@ import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.InnerExprFollows;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.translator.MapTranslate;
@@ -19,32 +19,39 @@ import lsfusion.server.data.where.Where;
 
 public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, PartitionJoin, PartitionJoin.QueryOuterContext> {
 
-    public static class Query extends AbstractOuterContext<Query> {
+    public static class Query extends QueryJoin.Query<KeyExpr, Query> {
         private final Where where;
         private final ImSet<Expr> partitions;
 
-        public Query(Where where, ImSet<Expr> partitions) {
+        public Query(InnerExprFollows<KeyExpr> follows, Where where, ImSet<Expr> partitions) {
+            super(follows);
             this.where = where;
             this.partitions = partitions;
         }
 
+        public Query(Query query, MapTranslate translate) {
+            super(query, translate);
+            where = query.where.translateOuter(translate);
+            partitions = translate.translate(query.partitions);
+        }
+
         public boolean calcTwins(TwinImmutableObject o) {
-            return partitions.equals(((Query) o).partitions) && where.equals(((Query) o).where);
+            return super.calcTwins(o) && partitions.equals(((Query) o).partitions) && where.equals(((Query) o).where);
         }
 
         protected boolean isComplex() {
             return true;
         }
         protected int hash(HashContext hashContext) {
-            return hashOuter(partitions, hashContext) * 31 + where.hashOuter(hashContext);
+            return (31 * super.hash(hashContext) + hashOuter(partitions, hashContext)) * 31 + where.hashOuter(hashContext);
         }
 
         protected Query translate(MapTranslate translator) {
-            return new Query(where.translateOuter(translator),translator.translate(partitions));
+            return new Query(this, translator);
         }
 
         public ImSet<OuterContext> calculateOuterDepends() {
-            return SetFact.<OuterContext>merge(partitions, where);
+            return super.calculateOuterDepends().merge(SetFact.<OuterContext>merge(partitions, where));
         }
     }
     
@@ -53,8 +60,8 @@ public class PartitionJoin extends QueryJoin<KeyExpr, PartitionJoin.Query, Parti
         return query.where.mapWhere(group);
     }
 
-    public PartitionJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Where inner, ImSet<Expr> partitions, ImMap<KeyExpr, BaseExpr> group) {
-        super(keys, values, new Query(inner, partitions), group);
+    public PartitionJoin(ImSet<KeyExpr> keys, ImSet<Value> values, InnerExprFollows<KeyExpr> innerFollows, Where inner, ImSet<Expr> partitions, ImMap<KeyExpr, BaseExpr> group) {
+        super(keys, values, new Query(innerFollows, inner, partitions), group);
     }
 
     private PartitionJoin(ImSet<KeyExpr> keys, ImSet<Value> values, Query inner, ImMap<KeyExpr, BaseExpr> group) {
