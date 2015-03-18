@@ -54,6 +54,7 @@ public abstract class Field extends TwinImmutableObject implements BinarySeriali
     protected Field(String name,Type type) {
         this.name = name;
         this.type = type;
+        assert type != null;
     }
 
     public static String getDeclare(ImOrderMap<String, Type> map, final SQLSyntax syntax, final TypeEnvironment typeEnv) {
