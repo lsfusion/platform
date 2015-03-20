@@ -345,4 +345,13 @@ public class Words {
     public static String toString(BigDecimal numObject) {
         return toString(numObject, false);
     }
+
+    public static String capitalizeFirstLetter(String value) {
+        if (value == null || value.isEmpty()) return null;
+        else {
+            char[] stringArray = value.toCharArray();
+            stringArray[0] = Character.toUpperCase(stringArray[0]);
+            return new String(stringArray);
+        }
+    }
 }
