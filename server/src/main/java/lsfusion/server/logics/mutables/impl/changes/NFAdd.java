@@ -26,6 +26,8 @@ public class NFAdd<T> implements NFListChange<T>, NFOrderSetChange<T> {
     }
 
     public void proceedOrderSet(List<T> list) {
-        list.add(element);
+        if (!list.contains(element)) {
+            list.add(element);
+        }
     }
 }

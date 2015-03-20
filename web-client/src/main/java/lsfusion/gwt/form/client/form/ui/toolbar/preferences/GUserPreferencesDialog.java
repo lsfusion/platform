@@ -66,6 +66,21 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
 
         preferencesPanel.add(GwtClientUtils.createVerticalStrut(3));
 
+        //page size settings
+
+        Label pageSizeLabel = new Label("Размер страницы: ");
+        pageSizeBox = new TextBox();
+        pageSizeBox.addStyleName("userPreferencesFontSizeTextBox");
+
+        FlexPanel pageSizePanel = new FlexPanel();
+        pageSizePanel.add(pageSizeLabel, GFlexAlignment.CENTER);
+        pageSizePanel.add(pageSizeBox, GFlexAlignment.CENTER);
+
+        GCaptionPanel pageSizeSettingsPanel = new GCaptionPanel("Настройки размера страницы", pageSizePanel);
+        preferencesPanel.add(pageSizeSettingsPanel);
+
+        preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
+        
         // column caption settings        
         columnCaptionBox = new TextBox();
         columnCaptionBox.addStyleName("userPreferencesColumnCaptionTextBox");
@@ -86,21 +101,6 @@ public abstract class GUserPreferencesDialog extends GResizableModalWindow {
         GCaptionPanel columnCaptionSettingsPanel = new GCaptionPanel("Настройки выбранной колонки", columnCaptionPanel);
         preferencesPanel.add(columnCaptionSettingsPanel);
         
-        preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
-        
-        //page size settings
-
-        Label pageSizeLabel = new Label("Размер страницы: ");
-        pageSizeBox = new TextBox();
-        pageSizeBox.addStyleName("userPreferencesFontSizeTextBox");
-
-        FlexPanel pageSizePanel = new FlexPanel();
-        pageSizePanel.add(pageSizeLabel, GFlexAlignment.CENTER);
-        pageSizePanel.add(pageSizeBox, GFlexAlignment.CENTER);
-
-        GCaptionPanel pageSizeSettingsPanel = new GCaptionPanel("Настройки размера страницы", pageSizePanel);
-        preferencesPanel.add(pageSizeSettingsPanel);
-
         preferencesPanel.add(GwtClientUtils.createVerticalStrut(5));
         
         // font settings
