@@ -69,9 +69,9 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
         Object file = value.object;
         if (file instanceof byte[]) {
             try {
-                //if (value.getType() instanceof DynamicFormatFileClass) {
-                //    file = BaseUtils.getFile((byte[]) file);
-                //}
+                if (value.getType() instanceof DynamicFormatFileClass) {
+                    file = BaseUtils.getFile((byte[]) file);
+                }
                 ImportIterator iterator = getIterator((byte[]) file);
 
                 List<String> row;
