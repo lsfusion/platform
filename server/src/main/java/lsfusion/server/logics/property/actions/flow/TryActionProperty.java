@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.actions.flow;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -36,8 +37,7 @@ public class TryActionProperty extends KeepContextActionProperty {
     public CalcPropertyMapImplement<?, PropertyInterface> calcWhereProperty() {
 
         MList<ActionPropertyMapImplement<?, PropertyInterface>> actions = ListFact.mList();
-        if(tryAction != null)
-            actions.add(tryAction);
+        actions.add(tryAction);
         if(finallyAction != null)
             actions.add(finallyAction);
         
@@ -52,9 +52,8 @@ public class TryActionProperty extends KeepContextActionProperty {
 
     public ImSet<ActionProperty> getDependActions() {
         ImSet<ActionProperty> result = SetFact.EMPTY();
-        if (tryAction != null) {
-            result = result.merge(tryAction.property);
-        }
+        result = result.merge(tryAction.property);
+
         if (finallyAction != null) {
             result = result.merge(finallyAction.property);
         }
@@ -71,7 +70,7 @@ public class TryActionProperty extends KeepContextActionProperty {
 
     @Override
     public Type getSimpleRequestInputType(boolean optimistic) {
-        Type tryType = tryAction == null ? null : tryAction.property.getSimpleRequestInputType(optimistic);
+        Type tryType = tryAction.property.getSimpleRequestInputType(optimistic);
         Type finallyType = finallyAction == null ? null : finallyAction.property.getSimpleRequestInputType(optimistic);
 
         if (!optimistic && (tryType == null || finallyType == null)) {
@@ -90,16 +89,19 @@ public class TryActionProperty extends KeepContextActionProperty {
         
         FlowResult result = null;
 
-        if (tryAction != null) {
-            try {
-                result = tryAction.execute(context);
-            } finally {
-                if (finallyAction != null) {
-                    finallyAction.execute(context);
-                }
+        try {
+            result = tryAction.execute(context);
+        } catch(Exception e) {
+            //ignore exception if finallyAction == null
+            if(finallyAction !=  null) {
+                throw Throwables.propagate(e);
             }
-
+        } finally {
+            if (finallyAction != null) {
+                finallyAction.execute(context);
+            }
         }
+
         return result;
     }
 }
