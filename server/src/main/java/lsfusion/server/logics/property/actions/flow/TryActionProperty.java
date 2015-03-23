@@ -27,7 +27,7 @@ public class TryActionProperty extends KeepContextActionProperty {
 
         final ImRevMap<I, PropertyInterface> mapInterfaces = getMapInterfaces(innerInterfaces).reverse();
         this.tryAction = tryAction.map(mapInterfaces);
-        this.finallyAction = finallyAction.map(mapInterfaces);
+        this.finallyAction = finallyAction == null ? null : finallyAction.map(mapInterfaces);
 
         finalizeInit();
     }
