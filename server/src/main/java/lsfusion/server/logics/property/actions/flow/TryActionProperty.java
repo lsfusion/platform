@@ -91,7 +91,7 @@ public class TryActionProperty extends KeepContextActionProperty {
 
         try {
             result = tryAction.execute(context);
-        } catch(Exception e) {
+        } catch(Throwable e) {
             //ignore exception if finallyAction == null
             if(finallyAction !=  null) {
                 throw Throwables.propagate(e);
