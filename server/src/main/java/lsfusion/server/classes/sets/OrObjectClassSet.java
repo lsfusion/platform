@@ -195,7 +195,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     public CustomClass getCommonClass(boolean forceConcrete) {
         assert !isEmpty();
         assert !unknown;
-        final ImSet<CustomClass> commonSet;
+        ImSet<CustomClass> commonSet = SetFact.EMPTY();
         if(forceConcrete || Settings.get().isMergeUpClassSets()) {
             if(!forceConcrete && set.isEmpty() && up.getCommonClasses().length==1)
                 return up.getCommonClasses()[0];
@@ -203,7 +203,9 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
             MSet<ConcreteCustomClass> mConcrete = SetFact.mSet(set); // для детерменированности, так как upClassSet могут по разному "собираться"
             up.fillNextConcreteChilds(mConcrete); // проблема в том что свойства начинают "гулять" по таблицам
             commonSet = BaseUtils.immutableCast(mConcrete.immutable());
-        } else
+        }
+
+        if(commonSet.isEmpty()) // если concrete'ов нет придется что-то брать
             commonSet = SetFact.toExclSet(up.getCommonClasses()).addExcl(set);
 
         return getCommonClass(commonSet);
