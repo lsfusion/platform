@@ -6,6 +6,7 @@ import lsfusion.base.SymmPair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MCol;
@@ -15,6 +16,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.PackInterface;
 import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.where.DNFWheres;
@@ -120,16 +122,16 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         this(map, type.noWhere());
     }
 
-    public <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, Type type, Where where, boolean intermediate) {
+    public <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, Type type, Where where, boolean intermediate, ImOrderSet<Expr> orderTop) {
         assert !intermediate || isExceededIntermediatePackThreshold();
         if(intermediate && type.isStat()) // самый быстрый способ сохранить статистику, проверка на intermediate чтобы не было рекурсии
             return new GroupJoinsWheres(new StatKeysJoin<K>(getStatKeys(keepStat, keyStat)), where, type);
-        GroupJoinsWheres result = pack(keepStat, keyStat, type.isStat()); // savestat нужно для более правильной статистикой 
+        GroupJoinsWheres result = pack(keepStat, keyStat, type.isStat() || intermediate); // savestat нужно для более правильной статистикой, для intermediate тоже важна статистика так как сверху могут добавиться еще and'ы, а значит некоторые node'ы уйти и статистика может потеряться
 //        GroupJoinsWheres result = packMeans(keepStat, keyStat, intermediate);
         if(result.size() == 1) { // оптимизация
             Value value = result.singleValue();
             if(!BaseUtils.hashEquals(value.where, where)) {
-                assert (value.where.means(where) && where.means(value.where)) || where.hasUnionExpr(); // не будет выполняться так как groupJoinsWheres - через getCommonWhere может залазить внутрь UnionExpr и терять "следствия" тем самым
+                assert !orderTop.isEmpty() || (value.where.means(where) && where.means(value.where)) || where.hasUnionExpr(); // hasUnionExpr - через getCommonWhere может залазить внутрь UnionExpr и терять "следствия" тем самым, !orderTop.isEmpty из-за symmetricWhere в groupNotJoinsWheres
                 if(value.where.getComplexity(false) < where.getComplexity(false))
                     where = value.where;
                 result = new GroupJoinsWheres(result.singleKey(), new Value(value.upWheres, where), type);
@@ -147,25 +149,30 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     public boolean isFitPackThreshold() {
         return !(size() > Settings.get().getLimitWhereJoinsCount() || (!noWhere && getComplexity(true) > Settings.get().getLimitWhereJoinsComplexity()));
     }
+
+    // если сильно "наобъединяться" бОльшая вероятность, что не слишком умная СУБД сделает неправильный план (впрочем после materialized subqueries должно уйти)
+    private final static boolean collapseStats = false; // в запросе выполнения всегда объединять join'ы с одинаковой статистикой, а не только при превышении порога
     
     private <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, boolean saveStat) {
-        int forcePack = Settings.get().getForceWhereJoinsPack();
 
         GroupJoinsWheres result = this;
-        if(forcePack <= 0 && result.isFitPackThreshold())
+        if(saveStat && result.isFitPackThreshold())
             return result;
-        
-        result = result.packMeans(keepStat, keyStat, true);
-        if(forcePack <= 1 && result.isFitPackThreshold())
-            return result;
-        
-        if(!saveStat) {
-            result = result.packMeans(keepStat, keyStat, false); // оптимизация, так как packMeans быстрее packReduce
+
+        if(!collapseStats) {
+            result = result.packMeans(keepStat, keyStat, true);
             if (result.isFitPackThreshold())
                 return result;
         }
-  
-        return result.packReduce(keepStat, keyStat, saveStat); // !!! result.packReduce 
+
+        // оптимизация, так как packMeans быстрее packReduce, для не saveStat не стоит делать так как при A, AB, BC, где B маленький предикат логичнее A, B получить чем A, BC
+        if(saveStat == collapseStats) {
+            result = result.packMeans(keepStat, keyStat, saveStat);
+            if (result.isFitPackThreshold())
+                return result;
+        }
+
+        return result.packReduce(keepStat, keyStat, saveStat);
     }
 
     // keepStat нужен чтобы можно было гарантировать что не образуется case с недостающим WhereJoin существенно влияющим на статистику
@@ -204,12 +211,14 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     private abstract static class CEntry extends ImmutableObject {
         public final WhereJoins where;
         public final int rows;
+        public final int orderTopCount;
         public final int childrenCount;
 
         public <K extends BaseExpr> CEntry(WhereJoins where, ImSet<K> keepStat, KeyStat keyStat) {
             this.where = where;
             
             rows = where.getCompileStatKeys(keepStat, keyStat).rows.getWeight();
+            orderTopCount = where.getOrderTopCount();
             childrenCount = where.getAllChildrenCount();
         }
         
@@ -227,40 +236,95 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }    
     
     // минимум изменения, абсолютной статистики, количества сршдвкутэjd    
-    private static long getPriority(int r, int m, int c) {
-        return (((long)r) * Stat.MAX.getWeight() + (r == 0 ? 0 : m)) * 100l + c;
+    private static int[] getPriority(int rdmin, int rdmax, int r, int oc, int c) {
+        if(collapseStats)
+            return new int[] {rdmin, rdmax, r, oc, c};
+
+        return new int[] {rdmin, 0, rdmin == 0 ? 0 : r, oc, c};
     }
 
-    private static long getMaxPriority() {
-        return getPriority(Stat.AGGR.getWeight(), 0, 0);
+    private static int[] getMaxPriority() {
+        return getPriority(Stat.AGGR.getWeight(), 0, 0, 0, 0);
+    }
+
+    private static int[] getMinPriority(boolean saveStat) {
+        if(collapseStats) {
+            if (saveStat)
+                return getPriority(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE); // при сохранении статистики главное не терять статистику
+            else
+                return getPriority(0, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE); // при не сохранении статистики надо хотя бы чтобы одна сохранилась поддержать
+        }
+
+        return getPriority(0, 0, 0, 0, 0);
+    }
+
+    private static int compare(int[] priorities1, int[] priorities2) {
+        for(int i=0;i<priorities1.length;i++) {
+            int p1 = priorities1[i];
+            int p2 = priorities2[i];
+            if(p1 > p2)
+                return 1;
+            if(p1 < p2)
+                return -1;
+        }
+        return 0;
     }
 
     private static class CMerged extends CEntry implements Comparable<CMerged> {
         public final SymmPair<CEntry, CEntry> original;
+        private int[] priority;
 
         public <K extends BaseExpr> CMerged(SymmPair<CEntry, CEntry> original, WhereJoins where, ImSet<K> keepStat, KeyStat keyStat) {
             super(where, keepStat, keyStat);
             this.original = original;
+
+//            assert assertMeansOriginal(where);
         }
 
-        protected int getRowDiff() {
+        //        private boolean assertMeansOriginal(WhereJoins where) {
+//            MExclSet<WhereJoins> mOrigs = SetFact.mExclSet();
+//            fillOriginal(mOrigs);
+//
+//            for(WhereJoins orig : mOrigs.immutable()) {
+//                assert orig.means(where);
+//            }
+//            return true;
+//        }
+
+        protected int getRowMinDiff() {
             int w1 = original.first.rows;
             int w2 = original.second.rows;
             assert rows >= w1 && rows >= w2; // возможно как и в pushWhere будет нарушаться
             return BaseUtils.min(rows - w1, rows - w2);
         }
 
-        protected long getPriority() {
-            int cm = childrenCount;
-            int c1 = original.first.childrenCount;
-            int c2 = original.second.childrenCount;
-            assert cm <= c1 && cm <= c2;
-            return GroupJoinsWheres.getPriority(getRowDiff(), rows, BaseUtils.min(c1 - cm, c2 - cm));
+        protected int getRowMaxDiff() {
+            int w1 = original.first.rows;
+            int w2 = original.second.rows;
+            assert rows >= w1 && rows >= w2; // возможно как и в pushWhere будет нарушаться
+            return BaseUtils.max(rows - w1, rows - w2);
+        }
+
+        protected int[] getPriority() {
+            if(priority == null) {
+                int cm = childrenCount;
+                int c1 = original.first.childrenCount;
+                int c2 = original.second.childrenCount;
+
+                int ocm = orderTopCount;
+                int oc1 = original.first.orderTopCount;
+                int oc2 = original.second.orderTopCount;
+                assert ocm <= oc1 && ocm <= oc2;
+
+                assert cm <= c1 && cm <= c2;
+                priority = GroupJoinsWheres.getPriority(getRowMinDiff(), getRowMaxDiff(), rows, BaseUtils.min(oc1 - ocm, oc2 - ocm), BaseUtils.min(c1 - cm, c2 - cm));
+            }
+            return priority;
         }
         
         @Override
         public int compareTo(CMerged o) {
-            return Long.compare(getPriority(), o.getPriority());
+            return compare(getPriority(), o.getPriority());
         }
 
         public void fillOriginal(MExclSet<WhereJoins> wheres) {
@@ -275,7 +339,8 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             return this;
 
         int limit = Settings.get().getLimitWhereJoinsCount(); // пока только на count смотрим, так как complexity высчитываем в конце
-        long maxPriority = getMaxPriority();
+        int[] maxPriority = getMaxPriority();
+        int[] minPriority = getMinPriority(saveStat);
 
         // (A, B) -> X, Heap по X
 
@@ -317,12 +382,12 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             
             CMerged entry = priority.poll();
 
-            if(saveStat && entry.getRowDiff() > 0)
+            if(saveStat && entry.getRowMinDiff() > 0) // может быть слишком оптимистично, возможно нужно просто limit увеличить ???
                 break;
-            long currentPriority = entry.getPriority();
-            if(currentPriority >= maxPriority)
+            int[] currentPriority = entry.getPriority();
+            if(compare(currentPriority, maxPriority) >= 0) // не теряем ключи никогда
                 break;
-            if(currentPriority != 0 && current.size() <= limit) {
+            if(current.size() <= limit && compare(currentPriority, minPriority) > 0) { // идем до максимального порога или пока не нарушим условие
                 break;
             }
             
@@ -368,10 +433,10 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             }}), noWhere);
     }
 
-    public void fillList(KeyEqual keyEqual, MCol<GroupJoinsWhere> col) {
+    public void fillList(KeyEqual keyEqual, MCol<GroupJoinsWhere> col, ImOrderSet<Expr> orderTop) {
         for(int i=0,size=size();i<size;i++) {
             Value value = getValue(i);
-            col.add(new GroupJoinsWhere(keyEqual, getKey(i), value.upWheres, value.where));
+            col.add(new GroupJoinsWhere(keyEqual, getKey(i), value.upWheres, value.where, orderTop));
         }
     }
     

@@ -120,16 +120,6 @@ public class Settings {
         this.limitWhereJoinsDegree = limitWhereJoinsDegree;
     }
 
-    private int forceWhereJoinsPack = 1; // 0 - не паковать, 1 - следствия с сохранением статистики, 2 - следствия
-
-    public int getForceWhereJoinsPack() {
-        return forceWhereJoinsPack;
-    }
-
-    public void setForceWhereJoinsPack(int forceWhereJoinsPack) {
-        this.forceWhereJoinsPack = forceWhereJoinsPack;
-    }
-
     private int limitWhereJoinsComplexity = 300;
 
     // очень опасная эвристика - может в определенных случаях "потерять ключ", то есть образуется And в котором не хватает KeyExpr'а
@@ -1159,5 +1149,25 @@ public class Settings {
 
     public void setPageSizeDefaultValue(int pageSizeDefaultValue) {
         this.pageSizeDefaultValue = pageSizeDefaultValue;
+    }
+
+    private boolean disableInnerFollows = false;
+
+    public boolean isDisableInnerFollows() {
+        return disableInnerFollows;
+    }
+
+    public void setDisableInnerFollows(boolean disableInnerFollows) {
+        this.disableInnerFollows = disableInnerFollows;
+    }
+
+    private boolean disableGroupNotJoinsWheres = false;
+
+    public boolean isDisableGroupNotJoinsWheres() {
+        return disableGroupNotJoinsWheres;
+    }
+
+    public void setDisableGroupNotJoinsWheres(boolean disableGroupNotJoinsWheres) {
+        this.disableGroupNotJoinsWheres = disableGroupNotJoinsWheres;
     }
 }

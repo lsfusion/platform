@@ -13,7 +13,6 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
-import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.base.col.lru.LRUWVSMap;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractOuterContext;
@@ -21,8 +20,6 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
-import lsfusion.server.caches.hash.HashObject;
-import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
@@ -52,6 +49,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             allJoins.addAll(getAllChildren(where));
         }
         return allJoins.size();
+    }
+
+    public int getOrderTopCount() {
+        int orderTopCount = 0;
+        for(WhereJoin where : wheres)
+            if(where instanceof ExprOrderTopJoin)
+                orderTopCount++;
+        return orderTopCount;
     }
 
     private final static LRUWVSMap<WhereJoin, ImSet<WhereJoin>> cacheAllChildren = new LRUWVSMap<WhereJoin, ImSet<WhereJoin>>(LRUUtil.L1);
@@ -201,8 +206,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return (ImMap<K, BaseExpr>) ((UnionJoin) join).getJoins(true);
         return join.getJoins();
     }
-    // assert что rows >= result
+
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat) {
+        return getStatKeys(groups, rows, keyStat, null, null);
+    }
+
+    // assert что rows >= result
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, Result<BaseExpr> newNotNull, MAddMap<BaseExpr, Boolean> proceededNotNulls) {
         final MAddMap<BaseJoin, Stat> joinStats = MapFact.mAddOverrideMap();
         final MAddMap<BaseExpr, Stat> exprStats = MapFact.mAddOverrideMap();
 
@@ -255,19 +265,21 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             joinStats.add(join, join.getStatKeys(keyStat).rows);
 
         // читаем статистику по значениям
-        MAddMap<BaseJoin, Stat> exprNotNullStats = MapFact.mAddMap(minStat);
         for(BaseExpr expr : exprs) {
             PropStat exprStat = expr.getStatValue(keyStat);
             exprStats.add(expr, exprStat.distinct);
-            if(exprStat.notNull!=null)
-                exprNotNullStats.add(expr.getBaseJoin(), exprStat.notNull); // тут как и снизу возможно лучше min брать
-        }
-        // уменьшаем статистику join'а до минимального notNull значения
-        for(int i=0,size=exprNotNullStats.size();i<size;i++) {
-            BaseJoin notNullJoin = exprNotNullStats.getKey(i);
-            Stat stat = exprNotNullStats.getValue(i);
-//            assert stat.lessEquals(joinStats.get(notNullJoin));
-            joinStats.add(notNullJoin, stat);
+
+            Stat notNullStat = exprStat.notNull;
+            Boolean proceededNotNull = null;
+            if(notNullStat !=null && !(newNotNull != null && (proceededNotNull = proceededNotNulls.get(expr)) != null && proceededNotNull)) { // пропускаем notNull
+                InnerBaseJoin<?> notNullJoin = expr.getBaseJoin();
+                Stat joinStat = joinStats.get(notNullJoin);
+//                assert notNullStat.lessEquals(joinStat);
+                joinStats.add(notNullJoin, notNullStat); // уменьшаем статистику join'а до notNull значения
+                if(newNotNull != null && proceededNotNull == null && notNullStat.less(joinStat) && expr.isTableIndexed()) { // если уменьшаем статистику, индексированы, и есть проблема с notNull
+                    newNotNull.set(expr);
+                }
+            }
         }
 
         MAddExclMap<BaseExpr, Set<Edge>> balancedEdges = MapFact.mAddExclMap(); // assert edge.expr == key
@@ -609,7 +621,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             currentJoinStat = resultStat; currentStat = rows.result;
         }
 
-        MAddExclMap<WhereJoin, Where> reducedUpWheres = MapFact.mAddExclMap(upWheres);
+        MAddMap<WhereJoin, Where> reducedUpWheres = MapFact.mAddOverrideMap(upWheres); // может проходить несколько раз по одной ветке
         int it = 0;
         while(it < current.size()) {
             WhereJoin<?, ?> reduceJoin = current.get(it);
@@ -627,7 +639,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     }
                 if(!found) {
                     BaseUtils.addToOrderedList(reduced, joinFollow, it, orderComplexity);
-                    reducedUpWheres.exclAdd(joinFollow, reduceFollowUpWheres.result.get(joinFollow));
+                    reducedUpWheres.add(joinFollow, reduceFollowUpWheres.result.get(joinFollow));
                 }
             }
 
@@ -807,7 +819,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
     
     // вообще при таком подходе, скажем из-за формул в ExprJoin, LEFT JOIN'ы могут быть раньше INNER, но так как SQL Server это позволяет бороться до конца за это не имеет особого смысла 
-    public Where fillInnerJoins(ImMap<WhereJoin, Where> upWheres, MList<String> whereSelect, CompileSource source) {
+    public Where fillInnerJoins(ImMap<WhereJoin, Where> upWheres, MList<String> whereSelect, CompileSource source, ImSet<KeyExpr> keys, KeyStat keyStat) {
         Where innerWhere = Where.TRUE;
         for (WhereJoin where : wheres)
             if(!(where instanceof ExprOrderTopJoin && ((ExprOrderTopJoin)where).givesNoKeys())) {
@@ -818,6 +830,27 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     innerWhere = innerWhere.and(upWhere);
                 }
             }
+        if(source.syntax.hasNotNullIndexProblem()) {
+            Result<BaseExpr> newNotNull = new Result<BaseExpr>();
+            MAddMap<BaseExpr, Boolean> proceedNotNulls = MapFact.mAddOverrideMap();
+            Stat prevStat = getStatKeys(keys, null, keyStat, newNotNull, proceedNotNulls).rows;
+            while(true) {
+                BaseExpr notNull = newNotNull.result;
+                if(notNull == null)
+                    break;
+
+                proceedNotNulls.add(notNull, true); // пробуем без этого notNull
+                newNotNull.set(null);
+                Stat newStat = getStatKeys(keys, null, keyStat, newNotNull, proceedNotNulls).rows;
+                if(prevStat.less(newStat)) // если реально использовался помечаем как "важный"
+                    proceedNotNulls.add(notNull, false);
+            }
+            for(int i=0,size=proceedNotNulls.size();i<size;i++) {
+                if(!proceedNotNulls.getValue(i)) {
+                    whereSelect.add(proceedNotNulls.getKey(i).getSource(source) + " IS NOT NULL");
+                }
+            }
+        }
         return innerWhere;
     }
 

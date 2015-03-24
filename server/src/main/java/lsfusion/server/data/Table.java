@@ -7,10 +7,8 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.caches.AbstractOuterContext;
-import lsfusion.server.caches.OuterContext;
-import lsfusion.server.caches.ParamLazy;
-import lsfusion.server.caches.TwinLazy;
+import lsfusion.server.Settings;
+import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -439,6 +437,10 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         }.proceed(joinImplement);
     }
 
+    protected boolean isIndexed(PropertyField field) {
+        return false;
+    }
+
     public Join joinAnd(ImMap<KeyField, ? extends BaseExpr> joinImplement) {
         return new Join(joinImplement);
     }
@@ -469,6 +471,18 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         public Join(ImMap<KeyField, ? extends BaseExpr> joins) {
             this.joins = (ImMap<KeyField, BaseExpr>) joins;
             assert (joins.size()==keys.size());
+        }
+
+        public ClassWhere<KeyField> getClassWhere() {
+            return Table.this.getClasses();
+        }
+
+        @TwinLazy
+        public InnerFollows<KeyField> getInnerFollows() {
+            if(Settings.get().isDisableInnerFollows())
+                return InnerFollows.EMPTY();
+
+            return new InnerFollows<KeyField>(getClassWhere(), keys.getSet(), Table.this);
         }
 
         @TwinLazy
@@ -618,8 +632,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return Join.this.packFollowFalse(falseWhere).getWhere();
             }
 
-            protected ImSet<DataWhere> calculateFollows() {
-                return NotNullExpr.getFollows(getExprFollows(NotNullExpr.FOLLOW, true));
+            protected ImSet<NotNullExprInterface> getExprFollows() {
+                return Join.this.getExprFollows(NotNullExpr.FOLLOW, true);
             }
 
             public lsfusion.server.data.expr.Expr getFJExpr() {
@@ -733,7 +747,14 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
             @Override
             public boolean isTableIndexed() {
-                return true;
+                return isIndexed(property);
+            }
+
+            @Override
+            public boolean hasALotOfNulls() {
+                assert isTableIndexed();
+                Stat notNull = getStatProps().get(property).notNull;
+                return notNull != null && notNull.less(Table.this.getStatKeys().rows);
             }
         }
 
