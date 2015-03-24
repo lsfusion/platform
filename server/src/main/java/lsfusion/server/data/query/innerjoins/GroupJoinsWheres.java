@@ -294,14 +294,14 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         protected int getRowMinDiff() {
             int w1 = original.first.rows;
             int w2 = original.second.rows;
-            assert rows >= w1 && rows >= w2; // возможно как и в pushWhere будет нарушаться
+//            assert rows >= w1 && rows >= w2; // возможно как и в pushWhere будет нарушаться
             return BaseUtils.min(rows - w1, rows - w2);
         }
 
         protected int getRowMaxDiff() {
             int w1 = original.first.rows;
             int w2 = original.second.rows;
-            assert rows >= w1 && rows >= w2; // возможно как и в pushWhere будет нарушаться
+//            assert rows >= w1 && rows >= w2; // возможно как и в pushWhere будет нарушаться
             return BaseUtils.max(rows - w1, rows - w2);
         }
 
