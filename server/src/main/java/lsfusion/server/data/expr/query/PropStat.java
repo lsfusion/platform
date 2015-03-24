@@ -6,7 +6,6 @@ public class PropStat {
 
     public static final PropStat ONE = new PropStat(Stat.ONE);
     public static final PropStat ALOT = new PropStat(Stat.ALOT);
-    public static final PropStat DEFAULT = new PropStat(Stat.DEFAULT);
 
     public PropStat(Stat distinct, Stat notNull) {
         this.distinct = distinct;

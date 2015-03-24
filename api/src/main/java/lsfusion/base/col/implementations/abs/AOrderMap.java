@@ -227,6 +227,16 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
         return MapFact.imOrderFilter(mResult, this);
     }
 
+    public ImOrderMap<K, V> removeOrderIncl(K remove) {
+        MOrderFilterMap<K, V> mResult = MapFact.mOrderFilter(this);
+        for(int i=0,size=size();i<size;i++) {
+            K key = getKey(i);
+            if(!BaseUtils.hashEquals(key, remove))
+                mResult.keep(key, getValue(i));
+        }
+        return MapFact.imOrderFilter(mResult, this);
+    }
+
     public ImOrderSet<K> filterOrderValues(FunctionSet<V> set) {
         MOrderFilterSet<K> mResult = SetFact.mOrderFilter(this);
         for(int i=0,size=size();i<size;i++)
@@ -251,6 +261,16 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
             public V getMapValue(int i) {
                 return values[i];
             }});
+    }
+
+    public ImOrderMap<K, V> replaceValue(final K replaceKey, final V replaceValue) {
+        return mapOrderValues(new GetKeyValue<V, K, V>() {
+            public V getMapValue(K key, V value) {
+                if(BaseUtils.hashEquals(key, replaceKey))
+                    return replaceValue;
+                return value;
+            }
+        });
     }
 
     public ImList<V> valuesList() {
@@ -282,6 +302,13 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
         mResult.exclAddAll(imOrderMap);
         return mResult.immutableOrder();
     }
+
+    public ImOrderMap<K, V> addOrderExcl(K key, V value) {
+        MOrderExclMap<K, V> mResult = MapFact.mOrderExclMap(this);
+        mResult.exclAdd(key, value);
+        return mResult.immutableOrder();
+    }
+
 
     public <M> ImOrderMap<M, V> map(ImMap<K, M> map) {
         return mapMergeOrderKeys(map.fnGetValue());

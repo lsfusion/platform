@@ -13,11 +13,13 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.*;
+import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.query.IQuery;
+import lsfusion.server.data.query.InnerFollows;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.Where;
@@ -30,6 +32,7 @@ import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.ClassField;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.Modifier;
@@ -42,6 +45,30 @@ public class ImplementTable extends GlobalTable {
     public final ImMap<KeyField, ValueClass> mapFields;
     private StatKeys<KeyField> statKeys = null;
     private ImMap<PropertyField, PropStat> statProps = null;
+    private ImSet<PropertyField> indexedProps = SetFact.<PropertyField>EMPTY();
+
+    private InnerFollows.Field fullField = null; // поле которое всегда не null, и свойство которого обеспечивает , возможно временно потом совместиться с логикой classExpr
+    public boolean isFull() {
+        return fullField != null;
+    }
+    public InnerFollows.Field getFullField() {
+        return fullField;
+    }
+    public void setFullField(final PropertyField field) {
+        fullField = new InnerFollows.Field() {
+            public BaseExpr getFollowExpr(BaseExpr joinExpr) {
+                return (BaseExpr) joinAnd(MapFact.singleton(keys.single(), joinExpr)).getExpr(field);
+            }
+        };
+    }
+    public void setFullField(final ClassField classField) {
+        fullField = classField;
+    }
+
+    @Override
+    protected boolean isIndexed(PropertyField field) {
+        return indexedProps.contains(field);
+    }
 
     public ImplementTable(String name, final ValueClass... implementClasses) {
         super(name);
@@ -84,6 +111,11 @@ public class ImplementTable extends GlobalTable {
     public void addField(PropertyField field,ClassWhere<Field> classes) { // кривовато конечно, но пока другого варианта нет
         properties = properties.addExcl(field);
         propertyClasses = propertyClasses.addExcl(field, classes);
+    }
+
+    @NFLazy
+    public void addIndex(PropertyField field) { // кривовато конечно, но пока другого варианта нет
+        indexedProps = indexedProps.addExcl(field);
     }
 
     private NFOrderSet<ImplementTable> parents;
@@ -203,20 +235,103 @@ public class ImplementTable extends GlobalTable {
         return true;
     }
 
-    public <T> MapKeysTable<T> getMapTable(ImMap<T, ValueClass> findItem, boolean included) {
+    private static interface MapTableType {
+        boolean skipParents(ImplementTable table);
+        boolean skipResult(ImplementTable table);
+        boolean onlyFirstParent(ImplementTable table); // assert !skipParents
+    }
+
+    // поиск таблицы для классов
+    private final static MapTableType findTable = new MapTableType() {
+        public boolean skipParents(ImplementTable table) {
+            return false;
+        }
+
+        public boolean skipResult(ImplementTable table) {
+            return false;
+        }
+
+        public boolean onlyFirstParent(ImplementTable table) {
+            return true;
+        }
+    };
+
+    // поиск сгенерированной таблицы
+    private final static MapTableType findIncludedTable = new MapTableType() {
+        public boolean skipParents(ImplementTable table) {
+            return true;
+        }
+
+        public boolean skipResult(ImplementTable table) {
+            return false;
+        }
+
+        public boolean onlyFirstParent(ImplementTable table) {
+            throw new UnsupportedOperationException();
+        }
+    };
+
+    // поиск full таблиц
+    private final static class FindFullTables implements MapTableType {
+
+        private final ImplementTable skipTable;
+
+        public FindFullTables(ImplementTable skipTable) {
+            this.skipTable = skipTable;
+        }
+
+        public boolean skipParents(ImplementTable table) {
+            return skipTable(table);
+        }
+
+        private boolean skipTable(ImplementTable table) {
+            return skipTable != null && BaseUtils.hashEquals(table, skipTable);
+        }
+
+        public boolean skipResult(ImplementTable table) {
+            return !table.isFull() || skipTable(table);
+        }
+
+        public boolean onlyFirstParent(ImplementTable table) {
+            return false;
+        }
+    };
+
+    public <T> MapKeysTable<T> getSingleMapTable(ImMap<T, ValueClass> findItem, boolean included) {
+        ImSet<MapKeysTable<T>> tables = getMapTables(findItem, included ? findIncludedTable : findTable);
+        if(tables.isEmpty())
+            return null;
+        return tables.single();
+    }
+
+    public <T> ImSet<MapKeysTable<T>> getFullMapTables(ImMap<T, ValueClass> findItem, ImplementTable skipTable) {
+        return getMapTables(findItem, new FindFullTables(skipTable));
+    }
+
+    public <T> ImSet<MapKeysTable<T>> getMapTables(ImMap<T, ValueClass> findItem, MapTableType type) {
         Result<ImRevMap<T,KeyField>> mapCompare = new Result<ImRevMap<T, KeyField>>();
         int relation = compare(findItem,mapCompare);
         // если внизу или отличается то не туда явно зашли
-        if(relation==COMPARE_DOWN || relation==COMPARE_DIFF) return null;
+        if(relation==COMPARE_DOWN || relation==COMPARE_DIFF) return SetFact.EMPTY();
 
-        if(!included) {
+        if(!type.skipParents(this)) {
+            MSet<MapKeysTable<T>> mResult = SetFact.mSet();
             for(ImplementTable item : getParentsListIt()) {
-                MapKeysTable<T> parentTable = item.getMapTable(findItem, false);
-                if(parentTable!=null) return parentTable;
+                ImSet<MapKeysTable<T>> parentTables = item.getMapTables(findItem, type);
+                if(type.onlyFirstParent(this) && !parentTables.isEmpty()) {
+                    assert parentTables.size() == 1;
+                    return parentTables;
+                }
+                mResult.addAll(parentTables);
             }
+            ImSet<MapKeysTable<T>> result = mResult.immutable();
+            if(!result.isEmpty())
+                return result;
         }
 
-        return new MapKeysTable<T>(this,mapCompare.result);
+        if(type.skipResult(this)) return SetFact.EMPTY();
+
+        return SetFact.singleton(new MapKeysTable<T>(this,mapCompare.result));
     }
 
     public <T> MapKeysTable<T> getMapKeysTable(ImMap<T, ValueClass> classes) {
@@ -312,10 +427,14 @@ public class ImplementTable extends GlobalTable {
         ImValueMap<KeyField, Stat> mvDistinctKeys = getTableKeys().mapItValues(); // exception есть
         for(int i=0,size=keys.size();i<size;i++) {
             String keySID = getName() + "." + keys.get(i).getName();
+            Stat keyStat;
             if (!keyStats.containsKey(keySID))
-                mvDistinctKeys.mapValue(i, Stat.DEFAULT);
-            else
-                mvDistinctKeys.mapValue(i, new Stat(BaseUtils.nvl(keyStats.get(keySID), 0)));
+                keyStat = Stat.DEFAULT;
+            else {
+                Integer keyCount = keyStats.get(keySID);
+                keyStat = keyCount != null ? new Stat(keyCount) : rowStat;
+            }
+            mvDistinctKeys.mapValue(i, keyStat.min(rowStat));
         }
         statKeys = StatKeys.create(rowStat, new DistinctKeys<KeyField>(mvDistinctKeys.immutableValue()));
 
@@ -326,27 +445,42 @@ public class ImplementTable extends GlobalTable {
             Stat notNullStat;
             if(propStats.containsKey(getName() + "." + prop.getName())) {
                 Pair<Integer, Integer> propStat = propStats.get(getName() + "." + prop.getName());
-                distinctStat = new Stat(BaseUtils.nvl(propStat.first, 0));
-                notNullStat = new Stat(BaseUtils.nvl(propStat.second, 0));
+                notNullStat = propStat.second != null ? new Stat(propStat.second).min(rowStat) : rowStat;
+                distinctStat = propStat.first != null ? new Stat(propStat.first).min(notNullStat) : notNullStat;
             } else {
                 distinctStat = null;
                 notNullStat = null;
             }
 
+            PropStat propStat;
             if (prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat()) {
                 if (distinctStat==null) {
                     Stat typeStat = ((DataClass) prop.type).getTypeStat(false).min(rowStat);
-                    mvUpdateStatProps.mapValue(i, new PropStat(typeStat));
+                    propStat = new PropStat(typeStat);
                 } else
-                    mvUpdateStatProps.mapValue(i, new PropStat(notNullStat, notNullStat));
+                    propStat = new PropStat(notNullStat, notNullStat);
             } else {
-                if (distinctStat==null)
-                    mvUpdateStatProps.mapValue(i, PropStat.DEFAULT);
+                if (distinctStat==null) {
+                    Stat defaultStat = Stat.DEFAULT.min(rowStat);
+                    propStat = new PropStat(defaultStat);
+                }
                 else
-                    mvUpdateStatProps.mapValue(i, new PropStat(distinctStat, notNullStat));
+                    propStat = new PropStat(distinctStat, notNullStat);
             }
+            mvUpdateStatProps.mapValue(i, propStat);
         }
         statProps = mvUpdateStatProps.immutableValue();
+
+        assert statDefault || correctStatProps();
+    }
+
+    private boolean correctStatProps() {
+        for(PropStat stat : statProps.valueIt()) {
+            if(!stat.distinct.lessEquals(statKeys.rows))
+                stat = stat;
+            assert stat.distinct.lessEquals(statKeys.rows);
+        }
+        return true;
     }
 
     public static class InconsistentTable extends GlobalTable {

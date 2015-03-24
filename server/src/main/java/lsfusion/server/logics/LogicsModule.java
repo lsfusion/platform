@@ -12,11 +12,13 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.*;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
+import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.Time;
 import lsfusion.server.data.Union;
@@ -80,7 +82,16 @@ public abstract class LogicsModule {
     protected static final Logger logger = Logger.getLogger(LogicsModule.class);
 
     protected static final ActionPropertyDebugger debugger = ActionPropertyDebugger.getInstance();
-    
+
+    public static List<ResolveClassSet> getResolveList(ValueClass[] classes) {
+        List<ResolveClassSet> classSets;
+        classSets = new ArrayList<ResolveClassSet>();
+        for (ValueClass cls : classes) {
+            classSets.add(cls.getResolveSet());
+        }
+        return classSets;
+    }
+
     // после этого шага должны быть установлены name, namespace, requiredModules
     public abstract void initModuleDependencies() throws RecognitionException;
 
@@ -405,10 +416,27 @@ public abstract class LogicsModule {
         return customClass;
     }
 
-    protected ImplementTable addTable(String name, ValueClass... classes) {
+    protected ImplementTable addTable(String name, boolean isFull, ValueClass... classes) {
         ImplementTable table = baseLM.tableFactory.include(transformNameToSID(name), getVersion(), classes);
         addModuleTable(table);
+        if(isFull)
+            markFull(table, classes);
         return table;
+    }
+
+    protected void markFull(ImplementTable table, ValueClass... classes) {
+        // создаем IS
+        ImList<ValueClass> listClasses = ListFact.toList(classes);
+        CalcPropertyRevImplement<?, Integer> mapProperty = IsClassProperty.getProperty(listClasses.toIndexedMap()); // тут конечно стремновато из кэша брать, так как остальные гарантируют создание
+        LCP<?> lcp = addJProp(mapProperty.createLP(ListFact.consecutiveList(listClasses.size(), 0)), ListFact.consecutiveList(listClasses.size()).toArray(new Integer[listClasses.size()]));
+//        addProperty(null, lcp);
+
+        // делаем public, persistent
+        makePropertyPublic(lcp, PropertyCanonicalNameUtils.fullPropPrefix + table.getName(), getResolveList(classes));
+        addPersistent(lcp, table);
+
+        // помечаем fullField из помеченного свойства
+        table.setFullField(lcp.property.field);
     }
 
     //////////////////////////////////////////////////////////////////////////////

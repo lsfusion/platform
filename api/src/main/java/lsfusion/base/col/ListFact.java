@@ -25,14 +25,14 @@ public class ListFact {
         return SetFact.singletonOrder(element);
     }
 
-    public static ImList<Integer> consecutiveList(int size, final int is) {
+    public static ImOrderSet<Integer> consecutiveList(int size, final int is) {
         return SetFact.toOrderExclSet(size, new GetIndex<Integer>() {
             public Integer getMapValue(int i) {
                 return i+is;
             }});
     }
 
-    public static ImList<Integer> consecutiveList(int size) {
+    public static ImOrderSet<Integer> consecutiveList(int size) {
         return consecutiveList(size, 1);
     }
 

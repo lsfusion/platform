@@ -736,7 +736,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             packTables(sql, mPackTables.immutable(), false); // упакуем таблицы
 
             systemLogger.info("Updating stats");
-            updateStats(sql);  // пересчитаем статистику
+            businessLogics.updateStats(sql);  // пересчитаем статистику
 
             // создадим индексы в базе
             systemLogger.info("Adding indices");
@@ -1568,7 +1568,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         for (LCP<?> lp : lps) {
             index.add((CalcProperty) lp.property);
         }
-        indexes.put(index, lps[0].property.getType() instanceof DataClass);
+        CalcProperty<? extends PropertyInterface> property = lps[0].property;
+        indexes.put(index, property.getType() instanceof DataClass);
+        property.markIndexed();
     }
 
     public String backupDB(ExecutionContext context, String dumpFileName, List<String> excludeTables) throws IOException, InterruptedException {
@@ -1632,50 +1634,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         } catch(SQLException e) {
             sql.rollbackTransaction();
             throw e;
-        }
-    }
-
-    private void updateStats(SQLSession sql) throws SQLException, SQLHandledException {
-        updateStats(sql, true); // чтобы сами таблицы статистики получили статистику
-        if (!SystemProperties.doNotCalculateStats)
-            updateStats(sql, false);
-    }
-
-    private <T> ImMap<String, T> readStatsFromDB(SQLSession sql, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException, SQLHandledException {
-        QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.toSet("key"));
-        Expr sidToObject = sIDProp.getExpr(query.getMapExprs().singleValue());
-        query.and(sidToObject.getWhere());
-        query.addProperty("property", statsProp.getExpr(sidToObject));
-        if(notNullProp!=null)
-            query.addProperty("notNull", notNullProp.getExpr(sidToObject));
-        return query.execute(sql, OperationOwner.unknown).getMap().mapKeyValues(new GetValue<String, ImMap<String, Object>>() {
-                                                                public String getMapValue(ImMap<String, Object> key) {
-                                                                    return ((String) key.singleValue()).trim();
-                                                                }}, new GetValue<T, ImMap<String, Object>>() {
-                                                                public T getMapValue(ImMap<String, Object> value) {
-                                                                    if(notNullProp!=null) {
-                                                                        return (T)new Pair<Integer, Integer>((Integer)value.get("property"), (Integer)value.get("notNull"));
-                                                                    } else
-                                                                        return (T)value.singleValue();
-                                                                }});
-    }
-
-    public void updateStats(SQLSession sql, boolean statDefault) throws SQLException, SQLHandledException {
-        ImMap<String, Integer> tableStats;
-        ImMap<String, Integer> keyStats;
-        ImMap<String, Pair<Integer, Integer>> propStats;
-        if(statDefault) {
-            tableStats = MapFact.EMPTY();
-            keyStats = MapFact.EMPTY();
-            propStats = MapFact.EMPTY();
-        } else {
-            tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null);
-            keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.quantityTableKey, null);
-            propStats = readStatsFromDB(sql, reflectionLM.tableColumnSID, reflectionLM.quantityTableColumn, reflectionLM.notNullQuantityTableColumn);
-        }
-
-        for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
-            dataTable.updateStat(tableStats, keyStats, propStats, statDefault);
         }
     }
 

@@ -2785,12 +2785,15 @@ aspectStatement
 ////////////////////////////////////////////////////////////////////////////////
 
 tableStatement 
+@init {
+	boolean isFull = false;
+}
 @after {
 	if (inTableParseState()) {
-		self.addScriptedTable($name.text, $list.ids);
+		self.addScriptedTable($name.text, $list.ids, isFull);
 	}
 }
-	:	'TABLE' name=ID '(' list=nonEmptyClassIdList ')' ';';
+	:	'TABLE' name=ID '(' list=nonEmptyClassIdList ')' ('FULL' {isFull = true;})? ';';
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// LOGGABLE STATEMENT /////////////////////////////

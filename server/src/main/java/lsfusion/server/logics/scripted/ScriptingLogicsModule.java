@@ -2350,14 +2350,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         addAspectEvent((ActionProperty) mainActionLP.property, actionImplements.get(0), before);
     }
 
-    public void addScriptedTable(String name, List<String> classIds) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedTable(String name, List<String> classIds, boolean isFull) throws ScriptingErrorLog.SemanticErrorException {
         checkDuplicateTable(name);
 
         ValueClass[] classes = new ValueClass[classIds.size()];
         for (int i = 0; i < classIds.size(); i++) {
             classes[i] = findClass(classIds.get(i));
         }
-        addTable(name, classes);
+        addTable(name, isFull, classes);
     }
 
     public List<LCP> indexedProperties = new ArrayList<LCP>();

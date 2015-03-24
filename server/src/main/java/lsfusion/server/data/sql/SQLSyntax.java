@@ -223,4 +223,6 @@ public interface SQLSyntax {
     boolean doesNotTrimWhenCastToVarChar();
 
     String getTypeChange(Type oldType, Type type, String name, ExecuteEnvironment env);
+
+    boolean hasNotNullIndexProblem();
 }

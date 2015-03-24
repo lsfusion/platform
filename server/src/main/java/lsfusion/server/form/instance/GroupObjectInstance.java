@@ -259,32 +259,40 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     private ImOrderMap<OrderInstance,Boolean> setOrders = null;
     public ImOrderMap<OrderInstance,Boolean> getSetOrders() {
         if(setOrders==null)
-            setOrders = MapFact.fromJavaOrderMap(userOrders).mergeOrder(fixedOrders).mergeOrder(getOrderObjects().toOrderMap(false));
+            setOrders = userOrders.mergeOrder(fixedOrders).mergeOrder(getOrderObjects().toOrderMap(false));
         return setOrders;
     }
-    private OrderedMap<OrderInstance,Boolean> userOrders = MapFact.mAddRemoveOrderMap();
+    private ImOrderMap<OrderInstance,Boolean> userOrders = MapFact.EMPTYORDER();
 
     public void changeOrder(OrderInstance property, Order modiType) {
+        ImOrderMap<OrderInstance, Boolean> newOrders;
         if (modiType == Order.REPLACE) {
-            userOrders = new OrderedMap<OrderInstance, Boolean>();
-        }
-
-        if (modiType == Order.REMOVE) {
-            userOrders.remove(property);
+            newOrders = MapFact.singletonOrder(property, false);
+        } else if (modiType == Order.REMOVE) {
+            newOrders = userOrders.removeOrderIncl(property);
         } else if (modiType == Order.DIR) {
-            userOrders.put(property, !(userOrders.containsKey(property)? userOrders.get(property) : false));
+            if(userOrders.containsKey(property))
+                newOrders = userOrders.replaceValue(property, !userOrders.get(property));
+            else
+                newOrders = userOrders.addOrderExcl(property, true);
         } else {
-            userOrders.put(property, false);
+            assert modiType == Order.ADD;
+            newOrders = userOrders.addOrderExcl(property, false);
         }
 
-        setOrders = null;
-        updated |= UPDATED_ORDER;
+        if(!BaseUtils.hashEquals(newOrders, userOrders)) {// оптимизация для пользовательских настроек
+            userOrders = newOrders;
+            setOrders = null;
+            updated |= UPDATED_ORDER;
+        }
     }
 
     public void clearOrders() {
-        userOrders.clear();
-        setOrders = null;
-        updated |= UPDATED_ORDER;
+        if(!userOrders.isEmpty()) { // оптимизация для пользовательских настроек
+            userOrders = MapFact.EMPTYORDER();
+            setOrders = null;
+            updated |= UPDATED_ORDER;
+        }
     }
 
     // с активным интерфейсом, assertion что содержит все ObjectInstance

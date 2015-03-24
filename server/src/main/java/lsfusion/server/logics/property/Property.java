@@ -428,7 +428,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return getOldDepends(false);
     }
     public ImSet<OldProperty> getOldDepends(boolean events) {
-        return getSessionCalcDepends(events).mapSetValues(new GetValue<OldProperty, SessionCalcProperty>() {
+        return getSessionCalcDepends(events).mapMergeSetValues(new GetValue<OldProperty, SessionCalcProperty>() {
             public OldProperty getMapValue(SessionCalcProperty value) {
                 return value.getOldProperty();
             }});

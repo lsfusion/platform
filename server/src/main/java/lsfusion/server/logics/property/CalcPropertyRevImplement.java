@@ -2,10 +2,12 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
 
@@ -48,5 +50,9 @@ public class CalcPropertyRevImplement<P extends PropertyInterface, T> {
 
     public String toString() {
         return property.toString() + " {" + mapping + "}";
+    }
+
+    public LCP createLP(ImOrderSet<T> listInterfaces) {
+        return new LCP<P>(property, listInterfaces.mapOrder(mapping.reverse()));
     }
 }

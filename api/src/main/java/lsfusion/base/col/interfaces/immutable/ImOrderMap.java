@@ -40,6 +40,7 @@ public interface ImOrderMap<K,V> {
     <M> ImOrderMap<M, V> map(ImRevMap<K,M> map);
     <M> ImOrderMap<M, V> map(ImMap<K,M> map); // с повторением
 
+    ImOrderMap<K, V> addOrderExcl(K key, V value);
     ImOrderMap<K, V> addOrderExcl(ImOrderMap<? extends K, ? extends V> map); // не пересекаются
 
     ImOrderMap<K, V> mergeOrder(ImOrderMap<? extends K, ? extends V> map);
@@ -47,11 +48,14 @@ public interface ImOrderMap<K,V> {
     ImOrderSet<K> keyOrderSet();
     ImList<V> valuesList();
 
+    ImOrderMap<K, V> replaceValue(K replaceKey, V replaceValue);
     ImOrderMap<K, V> replaceValues(V[] values);
 
     ImOrderMap<K, V> filterOrder(FunctionSet<K> set);
     ImOrderSet<K> filterOrderValues(FunctionSet<V> set);
     ImOrderMap<K, V> filterOrderValuesMap(FunctionSet<V> set);
+
+    ImOrderMap<K, V> removeOrderIncl(K remove);
 
     <M> ImOrderValueMap<K, M> mapItOrderValues();
 

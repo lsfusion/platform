@@ -91,7 +91,7 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
         comp.setContainer(this, version);
     }
-    
+
     public static class VersionContainerAdder extends ContainerAdder<ContainerView, ComponentView> {
         private final Version version;
 

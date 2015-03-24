@@ -33,7 +33,7 @@ public class StatKeys<K> extends TwinImmutableObject {
     public StatKeys(Stat rows, DistinctKeys<K> distinct) {
         this.rows = rows;
         this.distinct = distinct;
-        assert distinct.isEmpty() || rows.equals(Stat.MIN) || rows.lessEquals(distinct.getMax());
+        assert distinct.isEmpty() || rows.equals(Stat.MIN) || (rows.lessEquals(distinct.getMax()) && distinct.getMaxKey().lessEquals(rows)); // в абсолютном большинстве случаев они равны, но могут быть нюансы когда у таблицы пограничные значения скажем 4, 4 -> 16 будет 0,0 -> 1
     }
 
     public static <K> StatKeys<K> create(Stat rows, DistinctKeys<K> distinct) {

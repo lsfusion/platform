@@ -333,10 +333,12 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         final SubQueryContext subcontext;
         final KeyStat keyStat;
+        private final ImSet<KeyExpr> keys;
 
         public InnerSelect(ImSet<KeyExpr> keys, KeyType keyType, KeyStat keyStat, Where fullWhere, WhereJoins whereJoins, ImMap<WhereJoin, Where> upWheres, SQLSyntax syntax, ExecuteEnvironment env, ImRevMap<ParseValue, String> params, SubQueryContext subcontext) {
             super(keyType, fullWhere, params, syntax, env);
 
+            this.keys = keys;
             this.keyStat = keyStat;
             this.subcontext = subcontext;
             this.whereJoins = whereJoins;
@@ -437,8 +439,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         public void fillInnerJoins(MCol<String> whereSelect) { // заполним Inner Joins, чтобы keySelect'ы были
             stackUsedPendingKeys.push(SetFact.<KeyExpr>mSet()); stackTranslate.push(MapFact.<String, String>mRevMap()); stackUsedOuterPendingJoins.push(new Result<Boolean>());
-            
-            innerWhere = whereJoins.fillInnerJoins(upWheres, mExplicitWheres, this);
+
+            innerWhere = whereJoins.fillInnerJoins(upWheres, mExplicitWheres, this, keys, keyStat);
 
             MSet<KeyExpr> usedKeys = stackUsedPendingKeys.pop();
             MRevMap<String, String> translate = stackTranslate.pop();

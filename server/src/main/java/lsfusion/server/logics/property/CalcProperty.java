@@ -811,6 +811,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         this.field = field;
     }
 
+    public void markIndexed() {
+        assert isStored();
+
+        mapTable.table.addIndex(field);
+    }
+
     public AndClassSet getValueClassSet() {
         return getClassValueWhere(ClassType.resolvePolicy).getCommonClass("value");
     }

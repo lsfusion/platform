@@ -688,6 +688,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return false;
     }
 
+    public boolean hasNotNullIndexProblem() { // проблема если идет join по a.f=b и есть индекс по f но там много NULL, субд не догадывается использовать этот индекс для фильтрации NOT NULL
+        return false;
+    }
+
     protected String getPath() {
         throw new UnsupportedOperationException();
     }

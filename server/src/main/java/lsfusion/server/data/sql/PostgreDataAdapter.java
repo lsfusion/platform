@@ -626,4 +626,9 @@ public class PostgreDataAdapter extends DataAdapter {
     public boolean hasAggConcProblem() {
         return true;
     }
+
+    @Override
+    public boolean hasNotNullIndexProblem() {
+        return true;
+    }
 }

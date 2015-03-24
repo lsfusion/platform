@@ -21,6 +21,13 @@ public class DistinctKeys<K> extends WrapMap<K, Stat> {
         return result;
     }
 
+    public Stat getMaxKey() {
+        Stat result = Stat.ONE;
+        for(int i=0,size=size();i<size;i++)
+            result = result.max(getValue(i));
+        return result;
+    }
+
     public <T> DistinctKeys<T> mapBack(ImMap<T, K> map) {
         return new DistinctKeys<T>(map.mapValues(new GetValue<Stat, K>() {
             public Stat getMapValue(K value) {

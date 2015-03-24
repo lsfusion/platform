@@ -3,8 +3,10 @@ package lsfusion.server.logics.property;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.session.PropertyChanges;
 
 public class CalcPropertyImplement<P extends PropertyInterface, T> extends TwinImmutableObject {
