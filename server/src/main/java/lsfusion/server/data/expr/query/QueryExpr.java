@@ -6,6 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.Settings;
 import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.ConcreteClass;
@@ -14,6 +15,8 @@ import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.pull.StatPullWheres;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.InnerExprFollows;
+import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
@@ -149,6 +152,14 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
             return getOuterStaticValues(thisObj.group.keys()).merge(thisObj.query.getOuterStaticValues());
         }
 
+        public InnerExprFollows<K> getInnerFollows() { // не делаем IdentityLazy так как только при конструировании InnerJoin используется
+            if(Settings.get().isDisableInnerFollows())
+                return InnerExprFollows.EMPTYEXPR();
+
+            ImSet<K> groupKeys = thisObj.group.keys();
+            return new InnerExprFollows<K>(Query.<K, K, K>getClassWhere(getFullWhere(), MapFact.<K, BaseExpr>EMPTY(), groupKeys.toRevMap()), groupKeys);
+        }
+
         protected IC translate(MapTranslate translate) {
             return thisObj.createThis(thisObj.query.translateOuter(translate), (ImMap<K, BaseExpr>) translate.translateExprKeys(thisObj.group)).getInner();
         }
@@ -225,15 +236,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
             Where fullWhere = getInner().getFullWhere();
             if(fullWhere.isFalse()) return ClassExprWhere.FALSE; // нужен потому как вызывается до create
 
-            ImRevMap<BaseExpr, K> outerInner;
-/*            if(hasDuplicateOuter()) {
-                ReversedMap<BaseExpr, K> reversed = new ReversedHashMap<BaseExpr, K>();
-                Where equalsWhere = GroupExpr.getEqualsWhere(GroupExpr.groupMap(group, fullWhere.getExprValues(), reversed));
-                fullWhere = fullWhere.and(equalsWhere);
-                outerInner = reversed;
-            } else
-                outerInner = BaseUtils.reverse(group);*/
-            outerInner = group.toRevMap().reverse();
+            ImRevMap<BaseExpr, K> outerInner = group.toRevMap().reverse();
 
             ConcreteClass staticClass = null;
             if(!getInner().isSelect())

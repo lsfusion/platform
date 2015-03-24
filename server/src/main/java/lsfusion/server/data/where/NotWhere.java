@@ -5,6 +5,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.server.Settings;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
@@ -76,9 +77,9 @@ public class NotWhere extends ObjectWhere {
     }
 
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-        WhereJoin exprJoin;
-        if(where instanceof BinaryWhere && (exprJoin=((BinaryWhere)where).groupJoinsWheres(orderTop, true))!=null)
-            return new GroupJoinsWheres(exprJoin, this, type);
+        GroupJoinsWheres notGroup;
+        if(!Settings.get().isDisableGroupNotJoinsWheres() && (notGroup = where.groupNotJoinsWheres(keepStat, keyStat, orderTop, type))!=null) // на самом деле СУБД часто умеет делать BitmapOr, но весьма редка ведет себя очень нестабильно, но если что можно будет попробовать потом отключить
+            return notGroup;
         return new GroupJoinsWheres(this, type);
     }
 

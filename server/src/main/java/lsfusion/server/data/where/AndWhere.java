@@ -97,7 +97,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
             if(result.isExceededIntermediatePackThreshold()) {
                 OrObjectWhere[] procWheres = newArray(i);
                 System.arraycopy(wheres, 0, procWheres, 0, i);
-                result = packIntermediate(result, type, keepStat, keyStat, toWhere(procWheres, true));
+                result = packIntermediate(result, type, keepStat, keyStat, toWhere(procWheres, true), orderTop);
             }
             result = result.and(wheres[i].groupJoinsWheres(keepStat, keyStat, orderTop, type));
         }

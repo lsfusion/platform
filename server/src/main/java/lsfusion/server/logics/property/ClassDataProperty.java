@@ -7,12 +7,14 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.*;
+import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
+import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.PropertyChanges;
 
 import java.sql.SQLException;
@@ -59,8 +61,16 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
         return (Table.Join.Expr) getStoredExpr(MapFact.singleton(interfaces.single(), expr));
     }
 
+    public BaseExpr getFollowExpr(BaseExpr joinExpr) {
+        return (BaseExpr) joinExpr.classExpr(this);
+    }
+
     public ObjectValueClassSet getObjectSet() {
         return set;
+    }
+
+    public ImplementTable getTable() {
+        return mapTable.table;
     }
 
     protected boolean useSimpleIncrement() {

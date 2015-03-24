@@ -33,10 +33,6 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExpr.Query, PartitionJoin, PartitionExpr, PartitionExpr.QueryInnerContext> {
 
     public static class Query extends AggrExpr.Query<PartitionType, Query> {
@@ -300,6 +296,6 @@ public class PartitionExpr extends AggrExpr<KeyExpr, PartitionType, PartitionExp
 
     @IdentityInstanceLazy
     public PartitionJoin getInnerJoin() {
-        return new PartitionJoin(getInner().getQueryKeys(), getInner().getInnerValues(),query.getWhere(), Settings.get().isPushOrderWhere() ?query.partitions:SetFact.<Expr>EMPTY(),group);
+        return new PartitionJoin(getInner().getQueryKeys(), getInner().getInnerValues(), getInner().getInnerFollows(), query.getWhere(), Settings.get().isPushOrderWhere() ?query.partitions:SetFact.<Expr>EMPTY(),group);
     }
 }

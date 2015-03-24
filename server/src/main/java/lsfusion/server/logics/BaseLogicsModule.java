@@ -319,6 +319,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     @Override
     public void initTables() throws RecognitionException {
         tableFactory = new TableFactory(baseClass);
+        baseClass.initFullTables(tableFactory);
         
         super.initTables();
     }

@@ -10,10 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityLazy;
-import lsfusion.server.classes.BaseClass;
-import lsfusion.server.classes.CustomClass;
-import lsfusion.server.classes.SystemClass;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.server.classes.*;
 import lsfusion.server.data.*;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.DataObject;
@@ -26,7 +23,7 @@ import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import java.sql.SQLException;
 import java.util.*;
 
-public class TableFactory {
+public class TableFactory implements FullTablesInterface {
 
     private BaseClass baseClass;
     private Map<Integer, NFOrderSet<ImplementTable>> implementTablesMap = new HashMap<Integer, NFOrderSet<ImplementTable>>();
@@ -72,11 +69,40 @@ public class TableFactory {
         NFOrderSet<ImplementTable> tables = implementTablesMap.get(findItem.size());
         if (tables != null)
             for (ImplementTable implementTable : tables.getListIt()) {
-                MapKeysTable<T> mapTable = implementTable.getMapTable(findItem, false);
+                MapKeysTable<T> mapTable = implementTable.getSingleMapTable(findItem, false);
                 if (mapTable != null) return mapTable;
             }
 
         return getIncludedMapTable(findItem);
+    }
+
+
+    public <T> ImSet<MapKeysTable<T>> getFullMapTables(ImMap<T, ValueClass> findItem, ImplementTable table) {
+        NFOrderSet<ImplementTable> tables = implementTablesMap.get(findItem.size());
+        if(tables == null)
+            return SetFact.EMPTY();
+
+        MSet<MapKeysTable<T>> mResult = SetFact.mSet();
+        for (ImplementTable implementTable : tables.getListIt()) {
+            mResult.addAll(implementTable.getFullMapTables(findItem, table));
+        }
+        return mResult.immutable();
+    }
+
+    @IdentityLazy
+    public ImSet<ImplementTable> getFullTables(ObjectValueClassSet findItem, ImplementTable implementTable) {
+        ValueClass valueClass;
+        if(implementTable != null && implementTable.mapFields.size() == 1 && implementTable.isFull()) // recursion guard, проверка на isFull нужна, потому что иначе пойдем вверх, а потом вернемся на эту же таблиц
+            valueClass = implementTable.mapFields.singleValue();
+        else {
+            valueClass = findItem.getOr().getCommonClass(true);
+            implementTable = null;
+        }
+        return getFullMapTables(MapFact.<String, ValueClass>singleton("key", valueClass), implementTable).mapSetValues(new GetValue<ImplementTable, MapKeysTable<String>>() {
+            public ImplementTable getMapValue(MapKeysTable<String> value) {
+                return value.table;
+            }
+        });
     }
 
     // получает "автоматическую таблицу"
@@ -89,7 +115,7 @@ public class TableFactory {
             includedTablesMap.put(classCount, incTables);
         }
         for (ImplementTable implementTable : incTables) {
-            MapKeysTable<T> mapTable = implementTable.getMapTable(findItem, true);
+            MapKeysTable<T> mapTable = implementTable.getSingleMapTable(findItem, true);
             if (mapTable != null) return mapTable;
         }
 
@@ -119,7 +145,7 @@ public class TableFactory {
 
         ImplementTable implementTable = new ImplementTable("base_" + baseClassCount + dataPrefix, valueClasses.toArray(new ValueClass[classCount]));
         incTables.add(implementTable);
-        return implementTable.getMapTable(findItem, true);
+        return implementTable.getSingleMapTable(findItem, true);
     }
 
 

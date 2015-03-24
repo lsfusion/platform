@@ -143,6 +143,13 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         return new ClassWhere<T>(remapWheres);
     }
 
+    public <T> ClassWhere<T> remap(GetValue<T, K> map) {
+        And<T>[] remapWheres = new And[wheres.length];
+        for(int i=0;i<wheres.length;i++)
+            remapWheres[i] = wheres[i].remap(map);
+        return new ClassWhere<T>(remapWheres);
+    }
+
     private final static AddValue<Object, ClassWhere<Object>> addOr = new SymmAddValue<Object, ClassWhere<Object>>() {
         public ClassWhere<Object> addValue(Object key, ClassWhere<Object> prevValue, ClassWhere<Object> newValue) {
             return prevValue.or(newValue);

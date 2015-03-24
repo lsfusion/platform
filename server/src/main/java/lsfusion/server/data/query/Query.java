@@ -246,7 +246,7 @@ public class Query<K,V> extends IQuery<K,V> {
         return (ClassWhere<B>) getClassWhere(where, mapKeys, properties.filterIncl(classProps));
     }
 
-    public static <B, K extends B, V extends B> ClassWhere<B> getClassWhere(Where where, final ImMap<K, ? extends BaseExpr> mapKeys, ImMap<V, Expr> mapProps) {
+    public static <B, K extends B, V extends B> ClassWhere<B> getClassWhere(Where where, final ImMap<K, ? extends BaseExpr> mapKeys, ImMap<V, ? extends Expr> mapProps) {
         return new ExclPullWheres<ClassWhere<B>, V, Where>() {
             protected ClassWhere<B> initEmpty() {
                 return ClassWhere.FALSE();

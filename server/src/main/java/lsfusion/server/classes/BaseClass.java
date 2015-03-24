@@ -5,6 +5,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.table.FullTablesInterface;
 import lsfusion.server.logics.table.ImplementTable;
 import org.apache.log4j.Logger;
 import lsfusion.base.Pair;
@@ -49,6 +50,11 @@ public class BaseClass extends AbstractCustomClass {
     public final UnknownClass unknown;
 
     public ConcreteCustomClass objectClass;
+
+    public FullTablesInterface fullTables;
+    public void initFullTables(FullTablesInterface fullTables) {
+        this.fullTables = fullTables;
+    }
 
     public BaseClass(String sID, String caption, Version version) {
         super(sID, caption, version);
