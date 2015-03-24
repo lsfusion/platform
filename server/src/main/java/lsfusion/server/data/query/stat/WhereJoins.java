@@ -275,7 +275,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 InnerBaseJoin<?> notNullJoin = expr.getBaseJoin();
                 Stat joinStat = joinStats.get(notNullJoin);
 //                assert notNullStat.lessEquals(joinStat);
-                joinStats.add(notNullJoin, notNullStat); // уменьшаем статистику join'а до notNull значения
+                joinStats.add(notNullJoin, notNullStat.min(joinStat)); // уменьшаем статистику join'а до notNull значения, min нужен так как может быть несколько notNull
                 if(newNotNull != null && proceededNotNull == null && notNullStat.less(joinStat) && expr.isTableIndexed()) { // если уменьшаем статистику, индексированы, и есть проблема с notNull
                     newNotNull.set(expr);
                 }

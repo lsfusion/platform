@@ -2,6 +2,7 @@ package lsfusion.base.col.implementations.abs;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
+import lsfusion.base.NotFunctionSet;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -227,6 +228,15 @@ public abstract class AOrderMap<K, V> extends AColObject implements ImOrderMap<K
         return MapFact.imOrderFilter(mResult, this);
     }
 
+    public ImOrderMap<K, V> removeOrder(ImSet<? extends K> keys) {
+        if(keys.isEmpty()) // оптимизация
+            return this;
+
+        return filterOrder(new NotFunctionSet<K>((FunctionSet<K>) keys));
+    }
+    public ImOrderMap<K, V> removeOrderIncl(ImSet<? extends K> keys) {
+        return removeOrder(keys);
+    }
     public ImOrderMap<K, V> removeOrderIncl(K remove) {
         MOrderFilterMap<K, V> mResult = MapFact.mOrderFilter(this);
         for(int i=0,size=size();i<size;i++) {

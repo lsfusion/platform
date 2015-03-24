@@ -38,13 +38,6 @@ public class InnerJoins extends AddSet<InnerJoin, InnerJoins> {
         return BaseUtils.hashEquals(who, what) || what.getInnerExpr(who)!=null;
     }
 
-    public boolean means(InnerJoin inner) {
-        for(InnerJoin where : wheres)
-            if(containsAll(where, inner))
-                return true;
-        return false;
-    }
-
     public InnerJoins and(InnerJoins joins) {
         return add(joins);
     }

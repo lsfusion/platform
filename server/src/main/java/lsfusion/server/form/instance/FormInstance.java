@@ -7,18 +7,18 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKey;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.interop.*;
 import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.HideFormClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.interop.form.ColorPreferences;
-import lsfusion.interop.form.ColumnUserPreferences;
-import lsfusion.interop.form.FormUserPreferences;
-import lsfusion.interop.form.GroupObjectUserPreferences;
+import lsfusion.interop.form.*;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.server.*;
 import lsfusion.server.auth.SecurityPolicy;
@@ -1289,11 +1289,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     // проверки видимости (для оптимизации pageframe'ов)
     protected Set<PropertyReaderInstance> pendingHidden = SetFact.mAddRemoveSet();
 
-    private boolean isHidden(PropertyDrawInstance<?> property, boolean grid) {
+    private ComponentView getDrawTabContainer(PropertyDrawInstance<?> property, boolean grid) {
         if (Settings.get().isDisableTabbedOptimization())
-            return false;
-
-        ComponentView container = entity.getDrawTabContainer(property.entity, grid);
+            return null;
+        return entity.getDrawTabContainer(property.entity, grid);
+    }
+    private boolean isHidden(PropertyDrawInstance<?> property, boolean grid) {
+        ComponentView container = getDrawTabContainer(property, grid);
         return container != null && isHidden(container); // первая проверка - cheat / оптимизация
     }
 
@@ -1301,7 +1303,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         if (Settings.get().isDisableTabbedOptimization())
             return false;
 
-        FormEntity.ComponentSet containers = entity.getDrawTabContainers(group.entity);
+        FormEntity.ComponentUpSet containers = entity.getDrawTabContainers(group.entity);
         if (containers == null) // cheat / оптимизация, иначе пришлось бы в isHidden и еще в нескольких местах явную проверку на null
             return false;
         for (ComponentView component : containers.it())
@@ -1501,6 +1503,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         updateContainersShowIfs(changedProps);
 
+        MAddSet<ComponentView> hiddenButDefinitelyShownSet = SetFact.mAddSet(); // не ComponentDownSet для оптимизации
+        MAddExclMap<PropertyReaderInstance, ComponentView> hiddenNotSureShown = MapFact.mAddExclMap();
         final MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mShowIfs = MapFact.mOrderExclMap();
         for (PropertyDrawInstance drawProperty : properties) {
             ClassViewType curClassView = drawProperty.getCurClassView();
@@ -1530,22 +1534,53 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             newIsShown.put(drawProperty, newInInterface);
 
             Boolean oldInInterface = isInInterface.put(drawProperty, newInInterface);
-            if (newInInterface != null && drawProperty.propertyShowIf != null) {
-                boolean read = refresh
-                               || !newInInterface.equals(oldInInterface) // если изменилось представление
-                               || groupUpdated(drawProperty.getColumnGroupObjects(), UPDATED_CLASSVIEW) // изменились группы в колонки (так как отбираются только GRID)
-                               || propertyUpdated(drawProperty.propertyShowIf, propRowColumnGrids, changedProps); //изменился propertyShowIf 
-                if (read) {
-                    mShowIfs.exclAdd(drawProperty.showIfReader, propRowColumnGrids);
-                } else {
-                    //т.е. не поменялся ни inInterface, ни showIf
-                    newIsShown.put(drawProperty, isShown.get(drawProperty));
+            if (newInInterface != null) { // если показывается
+                ComponentView tabContainer = getDrawTabContainer(drawProperty, newInInterface);
+                boolean hidden = tabContainer != null && isHidden(tabContainer);
+                boolean isDefinitelyShown = drawProperty.propertyShowIf == null;
+                if (!isDefinitelyShown) {
+                    ShowIfReaderInstance showIfReader = drawProperty.showIfReader;
+                    boolean read = refresh
+                                   || !newInInterface.equals(oldInInterface) // если изменилось представление
+                                   || (!hidden && pendingHidden.contains(showIfReader)) // если стал видим, но не читался
+                                   || groupUpdated(drawProperty.getColumnGroupObjects(), UPDATED_CLASSVIEW) // изменились группы в колонки (так как отбираются только GRID)
+                                   || propertyUpdated(drawProperty.propertyShowIf, propRowColumnGrids, changedProps); //изменился propertyShowIf
+                    if (read) {
+                        mShowIfs.exclAdd(showIfReader, propRowColumnGrids);
+                        if(hidden)
+                            hiddenNotSureShown.exclAdd(showIfReader, tabContainer);
+                    } else {
+                        //т.е. не поменялся ни inInterface, ни showIf, достаем из кэша
+                        Boolean isPropShown = isShown.get(drawProperty);
+                        newIsShown.put(drawProperty, isPropShown);
+                        isDefinitelyShown = isPropShown != null;
+                    }
                 }
+                if(hidden && isDefinitelyShown) // помечаем component'ы которые точно показываются
+                    hiddenButDefinitelyShownSet.add(tabContainer);
             }
         }
-        
+        ImOrderMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> showIfs = mShowIfs.immutableOrder();
+
+        if(hiddenNotSureShown.size() > 0) { // оптимизация
+            FormEntity.ComponentDownSet hiddenButDefinitelyShown = FormEntity.ComponentDownSet.create(hiddenButDefinitelyShownSet);
+
+            MOrderFilterMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> mRestShowIfs = MapFact.mOrderFilter(showIfs);
+            for (int i = 0, size = showIfs.size(); i < size; i++) {
+                PropertyReaderInstance property = showIfs.getKey(i);
+                ComponentView component = hiddenNotSureShown.get(property);
+                if (component != null && hiddenButDefinitelyShown.containsAll(component)) // те которые попали в hiddenButDefinitelyShown - добавляем в pendingHidden, исключаем из ShowIf'а
+                    pendingHidden.add(property);
+                else { // исключаем из pendingHidden, оставляем в map'е
+                    pendingHidden.remove(property);
+                    mRestShowIfs.keep(property, showIfs.getValue(i));
+                }
+            }
+            showIfs = MapFact.imOrderFilter(mRestShowIfs, showIfs);
+        }
+
         MExclMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> showIfValues = MapFact.mExclMap();
-        ImOrderMap<ImSet<GroupObjectInstance>, ImOrderSet<PropertyReaderInstance>> changedShowIfs = mShowIfs.immutableOrder().groupOrderValues();
+        ImOrderMap<ImSet<GroupObjectInstance>, ImOrderSet<PropertyReaderInstance>> changedShowIfs = showIfs.groupOrderValues();
         for (int i = 0, size = changedShowIfs.size(); i < size; i++) {
             updateDrawProps(showIfValues, changedShowIfs.getKey(i), changedShowIfs.getValue(i));
         }
@@ -1672,7 +1707,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 } else {
                     // hidden = false, чтобы читать showIf всегда, т.к. влияет на видимость, а соответственно на наличие вкладки
                     // (с hidden'ом избыточный функционал, но небольшой, поэтому все же используем fillChangedReader)
-                    fillChangedReader(drawProperty.propertyShowIf, drawProperty.showIfReader, propRowColumnGrids, false, read, mReadProperties, changedProps);
+                    // непонятно зачем эта строка была нужна
+//                    fillChangedReader(drawProperty.propertyShowIf, drawProperty.showIfReader, propRowColumnGrids, false, read, mReadProperties, changedProps);
                 }
 
                 fillChangedReader(drawProperty.propertyCaption, drawProperty.captionReader, propRowColumnGrids, hidden, read, mReadProperties, changedProps);

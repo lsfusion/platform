@@ -2,6 +2,7 @@ package lsfusion.base.col.interfaces.immutable;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.FunctionSet;
+import lsfusion.base.NotFunctionSet;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 
@@ -55,6 +56,8 @@ public interface ImOrderMap<K,V> {
     ImOrderSet<K> filterOrderValues(FunctionSet<V> set);
     ImOrderMap<K, V> filterOrderValuesMap(FunctionSet<V> set);
 
+    ImOrderMap<K, V> removeOrder(ImSet<? extends K> keys);
+    ImOrderMap<K, V> removeOrderIncl(ImSet<? extends K> keys);
     ImOrderMap<K, V> removeOrderIncl(K remove);
 
     <M> ImOrderValueMap<K, M> mapItOrderValues();

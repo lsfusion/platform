@@ -33,7 +33,7 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
     }
     
     public boolean depends(InnerJoin join) {
-        return valueJoins.means(join);
+        return valueJoins.containsAll(join);
     }
 
     public ExprStatJoin(BaseExpr baseExpr, Stat stat, InnerJoins valueJoins) {

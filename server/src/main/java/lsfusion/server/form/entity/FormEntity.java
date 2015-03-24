@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.ClassViewType;
 import lsfusion.interop.FormEventType;
@@ -1017,21 +1018,64 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         getRichDesign().finalizeAroundInit();
     }
 
-    public static class ComponentSet extends AddSet<ComponentView, ComponentSet> {
+    // сохраняет нижние компоненты
+    public static class ComponentDownSet extends AddSet<ComponentView, ComponentDownSet> {
 
-        public ComponentSet() {
+        public ComponentDownSet() {
         }
 
-        public ComponentSet(ComponentView where) {
+        public static ComponentDownSet create(MAddSet<ComponentView> components) {
+            ComponentDownSet result = new ComponentDownSet();
+            for(ComponentView component : components)
+                result = result.addItem(component);
+            return result;
+        }
+
+        public ComponentDownSet(ComponentView where) {
             super(where);
         }
 
-        public ComponentSet(ComponentView[] wheres) {
+        public ComponentDownSet(ComponentView[] wheres) {
             super(wheres);
         }
 
-        protected ComponentSet createThis(ComponentView[] wheres) {
-            return new ComponentSet(wheres);
+        protected ComponentDownSet createThis(ComponentView[] wheres) {
+            return new ComponentDownSet(wheres);
+        }
+
+        protected ComponentView[] newArray(int size) {
+            return new ComponentView[size];
+        }
+
+        protected boolean containsAll(ComponentView who, ComponentView what) {
+            return what.isAncestorOf(who);
+        }
+
+        public ComponentDownSet addItem(ComponentView container) {
+            return add(new ComponentDownSet(container));
+        }
+
+        public ComponentDownSet addAll(ComponentDownSet set) {
+            return add(set);
+        }
+    }
+
+    // сохраняет верхние компоненты
+    public static class ComponentUpSet extends AddSet<ComponentView, ComponentUpSet> {
+
+        public ComponentUpSet() {
+        }
+
+        public ComponentUpSet(ComponentView where) {
+            super(where);
+        }
+
+        public ComponentUpSet(ComponentView[] wheres) {
+            super(wheres);
+        }
+
+        protected ComponentUpSet createThis(ComponentView[] wheres) {
+            return new ComponentUpSet(wheres);
         }
 
         protected ComponentView[] newArray(int size) {
@@ -1042,17 +1086,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             return who.isAncestorOf(what);
         }
 
-        public ComponentSet addItem(ComponentView container) {
-            return add(new ComponentSet(container));
+        public ComponentUpSet addItem(ComponentView container) {
+            return add(new ComponentUpSet(container));
         }
         
-        public ComponentSet addAll(ComponentSet set) {
+        public ComponentUpSet addAll(ComponentUpSet set) {
             return add(set);            
         }
     }
     @IdentityStrongLazy
-    public ComponentSet getDrawTabContainers(GroupObjectEntity group) {
-        ComponentSet result = new ComponentSet();
+    public ComponentUpSet getDrawTabContainers(GroupObjectEntity group) {
+        ComponentUpSet result = new ComponentUpSet();
         for(PropertyDrawEntity property : getPropertyDrawsIt())
             if(!group.getObjects().disjoint(property.propertyObject.mapping.values().toSet())) { // для свойств "зависящих" от группы
                 ComponentView drawContainer = getDrawTabContainer(property, true);
@@ -1075,7 +1119,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             }
         }
         for(GroupObjectEntity fixedGroupObject : mFixedGroupObjects.immutable()) {
-            ComponentSet drawContainers = getDrawTabContainers(fixedGroupObject);
+            ComponentUpSet drawContainers = getDrawTabContainers(fixedGroupObject);
             if(drawContainers==null)
                 return null;
                 

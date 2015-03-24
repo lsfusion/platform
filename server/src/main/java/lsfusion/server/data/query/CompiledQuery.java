@@ -326,7 +326,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         }
 
         public boolean isInner(InnerJoin join) {
-            return getInnerJoins().means(join);
+            return getInnerJoins().containsAll(join);
         }
 
         final ImMap<WhereJoin, Where> upWheres;

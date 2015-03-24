@@ -72,6 +72,13 @@ public abstract class AddSet<T,This extends AddSet<T,This>> extends TwinImmutabl
     // если true - what выбрасываем
     protected abstract boolean containsAll(T who, T what);
 
+    public boolean containsAll(T inner) {
+        for(T where : wheres)
+            if(containsAll(where, inner))
+                return true;
+        return false;
+    }
+
     protected This add(This where) {
         if(isFalse() || where.isTrue()) return where;
         if(where.isFalse() || isTrue()) return (This) this;
