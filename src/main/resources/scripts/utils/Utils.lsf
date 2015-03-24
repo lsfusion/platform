@@ -17,6 +17,7 @@ wordCount = FORMULA 'array_length((string_to_array($1,$2)),1)';
 
 istartsWith = FORMULA INTEGER PG 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN 1 ELSE NULL END' MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
 startsWith = FORMULA INTEGER PG 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN 1 ELSE NULL END' MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
+endsWith = FORMULA INTEGER PG 'CASE WHEN (($1) LIKE (\'%\'||($2))) THEN 1 ELSE NULL END' MS 'CASE WHEN (($1) LIKE (\'%\'+($2))) THEN 1 ELSE NULL END';
 
 // todo : для MS SQL пофиксить формулу, чтобы правильно работало, если в подстроке есть %
 isISubstring = FORMULA INTEGER PG 'CASE WHEN position(lower($2) in lower($1)) > 0 THEN 1 ELSE NULL END' MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END'; 
