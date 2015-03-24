@@ -4,10 +4,13 @@ import lsfusion.client.StartupProperties;
 import lsfusion.interop.ComponentDesign;
 
 import javax.swing.*;
-import javax.swing.text.DefaultFormatterFactory;
-import javax.swing.text.NumberFormatter;
+import javax.swing.text.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
@@ -40,8 +43,10 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
             public Object stringToValue(String text) throws ParseException {
                 lastZero = 0;
                 if (text != null && text.length() > 0) {
-                    if (!isGroupSeparatorDot && StartupProperties.dotSeparator)
-                            text = text.replace(",", ".");
+                    if (text.contains(",") && separator == '.')
+                        text = text.replace(",", ".");
+                    else if (text.contains(".") && separator == ',')
+                        text = text.replace(".", ",");
                     if (text.indexOf(separator) != -1) {
                         while (lastZero < text.length() - 1 && text.charAt(text.length() - 1 - lastZero) == '0') {
                             lastZero++;
@@ -54,6 +59,20 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                 return super.stringToValue(text);
             }
         };
+
+        //через reflection добавляем к разрешённым символам второй decimal separator (. или ,)
+        try {
+            Field field = NumberFormatter.class.getDeclaredField("specialChars");
+            field.setAccessible(true);
+            String specialChars = (String) field.get(formatter);
+            if(!specialChars.contains("."))
+                specialChars +=".";
+            if(!specialChars.contains(","))
+                specialChars +=",";
+            field.set(formatter, specialChars);
+        } catch (NoSuchFieldException ignored) {
+        } catch (IllegalAccessException ignored) {
+        }
 
         formatter.setValueClass(formatterValueClass);
         formatter.setAllowsInvalid(false);
