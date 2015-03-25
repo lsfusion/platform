@@ -2332,7 +2332,7 @@ public class BaseUtils {
     }
 
     public static String bigDecimalToString(String format, BigDecimal bd) {
-        return new DecimalFormat(format).format(bd);
+        return new DecimalFormat(format).format(bd == null ? BigDecimal.ZERO : bd);
     }
 
     public static String dateToString(Date d) {
