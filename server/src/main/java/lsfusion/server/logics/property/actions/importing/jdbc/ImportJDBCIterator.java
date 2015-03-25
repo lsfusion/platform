@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.actions.importing.sql;
+package lsfusion.server.logics.property.actions.importing.jdbc;
 
 import com.sun.rowset.CachedRowSetImpl;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
@@ -7,11 +7,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImportSQLIterator extends ImportIterator {
+public class ImportJDBCIterator extends ImportIterator {
     CachedRowSetImpl rs;
     List<Integer> sourceColumns;
     
-    public ImportSQLIterator(CachedRowSetImpl rs, List<Integer> sourceColumns) {
+    public ImportJDBCIterator(CachedRowSetImpl rs, List<Integer> sourceColumns) {
         this.rs = rs;
         this.sourceColumns = sourceColumns;
     }

@@ -1,4 +1,4 @@
-package lsfusion.server.logics.property.actions.importing.sql;
+package lsfusion.server.logics.property.actions.importing.jdbc;
 
 import com.google.common.base.Throwables;
 import com.sun.rowset.CachedRowSetImpl;
@@ -16,8 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ImportSQLDataActionProperty extends ImportDataActionProperty {
-    public ImportSQLDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
+public class ImportJDBCDataActionProperty extends ImportDataActionProperty {
+    public ImportJDBCDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
         super(valueClass, LM, ids, properties);
     }
 
@@ -34,7 +34,7 @@ public class ImportSQLDataActionProperty extends ImportDataActionProperty {
             }
             List<Integer> sourceColumns = getSourceColumns(fieldMapping);
             
-            return new ImportSQLIterator(rs, sourceColumns);
+            return new ImportJDBCIterator(rs, sourceColumns);
             
         } catch (ClassNotFoundException e) {
             throw Throwables.propagate(e);

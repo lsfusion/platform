@@ -1,5 +1,5 @@
 package lsfusion.server.logics.property;
 
 public enum ImportSourceFormat {
-    XLS, XLSX, DBF, CSV, XML, SQL, MDB
+    XLS, XLSX, DBF, CSV, XML, JDBC, MDB
 }

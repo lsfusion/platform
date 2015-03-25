@@ -37,6 +37,12 @@ public class ReadActionProperty extends ScriptingActionProperty {
     public ReadActionProperty(ScriptingLogicsModule LM, ValueClass valueClass, LCP<?> targetProp) {
         super(LM, valueClass);
         this.targetProp = targetProp;
+
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        } catch (ClassNotFoundException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override
@@ -47,7 +53,7 @@ public class ReadActionProperty extends ScriptingActionProperty {
         String path = (String) value.object;
         try {
             if (path != null) {
-                Pattern p = Pattern.compile("(file|ftp|http|sql|mdb):\\/\\/(.*)");
+                Pattern p = Pattern.compile("(file|ftp|http|jdbc|mdb):(\\/\\/)?(.*)");
                 Matcher m = p.matcher(path);
                 if (m.matches()) {
                     String type = m.group(1).toLowerCase();
@@ -62,9 +68,9 @@ public class ReadActionProperty extends ScriptingActionProperty {
                     } else if (type.equals("ftp")) {
                         file = File.createTempFile("downloaded", "tmp");
                         copyFTPToFile(path, file);
-                    } else if (type.equals("sql")) {
+                    } else if (type.equals("jdbc")) {
                         file = File.createTempFile("downloaded", "tmp");
-                        copySQLToFile(path, file);
+                        copyJDBCToFile(path, file);
                     } else if (type.equals("mdb")) {
                         file = File.createTempFile("downloaded", "tmp");
                         copyMDBToFile(path, file);
@@ -129,26 +135,22 @@ public class ReadActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void copySQLToFile(String query, File file) throws SQLException {
-        /*sql://username:password@host:port;dbName;query*/
-        Pattern queryPattern = Pattern.compile("sql:\\/\\/(.*):(.*)@([^:]*)(?::(\\d*))?;([^;]*);(.*)");
+    private void copyJDBCToFile(String query, File file) throws SQLException {
+        /*jdbc://connectionString;query*/
+        Pattern queryPattern = Pattern.compile("(jdbc:[^@]*)@(.*)");
         Matcher queryMatcher = queryPattern.matcher(query);
         if (queryMatcher.matches()) {
             Connection conn = null;
 
             try {
-                String sqlUsername = queryMatcher.group(1);
-                String sqlPassword = queryMatcher.group(2);
-                String sqlHost = queryMatcher.group(3);
-                Integer sqlPort = queryMatcher.group(4) == null ? 1433 : Integer.parseInt(queryMatcher.group(4));
-                String sqlDBName = queryMatcher.group(5);
-                String sqlQuery = queryMatcher.group(6);
-                conn = getConnection(sqlHost, sqlPort, sqlDBName, sqlUsername, sqlPassword);
+                String connectionString = queryMatcher.group(1);
+                String jdbcQuery = queryMatcher.group(2);
+                conn = DriverManager.getConnection(connectionString);
 
                 Statement statement = null;
                 try {
                     statement = conn.createStatement();
-                    ResultSet rs = statement.executeQuery(sqlQuery);
+                    ResultSet rs = statement.executeQuery(jdbcQuery);
 
                     FileUtils.writeByteArrayToFile(file, BaseUtils.serializeResultSet(rs));
 
@@ -157,8 +159,6 @@ public class ReadActionProperty extends ScriptingActionProperty {
                         statement.close();
                 }
 
-            } catch (ClassNotFoundException e) {
-                throw Throwables.propagate(e);
             } catch (SQLException e) {
                 throw Throwables.propagate(e);
             } catch (IOException e) {
@@ -169,20 +169,8 @@ public class ReadActionProperty extends ScriptingActionProperty {
             }
 
         } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect sql url. Please use format: sql://username:password@host:port;dbName;query"));
+            throw Throwables.propagate(new RuntimeException("Incorrect jdbc url. Please use format: connectionString@query"));
         }
-    }
-
-    protected Connection getConnection(String sqlHost, Integer sqlPort, String sqlDBName, String sqlUsername, String sqlPassword) throws ClassNotFoundException, SQLException {
-        String url;
-        //we specify instance OR port
-        if (sqlHost != null && sqlHost.contains("\\")) {
-            url = String.format("jdbc:sqlserver://%s;databaseName=%s;User=%s;Password=%s", sqlHost, sqlDBName, sqlUsername, sqlPassword);
-        } else {
-            url = String.format("jdbc:sqlserver://%s:%s;databaseName=%s;User=%s;Password=%s", sqlHost, sqlPort, sqlDBName, sqlUsername, sqlPassword);
-        }
-        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        return DriverManager.getConnection(url);
     }
 
     private void copyMDBToFile(String path, File file) throws IOException {
