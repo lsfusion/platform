@@ -1,6 +1,10 @@
 package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
+import com.healthmarketscience.jackcess.Database;
+import com.healthmarketscience.jackcess.DatabaseBuilder;
+import com.healthmarketscience.jackcess.Row;
+import com.healthmarketscience.jackcess.Table;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.classes.StringClass;
@@ -20,6 +24,10 @@ import java.io.*;
 import java.net.SocketException;
 import java.net.URL;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +47,7 @@ public class ReadActionProperty extends ScriptingActionProperty {
         String path = (String) value.object;
         try {
             if (path != null) {
-                Pattern p = Pattern.compile("(file|ftp|http|sql):\\/\\/(.*)");
+                Pattern p = Pattern.compile("(file|ftp|http|sql|mdb):\\/\\/(.*)");
                 Matcher m = p.matcher(path);
                 if (m.matches()) {
                     String type = m.group(1).toLowerCase();
@@ -57,6 +65,9 @@ public class ReadActionProperty extends ScriptingActionProperty {
                     } else if (type.equals("sql")) {
                         file = File.createTempFile("downloaded", "tmp");
                         copySQLToFile(path, file);
+                    } else if (type.equals("mdb")) {
+                        file = File.createTempFile("downloaded", "tmp");
+                        copyMDBToFile(path, file);
                     }
                     if (file != null && file.exists()) {
                         targetProp.change(IOUtils.getFileBytes(file), context);
@@ -172,5 +183,41 @@ public class ReadActionProperty extends ScriptingActionProperty {
         }
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         return DriverManager.getConnection(url);
+    }
+
+    private void copyMDBToFile(String path, File file) throws IOException {
+        /*mdb://path:table*/
+        Pattern queryPattern = Pattern.compile("mdb:\\/\\/(.*):(.*)");
+        Matcher queryMatcher = queryPattern.matcher(path);
+        if (queryMatcher.matches()) {
+            Database db = null;
+
+            try {
+                db = DatabaseBuilder.open(new File(queryMatcher.group(1)));
+
+                Table table = db.getTable(queryMatcher.group(2));
+
+                List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>();
+
+                for (Row rowEntry : table) {
+
+                    Map<String, Object> row = new HashMap<String, Object>();
+                    for(Map.Entry<String, Object> entry : rowEntry.entrySet()) {
+                        row.put(entry.getKey(), entry.getValue());
+                    }
+                    rows.add(row);
+                }
+
+                FileUtils.writeByteArrayToFile(file, BaseUtils.serializeCustomObject(rows));
+
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            } finally {
+                if (db != null)
+                    db.close();
+            }
+        } else {
+            throw Throwables.propagate(new RuntimeException("Incorrect mdb url. Please use format: mdb://path:table"));
+        }
     }
 }

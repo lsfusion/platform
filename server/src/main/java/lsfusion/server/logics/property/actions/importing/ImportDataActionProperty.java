@@ -15,6 +15,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.ImportSourceFormat;
 import lsfusion.server.logics.property.actions.importing.csv.ImportCSVDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.sql.ImportSQLDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xls.ImportXLSDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xlsx.ImportXLSXDataActionProperty;
@@ -51,6 +52,8 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
             return new ImportXMLDataActionProperty(valueClass, LM, ids, properties);
         } else if (format == ImportSourceFormat.SQL) {
             return new ImportSQLDataActionProperty(valueClass, LM, ids, properties);
+        } else if (format == ImportSourceFormat.MDB) {
+            return new ImportMDBDataActionProperty(valueClass, LM, ids, properties);
         }
         return null;
     }

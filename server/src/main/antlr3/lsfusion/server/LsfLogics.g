@@ -1607,6 +1607,7 @@ importSourceFormat returns [ImportSourceFormat format]
 	| 'CSV'  { $format = ImportSourceFormat.CSV; }
 	| 'XML'  { $format = ImportSourceFormat.XML; }
 	| 'SQL'  { $format = ImportSourceFormat.SQL; }
+	| 'MDB'  { $format = ImportSourceFormat.MDB; }
 	;
 
 typePropertyDefinition returns [LP property] 

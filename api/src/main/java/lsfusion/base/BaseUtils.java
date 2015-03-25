@@ -677,6 +677,19 @@ public class BaseUtils {
         ObjectInputStream o = new ObjectInputStream(b);
         return (CachedRowSetImpl) o.readObject();
     }
+
+    public static byte[] serializeCustomObject(Object object) throws IOException {
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        ObjectOutputStream o = new ObjectOutputStream(b);
+        o.writeObject(object);
+        return b.toByteArray();
+    }
+
+    public static Object deserializeCustomObject(byte[] bytes) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream b = new ByteArrayInputStream(bytes);
+        ObjectInputStream o = new ObjectInputStream(b);
+        return o.readObject();
+    }
     
     public static void serializeString(DataOutputStream outStream, String str) throws IOException {
         assert str != null;
