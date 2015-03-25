@@ -1170,4 +1170,14 @@ public class Settings {
     public void setDisableGroupNotJoinsWheres(boolean disableGroupNotJoinsWheres) {
         this.disableGroupNotJoinsWheres = disableGroupNotJoinsWheres;
     }
+
+    private int explainThreshold = 100;
+
+    public int getExplainThreshold() {
+        return explainThreshold;
+    }
+
+    public void setExplainThreshold(int explainThreshold) {
+        this.explainThreshold = explainThreshold;
+    }
 }

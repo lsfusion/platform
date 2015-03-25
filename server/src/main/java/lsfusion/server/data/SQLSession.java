@@ -990,6 +990,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         ResultSet result = statement.executeQuery();
         Integer rows = null;
         try {
+            int thr = Settings.get().getExplainThreshold();
             int i=0;
             String row = null;
             List<String> out = new ArrayList<String>();
@@ -1011,8 +1012,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     m++;
                 }
 
-                if(!noAnalyze && dml && i++==1 && act>=0) // второй ряд (первый почему то всегда 0)
+                if(!noAnalyze && dml && (i==1 || i==2) && rows == null &&  act>=0) // второй ряд (первый почему то всегда 0) или 3-й (так как 2-й может быть Buffers:)
                     rows = act;
+                i++;
 
                 Pattern tpt = Pattern.compile("actual time=(((\\d)+)[.]((\\d)+))[.][.](((\\d)+)[.]((\\d)+))");
                 matcher = tpt.matcher(row);
@@ -1028,10 +1030,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                         mark += "G";
                     else if(diff < 0.25)
                         mark += "L";
-                    if(rtime > 1000.0)
+                    if(rtime > thr * 10)
                         mark += "T";
                 }
-                else if(rtime > 100.0)
+                else if(rtime > thr)
                     mark += "t";
                 out.add(BaseUtils.padr(mark, 2) + row);
             }
@@ -1043,7 +1045,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 if(matcher.find()) {
                     rtime = Double.valueOf(matcher.group(1));
                 }
-                if(noAnalyze || rtime > 100.0) {
+                if(noAnalyze || rtime > thr) {
                     systemLogger.info(statement.toString() + " volatile : " + isVolatileStats());
                     for(String outRow : out)
                         systemLogger.info(outRow);
@@ -1173,7 +1175,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             lockTimeout(execInfo.needTimeoutLock());
 
-            statement = getStatement((explainAnalyze() && !explainNoAnalyze()?"EXPLAIN (ANALYZE, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
+            statement = getStatement((explainAnalyze() && !explainNoAnalyze()?"EXPLAIN (ANALYZE, BUFFERS, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
             queryExecEnv.beforeStatement(statement, this, execInfo);
 
             if(explainAnalyze()) {
