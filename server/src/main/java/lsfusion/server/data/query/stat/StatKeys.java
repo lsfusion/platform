@@ -37,6 +37,7 @@ public class StatKeys<K> extends TwinImmutableObject {
         assert distinct.isEmpty() || rows.equals(Stat.MIN) || (rows.lessEquals(distinct.getMax()) && distinct.getMaxKey().lessEquals(rows));
     }
 
+    // по идее важно только в WhereJoins, в остальных за счет того что статистика округляется вверх по идее должен выполняться верхний assertion
     public static <K> StatKeys<K> create(Stat rows, DistinctKeys<K> distinct) {
         return new StatKeys<K>(distinct.getMax().min(rows), distinct);
     }
