@@ -41,6 +41,7 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.*;
+import lsfusion.server.logics.debug.CalcPropertyDebugInfo;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.ChangeEvent;
 import lsfusion.server.logics.property.actions.edit.DefaultChangeActionProperty;
@@ -62,6 +63,8 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 public abstract class CalcProperty<T extends PropertyInterface> extends Property<T> implements MapKeysInterface<T> {
+
+    private CalcPropertyDebugInfo debugInfo;
 
     public static FunctionSet<CalcProperty> getDependsOnSet(final FunctionSet<CalcProperty> check) {
         return new FunctionSet<CalcProperty>() {
@@ -1633,5 +1636,22 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         Where where = DataSession.getIncorrectWhere(this, baseClass, mapTable.mapKeys.join(mapKeys));
         Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(mapKeys, Expr.NULL, field, where);
         sql.updateRecords(new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global));
+    }
+
+    public void setDebugInfo(CalcPropertyDebugInfo debugInfo) {
+        this.debugInfo = debugInfo;
+    }
+
+    public CalcPropertyDebugInfo getDebugInfo() {
+        return debugInfo;
+    }
+
+    @Override
+    public String toString() {
+        String string = super.toString();
+        if (debugInfo != null) {
+            string = string + " - " + debugInfo;
+        }
+        return string;
     }
 }

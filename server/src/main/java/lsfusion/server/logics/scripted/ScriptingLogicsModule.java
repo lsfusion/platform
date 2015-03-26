@@ -39,6 +39,7 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.debug.ActionDebugInfo;
 import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
+import lsfusion.server.logics.debug.CalcPropertyDebugInfo;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
@@ -2583,6 +2584,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             element.window = (NavigatorWindow) window;
         } else {
             errLog.emitAddToSystemWindowError(parser, windowName);
+        }
+    }
+
+    public void propertyDefinitionCreated(LP property, int line, int offset) {
+        if (property != null && property.property instanceof CalcProperty) {
+            CalcPropertyDebugInfo debugInfo = new CalcPropertyDebugInfo(getName(), line, offset);
+
+            ((CalcProperty) property.property).setDebugInfo(debugInfo);
         }
     }
 

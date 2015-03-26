@@ -918,9 +918,18 @@ propertyDeclaration returns [String name, String caption, List<TypedParameter> p
 	:	propNameCaption=simpleNameWithCaption { $name = $propNameCaption.name; $caption = $propNameCaption.caption; }
 		('(' paramList=typedParameterList ')' { $params = $paramList.params; })? 
 	;
-	
+
 
 propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	int line = self.getParser().getGlobalCurrentLineNumber(); 
+    int offset = self.getParser().getGlobalPositionInLine();
+}
+@after{
+    if (inPropParseState()) {
+        self.propertyDefinitionCreated($property.property, line, offset);
+    }
+}
 	:	pe=ifPE[context, dynamic] { $property = $pe.property; }
 	;
 
@@ -1164,6 +1173,15 @@ expressionUnfriendlyPD[List<TypedParameter> context, boolean dynamic, boolean in
 	;
 
 contextIndependentPD[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
+@init {
+	int line = self.getParser().getGlobalCurrentLineNumber(); 
+    int offset = self.getParser().getGlobalPositionInLine();
+}
+@after{
+    if (inPropParseState()) {
+        self.propertyDefinitionCreated($property, line, offset);
+    }
+}
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
 	|	abstractDef=abstractPropertyDefinition { $property = $abstractDef.property; $signature = $abstractDef.signature; }
 	|	abstractActionDef=abstractActionPropertyDefinition { $property = $abstractActionDef.property; $signature = $abstractActionDef.signature; }
