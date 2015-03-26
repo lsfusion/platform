@@ -1349,7 +1349,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         if(explainAnalyze()) {
 //            systemLogger.info(select);
             Result<ReturnStatement> returnExplain = new Result<ReturnStatement>();
-            PreparedStatement statement = getStatement("EXPLAIN (" + (explainNoAnalyze() ? "VERBOSE, COSTS" : "ANALYZE") + ") " + select, paramObjects, connection, syntax, env, returnExplain, env.isNoPrepare());
+            PreparedStatement statement = getStatement("EXPLAIN (" + (explainNoAnalyze() ? "VERBOSE, BUFFERS, COSTS" : "ANALYZE") + ") " + select, paramObjects, connection, syntax, env, returnExplain, env.isNoPrepare());
             long started = System.currentTimeMillis();
             env.before(this, connection, select, owner);
             executeExplain(statement, explainNoAnalyze(), false);
