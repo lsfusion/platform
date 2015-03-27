@@ -25,7 +25,7 @@ public class ChangeClassValueActionProperty extends SystemExplicitActionProperty
 
     @Override
     public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
-        return getBaseClass().getChildProps().toMap(false);
+        return ChangeClassActionProperty.aspectChangeBaseExtProps(getBaseClass());
     }
 
     private BaseClass getBaseClass() {

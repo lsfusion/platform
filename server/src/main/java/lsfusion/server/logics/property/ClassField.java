@@ -16,4 +16,6 @@ public interface ClassField extends InnerFollows.Field {
     ObjectValueClassSet getObjectSet();
 
     ImplementTable getTable();
+
+    CalcProperty getProperty();
 }

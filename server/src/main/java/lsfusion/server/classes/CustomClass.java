@@ -449,8 +449,15 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return property;
     }
 
-    public void fillChangedProps(MExclSet<CalcProperty> mSet, IncrementType type) { // использование в aspectChangeExtProps у ADDOBJ, ChangeClass и т.п.
+    // использование в aspectChangeExtProps у ADDOBJ, ChangeClass и т.п.
+    public void fillChangedProps(MExclSet<CalcProperty> mSet, IncrementType type) {
         getProperty().fillChangedProps(mSet, type);
+    }
+    public ImSet<CalcProperty> getDataProps() { // используется не везде, так как в явную ClassDataProperty не используется, только чтобы readStored был после всех изменений
+        return getUpTables().keys().mapSetValues(new GetValue<CalcProperty, ClassField>() {
+            public CalcProperty getMapValue(ClassField value) {
+                return value.getProperty();
+            }});
     }
 
     public static ImSet<IsClassProperty> getProperties(ImSet<? extends ValueClass> classes) {
@@ -477,13 +484,13 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return mResult.immutable();
     }
 
-    public ImSet<CalcProperty> getChildDropProps(final ConcreteObjectClass toClass) {
-        MExclSet<CalcProperty> mResult = SetFact.mExclSet();
-        for(CustomClass child : getAllChildren())
-            if(!(toClass instanceof CustomClass && ((CustomClass) toClass).isChild(child)))
-                child.fillChangedProps(mResult, IncrementType.DROP);
-        return mResult.immutable();
-    }
+//    public ImSet<CalcProperty> getChildDropProps(final ConcreteObjectClass toClass) {
+//        MExclSet<CalcProperty> mResult = SetFact.mExclSet();
+//        for(CustomClass child : getAllChildren())
+//            if(!(toClass instanceof CustomClass && ((CustomClass) toClass).isChild(child)))
+//                child.fillChangedProps(mResult, IncrementType.DROP);
+//        return mResult.immutable();
+//    }
 
     public ImSet<CalcProperty> getParentSetProps() {
         MExclSet<CalcProperty> mResult = SetFact.mExclSet();

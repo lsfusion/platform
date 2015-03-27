@@ -85,6 +85,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
         if(this.result!=null)
             result.addAll(this.result.property.getChangeProps().toMap(false));
         result.addAll(valueClass.getParentSetProps().toMap(false));
+        result.addAll(valueClass.getDataProps().toMap(false));
         result.add(valueClass.getBaseClass().getObjectClassProperty(), false);
         return result.immutable();
     }

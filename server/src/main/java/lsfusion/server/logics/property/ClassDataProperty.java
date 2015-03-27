@@ -73,6 +73,10 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
         return mapTable.table;
     }
 
+    public CalcProperty getProperty() {
+        return this;
+    }
+
     protected boolean useSimpleIncrement() {
         throw new RuntimeException("should not be");
     }

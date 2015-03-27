@@ -101,7 +101,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             if(property instanceof ChangedProperty)
                 mResult.add((IsClassProperty)((ChangedProperty)property).property);
             else {
-                assert property instanceof DataProperty || property instanceof ObjectClassProperty;
+                assert property instanceof DataProperty || property instanceof ObjectClassProperty || property instanceof ClassDataProperty;
                 mResult.add(property);
             }
         }

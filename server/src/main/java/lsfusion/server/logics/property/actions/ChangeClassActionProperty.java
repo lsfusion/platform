@@ -45,16 +45,25 @@ public class ChangeClassActionProperty<T extends PropertyInterface, I extends Pr
      public final CalcPropertyMapImplement<T, I> where;
      private final I changeInterface;
 
+     // когда класс с которого меняется не известен
+     public static ImMap<CalcProperty, Boolean> aspectChangeBaseExtProps(BaseClass baseClass) {
+         return baseClass.getChildProps().addExcl(baseClass.getDataProps()).toMap(false);
+     }
+
     // вот тут пока эвристика вообще надо на внешний контекст смотреть (там может быть веселье с последействием), но пока будет работать достаточно эффективно
      @Override
      public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
          OrObjectClassSet orSet;
          if(needDialog() || where==null || (orSet = where.mapClassWhere(ClassType.wherePolicy).getOrSet(changeInterface))==null)
-             return baseClass.getChildProps().toMap(false);
+             return aspectChangeBaseExtProps(baseClass);
 
          MSet<CalcProperty> mResult = SetFact.mSet(); // можно было бы оптимизировать (для exclAdd в частности), но пока не критично
-         for(ConcreteCustomClass cls : orSet.getSetConcreteChildren())
+         if(valueClass instanceof CustomClass) // не удаление
+             mResult.addAll(((CustomClass) valueClass).getDataProps());
+         for(ConcreteCustomClass cls : orSet.getSetConcreteChildren()) {
              mResult.addAll(cls.getChangeProps((ConcreteObjectClass) valueClass));
+             mResult.addAll(cls.getDataProps());
+         }
 /*         for(CustomClass cls : orSet.up.wheres) {
              cls.fillChangeProps((ConcreteObjectClass)valueClass, mResult);
              mResult.exclAddAll(cls.getChildDropProps((ConcreteObjectClass) valueClass));
