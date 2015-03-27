@@ -728,16 +728,16 @@ META defineDocumentHeaderQuantityCustom (object, detail)
     @defineDocumentHeaderQuantityCustomPrefix(object, detail, , );
 END
 META defineDocumentInterfaceHeaderQuantityCustom (object, detail)
-    @defineDocumentHeaderQuantityCustom (object, detail)
-    @defineDocumentHeaderQuantityCustom (user###object, user###detail)
+    @defineDocumentHeaderQuantityCustom (object, detail);
+    @defineDocumentHeaderQuantityCustom (user###object, user###detail);
 END
 
 META defineDocumentHeaderQuantityPrefix (object, prefix, caption)
     @defineDocumentHeaderQuantityCustomPrefix(object, object##Detail, prefix, caption);
 END
 META defineDocumentInterfaceHeaderQuantityPrefix (object, prefix, caption)
-    @defineDocumentHeaderQuantityPrefix (object, prefix, caption)
-    @defineDocumentHeaderQuantityPrefix (user###object, prefix, caption)
+    @defineDocumentHeaderQuantityPrefix (object, prefix, caption);
+    @defineDocumentHeaderQuantityPrefix (user###object, prefix, caption);
 END
 
 META defineDocumentHeaderQuantity (object)
