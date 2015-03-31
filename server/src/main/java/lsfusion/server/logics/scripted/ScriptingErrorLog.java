@@ -519,6 +519,10 @@ public class ScriptingErrorLog {
     public void emitAbstractNonCaseImplError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "WHEN ... THEN block should be used only with CASE abstract");
     }
+    
+    public void emitPropertyWithParamsExpected(ScriptParser parser, String property, String paramClasses) throws SemanticErrorException {
+        emitSimpleError(parser, format("Expected property with (%s) param classes: %s", paramClasses, property));
+    }
 
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);

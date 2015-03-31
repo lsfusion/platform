@@ -2202,7 +2202,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
             List<ResolveClassSet> paramClasses = getParamClasses(lcp);
             
-            assert paramClasses.size() == 1 && paramClasses.get(0).getType() == IntegerClass.instance : "Integer class as interface expected in " + propUsage.name;
+            if (paramClasses.size() != 1 || paramClasses.get(0).getType() != IntegerClass.instance) {
+                errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, "INTEGER");
+            }
             
             props.add(lcp);
         }
