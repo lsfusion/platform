@@ -233,7 +233,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         }
 
         public ClassExprWhere calculateClassWhere() {
-            Where fullWhere = getInner().getFullWhere();
+            Where fullWhere = getInner().getFullWhere(); // в принципе сейчас можно и без groupWhere, но пока оставим так
             if(fullWhere.isFalse()) return ClassExprWhere.FALSE; // нужен потому как вызывается до create
 
             ImRevMap<BaseExpr, K> outerInner = group.toRevMap().reverse();
@@ -250,7 +250,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
                 Expr mainExpr = getInner().getMainExpr();
                 ImRevMap<BaseExpr, Expr> valueMap = MapFact.<BaseExpr, Expr>singletonRev(QueryExpr.this, mainExpr);
                 if(getInner().isSelectNotInWhere())
-                    result = ClassExprWhere.mapBack(outerInner, fullWhere).and(ClassExprWhere.mapBack(valueMap, fullWhere.and(mainExpr.getWhere())));
+                    result = ClassExprWhere.mapBack(outerInner, fullWhere).and(ClassExprWhere.mapBack(valueMap, fullWhere));
                 else
                     result = ClassExprWhere.mapBack(valueMap.addExcl(outerInner), fullWhere);
             } else

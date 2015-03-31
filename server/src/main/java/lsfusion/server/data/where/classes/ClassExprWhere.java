@@ -274,7 +274,8 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
                 return ClassExprWhere.FALSE;
             }
             protected ClassExprWhere proceedBase(Where data, ImMap<BaseExpr, BaseExpr> outerInner) {
-                return data.getClassWhere().mapBack(outerInner);
+                // тут фокус в том что так-как exclusive в CaseList не гарантируется с точки зрения булевой логики (только с точки зрения семантики), getWhere за пределами inner не гарантирует все assertion'ы (например то что SingleClassExpr.isClass - getOrSet не null + assertion в intersect)
+                return data.and(Expr.getWhere(outerInner)).getClassWhere().mapBack(outerInner);
             }
             protected ClassExprWhere add(ClassExprWhere op1, ClassExprWhere op2) {
                 return op1.or(op2);
@@ -292,12 +293,12 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             protected ClassExprWhere proceedBase(Where data, ImMap<BaseExpr, BaseExpr> outerInner) {
                 Result<ImRevMap<BaseExpr, BaseExpr>> innerOuter = new Result<ImRevMap<BaseExpr, BaseExpr>>();
                 Where where = Expr.andExprCheck(outerWhere, GroupExpr.getEqualsWhere(GroupExpr.groupMap(outerInner, outerWhere.getExprValues(), innerOuter)));
-                return where.getClassWhere().mapBack(innerOuter.result).and(data.getClassWhere());
+                return where.getClassWhere().mapBack(innerOuter.result).and(data.and(Expr.getWhere(outerInner)).getClassWhere()); // см. выше
             }
             protected ClassExprWhere add(ClassExprWhere op1, ClassExprWhere op2) {
                 return op1.or(op2);
             }
-        }.proceed(Expr.getWhere(outerInner.values()), outerInner);
+        }.proceed(Where.TRUE, outerInner);
     }
 
     private class OuterContext extends AbstractOuterContext<OuterContext> {
