@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
+import static lsfusion.base.BaseUtils.systemLogger;
 import static lsfusion.interop.ClassViewType.GRID;
 import static lsfusion.interop.ClassViewType.HIDE;
 import static lsfusion.interop.Order.*;
@@ -1461,13 +1462,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
         for (GroupObjectInstance group : getOrderGroups()) {
-            ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh, result, mChangedProps, this);
-            if (selectObjects != null) // то есть нужно изменять объект
-                updateGroupObject = new GroupObjectValue(group, selectObjects);
+            try {
+                ImMap<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, queryEnv, getModifier(), environmentIncrement, this, BL.LM.baseClass, isHidden(group), refresh, result, mChangedProps, this);
+                if (selectObjects != null) // то есть нужно изменять объект
+                    updateGroupObject = new GroupObjectValue(group, selectObjects);
 
-            if (group.getDownTreeGroups().size() == 0 && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
-                updateGroupObject.group.update(session, result, this, updateGroupObject.value);
-                updateGroupObject = null;
+                if (group.getDownTreeGroups().size() == 0 && updateGroupObject != null) { // так как в tree группе currentObject друг на друга никак не влияют, то можно и нужно делать updateGroupObject в конце
+                    updateGroupObject.group.update(session, result, this, updateGroupObject.value);
+                    updateGroupObject = null;
+                }
+            } catch (EmptyStackException e) {
+                systemLogger.error("OBJECTS : " + group.toString() + " FORM " + entity.toString());
+                throw Throwables.propagate(e);
             }
         }
 
