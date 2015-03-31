@@ -359,23 +359,39 @@ END
 
 // Closed
 closeDocumentsDate = ABSTRACT ACTION LIST (DATE);
+
+documentsClosedDate 'Дата закрытия документов' = DATA DATE();
+ 
 dialogCloseDocumentsDate 'Закрыть документы' = ACTION () {
-    FORM dialogDate MODAL;
+    IF documentsClosedDate() THEN
+        FORM dialogDate OBJECTS d = documentsClosedDate() MODAL
+    ELSE
+        FORM dialogDate MODAL;
     IF formResult() == FormResult.ok THEN {
+        documentsClosedDate() <- chosenDate('d');
         closeDocumentsDate(chosenDate('d'));
         apply();
     }
 }
 
 EXTEND FORM options
-    PROPERTIES dialogCloseDocumentsDate()
+    PROPERTIES documentsClosedDate(), dialogCloseDocumentsDate()
 ;
 
 DESIGN options {
-    commons{
-        ADD PROPERTY(dialogCloseDocumentsDate());
+    commons {
+        NEW documents {
+            caption = 'Документы';
+            ADD PROPERTY(documentsClosedDate());
+            ADD PROPERTY(dialogCloseDocumentsDate());
+        }
     }
 }
+
+META defineDocumentClosedConstraint(objectClass)
+    CONSTRAINT CHANGED(date##objectClass(d)) AND date##objectClass(d) < documentsClosedDate()
+        MESSAGE 'Запрещено создавать документы до даты закрытия';
+END
 
 META defineDocumentHeaderClosed (objectClass)
     isClosed##objectClass 'Закрыт' = DATA BOOLEAN (objectClass);
