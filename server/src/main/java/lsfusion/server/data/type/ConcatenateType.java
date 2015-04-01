@@ -20,7 +20,6 @@ import lsfusion.server.data.expr.DeconcatenateExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.query.TypeEnvironment;
-import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.view.report.ReportDrawField;
@@ -113,31 +112,31 @@ public class ConcatenateType extends AbstractType<Object[]> {
 //        return syntax.getCompositeSQL();
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         assert !syntax.hasDriverCompositeProblem();
 
         throw new RuntimeException("not supported yet");
     }
 
-    public void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax) throws SQLException {
         if(syntax.hasDriverCompositeProblem()) {
             for (Type type : types)
-                type.writeNullParam(statement, num, syntax, typeEnv);
+                type.writeNullParam(statement, num, syntax);
             return;
         }
 
-        super.writeNullParam(statement, num, syntax, typeEnv);
+        super.writeNullParam(statement, num, syntax);
     }
 
     @Override
-    public void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax) throws SQLException {
         if(syntax.hasDriverCompositeProblem()) {
             for (int i=0,size=types.length;i<size;i++)
-                types[i].writeParam(statement, num, ((Object[])value)[i], syntax, typeEnv);
+                types[i].writeParam(statement, num, ((Object[])value)[i], syntax);
             return;
         }
 
-        super.writeParam(statement, num, value, syntax, typeEnv);
+        super.writeParam(statement, num, value, syntax);
     }
 
     private static String getDeconcName(String name, int i) {
@@ -145,7 +144,7 @@ public class ConcatenateType extends AbstractType<Object[]> {
     }
 
     @Override
-    public boolean isSafeType(Object value) { // важно что not safe иначе в parsing'е не будет этого типа
+    public boolean isSafeType() { // важно что not safe иначе в parsing'е не будет этого типа
         return false;
     }
 

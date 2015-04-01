@@ -7,7 +7,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.DataClass;
@@ -17,9 +16,7 @@ import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.expr.where.pull.ExprPullWheres;
-import lsfusion.server.data.query.CompileSource;
-import lsfusion.server.data.query.ExecuteEnvironment;
-import lsfusion.server.data.query.JoinData;
+import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.stat.FormulaJoin;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
@@ -80,8 +77,8 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
                 return PostgreDataAdapter.debugSyntax;
             }
 
-            public ExecuteEnvironment getEnv() {
-                return ExecuteEnvironment.EMPTY;
+            public MStaticExecuteEnvironment getMEnv() {
+                return StaticExecuteEnvironmentImpl.MVOID;
             }
 
             public int getExprCount() {

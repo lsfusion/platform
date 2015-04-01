@@ -34,8 +34,9 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
 
     public static ImSet<ParamExpr> getOuterColKeys(ImCol<? extends OuterContext> array) {
         MSet<ParamExpr> mResult = SetFact.mSet();
-        for(OuterContext<?> element : array)
+        for(OuterContext<?> element : array) {
             mResult.addAll(element.getOuterKeys());
+        }
         return mResult.immutable();
     }
 

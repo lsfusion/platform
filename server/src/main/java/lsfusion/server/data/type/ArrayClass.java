@@ -57,7 +57,7 @@ public class ArrayClass<T> extends DataClass<T[]> {
         throw new RuntimeException("not supported");
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         if(1==1) throw new RuntimeException("not supported"); // не совсем понятно что с TypeEnvironment делать
         statement.setArray(num, statement.getConnection().createArrayOf(type.getDB(syntax, null), (Object[]) value)); // not tested
     }

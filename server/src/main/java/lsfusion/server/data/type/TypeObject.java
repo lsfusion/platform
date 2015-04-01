@@ -36,7 +36,7 @@ public class TypeObject extends AbstractParseInterface {
 
     // нужно ли делать явный type (для дат важно)
     public boolean isSafeType() {
-        return type.isSafeType(object);
+        return type.isSafeType();
     }
 
     public Type getType() {
@@ -47,12 +47,12 @@ public class TypeObject extends AbstractParseInterface {
         return type.getString(object, syntax);
     }
 
-    public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax, TypeEnvironment env) throws SQLException {
-        type.writeParam(statement, paramNum, object, syntax, env);
+    public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException {
+        type.writeParam(statement, paramNum, object, syntax);
     }
 
     public void writeNullParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax, TypeEnvironment env) throws SQLException {
-        type.writeParam(statement, paramNum, object, syntax, env);
+        type.writeParam(statement, paramNum, object, syntax);
     }
 
     public ConcatenateType getConcType() {

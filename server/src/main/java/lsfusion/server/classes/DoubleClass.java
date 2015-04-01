@@ -80,7 +80,7 @@ public class DoubleClass extends IntegralClass<Double> {
         return anDouble;
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setDouble(num, (Double)value);
     }
 

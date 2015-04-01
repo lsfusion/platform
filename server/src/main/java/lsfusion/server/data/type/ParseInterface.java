@@ -15,7 +15,7 @@ public interface ParseInterface {
     public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion);
     
     // иначе
-    public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax, TypeEnvironment env) throws SQLException;
+    public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException;
 
     public boolean isSafeType();
 

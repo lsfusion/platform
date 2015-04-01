@@ -1,6 +1,5 @@
 package lsfusion.server.classes;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
 import lsfusion.server.data.query.TypeEnvironment;
@@ -90,7 +89,7 @@ public class ByteArrayClass extends DataClass<byte[]> {
         return set.getBytes(name);
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setBytes(num, (byte[]) value);
     }
 

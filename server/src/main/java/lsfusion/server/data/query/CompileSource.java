@@ -24,12 +24,12 @@ public abstract class CompileSource {
 
     public final ImRevMap<ParseValue,String> params;
     public final SQLSyntax syntax;
-    public final ExecuteEnvironment env;
+    public final MStaticExecuteEnvironment env;
 
     public final KeyType keyType;
     public final Where fullWhere;
 
-    protected CompileSource(KeyType keyType, Where fullWhere, ImRevMap<ParseValue, String> params, SQLSyntax syntax, ExecuteEnvironment env) {
+    protected CompileSource(KeyType keyType, Where fullWhere, ImRevMap<ParseValue, String> params, SQLSyntax syntax, MStaticExecuteEnvironment env) {
         this.keyType = keyType;
         this.fullWhere = fullWhere;
         this.params = params;

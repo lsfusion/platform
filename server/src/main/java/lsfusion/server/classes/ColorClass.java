@@ -72,7 +72,7 @@ public class ColorClass extends DataClass<Color> {
     }
 
     @Override
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setInt(num, ((Color) value).getRGB());
     }
 

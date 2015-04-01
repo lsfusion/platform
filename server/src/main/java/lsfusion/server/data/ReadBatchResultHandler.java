@@ -1,5 +1,6 @@
 package lsfusion.server.data;
 
+import lsfusion.base.Provider;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -7,7 +8,7 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 
 import java.sql.SQLException;
 
-public abstract class ReadBatchResultHandler<K, V> implements ResultHandler<K, V> {
+public abstract class ReadBatchResultHandler<K, V> implements ResultHandler<K, V>, Provider<ImOrderMap<ImMap<K, Object>, ImMap<V, Object>>> {
 
     private final int batchThreshold;
 
@@ -34,7 +35,11 @@ public abstract class ReadBatchResultHandler<K, V> implements ResultHandler<K, V
         proceedBatch();
     }
 
-    public MOrderExclMap<ImMap<K, Object>, ImMap<V, Object>> getPrevResults() {
-        return mExecResult;
+    public ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> get() {
+        return mExecResult.immutableOrderCopy();
+    }
+
+    public Provider<ImOrderMap<ImMap<K, Object>, ImMap<V, Object>>> getPrevResults() {
+        return this;
     }
 }

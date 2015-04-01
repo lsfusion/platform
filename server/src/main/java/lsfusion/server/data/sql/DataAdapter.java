@@ -254,7 +254,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "DATE_TRUNC('second', CURRENT_TIMESTAMP)";
     }
 
-    public String getTypeChange(Type oldType, Type type, String name, ExecuteEnvironment env) {
+    public String getTypeChange(Type oldType, Type type, String name, MStaticExecuteEnvironment env) {
         throw new UnsupportedOperationException();
     }
 
@@ -284,7 +284,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public void setLogLevel(Connection connection, int level) {
     }
 
-    public boolean orderTopTrouble() {
+    public boolean orderTopProblem() {
         throw new RuntimeException("unknown");
     }
 
@@ -407,7 +407,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
 //        statement.setQueryTimeout(1);
         SQLSession.ParamNum paramNum = new SQLSession.ParamNum();
         for(TypeObject param : params)
-            param.writeParam(statement, paramNum, this, ExecuteEnvironment.EMPTY);
+            param.writeParam(statement, paramNum, this);
         try {
             statement.execute();
         } catch(SQLException e) {

@@ -21,6 +21,7 @@ import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.*;
 import lsfusion.server.classes.LogicalClass;
+import lsfusion.server.data.SQLQuery;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
@@ -227,17 +228,18 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
 
         final Result<ImMap<Expr,String>> fromPropertySelect = new Result<ImMap<Expr, String>>();
         Result<ImCol<String>> fromWhereSelect = new Result<ImCol<String>>(); // проверить crossJoin
+        Result<ImMap<String, SQLQuery>> subQueries = new Result<ImMap<String, SQLQuery>>();
         lsfusion.server.data.query.Query<KeyExpr,Expr> subQuery = new lsfusion.server.data.query.Query<KeyExpr,Expr>(getInner().getQueryKeys().toRevMap(),
                 group.keys().addExcl(query.getExprs()).toMap(), getInner().getFullWhere());
         CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(source.syntax, subcontext);
-        String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, fromWhereSelect, source.params, null);
+        String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, fromWhereSelect, subQueries, source.params, null);
         
         ImCol<String> whereSelect = fromWhereSelect.result.mergeCol(group.mapColValues(new GetKeyValue<String, Expr, BaseExpr>() {
             public String getMapValue(Expr key, BaseExpr value) {
                 return fromPropertySelect.result.get(key)+"="+value.getSource(source);
             }}));
 
-        return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect.result, compiled.propertyReaders, subQuery, source.syntax, source.env, getType()),
+        return "(" + source.syntax.getSelect(fromSelect, query.getSource(fromPropertySelect.result, compiled.getMapPropertyReaders(), subQuery, source.syntax, source.env, getType()),
                 whereSelect.toString(" AND "), "", "", "", "") + ")";
     }
 

@@ -96,7 +96,7 @@ public class ActionPropertyMapImplement<P extends PropertyInterface, T extends P
     }
 
     public ActionPropertyValueImplement<P> getValueImplement(ImMap<T, ? extends ObjectValue> mapObjects) {
-        return new ActionPropertyValueImplement<P>(property, mapping.join(mapObjects));
+        return new ActionPropertyValueImplement<P>(property, mapping.join(mapObjects), null);
     }
 
     public Graph<ActionCase<T>> mapAbstractGraph() {

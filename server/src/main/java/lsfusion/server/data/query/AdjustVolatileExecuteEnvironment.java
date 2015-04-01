@@ -7,7 +7,7 @@ import lsfusion.server.data.SQLSession;
 
 import java.sql.SQLException;
 
-public class AdjustVolatileExecuteEnvironment extends QueryExecuteEnvironment {
+public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment {
 
     private boolean volatileStats;
     private boolean fixVolatile;
@@ -57,7 +57,7 @@ public class AdjustVolatileExecuteEnvironment extends QueryExecuteEnvironment {
         }
     }
 
-    public synchronized QueryExecuteInfo getInfo(SQLSession session, int transactTimeout) {
+    public synchronized DynamicExecEnvSnapshot getInfo(SQLSession session, int transactTimeout) {
         int setTimeout = timeout;
         if(setTimeout > 0)
             setTimeout = BaseUtils.max(setTimeout, getTransAdjust(session));
@@ -67,6 +67,6 @@ public class AdjustVolatileExecuteEnvironment extends QueryExecuteEnvironment {
             setTimeout = transactTimeout;
             result = volatileStats;
         }
-        return new QueryExecuteInfo(setTimeout, result);
+        return new DynamicExecEnvSnapshot(setTimeout, result);
     }
 }

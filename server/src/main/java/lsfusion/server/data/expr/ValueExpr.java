@@ -56,7 +56,14 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
     public static StaticValueExpr COUNT = new StaticValueExpr(1, COUNTCLASS);
 
     public String getSource(CompileSource compile) {
-        return compile.params.get(this);
+        String result = compile.params.get(this);
+
+        // регистрируем тип заранее в env, потому как при парсинге он только проверяется
+        Type type = objectClass.getType();
+        if (!type.isSafeType())
+            type.getCast(result, compile.syntax, compile.env);
+
+        return result;
     }
 
     public Type getType(KeyType keyType) {

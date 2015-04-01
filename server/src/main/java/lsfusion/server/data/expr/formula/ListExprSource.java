@@ -4,7 +4,8 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.query.CompileSource;
-import lsfusion.server.data.query.ExecuteEnvironment;
+import lsfusion.server.data.query.MStaticExecuteEnvironment;
+import lsfusion.server.data.query.StaticExecuteEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 
 public abstract class ListExprSource extends ContextListExprType implements ExprSource {
@@ -23,7 +24,7 @@ public abstract class ListExprSource extends ContextListExprType implements Expr
         return getCompileSource().syntax;
     }
 
-    public ExecuteEnvironment getEnv() {
+    public MStaticExecuteEnvironment getMEnv() {
         return getCompileSource().env;
     }
 

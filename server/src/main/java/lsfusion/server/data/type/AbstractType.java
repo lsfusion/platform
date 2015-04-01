@@ -11,7 +11,7 @@ import java.sql.SQLException;
 
 public abstract class AbstractType<T> extends AbstractReader<T> implements Type<T> {
 
-    public boolean isSafeType(Object value) {
+    public boolean isSafeType() {
         return true;
     }
 
@@ -40,11 +40,11 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return object;
     }
 
-    protected abstract void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException;
-    public void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
-        writeParam(statement, num.get(), value, syntax, typeEnv);
+    protected abstract void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException;
+    public void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax) throws SQLException {
+        writeParam(statement, num.get(), value, syntax);
     }
-    public void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax) throws SQLException {
         statement.setNull(num.get(), getSQL(syntax));
     }
 

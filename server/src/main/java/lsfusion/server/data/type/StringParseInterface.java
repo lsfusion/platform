@@ -1,7 +1,6 @@
 package lsfusion.server.data.type;
 
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 
 import java.sql.PreparedStatement;
@@ -12,7 +11,7 @@ public abstract class StringParseInterface extends AbstractParseInterface {
         return true;
     }
 
-    public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax, TypeEnvironment env) throws SQLException {
+    public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException {
         throw new RuntimeException("not supported");
     }
 

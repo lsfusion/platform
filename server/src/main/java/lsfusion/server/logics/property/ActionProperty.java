@@ -335,6 +335,14 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         events = ((MMap<BaseEvent, SessionEnvEvent>)events).immutable();
     }
 
+    @Override
+    public String toString() {
+        String result = super.toString();
+        if(debugInfo != null)
+           result += ":" + debugInfo;
+        return result;
+    }
+
     public final FlowResult execute(ExecutionContext<P> context) throws SQLException, SQLHandledException {
 //        context.actionName = toString();
         if(paramInfo != null) {

@@ -84,7 +84,7 @@ public class IntegerClass extends IntegralClass<Integer> {
         return anInt;
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setInt(num, (Integer)value);
     }
 

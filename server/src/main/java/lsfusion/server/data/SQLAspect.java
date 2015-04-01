@@ -1,5 +1,6 @@
 package lsfusion.server.data;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.ReflectionUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -7,8 +8,9 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.Settings;
 import lsfusion.server.data.query.AdjustState;
 import lsfusion.server.data.query.AdjustVolatileExecuteEnvironment;
-import lsfusion.server.data.query.ExecuteEnvironment;
-import lsfusion.server.data.query.QueryExecuteEnvironment;
+import lsfusion.server.data.query.StaticExecuteEnvironment;
+import lsfusion.server.data.query.DynamicExecuteEnvironment;
+import lsfusion.server.data.type.ParseInterface;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -19,28 +21,21 @@ public class SQLAspect {
     
     private static interface ProceedDefaultEnv {
         Object proceed() throws Throwable;
-    } 
-    @Around("execution(* lsfusion.server.data.SQLSession.executeDML(java.lang.String, lsfusion.server.data.OperationOwner, lsfusion.server.data.TableOwner, lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.data.query.ExecuteEnvironment, lsfusion.server.data.query.QueryExecuteEnvironment, int)) && target(sql) && args(queryString, owner, tableOwner, paramObjects, env, queryExecEnv, transactTimeout)")
-    public Object executeDML(final ProceedingJoinPoint thisJoinPoint, final SQLSession sql, final String queryString, final OperationOwner owner, final TableOwner tableOwner, final ImMap paramObjects, final ExecuteEnvironment env, QueryExecuteEnvironment queryExecEnv, final int transactTimeout) throws Throwable {
-        return executeRepeatableStatement(thisJoinPoint, sql, owner, queryExecEnv, queryString, new ProceedDefaultEnv() {
-            public Object proceed() throws Throwable {
-                return thisJoinPoint.proceed(new Object[] {sql, queryString, owner, tableOwner, paramObjects, env, QueryExecuteEnvironment.DEFAULT, transactTimeout});
-            }});
     }
 
-    @Around("execution(* lsfusion.server.data.SQLSession.executeSelect(java.lang.String, lsfusion.server.data.OperationOwner, lsfusion.server.data.query.ExecuteEnvironment, lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.data.query.QueryExecuteEnvironment, int," +
-            "lsfusion.base.col.interfaces.immutable.ImRevMap, lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.base.col.interfaces.immutable.ImRevMap, lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.data.ResultHandler)) && target(sql) && args(select, owner, env, paramObjects, queryExecEnv, transactTimeout, keyNames, keyReaders, propertyNames, propertyReaders, resultHandler)")
-    public Object executeSelect(final ProceedingJoinPoint thisJoinPoint, final SQLSession sql, final String select, final OperationOwner owner, final ExecuteEnvironment env, final ImMap paramObjects, QueryExecuteEnvironment queryExecEnv, final int transactTimeout, final ImRevMap keyNames, final ImMap keyReaders, final ImRevMap propertyNames, final ImMap propertyReaders, final ResultHandler resultHandler) throws Throwable {
-        return executeRepeatableStatement(thisJoinPoint, sql, owner, queryExecEnv, select, new ProceedDefaultEnv() {
+    @Around("execution(* lsfusion.server.data.SQLSession.executeCommand(lsfusion.server.data.SQLCommand, lsfusion.server.data.OperationOwner, lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.data.query.DynamicExecuteEnvironment, int," +
+            "java.lang.Object)) && target(sql) && args(command, owner, paramObjects, queryExecEnv, transactTimeout, handler)")
+    public Object executeCommand(final ProceedingJoinPoint thisJoinPoint, final SQLSession sql, final SQLCommand command, final OperationOwner owner, final ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, final int transactTimeout, final Object handler) throws Throwable {
+        return executeRepeatableStatement(thisJoinPoint, sql, owner, queryExecEnv, command, new ProceedDefaultEnv() {
             public Object proceed() throws Throwable {
-                return thisJoinPoint.proceed(new Object[] {sql, select, owner, env, paramObjects, QueryExecuteEnvironment.DEFAULT, transactTimeout, keyNames, keyReaders, propertyNames, propertyReaders, resultHandler});
+                return thisJoinPoint.proceed(new Object[] {sql, command, owner, paramObjects, DynamicExecuteEnvironment.DEFAULT, transactTimeout, handler});
             }});
     }
 
     // проверка на closed
-    private Object executeRepeatableStatement(ProceedingJoinPoint thisJoinPoint, SQLSession session, OperationOwner owner, QueryExecuteEnvironment env, String command, ProceedDefaultEnv proceedDefault) throws Throwable {
-        if(command.length() > Settings.get().getQueryLengthLimit())
-            throw new SQLTooLongQueryException(command);
+    private Object executeRepeatableStatement(ProceedingJoinPoint thisJoinPoint, SQLSession session, OperationOwner owner, DynamicExecuteEnvironment env, SQLCommand command, ProceedDefaultEnv proceedDefault) throws Throwable {
+        if(command.command.length() > Settings.get().getQueryLengthLimit())
+            throw new SQLTooLongQueryException(command.command);
         
         Object result = null;
         Result<Boolean> wasException = new Result<Boolean>();
@@ -74,10 +69,10 @@ public class SQLAspect {
             
             env.succeeded(state);
         } catch (SQLHandledException e) {
-            if(!(e instanceof SQLTimeoutException && !((SQLTimeoutException)e).isTransactTimeout))
+            if (!(e instanceof SQLTimeoutException && !((SQLTimeoutException) e).isTransactTimeout))
                 throw e;
             env.failed(state);
-            if(e.isInTransaction()) // транзакция все равно прервана
+            if (e.isInTransaction()) // транзакция все равно прервана
                 throw e;
             // вообще тут только timeout и closed могут быть.
             wasException.set(true);

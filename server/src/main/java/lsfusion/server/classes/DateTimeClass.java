@@ -96,12 +96,12 @@ public class DateTimeClass extends DataClass<Timestamp> {
         return set.getTimestamp(name);
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setTimestamp(num, (Timestamp) value);
     }
 
     @Override
-    public boolean isSafeType(Object value) {
+    public boolean isSafeType() {
         return false;
     }
 

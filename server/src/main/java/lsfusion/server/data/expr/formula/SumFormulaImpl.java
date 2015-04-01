@@ -3,7 +3,7 @@ package lsfusion.server.data.expr.formula;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.data.expr.formula.conversion.*;
-import lsfusion.server.data.query.ExecuteEnvironment;
+import lsfusion.server.data.query.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
@@ -35,7 +35,7 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
         }
 
         @Override
-        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, ExecuteEnvironment env) {
+        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env) {
             Type type = conversion.getType(type1, type2);
             if (type != null) {
                 return "(" + src1 + "+" + src2 + ")";
@@ -52,7 +52,7 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
         }
 
         @Override
-        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, ExecuteEnvironment env) {
+        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env) {
             Type type = conversion.getType(type1, type2);
             if (type != null) {
                 if (!(type1 instanceof StringClass)) {

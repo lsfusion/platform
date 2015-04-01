@@ -70,7 +70,7 @@ public class StaticValueExpr extends StaticExpr<StaticClass> implements ParseVal
             } else {
                 result = compile.params.get(this);
             }
-            if (!type.isSafeType(object))
+            if (!type.isSafeType())
                 result = type.getCast(result, compile.syntax, compile.env);
             return result;
         }

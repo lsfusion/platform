@@ -42,7 +42,21 @@ public abstract class CaseList<A, D extends A,C extends Case<D>> implements Iter
     protected CaseList(ImSet<C> list) {
         this.list = list;
         this.exclusive = true;
+
+//        assert checkExclusiveness(); // далеко не всегда будет выполняться в частности при изменении классов
     }
+
+//    protected boolean checkExclusiveness() {
+//        ImSet<C> set = (ImSet<C>) list;
+//        for(int i=0,size=set.size();i<size;i++) {
+//            for(int j=i+1;j<size;j++) {
+//                if(!set.get(i).where.and(set.get(j).where).not().checkTrue())
+//                    if(!set.toString().contains("_CLASS_"))
+//                        set = set;
+//            }
+//        }
+//        return true;
+//    }
 
     public boolean equals(Object obj) {
         return obj instanceof CaseList && exclusive == ((CaseList)obj).exclusive && list.equals(((CaseList)obj).list);

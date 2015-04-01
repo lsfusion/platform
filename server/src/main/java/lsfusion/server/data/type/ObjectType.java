@@ -86,8 +86,8 @@ public class ObjectType extends AbstractType<Integer> {
         return anInt;
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
-        idClass.writeParam(statement, num, value, syntax, typeEnv);
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+        idClass.writeParam(statement, num, value, syntax);
     }
 
     public boolean isSafeString(Object value) {

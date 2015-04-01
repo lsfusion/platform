@@ -6,7 +6,8 @@ import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.CompileOrder;
-import lsfusion.server.data.query.ExecuteEnvironment;
+import lsfusion.server.data.query.MStaticExecuteEnvironment;
+import lsfusion.server.data.query.StaticExecuteEnvironment;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.*;
 
@@ -118,7 +119,7 @@ public interface SQLSyntax {
 
     boolean noDynamicSampling();
 
-    boolean orderTopTrouble();
+    boolean orderTopProblem();
     
     boolean isDeadLock(SQLException e);
 
@@ -222,7 +223,7 @@ public interface SQLSyntax {
 
     boolean doesNotTrimWhenCastToVarChar();
 
-    String getTypeChange(Type oldType, Type type, String name, ExecuteEnvironment env);
+    String getTypeChange(Type oldType, Type type, String name, MStaticExecuteEnvironment env);
 
     boolean hasNotNullIndexProblem();
 }

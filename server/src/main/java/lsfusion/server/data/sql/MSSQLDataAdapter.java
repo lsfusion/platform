@@ -26,10 +26,7 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.query.CompileOrder;
-import lsfusion.server.data.query.ExecuteEnvironment;
-import lsfusion.server.data.query.TypeEnvironment;
-import lsfusion.server.data.query.TypeFunc;
+import lsfusion.server.data.query.*;
 import lsfusion.server.data.type.*;
 import lsfusion.server.logics.BusinessLogics;
 import org.apache.commons.exec.CommandLine;
@@ -465,7 +462,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String getTypeChange(Type oldType, Type type, String name, ExecuteEnvironment env) {
+    public String getTypeChange(Type oldType, Type type, String name, MStaticExecuteEnvironment env) {
         return type.getDB(this, env);
     }
 
@@ -822,7 +819,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
 
     @Override
-    public boolean orderTopTrouble() { // будем считать базу умной
+    public boolean orderTopProblem() { // будем считать базу умной
         return false;
     }
 

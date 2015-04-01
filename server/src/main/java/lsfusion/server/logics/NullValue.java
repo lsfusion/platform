@@ -11,7 +11,6 @@ import lsfusion.server.data.Field;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.type.ParseInterface;
@@ -113,8 +112,8 @@ public class NullValue extends ObjectValue<NullValue> {
             return SQLSyntax.NULL;
         }
 
-        public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax, TypeEnvironment env) throws SQLException {
-            type.writeNullParam(statement, paramNum, syntax, env);
+        public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException {
+            type.writeNullParam(statement, paramNum, syntax);
         }
 
         public boolean isSafeType() {

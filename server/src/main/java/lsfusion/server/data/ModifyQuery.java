@@ -12,12 +12,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.session.DataSession;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 public class ModifyQuery {
     public final Table table;
@@ -92,7 +88,7 @@ public class ModifyQuery {
                     }}, ",");
 
                 update = "UPDATE " + table.getName(syntax) + " SET " + setString + " FROM " + table.getName(syntax) + " JOIN (" +
-                        changeCompile.select + ") " + changeAlias + " ON " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
+                        changeCompile.sql.command + ") " + changeAlias + " ON " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
                 break;
             case 0:
                 // по умолчанию - нормальная
@@ -112,7 +108,8 @@ public class ModifyQuery {
                 throw new RuntimeException();
         }
 
-        return new SQLExecute(update,changeCompile.getQueryParams(env), changeCompile.env, changeCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
+        SQLDML dml = new SQLDML(update, changeCompile.sql.subQueries, changeCompile.sql.env);
+        return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
     }
 
     public SQLExecute getDelete(final SQLSyntax syntax) {
@@ -132,7 +129,7 @@ public class ModifyQuery {
                     }});
 
                 delete = "DELETE FROM " + table.getName(syntax) + " FROM " + table.getName(syntax) + " JOIN (" +
-                        deleteCompile.select + ") " + deleteAlias + " ON " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
+                        deleteCompile.sql.command + ") " + deleteAlias + " ON " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
                 break;
             case 0:
                 deleteAlias = "ch_dl_sq";
@@ -142,13 +139,14 @@ public class ModifyQuery {
                         return table.getName(syntax) + "." + value.getName(syntax) + "=" + deleteAlias + "." + deleteCompile.keyNames.get(value);
                     }});
 
-                delete = "DELETE FROM " + table.getName(syntax) + " USING (" + deleteCompile.select + ") " + deleteAlias + " WHERE " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
+                delete = "DELETE FROM " + table.getName(syntax) + " USING (" + deleteCompile.sql.command + ") " + deleteAlias + " WHERE " + (whereSelect.size()==0? Where.TRUE_STRING:whereSelect.toString(" AND "));
                 break;
             default:
                 throw new UnsupportedOperationException();
         }
 
-        return new SQLExecute(delete, deleteCompile.getQueryParams(env), deleteCompile.env, deleteCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
+        SQLDML dml = new SQLDML(delete, deleteCompile.sql.subQueries, deleteCompile.sql.env);
+        return new SQLExecute(dml, deleteCompile.getQueryParams(env), deleteCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
     }
 
 
@@ -178,37 +176,17 @@ public class ModifyQuery {
         return leftKeysQuery.getQuery();
     }
 
-    private static String getInsertCastSelect(final CompiledQuery<KeyField, PropertyField> changeCompile, SQLSyntax syntax, ExecuteEnvironment env) {
-        if(changeCompile.union && syntax.nullUnionTrouble()) {
-            final String alias = "castalias";
-            boolean casted = false;
-            String exprs = changeCompile.keyOrder.toString(new GetValue<String, KeyField>() {
-                public String getMapValue(KeyField value) {
-                    return alias + "." + changeCompile.keyNames.get(value);
-                }}, ",");
-            for(PropertyField propertyField : changeCompile.propertyOrder) { // последействие
-                String propertyExpr = alias + "." + changeCompile.propertyNames.get(propertyField);
-                if(changeCompile.propertyReaders.get(propertyField) instanceof NullReader) { // если null, вставляем явный cast
-                    propertyExpr = propertyField.type.getCast(propertyExpr, syntax, env);
-                    casted = true;
-                }
-                exprs = (exprs.length()==0?"":exprs+",") + propertyExpr;
-            }
-            if(casted)
-                return "SELECT " + exprs + " FROM (" + changeCompile.select + ") " + alias; 
-        }
-        return changeCompile.select;
-    }
-
     public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax) {
         CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(syntax);
 
         String insertString = SetFact.addOrderExcl(changeCompile.keyOrder, changeCompile.propertyOrder).toString(Field.<Field>nameGetter(syntax), ",");
 
-        ExecuteEnvironment execEnv = new ExecuteEnvironment();
-        execEnv.add(changeCompile.env);
+        MStaticExecuteEnvironment execEnv = StaticExecuteEnvironmentImpl.mEnv(changeCompile.sql.env);
+        SQLDML dml = new SQLDML("INSERT INTO " + name + " (" + (insertString.length() == 0 ? "dumb" : insertString) + ") " +
+                changeCompile.sql.getInsertSelect(true, changeCompile.keyOrder.mapOrder(changeCompile.keyNames), changeCompile.propertyOrder.mapOrder(changeCompile.propertyNames),
+                        changeCompile.propertyOrder, syntax, execEnv), changeCompile.sql.subQueries, execEnv.finish());
 
-        return new SQLExecute("INSERT INTO " + name + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax, execEnv),changeCompile.getQueryParams(env), execEnv, changeCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
+        return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
     }
 
     public SQLExecute getInsertSelect(SQLSyntax syntax) {

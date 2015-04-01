@@ -10,7 +10,7 @@ import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.Log4jWriter;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
-import lsfusion.server.data.query.ExecuteEnvironment;
+import lsfusion.server.data.query.MStaticExecuteEnvironment;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.type.*;
 import lsfusion.server.logics.BusinessLogics;
@@ -207,7 +207,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String getTypeChange(Type oldType, Type type, String name, ExecuteEnvironment env) {
+    public String getTypeChange(Type oldType, Type type, String name, MStaticExecuteEnvironment env) {
         String newType = type.getDB(this, env);
         return "TYPE " + newType + " USING " + name + "::" + newType;
     }
@@ -431,7 +431,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public boolean orderTopTrouble() {
+    public boolean orderTopProblem() {
         return true;
     }
 

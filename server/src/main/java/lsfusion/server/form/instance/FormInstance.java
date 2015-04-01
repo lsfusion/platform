@@ -11,7 +11,6 @@ import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKey;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImOrderValueMap;
 import lsfusion.interop.*;
 import lsfusion.interop.action.ConfirmClientAction;
@@ -1159,11 +1158,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return session.check(BL, this, interaction);
     }
 
-    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException {
+    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException {
         assert formInstance == null || this == formInstance;
         update = CompoundUpdateCurrentClasses.merge(update, outerUpdateCurrentClasses);
         
-        boolean succeeded = session.apply(BL, this, update, interaction, applyAction, keepProperties);
+        boolean succeeded = session.apply(BL, this, update, interaction, applyActions, keepProperties);
 
         if (!succeeded)
             return false;
@@ -2028,7 +2027,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     public void fireOnOk() throws SQLException, SQLHandledException {
         formResult = FormCloseType.OK;
-        fireEvent(FormEventType.OK);
+    }
+    public ImOrderSet<ActionPropertyValueImplement> getEventsOnOk() throws SQLException, SQLHandledException {
+        return getEvents(FormEventType.OK);
     }
 
     public void fireOnClose() throws SQLException, SQLHandledException {
@@ -2050,17 +2051,22 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private void fireEvent(Object eventObject) throws SQLException, SQLHandledException {
+        for(ActionPropertyValueImplement event : getEvents(eventObject))
+            event.execute(this);
+    }
+
+    private ImOrderSet<ActionPropertyValueImplement> getEvents(Object eventObject) {
+        MOrderExclSet<ActionPropertyValueImplement> mResult = SetFact.mOrderExclSet();
         Iterable<ActionPropertyObjectEntity<?>> actionsOnEvent = entity.getEventActionsListIt(eventObject);
         if (actionsOnEvent != null) {
             for (ActionPropertyObjectEntity<?> autoAction : actionsOnEvent) {
                 ActionPropertyObjectInstance<? extends PropertyInterface> autoInstance = instanceFactory.getInstance(autoAction);
                 if (autoInstance.isInInterface(null) && securityPolicy.property.change.checkPermission(autoAction.property)) { // для проверки null'ов и политики безопасности
-                    FlowResult result = autoInstance.execute(this);
-                    if (result != FlowResult.FINISH)
-                        return;
+                    mResult.exclAdd(autoInstance.getValueImplement());
                 }
             }
         }
+        return mResult.immutableOrder();
     }
 
     private FormCloseType formResult = FormCloseType.DROP;
@@ -2149,7 +2155,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         fireOnOk();
 
-        if (sessionScope.isManageSession() && !apply(BL, interaction)) {
+        if (sessionScope.isManageSession() && !apply(BL, interaction, getEventsOnOk())) {
             return;
         }
 

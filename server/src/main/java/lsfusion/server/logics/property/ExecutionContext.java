@@ -7,6 +7,7 @@ import lsfusion.base.Processor;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -348,15 +349,15 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
     }
 
     public boolean apply() throws SQLException, SQLHandledException {
-        return apply(null);
+        return apply(SetFact.<ActionPropertyValueImplement>EMPTYORDER());
     }
 
-    public boolean apply(ActionPropertyValueImplement applyAction) throws SQLException, SQLHandledException {
-        return apply(applyAction, SetFact.<SessionDataProperty>EMPTY());
+    public boolean apply(ImOrderSet<ActionPropertyValueImplement> applyActions) throws SQLException, SQLHandledException {
+        return apply(applyActions, SetFact.<SessionDataProperty>EMPTY());
     }
     
-    public boolean apply(ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
-        return getEnv().apply(getBL(), this, this, applyAction, keepProperties, getFormInstance());
+    public boolean apply(ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties) throws SQLException, SQLHandledException {
+        return getEnv().apply(getBL(), this, this, applyActions, keepProperties, getFormInstance());
     }
 
     public void cancel() throws SQLException, SQLHandledException {

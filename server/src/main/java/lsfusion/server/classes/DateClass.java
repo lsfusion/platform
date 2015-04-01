@@ -100,12 +100,12 @@ public class DateClass extends DataClass<Date> {
         return date;
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setDate(num, (Date)value);
     }
 
     @Override
-    public boolean isSafeType(Object value) {
+    public boolean isSafeType() {
         return false;
     }
 

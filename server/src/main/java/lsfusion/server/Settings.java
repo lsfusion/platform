@@ -99,7 +99,7 @@ public class Settings {
 
     private int splitIncrementApply = 10;
 
-    private int statDegree = 9;
+    private int statDegree = 5;
 
     private int barcodeLength = 13;
 
@@ -145,7 +145,7 @@ public class Settings {
 
     private double limitComplexityGrowthCoeff = 1.5;
 
-    private long limitHintIncrementStat = 1000;
+    private long limitHintIncrementStat = 200;
 
     private int limitHintNoUpdateComplexity = 4000;
 
@@ -1179,5 +1179,15 @@ public class Settings {
 
     public void setExplainThreshold(int explainThreshold) {
         this.explainThreshold = explainThreshold;
+    }
+
+    public boolean disableCompiledSubQueries = false;
+
+    public boolean isDisableCompiledSubQueries() {
+        return disableCompiledSubQueries;
+    }
+
+    public void setDisableCompiledSubQueries(boolean disableCompiledSubQueries) {
+        this.disableCompiledSubQueries = disableCompiledSubQueries;
     }
 }

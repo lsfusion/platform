@@ -1,7 +1,6 @@
 package lsfusion.server.data.type;
 
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 
 import java.sql.PreparedStatement;
@@ -24,8 +23,8 @@ public abstract class AbstractParseInterface implements ParseInterface {
             return SQLSyntax.NULL;
         }
 
-        public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax, TypeEnvironment env) throws SQLException {
-            type.writeNullParam(statement, paramNum, syntax, env);
+        public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) throws SQLException {
+            type.writeNullParam(statement, paramNum, syntax);
         }
 
         public boolean isSafeType() {

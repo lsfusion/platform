@@ -61,7 +61,7 @@ hostnameServerComputer 'Сервер' () = hostnameComputer(serverComputer());
 
 setExplainAnalyzeModeUser 'Выводить в лог EXPLAIN ANALYZE запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.SetExplainAnalyzeModeUserActionProperty' (BOOLEAN, User);
 explainAnalyzeModeUser 'Включён Explain Analyze' = DATA BOOLEAN (User);
-refreshExplainAnalyzeModeUser 'Обновить Explain Analyze'(user) = ACTION {
+refreshExplainAnalyzeModeUser 'Обновить Explain Analyze' = ACTION (user) {
     setExplainAnalyzeModeUser(explainAnalyzeModeUser(user), user);  
 }
 WHEN CHANGED(explainAnalyzeModeUser(user)) DO {

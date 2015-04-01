@@ -37,11 +37,11 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     int getSQL(SQLSyntax syntax);
 
     boolean isSafeString(Object value);
-    boolean isSafeType(Object value);
+    boolean isSafeType();
     String getString(Object value, SQLSyntax syntax);
 
-    void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException;
-    void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException;
+    void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax) throws SQLException;
+    void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax) throws SQLException;
 
     Format getReportFormat();
     int getMinimumWidth();

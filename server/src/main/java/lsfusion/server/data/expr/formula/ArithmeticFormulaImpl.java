@@ -31,7 +31,7 @@ public abstract class ArithmeticFormulaImpl extends AbstractFormulaImpl implemen
         String src1 = source.getSource(0);
         String src2 = source.getSource(1);
 
-        String sumSource = conversionSource.getSource(type1, type2, src1, src2, source.getSyntax(), source.getEnv());
+        String sumSource = conversionSource.getSource(type1, type2, src1, src2, source.getSyntax(), source.getMEnv());
 
         if (sumSource == null) {
             throw new RuntimeException("Can't build " + getOperationName() + " expression");

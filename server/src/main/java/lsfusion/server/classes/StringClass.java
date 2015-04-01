@@ -69,11 +69,11 @@ public class StringClass extends DataClass {
     }
 
     @Override
-    public boolean isSafeType(Object value) { // при полиморфных функциях странно себя ведет без explicit cast'а
+    public boolean isSafeType() { // при полиморфных функциях странно себя ведет без explicit cast'а
         return false;
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setString(num, (String) value);
     }
 

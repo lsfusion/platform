@@ -3,17 +3,13 @@ package lsfusion.server.data;
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
 import lsfusion.base.MutableClosedObject;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.server.Message;
@@ -25,7 +21,6 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.expr.where.extra.BinaryWhere;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLExecute;
@@ -450,7 +445,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void createTable(Table table, ImOrderSet<KeyField> keys) throws SQLException {
-        ExecuteEnvironment env = new ExecuteEnvironment();
+        MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
 
         if (keys.size() == 0)
             keys = SetFact.singletonOrder(KeyField.dumb);
@@ -458,7 +453,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         createString = createString + "," + getConstraintDeclare(table.getName(), keys);
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
-        executeDDL("CREATE TABLE " + table.getName(syntax) + " (" + createString + ")", env);
+        executeDDL("CREATE TABLE " + table.getName(syntax) + " (" + createString + ")", env.finish());
         addExtraIndices(table, keys);
     }
 
@@ -540,8 +535,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }*/
 
     public void addColumn(Table table, PropertyField field) throws SQLException {
-        ExecuteEnvironment env = new ExecuteEnvironment();
-        executeDDL("ALTER TABLE " + table.getName(syntax) + " ADD " + field.getDeclare(syntax, env), env); //COLUMN
+        MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
+        executeDDL("ALTER TABLE " + table.getName(syntax) + " ADD " + field.getDeclare(syntax, env), env.finish()); //COLUMN
     }
 
     public void dropColumn(Table table, Field field) throws SQLException {
@@ -561,7 +556,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void modifyColumn(Table table, Field field, Type oldType) throws SQLException {
-        ExecuteEnvironment env = new ExecuteEnvironment();
+        MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
         executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.getName(syntax) + " " + syntax.getTypeChange(oldType, field.type, field.getName(syntax), env));
     }
 
@@ -750,22 +745,23 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     // напрямую не используется, только через Pool
 
     private void dropTemporaryTableFromDB(String tableName) throws SQLException {
-        executeDDL(syntax.getDropSessionTable(tableName), ExecuteEnvironment.NOREADONLY);
+        executeDDL(syntax.getDropSessionTable(tableName), StaticExecuteEnvironmentImpl.NOREADONLY);
     }
 
     public void createTemporaryTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, OperationOwner owner) throws SQLException {
-        ExecuteEnvironment env = new ExecuteEnvironment();
+        MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
 
         if(keys.size()==0)
             keys = SetFact.singletonOrder(KeyField.dumb);
         String createString = SetFact.addExclSet(keys.getSet(), properties).toString(this.<Field>getDeclare(env), ",");
         createString = createString + "," + getConstraintDeclare(name, keys);
-        executeDDL(syntax.getCreateSessionTable(name, createString), ExecuteEnvironment.NOREADONLY, owner);
+        env.addNoReadOnly();
+        executeDDL(syntax.getCreateSessionTable(name, createString), env.finish(), owner);
     }
 
     public void vacuumAnalyzeSessionTable(String table, OperationOwner owner) throws SQLException {
 //        (isInTransaction()? "" :"VACUUM ") + по идее не надо так как TRUNCATE делается
-        executeDDL("ANALYZE " + table, ExecuteEnvironment.NOREADONLY, owner);
+        executeDDL("ANALYZE " + table, StaticExecuteEnvironmentImpl.NOREADONLY, owner);
     }
 
     private int noReadOnly = 0;
@@ -891,18 +887,18 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void executeDDL(String DDL) throws SQLException {
-        executeDDL(DDL, ExecuteEnvironment.EMPTY);
+        executeDDL(DDL, StaticExecuteEnvironmentImpl.EMPTY);
     }
 
     private void executeDDL(String DDL, OperationOwner owner) throws SQLException {
-        executeDDL(DDL, ExecuteEnvironment.EMPTY, owner);
+        executeDDL(DDL, StaticExecuteEnvironmentImpl.EMPTY, owner);
     }
 
-    private void executeDDL(String DDL, ExecuteEnvironment env) throws SQLException {
+    private void executeDDL(String DDL, StaticExecuteEnvironment env) throws SQLException {
         executeDDL(DDL, env, OperationOwner.unknown);
     }
     
-    private void executeDDL(String DDL, ExecuteEnvironment env, OperationOwner owner) throws SQLException {
+    private void executeDDL(String DDL, StaticExecuteEnvironment env, OperationOwner owner) throws SQLException {
         lockRead(owner);
 
         ExConnection connection = getConnection();
@@ -930,7 +926,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     private int executeDML(SQLExecute execute) throws SQLException, SQLHandledException {
-        return executeDML(execute.command, execute.owner, execute.tableOwner, execute.params, execute.env, execute.queryExecEnv, execute.transactTimeout);
+        return executeDML(execute.command, execute.owner, execute.tableOwner, execute.params, execute.queryExecEnv, execute.transactTimeout);
     }
 
     private static Map<Integer, Boolean> explainUserMode = new ConcurrentHashMap<Integer, Boolean>();
@@ -958,12 +954,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return getVolatileStats(userProvider.getCurrentUser());
     }
 
-    private boolean explainAnalyze() {
+    public boolean explainAnalyze() {
         Boolean eam = explainUserMode.get(userProvider.getCurrentUser());
         return eam != null && eam;
     }
 
-    private boolean explainNoAnalyze() {
+    public boolean explainNoAnalyze() {
         Boolean ea = explainNoAnalyzeUserMode.get(userProvider.getCurrentUser());
         return ea != null && ea;
     }
@@ -985,7 +981,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     // б) большое количество NULL значений (скажем 0,999975) - например признак своей компании в множестве юрлиц, тогда становится очень большая дисперсия (то есть тогда либо не компания, и результат 0, или компания и результат большой 100к, при этом когда применяется selectivity он ессно round'ся и 0-100к превращается в 10, что неправильно в общем случае)  
     // Лечится только разнесением в разные таблицы / по разным классам (когда это возможно)
     // Postgres - иногда может быть большое время планирования, но пока проблема была локальная на других базах не повторялась
-    private int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml) throws SQLException {
+    public int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml) throws SQLException {
         long l = System.currentTimeMillis();
         ResultSet result = statement.executeQuery();
         Integer rows = null;
@@ -999,12 +995,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
                 Pattern pt = Pattern.compile(" rows=((\\d)+) ");
                 Matcher matcher = pt.matcher(row);
-                int est=0;
+                long est=0;
                 int act=-1;
                 int m=0;
                 while(matcher.find()) {
                     if(m==0)
-                        est = Integer.valueOf(matcher.group(1));
+                        est = Long.valueOf(matcher.group(1));
                     if(m==1) { // 2-е соответствие
                         act = Integer.valueOf(matcher.group(1));
                         break;
@@ -1112,11 +1108,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return e;
     }
 
-    
-    private QueryExecuteInfo lockQueryExec(QueryExecuteEnvironment queryExecEnv, int transactTimeout, OperationOwner owner) {
+
+    private DynamicExecEnvSnapshot lockQueryExec(DynamicExecuteEnvironment queryExecEnv, int transactTimeout, OperationOwner owner) {
         lockRead(owner);
-        
-        QueryExecuteInfo info;
+
+        DynamicExecEnvSnapshot info;
         try {
             info = queryExecEnv.getInfo(this, transactTimeout);
 
@@ -1152,96 +1148,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         unlockTimeout(false);
     }
 
-    private void unlockQueryExec(QueryExecuteInfo info) {
+    private void unlockQueryExec(DynamicExecEnvSnapshot info) {
         unlockRead();
     }
-    
-    @Message("message.sql.execute")
-    public int executeDML(@ParamMessage String command, OperationOwner owner, TableOwner tableOwner, ImMap<String, ParseInterface> paramObjects, ExecuteEnvironment env, QueryExecuteEnvironment queryExecEnv, int transactTimeout) throws SQLException, SQLHandledException { // public для аспекта
-        QueryExecuteInfo execInfo = lockQueryExec(queryExecEnv, transactTimeout, owner);
-        queryExecEnv.beforeConnection(this, owner, execInfo);
 
-        ExConnection connection = getConnection();
-
-        int result = 0;
-        long runTime = 0;
-        Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
-        PreparedStatement statement = null;
-        
-        Result<Throwable> firstException = new Result<Throwable>();
-        boolean errorPrivate = false;
-        try {
-            env.before(this, connection, command, owner);
-
-            lockTimeout(execInfo.needTimeoutLock());
-
-            statement = getStatement((explainAnalyze() && !explainNoAnalyze()?"EXPLAIN (ANALYZE, BUFFERS, VERBOSE, COSTS) ":"") + command, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
-            queryExecEnv.beforeStatement(statement, this, execInfo);
-
-            if(explainAnalyze()) {
-                PreparedStatement explainStatement = statement;
-                Result<ReturnStatement> returnExplain = null; long explainStarted = 0;
-                if(explainNoAnalyze()) {
-                    returnExplain = new Result<ReturnStatement>();
-                    explainStatement = getStatement("EXPLAIN (VERBOSE, COSTS)" + command, paramObjects, connection, syntax, env, returnExplain, env.isNoPrepare());
-                    explainStarted = System.currentTimeMillis();
-                }
-//                systemLogger.info(explainStatement.toString());
-                env.before(this, connection, command, owner);
-                result = executeExplain(explainStatement, explainNoAnalyze(), true);
-                env.after(this, connection, command, owner);
-                if(explainNoAnalyze())
-                    returnExplain.result.proceed(explainStatement, System.currentTimeMillis() - explainStarted);
-            }
-
-            if(!(explainAnalyze() && !explainNoAnalyze())) {
-                long started = System.currentTimeMillis();
-                result = statement.executeUpdate();
-                runTime = System.currentTimeMillis() - started;
-            }
-        } catch (Throwable t) { // по хорошему тоже надо через runSuppressed, но будут проблемы с final'ами
-            t = handle(t, statement != null ? statement.toString() : "PREPARING STATEMENT", execInfo.isTransactTimeout, connection, privateConnection != null);
-            firstException.set(t);
-        }
-
-        afterExStatementExecute(firstException, command, owner, env, queryExecEnv, execInfo, connection, runTime, returnStatement, statement);
-
-        finishHandledExceptions(firstException);
-        
-        return result;
-    }
-
-    private void afterExStatementExecute(Result<Throwable> firstException, final String command, final OperationOwner owner, final ExecuteEnvironment env, final QueryExecuteEnvironment queryExecEnv, final QueryExecuteInfo execInfo, final ExConnection connection, final long runTime, final Result<ReturnStatement> returnStatement, final PreparedStatement statement) {
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                env.after(SQLSession.this, connection, command, owner);
-            }}, firstException);
-
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                if(statement!=null)
-                    returnStatement.result.proceed(statement, runTime);
-            }}, firstException);
-
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                unlockTimeout(execInfo.needTimeoutLock());
-            }}, firstException);
-
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                returnConnection(connection);
-            }}, firstException);
-
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                queryExecEnv.afterConnection(SQLSession.this, owner, execInfo);
-            }}, firstException);
-
-        unlockQueryExec(execInfo);
-    }
-
-    private void afterStatementExecute(Result<Throwable> firstException, final String command, final ExecuteEnvironment env, final ExConnection connection, final Statement statement, final OperationOwner owner) throws SQLException {
+    private void afterStatementExecute(Result<Throwable> firstException, final String command, final StaticExecuteEnvironment env, final ExConnection connection, final Statement statement, final OperationOwner owner) {
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
                 if(statement != null)
@@ -1256,7 +1167,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
                 env.after(SQLSession.this, connection, command, owner);
-            }}, firstException);
+            }
+        }, firstException);
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
@@ -1292,31 +1204,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return result;
     }
 
-    // оптимизация
-    private static <K> boolean hasConcColumns(ImMap<K, ? extends Reader> colReaders) {
-        for(int i=0,size= colReaders.size();i<size;i++)
-            if(colReaders.getValue(i) instanceof ConcatenateType)
-                return true;
-        return false;
-    }
-
-    private static <K, V> boolean hasConc(ImMap<K, ? extends Reader> keyReaders, ImMap<V, ? extends Reader> propertyReaders) {
-        return hasConcColumns(keyReaders) || hasConcColumns(propertyReaders);
-    }
-
-    private ImMap<String, String> fixConcColumns(ImMap<String, ? extends Reader> colReaders, TypeEnvironment env) {
-        MExclMap<String, String> mReadColumns = MapFact.mExclMap();
-        for(int i=0,size=colReaders.size();i<size;i++) {
-            String keyName = colReaders.getKey(i);
-            colReaders.getValue(i).readDeconc(keyName, keyName, mReadColumns, syntax, env);
-        }
-        return mReadColumns.immutable();
-    }
-
-    private String fixConcSelect(String select, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, TypeEnvironment env) {
-        return "SELECT " + SQLSession.stringExpr(fixConcColumns(keyReaders, env), fixConcColumns(propertyReaders, env)) + " FROM (" + select + ") s";
-    }
-
     public boolean outStatement = false;
     
     private static long getMemoryLimit() {
@@ -1333,141 +1220,97 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
-    public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(String select, OperationOwner owner, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, QueryExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders) throws SQLException, SQLHandledException {
+    // системные вызовы
+    public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(String select, OperationOwner owner, StaticExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<String, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<String, ? extends Reader> propertyReaders) throws SQLException, SQLHandledException {
         ReadAllResultHandler<K, V> result = new ReadAllResultHandler<K, V>();
-        executeSelect(select, owner, env, paramObjects, queryExecEnv, transactTimeout, keyNames, keyReaders, propertyNames, propertyReaders, result);
+        executeSelect(new SQLQuery(select, MapFact.<String, SQLQuery>EMPTY(), env,keyReaders, propertyReaders, false), owner, paramObjects, queryExecEnv, transactTimeout, keyNames, propertyNames, result);
         return result.terminate();
     }
 
+    public <K,V> void executeSelect(SQLQuery query, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, ImRevMap<V, String> propertyNames, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
+        executeSelect(query, owner, paramObjects, queryExecEnv, transactTimeout, new MapResultHandler<K, V, String, String>(handler, keyNames, propertyNames));
+    }
+
+    public void executeSelect(SQLQuery query, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, int transactTimeout, ResultHandler<String, String> handler) throws SQLException, SQLHandledException {
+        executeCommand(query.fixConcSelect(syntax), owner, paramObjects, queryExecEnv, transactTimeout, handler);
+    }
+
+    public int executeDML(@ParamMessage SQLDML command, OperationOwner owner, TableOwner tableOwner, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, int transactTimeout) throws SQLException, SQLHandledException { // public для аспекта
+        Result<Integer> handler = new Result<Integer>(0);
+        executeCommand(command, owner, paramObjects, queryExecEnv, transactTimeout, handler);
+        return handler.result;
+    }
+
     @Message("message.sql.execute")
-    public <K,V> void executeSelect(@ParamMessage String select, OperationOwner owner, ExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, QueryExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<K, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<V, ? extends Reader> propertyReaders, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
-        QueryExecuteInfo execInfo = lockQueryExec(queryExecEnv, transactTimeout, owner);
-        queryExecEnv.beforeConnection(this, owner, execInfo);
+    public <H> void executeCommand(@ParamMessage final SQLCommand<H> command, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, final DynamicExecuteEnvironment queryExecEnv, int transactTimeout, H handler) throws SQLException, SQLHandledException {
 
-        ExConnection connection = getConnection();
+        final DynamicExecEnvSnapshot snapEnv = lockQueryExec(queryExecEnv, transactTimeout, owner);
+        snapEnv.beforeConnection(this, owner);
 
-        if(explainAnalyze()) {
-//            systemLogger.info(select);
-            Result<ReturnStatement> returnExplain = new Result<ReturnStatement>();
-            PreparedStatement statement = getStatement("EXPLAIN (" + (explainNoAnalyze() ? "VERBOSE, BUFFERS, COSTS" : "ANALYZE") + ") " + select, paramObjects, connection, syntax, env, returnExplain, env.isNoPrepare());
-            long started = System.currentTimeMillis();
-            env.before(this, connection, select, owner);
-            executeExplain(statement, explainNoAnalyze(), false);
-            env.after(this, connection, select, owner);
-            returnExplain.result.proceed(statement, System.currentTimeMillis() - started);
-        }
+        final ExConnection connection = getConnection();
 
-        // по хорошему надо бы внутрь pool'инга вставить, но это не такой большой overhead
-        if(syntax.hasDriverCompositeProblem() && hasConc(keyReaders, propertyReaders))
-            select = fixConcSelect(select, keyNames.crossJoin(keyReaders), propertyNames.crossJoin(propertyReaders), env);
-
-        Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
         long runTime = 0;
+        final Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
         PreparedStatement statement = null;
 
+        final String string = command.getString();
+
         Result<Throwable> firstException = new Result<Throwable>();
+        StaticExecuteEnvironment env = command.env;
+
         try {
-            env.before(this, connection, select, owner);
+            env.before(this, connection, string, owner);
 
-            lockTimeout(execInfo.needTimeoutLock());
-            statement = getStatement(select, paramObjects, connection, syntax, env, returnStatement, env.isNoPrepare());
+            lockTimeout(snapEnv.needTimeoutLock());
 
-            if(outStatement)
-                System.out.println(statement.toString());
-
-            queryExecEnv.beforeStatement(statement, this, execInfo);
+            statement = getStatement(command, paramObjects, connection, syntax, snapEnv, returnStatement);
+            snapEnv.beforeStatement(statement, this);
 
             long started = System.currentTimeMillis();
-            final ResultSet result = statement.executeQuery();
+
+            command.execute(statement, handler, this);
+
             runTime = System.currentTimeMillis() - started;
-
-            long pessLimit = Settings.get().getQueryRowCountPessLimit();// пессимистичная оценка, чтобы отсекать совсем маленькие 
-            long adjLimit = 0;
-            long rowCount = 0;
-            int rowSize = 0;
-            boolean isNoQueryLimit = isNoQueryLimit();
-                                    
-            try {
-                handler.start();
-                
-                while(result.next()) {
-                    ImValueMap<K, Object> mRowKeys = keyNames.mapItValues(); // потому как exception есть
-                    for(int i=0,size=keyNames.size();i<size;i++)
-                        mRowKeys.mapValue(i, keyReaders.get(keyNames.getKey(i)).read(result, syntax, keyNames.getValue(i)));
-                    ImValueMap<V, Object> mRowProperties = propertyNames.mapItValues(); // потому как exception есть
-                    for(int i=0,size=propertyNames.size();i<size;i++)
-                        mRowProperties.mapValue(i, propertyReaders.get(propertyNames.getKey(i)).read(result, syntax, propertyNames.getValue(i)));
-                    handler.proceed(mRowKeys.immutableValue(), mRowProperties.immutableValue());
-                    
-                    if(!isNoQueryLimit && rowCount++ > pessLimit) {
-                        if(adjLimit == 0) {
-                            rowSize = calculateRowSize(keyReaders, propertyReaders, handler.getPrevResults());
-                            adjLimit = BaseUtils.max(getMemoryLimit() / rowSize, pessLimit);
-
-                            ServerLoggers.exinfoLog("LARGE QUERY LIMIT " + adjLimit + " SIZE " + rowSize + " " + statement.toString());
-                        }
-                        if(rowCount > adjLimit) {
-                            while(result.next()) {
-                                rowCount++;
-                            }
-                            throw new SQLTooLargeQueryException(rowCount, adjLimit, rowSize);
-                        }
-                    }
-                }
-
-                if(adjLimit > 0)
-                    ServerLoggers.exInfoLogger.info("LARGE QUERY ROWS COUNT " + rowCount);
-
-                handler.finish();
-            } finally {
-                result.close();
-            }
         } catch (Throwable t) { // по хорошему тоже надо через runSuppressed, но будут проблемы с final'ами
-            t = handle(t, statement != null ? statement.toString() : "PREPARING STATEMENT", execInfo.isTransactTimeout, connection, privateConnection != null);
+            t = handle(t, statement != null ? statement.toString() : "PREPARING STATEMENT", snapEnv.isTransactTimeout, connection, privateConnection != null);
             firstException.set(t);
         }
-        
-        afterExStatementExecute(firstException, select, owner, env, queryExecEnv, execInfo, connection, runTime, returnStatement, statement);
+
+        afterExStatementExecute(owner, env, snapEnv, connection, runTime, returnStatement, statement, string, firstException);
 
         finishHandledExceptions(firstException);
     }
-    
-    private <K> boolean hasUnlimited(ImMap<K, ? extends Reader> keyReaders) {
-        for(Reader reader : keyReaders.valueIt())
-            if(reader.getCharLength().isUnlimited())
-                return true;
-        return false;
-    }                                        
 
-    private <K, V> int calculateRowSize(ImMap<K, ? extends Reader> keyReaders, ImMap<V, ? extends Reader> propertyReaders, MOrderExclMap<ImMap<K, Object>, ImMap<V, Object>> mExecResult) {
-        
-        ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> execResult = null;
-        if(hasUnlimited(keyReaders) || hasUnlimited(propertyReaders)) // оптимизация
-            execResult = mExecResult.immutableOrderCopy();
+    private void afterExStatementExecute(final OperationOwner owner, final StaticExecuteEnvironment env, final DynamicExecEnvSnapshot execInfo, final ExConnection connection, final long runTime, final Result<ReturnStatement> returnStatement, final PreparedStatement statement, final String string, Result<Throwable> firstException) {
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                env.after(SQLSession.this, connection, string, owner);
+            }}, firstException);
 
-        return calculateRowSize(keyReaders, execResult == null ? null :  execResult.keyIt()) +
-                    calculateRowSize(propertyReaders, execResult == null ? null :  execResult.valueIt());
-    }
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                if (statement != null)
+                    returnStatement.result.proceed(statement, runTime);
+            }
+        }, firstException);
 
-    private <K> int calculateRowSize(ImMap<K, ? extends Reader> keyReaders, Iterable<ImMap<K, Object>> keys) {
-        int rowSize = 0;
-        for(int i=0, size = keyReaders.size();i<size;i++) {
-            Reader reader = keyReaders.getValue(i);
-            ExtInt length = reader.getCharLength();
-            if(length.isUnlimited()) {
-                K key = keyReaders.getKey(i);
-                int proceededSize = 0; int total = 0;
-                for(ImMap<K, Object> keyValue : keys) {
-                    Object value = keyValue.get(key);
-                    if(value != null)
-                        proceededSize += reader.getSize(value);
-                    total++;
-                }
-                rowSize += (proceededSize  / total);
-            } else                
-                rowSize += length.getValue();
-        }
-        return rowSize;
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                unlockTimeout(execInfo.needTimeoutLock());
+            }}, firstException);
+
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                returnConnection(connection);
+            }}, firstException);
+
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
+                execInfo.afterConnection(SQLSession.this, owner);
+            }
+        }, firstException);
+
+        unlockQueryExec(execInfo);
     }
 
     private static final Parser<Object, Object> dataParser = new Parser<Object, Object>() {
@@ -1525,13 +1368,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         ImOrderSet<PropertyField> properties = rows.getValue(0).keys().toOrderSet();
         ImOrderSet<Field> fields = SetFact.addOrderExcl(keys, properties);
 
-        final ExecuteEnvironment env = new ExecuteEnvironment();
-
+        final MStaticExecuteEnvironment mEnv = StaticExecuteEnvironmentImpl.mEnv();
         String insertString = fields.toString(Field.nameGetter(syntax), ",");
         String valueString = fields.toString(new GetValue<String, Field>() {
             public String getMapValue(Field value) {
-                return value.type.writeDeconc(syntax, env);
+                return value.type.writeDeconc(syntax, mEnv);
             }}, ",");
+        StaticExecuteEnvironment env = mEnv.finish();
 
         if(insertString.length()==0) {
             assert valueString.length()==0;
@@ -1554,10 +1397,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 ParamNum paramNum = new ParamNum();
                 ImMap<KeyField, K> rowKey = rows.getKey(i);
                 for(KeyField key : keys) // чтобы сохранить порядок
-                    parser.getKeyParse(rowKey.get(key), key, syntax).writeParam(statement, paramNum, syntax, env);
+                    parser.getKeyParse(rowKey.get(key), key, syntax).writeParam(statement, paramNum, syntax);
                 ImMap<PropertyField, V> rowValue = rows.getValue(i);
                 for(PropertyField property : properties) // чтобы сохранить порядок
-                    parser.getPropParse(rowValue.get(property), property, syntax).writeParam(statement, paramNum, syntax, env);
+                    parser.getPropParse(rowValue.get(property), property, syntax).writeParam(statement, paramNum, syntax);
                 statement.addBatch();
             }
 
@@ -1616,7 +1459,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
 
         try {
-            executeDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", owner, tableOwner, params.immutable(), ExecuteEnvironment.EMPTY, QueryExecuteEnvironment.DEFAULT, 0);
+            executeDML(new SQLDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.EMPTY), owner, tableOwner, params.immutable(), DynamicExecuteEnvironment.DEFAULT, 0);
         } catch (SQLHandledException e) {
             throw new UnsupportedOperationException(); // по идее ни deadlock'а, ни update conflict'а, ни timeout'а
         }
@@ -1725,7 +1568,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public void truncate(String table, OperationOwner owner) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         if(problemInTransaction == null) {
-            executeDDL("TRUNCATE TABLE " + table, ExecuteEnvironment.NOREADONLY, owner); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
+            executeDDL("TRUNCATE TABLE " + table, StaticExecuteEnvironmentImpl.NOREADONLY, owner); // нельзя использовать из-за : в транзакции в режиме "только чтение" нельзя выполнить TRUNCATE TABLE
 //            executeDML("DELETE FROM " + syntax.getSessionTableName(table), owner, tableOwner);
         }
     }
@@ -1741,7 +1584,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public int getCount(String table, OperationOwner opOwner) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         try {
-            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, ExecuteEnvironment.EMPTY, MapFact.<String, ParseInterface>EMPTY(), QueryExecuteEnvironment.DEFAULT, 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance), MapFact.<Object, String>EMPTYREV(), MapFact.<Object, Reader>EMPTY()).singleKey().singleValue();
+            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, StaticExecuteEnvironmentImpl.EMPTY, MapFact.<String, ParseInterface>EMPTY(), DynamicExecuteEnvironment.DEFAULT, 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance), MapFact.<String, String>EMPTYREV(), MapFact.<String, Reader>EMPTY()).singleKey().singleValue();
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -1779,7 +1622,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     // в явную без query так как часто выполняется
     public void readSingleValues(SessionTable table, Result<ImMap<KeyField, Object>> keyValues, Result<ImMap<PropertyField, Object>> propValues, Result<DistinctKeys<KeyField>> statKeys, Result<ImMap<PropertyField, PropStat>> statProps, OperationOwner opOwner) throws SQLException {
         ImSet<KeyField> tableKeys = table.getTableKeys();
-        ExecuteEnvironment env = new ExecuteEnvironment();
+        MStaticExecuteEnvironment env = StaticExecuteEnvironmentImpl.mEnv();
 
         MExclMap<String, String> mReadKeys = MapFact.mExclMap();
         mReadKeys.exclAdd(getCnt(""), syntax.getCount("*"));
@@ -2012,122 +1855,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
-    private static class ParsedStatement {
-        public final PreparedStatement statement;
-        public final ImList<String> preparedParams;
-        public final ExecuteEnvironment env;
+    private static final LRUWSVSMap<Connection, PreParsedStatement, ParsedStatement> statementPool = new LRUWSVSMap<Connection, PreParsedStatement, ParsedStatement>(LRUUtil.G1);
 
-        private ParsedStatement(PreparedStatement statement, ImList<String> preparedParams, ExecuteEnvironment env) {
-            this.statement = statement;
-            this.preparedParams = preparedParams;
-            this.env = env;
-        }
-    }
-
-    private static ParsedStatement parseStatement(ParseStatement parse, Connection connection, SQLSyntax syntax) throws SQLException {
-        ExecuteEnvironment env = new ExecuteEnvironment();
-
-        char[][] paramArrays = new char[parse.params.size()+1][];
-        String[] params = new String[paramArrays.length];
-        String[] safeStrings = new String[paramArrays.length];
-        Type[] notSafeTypes = new Type[paramArrays.length];
-        int paramNum = 0;
-        for (int i=0,size= parse.params.size();i<size;i++) {
-            String param = parse.params.get(i);
-            paramArrays[paramNum] = param.toCharArray();
-            params[paramNum] = param;
-            safeStrings[paramNum] = parse.safeStrings.get(param);
-            notSafeTypes[paramNum++] = parse.notSafeTypes.get(param);
-        }
-        // в общем случае неправильно использовать тот же механизм что и для параметров, но в текущей реализации будет работать 
-        paramArrays[paramNum] = BinaryWhere.adjustSelectivity.toCharArray();
-//      params[paramNum] = ;
-        safeStrings[paramNum] = parse.volatileStats && Settings.get().isEnableAdjustSelectivity() ? " OR " + syntax.getAdjustSelectivityPredicate() : "";
-        notSafeTypes[paramNum++] = null;
-
-        // те которые isString сразу транслируем
-        MList<String> mPreparedParams = ListFact.mList();
-        char[] toparse = parse.statement.toCharArray();
-        String parsedString = parse.envString;
-        char[] parsed = new char[toparse.length + paramArrays.length * 100];
-        int num = 0;
-        for (int i = 0; i < toparse.length;) {
-            int charParsed = 0;
-            for (int p = 0; p < paramArrays.length; p++) {
-                if (BaseUtils.startsWith(toparse, i, paramArrays[p])) { // нашли
-                    String valueString;
-
-                    Type notSafeType = notSafeTypes[p];
-                    if (safeStrings[p] !=null) // если можно вручную пропарсить парсим
-                        valueString = safeStrings[p];
-                    else {
-                        if(notSafeType instanceof ConcatenateType)
-                            valueString = notSafeType.writeDeconc(syntax, env);
-                        else
-                            valueString = "?";
-                        mPreparedParams.add(params[p]);
-                    }
-                    if (notSafeType !=null)
-                        valueString = notSafeType.getCast(valueString, syntax, env);
-
-                    char[] valueArray = valueString.toCharArray();
-                    if(num + valueArray.length >= parsed.length) {
-                        parsedString = parsedString + new String(parsed, 0, num);
-                        parsed = new char[BaseUtils.max(toparse.length - i + paramArrays.length * 100, valueArray.length + 100)];
-                        num = 0;
-                    }
-                    System.arraycopy(valueArray, 0, parsed, num, valueArray.length);
-                    num += valueArray.length;
-                    charParsed = paramArrays[p].length;
-                    assert charParsed!=0;
-                    break;
-                }
-            }
-            if (charParsed == 0) {
-                if(num + 1 >= parsed.length) {
-                    parsedString = parsedString + new String(parsed, 0, num);
-                    parsed = new char[toparse.length - i + paramArrays.length * 100 + 1];
-                    num = 0;
-                }
-                parsed[num++] = toparse[i];
-                charParsed = 1;
-            }
-            i = i + charParsed;
-        }
-        parsedString = parsedString + new String(parsed, 0, num);
-
-        return new ParsedStatement(connection.prepareStatement(parsedString), mPreparedParams.immutableList(), env);
-    }
-
-    private static class ParseStatement extends TwinImmutableObject {
-        public final String statement;
-        public final ImSet<String> params;
-        public final ImMap<String, String> safeStrings;
-        public final ImMap<String, Type> notSafeTypes;
-        public final boolean volatileStats;
-        public final String envString;
-        
-        private ParseStatement(String statement, ImSet<String> params, ImMap<String, String> safeStrings, ImMap<String, Type> notSafeTypes, boolean volatileStats, String envString) {
-            this.statement = statement;
-            this.params = params;
-            this.safeStrings = safeStrings;
-            this.notSafeTypes = notSafeTypes;
-            this.volatileStats = volatileStats;
-            this.envString = envString;
-        }
-
-        public boolean calcTwins(TwinImmutableObject o) {
-            return notSafeTypes.equals(((ParseStatement) o).notSafeTypes) && params.equals(((ParseStatement) o).params) && safeStrings.equals(((ParseStatement) o).safeStrings) && statement.equals(((ParseStatement) o).statement) && volatileStats == ((ParseStatement) o).volatileStats && envString.equals(((ParseStatement) o).envString);
-        }
-
-        public int immutableHashCode() {
-            return 31 * (31 * (31 * (31 * (31 * statement.hashCode() + params.hashCode()) + safeStrings.hashCode()) + notSafeTypes.hashCode()) + ( volatileStats ? 1 : 0 )) + envString.hashCode();
-        }
-    }
-
-    private static final LRUWSVSMap<Connection, ParseStatement, ParsedStatement> statementPool = new LRUWSVSMap<Connection, ParseStatement, ParsedStatement>(LRUUtil.G1);
-
-    private static interface ReturnStatement {
+    public static interface ReturnStatement {
         void proceed(PreparedStatement statement, long runTime) throws SQLException;
     }
 
@@ -2158,18 +1888,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         ServerLoggers.assertLog(sessionTable != null && sessionTable.get() != null, "USED RETURNED TABLE : " + table.getName());
     }
 
-    private PreparedStatement getStatement(String command, ImMap<String, ParseInterface> paramObjects, final ExConnection connection, SQLSyntax syntax, ExecuteEnvironment env, Result<ReturnStatement> returnStatement, boolean noPrepare) throws SQLException {
+    private PreparedStatement getStatement(SQLCommand command, ImMap<String, ParseInterface> paramObjects, final ExConnection connection, SQLSyntax syntax, DynamicExecEnvSnapshot snapEnv, Result<ReturnStatement> returnStatement) throws SQLException {
 
-        boolean poolPrepared = !noPrepare && !Settings.get().isDisablePoolPreparedStatements() && command.length() > Settings.get().getQueryPrepareLength();
+        StaticExecuteEnvironment env = command.env;
+        boolean poolPrepared = !env.isNoPrepare() && !Settings.get().isDisablePoolPreparedStatements() && command.getString().length() > Settings.get().getQueryPrepareLength();
 
         checkSessionTables(paramObjects);
-        final ParseStatement parse = preparseStatement(command, poolPrepared, paramObjects, syntax, env.hasRecursion());
+        final PreParsedStatement parse = command.preparseStatement(poolPrepared, paramObjects, syntax, isVolatileStats(), snapEnv.getMaterializedQueries(), env.hasRecursion());
 
         ParsedStatement parsed = null;
         if(poolPrepared)
             parsed = statementPool.get(connection.sql, parse);
         if(parsed==null) {
-            parsed = parseStatement(parse, connection.sql, syntax);
+            parsed = parse.parseStatement(connection.sql, syntax);
             if(poolPrepared) {
                 final ParsedStatement fParsed = parsed;
                 returnStatement.set(new ReturnStatement() {
@@ -2188,28 +1919,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         try {
             ParamNum paramNum = new ParamNum();
             for (String param : parsed.preparedParams)
-                paramObjects.get(param).writeParam(parsed.statement, paramNum, syntax, env);
-            env.add(parsed.env);
+                paramObjects.get(param).writeParam(parsed.statement, paramNum, syntax);
         } catch (SQLException e) {
             returnStatement.result.proceed(parsed.statement, 0);
             throw e;
         }
 
         return parsed.statement;
-    }
-
-    private ParseStatement preparseStatement(String command, boolean parseParams, ImMap<String, ParseInterface> paramObjects, SQLSyntax syntax, boolean usedRecursion) {
-        StringBuilder envString = new StringBuilder();
-        ImFilterValueMap<String, String> mvSafeStrings = paramObjects.mapFilterValues();
-        ImFilterValueMap<String, Type> mvNotSafeTypes = paramObjects.mapFilterValues();
-        for(int i=0,size=paramObjects.size();i<size;i++) {
-            ParseInterface parseInterface = paramObjects.getValue(i);
-            if(parseInterface.isSafeString() && !(parseParams && parseInterface instanceof TypeObject))
-                mvSafeStrings.mapValue(i, parseInterface.getString(syntax, envString, usedRecursion));
-            if(!parseInterface.isSafeType())
-                mvNotSafeTypes.mapValue(i, parseInterface.getType());
-        }
-        return new ParseStatement(command, paramObjects.keys(), mvSafeStrings.immutableValue(), mvNotSafeTypes.immutableValue(), isVolatileStats(), envString.toString());
     }
 
     private final static GetKeyValue<String, String, String> addFieldAliases = new GetKeyValue<String, String, String>() {

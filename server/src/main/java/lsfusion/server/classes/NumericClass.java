@@ -106,7 +106,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return read(set.getBigDecimal(name));
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setBigDecimal(num, (BigDecimal) value);
     }
 

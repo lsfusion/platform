@@ -4,6 +4,7 @@ import lsfusion.base.FunctionSet;
 import lsfusion.base.MutableClosedObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.ConcreteObjectClass;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
@@ -52,11 +53,15 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     public abstract void changeClass(PropertyObjectInterfaceInstance objectInstance, DataObject dataObject, ConcreteObjectClass cls) throws SQLException, SQLHandledException;
 
     public boolean apply(BusinessLogics BL) throws SQLException, SQLHandledException {
-        return apply(BL, null, null);
+        return apply(BL, (UpdateCurrentClasses)null, null);
     }
 
     public boolean apply(BusinessLogics BL, UserInteraction interaction) throws SQLException, SQLHandledException {
         return apply(BL, null, interaction);
+    }
+
+    public boolean apply(BusinessLogics BL, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions) throws SQLException, SQLHandledException {
+        return apply(BL, null, interaction, applyActions, SetFact.<SessionDataProperty>EMPTY(), null);
     }
 
     public boolean apply(ExecutionContext context) throws SQLException, SQLHandledException {
@@ -64,14 +69,14 @@ public abstract class ExecutionEnvironment extends MutableClosedObject<Object> {
     }
 
     public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction) throws SQLException, SQLHandledException {
-        return apply(BL, update, interaction, null, SetFact.<SessionDataProperty>EMPTY(), null);
+        return apply(BL, update, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY(), null);
     }
 
     public void cancel() throws SQLException, SQLHandledException {
         cancel(SetFact.<SessionDataProperty>EMPTY());
     }
 
-    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException;
+    public abstract boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException;
     
     public abstract void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException;
 }

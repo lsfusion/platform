@@ -13,7 +13,7 @@ public class CastFormulaImpl implements FormulaJoinImpl {
     @Override
     public String getSource(ExprSource source) {
         assert source.getExprCount() == 1;
-        return castClass.getSafeCast(source.getSource(0), source.getSyntax(), source.getEnv(), source.getType(0));
+        return castClass.getSafeCast(source.getSource(0), source.getSyntax(), source.getMEnv(), source.getType(0));
     }
 
     @Override

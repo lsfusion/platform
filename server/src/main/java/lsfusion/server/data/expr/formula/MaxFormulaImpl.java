@@ -1,6 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
-import lsfusion.server.data.query.ExecuteEnvironment;
+import lsfusion.server.data.query.MStaticExecuteEnvironment;
+import lsfusion.server.data.query.StaticExecuteEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
@@ -31,7 +32,7 @@ public class MaxFormulaImpl extends AbstractFormulaImpl implements FormulaUnionI
 
         Type type = getType(source);
         SQLSyntax syntax = source.getSyntax();
-        ExecuteEnvironment env = source.getEnv();
+        MStaticExecuteEnvironment env = source.getMEnv();
         boolean noMaxImplicitCast = syntax.noMaxImplicitCast();
 
         String result = type.getCast(source.getSource(0), syntax, env, source.getType(0)); // чтобы когда NULL'ы тип правильно определило

@@ -46,7 +46,7 @@ public class LongClass extends IntegralClass<Long> {
     }
 
     @Override
-    public boolean isSafeType(Object value) {
+    public boolean isSafeType() {
         return false; // в рекурсии например не safetype, когда 1 скажем по умолчанию integer и они не кастятся друг к другу
     }
 
@@ -92,7 +92,7 @@ public class LongClass extends IntegralClass<Long> {
         return anLong;
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax, TypeEnvironment typeEnv) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setLong(num, (Long)value);
     }
 

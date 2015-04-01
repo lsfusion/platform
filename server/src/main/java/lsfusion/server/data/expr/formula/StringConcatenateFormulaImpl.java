@@ -20,7 +20,7 @@ public abstract class StringConcatenateFormulaImpl extends AbstractFormulaImpl {
         if (exprType instanceof StringClass && ((StringClass)exprType).blankPadded) {
             exprSource = ((StringClass)exprType).getRTrim(exprSource);
         } else {
-            exprSource = selfType.getCast(exprSource, source.getSyntax(), source.getEnv(), exprType);
+            exprSource = selfType.getCast(exprSource, source.getSyntax(), source.getMEnv(), exprType);
         }
         return exprSource;
     }

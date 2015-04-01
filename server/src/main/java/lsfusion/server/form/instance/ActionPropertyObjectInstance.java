@@ -5,6 +5,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ActionProperty;
+import lsfusion.server.logics.property.ActionPropertyValueImplement;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.FormEnvironment;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
@@ -33,5 +34,9 @@ public class ActionPropertyObjectInstance<P extends PropertyInterface> extends P
     public CalcPropertyObjectInstance<?> getDrawProperty() {
 //        return DerivedProperty.createTrue().mapObjects(MapFact.<PropertyInterface, PropertyObjectInterfaceInstance>EMPTY());
         return property.getWhereProperty().mapObjects(mapping);
+    }
+
+    public ActionPropertyValueImplement<P> getValueImplement() {
+        return new ActionPropertyValueImplement<P>(property, getInterfaceValues(), mapping);
     }
 }

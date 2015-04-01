@@ -235,10 +235,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private boolean isInTransaction;
 
     private void startTransaction(UpdateCurrentClasses update, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
-//        if(!isInTransaction()) {
-        ServerLoggers.assertLog(!isInTransaction(), "NESTED APPLY");
-//            throw new RuntimeException("NESTED APPLY");
-//        }
         sql.startTransaction(DBManager.getCurrentTIL(), getOwner());
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
@@ -1189,14 +1185,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 //            return ((LogMessageClientAction)BaseUtils.single(actions)).message;
     }
 
-    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException {
-        return apply(BL, formInstance, update, interaction, applyAction, keepProperties);
+    public boolean apply(BusinessLogics BL, UpdateCurrentClasses update, UserInteraction interaction, ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProperties, FormInstance formInstance) throws SQLException, SQLHandledException {
+        return apply(BL, formInstance, update, interaction, applyActions, keepProperties);
     }
 
     public boolean check(BusinessLogics BL, FormInstance form, UserInteraction interaction) throws SQLException, SQLHandledException {
         setApplyFilter(ApplyFilter.ONLYCHECK);
 
-        boolean result = apply(BL, form, null, interaction, null, SetFact.<SessionDataProperty>EMPTY());
+        boolean result = apply(BL, form, null, interaction, SetFact.<ActionPropertyValueImplement>EMPTYORDER(), SetFact.<SessionDataProperty>EMPTY());
 
         setApplyFilter(ApplyFilter.NO);
         return result;
@@ -1482,13 +1478,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public boolean apply(final BusinessLogics<?> BL, FormInstance form, UpdateCurrentClasses update, UserInteraction interaction,
-                         ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
-        if(!hasChanges() && applyAction == null)
+                         ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+        if(!hasChanges() && applyActions.isEmpty())
             return true;
 
         if(isInTransaction()) {
             ServerLoggers.assertLog(false, "NESTED APPLY");
-            if(applyAction != null)
+            for(ActionPropertyValueImplement applyAction : applyActions)
                 applyAction.execute(this);
             return true;
         }
@@ -1539,18 +1535,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // очистим, так как в транзакции уже другой механизм используется, и старые increment'ы будут мешать
         dataModifier.clearHints(sql, getOwner());
 
-        return transactApply(BL, update, interaction, 0, 0, applyAction, keepProps);
+        return transactApply(BL, update, interaction, 0, 0, applyActions, keepProps);
     }
 
     private boolean transactApply(BusinessLogics<?> BL, UpdateCurrentClasses update,
                                   UserInteraction interaction,
                                   int attemptCount, int autoAttemptCount,
-                                  ActionPropertyValueImplement applyAction, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+                                  ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
         startTransaction(update, BL);
 
         try {
-            return recursiveApply(applyAction == null ? SetFact.<ActionPropertyValueImplement>EMPTYORDER() : SetFact.singletonOrder(applyAction), BL, update, keepProps);
+            return recursiveApply(applyActions, BL, update, keepProps);
         } catch (Throwable t) { // assert'им что последняя SQL комманда, работа с транзакцией
             try {
                 rollbackApply();
@@ -1580,7 +1576,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     sql.pushNoTransactTimeout();
                     
                 try {
-                    return transactApply(BL, update, interaction, attemptCount++, autoAttemptCount, applyAction, keepProps);
+                    return transactApply(BL, update, interaction, attemptCount++, autoAttemptCount, applyActions, keepProps);
                 } finally {
                     if(noTimeout)
                         sql.popNoTransactTimeout();
