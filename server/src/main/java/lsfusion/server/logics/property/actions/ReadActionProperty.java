@@ -174,8 +174,8 @@ public class ReadActionProperty extends ScriptingActionProperty {
     }
 
     private void copyMDBToFile(String path, File file) throws IOException {
-        /*mdb://path:table*/
-        Pattern queryPattern = Pattern.compile("mdb:\\/\\/(.*):(.*)");
+        /*mdb://path:table;where*/
+        Pattern queryPattern = Pattern.compile("mdb:\\/\\/(.*):([^;]*)(?:;(.*))?");
         Matcher queryMatcher = queryPattern.matcher(path);
         if (queryMatcher.matches()) {
             Database db = null;
@@ -185,15 +185,80 @@ public class ReadActionProperty extends ScriptingActionProperty {
 
                 Table table = db.getTable(queryMatcher.group(2));
 
+                String field = null;
+                String sign = null;
+                String value = null;
+
+                String where = queryMatcher.group(3);
+                Pattern wherePattern = Pattern.compile("([^=<>]*)([=<>]*)([^=<>]*)");
+                Matcher whereMatcher = wherePattern.matcher(where);
+                boolean isWhere = whereMatcher.matches();
+                if(isWhere) {
+                    field = whereMatcher.group(1);
+                    sign = whereMatcher.group(2);
+                    value = whereMatcher.group(3);
+                }
+
                 List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>();
 
                 for (Row rowEntry : table) {
 
-                    Map<String, Object> row = new HashMap<String, Object>();
-                    for(Map.Entry<String, Object> entry : rowEntry.entrySet()) {
-                        row.put(entry.getKey(), entry.getValue());
+                    boolean ignoreRow = false;
+                    if(isWhere) {
+                        if(!rowEntry.containsKey(field)) {
+                            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. No such column. Note: names are sensitive"));
+                        }
+                        Object fieldValue = rowEntry.get(field);
+                        if(fieldValue instanceof Integer) {
+                            Integer intValue;
+                            try {
+                                intValue = Integer.parseInt(value);
+                            } catch (Exception e) {
+                                throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
+                            }
+                            if (sign.equals("=")) {
+                                if (!fieldValue.equals(intValue))
+                                    ignoreRow = true;
+                            } else if (sign.equals(">=")) {
+                                if (((Integer) fieldValue).compareTo(intValue) < 0)
+                                    ignoreRow = true;
+                            } else if (sign.equals(">")) {
+                                if (((Integer) fieldValue).compareTo(intValue) <= 0)
+                                    ignoreRow = true;
+                            } else if (sign.equals("<=")) {
+                                if (((Integer) fieldValue).compareTo(intValue) > 0)
+                                    ignoreRow = true;
+                            } else if (sign.equals("<")) {
+                                if (((Integer) fieldValue).compareTo(intValue) >= 0)
+                                    ignoreRow = true;
+                            }
+                        } else {
+                            String stringFieldValue = String.valueOf(fieldValue);
+                            if (sign.equals("=")) {
+                                if (!stringFieldValue.equals(value))
+                                    ignoreRow = true;
+                            } else if (sign.equals(">=")) {
+                                if (stringFieldValue.compareTo(value) < 0)
+                                    ignoreRow = true;
+                            } else if (sign.equals(">")) {
+                                if (stringFieldValue.compareTo(value) <= 0)
+                                    ignoreRow = true;
+                            } else if (sign.equals("<=")) {
+                                if (stringFieldValue.compareTo(value) > 0)
+                                    ignoreRow = true;
+                            } else if (sign.equals("<")) {
+                                if (stringFieldValue.compareTo(value) >= 0)
+                                    ignoreRow = true;
+                            }
+                        }
                     }
-                    rows.add(row);
+                    if(!ignoreRow) {
+                        Map<String, Object> row = new HashMap<String, Object>();
+                        for (Map.Entry<String, Object> entry : rowEntry.entrySet()) {
+                            row.put(entry.getKey(), entry.getValue());
+                        }
+                        rows.add(row);
+                    }
                 }
 
                 FileUtils.writeByteArrayToFile(file, BaseUtils.serializeCustomObject(rows));
@@ -205,7 +270,7 @@ public class ReadActionProperty extends ScriptingActionProperty {
                     db.close();
             }
         } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect mdb url. Please use format: mdb://path:table"));
+            throw Throwables.propagate(new RuntimeException("Incorrect mdb url. Please use format: mdb://path:table;where"));
         }
     }
 }
