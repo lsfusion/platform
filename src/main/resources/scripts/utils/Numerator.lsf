@@ -91,13 +91,18 @@ META defineNumberedAbstract(class)
 END
 
 useUpperedSeries 'Использовать верхний регистр для серии' = DATA BOOLEAN (); 
+keepNumberSpaces 'Разрешить пробелы в номерах' = DATA BOOLEAN (); 
 
 EXTEND FORM options
-    PROPERTIES () useUpperedSeries
+    PROPERTIES () useUpperedSeries, keepNumberSpaces
 ;
 DESIGN options{
     commons {
-        ADD PROPERTY (useUpperedSeries());
+        NEW numerator {
+            caption = 'Нумератор';
+            ADD PROPERTY (useUpperedSeries());
+            ADD PROPERTY (keepNumberSpaces());
+        }
     }    
 }
 
@@ -107,6 +112,9 @@ META defineNumbered(class)
      
     WHEN useUpperedSeries() AND CHANGED(series###class(o))
          DO series###class(o) <- upper(series###class(o));
+    
+    WHEN CHANGED(number###class(o)) AND NOT keepNumberSpaces()
+        DO number###class(o) <- replace(number###class(o), ' ', '');
 
     seriesNumber###class 'Серия/Номер' (o) = 
         CONCAT '', series###class(o), number###class(o) 
