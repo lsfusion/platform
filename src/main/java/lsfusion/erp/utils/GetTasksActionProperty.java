@@ -15,8 +15,8 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
-import lsfusion.server.data.query.ExecuteEnvironment;
-import lsfusion.server.data.query.QueryExecuteEnvironment;
+import lsfusion.server.data.query.DynamicExecuteEnvironment;
+import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.type.ParseInterface;
 import lsfusion.server.data.type.Reader;
 import lsfusion.server.logics.DataObject;
@@ -87,8 +87,8 @@ public abstract class GetTasksActionProperty extends ScriptingActionProperty {
             propertyReaders.exclAdd("start_time", DateTimeClass.instance);
             propertyReaders.immutable();
 
-            ImOrderMap rs = session.sql.executeSelect(originalQuery, OperationOwner.unknown, ExecuteEnvironment.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
-                    QueryExecuteEnvironment.DEFAULT, 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
+            ImOrderMap rs = session.sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
+                    DynamicExecuteEnvironment.DEFAULT, 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
             int i = 0;
             for (Object rsValue : rs.values()) {
@@ -141,8 +141,8 @@ public abstract class GetTasksActionProperty extends ScriptingActionProperty {
             propertyReaders.exclAdd("query_start", DateTimeClass.instance);
             propertyReaders.immutable();
 
-            ImOrderMap rs = session.sql.executeSelect(originalQuery, OperationOwner.unknown, ExecuteEnvironment.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
-                    QueryExecuteEnvironment.DEFAULT, 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
+            ImOrderMap rs = session.sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
+                    DynamicExecuteEnvironment.DEFAULT, 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
             Map<Integer, SQLSession> sessionMap = SQLSession.getSQLSessionMap();
             
