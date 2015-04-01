@@ -189,14 +189,17 @@ public class ReadActionProperty extends ScriptingActionProperty {
                 String sign = null;
                 String value = null;
 
+                boolean isWhere = false;
                 String where = queryMatcher.group(3);
-                Pattern wherePattern = Pattern.compile("([^=<>]*)([=<>]*)([^=<>]*)");
-                Matcher whereMatcher = wherePattern.matcher(where);
-                boolean isWhere = whereMatcher.matches();
-                if(isWhere) {
-                    field = whereMatcher.group(1);
-                    sign = whereMatcher.group(2);
-                    value = whereMatcher.group(3);
+                if(where != null) {
+                    Pattern wherePattern = Pattern.compile("([^=<>]*)([=<>]*)([^=<>]*)");
+                    Matcher whereMatcher = wherePattern.matcher(where);
+                    isWhere = whereMatcher.matches();
+                    if (isWhere) {
+                        field = whereMatcher.group(1);
+                        sign = whereMatcher.group(2);
+                        value = whereMatcher.group(3);
+                    }
                 }
 
                 List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>();
