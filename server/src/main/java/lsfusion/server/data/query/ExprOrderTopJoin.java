@@ -40,7 +40,7 @@ public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
         if(not)
             return new StatKeys<Integer>(SetFact.<Integer>EMPTY(), Stat.ONE);
         else
-            if(compare.equals(Compare.EQUALS))
+            if(compare.equals(Compare.EQUALS) && !givesNoKeys()) // если не дает ключей, нельзя уменьшать статистику, так как паковка может съесть другие join'ы и тогда будет висячий ключ
                 return new StatKeys<Integer>(SetFact.singleton(0), Stat.ONE);
             else
                 return new StatKeys<Integer>(SetFact.singleton(0), baseExpr.getTypeStat(keyStat, true));
