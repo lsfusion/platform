@@ -2549,6 +2549,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void moveElement(NavigatorElement element, NavigatorElement parentElement, InsertPosition pos, NavigatorElement anchorElement, boolean adding) throws ScriptingErrorLog.SemanticErrorException {
         Version version = getVersion();
         
+        // если редактирование существующего элемента, и происходит перемещение элемента, то оно должно происходить только внутри своего уровня 
         if (!adding && !parentElement.equals(element.getNFParent(version))) {
             errLog.emitIllegalNavigatorElementMove(parser, element.getCanonicalName(), parentElement.getCanonicalName());
         }

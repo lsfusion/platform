@@ -3095,13 +3095,10 @@ componentInsertPosition returns [InsertPosition position, ComponentView anchor]
 	;
 
 removeComponentStatement
-@init {
-	boolean cascade = false;
-}
-	:	'REMOVE' compSelector=componentSelector ('CASCADE' { cascade = true; } )? ';'
+	:	'REMOVE' compSelector=componentSelector ';'
 		{
 			if (inPropParseState()) {
-				$designStatement::design.removeComponent($compSelector.component, cascade, self.getVersion());
+				$designStatement::design.removeComponent($compSelector.component, self.getVersion());
 			}
 		}
 	;

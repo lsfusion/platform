@@ -153,12 +153,12 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "'" + groupObject + "' is in tree group - can't use it in AFTER/BEFORE");
     }
 
-    public void emitComponentIsNullError(ScriptParser parser, String mainMsg) throws SemanticErrorException {
-        emitSimpleError(parser, mainMsg + " component is null");
+    public void emitComponentParentError(ScriptParser parser, String compName) throws SemanticErrorException {
+        emitSimpleError(parser, format("component '%s' has no parent", compName));
     }
-
-    public void emitComponentMustBeAContainerError(ScriptParser parser) throws SemanticErrorException {
-        emitSimpleError(parser, "component must be a container");
+    
+    public void emitComponentMustBeAContainerError(ScriptParser parser, String componentName) throws SemanticErrorException {
+        emitSimpleError(parser, format("component '%s' must be a container", componentName));
     }
 
     public void emitIllegalMoveComponentToSubcomponent(ScriptParser parser, String movingComponent, String movedToComponent) throws SemanticErrorException {

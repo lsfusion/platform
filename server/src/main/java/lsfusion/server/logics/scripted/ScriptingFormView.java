@@ -26,7 +26,7 @@ public class ScriptingFormView {
         return getComponentBySID(sid, true, version);
     }
 
-    public ComponentView getComponentBySID(String sid, boolean hasToExist, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    private ComponentView getComponentBySID(String sid, boolean hasToExist, Version version) throws ScriptingErrorLog.SemanticErrorException {
         ComponentView component = view.getComponentBySID(sid, version);
         if (hasToExist && component == null) {
             errLog.emitComponentNotFoundError(parser, sid);
@@ -36,11 +36,12 @@ public class ScriptingFormView {
     }
 
     public ContainerView getParentContainer(ComponentView child, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        if (child == null) {
-            errLog.emitComponentIsNullError(parser, "can't get parent:");
+        assert child != null;
+        ContainerView parent = child.getNFContainer(version);
+        if (parent == null) {
+            errLog.emitComponentParentError(parser, child.getSID());
         }
-
-        return child.getNFContainer(version);
+        return parent;
     }
 
     public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
@@ -66,10 +67,10 @@ public class ScriptingFormView {
     }
 
     public void moveComponent(ComponentView component, ComponentView parentComponent, ScriptingLogicsModule.InsertPosition pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        assert component != null;
+        assert component != null && parentComponent != null;
 
         if (!(parentComponent instanceof ContainerView)) {
-            errLog.emitComponentMustBeAContainerError(parser);
+            errLog.emitComponentMustBeAContainerError(parser, parentComponent.getSID());
         }
         ContainerView parent = (ContainerView) parentComponent;
 
@@ -100,26 +101,14 @@ public class ScriptingFormView {
         }
     }
 
-    public void removeComponent(ComponentView component, boolean cascade, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        if (component == null) {
-            errLog.emitComponentIsNullError(parser, "can't remove component:");
-        }
-
+    public void removeComponent(ComponentView component, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        assert component != null;
+        
         if (component == view.mainContainer) {
             errLog.emitRemoveMainContainerError(parser);
         }
 
         component.getNFContainer(version).remove(component, version);
-
-        //не удаляем компоненты (не-контейнеры) из пула, чтобы можно было опять их использовать в настройке
-        if (component instanceof ContainerView) {
-            view.removeContainerFromMapping((ContainerView) component, version);
-            if (cascade) {
-                for (ComponentView child : ((ContainerView) component).getNFChildrenIt(version)) {
-                    removeComponent(child, true, version);
-                }
-            }
-        }
     }
 
     public GroupObjectView getGroupObject(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {
