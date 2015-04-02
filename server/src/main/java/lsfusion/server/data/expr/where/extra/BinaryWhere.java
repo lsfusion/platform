@@ -75,24 +75,18 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             if(valueExpr == null)
                 return !expr.hasALotOfNulls();
             else
-                return true; // тут надо смотреть на то сколько distinct'ов, хотя может и не надо, разве что если их очень мало и для одного distinct значения в n раз больше записей чем в окнет
+                return true; // тут надо смотреть на то сколько distinct'ов, хотя может и не надо, разве что если их очень мало и для одного distinct значения в n раз больше записей чем в окне
         }
         return false;
     }
 
     public WhereJoin groupJoinsWheres(ImOrderSet<Expr> orderTop) {
-        if(needOrderTopJoin(operator2, orderTop, operator1))
+        assert !getCompare().equals(Compare.EQUALS); // перегружена реализация по идее
+        if(needOrderTopJoin(operator2, orderTop, operator1)) // для Like'ов тоже надо так как там может быть git индекс
             return new ExprOrderTopJoin(operator2, getCompare().reverse(), operator1, false);
         if(needOrderTopJoin(operator1, orderTop, operator2))
             return new ExprOrderTopJoin(operator1, getCompare(), operator2, false);
-
-        if (operator1.isValue() && getCompare().equals(Compare.EQUALS))
-            return new ExprStatJoin(operator2, Stat.ONE, operator1);
-        if (operator2.isValue() && getCompare().equals(Compare.EQUALS))
-            return new ExprStatJoin(operator1, Stat.ONE, operator2);
-        if(getCompare().equals(Compare.EQUALS))
-            return new ExprEqualsJoin(operator1, operator2);
-        return null;        
+        return null;
     }
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         WhereJoin exprJoin = groupJoinsWheres(orderTop);

@@ -1,11 +1,17 @@
 package lsfusion.server.data.expr.where.extra;
 
 import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.sql.SQLSyntax;
+import lsfusion.server.data.where.OrObjectWhere;
 import lsfusion.server.data.where.Where;
 
 // если operator1 не null и больше operator2 или operator2 null
@@ -44,6 +50,31 @@ public class GreaterWhere<T> extends CompareWhere<GreaterWhere<T>> {
 
     protected Compare getCompare() {
         return orEquals ? Compare.GREATER_EQUALS : Compare.GREATER;
+    }
+
+    private Where symmetricGreaterWhere = null;
+    // A>(>=)B = !A<=(<)B AND A AND B
+    private Where getSymmetricGreaterWhere() { // так EqualsWhere не появляются, в контексте использования (groupNotJoinsWheres) это удобно
+        if (symmetricGreaterWhere == null) {
+            GreaterWhere backCompare = new GreaterWhere(operator2, operator1, !orEquals);
+
+            OrObjectWhere[] operators = getOperandWhere().getOr();
+            OrObjectWhere[] symmetricOrs = new OrObjectWhere[operators.length + 1];
+            System.arraycopy(operators, 0, symmetricOrs, 0, operators.length);
+            symmetricOrs[operators.length] = backCompare.not();
+            symmetricGreaterWhere = toWhere(symmetricOrs);
+        }
+        return symmetricGreaterWhere;
+    }
+
+    // тут есть нюанс, что может неявно появится keyEquals (при текущей реализации с orEquals не появится), поэтому правильнее может быть было бы в getKeyEquals перенести, но пока не важно
+    @Override
+    public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
+        if (needOrderTopJoin(operator2, orderTop, operator1) || // избаляемся от not'ов, NOT EQUALS не интересует так как в индексе не помогает
+                needOrderTopJoin(operator1, orderTop, operator2))
+            return getSymmetricGreaterWhere().not().groupJoinsWheres(keepStat, keyStat, orderTop, type);
+
+        return super.groupNotJoinsWheres(keepStat, keyStat, orderTop, type);
     }
 
     protected String getCompareSource(CompileSource compile) {

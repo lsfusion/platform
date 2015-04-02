@@ -17,7 +17,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 
 @Aspect
-public class SQLAspect {
+public class SQLRepeatAspect {
     
     private static interface ProceedDefaultEnv {
         Object proceed() throws Throwable;

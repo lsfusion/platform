@@ -26,6 +26,7 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
     public ExprStatJoin(BaseExpr baseExpr, Stat stat, BaseExpr valueExpr) {
         this(baseExpr, stat, getInnerJoins(valueExpr));
         assert valueExpr.isValue();
+        assert !givesNoKeys(); // calculateKeyEquals по идее должен устранить keyExpr = value (другое дело что groupNotJoinsWheres мог бы дать эту ситуацию, но сейчас там другая реализация getSymmetricGreaterWhere)
     }
 
     public ExprStatJoin(BaseExpr baseExpr, Stat stat) {

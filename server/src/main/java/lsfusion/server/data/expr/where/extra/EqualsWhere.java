@@ -2,12 +2,18 @@ package lsfusion.server.data.expr.where.extra;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.*;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.CompileSource;
+import lsfusion.server.data.query.ExprEqualsJoin;
+import lsfusion.server.data.query.ExprOrderTopJoin;
+import lsfusion.server.data.query.ExprStatJoin;
 import lsfusion.server.data.query.innerjoins.KeyEquals;
+import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.where.Where;
 
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
@@ -65,5 +71,14 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     protected boolean isEquals() {
         return true;
+    }
+
+    @Override
+    public WhereJoin groupJoinsWheres(ImOrderSet<Expr> orderTop) {
+        if (operator1.isValue())
+            return new ExprStatJoin(operator2, Stat.ONE, operator1);
+        if (operator2.isValue())
+            return new ExprStatJoin(operator1, Stat.ONE, operator2);
+        return new ExprEqualsJoin(operator1, operator2); // тут тоже assertion из calculateKeyEquals'а есть, но он сложный поэтому пока прописывать не будем
     }
 }

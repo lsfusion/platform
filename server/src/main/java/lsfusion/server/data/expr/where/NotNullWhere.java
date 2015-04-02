@@ -50,8 +50,8 @@ public abstract class NotNullWhere extends DataWhere {
     @Override
     public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         BaseExpr expr = getExpr();
-        if(BinaryWhere.needOrderTopJoin(expr, orderTop, null)) // вопрос что возможно аналогичная проверка пригодилась бы в compareWhere но не понятно какую степень брать
-            return new GroupJoinsWheres(new ExprOrderTopJoin(expr, Compare.LESS_EQUALS, Expr.NULL, true), not(), type); // кривовато конечно, но пока достаточно
+        if(BinaryWhere.needOrderTopJoin(expr, orderTop, null))
+            return new GroupJoinsWheres(new ExprOrderTopJoin(expr, Compare.LESS, Expr.NULL, true), not(), type); // кривовато конечно, но пока достаточно
         return super.groupNotJoinsWheres(keepStat, keyStat, orderTop, type);
     }
 

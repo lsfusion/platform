@@ -62,4 +62,8 @@ public abstract class ExprJoin<T extends ExprJoin<T>> extends AbstractOuterConte
     public boolean isClassJoin() {
         return baseExpr instanceof IsClassExpr;
     }
+
+    public boolean givesNoKeys() {
+        return baseExpr instanceof KeyExpr;
+    }
 }

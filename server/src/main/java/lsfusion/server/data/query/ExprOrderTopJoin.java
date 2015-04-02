@@ -29,6 +29,7 @@ public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
 
     public ExprOrderTopJoin(BaseExpr baseExpr, Compare compare, Expr compareExpr, boolean not) {
         super(baseExpr);
+        assert !compare.equals(Compare.EQUALS);
         assert compareExpr.isValue();
         assert baseExpr.isTableIndexed();
         this.compareExpr = compareExpr;
@@ -80,6 +81,6 @@ public class ExprOrderTopJoin extends ExprJoin<ExprOrderTopJoin> {
     }
 
     public boolean givesNoKeys() {
-        return not || baseExpr instanceof KeyExpr;
+        return not || super.givesNoKeys();
     }
 }

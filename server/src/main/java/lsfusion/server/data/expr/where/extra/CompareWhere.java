@@ -104,13 +104,4 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
     public ClassExprWhere calculateClassWhere() {
         return getMeanClassWhere().getClassWhere(operator1, operator2, isEquals()); // именно так а не как Formula потому как иначе бесконечный цикл getMeanClassWheres -> MeanClassWhere.getClassWhere -> means(isFalse) и т.д. пойдет
     }
-
-    @Override
-    public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-        if (!getCompare().equals(Compare.EQUALS) && (needOrderTopJoin(operator2, orderTop, operator1) || // избаляемся от not'ов, NOT EQUALS не интересует так как в индексе не помогает
-                needOrderTopJoin(operator1, orderTop, operator2)))
-            return getSymmetricWhere().not().groupJoinsWheres(keepStat, keyStat, orderTop, type);
-
-        return super.groupNotJoinsWheres(keepStat, keyStat, orderTop, type);
-    }
 }
