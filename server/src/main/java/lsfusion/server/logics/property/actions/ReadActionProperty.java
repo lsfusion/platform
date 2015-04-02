@@ -17,6 +17,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 
@@ -212,47 +213,17 @@ public class ReadActionProperty extends ScriptingActionProperty {
                             throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. No such column. Note: names are sensitive"));
                         }
                         Object fieldValue = rowEntry.get(field);
-                        if(fieldValue instanceof Integer) {
-                            Integer intValue;
-                            try {
-                                intValue = Integer.parseInt(value);
-                            } catch (Exception e) {
-                                throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
-                            }
-                            if (sign.equals("=")) {
-                                if (!fieldValue.equals(intValue))
-                                    ignoreRow = true;
-                            } else if (sign.equals(">=")) {
-                                if (((Integer) fieldValue).compareTo(intValue) < 0)
-                                    ignoreRow = true;
-                            } else if (sign.equals(">")) {
-                                if (((Integer) fieldValue).compareTo(intValue) <= 0)
-                                    ignoreRow = true;
-                            } else if (sign.equals("<=")) {
-                                if (((Integer) fieldValue).compareTo(intValue) > 0)
-                                    ignoreRow = true;
-                            } else if (sign.equals("<")) {
-                                if (((Integer) fieldValue).compareTo(intValue) >= 0)
-                                    ignoreRow = true;
-                            }
+                        if (fieldValue == null)
+                            ignoreRow = true;
+                        else if (fieldValue instanceof Integer) {
+                            if (ignoreRowIntegerCondition(fieldValue, sign, value))
+                                ignoreRow = true;
+                        } else if (fieldValue instanceof java.util.Date) {
+                            if (ignoreRowDateCondition(fieldValue, sign, value))
+                                ignoreRow = true;
                         } else {
-                            String stringFieldValue = String.valueOf(fieldValue);
-                            if (sign.equals("=")) {
-                                if (!stringFieldValue.equals(value))
-                                    ignoreRow = true;
-                            } else if (sign.equals(">=")) {
-                                if (stringFieldValue.compareTo(value) < 0)
-                                    ignoreRow = true;
-                            } else if (sign.equals(">")) {
-                                if (stringFieldValue.compareTo(value) <= 0)
-                                    ignoreRow = true;
-                            } else if (sign.equals("<=")) {
-                                if (stringFieldValue.compareTo(value) > 0)
-                                    ignoreRow = true;
-                            } else if (sign.equals("<")) {
-                                if (stringFieldValue.compareTo(value) >= 0)
-                                    ignoreRow = true;
-                            }
+                            if (ignoreRowStringCondition(fieldValue, sign, value))
+                                ignoreRow = true;
                         }
                     }
                     if(!ignoreRow) {
@@ -275,5 +246,81 @@ public class ReadActionProperty extends ScriptingActionProperty {
         } else {
             throw Throwables.propagate(new RuntimeException("Incorrect mdb url. Please use format: mdb://path:table;where"));
         }
+    }
+
+    private boolean ignoreRowIntegerCondition(Object fieldValue, String sign, String value) {
+        boolean ignoreRow = false;
+        Integer intValue;
+        try {
+            intValue = Integer.parseInt(value);
+        } catch (Exception e) {
+            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
+        }
+        if (sign.equals("=")) {
+            if (!fieldValue.equals(intValue))
+                ignoreRow = true;
+        } else if (sign.equals(">=")) {
+            if (((Integer) fieldValue).compareTo(intValue) < 0)
+                ignoreRow = true;
+        } else if (sign.equals(">")) {
+            if (((Integer) fieldValue).compareTo(intValue) <= 0)
+                ignoreRow = true;
+        } else if (sign.equals("<=")) {
+            if (((Integer) fieldValue).compareTo(intValue) > 0)
+                ignoreRow = true;
+        } else if (sign.equals("<")) {
+            if (((Integer) fieldValue).compareTo(intValue) >= 0)
+                ignoreRow = true;
+        }
+        return ignoreRow;
+    }
+
+    private boolean ignoreRowDateCondition(Object fieldValue, String sign, String value) {
+        boolean ignoreRow = false;
+        java.util.Date dateValue;
+        try {
+            dateValue = DateUtils.parseDate(value, new String[] {"yyyy-MM-dd"});
+        } catch (Exception e) {
+            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
+        }
+        if (sign.equals("=")) {
+            if (((java.util.Date)fieldValue).compareTo(dateValue) != 0)
+                ignoreRow = true;
+        } else if (sign.equals(">=")) {
+            if (((java.util.Date)fieldValue).compareTo(dateValue) < 0)
+                ignoreRow = true;
+        } else if (sign.equals(">")) {
+            if (((java.util.Date)fieldValue).compareTo(dateValue) <= 0)
+                ignoreRow = true;
+        } else if (sign.equals("<=")) {
+            if (((java.util.Date)fieldValue).compareTo(dateValue) > 0)
+                ignoreRow = true;
+        } else if (sign.equals("<")) {
+            if (((java.util.Date)fieldValue).compareTo(dateValue) >= 0)
+                ignoreRow = true;
+        }
+        return ignoreRow;
+    }
+
+    private boolean ignoreRowStringCondition(Object fieldValue, String sign, String value) {
+        boolean ignoreRow = false;
+        String stringFieldValue = String.valueOf(fieldValue);
+        if (sign.equals("=")) {
+            if (!stringFieldValue.equals(value))
+                ignoreRow = true;
+        } else if (sign.equals(">=")) {
+            if (stringFieldValue.compareTo(value) < 0)
+                ignoreRow = true;
+        } else if (sign.equals(">")) {
+            if (stringFieldValue.compareTo(value) <= 0)
+                ignoreRow = true;
+        } else if (sign.equals("<=")) {
+            if (stringFieldValue.compareTo(value) > 0)
+                ignoreRow = true;
+        } else if (sign.equals("<")) {
+            if (stringFieldValue.compareTo(value) >= 0)
+                ignoreRow = true;
+        }
+        return ignoreRow;
     }
 }
