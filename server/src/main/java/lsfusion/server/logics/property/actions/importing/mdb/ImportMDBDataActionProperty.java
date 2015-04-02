@@ -28,9 +28,11 @@ public class ImportMDBDataActionProperty extends ImportDataActionProperty {
 
             Map<String, Integer> fieldMapping = new HashMap<String, Integer>();
             int i = 0;
-            for (Map.Entry<String, Object> entry : rows.get(0).entrySet()) {
-                fieldMapping.put(entry.getKey(), i);
-                i++;
+            if(!rows.isEmpty()) {
+                for (Map.Entry<String, Object> entry : rows.get(0).entrySet()) {
+                    fieldMapping.put(entry.getKey(), i);
+                    i++;
+                }
             }
 
             for (Map<String, Object> row : rows) {
