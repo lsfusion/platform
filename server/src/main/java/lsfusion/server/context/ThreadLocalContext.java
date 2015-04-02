@@ -102,6 +102,10 @@ public class ThreadLocalContext {
         return get().requestUserData(dataClass, oldValue);
     }
 
+    public static DataObject getConnection() {
+        return get().getConnection();
+    }
+
     public static ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {
         return get().requestUserClass(baseClass, defaultValue, concrete);
     }

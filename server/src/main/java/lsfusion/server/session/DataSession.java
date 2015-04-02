@@ -1514,17 +1514,19 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 }
                 BL.systemEventsLM.changesSession.change(dataChanged, DataSession.this, applyObject);
                 currentSession.change(applyObject.object, DataSession.this);
-                if (form != null){
-                    BL.systemEventsLM.connectionSession.change(form.instanceFactory.connection, (ExecutionEnvironment)DataSession.this, applyObject);
+                DataObject cn = ThreadLocalContext.getConnection();
+                if(cn != null)
+                    BL.systemEventsLM.connectionSession.change(cn, (ExecutionEnvironment)DataSession.this, applyObject);
+                if (form != null) {
                     Object ne = !form.entity.isNamed()
-                                ? null
-                                : BL.reflectionLM.navigatorElementCanonicalName.read(form, new DataObject(form.entity.getCanonicalName(), StringClass.get(50)));
-                    if(ne!=null) 
-                        BL.systemEventsLM.navigatorElementSession.change(new DataObject(ne, BL.reflectionLM.navigatorElement), (ExecutionEnvironment)DataSession.this, applyObject);
-                    BL.systemEventsLM.quantityAddedClassesSession.change(add.size(), DataSession.this, applyObject);
-                    BL.systemEventsLM.quantityRemovedClassesSession.change(remove.size(), DataSession.this, applyObject);
-                    BL.systemEventsLM.quantityChangedClassesSession.change(changed, DataSession.this, applyObject);
+                            ? null
+                            : BL.reflectionLM.navigatorElementCanonicalName.read(form, new DataObject(form.entity.getCanonicalName(), StringClass.get(50)));
+                    if (ne != null)
+                        BL.systemEventsLM.navigatorElementSession.change(new DataObject(ne, BL.reflectionLM.navigatorElement), (ExecutionEnvironment) DataSession.this, applyObject);
                 }
+                BL.systemEventsLM.quantityAddedClassesSession.change(add.size(), DataSession.this, applyObject);
+                BL.systemEventsLM.quantityRemovedClassesSession.change(remove.size(), DataSession.this, applyObject);
+                BL.systemEventsLM.quantityChangedClassesSession.change(changed, DataSession.this, applyObject);
             } catch (SQLHandledException e) {
                 throw Throwables.propagate(e);
             }

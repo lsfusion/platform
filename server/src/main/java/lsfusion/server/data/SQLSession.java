@@ -1116,7 +1116,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         try {
             info = queryExecEnv.getInfo(this, transactTimeout);
 
-            if(getVolatileStats())
+            if(getVolatileStats()) // assert что queryExecEnv == DEFAULT, во всяком случае SQLRepeatAspect так делает
                 info = info.withVolatileStats();
         } catch (Throwable e) {
             unlockRead();
