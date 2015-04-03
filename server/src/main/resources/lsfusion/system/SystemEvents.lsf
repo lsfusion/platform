@@ -167,7 +167,7 @@ DESIGN exceptions {
                 ADD PROPERTY(erTraceException(e)) {
                     fill = 0.5;
                     preferredSize = ( -1, 200);
-                    panelLabelAbove = TRUE;
+                    panelCaptionAbove = TRUE;
                 }
             }
             ADD functions.box;
@@ -203,7 +203,7 @@ DESIGN changes {
                 ADD PROPERTY(pChanges) {
                     fill = 0.5;
                     preferredSize = ( -1, 200);
-                    panelLabelAbove = TRUE;
+                    panelCaptionAbove = TRUE;
                 }
             }
             ADD functions.box;

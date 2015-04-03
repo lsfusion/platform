@@ -573,20 +573,20 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         property.design.setFont(font);
     }
 
-    public void setHeaderFont(FontInfo headerFont) {
+    public void setCaptionFont(FontInfo captionFont) {
         for (PropertyDrawView property : getPropertiesIt()) {
-            setHeaderFont(property, headerFont);
+            setCaptionFont(property, captionFont);
         }
     }
 
-    public void setHeaderFont(FontInfo headerFont, GroupObjectEntity groupObject) {
+    public void setCaptionFont(FontInfo captionFont, GroupObjectEntity groupObject) {
         for (PropertyDrawView property : getProperties(groupObject)) {
-            setHeaderFont(property, headerFont);
+            setCaptionFont(property, captionFont);
         }
     }
 
-    public void setHeaderFont(PropertyDrawView property, FontInfo headerFont) {
-        property.design.setHeaderFont(headerFont);
+    public void setCaptionFont(PropertyDrawView property, FontInfo captionFont) {
+        property.design.setCaptionFont(captionFont);
     }
 
     public void setBackground(AbstractGroup group, Color background, GroupObjectEntity groupObject) {
@@ -762,22 +762,22 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         property.editKey = keyStroke;
     }
 
-    public void setPanelLabelAbove(AbstractGroup group, boolean panelLabelAbove, GroupObjectEntity groupObject) {
+    public void setPanelCaptionAbove(AbstractGroup group, boolean panelCaptionAbove, GroupObjectEntity groupObject) {
 
         for (PropertyDrawView property : getProperties(group, groupObject)) {
-            setPanelLabelAbove(property, panelLabelAbove);
+            setPanelCaptionAbove(property, panelCaptionAbove);
         }
     }
 
-    public void setPanelLabelAbove(AbstractGroup group, boolean panelLabelAbove) {
+    public void setPanelCaptionAbove(AbstractGroup group, boolean panelCaptionAbove) {
 
         for (PropertyDrawView property : getProperties(group)) {
-            setPanelLabelAbove(property, panelLabelAbove);
+            setPanelCaptionAbove(property, panelCaptionAbove);
         }
     }
 
-    public void setPanelLabelAbove(PropertyDrawView property, boolean panelLabelAbove) {
-        property.panelLabelAbove = panelLabelAbove;
+    public void setPanelCaptionAbove(PropertyDrawView property, boolean panelCaptionAbove) {
+        property.panelCaptionAbove = panelCaptionAbove;
     }
 
     public void setPreferredSize(AbstractGroup group, Dimension size) {

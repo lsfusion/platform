@@ -33,6 +33,6 @@ public class DisconnectActionProperty extends ScriptingActionProperty {
     @Override
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
         super.proceedDefaultDesign(propertyView, view);
-        propertyView.design.setIconPath("disconnect.png");
+        propertyView.design.setImagePath("disconnect.png");
     }
 }

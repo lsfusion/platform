@@ -164,7 +164,7 @@ public class AddObjectActionProperty<T extends PropertyInterface, I extends Prop
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
         super.proceedDefaultDesign(propertyView, view);
         propertyView.editKey = KeyStrokes.getAddActionPropertyKeyStroke();
-        propertyView.design.setIconPath("add.png");
+        propertyView.design.setImagePath("add.png");
         propertyView.showEditKey = false;
     }
 

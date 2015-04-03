@@ -78,8 +78,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         FontInfo clientFont = clientComponent.design.getFont();
         component.font = convertFont(clientFont);
 
-        FontInfo headerFont = clientComponent.design.getHeaderFont();
-        component.headerFont = convertFont(headerFont);
+        FontInfo captionFont = clientComponent.design.getCaptionFont();
+        component.captionFont = convertFont(captionFont);
 
         return component;
     }
@@ -223,8 +223,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         toolbar.showCountQuantity = clientToolbar.showCountRows;
         toolbar.showCalculateSum = clientToolbar.showCalculateSum;
         toolbar.showGroup = clientToolbar.showGroupReport;
-        toolbar.showPrintGroupButton = clientToolbar.showPrint;
-        toolbar.showPrintGroupXlsButton = clientToolbar.showXls;
+        toolbar.showPrintGroup = clientToolbar.showPrint;
+        toolbar.showPrintGroupXls = clientToolbar.showXls;
         toolbar.showGridSettings = clientToolbar.showSettings;
         return toolbar;
     }
@@ -300,7 +300,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
-        propertyDraw.icon = FileUtils.createImage(clientPropertyDraw.design.getImageHolder(), clientPropertyDraw.design.iconPath, "property", canIconBeDisabled);
+        propertyDraw.icon = FileUtils.createImage(clientPropertyDraw.design.getImageHolder(), clientPropertyDraw.design.imagePath, "property", canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 
@@ -327,7 +327,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.maximumCharWidth = clientPropertyDraw.maximumCharWidth;
         propertyDraw.preferredCharWidth = clientPropertyDraw.preferredCharWidth;
 
-        propertyDraw.panelLabelAbove = clientPropertyDraw.panelLabelAbove;
+        propertyDraw.panelCaptionAbove = clientPropertyDraw.panelCaptionAbove;
         
         propertyDraw.hide = clientPropertyDraw.hide;
         

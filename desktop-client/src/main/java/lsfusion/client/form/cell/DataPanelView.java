@@ -55,7 +55,7 @@ public class DataPanelView extends JPanel implements PanelView {
 
         label = new JLabel();
         setLabelText(property.getEditCaption());
-        if (property.panelLabelAbove) {
+        if (property.panelCaptionAbove) {
             label.setHorizontalAlignment(SwingConstants.CENTER);
         }
 
@@ -221,7 +221,7 @@ public class DataPanelView extends JPanel implements PanelView {
             Dimension tableSize = sizeGetter.get(table);
             int width;
             int height;
-            if (property.panelLabelAbove) {
+            if (property.panelCaptionAbove) {
                 width = max(labelSize.width, tableSize.width);
                 height = limitedSum(labelSize.height, tableSize.height);
             } else {
@@ -234,8 +234,8 @@ public class DataPanelView extends JPanel implements PanelView {
 
         @Override
         public void layoutContainer(Container parent) {
-            boolean vertical = property.panelLabelAbove;
-            boolean tableFirst = property.showTableFirst;
+            boolean vertical = property.panelCaptionAbove;
+            boolean tableFirst = property.panelCaptionAfter;
 
             Insets in = parent.getInsets();
 

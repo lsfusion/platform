@@ -27,15 +27,15 @@ public class ToolbarViewProxy extends ComponentViewProxy<ToolbarView> {
         target.showGroupReport = showGroup;
     }
 
-    public void setShowPrintGroupButton(boolean showPrintGroupButton) {
-        target.showPrint = showPrintGroupButton;
+    public void setShowPrintGroup(boolean showPrintGroup) {
+        target.showPrint = showPrintGroup;
     }
 
-    public void setShowPrintGroupXlsButton(boolean showPrintGroupXlsButton) {
-        target.showXls = showPrintGroupXlsButton;
+    public void setShowPrintGroupXls(boolean showPrintGroupXls) {
+        target.showXls = showPrintGroupXls;
     }
 
-    public void setShowHideSettings(boolean showHideSettings) {
-        target.showSettings = showHideSettings;
+    public void setShowSettings(boolean showSettings) {
+        target.showSettings = showSettings;
     }
 }

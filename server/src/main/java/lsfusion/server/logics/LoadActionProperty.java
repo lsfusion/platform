@@ -57,6 +57,6 @@ public class LoadActionProperty extends SystemExplicitActionProperty {
     @Override
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
         super.proceedDefaultDesign(propertyView, view);
-        propertyView.design.setIconPath("load.png");
+        propertyView.design.setImagePath("load.png");
     }
 }

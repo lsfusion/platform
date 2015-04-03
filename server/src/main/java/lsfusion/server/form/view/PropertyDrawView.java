@@ -38,7 +38,7 @@ public class PropertyDrawView extends ComponentView {
 
     public PropertyDrawEntity<?> entity;
 
-    public boolean showTableFirst;
+    public boolean panelCaptionAfter;
     public boolean editOnSingleClick;
     public boolean hide;
     public String regexp;
@@ -59,7 +59,7 @@ public class PropertyDrawView extends ComponentView {
 
     public Boolean focusable;
 
-    public boolean panelLabelAbove = false;
+    public boolean panelCaptionAbove = false;
 
     public ExternalScreen externalScreen;
     public ExternalScreenConstraints externalScreenConstraints = new ExternalScreenConstraints();
@@ -187,7 +187,7 @@ public class PropertyDrawView extends ComponentView {
         pool.writeObject(outStream, focusable);
         outStream.writeByte(entity.getEditType().serialize());
 
-        outStream.writeBoolean(panelLabelAbove);
+        outStream.writeBoolean(panelCaptionAbove);
 
         outStream.writeBoolean(externalScreen != null);
         if (externalScreen != null) {
@@ -195,7 +195,7 @@ public class PropertyDrawView extends ComponentView {
         }
         pool.writeObject(outStream, externalScreenConstraints);
 
-        outStream.writeBoolean(showTableFirst);
+        outStream.writeBoolean(panelCaptionAfter);
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
 
@@ -329,7 +329,7 @@ public class PropertyDrawView extends ComponentView {
 
         focusable = pool.readObject(inStream);
 
-        panelLabelAbove = inStream.readBoolean();
+        panelCaptionAbove = inStream.readBoolean();
 
         if (inStream.readBoolean()) {
             externalScreen = pool.context.BL.getExternalScreen(inStream.readInt());
@@ -337,7 +337,7 @@ public class PropertyDrawView extends ComponentView {
 
         externalScreenConstraints = pool.readObject(inStream);
 
-        showTableFirst = inStream.readBoolean();
+        panelCaptionAfter = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();
         hide = inStream.readBoolean();
 

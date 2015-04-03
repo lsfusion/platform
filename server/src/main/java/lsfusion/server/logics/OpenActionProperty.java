@@ -62,6 +62,6 @@ public class OpenActionProperty extends SystemExplicitActionProperty {
     @Override
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
         super.proceedDefaultDesign(propertyView, view);
-        propertyView.design.setIconPath("open.png");
+        propertyView.design.setImagePath("open.png");
     }
 }

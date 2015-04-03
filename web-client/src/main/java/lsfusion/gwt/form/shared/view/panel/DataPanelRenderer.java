@@ -48,7 +48,7 @@ public class DataPanelRenderer implements PanelRenderer {
     public DataPanelRenderer(final GFormController form, GPropertyDraw iproperty, GGroupObjectValue columnKey) {
         this.property = iproperty;
 
-        vertical = property.panelLabelAbove;
+        vertical = property.panelCaptionAbove;
 
         tooltip = property.getTooltipText(property.getCaptionOrEmpty());
 
@@ -78,8 +78,8 @@ public class DataPanelRenderer implements PanelRenderer {
             }
         });
 
-        if (property.headerFont != null) {
-            property.headerFont.apply(label.getElement().getStyle());
+        if (property.captionFont != null) {
+            property.captionFont.apply(label.getElement().getStyle());
         }
 
         valueTable = new ValueTable(form, columnKey);

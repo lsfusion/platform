@@ -11,12 +11,12 @@ public class ComponentDesign extends ContextObject implements Serializable {
 
     public FontInfo font;
 
-    public FontInfo headerFont;
+    public FontInfo captionFont;
 
     public Color background;
     public Color foreground;
 
-    public String iconPath;
+    public String imagePath;
     private SerializableImageIconHolder imageHolder;
 
     public ComponentDesign() {
@@ -73,8 +73,8 @@ public class ComponentDesign extends ContextObject implements Serializable {
     }
 
     public void designHeader(Component comp) {
-        if (headerFont != null) {
-            comp.setFont(getHeaderFont(comp));
+        if (captionFont != null) {
+            comp.setFont(getCaptionFont(comp));
         }
     }
 
@@ -100,8 +100,8 @@ public class ComponentDesign extends ContextObject implements Serializable {
         return getOrDeriveComponentFont(font, component);
     }
 
-    public Font getHeaderFont(Component component) {
-        return getOrDeriveComponentFont(headerFont, component);
+    public Font getCaptionFont(Component component) {
+        return getOrDeriveComponentFont(captionFont, component);
     }
 
     public FontInfo getFont() {
@@ -113,13 +113,13 @@ public class ComponentDesign extends ContextObject implements Serializable {
         updateDependency(this, "font");
     }
 
-    public FontInfo getHeaderFont() {
-        return headerFont;
+    public FontInfo getCaptionFont() {
+        return captionFont;
     }
 
-    public void setHeaderFont(FontInfo font) {
-        this.headerFont = font;
-        updateDependency(this, "headerFont");
+    public void setCaptionFont(FontInfo font) {
+        this.captionFont = font;
+        updateDependency(this, "captionFont");
     }
 
     private Font getOrDeriveComponentFont(FontInfo fontInfo, Component component) {
@@ -139,8 +139,8 @@ public class ComponentDesign extends ContextObject implements Serializable {
         return cFont;
     }
 
-    public void setIconPath(String iconPath) {
-        this.iconPath = iconPath;
-        setImage(new ImageIcon(ComponentDesign.class.getResource("/images/" + iconPath)));
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+        setImage(new ImageIcon(ComponentDesign.class.getResource("/images/" + imagePath)));
     }
 }

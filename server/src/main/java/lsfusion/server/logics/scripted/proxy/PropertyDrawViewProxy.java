@@ -10,8 +10,8 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         super(target);
     }
 
-    public void setShowTableFirst(boolean showTableFirst) {
-        target.showTableFirst = showTableFirst;
+    public void setPanelCaptionAfter(boolean panelCaptionAfter) {
+        target.panelCaptionAfter = panelCaptionAfter;
     }
 
     public void setEditOnSingleClick(boolean editOnSingleClick) {
@@ -62,8 +62,8 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.focusable = focusable;
     }
 
-    public void setPanelLabelAbove(boolean panelLabelAbove) {
-        target.panelLabelAbove = panelLabelAbove;
+    public void setPanelCaptionAbove(boolean panelCaptionAbove) {
+        target.panelCaptionAbove = panelCaptionAbove;
     }
 
     public void setCaption(String caption) {

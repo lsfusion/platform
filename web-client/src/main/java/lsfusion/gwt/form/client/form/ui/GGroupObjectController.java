@@ -109,11 +109,11 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
             addToToolbar(sumButton);
         }
 
-        if (groupObject.toolbar.showPrintGroupButton || groupObject.toolbar.showPrintGroupXlsButton) {
+        if (groupObject.toolbar.showPrintGroup || groupObject.toolbar.showPrintGroupXls) {
             addToToolbar(GwtClientUtils.createHorizontalStrut(5));
         }
 
-        if (groupObject.toolbar.showPrintGroupButton) {
+        if (groupObject.toolbar.showPrintGroup) {
             addToToolbar(new GToolbarButton("reportbw.png", "Распечатать таблицу") {
                 @Override
                 public void addListener() {
@@ -127,7 +127,7 @@ public class GGroupObjectController extends GAbstractGroupObjectController {
             });
         }
 
-        if (groupObject.toolbar.showPrintGroupXlsButton) {
+        if (groupObject.toolbar.showPrintGroupXls) {
             addToToolbar(new GToolbarButton("excelbw.png", "Экспорт в xls") {
                 @Override
                 public void addListener() {

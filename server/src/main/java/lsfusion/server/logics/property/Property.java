@@ -312,7 +312,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
         if (iconPath != null) {
-            propertyView.design.iconPath = iconPath;
+            propertyView.design.imagePath = iconPath;
             propertyView.design.setImage(image);
         }
 

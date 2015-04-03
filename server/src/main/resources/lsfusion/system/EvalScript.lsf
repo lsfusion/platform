@@ -109,7 +109,7 @@ DESIGN script {
                 ADD PROPERTY(saveAsScriptAction()) { font = 'bold 24'; alignment = STRETCH; }
             }
             ADD PROPERTY(scriptStorage()) {
-                panelLabelAbove = TRUE;    
+                panelCaptionAbove = TRUE;    
                 fill = 1;
             }
             NEW run {

@@ -75,7 +75,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public int maximumCharWidth;
     public int preferredCharWidth;
 
-    public boolean panelLabelAbove;
+    public boolean panelCaptionAbove;
     
     public boolean hide;
 
@@ -314,7 +314,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
                 ", caption='" + caption + '\'' +
                 ", baseType=" + baseType +
                 ", changeType=" + changeType +
-                ", iconPath='" + icon + '\'' +
+                ", imagePath='" + icon + '\'' +
                 ", focusable=" + focusable +
                 ", checkEquals=" + checkEquals +
                 ", editType=" + editType +

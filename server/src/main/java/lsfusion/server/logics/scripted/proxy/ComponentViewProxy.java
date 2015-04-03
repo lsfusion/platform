@@ -135,8 +135,8 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
 
     /* ========= design properties ========= */
 
-    public void setHeaderFont(FontInfo headerFont) {
-        target.design.setHeaderFont(headerFont);
+    public void setCaptionFont(FontInfo captionFont) {
+        target.design.setCaptionFont(captionFont);
     }
 
     public void setFont(FontInfo font) {
@@ -186,7 +186,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         target.design.foreground = foreground;
     }
 
-    public void setIconPath(String iconPath) {
-        target.design.setIconPath(iconPath);
+    public void setImagePath(String imagePath) {
+        target.design.setImagePath(imagePath);
     }
 }

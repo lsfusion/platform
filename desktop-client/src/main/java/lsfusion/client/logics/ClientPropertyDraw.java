@@ -75,7 +75,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Boolean focusable;
     public PropertyEditType editType = PropertyEditType.EDITABLE;
 
-    public boolean panelLabelAbove;
+    public boolean panelCaptionAbove;
 
     public ClientExternalScreen externalScreen;
     public ExternalScreenConstraints externalScreenConstraints;
@@ -100,7 +100,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public List<ClientGroupObject> columnGroupObjects = new ArrayList<ClientGroupObject>();
 
     public boolean autoHide;
-    public boolean showTableFirst;
+    public boolean panelCaptionAfter;
     public boolean clearText;
     public String tableName;
     public String eventID;
@@ -313,7 +313,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, format);
         pool.writeObject(outStream, focusable);
 
-        outStream.writeBoolean(panelLabelAbove);
+        outStream.writeBoolean(panelCaptionAbove);
 
         outStream.writeBoolean(externalScreen != null);
         if (externalScreen != null) {
@@ -321,7 +321,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
         pool.writeObject(outStream, externalScreenConstraints);
 
-        outStream.writeBoolean(showTableFirst);
+        outStream.writeBoolean(panelCaptionAfter);
         outStream.writeBoolean(editOnSingleClick);
         outStream.writeBoolean(hide);
 
@@ -349,7 +349,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         focusable = pool.readObject(inStream);
         editType = PropertyEditType.deserialize(inStream.readByte());
 
-        panelLabelAbove = inStream.readBoolean();
+        panelCaptionAbove = inStream.readBoolean();
 
         if (inStream.readBoolean()) {
             externalScreen = ClientExternalScreen.getScreen(inStream.readInt());
@@ -357,7 +357,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         externalScreenConstraints = pool.readObject(inStream);
 
-        showTableFirst = inStream.readBoolean();
+        panelCaptionAfter = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();
         hide = inStream.readBoolean();
 

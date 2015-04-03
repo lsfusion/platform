@@ -33,7 +33,7 @@ public class GComponent implements Serializable {
     public ColorDTO foreground;
 
     public GFont font;
-    public GFont headerFont;
+    public GFont captionFont;
 
     @Override
     public String toString() {
