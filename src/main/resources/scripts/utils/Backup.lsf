@@ -54,7 +54,7 @@ DESIGN backup {
             fill = 1;
             ADD PROPERTY(logBackup(b)) {
                 fill = 1;
-                panelLabelAbove = TRUE;
+                panelCaptionAbove = TRUE;
             }
             ADD t2.box {
                 caption = 'Скопированные таблицы';

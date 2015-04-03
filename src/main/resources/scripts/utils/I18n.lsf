@@ -105,11 +105,11 @@ DESIGN translation {
         type = CONTAINERH;
         ADD PROPERTY(translationInput()) {
             fill = 1;
-            panelLabelAbove = TRUE;
+            panelCaptionAbove = TRUE;
         }
         ADD PROPERTY(translationResult()) {
             fill = 1;
-            panelLabelAbove = TRUE;
+            panelCaptionAbove = TRUE;
         }
     }
     ADD PROPERTY(translateText()) { font = 'bold 24'; }
@@ -154,13 +154,13 @@ DESIGN dictionary {
             ADD PROPERTY(translationInput()) {
                 fill = 1;
                 caption = 'Фраза для перевода';
-                panelLabelAbove = TRUE;
+                panelCaptionAbove = TRUE;
                 font = 'bold 24';
             }
             ADD PROPERTY(translationResult()){
                 fill = 1;
                 caption = 'Перевод';
-                panelLabelAbove = TRUE;
+                panelCaptionAbove = TRUE;
                 font = 'bold 24';
             }
         }
