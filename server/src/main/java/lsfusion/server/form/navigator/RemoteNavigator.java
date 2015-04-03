@@ -403,6 +403,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                 session.close();
             }
         } catch (Exception e) {
+            logger.error("Error updating user activity: ", e);
             throw Throwables.propagate(e);
         }
     }

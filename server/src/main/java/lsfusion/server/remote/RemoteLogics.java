@@ -160,12 +160,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         userLastActivityUpdateExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                try {
-                    RemoteNavigator.updateUserLastActivity(businessLogics);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    throw new RuntimeException(e);
-                }
+                RemoteNavigator.updateUserLastActivity(businessLogics);
             }
         }, Settings.get().getUpdateUserLastActivity(), Settings.get().getUpdateUserLastActivity(), TimeUnit.MILLISECONDS);
     }
