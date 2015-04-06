@@ -2,4 +2,5 @@ MODULE Com;
 
 REQUIRE System;
 
+//text, charset, baudrate, com-port
 writeToComPort 'Запись в com-port' = ACTION CUSTOM 'lsfusion.erp.utils.com.WriteToComPortActionProperty' (TEXT, VARSTRING[255], INTEGER, INTEGER);
