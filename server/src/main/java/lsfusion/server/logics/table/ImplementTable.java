@@ -471,7 +471,7 @@ public class ImplementTable extends GlobalTable {
         }
         statProps = mvUpdateStatProps.immutableValue();
 
-        assert statDefault || correctStatProps();
+//        assert statDefault || correctStatProps();
     }
 
     private boolean correctStatProps() {
