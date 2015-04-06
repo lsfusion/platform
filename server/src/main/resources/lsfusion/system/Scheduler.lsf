@@ -55,6 +55,7 @@ TABLE scheduledTaskLog (ScheduledTaskLog);
 TABLE scheduledTaskScheduledTaskLog (ScheduledTask, ScheduledTaskLog);
 
 resultScheduledTaskLog 'Результат' = DATA VARSTRING[200] (ScheduledTaskLog);
+exceptionOccurredScheduledTaskLog 'Ошибка' = DATA BOOLEAN (ScheduledTaskLog);
 propertyScheduledTaskLog 'Свойство' = DATA VARSTRING[200] (ScheduledTaskLog);
 dateScheduledTaskLog 'Время' = DATA DATETIME (ScheduledTaskLog);
 toDateScheduledTaskLog 'Дата' (d) = DATE(dateScheduledTaskLog(d));
@@ -93,7 +94,7 @@ FORM scheduledTask 'Планировщик'
     PROPERTIES (td) ADDOBJ, DELETESESSION
     
     OBJECTS tl=ScheduledTaskLog
-    PROPERTIES (tl) READONLY propertyScheduledTaskLog, resultScheduledTaskLog, dateScheduledTaskLog
+    PROPERTIES (tl) READONLY propertyScheduledTaskLog, resultScheduledTaskLog, exceptionOccurredScheduledTaskLog, dateScheduledTaskLog
 
     OBJECTS ctl=ScheduledClientTaskLog
     PROPERTIES (ctl) READONLY messageScheduledClientTaskLog
