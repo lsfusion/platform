@@ -42,6 +42,7 @@ right = FORMULA TEXT 'right($1,$2)';
 lpad = FORMULA TEXT 'lpad($1,$2,$3)';
 rpad = FORMULA TEXT 'rpad($1,$2,$3)';
 
+repeat = FORMULA TEXT 'repeat($1,$2)';
 // --------------------------------------------- Работа с числами --------------------------------- //
 
 floor = FORMULA 'floor($1)';
