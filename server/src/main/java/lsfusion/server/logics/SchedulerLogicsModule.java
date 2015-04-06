@@ -18,6 +18,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP periodScheduledTask;
     public LCP schedulerStartTypeScheduledTask;
     public LCP activeScheduledTask;
+    public LCP ignoreExceptionsScheduledTask;
     public LCP activeScheduledTaskDetail;
     public LCP orderScheduledTaskDetail;
     public LCP scheduledTaskScheduledTaskDetail;
@@ -54,6 +55,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
         periodScheduledTask = findProperty("periodScheduledTask");
         schedulerStartTypeScheduledTask = findProperty("schedulerStartTypeScheduledTask");
         activeScheduledTask = findProperty("activeScheduledTask");
+        ignoreExceptionsScheduledTask = findProperty("ignoreExceptionsScheduledTask");
         activeScheduledTaskDetail = findProperty("activeScheduledTaskDetail");
         orderScheduledTaskDetail = findProperty("orderScheduledTaskDetail");
         scheduledTaskScheduledTaskDetail = findProperty("scheduledTaskScheduledTaskDetail");

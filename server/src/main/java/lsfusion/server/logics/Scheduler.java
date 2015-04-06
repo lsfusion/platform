@@ -276,9 +276,9 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             DataObject currentScheduledTaskLogStartObject = beforeStartLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
             afterFinishLogSession = dbManager.createSession(getLogSql());
             currentScheduledTaskLogFinishObject = afterFinishLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
-
+            boolean ignoreExceptions = false;
             try {
-
+                ignoreExceptions = businessLogics.schedulerLM.ignoreExceptionsScheduledTask.read(beforeStartLogSession, scheduledTask) != null;
                 businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) beforeStartLogSession, currentScheduledTaskLogStartObject);
                 businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", beforeStartLogSession, currentScheduledTaskLogStartObject);
                 businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), beforeStartLogSession, currentScheduledTaskLogStartObject);
@@ -297,7 +297,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                 String finishResult = afterFinishLogSession.applyMessage(businessLogics);
                 if (finishResult != null)
                     logger.error("Error while saving scheduler task result " + lap.property.caption + " : " + finishResult);
-                return applyResult == null;
+                return applyResult == null || ignoreExceptions;
             } catch (Exception e) {
                 logger.error("Error while running scheduler task (in executeLAP()) " + lap.property.caption + " : ", e);
 
@@ -311,7 +311,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     logger.error("Error while reporting exception in scheduler task (in executeLAP()) " + lap.property.caption + " : ", e);
                 }
 
-                return false;
+                return ignoreExceptions;
             }
         }
 
