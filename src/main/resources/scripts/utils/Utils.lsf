@@ -6,6 +6,11 @@ REQUIRE System;
 
 GROUP print 'Печатные формы' : public;
 
+// ---------------------------------- Чтение списка файлов по пути ---------------------------------- //
+fileName 'Список файлов' = DATA LOCAL VARISTRING[255] (INTEGER);
+fileIsDirectory 'Является директорией' = DATA LOCAL BOOLEAN (INTEGER);
+listFiles 'Получить список файлов' = ACTION CUSTOM 'lsfusion.erp.utils.utils.ListFilesActionProperty' (VARISTRING[255]); 
+
 // --------------------------------------------- Работа со строками --------------------------------- //
 
 stringEqualsAll(string) = string == STRING[3]('Все');
