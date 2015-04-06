@@ -1,0 +1,5 @@
+MODULE Com;
+
+REQUIRE System;
+
+writeToComPort 'Запись в com-port' = ACTION CUSTOM 'lsfusion.erp.utils.com.WriteToComPortActionProperty' (TEXT, VARSTRING[255], INTEGER, INTEGER);
