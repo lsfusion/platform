@@ -1,16 +1,13 @@
 package lsfusion.client.form.editor;
 
-import lsfusion.client.StartupProperties;
 import lsfusion.interop.ComponentDesign;
 
 import javax.swing.*;
-import javax.swing.text.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import javax.swing.text.DefaultFormatterFactory;
+import javax.swing.text.NumberFormatter;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
@@ -20,10 +17,9 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
         super(design);
         final DecimalFormat df = (DecimalFormat) format;
         final boolean isGroupSeparatorDot = df.getDecimalFormatSymbols().getGroupingSeparator() == '.';
+        final char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
 
-        NumberFormatter formatter = new NullNumberFormatter(format, isGroupSeparatorDot ? 0 : 0.0) {
-            private final char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
-
+        NumberFormatter formatter = new NullNumberFormatter(format, isGroupSeparatorDot ? 0 : 0.0, String.valueOf(separator)) {
             public boolean lastTextEndsWithSeparator;
             public int lastZero;
 
