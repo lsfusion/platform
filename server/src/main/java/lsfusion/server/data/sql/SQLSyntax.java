@@ -167,7 +167,7 @@ public interface SQLSyntax {
     boolean supportsAnalyzeSessionTable();
     String getAnalyzeSessionTable(String tableName);
 
-    boolean supportsVolatileStats();
+    boolean supportsDisableNestedLoop();
     boolean supportsNoCount();
     String getVolatileStats(boolean on);
 

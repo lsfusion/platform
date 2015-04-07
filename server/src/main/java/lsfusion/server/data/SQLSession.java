@@ -158,7 +158,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
     private ReentrantLock temporaryTablesLock = new ReentrantLock(true);
-    private ReentrantReadWriteLock timeoutLock = new ReentrantReadWriteLock(true);
+    private ReentrantReadWriteLock connectionLock = new ReentrantReadWriteLock(true);
 
     public SQLSession(DataAdapter adapter, SQLSessionUserProvider userProvider) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
@@ -181,7 +181,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         removeUnusedTemporaryTables(false, owner);
         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
         assertLock();
-        if(inTransaction == 0 && volatileStats.get() == 0 && sessionTablesMap.isEmpty() && !explicitNeedPrivate) { // вернемся к commonConnection'у
+        if(inTransaction == 0 && sessionTablesMap.isEmpty() && !explicitNeedPrivate) { // вернемся к commonConnection'у
             ServerLoggers.assertLog(privateConnection != null, "BRACES NEEDPRIVATE - TRYCOMMON SHOULD MATCH");
             connectionPool.returnPrivate(this, privateConnection);
 //            System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() +  ExceptionUtils.getStackTrace());
@@ -781,33 +781,27 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
-    private AtomicInteger noQueryLimit = new AtomicInteger(0);
-
-    public void pushNoQueryLimit() {
-        noQueryLimit.getAndIncrement();
+    private void assertConnectionLock() {
+        ServerLoggers.assertLog(connectionLock.isWriteLocked(), "CONNECTION SHOULD BY LOCKED");
     }
+    public void setEnableNestLoop(ExConnection connection, OperationOwner owner, boolean on) throws SQLException {
+        assertConnectionLock();
+        assert syntax.supportsDisableNestedLoop();
 
-    public void popNoQueryLimit() {
-        noQueryLimit.decrementAndGet();
-    }
-    
-    public boolean isNoQueryLimit() {
-        return noQueryLimit.get() > 0;
-    }
+        if(problemInTransaction != null) { // если возникла проблема в транзакции ругнется
+            assert on;
+            return;
+        }
 
-    private AtomicInteger volatileStats = new AtomicInteger(0);
-
-    public boolean isVolatileStats() {
-        return volatileStats.get() > 0;
-    }
-
-    public void pushVolatileStats(OperationOwner owner) throws SQLException {
-        if(syntax.supportsVolatileStats())
-            if(volatileStats.getAndIncrement() == 0) {
-                envNeedPrivate(owner);
-
-                executeDDL("SET enable_nestloop=off", owner);
-            }
+        Statement statement = createSingleStatement(connection.sql);
+        try {
+            statement.execute("SET enable_nestloop=" + (on ? "on" : "off"));
+        } catch (SQLException e) {
+            logger.error(statement.toString());
+            throw e;
+        } finally {
+            statement.close();
+        }
     }
 
     private void envNeedPrivate(OperationOwner owner) throws SQLException {
@@ -821,16 +815,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
-    public void popVolatileStats(OperationOwner opOwner) throws SQLException {
-        if (syntax.supportsVolatileStats())
-            if (volatileStats.decrementAndGet() == 0) {
-                if(problemInTransaction == null)
-                    executeDDL("SET enable_nestloop=on", opOwner);
-
-                envTryCommon(opOwner);
-            }
-    }
-
     private void envTryCommon(OperationOwner opOwner) throws SQLException {
         lockRead(opOwner);
         temporaryTablesLock.lock();
@@ -842,34 +826,69 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
-    private AtomicInteger noHandled = new AtomicInteger(0);
+    private ThreadLocal<Integer> noQueryLimit = new ThreadLocal<Integer>();
+
+    public void pushNoQueryLimit() {
+        Integer prevValue = noQueryLimit.get();
+        noQueryLimit.set(prevValue == null ? 1 : prevValue + 1);
+    }
+
+    public void popNoQueryLimit() {
+        Integer prevValue = noQueryLimit.get();
+        noQueryLimit.set(prevValue.equals(1) ? null : prevValue - 1);
+    }
+
+    public boolean isNoQueryLimit() {
+        return noQueryLimit.get() != null;
+    }
+
+    private ThreadLocal<Integer> volatileStats = new ThreadLocal<Integer>();
+
+    public boolean isVolatileStats() {
+        return volatileStats.get() != null;
+    }
+
+    public void pushVolatileStats(OperationOwner owner) throws SQLException {
+        Integer prevValue = volatileStats.get();
+        volatileStats.set(prevValue == null ? 1 : prevValue + 1);
+    }
+
+    public void popVolatileStats(OperationOwner opOwner) throws SQLException {
+        Integer prevValue = volatileStats.get();
+        volatileStats.set(prevValue.equals(1) ? null : prevValue - 1);
+    }
+
+    private ThreadLocal<Integer> noHandled = new ThreadLocal<Integer>();
 
     // если вообще нет обработки handled exception'ов
     public void pushNoHandled() {
-        noHandled.getAndIncrement();
+        Integer prevValue = noHandled.get();
+        noHandled.set(prevValue == null ? 1 : prevValue + 1);
     }
     
     public boolean isNoHandled() {
-        return noHandled.get() > 0;
+        return noHandled.get() != null;
     }
     
     public void popNoHandled() {
-        noHandled.decrementAndGet();
+        Integer prevValue = noHandled.get();
+        noHandled.set(prevValue.equals(1) ? null : prevValue - 1);
     }
 
-    private AtomicInteger noTransactTimeout = new AtomicInteger(0);
+    private ThreadLocal<Integer> noTransactTimeout = new ThreadLocal<Integer>();
 
-    // если вообще нет обработки handled exception'ов
     public void pushNoTransactTimeout() {
-        noTransactTimeout.getAndIncrement();
+        Integer prevValue = noTransactTimeout.get();
+        noTransactTimeout.set(prevValue == null ? 1 : prevValue + 1);
     }
 
     public boolean isNoTransactTimeout() {
-        return noTransactTimeout.get() > 0;
+        return noTransactTimeout.get() != null;
     }
 
     public void popNoTransactTimeout() {
-        noTransactTimeout.decrementAndGet();
+        Integer prevValue = noTransactTimeout.get();
+        noTransactTimeout.set(prevValue.equals(1) ? null : prevValue - 1);
     }
 
     private boolean forcedCancel = false;
@@ -909,7 +928,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         try {
             env.before(this, connection, DDL, owner);
 
-            lockTimeout();
+            lockConnection();
 
             statement = createSingleStatement(connection.sql);
 
@@ -1109,47 +1128,28 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
 
-    private DynamicExecEnvSnapshot lockQueryExec(DynamicExecuteEnvironment queryExecEnv, int transactTimeout, OperationOwner owner) {
-        lockRead(owner);
-
-        DynamicExecEnvSnapshot info;
-        try {
-            info = queryExecEnv.getInfo(this, transactTimeout);
-
-            if(getVolatileStats()) // assert что queryExecEnv == DEFAULT, во всяком случае SQLRepeatAspect так делает
-                info = info.withVolatileStats();
-        } catch (Throwable e) {
-            unlockRead();
-            throw Throwables.propagate(e);
-        }
-        return info;
-    }
-    private void lockTimeout(boolean needTimeout) {
+    private void lockConnection(boolean needLock) {
         if(syntax.hasJDBCTimeoutMultiThreadProblem()) {
-            if(needTimeout)
-                timeoutLock.writeLock().lock();
+            if(needLock)
+                connectionLock.writeLock().lock();
             else
-                timeoutLock.readLock().lock();
+                connectionLock.readLock().lock();
         }
     }
-    private void unlockTimeout(boolean needTimeout) {
+    private void unlockConnection(boolean needLock) {
         if(syntax.hasJDBCTimeoutMultiThreadProblem()) {
-            if(needTimeout)
-                timeoutLock.writeLock().unlock();
+            if(needLock)
+                connectionLock.writeLock().unlock();
             else
-                timeoutLock.readLock().unlock();
+                connectionLock.readLock().unlock();
         }
     }
     // когда в принципе используются statement'ы, чтобы им случайно не повесился timeout
-    private void lockTimeout() {
-        lockTimeout(false);
+    private void lockConnection() {
+        lockConnection(false);
     }
-    private void unlockTimeout() {
-        unlockTimeout(false);
-    }
-
-    private void unlockQueryExec(DynamicExecEnvSnapshot info) {
-        unlockRead();
+    private void unlockConnection() {
+        unlockConnection(false);
     }
 
     private void afterStatementExecute(Result<Throwable> firstException, final String command, final StaticExecuteEnvironment env, final ExConnection connection, final Statement statement, final OperationOwner owner) {
@@ -1161,7 +1161,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
-                unlockTimeout();
+                unlockConnection();
             }}, firstException);
 
         runSuppressed(new SQLRunnable() {
@@ -1184,7 +1184,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         ExConnection connection = getConnection();
 
         int result = 0;
-        lockTimeout();
+        lockConnection();
 
         Statement statement = createSingleStatement(connection.sql);
         try {
@@ -1196,7 +1196,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         } finally {
             statement.close();
 
-            unlockTimeout();
+            unlockConnection();
 
             returnConnection(connection);
             unlockRead();
@@ -1241,10 +1241,40 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return handler.result;
     }
 
-    @Message("message.sql.execute")
+    // можно было бы сделать аспектом, но во-первых вся логика before / after аспектная и реализована в явную, плюс непонятно как соотносить snapshot с mutable объектом (env)
     public <H> void executeCommand(@ParamMessage final SQLCommand<H> command, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, final DynamicExecuteEnvironment queryExecEnv, int transactTimeout, H handler) throws SQLException, SQLHandledException {
+        if(command.command.length() > Settings.get().getQueryLengthLimit())
+            throw new SQLTooLongQueryException(command.command);
 
-        final DynamicExecEnvSnapshot snapEnv = lockQueryExec(queryExecEnv, transactTimeout, owner);
+        DynamicExecEnvSnapshot snapEnv = queryExecEnv.getSnapshot(transactTimeout);
+
+        try {
+            executeCommand(command, owner, paramObjects, snapEnv, handler);
+
+            queryExecEnv.succeeded(snapEnv);
+
+            return;
+        } catch (SQLClosedException e) {
+            if(e.isInTransaction() || !tryRestore(owner, e.connection, e.isPrivate))
+                throw e;
+        } catch (SQLHandledException e) {
+            if (!(e instanceof SQLTimeoutException && !((SQLTimeoutException) e).isTransactTimeout))
+                throw e; // update conflict'ы, deadlock'и, transactTimeout'ы
+
+            queryExecEnv.failed(snapEnv);
+
+            if (e.isInTransaction()) // транзакция все равно прервана
+                throw e;
+        }
+
+        // повторяем
+        executeCommand(command, owner, paramObjects, queryExecEnv, transactTimeout, handler);
+    }
+
+    @Message("message.sql.execute")
+    public <H> void executeCommand(@ParamMessage final SQLCommand<H> command, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, final DynamicExecEnvSnapshot snapEnv, H handler) throws SQLException, SQLHandledException {
+        lockRead(owner);
+
         snapEnv.beforeConnection(this, owner);
 
         final ExConnection connection = getConnection();
@@ -1261,10 +1291,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         try {
             env.before(this, connection, string, owner);
 
-            lockTimeout(snapEnv.needTimeoutLock());
+            lockConnection(snapEnv.needConnectionLock());
+
+            snapEnv.beforeStatement(this, connection, string, owner);
 
             statement = getStatement(command, paramObjects, connection, syntax, snapEnv, returnStatement);
-            snapEnv.beforeStatement(statement, this);
+            snapEnv.beforeExec(statement, this);
 
             long started = System.currentTimeMillis();
 
@@ -1284,6 +1316,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private void afterExStatementExecute(final OperationOwner owner, final StaticExecuteEnvironment env, final DynamicExecEnvSnapshot execInfo, final ExConnection connection, final long runTime, final Result<ReturnStatement> returnStatement, final PreparedStatement statement, final String string, Result<Throwable> firstException) {
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
+                execInfo.afterStatement(SQLSession.this, connection, string, owner);
+            }}, firstException);
+
+        runSuppressed(new SQLRunnable() {
+            public void run() throws SQLException {
                 env.after(SQLSession.this, connection, string, owner);
             }}, firstException);
 
@@ -1296,7 +1333,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
-                unlockTimeout(execInfo.needTimeoutLock());
+                unlockConnection(execInfo.needConnectionLock());
             }}, firstException);
 
         runSuppressed(new SQLRunnable() {
@@ -1310,7 +1347,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             }
         }, firstException);
 
-        unlockQueryExec(execInfo);
+        unlockRead();
     }
 
     private static final Parser<Object, Object> dataParser = new Parser<Object, Object>() {
@@ -1389,7 +1426,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         try {
             env.before(this, connection, command, opOwner);
 
-            lockTimeout();
+            lockConnection();
 
             statement = connection.sql.prepareStatement(command);
             
@@ -1658,7 +1695,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         ExConnection connection = getConnection();
 
-        lockTimeout();
+        lockConnection();
 
         Statement statement = createSingleStatement(connection.sql);
         try {
@@ -1709,7 +1746,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         } finally {
             statement.close();
 
-            unlockTimeout();
+            unlockConnection();
 
             returnConnection(connection);
 

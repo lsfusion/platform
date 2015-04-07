@@ -1,7 +1,9 @@
 package lsfusion.server.data.query;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.data.ExConnection;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLQuery;
 import lsfusion.server.data.SQLSession;
@@ -9,50 +11,99 @@ import lsfusion.server.data.SQLSession;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+// ThreadSafe
 public class DynamicExecEnvSnapshot {
-    
+
+    // immutable часть
+    public final boolean volatileStats;
     public final int timeout;
-    public final boolean isTransactTimeout;
-    public final boolean isUserVolatileStats;
 
-    public static final DynamicExecEnvSnapshot EMPTY = new DynamicExecEnvSnapshot(0, false);
+    // состояние сессии (точнее потока + сессии), есть assertion что не изменяются вплоть до окончания выполнения
+    public int transactTimeout; // param
+    public boolean sessionVolatileStats; // ThreadLocal
+    public boolean noHandled; // ThreadLocal
+    public boolean inTransaction; // LockWrite
+    public int secondsFromTransactStart; // LockWrite
 
-    public DynamicExecEnvSnapshot(int seconds, boolean isTransact) {
-        this(seconds, isTransact, false);
+    // преподсчитанное состояние
+    public boolean isTransactTimeout = false;
+    public boolean needConnectionLock;
+    public boolean disableNestedLoop;
+    public int setTimeout;
+
+    public static final DynamicExecEnvSnapshot EMPTY = new DynamicExecEnvSnapshot(false, 0, Integer.MAX_VALUE);
+
+    public DynamicExecEnvSnapshot(boolean volatileStats, int timeout, int transactTimeout) {
+        this.volatileStats = volatileStats;
+        this.timeout = timeout;
+        this.transactTimeout = transactTimeout;
     }
 
-    public DynamicExecEnvSnapshot(int seconds, boolean isTransact, boolean isUserVolatileStats) {
-        this.timeout = seconds;
-        this.isTransactTimeout = isTransact;
-        this.isUserVolatileStats = isUserVolatileStats;
+    // assert что session.locked
+    private void prepareEnv(SQLSession session) { // "смешивает" универсальное состояние (при отсуствии ограничений) и "местное", DynamicExecuteEnvironment.checkSnapshot выполняет обратную функцию
+        noHandled = session.isNoHandled();
+        if(noHandled)
+            return;
+
+        inTransaction = session.isInTransaction();
+        secondsFromTransactStart = session.getSecondsFromTransactStart();
+
+        setTimeout = timeout;
+        if(setTimeout > 0) // если есть транзакция, увеличиваем timeout до времени транзакции
+            setTimeout = BaseUtils.max(setTimeout, secondsFromTransactStart);
+
+        if(session.syntax.supportsDisableNestedLoop()) {
+            disableNestedLoop = volatileStats;
+            sessionVolatileStats = session.isVolatileStats();
+            if (sessionVolatileStats) { // проверяем локальный volatileStats
+                disableNestedLoop = true;
+                setTimeout = 0; // выключаем timeout
+            }
+        }
+
+        // уменьшаем timeout до локального максимума
+        if(inTransaction && !session.isNoTransactTimeout() && transactTimeout > 0 && (setTimeout >= transactTimeout || setTimeout == 0)) {
+            setTimeout = transactTimeout;
+            isTransactTimeout = true;
+        }
+
+        needConnectionLock = disableNestedLoop || (setTimeout > 0 && session.syntax.hasJDBCTimeoutMultiThreadProblem()); // проверка на timeout из-за бага в драйвере postgresql
+    }
+
+    // после readLock сессии, но до получения connection'а
+    public void beforeConnection(SQLSession session, OperationOwner owner) throws SQLException {
+        prepareEnv(session);
+
+        if(needConnectionLock)
+            session.lockNeedPrivate();
     }
 
     public void afterConnection(SQLSession session, OperationOwner owner) throws SQLException {
-        if(isUserVolatileStats)
-            session.popVolatileStats(owner);
-        if(timeout > 0)
+        if(needConnectionLock)
             session.lockTryCommon(owner);
     }
 
-    public void beforeConnection(SQLSession session, OperationOwner owner) throws SQLException {
-        if(timeout > 0) // из-за бага в драйвере postgresql
-            session.lockNeedPrivate();
-        if(isUserVolatileStats)
-            session.pushVolatileStats(owner);
+    public boolean needConnectionLock() {
+        return needConnectionLock;
     }
 
-    public DynamicExecEnvSnapshot withVolatileStats() {
-        assert !isUserVolatileStats;
-        return new DynamicExecEnvSnapshot(timeout, isTransactTimeout, true);
-    }
-    
-    public boolean needTimeoutLock() {
-        return timeout > 0;
+    public void beforeStatement(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
+        if(disableNestedLoop) {
+            assert needConnectionLock; // чтобы запрещать connection должен быть заблокирован
+            sqlSession.setEnableNestLoop(connection, owner, false);
+        }
     }
 
-    public void beforeStatement(Statement statement, SQLSession session) throws SQLException {
-        if(timeout > 0)
-            statement.setQueryTimeout(timeout);
+    public void afterStatement(SQLSession sqlSession, ExConnection connection, String command, OperationOwner owner) throws SQLException {
+        if(disableNestedLoop) {
+            assert needConnectionLock;
+            sqlSession.setEnableNestLoop(connection, owner, true);
+        }
+    }
+
+    public void beforeExec(Statement statement, SQLSession session) throws SQLException {
+        if(setTimeout > 0)
+            statement.setQueryTimeout(setTimeout);
     }
 
     public ImMap<SQLQuery, String> getMaterializedQueries() {

@@ -301,10 +301,6 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         return form!=null ? form.getMapObjects() : null;
     }
 
-    public ObjectInstance getObjectInstance(ObjectEntity object) {
-        return getFormInstance().instanceFactory.getInstance(object);
-    }
-
     public PropertyObjectInterfaceInstance getObjectInstance(P cls) {
         ImMap<P, PropertyObjectInterfaceInstance> objectInstances = getObjectInstances();
         return objectInstances != null ? objectInstances.get(cls) : null;

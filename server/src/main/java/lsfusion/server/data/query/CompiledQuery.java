@@ -261,7 +261,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             select = getSelect(from, keySelect, keyNames, resultKeyOrder, propertySelect, propertyNames, resultPropertyOrder, whereSelect, syntax, compileOrders, top, false);
         }
 
-        queryExecEnv = (select.length() > Settings.get().getQueryLengthTimeout() && syntax.supportsVolatileStats() ? new AdjustVolatileExecuteEnvironment() : DynamicExecuteEnvironment.DEFAULT);
+        queryExecEnv = (select.length() > Settings.get().getQueryLengthTimeout() && syntax.supportsDisableNestedLoop() ? new AdjustVolatileExecuteEnvironment() : DynamicExecuteEnvironment.DEFAULT);
 
         env = mEnv.finish();
         sql = new SQLQuery(select, mSubQueries.immutable(), env, keyNames.crossJoin(keyReaders), propertyNames.crossJoin(propertyReaders), union);

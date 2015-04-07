@@ -1,72 +1,55 @@
 package lsfusion.server.data.query;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.server.Settings;
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLSession;
-
-import java.sql.SQLException;
 
 public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment {
 
+    // если volatileStats, то assertion что запрос без volatileStats с заданным timeout'ом не выполнился
     private boolean volatileStats;
-    private boolean fixVolatile;
     private int timeout = Settings.get().getTimeoutStart();
 
-    private static int getTransAdjust(SQLSession sqlSession) {
-        return sqlSession.getSecondsFromTransactStart();
-    }
-            
-    public synchronized AdjustState before(SQLSession sqlSession, OperationOwner opOwner) throws SQLException {
-        if(sqlSession.isVolatileStats() || sqlSession.isNoHandled())
-            return null;
-        
-        if(volatileStats)
-            sqlSession.pushVolatileStats(opOwner);
-
-        return new AdjustState(timeout, volatileStats, getTransAdjust(sqlSession));
+    public synchronized DynamicExecEnvSnapshot getSnapshot(int transactTimeout) {
+        return new DynamicExecEnvSnapshot(volatileStats, timeout, transactTimeout);
     }
 
-    public void after(AdjustState queryExecState, SQLSession sqlSession, OperationOwner opOwner) throws SQLException {
-        if(queryExecState.volatileStats)
-            sqlSession.popVolatileStats(opOwner);
+    // метод "обратный" prepareEnv'у, его задача "размешать" локальное и глобальное состояние, то есть определить когда локальное состояние мешает глобальному
+    private boolean checkSnapshot(DynamicExecEnvSnapshot snapshot) {
+        if(snapshot.noHandled)
+            return false;
+
+        if(!(volatileStats == snapshot.volatileStats && timeout == snapshot.timeout)) // discard'м если состояние на конец отличается от состояния на начало
+            return false;
+
+        if(timeout == 0 || (!snapshot.volatileStats && snapshot.sessionVolatileStats) || snapshot.isTransactTimeout) // уже выключен, snapshot хочет volatile, а сессия нет, включился transactTimeout
+            return false;
+
+        return true;
     }
 
-    public void succeeded(AdjustState state) {
-        if(state.volatileStats && timeout > state.transAdjust) { // только если больше чем transAdjust, потому как без volatileStats с большой вероятностью выполнялось для меньшего timeout'а
-            fixVolatile = true; // помечаем запрос как опасный, и всегда будем использовать volatile stats
+    public synchronized void succeeded(DynamicExecEnvSnapshot snapshot) {
+        if(snapshot.volatileStats && timeout > snapshot.secondsFromTransactStart) { // проверка checkSnapshot не первая для оптимизации
+            if(!checkSnapshot(snapshot))
+                return;
+
+            assert volatileStats;
+            // только если больше чем secondsFromTransactStart, потому как в противном случае без volatileStats с большой вероятностью выполнялось для меньшего timeout'а
+            timeout = 0; // то есть без volatileStats не выполнилось, а с volatileStats выполнилось - помечаем запрос как опасный, точнее выключаем env
         }
     }
 
-    public synchronized void failed(AdjustState state) {
-        
-        // discard'м если состояние на конец отличается от состояния на начало
-        if(!(volatileStats == state.volatileStats && timeout == state.prevTimeout))
+    public synchronized void failed(DynamicExecEnvSnapshot snapshot) {
+        if(!checkSnapshot(snapshot))
             return;
 
         int degree = Settings.get().getTimeoutDegree();
-        if(fixVolatile) {
-            volatileStats = true; // на всякий случай, так как suceeded не synchronized 
-            timeout = 0; // timeout не нужен
+        if(timeout < snapshot.setTimeout) {
+            assert snapshot.setTimeout == snapshot.secondsFromTransactStart; // так как увеличить timeout может только транзакция
+            timeout = snapshot.setTimeout;
         } else {
-            if(timeout < state.transAdjust)
-                timeout = state.transAdjust;
-            else if(volatileStats)
+            assert !snapshot.isTransactTimeout;
+            if(volatileStats)
                 timeout *= degree;
-            volatileStats = !volatileStats;
         }
-    }
-
-    public synchronized DynamicExecEnvSnapshot getInfo(SQLSession session, int transactTimeout) {
-        int setTimeout = timeout;
-        if(setTimeout > 0)
-            setTimeout = BaseUtils.max(setTimeout, getTransAdjust(session));
-        
-        boolean result = false;
-        if(session.isInTransaction() && !session.isNoTransactTimeout() && transactTimeout > 0 && (setTimeout >= transactTimeout || setTimeout == 0)) {
-            setTimeout = transactTimeout;
-            result = volatileStats;
-        }
-        return new DynamicExecEnvSnapshot(setTimeout, result);
+        volatileStats = !volatileStats;
     }
 }

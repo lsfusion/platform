@@ -482,7 +482,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public boolean supportsVolatileStats() {
+    public boolean supportsDisableNestedLoop() {
         return true;
     }
 

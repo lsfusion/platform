@@ -656,7 +656,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         throw new UnsupportedOperationException();
     }
 
-    public boolean supportsVolatileStats() {
+    public boolean supportsDisableNestedLoop() {
         return false;
     }
 
