@@ -109,7 +109,7 @@ DESIGN customUser {
     NEW container BEFORE functions.box {
         type = SPLITH;
         fill = 1;
-        ADD u.box {
+        MOVE u.box {
             flex = 0.3;
         };
         u.panel.props {
@@ -252,7 +252,7 @@ FORM changePasswordUser 'Сменить пароль'
 DESIGN changePasswordUser {
     main{
         passwords.box {
-            ADD PROPERTY(loginCustomUser(u)) FIRST {
+            MOVE PROPERTY(loginCustomUser(u)) FIRST {
                font = 'Tahoma 36';
             };
             PROPERTY(valueOld){

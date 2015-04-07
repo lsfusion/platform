@@ -163,43 +163,43 @@ DESIGN mail {
     main {
         NEW specContainer {
             fill = 1;
-            ADD a.box;
+            MOVE a.box;
             NEW mailContainer {
                 fill = 3;
                 type = TABBED;    
                 NEW emailContainer {
                     caption = 'Входящие';
-                    ADD e.box;
+                    MOVE e.box;
                     NEW tabbedContainer {
                         fill = 1;
                         type=TABBED;
                         NEW textContainer {
                             caption = 'Сообщение';
                             type = CONTAINERV;        
-                            ADD PROPERTY(messageEmail(e)) {
+                            MOVE PROPERTY(messageEmail(e)) {
                                 fill = 1;
                                 preferredSize = ( -1, 200);
                                 panelCaptionAbove = TRUE;
                             }
                         }
-                        ADD ae.box {caption = 'Вложения';}
+                        MOVE ae.box {caption = 'Вложения';}
                     }
                 }
                 NEW notificationContainer {
                     caption = 'Уведомления';
-                    ADD n.box;
+                    MOVE n.box;
                     NEW pane {
                         fill = 1;
                         type = CONTAINERH;
-                        ADD p.box;
-                        ADD PROPERTY(textNotification(n)) {
+                        MOVE p.box;
+                        MOVE PROPERTY(textNotification(n)) {
                             fill = 1;
                             panelCaptionAbove = TRUE;
                         }
                     }
                 }
             }
-            ADD functions.box;
+            MOVE functions.box;
         }
     }
 }

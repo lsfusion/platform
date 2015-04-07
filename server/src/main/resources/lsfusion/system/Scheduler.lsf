@@ -111,20 +111,20 @@ DESIGN scheduledTask {
     NEW specContainer {
         fill = 1; 
         type = SPLITV;
-        ADD t.box;
+        MOVE t.box;
         NEW south {
             fill = 2;
             type = TABBED;
-            ADD td.box {caption = 'Свойства';}
+            MOVE td.box {caption = 'Свойства';}
             NEW logContainer {
                 caption = 'Лог';
                 type = CONTAINERH;
-                ADD tl.box;
-                ADD ctl.box;
+                MOVE tl.box;
+                MOVE ctl.box;
             }
         }
     }
-    ADD functions.box;
+    MOVE functions.box;
 }
 
 FORM scheduledTaskProperties 'Свойства'

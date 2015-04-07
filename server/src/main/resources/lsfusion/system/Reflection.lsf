@@ -239,22 +239,22 @@ DESIGN physicalModel {
             NEW modelContainer {
                 fill = 1;
                 caption = 'Таблицы';
-                ADD t.box {
+                MOVE t.box {
                     caption = 'Таблицы';
                 };
-                ADD tk.box {
+                MOVE tk.box {
                     caption = 'Ключи';
                 }
-                ADD tc.box {
+                MOVE tc.box {
                     caption = 'Колонки';
                 }
-                ADD PROPERTY(recalculateStats());
+                MOVE PROPERTY(recalculateStats());
             }
 
             NEW dropColumnsContainer {
                 fill = 1;
                 caption = 'Удалённые колонки';
-                ADD dc.box;
+                MOVE dc.box;
             }
         }
     }
@@ -306,10 +306,10 @@ DESIGN forms {
         NEW groupingContainer BEFORE p.box {
             type = CONTAINERH;
             fill = 1;
-            ADD g.box {
+            MOVE g.box {
                 fill = 2;
             }
-            ADD fg.box {
+            MOVE fg.box {
                 fill = 1;
             }
         }
@@ -342,13 +342,13 @@ DESIGN properties {
             NEW treeContainer {
                 fill = 1;
                 caption = 'Дерево';
-                ADD treePropertiesObject.tree.box;
+                MOVE treePropertiesObject.tree.box;
             }
 
             NEW tableContainer {
                 fill = 1;
                 caption = 'Таблица';
-                ADD p.box;
+                MOVE p.box;
             }
         }
     }

@@ -104,27 +104,27 @@ DESIGN script {
             NEW script {
                 caption = 'Сохранённые скрипты';
                 type = CONTAINERH;
-                ADD PROPERTY(nameScript(s)) { font = 'bold 24'; alignment = STRETCH; }
-                ADD PROPERTY(saveScriptAction(s)) { font = 'bold 24'; alignment = STRETCH; }
-                ADD PROPERTY(saveAsScriptAction()) { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(nameScript(s)) { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(saveScriptAction(s)) { font = 'bold 24'; alignment = STRETCH; }
+                MOVE PROPERTY(saveAsScriptAction()) { font = 'bold 24'; alignment = STRETCH; }
             }
-            ADD PROPERTY(scriptStorage()) {
+            MOVE PROPERTY(scriptStorage()) {
                 panelCaptionAbove = TRUE;    
                 fill = 1;
             }
             NEW run {
                 caption = 'Запуск';
                 type = CONTAINERH;
-                ADD PROPERTY(scriptExecution()) { font = 'bold 24'; }
-                ADD PROPERTY(actionBodyExecution()) { font = 'bold 24'; }
-                ADD PROPERTY(formExecution()) { font = 'bold 24'; }
+                MOVE PROPERTY(scriptExecution()) { font = 'bold 24'; }
+                MOVE PROPERTY(actionBodyExecution()) { font = 'bold 24'; }
+                MOVE PROPERTY(formExecution()) { font = 'bold 24'; }
             }
         }
-        ADD r.box {
+        MOVE r.box {
             caption = 'Данные';
         }
     }
-    ADD functions.box;
+    MOVE functions.box;
 }
 
 FORM scriptLog 'Скрипт'

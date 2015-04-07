@@ -3026,7 +3026,7 @@ componentStatementBody [ComponentView parentComponent]
 		|	setupComponentStatement
 		|	setupGroupObjectStatement
 		|	newComponentStatement[parentComponent]
-		|	addComponentStatement[parentComponent]
+		|	moveComponentStatement[parentComponent]
 		|	removeComponentStatement
 		|	emptyStatement
 		)*
@@ -3071,11 +3071,11 @@ newComponentStatement[ComponentView parentComponent]
 		componentStatementBody[newComp]
 	;
 	
-addComponentStatement[ComponentView parentComponent]
+moveComponentStatement[ComponentView parentComponent]
 @init {
 	ComponentView insComp = null;
 }
-	:	'ADD' insSelector=componentSelector { insComp = $insSelector.component; } insPosition=componentInsertPosition
+	:	'MOVE' insSelector=componentSelector { insComp = $insSelector.component; } insPosition=componentInsertPosition
 		{
 			if (inPropParseState()) {
 				$designStatement::design.moveComponent(insComp, parentComponent, insPosition.position, insPosition.anchor, self.getVersion());

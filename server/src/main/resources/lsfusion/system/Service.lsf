@@ -107,7 +107,7 @@ META defineLog (object, caption, container)
     countDaysClear##object 'За сколько дней хранить лог '##caption = DATA INTEGER (); 
     
     EXTEND FORM options PROPERTIES countDaysClear##object();
-    DESIGN options { container { ADD PROPERTY(countDaysClear##object());} }    
+    DESIGN options { container { MOVE PROPERTY(countDaysClear##object());} }    
 END
 META defineLog (object, dateProp)
     clearApplicationLog () += ACTION () NEWSESSION {
@@ -198,82 +198,82 @@ DESIGN admin {
         columns = 3;
         NEW current {
             caption = 'Текущие значения';
-            ADD PROPERTY(currentDate());
+            MOVE PROPERTY(currentDate());
         }
         NEW colors {
             caption = 'Цвета';
-            ADD PROPERTY(defaultBackgroundColor());
-            ADD PROPERTY(defaultForegroundColor());
-            ADD PROPERTY(selectedRowBackgroundColor());
-            ADD PROPERTY(selectedRowBorderColor());
-            ADD PROPERTY(selectedCellBackgroundColor());
-            ADD PROPERTY(focusedCellBackgroundColor());
-            ADD PROPERTY(focusedCellBorderColor());
+            MOVE PROPERTY(defaultBackgroundColor());
+            MOVE PROPERTY(defaultForegroundColor());
+            MOVE PROPERTY(selectedRowBackgroundColor());
+            MOVE PROPERTY(selectedRowBorderColor());
+            MOVE PROPERTY(selectedCellBackgroundColor());
+            MOVE PROPERTY(focusedCellBackgroundColor());
+            MOVE PROPERTY(focusedCellBorderColor());
         }
         NEW report {
             caption = 'Отчеты';
-            ADD PROPERTY(reportCharWidth());
-            ADD PROPERTY(reportRowHeight());
-            ADD PROPERTY(reportNotToStretch());
+            MOVE PROPERTY(reportCharWidth());
+            MOVE PROPERTY(reportRowHeight());
+            MOVE PROPERTY(reportNotToStretch());
         }
         NEW administration {
             caption = 'Запуск';
             
-            ADD PROPERTY(restartServerAction());
-            ADD PROPERTY(cancelRestartServerAction());
-            ADD PROPERTY(serviceDBAction());
-            ADD PROPERTY(hostnameServerComputer());
+            MOVE PROPERTY(restartServerAction());
+            MOVE PROPERTY(cancelRestartServerAction());
+            MOVE PROPERTY(serviceDBAction());
+            MOVE PROPERTY(hostnameServerComputer());
         }
         NEW recalculate {
             caption = 'Исправление целостности базы данных';
-            ADD PROPERTY(recalculateClassesAction());
-            ADD PROPERTY(recalculateAction());
-            ADD PROPERTY(recalculateFollowsAction());
+            MOVE PROPERTY(recalculateClassesAction());
+            MOVE PROPERTY(recalculateAction());
+            MOVE PROPERTY(recalculateFollowsAction());
         }
         NEW check {
             caption = 'Проверка целостности базы данных';
-            ADD PROPERTY(checkClassesAction());
-            ADD PROPERTY(checkAggregationsAction());
+            MOVE PROPERTY(checkClassesAction());
+            MOVE PROPERTY(checkAggregationsAction());
         }
         NEW upload {
             caption = 'Загрузить в другую базу';
-            ADD PROPERTY(uploadStaticCaptionType());
-            ADD PROPERTY(uploadHost());
-            ADD PROPERTY(uploadUser());
-            ADD PROPERTY(uploadPassword());
-            ADD PROPERTY(uploadInstance());
-            ADD PROPERTY(uploadDB());
-            ADD PROPERTY(uploadToDBAction());
+            MOVE PROPERTY(uploadStaticCaptionType());
+            MOVE PROPERTY(uploadHost());
+            MOVE PROPERTY(uploadUser());
+            MOVE PROPERTY(uploadPassword());
+            MOVE PROPERTY(uploadInstance());
+            MOVE PROPERTY(uploadDB());
+            MOVE PROPERTY(uploadToDBAction());
         }
         NEW database {
             caption = 'База данных';
-            ADD PROPERTY(packAction());
-            ADD PROPERTY(analyzeDBAction());
-            ADD PROPERTY(vacuumDBAction());
-            ADD PROPERTY(TILMode());
-            ADD PROPERTY(reupdateMode());
-            ADD PROPERTY(singleTransaction());
+            MOVE PROPERTY(packAction());
+            MOVE PROPERTY(analyzeDBAction());
+            MOVE PROPERTY(vacuumDBAction());
+            MOVE PROPERTY(TILMode());
+            MOVE PROPERTY(reupdateMode());
+            MOVE PROPERTY(singleTransaction());
         }
         NEW virtualMachine {
             caption = 'Виртуальная машина';
-            ADD PROPERTY(runGarbageCollector());
-            ADD PROPERTY(getVMInfo());
-            ADD PROPERTY(dropLRU());
-            ADD PROPERTY(makeHeapDump());
+            MOVE PROPERTY(runGarbageCollector());
+            MOVE PROPERTY(getVMInfo());
+            MOVE PROPERTY(dropLRU());
+            MOVE PROPERTY(makeHeapDump());
         }
         NEW log {
             caption = 'Логирование';
-            ADD PROPERTY(turnExplainAnalizeOnCurrentUser());
-            ADD PROPERTY(clearApplicationLog());
+            MOVE PROPERTY(turnExplainAnalizeOnCurrentUser());
+            MOVE PROPERTY(clearApplicationLog());
         }
         NEW settings {
             caption = 'Настройка свойств';
-            ADD PROPERTY(nameReflectionSetting());
-            ADD PROPERTY(valueReflectionSetting());
+            MOVE PROPERTY(nameReflectionSetting());
+            MOVE PROPERTY(valueReflectionSetting());
         }        
     }
-    ADD u.box;
-    ADD functions.box;
+    MOVE u.box;
+    MOVE functions.box;
 }
 
 NAVIGATOR { 

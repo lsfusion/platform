@@ -201,7 +201,7 @@ EXTEND FORM customUser
 
 DESIGN customUser {
     container {
-        ADD ur.box {
+        MOVE ur.box {
             flex = 1.0;
         }
     }
@@ -327,8 +327,8 @@ DESIGN securityPolicy {
             NEW defaultForms {
                 type = TABBED;
                 caption = 'Формы';
-                ADD treeDefaultForm.tree.box;
-                ADD df.box {
+                MOVE treeDefaultForm.tree.box;
+                MOVE df.box {
                     caption = 'Таблица';
                 }
             }
@@ -336,8 +336,8 @@ DESIGN securityPolicy {
             NEW defaultPropertyContainer {
                 type = TABBED;
                 caption = 'Свойства';
-                ADD treeDefaultProperty.tree.box;
-                ADD dpr.box {
+                MOVE treeDefaultProperty.tree.box;
+                MOVE dpr.box {
                     caption = 'Таблица';
                 };
             }
@@ -346,7 +346,7 @@ DESIGN securityPolicy {
         NEW roles {
             caption = 'Роли';
             type = SPLITV;
-            ADD ur.box;
+            MOVE ur.box;
 
             NEW rolePolicyContainer {
                 fill = 2;
@@ -355,8 +355,8 @@ DESIGN securityPolicy {
                 NEW formsContainer {
                     type = TABBED;
                     caption = 'Формы';
-                    ADD treeFormObject.tree.box;
-                    ADD f.box {
+                    MOVE treeFormObject.tree.box;
+                    MOVE f.box {
                         caption = 'Таблица';
                     }
                 }
@@ -364,20 +364,20 @@ DESIGN securityPolicy {
                 NEW propertiesContainer {
                     type = TABBED;
                     caption = 'Свойства';
-                    ADD treePropertyObject.tree.box;
-                    ADD pr.box {
+                    MOVE treePropertyObject.tree.box;
+                    MOVE pr.box {
                         caption = 'Таблица';
                     }
                 }
             }
         }
 
-        ADD p.box {
+        MOVE p.box {
             caption = 'Дополнительные политики';
         }
     }
     
-    ADD functions.box;
+    MOVE functions.box;
 }
 
 FORM userRoles 'Роли'
@@ -400,21 +400,21 @@ DESIGN propertyPolicy {
     NEW property {
         type = CONTAINERH;
         caption = 'Свойства';
-        ADD PROPERTY(captionProperty(p));
-        ADD PROPERTY(canonicalNameProperty(p));
+        MOVE PROPERTY(captionProperty(p));
+        MOVE PROPERTY(canonicalNameProperty(p));
     }
     NEW permission {
         type = CONTAINERH;
         caption = 'Доступ';
-        ADD PROPERTY(permitViewProperty(p));
-        ADD PROPERTY(forbidViewProperty(p));
-        ADD PROPERTY(permitChangeProperty(p));
-        ADD PROPERTY(forbidChangeProperty(p));
-        ADD PROPERTY(userLoggableProperty(p));
-        ADD PROPERTY(isSetNotNullProperty(p));
+        MOVE PROPERTY(permitViewProperty(p));
+        MOVE PROPERTY(forbidViewProperty(p));
+        MOVE PROPERTY(permitChangeProperty(p));
+        MOVE PROPERTY(forbidChangeProperty(p));
+        MOVE PROPERTY(userLoggableProperty(p));
+        MOVE PROPERTY(isSetNotNullProperty(p));
     }
-    ADD ur.box;
-    ADD functions.box;
+    MOVE ur.box;
+    MOVE functions.box;
 }
 
 NAVIGATOR {
