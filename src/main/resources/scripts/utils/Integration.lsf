@@ -25,6 +25,6 @@ END
 EXTEND FORM options PROPERTIES() showIDs;
 DESIGN options {
     commons {
-        ADD PROPERTY(showIDs());
+        MOVE PROPERTY(showIDs());
     }
 }

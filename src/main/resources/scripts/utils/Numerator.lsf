@@ -100,8 +100,8 @@ DESIGN options{
     commons {
         NEW numerator {
             caption = 'Нумератор';
-            ADD PROPERTY (useUpperedSeries());
-            ADD PROPERTY (keepNumberSpaces());
+            MOVE PROPERTY (useUpperedSeries());
+            MOVE PROPERTY (keepNumberSpaces());
         }
     }    
 }
@@ -207,7 +207,7 @@ META defineNumeratedDefault (object1, object2, property, captionV, seriesV)
     ;
     DESIGN defaultNumerators {
         defaultContainer {
-            ADD PROPERTY(nameDefaultNumerator###object1###object2);
+            MOVE PROPERTY(nameDefaultNumerator###object1###object2);
         }
     }
 

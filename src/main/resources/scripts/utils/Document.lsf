@@ -382,8 +382,8 @@ DESIGN options {
     commons {
         NEW documents {
             caption = 'Документы';
-            ADD PROPERTY(documentsClosedDate());
-            ADD PROPERTY(dialogCloseDocumentsDate());
+            MOVE PROPERTY(documentsClosedDate());
+            MOVE PROPERTY(dialogCloseDocumentsDate());
         }
     }
 }

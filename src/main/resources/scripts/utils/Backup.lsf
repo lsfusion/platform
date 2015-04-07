@@ -47,21 +47,21 @@ DESIGN backup {
         type = CONTAINERH;
         NEW leftPane {
             fill = 1;
-            ADD b.box;
-            ADD t1.box;
+            MOVE b.box;
+            MOVE t1.box;
         }
         NEW rightPane {
             fill = 1;
-            ADD PROPERTY(logBackup(b)) {
+            MOVE PROPERTY(logBackup(b)) {
                 fill = 1;
                 panelCaptionAbove = TRUE;
             }
-            ADD t2.box {
+            MOVE t2.box {
                 caption = 'Скопированные таблицы';
             }
         }
     }
-    ADD functions.box;
+    MOVE functions.box;
 }
 
 NAVIGATOR {

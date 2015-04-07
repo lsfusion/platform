@@ -17,7 +17,7 @@ DESIGN defaultData {
             type = COLUMNS;
             columns = 3;
             caption = 'Общие';
-            ADD PROPERTY(loadDefaultData());
+            MOVE PROPERTY(loadDefaultData());
         }
     }
 }
@@ -35,7 +35,7 @@ META implementLoadDefaultData (property)
     ;
     DESIGN defaultData {
         commons {
-            ADD PROPERTY(property());
+            MOVE PROPERTY(property());
         }
     }
 END

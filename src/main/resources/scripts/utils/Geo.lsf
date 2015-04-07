@@ -71,8 +71,8 @@ EXTEND FORM options
 
 DESIGN options {
     commons {
-        ADD PROPERTY(autoSynchronizeCoordinates());
-        ADD PROPERTY(nameUserMapProvider());
+        MOVE PROPERTY(autoSynchronizeCoordinates());
+        MOVE PROPERTY(nameUserMapProvider());
     }
 }
 

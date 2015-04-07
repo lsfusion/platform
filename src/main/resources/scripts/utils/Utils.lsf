@@ -115,7 +115,7 @@ FORM dialogString 'Выбор строку'
 DESIGN dialogString {
     NEW string BEFORE functions.box {
         fill = 1;
-        ADD PROPERTY (objValue) {
+        MOVE PROPERTY (objValue) {
             fill = 1;
             caption = 'Введите строку';
             font = 'bold 64';
@@ -132,7 +132,7 @@ FORM dialogDate 'Выбор даты'
 DESIGN dialogDate {
     NEW date BEFORE functions.box {
         fill = 1;
-        ADD PROPERTY (objValue) {
+        MOVE PROPERTY (objValue) {
             fill = 1;
             caption = 'Введите дату';
             font = 'bold 64';
@@ -301,7 +301,7 @@ META extendFormEditable (form)
     ;
     DESIGN form {
         functions.box {
-            ADD PROPERTY(isEditable()) BEFORE rightControls;
+            MOVE PROPERTY(isEditable()) BEFORE rightControls;
         }
     }
 END

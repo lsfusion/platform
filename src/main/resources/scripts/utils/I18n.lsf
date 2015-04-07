@@ -97,23 +97,23 @@ DESIGN translation {
     NEW languages {
         caption = 'Языки';
         type = CONTAINERH;
-        ADD PROPERTY(nameLanguageFromTranslation());
-        ADD PROPERTY(nameLanguageToTranslation());
+        MOVE PROPERTY(nameLanguageFromTranslation());
+        MOVE PROPERTY(nameLanguageToTranslation());
     }
     NEW translation {
         fill = 1;
         type = CONTAINERH;
-        ADD PROPERTY(translationInput()) {
+        MOVE PROPERTY(translationInput()) {
             fill = 1;
             panelCaptionAbove = TRUE;
         }
-        ADD PROPERTY(translationResult()) {
+        MOVE PROPERTY(translationResult()) {
             fill = 1;
             panelCaptionAbove = TRUE;
         }
     }
-    ADD PROPERTY(translateText()) { font = 'bold 24'; }
-    ADD functions.box;
+    MOVE PROPERTY(translateText()) { font = 'bold 24'; }
+    MOVE functions.box;
 }
 
 NAVIGATOR {
@@ -147,24 +147,24 @@ FORM dictionary 'Словарь'
 DESIGN dictionary {
     main {
         type = CONTAINERV;
-        ADD d.box;
-        ADD e.box;
+        MOVE d.box;
+        MOVE e.box;
         NEW test {
             type = CONTAINERH;
-            ADD PROPERTY(translationInput()) {
+            MOVE PROPERTY(translationInput()) {
                 fill = 1;
                 caption = 'Фраза для перевода';
                 panelCaptionAbove = TRUE;
                 font = 'bold 24';
             }
-            ADD PROPERTY(translationResult()){
+            MOVE PROPERTY(translationResult()){
                 fill = 1;
                 caption = 'Перевод';
                 panelCaptionAbove = TRUE;
                 font = 'bold 24';
             }
         }
-        ADD functions.box;
+        MOVE functions.box;
     }
 }
 

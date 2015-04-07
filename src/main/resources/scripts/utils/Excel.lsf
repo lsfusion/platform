@@ -47,21 +47,21 @@ DESIGN template {
     main{
         preferredSize = (1024, 768);
         type = CONTAINERV;
-        ADD t.box {
+        MOVE t.box {
             type = CONTAINERH;
             NEW row1 {
-                ADD PROPERTY(nameTemplate(t));
-                ADD PROPERTY(idTemplate(t));
+                MOVE PROPERTY(nameTemplate(t));
+                MOVE PROPERTY(idTemplate(t));
             };
             NEW row2 {
                 type = CONTAINERH;
-                ADD PROPERTY(loadFileTemplate(t));
-                ADD PROPERTY(openFileTemplate(t));
+                MOVE PROPERTY(loadFileTemplate(t));
+                MOVE PROPERTY(openFileTemplate(t));
             };
         }
-        ADD te.box;
+        MOVE te.box;
     }
-    ADD functions.box;
+    MOVE functions.box;
 }
 
 FORM templates 'Шаблоны Excel'
