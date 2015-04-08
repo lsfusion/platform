@@ -34,7 +34,6 @@ periodScheduledTask 'Повторять каждые (секунд)' = DATA INTE
 schedulerStartTypeScheduledTask 'Отсчёт времени' = DATA SchedulerStartType (ScheduledTask);
 nameSchedulerStartTypeScheduledTask 'Отсчёт времени' = staticCaption(schedulerStartTypeScheduledTask(ScheduledTask));
 activeScheduledTask 'Активно' = DATA BOOLEAN (ScheduledTask);
-ignoreExceptionsScheduledTask 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTask);
 
 CLASS ScheduledTaskDetail 'Строка задания планировщика';
 TABLE scheduledTaskDetail (ScheduledTaskDetail);
@@ -49,6 +48,7 @@ canonicalNamePropertyScheduledTaskDetail 'Код свойства' (scheduledTas
 classPropertyScheduledTaskDetail 'Класс свойства' (scheduledTaskDetail) = classProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
 returnPropertyScheduledTaskDetail 'Возвращаемый класс' (scheduledTaskDetail) = returnProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
 signaturePropertyScheduledTaskDetail 'Сигнатура' (scheduledTaskDetail) = signatureProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
+ignoreExceptionsScheduledTaskDetail 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTaskDetail);
 
 CLASS ScheduledTaskLog 'Лог планировщика';
 TABLE scheduledTaskLog (ScheduledTaskLog);
@@ -72,24 +72,24 @@ messageScheduledClientTaskLog 'Сообщение'= DATA TEXT (ScheduledClientTa
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty' ();
 
 WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t)) OR CHANGED (periodScheduledTask(t)) 
-    OR CHANGED (schedulerStartTypeScheduledTask(t)) OR CHANGED (schedulerStartTypeScheduledTask(t))
-    OR CHANGED (ignoreExceptionsScheduledTask(t))) AND activeScheduledTask(t)
+    OR CHANGED (schedulerStartTypeScheduledTask(t)) OR CHANGED (schedulerStartTypeScheduledTask(t))) AND activeScheduledTask(t)
     OR CHANGED (activeScheduledTask(t)))
  DO EXEC runSetupScheduler();
  
  WHEN ((CHANGED (activeScheduledTaskDetail(td)) OR CHANGED (orderScheduledTaskDetail(td)) 
-    OR CHANGED (scheduledTaskScheduledTaskDetail(td)) OR CHANGED (propertyScheduledTaskDetail(td))) AND activeScheduledTask(scheduledTaskScheduledTaskDetail(td)))
+    OR CHANGED (scheduledTaskScheduledTaskDetail(td)) OR CHANGED (propertyScheduledTaskDetail(td)) OR CHANGED (ignoreExceptionsScheduledTaskDetail(td)))
+    AND activeScheduledTask(scheduledTaskScheduledTaskDetail(td)))
   DO EXEC runSetupScheduler();
            
 FORM scheduledTask 'Планировщик'
 
     OBJECTS t=ScheduledTask
-    PROPERTIES (t) activeScheduledTask, ignoreExceptionsScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask,
+    PROPERTIES (t) activeScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask,
                     nameSchedulerStartTypeScheduledTask, runAtStartScheduledTask
     PROPERTIES (t) ADDOBJ, DELETESESSION
          
     OBJECTS td=ScheduledTaskDetail
-    PROPERTIES (td) activeScheduledTaskDetail, orderScheduledTaskDetail, captionPropertyScheduledTaskDetail, 
+    PROPERTIES (td) activeScheduledTaskDetail, ignoreExceptionsScheduledTaskDetail, orderScheduledTaskDetail, captionPropertyScheduledTaskDetail, 
                     canonicalNamePropertyScheduledTaskDetail, classPropertyScheduledTaskDetail, returnPropertyScheduledTaskDetail
     PROPERTIES (td) ADDOBJ, DELETESESSION
     

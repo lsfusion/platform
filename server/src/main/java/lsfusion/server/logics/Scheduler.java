@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -203,15 +204,17 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
             QueryBuilder<Object, Object> scheduledTaskDetailQuery = new QueryBuilder<Object, Object>(scheduledTaskDetailKeys);
             scheduledTaskDetailQuery.addProperty("canonicalNamePropertyScheduledTaskDetail", businessLogics.schedulerLM.canonicalNamePropertyScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
+            scheduledTaskDetailQuery.addProperty("ignoreExceptionsScheduledTaskDetail", businessLogics.schedulerLM.ignoreExceptionsScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
             scheduledTaskDetailQuery.addProperty("orderScheduledTaskDetail", businessLogics.schedulerLM.orderScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
             scheduledTaskDetailQuery.and(businessLogics.schedulerLM.activeScheduledTaskDetail.getExpr(scheduledTaskDetailExpr).getWhere());
             scheduledTaskDetailQuery.and(businessLogics.schedulerLM.scheduledTaskScheduledTaskDetail.getExpr(scheduledTaskDetailExpr).compare(currentScheduledTaskObject, Compare.EQUALS));
 
-            TreeMap<Integer, LAP> propertySIDMap = new TreeMap<Integer, LAP>();
+            TreeMap<Integer, Pair<LAP, Boolean>> propertySIDMap = new TreeMap<Integer, Pair<LAP, Boolean>>();
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session);
             int defaultOrder = propertyResult.size() + 100;
             for (ImMap<Object, Object> propertyValues : propertyResult.valueIt()) {
                 String canonicalName = (String) propertyValues.get("canonicalNamePropertyScheduledTaskDetail");
+                Boolean ignoreExceptions = (Boolean) propertyValues.get("ignoreExceptionsScheduledTaskDetail");
                 Integer orderProperty = (Integer) propertyValues.get("orderScheduledTaskDetail");
                 if (canonicalName != null) {
                     if (orderProperty == null) {
@@ -219,7 +222,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                         defaultOrder++;
                     }
                     LAP lap = (LAP) businessLogics.findProperty(canonicalName.trim());
-                    propertySIDMap.put(orderProperty, lap);
+                    propertySIDMap.put(orderProperty, Pair.create(lap, ignoreExceptions));
                 }
             }
 
@@ -246,21 +249,23 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
     }
 
     class SchedulerTask implements Runnable {
-        TreeMap<Integer, LAP> lapMap;
+        TreeMap<Integer, Pair<LAP, Boolean>> lapMap;
         private DataObject scheduledTask;
         private DataObject currentScheduledTaskLogFinishObject;
         private DataSession afterFinishLogSession;
 
-        public SchedulerTask(TreeMap<Integer, LAP> lapMap, DataObject scheduledTask) {
+        public SchedulerTask(TreeMap<Integer, Pair<LAP, Boolean>> lapMap, DataObject scheduledTask) {
             this.lapMap = lapMap;
             this.scheduledTask = scheduledTask;
         }
 
         public void run() {
             try {
-                for (Map.Entry<Integer, LAP> entry : lapMap.entrySet()) {
+                for (Map.Entry<Integer, Pair<LAP, Boolean>> entry : lapMap.entrySet()) {
                     if (entry.getValue() != null) {
-                        if (!executeLAP(entry.getValue(), scheduledTask))
+                        LAP lap = entry.getValue().first;
+                        boolean ignoreExceptions = entry.getValue().second != null && entry.getValue().second;
+                        if (!executeLAP(lap, ignoreExceptions, scheduledTask))
                             break;
                     }
                 }
@@ -269,16 +274,14 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             }
         }
 
-        private boolean executeLAP(LAP lap, DataObject scheduledTask) throws SQLException, SQLHandledException {
+        private boolean executeLAP(LAP lap, boolean ignoreExceptions, DataObject scheduledTask) throws SQLException, SQLHandledException {
             ThreadLocalContext.set(new SchedulerContext());
             
             DataSession beforeStartLogSession = dbManager.createSession();
             DataObject currentScheduledTaskLogStartObject = beforeStartLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
             afterFinishLogSession = dbManager.createSession(getLogSql());
             currentScheduledTaskLogFinishObject = afterFinishLogSession.addObject(businessLogics.schedulerLM.scheduledTaskLog);
-            boolean ignoreExceptions = false;
             try {
-                ignoreExceptions = businessLogics.schedulerLM.ignoreExceptionsScheduledTask.read(beforeStartLogSession, scheduledTask) != null;
                 businessLogics.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) beforeStartLogSession, currentScheduledTaskLogStartObject);
                 businessLogics.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", beforeStartLogSession, currentScheduledTaskLogStartObject);
                 businessLogics.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), beforeStartLogSession, currentScheduledTaskLogStartObject);
