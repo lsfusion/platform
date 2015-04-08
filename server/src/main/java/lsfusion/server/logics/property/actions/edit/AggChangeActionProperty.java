@@ -14,6 +14,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.*;
@@ -57,21 +58,31 @@ public class AggChangeActionProperty<P extends PropertyInterface> extends Around
         if (readValue != null) {
             // пока тупо MGProp'им назад
             KeyExpr keyExpr = new KeyExpr("key");
-            Expr groupExpr = GroupExpr.create(
-                    MapFact.singleton(0, aggProp.getExpr(MapFact.singleton(aggProp.interfaces.single(), keyExpr), context.getModifier())),
-                    keyExpr,
-                    keyExpr.isUpClass(aggClass),
-                    GroupType.ANY,
-                    MapFact.singleton(0, readValue.getExpr())
-            );
+            Expr aggExpr = aggProp.getExpr(MapFact.singleton(aggProp.interfaces.single(), keyExpr), context.getModifier());
+            Expr groupExpr;
+            if(readValue.isNull()) {
+                groupExpr = GroupExpr.create(
+                        MapFact.<String, Expr>EMPTY(),
+                        keyExpr,
+                        keyExpr.isUpClass(aggClass).and(aggExpr.getWhere().not()),
+                        GroupType.ANY,
+                        MapFact.<String, Expr>EMPTY()
+                );
+            } else {
+                groupExpr = GroupExpr.create(
+                        MapFact.singleton(0, aggExpr),
+                        keyExpr,
+                        keyExpr.isUpClass(aggClass),
+                        GroupType.ANY,
+                        MapFact.singleton(0, readValue.getExpr())
+                );
+            }
 
             ImOrderMap<ImMap<String, DataObject>, ImMap<String, ObjectValue>> values =
-                    new Query<String, String>(MapFact.<String, KeyExpr>EMPTYREV(), MapFact.singleton("value", groupExpr)).executeClasses(context);
+                    new Query<String, String>(MapFact.<String, KeyExpr>EMPTYREV(), MapFact.singleton("value", groupExpr), Where.TRUE).executeClasses(context);
 
-            if (values.size() != 0) {
-                ObjectValue convertWYSValue = values.singleValue().singleValue();
-                return proceed(context.pushUserInput(convertWYSValue));
-            }
+            ObjectValue convertWYSValue = values.singleValue().singleValue();
+            return proceed(context.pushUserInput(convertWYSValue));
         }
         return FlowResult.FINISH;
     }
