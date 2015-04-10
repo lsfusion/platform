@@ -18,12 +18,14 @@ import java.util.Scanner;
 public class ImportCSVDataActionProperty extends ImportDataActionProperty {
     private String separator;
     private boolean noHeader;
-    
+    private String charset;
+
     public ImportCSVDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties, 
-                                       String separator, boolean noHeader) {
+                                       String separator, boolean noHeader, String charset) {
         super(valueClass, LM, ids, properties);
         this.separator = separator == null ? "|" : separator;
         this.noHeader = noHeader;
+        this.charset = charset;
     }
 
     @Override
@@ -34,7 +36,7 @@ public class ImportCSVDataActionProperty extends ImportDataActionProperty {
     private List<List<String>> getTable(byte[] file) throws IOException, ParseException, xBaseJException {
         List<List<String>> result = new ArrayList<List<String>>();
 
-        Scanner scanner = new Scanner(new ByteArrayInputStream(file));
+        Scanner scanner = charset == null ? new Scanner(new ByteArrayInputStream(file)) : new Scanner(new ByteArrayInputStream(file), charset);
         if(!noHeader)
             scanner.nextLine();
         while (scanner.hasNextLine()) {

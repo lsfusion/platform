@@ -1599,10 +1599,10 @@ importActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages, $separator.val, noHeader);
+		$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages, $separator.val, noHeader, $charset.val);
 	}
 } 
-	:	'IMPORT' type=importSourceFormat (separator = stringLiteral)? ('NOHEADER' { noHeader = true; })?  'TO' plist=nonEmptyPropertyUsageListWithIds 'FROM' expr=propertyExpression[context, dynamic]
+	:	'IMPORT' type=importSourceFormat (separator = stringLiteral)? ('NOHEADER' { noHeader = true; })? ('CHARSET' charset = stringLiteral)?  'TO' plist=nonEmptyPropertyUsageListWithIds 'FROM' expr=propertyExpression[context, dynamic]
 	;
 
 nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<PropertyUsage> propUsages]

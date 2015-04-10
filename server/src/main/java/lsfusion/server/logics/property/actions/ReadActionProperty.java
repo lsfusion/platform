@@ -54,30 +54,36 @@ public class ReadActionProperty extends ScriptingActionProperty {
         String path = (String) value.object;
         try {
             if (path != null) {
-                Pattern p = Pattern.compile("(file|ftp|http|jdbc|mdb):(\\/\\/)?(.*)");
+                Pattern p = Pattern.compile("(file|ftp|http|jdbc|mdb):(?:\\/\\/)?(.*)");
                 Matcher m = p.matcher(path);
                 if (m.matches()) {
                     String type = m.group(1).toLowerCase();
                     String url = m.group(2);
 
                     File file = null;
+                    String extension = null;
                     if (type.equals("file")) {
                         file = new File(url);
+                        extension = BaseUtils.getFileExtension(file);
                     } else if (type.equals("http")) {
                         file = File.createTempFile("downloaded", "tmp");
                         FileUtils.copyURLToFile(new URL(path), file);
+                        extension = BaseUtils.getFileExtension(file);
                     } else if (type.equals("ftp")) {
                         file = File.createTempFile("downloaded", "tmp");
                         copyFTPToFile(path, file);
+                        extension = BaseUtils.getFileExtension(file);
                     } else if (type.equals("jdbc")) {
                         file = File.createTempFile("downloaded", "tmp");
+                        extension = "jdbc";
                         copyJDBCToFile(path, file);
                     } else if (type.equals("mdb")) {
                         file = File.createTempFile("downloaded", "tmp");
                         copyMDBToFile(path, file);
+                        extension = "mdb";
                     }
                     if (file != null && file.exists()) {
-                        targetProp.change(IOUtils.getFileBytes(file), context);
+                        targetProp.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(file), extension.getBytes()), context);
                         if (!type.equals("file"))
                             file.delete();
                     } else {
