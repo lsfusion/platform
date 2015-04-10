@@ -68,11 +68,11 @@ public class ReadActionProperty extends ScriptingActionProperty {
                     } else if (type.equals("http")) {
                         file = File.createTempFile("downloaded", "tmp");
                         FileUtils.copyURLToFile(new URL(path), file);
-                        extension = BaseUtils.getFileExtension(file);
+                        extension = BaseUtils.getFileExtension(new File(url));
                     } else if (type.equals("ftp")) {
                         file = File.createTempFile("downloaded", "tmp");
                         copyFTPToFile(path, file);
-                        extension = BaseUtils.getFileExtension(file);
+                        extension = BaseUtils.getFileExtension(new File(url));
                     } else if (type.equals("jdbc")) {
                         file = File.createTempFile("downloaded", "tmp");
                         extension = "jdbc";
