@@ -17,6 +17,7 @@ import lsfusion.server.data.expr.NotNullExprInterface;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -92,7 +93,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         WhereJoin exprJoin = groupJoinsWheres(orderTop);
         if(exprJoin!=null)
             return new GroupJoinsWheres(exprJoin, this, type);
-        return getOperandWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type).and(new GroupJoinsWheres(this, type));
+        return getOperandWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type).and(super.groupJoinsWheres(keepStat, keyStat, orderTop, type));
     }
 
     @IdentityLazy

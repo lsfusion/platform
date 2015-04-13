@@ -80,7 +80,7 @@ public class NotWhere extends ObjectWhere {
         GroupJoinsWheres notGroup;
         if(!Settings.get().isDisableGroupNotJoinsWheres() && (notGroup = where.groupNotJoinsWheres(keepStat, keyStat, orderTop, type))!=null) // на самом деле СУБД часто умеет делать BitmapOr, но весьма редка ведет себя очень нестабильно, но если что можно будет попробовать потом отключить
             return notGroup;
-        return new GroupJoinsWheres(this, type);
+        return super.groupJoinsWheres(keepStat, keyStat, orderTop, type);
     }
 
     public MeanClassWheres calculateMeanClassWheres(boolean useNots) {

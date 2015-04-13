@@ -234,12 +234,15 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
             return statJoins;
 
         ImList<GroupStatWhere<K>> sortedStatJoins = GroupWhere.sort(statJoins);
-        if(sortedStatJoins.size() > Settings.get().getLimitExclusiveSimpleCount() || getComplexity(sortedStatJoins) > Settings.get().getLimitExclusiveSimpleComplexity()) { // если сложность превышает порог - просто andNot'им верхние
+        if(sortedStatJoins.size() > Settings.get().getLimitExclusiveSimpleCount() || getComplexity(sortedStatJoins) > Settings.get().getLimitExclusiveSimpleComplexity()) { // если сложность превышает порог - просто andNot'им верхние, иначе по скорости будет не успевать
             MCol<GroupStatWhere<K>> exclJoins = ListFact.mCol(sortedStatJoins.size());
             Where prevWhere = Where.FALSE;
             for(GroupStatWhere<K> statJoin : sortedStatJoins) {
-                exclJoins.add(new GroupStatWhere<K>(statJoin.keyEqual, statJoin.stats, statJoin.where.and(prevWhere.translateQuery(statJoin.keyEqual.getTranslator()).not())));
-                prevWhere = prevWhere.or(statJoin.getFullWhere());
+                Where statExclWhere = statJoin.where.and(prevWhere.translateQuery(statJoin.keyEqual.getTranslator()).not());
+                if(!statExclWhere.isFalse()) { // потому как не рекурсия, могут быть ситуации когда становится false, или появляется несколько keyEqual
+                    exclJoins.add(new GroupStatWhere<K>(statJoin.keyEqual, statJoin.stats, statExclWhere));
+                    prevWhere = prevWhere.or(statJoin.getFullWhere());
+                }
             }
             return exclJoins.immutableCol();
         } else { // иначе запускаем рекурсию

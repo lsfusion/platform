@@ -100,4 +100,9 @@ public class FormulaUnionExpr extends UnionExpr {
                 return value.followFalse(where, true);
             }}));
     }
+
+    @Override
+    public Where calculateNotNullWhere() {
+        return Where.TRUE;
+    }
 }

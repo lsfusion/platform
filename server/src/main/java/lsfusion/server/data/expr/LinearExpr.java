@@ -1,6 +1,7 @@
 package lsfusion.server.data.expr;
 
 import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.caches.IdentityLazy;
@@ -9,6 +10,7 @@ import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
@@ -36,26 +38,6 @@ public class LinearExpr extends UnionExpr {
     @Override
     protected ImSet<Expr> getParams() {
         return map.keys();
-    }
-
-    @IdentityLazy
-    public Where getCommonWhere() {
-        return getWhere(getBaseJoin().getJoins());
-    }
-    
-    public class NotNull extends NotNullExpr.NotNull {
-
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-            return getCommonWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type).and(new GroupJoinsWheres(this, type));
-        }
-
-        public ClassExprWhere calculateClassWhere() {
-            return getCommonWhere().getClassWhere();
-        }
-    }
-
-    public Where calculateNotNullWhere() {
-        return new NotNull();
     }
 
     /*    @Override

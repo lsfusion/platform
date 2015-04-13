@@ -65,10 +65,6 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
         public ClassExprWhere calculateClassWhere() {
             return new ClassExprWhere(CurrentEnvironmentExpr.this, paramClass);
         }
-
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-            return new GroupJoinsWheres(this, type);
-        }
     }
 
     public NotNull calculateNotNullWhere() {

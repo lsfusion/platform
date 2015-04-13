@@ -15,6 +15,7 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.InnerBaseJoin;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
@@ -99,25 +100,5 @@ public class FormulaNotNullExpr extends StaticClassNotNullExpr implements Formul
 
     protected FormulaNotNullExpr translate(MapTranslate translator) {
         return new FormulaNotNullExpr(translator.translateDirect(exprs), formula);
-    }
-
-    @IdentityLazy
-    public Where getCommonWhere() {
-        return getWhere(getFParams());
-    }
-
-    public class NotNull extends NotNullExpr.NotNull {
-
-        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-            return getCommonWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type).and(new GroupJoinsWheres(this, type));
-        }
-
-        public ClassExprWhere calculateClassWhere() {
-            return getCommonWhere().getClassWhere();
-        }
-    }
-
-    public Where calculateNotNullWhere() {
-        return new NotNull();
     }
 }

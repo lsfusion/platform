@@ -2,6 +2,7 @@ package lsfusion.server.data.query;
 
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
+import lsfusion.server.Settings;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.query.Stat;
@@ -26,7 +27,8 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
     public ExprStatJoin(BaseExpr baseExpr, Stat stat, BaseExpr valueExpr) {
         this(baseExpr, stat, getInnerJoins(valueExpr));
         assert valueExpr.isValue();
-        assert !givesNoKeys(); // calculateKeyEquals по идее должен устранить keyExpr = value (другое дело что groupNotJoinsWheres мог бы дать эту ситуацию, но сейчас там другая реализация getSymmetricGreaterWhere)
+        assert !givesNoKeys(); //  || Settings.get().isUseCommonWhere()calculateKeyEquals по идее должен устранить keyExpr = value (другое дело что groupNotJoinsWheres мог бы дать эту ситуацию, но сейчас там другая реализация getSymmetricGreaterWhere)
+        // не выполняется из-за getCommonWhere, так как он включается не в calculateOrWhere (туда включается более общий Where), а в keyEquals, groupJoinsWheres, classWhere (может их исключить оттуда) ??
     }
 
     public ExprStatJoin(BaseExpr baseExpr, Stat stat) {

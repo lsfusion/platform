@@ -16,6 +16,7 @@ import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.ExprStatJoin;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
+import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
@@ -153,7 +154,7 @@ public class IsClassWhere extends DataWhere {
             Stat stat = classExpr.getStatValue().mult(new Stat(((ObjectValueClassSet) classes).getClassCount())).div(classExpr.getInnerJoin().getStatKeys(keyStat).rows);
             return new GroupJoinsWheres(new ExprStatJoin(classExpr, stat), this, type);
         }
-        return expr.getWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type).and(new GroupJoinsWheres(this, type));
+        return expr.getNotNullWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type).and(super.groupJoinsWheres(keepStat, keyStat, orderTop, type));
     }
     public ClassExprWhere calculateClassWhere() {
         return expr.getClassWhere(inconsistent ? getBaseClass().getUpSet() : classes).and(expr.getWhere().getClassWhere());
