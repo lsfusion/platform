@@ -38,6 +38,17 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
     protected final List<String> ids;
     protected final List<LCP> properties;
 
+    public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM,
+                                                          List<String> ids, List<LCP> properties) {
+        return createProperty(valueClass, format, LM, ids, properties, null, false, null);
+    }
+
+    public static ImportDataActionProperty createProperty(ValueClass valueClass, ScriptingLogicsModule LM,
+                                                          List<String> ids, List<LCP> properties, String separator, boolean noHeader,
+                                                          String charset) {
+        return createProperty(valueClass, ImportSourceFormat.CSV, LM, ids, properties, separator, noHeader, charset);
+    }
+
     public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM, 
                                                           List<String> ids, List<LCP> properties, String separator, boolean noHeader,
                                                           String charset) {

@@ -2195,8 +2195,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         LCP<?> sourceProp = (LCP<?>) findLPByPropertyUsage(propUsage);
         return addScriptedJoinAProp(addAProp(new WriteActionProperty(this, sourcePathProp.property.property.getValueClass(ClassType.valuePolicy), sourceProp)), Collections.singletonList(sourcePathProp));
     }
-    
-    public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
+
+    public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = new ArrayList<LCP>();
         for (PropertyUsage propUsage : propUsages) {
             LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
@@ -2208,7 +2208,22 @@ public class ScriptingLogicsModule extends LogicsModule {
             
             props.add(lcp);
         }
-        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), format, this, ids, props, separator, noHeader, charset)), Collections.singletonList(fileProp));
+        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), format, this, ids, props)), Collections.singletonList(fileProp));
+    }
+
+    public LPWithParams addScriptedImportCSVActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
+        List<LCP> props = new ArrayList<LCP>();
+        for (PropertyUsage propUsage : propUsages) {
+            LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
+            List<ResolveClassSet> paramClasses = getParamClasses(lcp);
+
+            if (paramClasses.size() != 1 || paramClasses.get(0).getType() != IntegerClass.instance) {
+                errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, "INTEGER");
+            }
+
+            props.add(lcp);
+        }
+        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), this, ids, props, separator, noHeader, charset)), Collections.singletonList(fileProp));
     }
 
     public LCP addScriptedTypeProp(String className, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {

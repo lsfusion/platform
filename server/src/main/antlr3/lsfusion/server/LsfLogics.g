@@ -1599,11 +1599,24 @@ importActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages, $separator.val, noHeader, $charset.val);
+		$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages);
 	}
 } 
-	:	'IMPORT' type=importSourceFormat (separator = stringLiteral)? ('NOHEADER' { noHeader = true; })? ('CHARSET' charset = stringLiteral)?  'TO' plist=nonEmptyPropertyUsageListWithIds 'FROM' expr=propertyExpression[context, dynamic]
+	:	'IMPORT' type=importSourceFormat 'TO' plist=nonEmptyPropertyUsageListWithIds 'FROM' expr=propertyExpression[context, dynamic]
 	;
+
+importCSVActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	boolean noHeader = false;
+}
+@after {
+	if (inPropParseState()) {
+		$property = self.addScriptedImportCSVActionProperty($expr.property, $plist.ids, $plist.propUsages, $separator.val, noHeader, $charset.val);
+	}
+}
+	:	'IMPORT' 'CSV' (separator = stringLiteral)? ('NOHEADER' { noHeader = true; })? ('CHARSET' charset = stringLiteral)?  'TO' plist=nonEmptyPropertyUsageListWithIds 'FROM' expr=propertyExpression[context, dynamic]
+	;
+
 
 nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<PropertyUsage> propUsages]
 @init {
@@ -1622,7 +1635,7 @@ importSourceFormat returns [ImportSourceFormat format]
 	: 'XLS'  { $format = ImportSourceFormat.XLS; }
 	| 'XLSX' { $format = ImportSourceFormat.XLSX; }
 	| 'DBF'  { $format = ImportSourceFormat.DBF; }
-	| 'CSV'  { $format = ImportSourceFormat.CSV; }
+	//| 'CSV'  { $format = ImportSourceFormat.CSV; }
 	| 'XML'  { $format = ImportSourceFormat.XML; }
 	| 'JDBC' { $format = ImportSourceFormat.JDBC; }
 	| 'MDB'  { $format = ImportSourceFormat.MDB; }
@@ -2023,6 +2036,7 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	readPDB=readActionPropertyDefinitionBody[context, dynamic] { $property = $readPDB.property; }
 	|	writePDB=writeActionPropertyDefinitionBody[context, dynamic] { $property = $writePDB.property; }
 	|	importProp=importActionPropertyDefinitionBody[context, dynamic] { $property = $importProp.property; }
+	|	importCSVProp=importCSVActionPropertyDefinitionBody[context, dynamic] { $property = $importCSVProp.property; }
 	;
 	
 contextIndependentActionPDB returns [LPWithParams property, List<ResolveClassSet> signature]
