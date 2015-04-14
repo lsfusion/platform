@@ -6,7 +6,10 @@ import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.layout.HasLabel;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
-import lsfusion.interop.form.layout.*;
+import lsfusion.interop.form.layout.Alignment;
+import lsfusion.interop.form.layout.FlexAlignment;
+import lsfusion.interop.form.layout.FlexConstraints;
+import lsfusion.interop.form.layout.FlexLayout;
 import lsfusion.interop.form.screen.ExternalScreenComponent;
 
 import javax.swing.*;
@@ -164,17 +167,19 @@ public class PropertyController {
     }
 
     private void updatePanelView(ClientGroupObjectValue columnKey, PanelView view, Color rowBackground, Color rowForeground) {
-        Object value = values.get(columnKey);
+        if (values != null) {
+            Object value = values.get(columnKey);
 
-        view.setValue(value);
-        if (extView != null) {
-            String oldValue = (extView.getValue() == null) ? "" : extView.getValue();
-            String newValue = (value == null) ? "" : value.toString();
-            if (oldValue.equals(newValue)) {
-                return;
+            view.setValue(value);
+            if (extView != null) {
+                String oldValue = (extView.getValue() == null) ? "" : extView.getValue();
+                String newValue = (value == null) ? "" : value.toString();
+                if (oldValue.equals(newValue)) {
+                    return;
+                }
+                extView.setValue((value == null) ? "" : value.toString());
+                property.externalScreen.invalidate();
             }
-            extView.setValue((value == null) ? "" : value.toString());
-            property.externalScreen.invalidate();
         }
 
         view.setReadOnly(readOnly != null && readOnly.get(columnKey) != null);
