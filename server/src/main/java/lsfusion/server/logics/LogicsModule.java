@@ -419,8 +419,12 @@ public abstract class LogicsModule {
     protected ImplementTable addTable(String name, boolean isFull, ValueClass... classes) {
         ImplementTable table = baseLM.tableFactory.include(transformNameToSID(name), getVersion(), classes);
         addModuleTable(table);
-        if(isFull)
-            markFull(table, classes);
+        if(isFull) {
+            if(classes.length == 1)
+                table.markedFull = true;
+            else
+                markFull(table, classes);
+        }
         return table;
     }
 

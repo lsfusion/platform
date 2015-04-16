@@ -76,6 +76,17 @@ public class TableFactory implements FullTablesInterface {
         return getIncludedMapTable(findItem);
     }
 
+    public <T> MapKeysTable<T> getClassMapTable(ImMap<T, ValueClass> findItem) {
+        NFOrderSet<ImplementTable> tables = implementTablesMap.get(findItem.size());
+        if (tables != null) {
+            for (ImplementTable implementTable : tables.getListIt()) {
+                MapKeysTable<T> table = implementTable.getClassMapTable(findItem);
+                if (table != null)
+                    return table;
+            }
+        }
+        return getIncludedMapTable(findItem);
+    }
 
     public <T> ImSet<MapKeysTable<T>> getFullMapTables(ImMap<T, ValueClass> findItem, ImplementTable table) {
         NFOrderSet<ImplementTable> tables = implementTablesMap.get(findItem.size());

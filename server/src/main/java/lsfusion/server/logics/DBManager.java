@@ -687,9 +687,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     mCopyFromTables.add(oldClassProp.tableName);
 
                     Expr oldExpr = oldTable.join(MapFact.singleton(oldTable.getTableKeys().single(), keyExpr)).getExpr(oldTable.findProperty(oldClassProp.getDBName()));
+                    Where moveExprWhere = Where.FALSE;
                     for (int prevID : copyFrom.getValue(j))
-                        moveWhere = moveWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
-                    mExpr.add(moveWhere, oldExpr);
+                        moveExprWhere = moveExprWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
+                    mExpr.add(moveExprWhere, oldExpr);
+                    moveWhere = moveWhere.or(moveExprWhere);
                 }
                 copyObjects.addProperty(table.findProperty(classProp.getDBName()), mExpr.getFinal());
                 copyObjects.and(moveWhere);
@@ -1086,6 +1088,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             if (tableName.equals(table.getName())) {
                 runTableClassesRecalculation(session, table, isolatedTransaction);
             }
+    }
+
+    public String checkTableClasses(SQLSession session, String tableName, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+        for (ImplementTable table : businessLogics.LM.tableFactory.getImplementTables())
+            if (tableName.equals(table.getName())) {
+                return DataSession.checkTableClasses(table, session, LM.baseClass);
+            }
+        return null;
     }
 
     private void runTableClassesRecalculation(SQLSession session, final ImplementTable implementTable, boolean isolatedTransaction) throws SQLException, SQLHandledException {

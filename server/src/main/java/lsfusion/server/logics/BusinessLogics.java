@@ -63,6 +63,7 @@ import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.scripted.MetaCodeFragment;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.mail.NotificationActionProperty;
@@ -550,10 +551,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
+    public void initFullSingleTables() {
+        for(ImplementTable table : LM.tableFactory.getImplementTables()) {
+            if(table.markedFull && !table.isFull())  // для второго условия все и делается, чтобы не создавать лишние св-ва
+                LM.markFull(table, table.mapFields.singleValue());
+        }
+    }
+
     public void initClassDataProps() {
         ImMap<ImplementTable, ImSet<ConcreteCustomClass>> groupTables = getConcreteCustomClasses().group(new BaseUtils.Group<ImplementTable, ConcreteCustomClass>() {
             public ImplementTable group(ConcreteCustomClass customClass) {
-                return LM.tableFactory.getMapTable(MapFact.singleton("key", (ValueClass) customClass)).table;
+                return LM.tableFactory.getClassMapTable(MapFact.singleton("key", (ValueClass) customClass)).table;
             }
         });
 
@@ -562,20 +570,25 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             ImSet<ConcreteCustomClass> set = groupTables.getValue(i);
 
             ObjectValueClassSet classSet = OrObjectClassSet.fromSetConcreteChildren(set);
+
+            CustomClass tableClass = (CustomClass) table.mapFields.singleValue();
+            // помечаем full tables
+            assert tableClass.getUpSet().containsAll(classSet, false); // должны быть все классы по определению, исходя из логики раскладывания классов по таблицам
+            boolean isFull = classSet.containsAll(tableClass.getUpSet(), false);
+            if(isFull) // важно чтобы getInterfaceClasses дал тот же tableClass
+                classSet = tableClass.getUpSet();
+
             ClassDataProperty dataProperty = new ClassDataProperty(classSet.toString(), classSet);
             LCP<ClassPropertyInterface> lp = new LCP<ClassPropertyInterface>(dataProperty);
             LM.addProperty(null, new LCP<ClassPropertyInterface>(dataProperty));
             LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<ResolveClassSet>singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));
-            dataProperty.markStored(LM.tableFactory, table);
+            // именно такая реализация, а не implementTable, из-за того что getInterfaceClasses может попасть не в "класс таблицы", а мимо и тогда нарушится assertion что должен попасть в ту же таблицу, это в принципе проблема getInterfaceClasses
+            dataProperty.markStored(LM.tableFactory, new MapKeysTable<ClassPropertyInterface>(table, MapFact.singletonRev(dataProperty.interfaces.single(), table.keys.single())));
 
             // помечаем dataProperty
             for(ConcreteCustomClass customClass : set)
                 customClass.dataProperty = dataProperty;
-
-            // помечаем full tables
-            ValueClass tableClass = table.mapFields.singleValue();
-            assert tableClass.getUpSet().containsAll(classSet, false); // должны быть все классы по определению, исходя из логики раскладывания классов по таблицам
-            if(classSet.containsAll(tableClass.getUpSet(), false)) // неважно implicit или нет
+            if(isFull) // неважно implicit или нет
                 table.setFullField(dataProperty);
         }
     }

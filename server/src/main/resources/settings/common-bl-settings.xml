@@ -267,10 +267,19 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <bean id="initFullTablesTask" class="lsfusion.server.logics.tasks.impl.InitFullSingleTablesTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="initClassDataPropsTask"/> <!-- нужны все классы, в том числе reflection -->
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
     <bean id="initPropertiesTask" class="lsfusion.server.logics.tasks.impl.InitPropertiesTask">
         <property name="dependencies">
             <set>
-                <ref bean="initClassDataPropsTask"/> <!-- так как влияет на работу с expr'ами и учавствует в большом количестве кэшей  -->
+                <ref bean="initFullTablesTask"/> <!-- так как влияет на работу с expr'ами и учавствует в большом количестве кэшей  -->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

@@ -171,6 +171,7 @@ recalculateColumnsAggregationsTable 'Пересчитать агрегации �
         recalculateAggregationTableColumn(tableColumn);    
     }
 }
+checkClassesTable 'Проверить классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
 recalculateClassesTable 'Пересчитать классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
 
 CLASS DropColumn 'Удалённая колонка';
@@ -209,7 +210,7 @@ pivotFormGroupingPropertyDraw 'Pivot' = DATA BOOLEAN (FormGrouping, PropertyDraw
 FORM physicalModel 'Таблицы'
     OBJECTS t=Table
     PROPERTIES(t) READONLY sidTable, rowsTable, sparseColumnsTable
-    PROPERTIES(t) recalculateColumnsAggregationsTable, recalculateClassesTable
+    PROPERTIES(t) recalculateColumnsAggregationsTable, checkClassesTable, recalculateClassesTable
 
     OBJECTS tk=TableKey
     PROPERTIES(tk) READONLY classTableKey, nameTableKey, quantityTableKey

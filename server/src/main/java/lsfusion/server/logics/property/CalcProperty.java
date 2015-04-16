@@ -791,7 +791,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     public boolean aggProp;
 
     public void markStored(TableFactory tableFactory) {
-        markStored(tableFactory, null);
+        markStored(tableFactory, (ImplementTable)null);
     }
 
     public void markStored(TableFactory tableFactory, ImplementTable table) {
@@ -802,9 +802,15 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             mapTable = table.getMapKeysTable(keyClasses);
             assert mapTable!=null;
         }
+
         if (mapTable == null) {
             mapTable = tableFactory.getMapTable(keyClasses);
         }
+
+        markStored(tableFactory, mapTable);
+    }
+
+    public void markStored(TableFactory tableFactory, MapKeysTable<T> mapTable) {
 
         PropertyField field = new PropertyField(getDBName(), getType());
         fieldClassWhere = getClassWhere(mapTable, field);

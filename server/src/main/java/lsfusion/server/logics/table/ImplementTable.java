@@ -47,6 +47,8 @@ public class ImplementTable extends GlobalTable {
     private ImMap<PropertyField, PropStat> statProps = null;
     private ImSet<PropertyField> indexedProps = SetFact.<PropertyField>EMPTY();
 
+    public boolean markedFull;
+
     private InnerFollows.Field fullField = null; // поле которое всегда не null, и свойство которого обеспечивает , возможно временно потом совместиться с логикой classExpr
     public boolean isFull() {
         return fullField != null;
@@ -238,7 +240,7 @@ public class ImplementTable extends GlobalTable {
     private static interface MapTableType {
         boolean skipParents(ImplementTable table);
         boolean skipResult(ImplementTable table);
-        boolean onlyFirstParent(ImplementTable table); // assert !skipParents
+        boolean onlyFirstParent(ImplementTable table);
     }
 
     // поиск таблицы для классов
@@ -249,6 +251,20 @@ public class ImplementTable extends GlobalTable {
 
         public boolean skipResult(ImplementTable table) {
             return false;
+        }
+
+        public boolean onlyFirstParent(ImplementTable table) {
+            return true;
+        }
+    };
+
+    private final static MapTableType findClassTable = new MapTableType() {
+        public boolean skipParents(ImplementTable table) {
+            return !skipResult(table);
+        }
+
+        public boolean skipResult(ImplementTable table) {
+            return !table.markedFull;
         }
 
         public boolean onlyFirstParent(ImplementTable table) {
@@ -299,6 +315,15 @@ public class ImplementTable extends GlobalTable {
 
     public <T> MapKeysTable<T> getSingleMapTable(ImMap<T, ValueClass> findItem, boolean included) {
         ImSet<MapKeysTable<T>> tables = getMapTables(findItem, included ? findIncludedTable : findTable);
+        if(tables.isEmpty())
+            return null;
+        return tables.single();
+    }
+
+    public <T> MapKeysTable<T> getClassMapTable(ImMap<T, ValueClass> findItem) {
+        ImSet<MapKeysTable<T>> tables = getMapTables(findItem, findClassTable);
+        if(tables.isEmpty())
+            tables = getMapTables(findItem, findTable);
         if(tables.isEmpty())
             return null;
         return tables.single();
