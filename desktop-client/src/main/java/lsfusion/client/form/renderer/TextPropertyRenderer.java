@@ -58,7 +58,7 @@ public class TextPropertyRenderer extends JEditorPane implements PropertyRendere
                 setForeground(REQUIRED_FOREGROUND);
             } else {
                 setText(EMPTY_STRING);
-                setForeground(UIManager.getColor("TextField.inactiveForeground"));
+                setForeground(INACTIVE_FOREGROUND);
             }
         } else {
             if (rich) {
@@ -68,7 +68,7 @@ public class TextPropertyRenderer extends JEditorPane implements PropertyRendere
                 setContentType("text");
                 setText(value.toString());
             }
-            setForeground(UIManager.getColor("TextField.foreground"));
+            setForeground((property != null && property.design.foreground != null) ? property.design.foreground : NORMAL_FOREGROUND);
         }
         setSelected(isSelected, hasFocus);
     }

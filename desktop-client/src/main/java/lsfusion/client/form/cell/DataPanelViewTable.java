@@ -41,8 +41,8 @@ public class DataPanelViewTable extends SingleCellTable {
         return foregroundColor;
     }
 
-    public void setForegroundColor(Color background) {
-        this.foregroundColor = background;
+    public void setForegroundColor(Color foreground) {
+        this.foregroundColor = foreground;
     }
 
     public Color getForegroundColor() {

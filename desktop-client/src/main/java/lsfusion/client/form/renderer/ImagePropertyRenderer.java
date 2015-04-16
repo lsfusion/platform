@@ -16,15 +16,11 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        if (value == null && property.isEditableNotNull()) {
-            setText(REQUIRED_STRING);
-            setForeground(REQUIRED_FOREGROUND);
-            setIcon(null);
-        } else {
-            setIcon(value == null ? null : new ImageIcon((byte[]) value));
-            setText(null);
+        super.setValue(value, isSelected, hasFocus);
+        
+        if (value != null) {
+            setIcon(new ImageIcon((byte[]) value));
         }
-        setSelected(isSelected, hasFocus);
     }
 
     @Override

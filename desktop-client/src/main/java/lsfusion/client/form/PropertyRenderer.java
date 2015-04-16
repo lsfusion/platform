@@ -16,6 +16,9 @@ public interface PropertyRenderer {
 
     String EMPTY_STRING = ClientResourceBundle.getString("form.renderer.not.defined");
     String REQUIRED_STRING = ClientResourceBundle.getString("form.renderer.required");
+
+    Color NORMAL_FOREGROUND = UIManager.getColor("TextField.foreground");
+    Color INACTIVE_FOREGROUND = UIManager.getColor("TextField.inactiveForeground");
     
     Color REQUIRED_FOREGROUND = new Color(136, 9, 0);
 

@@ -10,16 +10,10 @@ public class ExcelPropertyRenderer extends FilePropertyRenderer {
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        super.setValue(value, isSelected, hasFocus);
+        
         if (value != null) {
             setIcon(SwingUtils.getSystemIcon("xls"));
-            setText(null);
-        } else {
-            setIcon(null);
-            if (property.isEditableNotNull()) {
-                setText(REQUIRED_STRING);
-                setForeground(REQUIRED_FOREGROUND);
-            }
         }
-        setSelected(isSelected, hasFocus);
     }
 }

@@ -54,7 +54,7 @@ public class ClientAbstractCellRenderer extends JComponent implements TableCellR
         }
 
         Color foregroundColor = cellTable.getForegroundColor(row, column);
-        if (foregroundColor != null) {
+        if (value != null && foregroundColor != null) {
             comp.setForeground(foregroundColor);
         }
         

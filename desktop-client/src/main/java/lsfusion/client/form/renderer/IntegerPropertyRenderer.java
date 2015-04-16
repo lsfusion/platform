@@ -17,13 +17,10 @@ public class IntegerPropertyRenderer extends LabelPropertyRenderer {
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        if (value == null && property.isEditableNotNull()) {
-            setText(REQUIRED_STRING);
-            setForeground(REQUIRED_FOREGROUND);
-        } else {
+        super.setValue(value, isSelected, hasFocus);
+
+        if (value != null || !property.isEditableNotNull()) {
             setText(value == null ? "" : format.format(value));
-            setForeground(UIManager.getColor("TextField.foreground"));
         }
-        setSelected(isSelected, hasFocus);
     }
 }

@@ -16,4 +16,17 @@ public abstract class FilePropertyRenderer extends LabelPropertyRenderer {
     public JComponent getComponent() {
         return this;
     }
+
+    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        if (value != null) {
+            setText(null);
+        } else {
+            setIcon(null);
+            if (property.isEditableNotNull()) {
+                setText(REQUIRED_STRING);
+                setForeground(REQUIRED_FOREGROUND);
+            }
+        }
+        setSelected(isSelected, hasFocus);
+    }
 }

@@ -58,4 +58,14 @@ public abstract class LabelPropertyRenderer extends JLabel implements PropertyRe
     public void paintAsSelected() {
         if (property != null) setBackground(property.colorPreferences.getSelectedCellBackground());
     }
+
+    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        if (value == null && property.isEditableNotNull()) {
+            setText(REQUIRED_STRING);
+            setForeground(REQUIRED_FOREGROUND);
+        } else {
+            setForeground((property != null && property.design.foreground != null) ? property.design.foreground : NORMAL_FOREGROUND);
+        }
+        setSelected(isSelected, hasFocus);
+    }
 }
