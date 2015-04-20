@@ -151,7 +151,7 @@ public class IsClassWhere extends DataWhere {
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         if(classes instanceof ObjectValueClassSet) { // "модифицируем" статистику classExpr'а чтобы "уточнить статистику" по объектам
             // тут правда есть нюанс, что статистика по классам считается одним механизмом, а по join'ами другим
-            Stat stat = classExpr.getStatValue().mult(new Stat(((ObjectValueClassSet) classes).getClassCount())).div(classExpr.getInnerJoin().getStatKeys(keyStat).rows);
+            Stat stat = classExpr.getStatValue().mult(new Stat(((ObjectValueClassSet) classes).getCount())).div(classExpr.getInnerJoin().getStatKeys(keyStat).rows);
             return new GroupJoinsWheres(new ExprStatJoin(classExpr, stat), this, type);
         }
         return expr.getNotNullWhere().groupJoinsWheres(keepStat, keyStat, orderTop, type).and(super.groupJoinsWheres(keepStat, keyStat, orderTop, type));

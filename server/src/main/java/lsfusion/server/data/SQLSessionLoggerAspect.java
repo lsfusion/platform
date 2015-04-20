@@ -18,14 +18,9 @@ public class SQLSessionLoggerAspect {
         return executeMethodAndLogTime(thisJoinPoint, session, queryString);
     }
 
-    @Around("execution(* lsfusion.server.data.SQLSession.executeDML(java.lang.String, ..)) && target(session) && args(queryString, ..)")
-    public Object executeDML(ProceedingJoinPoint thisJoinPoint, SQLSession session, String queryString) throws Throwable {
-        return executeMethodAndLogTime(thisJoinPoint, session, queryString);
-    }
-
-    @Around("execution(* lsfusion.server.data.SQLSession.executeSelect(java.lang.String, ..)) && target(session) && args(select, ..)")
-    public Object executeSelect(ProceedingJoinPoint thisJoinPoint, SQLSession session, String select) throws Throwable {
-        return executeMethodAndLogTime(thisJoinPoint, session, select);
+    @Around("execution(* lsfusion.server.data.SQLSession.executeCommand(lsfusion.server.data.SQLCommand, ..)) && target(session) && args(command, ..)")
+    public Object executeSelect(ProceedingJoinPoint thisJoinPoint, SQLSession session, SQLCommand command) throws Throwable {
+        return executeMethodAndLogTime(thisJoinPoint, session, command.toString());
     }
 
     @Around("execution(* lsfusion.server.data.SQLSession.insertBatchRecords(java.lang.String, lsfusion.base.col.interfaces.immutable.ImOrderSet, lsfusion.base.col.interfaces.immutable.ImMap, ..)) && target(session) && args(table, keys, rows, ..)")
