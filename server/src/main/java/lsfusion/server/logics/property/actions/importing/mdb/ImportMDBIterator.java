@@ -7,12 +7,10 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ImportMDBIterator extends ImportIterator {
-    List<List<String>> rowsList;
     Iterator<List<String>> rowMapIterator;
     List<Integer> sourceColumns;
 
     public ImportMDBIterator(List<List<String>> rowsList, List<Integer> sourceColumns) {
-        this.rowsList = rowsList;
         this.rowMapIterator = rowsList.iterator();
         this.sourceColumns = sourceColumns;
     }
