@@ -48,22 +48,38 @@ public class LRUUtil {
         return tenuredGenPool;
     }
 
-    public static double averageRate = 0.75;
-    public static double memGCIn100Millis = 0.05; // сколько памяти может собрать сборщик мусора за 100 мс 
-    public static double criticalRate = 0.9;
-
-    public static double safeMem = 0.1;
-    public static double adjustLRU = 1.0 + safeMem;
+    public static double memGCIn100Millis = 0.05; // сколько памяти может собрать сборщик мусора за 100 мс
 
     private static ScheduledExecutorService scheduler;
     private static long lastCollected;
     private static boolean runningCleanLRU = false;
 
+    private static final String cmsFraction = "-XX:CMSInitiatingOccupancyFraction=";
     public static void initLRUTuner(final LRULogger logger) {
         final MemoryPoolMXBean tenuredGenPool = getTenuredPool();
+        double averageRate = 0.7;
+        double safeMem = 0.1;
+        for(String arg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+            if (arg.startsWith(cmsFraction)) {
+                double cmsFractionValue = 0.0;
+                try {
+                    cmsFractionValue = Double.valueOf(arg.substring(cmsFraction.length())) / 100.0;
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+                if(cmsFractionValue >= safeMem)
+                    averageRate = cmsFractionValue;
+            }
+        }
+
+        double criticalRate = averageRate + 2 * safeMem;
+        final double adjustLRU = 1.0 + safeMem;
+
         final long maxMem = tenuredGenPool.getUsage().getMax();
         final double criticalMem = maxMem * criticalRate;
         final double averageMem = maxMem * averageRate;
+        final double upAverageMem = averageMem * (1.0 + safeMem);
+        final double downAverageMem = averageMem * (1.0 - safeMem);
 
         final boolean concurrent = !tenuredGenPool.isCollectionUsageThresholdSupported();
         final long longCriticalMem = (long) Math.floor(criticalMem);
@@ -114,9 +130,6 @@ public class LRUUtil {
                     }
                 }
             }}, null, null);
-
-        final double upAverageMem = averageMem * (1.0 + safeMem);
-        final double downAverageMem = averageMem * (1.0 - safeMem);
 
         scheduler.scheduleAtFixedRate(new Runnable() {
             public void run() {

@@ -46,7 +46,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
@@ -1087,7 +1086,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private Throwable handle(SQLException e, String message, ExConnection connection) {
         return handle(e, message, false, connection, true);
     }
-    
+
     private Throwable handle(Throwable t, String message, boolean isTransactTimeout, ExConnection connection, boolean errorPrivate) {
         if(!(t instanceof SQLException))
             return t;
@@ -1232,24 +1231,24 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void executeSelect(SQLQuery query, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, int transactTimeout, ResultHandler<String, String> handler) throws SQLException, SQLHandledException {
-        executeCommand(query.fixConcSelect(syntax), owner, paramObjects, queryExecEnv, transactTimeout, handler);
+        executeCommand(query.fixConcSelect(syntax), queryExecEnv, owner, paramObjects, transactTimeout, handler);
     }
 
     public int executeDML(@ParamMessage SQLDML command, OperationOwner owner, TableOwner tableOwner, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, int transactTimeout) throws SQLException, SQLHandledException { // public для аспекта
         Result<Integer> handler = new Result<Integer>(0);
-        executeCommand(command, owner, paramObjects, queryExecEnv, transactTimeout, handler);
+        executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler);
         return handler.result;
     }
 
     // можно было бы сделать аспектом, но во-первых вся логика before / after аспектная и реализована в явную, плюс непонятно как соотносить snapshot с mutable объектом (env)
-    public <H> void executeCommand(@ParamMessage final SQLCommand<H> command, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, final DynamicExecuteEnvironment queryExecEnv, int transactTimeout, H handler) throws SQLException, SQLHandledException {
+    public <H> void executeCommand(@ParamMessage final SQLCommand<H> command, final DynamicExecuteEnvironment queryExecEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, H handler) throws SQLException, SQLHandledException {
         if(command.command.length() > Settings.get().getQueryLengthLimit())
             throw new SQLTooLongQueryException(command.command);
 
         DynamicExecEnvSnapshot snapEnv = queryExecEnv.getSnapshot(transactTimeout);
 
         try {
-            executeCommand(command, owner, paramObjects, snapEnv, handler);
+            executeCommand(command, snapEnv, owner, paramObjects, handler);
 
             queryExecEnv.succeeded(snapEnv);
 
@@ -1268,11 +1267,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
 
         // повторяем
-        executeCommand(command, owner, paramObjects, queryExecEnv, transactTimeout, handler);
+        executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler);
     }
 
     @Message("message.sql.execute")
-    public <H> void executeCommand(@ParamMessage final SQLCommand<H> command, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, final DynamicExecEnvSnapshot snapEnv, H handler) throws SQLException, SQLHandledException {
+    public <H> void executeCommand(@ParamMessage final SQLCommand<H> command, final DynamicExecEnvSnapshot snapEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, H handler) throws SQLException, SQLHandledException {
         lockRead(owner);
 
         snapEnv.beforeConnection(this, owner);

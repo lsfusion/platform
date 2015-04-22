@@ -12,17 +12,17 @@ import org.aspectj.lang.annotation.Aspect;
 @Aspect
 public class SQLAnalyzeAspect {
 
-    @Around("execution(* lsfusion.server.data.SQLSession.executeCommand(lsfusion.server.data.SQLCommand, lsfusion.server.data.OperationOwner, lsfusion.base.col.interfaces.immutable.ImMap, lsfusion.server.data.query.DynamicExecuteEnvironment, int," +
-            "java.lang.Object)) && target(sql) && args(command, owner, paramObjects, queryExecEnv, transactTimeout, handler)")
-    public Object executeCommand(final ProceedingJoinPoint thisJoinPoint, final SQLSession sql, final SQLCommand command, final OperationOwner owner, final ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, final int transactTimeout, final Object handler) throws Throwable {
+    @Around("execution(* lsfusion.server.data.SQLSession.executeCommand(lsfusion.server.data.SQLCommand, lsfusion.server.data.query.DynamicExecuteEnvironment, lsfusion.server.data.OperationOwner, lsfusion.base.col.interfaces.immutable.ImMap, int," +
+            "java.lang.Object)) && target(sql) && args(command, queryExecEnv, owner, paramObjects, transactTimeout, handler)")
+    public Object executeCommand(final ProceedingJoinPoint thisJoinPoint, final SQLSession sql, final SQLCommand command, DynamicExecuteEnvironment queryExecEnv, final OperationOwner owner, final ImMap<String, ParseInterface> paramObjects, final int transactTimeout, final Object handler) throws Throwable {
         if(!(command instanceof SQLAnalyze)) {
             boolean explain = sql.explainAnalyze();
             boolean noAnalyze = sql.explainNoAnalyze();
             if (command instanceof SQLDML && explain && !noAnalyze)
-                return thisJoinPoint.proceed(new Object[]{sql, new SQLAnalyze(command, false), owner, paramObjects, queryExecEnv, transactTimeout, handler});
+                return thisJoinPoint.proceed(new Object[]{sql, new SQLAnalyze(command, false), queryExecEnv, owner, paramObjects, transactTimeout, handler});
 
             if (explain) {
-                thisJoinPoint.proceed(new Object[]{sql, new SQLAnalyze(command, noAnalyze), owner, paramObjects, queryExecEnv, transactTimeout, new Result<Integer>()});
+                thisJoinPoint.proceed(new Object[]{sql, new SQLAnalyze(command, noAnalyze), queryExecEnv, owner, paramObjects, transactTimeout, new Result<Integer>()});
             }
         }
 

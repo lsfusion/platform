@@ -4,6 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.Settings;
+import lsfusion.server.data.query.DynamicExecEnvSnapshot;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -18,8 +19,8 @@ public class SQLSessionLoggerAspect {
         return executeMethodAndLogTime(thisJoinPoint, session, queryString);
     }
 
-    @Around("execution(* lsfusion.server.data.SQLSession.executeCommand(lsfusion.server.data.SQLCommand, ..)) && target(session) && args(command, ..)")
-    public Object executeSelect(ProceedingJoinPoint thisJoinPoint, SQLSession session, SQLCommand command) throws Throwable {
+    @Around("execution(* lsfusion.server.data.SQLSession.executeCommand(lsfusion.server.data.SQLCommand, lsfusion.server.data.query.DynamicExecEnvSnapshot, ..)) && target(session) && args(command, snap, ..)")
+    public Object executeSelect(ProceedingJoinPoint thisJoinPoint, SQLSession session, SQLCommand command, DynamicExecEnvSnapshot snap) throws Throwable {
         return executeMethodAndLogTime(thisJoinPoint, session, command.toString());
     }
 
