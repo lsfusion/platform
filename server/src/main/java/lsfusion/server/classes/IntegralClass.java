@@ -75,4 +75,9 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
         double doubleValue = value.doubleValue();
         return doubleValue > -0.0005 && doubleValue < 0.0005;
     }
+
+    @Override
+    public boolean fixedSize() { // так как NumericClass не fixedSize, а getCompatible может "смешивать" другие Integral с NumericeClass'ами
+        return false;
+    }
 }

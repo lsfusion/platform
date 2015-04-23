@@ -172,9 +172,4 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     public boolean hasSafeCast() {
         return true;
     }
-
-    @Override
-    public boolean fixedSize() {
-        return false;
-    }
 }
