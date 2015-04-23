@@ -276,7 +276,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
     public static Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orFieldsClassWheres(ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>> orClasses) {
-        ImMap<PropertyField, ClassWhere<Field>> orPropertyClasses = propertyClasses.merge(orClasses.second, ClassWhere.<PropertyField, Field>addOr());
+        ImMap<PropertyField, ClassWhere<Field>> orPropertyClasses = propertyClasses.merge(orClasses.second, ClassWhere.<PropertyField, Field>getAddOr());
         return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(classes.or(orClasses.first), orPropertyClasses);
     }
 
@@ -347,7 +347,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             if(propertiesClassWheres==null)
                 propertiesClassWheres = rowClasses;
             else
-                propertiesClassWheres = propertiesClassWheres.mapAddValues(rowClasses, ClassWhere.<PropertyField, Field>addOr());
+                propertiesClassWheres = propertiesClassWheres.mapAddValues(rowClasses, ClassWhere.<PropertyField, Field>getAddOr());
         }
         return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(keysClassWhere, propertiesClassWheres);
     }

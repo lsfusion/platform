@@ -155,7 +155,7 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
             return prevValue.or(newValue);
         }
     };
-    public static <K, V> AddValue<K, ClassWhere<V>> addOr() {
+    public static <K, V> AddValue<K, ClassWhere<V>> getAddOr() {
         return BaseUtils.immutableCast(addOr);
     }
 
