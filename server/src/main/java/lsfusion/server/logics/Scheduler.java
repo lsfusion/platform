@@ -222,7 +222,8 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                         defaultOrder++;
                     }
                     LAP lap = (LAP) businessLogics.findProperty(canonicalName.trim());
-                    propertySIDMap.put(orderProperty, Pair.create(lap, ignoreExceptions));
+                    if(lap != null)
+                        propertySIDMap.put(orderProperty, Pair.create(lap, ignoreExceptions));
                 }
             }
 
