@@ -382,7 +382,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
             
             CMerged entry = priority.poll();
 
-            if(saveStat && entry.getRowMinDiff() > 0) // может быть слишком оптимистично, возможно нужно просто limit увеличить ???
+            if(saveStat && entry.getRowMaxDiff() > 0) // в intermediate нельзя вообще сливать с разной статистикой, потому как перейдем к большей статистике, а на самом деле она может collapse'ся потом, при and not этого условия
                 break;
             int[] currentPriority = entry.getPriority();
             if(compare(currentPriority, maxPriority) >= 0) // не теряем ключи никогда
