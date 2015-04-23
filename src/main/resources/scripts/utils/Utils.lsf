@@ -279,7 +279,7 @@ END
 
 META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty)
     prim1Object###aggrObject = DATA prim1Class (aggrClass);
-    prim2Object###aggrObject = DATA prim2Class (aggrClass);
+    prim2Object###aggrObject = DATA prim2Class (aggrClass) INDEXED;
     prim3Object###aggrObject = DATA prim3Class (aggrClass);
     prim4Object###aggrObject = DATA prim4Class (aggrClass);
 
