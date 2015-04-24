@@ -25,9 +25,9 @@ import java.util.List;
 public class ImportXLSXIterator extends ImportIterator {
     private final List<Integer> columns;
     private final List<LCP> properties;
-
     private int current;
     private XSSFSheet sheet;
+    private int lastRow;
 
     public ImportXLSXIterator(byte[] file, List<Integer> columns, List<LCP> properties, Integer sheetIndex) throws IOException {
         this.columns = columns;
@@ -35,15 +35,15 @@ public class ImportXLSXIterator extends ImportIterator {
 
         XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(file));
         sheet = wb.getSheetAt(sheetIndex == null ? 0 : (sheetIndex - 1));
+        lastRow = sheet.getLastRowNum() + 1;
     }
 
     @Override
     public List<String> nextRow() {
-        XSSFRow row = sheet.getRow(current);
-        if (row != null) {
-            List<String> listRow = new ArrayList<String>();
-            try {
-                XSSFRow xssfRow = sheet.getRow(current);
+        List<String> listRow = new ArrayList<String>();
+        try {
+            XSSFRow xssfRow = sheet.getRow(current);
+            if (xssfRow != null) {
                 for (Integer column : columns) {
                     ValueClass valueClass = properties.get(columns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
                     DateFormat dateFormat = null;
@@ -56,13 +56,12 @@ public class ImportXLSXIterator extends ImportIterator {
                     }
                     listRow.add(getXLSXFieldValue(xssfRow, column, dateFormat, null));
                 }
-            } catch (ParseException e) {
-                Throwables.propagate(e);
             }
-            current++;
-            return listRow;
+        } catch (ParseException e) {
+            Throwables.propagate(e);
         }
-        return null;
+        current++;
+        return current > lastRow ? null : listRow;
     }
 
     protected String getXLSXFieldValue(XSSFRow xssfRow, Integer cell, DateFormat dateFormat, String defaultValue) throws ParseException {

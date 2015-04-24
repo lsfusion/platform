@@ -26,6 +26,7 @@ public class ImportXLSIterator extends ImportIterator {
     private final List<LCP> properties;
     private int current;
     private HSSFSheet sheet;
+    private int lastRow;
     
     public ImportXLSIterator(byte[] file, List<Integer> columns, List<LCP> properties, Integer sheetIndex) throws IOException {
         this.columns = columns;
@@ -34,15 +35,15 @@ public class ImportXLSIterator extends ImportIterator {
         HSSFWorkbook wb = new HSSFWorkbook(new ByteArrayInputStream(file));
         
         sheet = wb.getSheetAt(sheetIndex == null ? 0 : (sheetIndex - 1));
+        lastRow = sheet.getLastRowNum() + 1;
     }
 
     @Override
     public List<String> nextRow() {
-        HSSFRow row = sheet.getRow(current);
-        if (row != null) {
-            List<String> listRow = new ArrayList<String>();
-            try {
-                HSSFRow hssfRow = sheet.getRow(current);
+        List<String> listRow = new ArrayList<String>();
+        try {
+            HSSFRow hssfRow = sheet.getRow(current);
+            if (hssfRow != null) {
                 for (Integer column : columns) {
                     ValueClass valueClass = properties.get(columns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
                     DateFormat dateFormat = null;
@@ -55,13 +56,12 @@ public class ImportXLSIterator extends ImportIterator {
                     }
                     listRow.add(getXLSFieldValue(hssfRow, column, dateFormat, null));
                 }
-            } catch (ParseException e) {
-                Throwables.propagate(e);
             }
-            current++;
-            return listRow;
+        } catch (ParseException e) {
+            Throwables.propagate(e);
         }
-        return null;
+        current++;
+        return current > lastRow ? null : listRow;
     }
 
     protected String getXLSFieldValue(HSSFRow hssfRow, int cell, DateFormat dateFormat, String defaultValue) throws ParseException {
