@@ -2712,7 +2712,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> allCreationParams = new ArrayList<LPWithParams>();
         allCreationParams.add(lpWithParams);        
         for (int i = oldContext.size(); i < newContext.size(); i++) { // докидываем 
-            allCreationParams.add(new LPWithParams(null, asList(i)));
+            allCreationParams.add(new LPWithParams(null, Collections.singletonList(i)));
         }
 
         List<Object> resultParams = getParamsPlainList(allCreationParams);
@@ -3258,6 +3258,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         setModuleName(name);
         setNamespace(namespace == null ? name : namespace);
         setDefaultNamespace(namespace == null);
+        if (requiredModules.isEmpty() && !getName().equals("System")) {
+            requiredModules.add("System");
+        }
         setRequiredModules(new HashSet<String>(requiredModules));
         setNamespacePriority(namespacePriority);
     }

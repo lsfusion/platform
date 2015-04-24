@@ -202,8 +202,9 @@ public class ScriptParser {
     }
 
     private Token getToken(Parser parser, boolean previous) {
-        if(previous)
+        if (previous) {
             return parser.input.LT(-1);
+        }
             
         Token token = parser.input.LT(1);
         if (token.getType() == Token.EOF) {
