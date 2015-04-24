@@ -58,7 +58,7 @@
         
         <spring.version>3.0.5.RELEASE</spring.version>
         <cglib.version>2.2.2</cglib.version>
-        <aspectj.version>1.7.3</aspectj.version>
+        <aspectj.version>1.8.5</aspectj.version>
 
         <servlet.api.version>2.5</servlet.api.version>
         <jcaptcha.version>1.0</jcaptcha.version>
@@ -88,7 +88,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- used by compiler -->
-        <maven.compiler.source>1.6</maven.compiler.source>
+        <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
 
         <!-- used by AspectJ-->
