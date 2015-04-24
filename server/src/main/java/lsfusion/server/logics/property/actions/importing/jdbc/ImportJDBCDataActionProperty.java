@@ -22,7 +22,7 @@ public class ImportJDBCDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file, Integer sheetIndex) {
+    public ImportIterator getIterator(byte[] file) {
 
         try {
             CachedRowSetImpl rs = BaseUtils.deserializeResultSet(file);

@@ -22,7 +22,7 @@ public class ImportCSVDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file, Integer sheetIndex) {
+    public ImportIterator getIterator(byte[] file) {
         return new ImportCSVIterator(file, charset, separator, noHeader, properties.size());
     }
 }

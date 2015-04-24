@@ -1,17 +1,25 @@
 package lsfusion.server.logics.property.actions.importing.xls;
 
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ImportXLSDataActionProperty extends ImportDataActionProperty {
+    protected Integer sheetIndex;
+    
     public final static Map<String, Integer> XLSColumnsMapping = new HashMap<String, Integer>() {{
         put("A", 0); put("B", 1); put("C", 2); put("D", 3); put("E", 4); put("F", 5); put("G", 6); put("H", 7); put("I", 8);
         put("J", 9); put("K", 10); put("L", 11); put("M", 12); put("N", 13); put("O", 14); put("P", 15); put("Q", 16);
@@ -26,7 +34,21 @@ public class ImportXLSDataActionProperty extends ImportDataActionProperty {
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file, Integer sheetIndex) throws IOException {
+    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        DataObject sheet = null;
+        if (context.getDataKeys().size() == 2) {
+            sheet = context.getDataKeys().getValue(1);
+            assert sheet.getType() instanceof IntegerClass;
+        }
+        if (sheet != null) {
+            sheetIndex = (Integer) sheet.object;
+        }
+        
+        super.executeCustom(context);
+    }
+
+    @Override
+    public ImportIterator getIterator(byte[] file) throws IOException {
         return new ImportXLSIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex);
     }
 }

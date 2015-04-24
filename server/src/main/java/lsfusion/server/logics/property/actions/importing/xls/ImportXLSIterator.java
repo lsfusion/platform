@@ -42,6 +42,7 @@ public class ImportXLSIterator extends ImportIterator {
         if (row != null) {
             List<String> listRow = new ArrayList<String>();
             try {
+                HSSFRow hssfRow = sheet.getRow(current);
                 for (Integer column : columns) {
                     ValueClass valueClass = properties.get(columns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
                     DateFormat dateFormat = null;
@@ -52,7 +53,7 @@ public class ImportXLSIterator extends ImportIterator {
                     } else if (valueClass instanceof DateTimeClass) {
                         dateFormat = DateTimeClass.getDateTimeFormat();
                     }
-                    listRow.add(getXLSFieldValue(sheet, current, column, dateFormat, null));
+                    listRow.add(getXLSFieldValue(hssfRow, column, dateFormat, null));
                 }
             } catch (ParseException e) {
                 Throwables.propagate(e);
@@ -63,8 +64,7 @@ public class ImportXLSIterator extends ImportIterator {
         return null;
     }
 
-    protected String getXLSFieldValue(HSSFSheet sheet, int row, int cell, DateFormat dateFormat, String defaultValue) throws ParseException {
-        HSSFRow hssfRow = sheet.getRow(row);
+    protected String getXLSFieldValue(HSSFRow hssfRow, int cell, DateFormat dateFormat, String defaultValue) throws ParseException {
         if (hssfRow != null) {
             HSSFCell hssfCell = hssfRow.getCell(cell);
             if (hssfCell != null) {

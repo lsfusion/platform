@@ -43,6 +43,7 @@ public class ImportXLSXIterator extends ImportIterator {
         if (row != null) {
             List<String> listRow = new ArrayList<String>();
             try {
+                XSSFRow xssfRow = sheet.getRow(current);
                 for (Integer column : columns) {
                     ValueClass valueClass = properties.get(columns.indexOf(column)).property.getValueClass(ClassType.valuePolicy);
                     DateFormat dateFormat = null;
@@ -53,7 +54,7 @@ public class ImportXLSXIterator extends ImportIterator {
                     } else if (valueClass instanceof DateTimeClass) {
                         dateFormat = DateTimeClass.getDateTimeFormat();
                     }
-                    listRow.add(getXLSXFieldValue(sheet, current, column, dateFormat, null));
+                    listRow.add(getXLSXFieldValue(xssfRow, column, dateFormat, null));
                 }
             } catch (ParseException e) {
                 Throwables.propagate(e);
@@ -64,29 +65,26 @@ public class ImportXLSXIterator extends ImportIterator {
         return null;
     }
 
-    protected String getXLSXFieldValue(XSSFSheet sheet, Integer row, Integer cell, DateFormat dateFormat, String defaultValue) throws ParseException {
+    protected String getXLSXFieldValue(XSSFRow xssfRow, Integer cell, DateFormat dateFormat, String defaultValue) throws ParseException {
         String result = defaultValue;
-        if (cell != null) {
-            XSSFRow xssfRow = sheet.getRow(row);
-            if (xssfRow != null) {
-                XSSFCell xssfCell = xssfRow.getCell(cell);
-                if (xssfCell != null) {
-                    switch (xssfCell.getCellType()) {
-                        case Cell.CELL_TYPE_NUMERIC:
-                            if (dateFormat != null) {
-                                result = dateFormat.format(xssfCell.getDateCellValue());
-                            } else {
-                                result = new DecimalFormat("#.#####").format(xssfCell.getNumericCellValue());
-                                result = result.endsWith(".0") ? result.substring(0, result.length() - 2) : result;
-                            }
-                            break;
-                        case Cell.CELL_TYPE_FORMULA:
-                            result = xssfCell.getCellFormula();
-                            break;
-                        case Cell.CELL_TYPE_STRING:
-                        default:
-                            result = (xssfCell.getStringCellValue().isEmpty()) ? defaultValue : xssfCell.getStringCellValue().trim();
-                    }
+        if (cell != null && xssfRow != null) {
+            XSSFCell xssfCell = xssfRow.getCell(cell);
+            if (xssfCell != null) {
+                switch (xssfCell.getCellType()) {
+                    case Cell.CELL_TYPE_NUMERIC:
+                        if (dateFormat != null) {
+                            result = dateFormat.format(xssfCell.getDateCellValue());
+                        } else {
+                            result = new DecimalFormat("#.#####").format(xssfCell.getNumericCellValue());
+                            result = result.endsWith(".0") ? result.substring(0, result.length() - 2) : result;
+                        }
+                        break;
+                    case Cell.CELL_TYPE_FORMULA:
+                        result = xssfCell.getCellFormula();
+                        break;
+                    case Cell.CELL_TYPE_STRING:
+                    default:
+                        result = (xssfCell.getStringCellValue().isEmpty()) ? defaultValue : xssfCell.getStringCellValue().trim();
                 }
             }
         }
