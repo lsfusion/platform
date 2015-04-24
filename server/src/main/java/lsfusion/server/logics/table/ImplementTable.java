@@ -449,9 +449,10 @@ public class ImplementTable extends GlobalTable {
         else
             rowStat = new Stat(BaseUtils.nvl(tableStats.get(name), 0));
 
-        ImValueMap<KeyField, Stat> mvDistinctKeys = getTableKeys().mapItValues(); // exception есть
-        for(int i=0,size=keys.size();i<size;i++) {
-            String keySID = getName() + "." + keys.get(i).getName();
+        ImSet<KeyField> tableKeys = getTableKeys();
+        ImValueMap<KeyField, Stat> mvDistinctKeys = tableKeys.mapItValues(); // exception есть
+        for(int i=0,size=tableKeys.size();i<size;i++) {
+            String keySID = getName() + "." + tableKeys.get(i).getName();
             Stat keyStat;
             if (!keyStats.containsKey(keySID))
                 keyStat = Stat.DEFAULT;
