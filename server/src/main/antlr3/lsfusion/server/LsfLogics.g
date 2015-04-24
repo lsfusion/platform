@@ -1595,28 +1595,28 @@ writeActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic]
 
 importActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
+	ImportSourceFormat format = null;
+	LPWithParams sheet = null;
+	String separator = null;
 	boolean noHeader = false;
+	String charset = null;
+
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages);
+		if($type.format == ImportSourceFormat.XLS || $type.format == ImportSourceFormat.XLSX)
+			$property = self.addScriptedImportExcelActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages, sheet);
+		else if($type.format == ImportSourceFormat.CSV)
+        	$property = self.addScriptedImportCSVActionProperty($expr.property, $plist.ids, $plist.propUsages, separator, noHeader, charset);
+		else
+			$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages);
 	}
 } 
-	:	'IMPORT' type=importSourceFormat 'TO' plist=nonEmptyPropertyUsageListWithIds 'FROM' expr=propertyExpression[context, dynamic]
+	:	'IMPORT' 
+		type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; separator = $type.separator; noHeader = $type.noHeader; charset = $type.charset; }
+		'TO' plist=nonEmptyPropertyUsageListWithIds 
+		'FROM' expr=propertyExpression[context, dynamic]
 	;
-
-importCSVActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
-@init {
-	boolean noHeader = false;
-}
-@after {
-	if (inPropParseState()) {
-		$property = self.addScriptedImportCSVActionProperty($expr.property, $plist.ids, $plist.propUsages, $separator.val, noHeader, $charset.val);
-	}
-}
-	:	'IMPORT' 'CSV' (separator = stringLiteral)? ('NOHEADER' { noHeader = true; })? ('CHARSET' charset = stringLiteral)?  'TO' plist=nonEmptyPropertyUsageListWithIds 'FROM' expr=propertyExpression[context, dynamic]
-	;
-
 
 nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<PropertyUsage> propUsages]
 @init {
@@ -1631,11 +1631,11 @@ propertyUsageWithId returns [String id = null, PropertyUsage propUsage]
 	:	(pid=ID '=' { $id = $pid.text; } )? pu=propertyUsage { $propUsage = $pu.propUsage; }
 	;
 
-importSourceFormat returns [ImportSourceFormat format]
-	: 'XLS'  { $format = ImportSourceFormat.XLS; }
-	| 'XLSX' { $format = ImportSourceFormat.XLSX; }
+importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, String separator, boolean noHeader, String charset]
+	: 'XLS' { $format = ImportSourceFormat.XLS; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
+	| 'XLSX' { $format = ImportSourceFormat.XLSX; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
 	| 'DBF'  { $format = ImportSourceFormat.DBF; }
-	//| 'CSV'  { $format = ImportSourceFormat.CSV; }
+	| 'CSV'  { $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = charsetVal.val; })?
 	| 'XML'  { $format = ImportSourceFormat.XML; }
 	| 'JDBC' { $format = ImportSourceFormat.JDBC; }
 	| 'MDB'  { $format = ImportSourceFormat.MDB; }
@@ -2036,7 +2036,6 @@ keepContextActionPDB[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	readPDB=readActionPropertyDefinitionBody[context, dynamic] { $property = $readPDB.property; }
 	|	writePDB=writeActionPropertyDefinitionBody[context, dynamic] { $property = $writePDB.property; }
 	|	importProp=importActionPropertyDefinitionBody[context, dynamic] { $property = $importProp.property; }
-	|	importCSVProp=importCSVActionPropertyDefinitionBody[context, dynamic] { $property = $importCSVProp.property; }
 	;
 	
 contextIndependentActionPDB returns [LPWithParams property, List<ResolveClassSet> signature]

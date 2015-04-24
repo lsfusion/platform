@@ -18,11 +18,11 @@ import java.util.Map;
 
 public class ImportJDBCDataActionProperty extends ImportDataActionProperty {
     public ImportJDBCDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
-        super(valueClass, LM, ids, properties);
+        super(new ValueClass[] {valueClass}, LM, ids, properties);
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) {
+    public ImportIterator getIterator(byte[] file, Integer sheetIndex) {
 
         try {
             CachedRowSetImpl rs = BaseUtils.deserializeResultSet(file);

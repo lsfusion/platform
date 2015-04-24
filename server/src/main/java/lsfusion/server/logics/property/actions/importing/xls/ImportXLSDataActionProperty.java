@@ -21,12 +21,12 @@ public class ImportXLSDataActionProperty extends ImportDataActionProperty {
         put("AP", 41); put("AQ", 42); put("AR", 43); put("AS", 44); put("AT", 45); put("BA", 52); put("BB", 53); put("BC", 54);
     }};
     
-    public ImportXLSDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
-        super(valueClass, LM, ids, properties);
+    public ImportXLSDataActionProperty(ValueClass[] valueClasses, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
+        super(valueClasses, LM, ids, properties);
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) throws IOException {
-        return new ImportXLSIterator(file, getSourceColumns(XLSColumnsMapping), properties);
+    public ImportIterator getIterator(byte[] file, Integer sheetIndex) throws IOException {
+        return new ImportXLSIterator(file, getSourceColumns(XLSColumnsMapping), properties, sheetIndex);
     }
 }

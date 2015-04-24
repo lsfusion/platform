@@ -14,12 +14,12 @@ import java.text.ParseException;
 import java.util.List;
 
 public class ImportXLSXDataActionProperty extends ImportDataActionProperty {
-    public ImportXLSXDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
-        super(valueClass, LM, ids, properties);
+    public ImportXLSXDataActionProperty(ValueClass[] valueClasses, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
+        super(valueClasses, LM, ids, properties);
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException {
-        return new ImportXLSXIterator(file, getSourceColumns(ImportXLSDataActionProperty.XLSColumnsMapping), properties);
+    public ImportIterator getIterator(byte[] file, Integer sheetIndex) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException {
+        return new ImportXLSXIterator(file, getSourceColumns(ImportXLSDataActionProperty.XLSColumnsMapping), properties, sheetIndex);
     }
 }

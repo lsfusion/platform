@@ -29,12 +29,12 @@ public class ImportXLSXIterator extends ImportIterator {
     private int current;
     private XSSFSheet sheet;
 
-    public ImportXLSXIterator(byte[] file, List<Integer> columns, List<LCP> properties) throws IOException {
+    public ImportXLSXIterator(byte[] file, List<Integer> columns, List<LCP> properties, Integer sheetIndex) throws IOException {
         this.columns = columns;
         this.properties = properties;
 
         XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(file));
-        sheet = wb.getSheetAt(0);
+        sheet = wb.getSheetAt(sheetIndex == null ? 0 : (sheetIndex - 1));
     }
 
     @Override

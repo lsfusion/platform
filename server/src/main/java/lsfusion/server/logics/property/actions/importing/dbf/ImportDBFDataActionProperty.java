@@ -19,11 +19,11 @@ import java.util.Map;
 
 public class ImportDBFDataActionProperty extends ImportDataActionProperty {
     public ImportDBFDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
-        super(valueClass, LM, ids, properties);
+        super(new ValueClass[] {valueClass}, LM, ids, properties);
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException {
+    public ImportIterator getIterator(byte[] file, Integer sheetIndex) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException {
 
         File tmpFile = null;
         try {

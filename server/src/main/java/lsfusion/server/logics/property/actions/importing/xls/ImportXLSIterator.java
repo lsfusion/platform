@@ -27,13 +27,13 @@ public class ImportXLSIterator extends ImportIterator {
     private int current;
     private HSSFSheet sheet;
     
-    public ImportXLSIterator(byte[] file, List<Integer> columns, List<LCP> properties) throws IOException {
+    public ImportXLSIterator(byte[] file, List<Integer> columns, List<LCP> properties, Integer sheetIndex) throws IOException {
         this.columns = columns;
         this.properties = properties;
 
         HSSFWorkbook wb = new HSSFWorkbook(new ByteArrayInputStream(file));
         
-        sheet = wb.getSheetAt(0);
+        sheet = wb.getSheetAt(sheetIndex == null ? 0 : (sheetIndex - 1));
     }
 
     @Override

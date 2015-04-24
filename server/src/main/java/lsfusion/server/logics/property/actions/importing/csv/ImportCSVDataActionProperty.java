@@ -15,14 +15,14 @@ public class ImportCSVDataActionProperty extends ImportDataActionProperty {
 
     public ImportCSVDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties, 
                                        String separator, boolean noHeader, String charset) {
-        super(valueClass, LM, ids, properties);
+        super(new ValueClass[] {valueClass}, LM, ids, properties);
         this.separator = separator == null ? "|" : separator;
         this.noHeader = noHeader;
         this.charset = charset;
     }
 
     @Override
-    public ImportIterator getIterator(byte[] file) {
+    public ImportIterator getIterator(byte[] file, Integer sheetIndex) {
         return new ImportCSVIterator(file, charset, separator, noHeader, properties.size());
     }
 }

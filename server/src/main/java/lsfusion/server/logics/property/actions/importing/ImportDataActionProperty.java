@@ -34,32 +34,20 @@ import java.util.Map;
 
 public abstract class ImportDataActionProperty extends ScriptingActionProperty {
 
-
     protected final List<String> ids;
     protected final List<LCP> properties;
 
-    public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM,
-                                                          List<String> ids, List<LCP> properties) {
-        return createProperty(valueClass, format, LM, ids, properties, null, false, null);
-    }
-
-    public static ImportDataActionProperty createProperty(ValueClass valueClass, ScriptingLogicsModule LM,
-                                                          List<String> ids, List<LCP> properties, String separator, boolean noHeader,
-                                                          String charset) {
-        return createProperty(valueClass, ImportSourceFormat.CSV, LM, ids, properties, separator, noHeader, charset);
-    }
-
-    public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM, 
-                                                          List<String> ids, List<LCP> properties, String separator, boolean noHeader,
-                                                          String charset) {
+    public static ImportDataActionProperty createExcelProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties, ValueClass sheetIndex) {
         if (format == ImportSourceFormat.XLS) {
-            return new ImportXLSDataActionProperty(valueClass, LM, ids, properties);
+            return new ImportXLSDataActionProperty(sheetIndex == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, sheetIndex} , LM, ids, properties);
         } else if (format == ImportSourceFormat.XLSX) {
-            return new ImportXLSXDataActionProperty(valueClass, LM, ids, properties);
-        } else if (format == ImportSourceFormat.DBF) {
+            return new ImportXLSXDataActionProperty(sheetIndex == null ? new ValueClass[] {valueClass} : new ValueClass[] {valueClass, sheetIndex}, LM, ids, properties);
+        } else return null;
+    }
+
+    public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
+        if (format == ImportSourceFormat.DBF) {
             return new ImportDBFDataActionProperty(valueClass, LM, ids, properties);
-        } else if (format == ImportSourceFormat.CSV) {
-            return new ImportCSVDataActionProperty(valueClass, LM, ids, properties, separator, noHeader, charset);
         } else if (format == ImportSourceFormat.XML) {
             return new ImportXMLDataActionProperty(valueClass, LM, ids, properties);
         } else if (format == ImportSourceFormat.JDBC) {
@@ -70,8 +58,8 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
         return null;
     }
 
-    public ImportDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
-        super(LM, valueClass);
+    public ImportDataActionProperty(ValueClass[] valueClasses, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
+        super(LM, valueClasses);
         this.ids = ids;
         this.properties = properties;
     }
@@ -81,13 +69,19 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
         DataObject value = context.getDataKeys().getValue(0);
         assert value.getType() instanceof FileClass;
 
+        DataObject sheetIndex = null;
+        if(context.getDataKeys().size() == 2) {
+            sheetIndex = context.getDataKeys().getValue(1);
+            assert sheetIndex.getType() instanceof IntegerClass;
+        }
+
         Object file = value.object;
         if (file instanceof byte[]) {
             try {
                 if (value.getType() instanceof DynamicFormatFileClass) {
                     file = BaseUtils.getFile((byte[]) file);
                 }
-                ImportIterator iterator = getIterator((byte[]) file);
+                ImportIterator iterator = getIterator((byte[]) file, sheetIndex == null ? null : (Integer) sheetIndex.object);
 
                 List<String> row;
                 int i = 0;
@@ -142,5 +136,5 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
         return 0;
     }
 
-    public abstract ImportIterator getIterator(byte[] file) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException;
+    public abstract ImportIterator getIterator(byte[] file, Integer sheetIndex) throws IOException, ParseException, xBaseJException, JDOMException, ClassNotFoundException;
 }

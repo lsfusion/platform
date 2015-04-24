@@ -1,6 +1,7 @@
 package lsfusion.server.logics.scripted;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -52,6 +53,7 @@ import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.property.actions.WriteActionProperty;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.csv.ImportCSVDataActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.mail.AttachmentFormat;
@@ -2211,6 +2213,23 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), format, this, ids, props)), Collections.singletonList(fileProp));
     }
 
+    public LPWithParams addScriptedImportExcelActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams sheetIndex) throws ScriptingErrorLog.SemanticErrorException {
+        List<LCP> props = new ArrayList<LCP>();
+        for (PropertyUsage propUsage : propUsages) {
+            LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
+            List<ResolveClassSet> paramClasses = getParamClasses(lcp);
+
+            if (paramClasses.size() != 1 || paramClasses.get(0).getType() != IntegerClass.instance) {
+                errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, "INTEGER");
+            }
+
+            props.add(lcp);
+        }
+        ValueClass sheetIndexValueClass = sheetIndex == null ? null : sheetIndex.property.property.getValueClass(ClassType.valuePolicy);
+        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createExcelProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy),
+                format, this, ids, props, sheetIndexValueClass)), sheetIndex == null ? Collections.singletonList(fileProp) : Lists.newArrayList(fileProp, sheetIndex));
+    }
+
     public LPWithParams addScriptedImportCSVActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
         List<LCP> props = new ArrayList<LCP>();
         for (PropertyUsage propUsage : propUsages) {
@@ -2223,7 +2242,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             props.add(lcp);
         }
-        return addScriptedJoinAProp(addAProp(ImportDataActionProperty.createProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), this, ids, props, separator, noHeader, charset)), Collections.singletonList(fileProp));
+        return addScriptedJoinAProp(addAProp(new ImportCSVDataActionProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), this, ids, props, separator, noHeader, charset)), Collections.singletonList(fileProp));
     }
 
     public LCP addScriptedTypeProp(String className, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {
