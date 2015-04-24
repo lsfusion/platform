@@ -1576,12 +1576,15 @@ filterPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 	;
 
 readActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	boolean delete = false;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedReadActionProperty($expr.property, $pUsage.propUsage);
+		$property = self.addScriptedReadActionProperty($expr.property, $pUsage.propUsage, $moveExpr.property, delete);
 	}
 }
-	:	'READ' expr=propertyExpression[context, dynamic] 'TO' pUsage=propertyUsage
+	:	'READ' expr=propertyExpression[context, dynamic] 'TO' pUsage=propertyUsage (('MOVE' moveExpr=propertyExpression[context, dynamic]) | ('DELETE' {delete = true; }))?
 	;
 
 writeActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]

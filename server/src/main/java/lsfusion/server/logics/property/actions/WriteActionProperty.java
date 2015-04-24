@@ -58,7 +58,7 @@ public class WriteActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void storeFileToFTP(String path, File file) throws IOException {
+    public static void storeFileToFTP(String path, File file) throws IOException {
         /*ftp://username:password@host:port/path_to_file*/
         Pattern connectionStringPattern = Pattern.compile("ftp:\\/\\/(.*):(.*)@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
