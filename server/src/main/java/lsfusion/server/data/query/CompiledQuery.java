@@ -594,9 +594,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     return alias + "." + queries.reverse().get(query);
             }
 
-            // static строго говоря
             protected boolean isEmptySelect(Where groupWhere, ImSet<KeyExpr> keys) {
-                return groupWhere.pack().getPackWhereJoins(true, keys, SetFact.<Expr>EMPTYORDER()).first.isEmpty();
+                return groupWhere.pack().getPackWhereJoins(!syntax.useFJ() && !Settings.get().isNoExclusiveCompile(), keys, SetFact.<Expr>EMPTYORDER()).first.isEmpty();
             }
 
             protected SQLQuery getEmptySelect(final Where groupWhere) {

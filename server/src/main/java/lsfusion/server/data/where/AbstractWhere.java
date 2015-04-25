@@ -8,10 +8,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.caches.IdentityLazy;
-import lsfusion.server.caches.ManualLazy;
-import lsfusion.server.caches.ParamExpr;
-import lsfusion.server.caches.TwinLazy;
+import lsfusion.server.caches.*;
 import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
@@ -250,7 +247,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     // так как используется в подзапросах еще, и может быть сложным вычислением, можно было бы хранить чисто в течении компиляции запроса
-    @IdentityLazy
+    @IdentityQuickLazy
     public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getPackWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop) {
         Pair<ImCol<GroupJoinsWhere>,Boolean> whereJoinsExcl = getWhereJoins(tryExclusive, keepStat, orderTop);
         ImCol<GroupJoinsWhere> whereJoins = whereJoinsExcl.first;

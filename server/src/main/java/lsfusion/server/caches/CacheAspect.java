@@ -166,7 +166,8 @@ public class CacheAspect {
 //    public final static SoftHashMap<IdentityInvocation, Object> lazyIdentityExecute = new SoftHashMap<IdentityInvocation, Object>();
     public final static IdentityInvocationWeakMap lazyIdentityExecute = new IdentityInvocationWeakMap();
     public final static LRUWSASVSMap<Object, Method, Object, Object> commonLruCache = new LRUWSASVSMap<Object, Method, Object, Object>(LRUUtil.G2);
-    
+    public final static LRUWSASVSMap<Object, Method, Object, Object> quickLruCache = new LRUWSASVSMap<Object, Method, Object, Object>(LRUUtil.L1);
+
     private static Object execute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs) throws Throwable {
         if(changedArgs) {
             Object[] call = new Object[args.length+1];
@@ -178,7 +179,7 @@ public class CacheAspect {
     }
 
     public static enum Type {
-        SIMPLE, START, STRONG 
+        SIMPLE, START, STRONG, QUICK
     } 
     
     public static Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs, Type type) throws Throwable {
@@ -198,15 +199,19 @@ public class CacheAspect {
         }
 
         LRUWSASVSMap<Object, Method, Object, Object> lruCache = null;
-        if(type == Type.START) {
-            BusinessLogics businessLogics = ThreadLocalContext.getBusinessLogics();
-            if(businessLogics != null) {
-                lruCache = businessLogics.startLruCache;
-            } else
-                ServerLoggers.assertLog(false, "");
+        if(type == Type.QUICK) {
+            lruCache = quickLruCache;
+        } else {
+            if (type == Type.START) {
+                BusinessLogics businessLogics = ThreadLocalContext.getBusinessLogics();
+                if (businessLogics != null) {
+                    lruCache = businessLogics.startLruCache;
+                } else
+                    ServerLoggers.assertLog(false, "");
+            }
+            if (lruCache == null)
+                lruCache = commonLruCache;
         }
-        if(lruCache == null)
-            lruCache = commonLruCache;
 
         return lazyExecute(target, thisJoinPoint, args, lruCache, changedArgs);     
     }
@@ -229,6 +234,10 @@ public class CacheAspect {
     @Around("execution(@lsfusion.server.caches.IdentityStrongLazy * *.*(..)) && target(object)")
     public Object callStrongMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return callMethod(object, thisJoinPoint, Type.STRONG);
+    }
+    @Around("execution(@lsfusion.server.caches.IdentityQuickLazy * *.*(..)) && target(object)")
+    public Object callQuickMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        return callMethod(object, thisJoinPoint, Type.QUICK);
     }
 
     public static Object callParamMethod(Object object, ProceedingJoinPoint thisJoinPoint, Type type) throws Throwable {
