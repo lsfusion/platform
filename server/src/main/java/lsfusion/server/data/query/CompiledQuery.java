@@ -594,6 +594,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     return alias + "." + queries.reverse().get(query);
             }
 
+            // static строго говоря
+            protected boolean isEmptySelect(Where groupWhere, ImSet<KeyExpr> keys) {
+                return groupWhere.pack().getPackWhereJoins(true, keys, SetFact.<Expr>EMPTYORDER()).first.isEmpty();
+            }
+
             protected SQLQuery getEmptySelect(final Where groupWhere) {
                 return getSQLQuery(null, MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.mEnv(), groupWhere);
             }
@@ -625,7 +630,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 //                return fullWhere.getComplexity(false) > InnerSelect.this.fullWhere.getComplexity(false); // не проталкиваем если, полученная сложность больше сложности всего запроса
             }
             
-            protected Where pushWhere(Where groupWhere, ImMap<K, BaseExpr> innerJoins, StatKeys<K> statKeys, Result<SQLQuery> empty) {
+            protected Where pushWhere(Where groupWhere, ImSet<KeyExpr> keys, ImMap<K, BaseExpr> innerJoins, StatKeys<K> statKeys, Result<SQLQuery> empty) {
                 Where fullWhere = groupWhere;
                 Where pushWhere = null;
                 if(innerJoins.size() > 1 && (pushWhere = whereJoins.getGroupPushWhere(innerJoins, upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
@@ -634,7 +639,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     for(K key : innerJoins.keyIt()) // проталкивание по одному ключу
                         if((pushWhere = whereJoins.getGroupPushWhere(MapFact.singleton(key, innerJoin.group.get(key)), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.distinct.get(key)))!=null)
                             fullWhere = fullWhere.and(pushWhere);
-                if(fullWhere.pack().getKeyEquals().isEmpty()) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                if(isEmptySelect(fullWhere, keys)) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
                     // getKeyEquals - для надежности, так как идет перетранслирование ключей и условие может стать false, а это критично, так как в emptySelect есть cast'ы, а скажем в GroupSelect, может придти EMPTY, ключи NULL и "Class Cast'ы" будут
                     empty.set(getEmptySelect(groupWhere));
                     return null;
@@ -682,7 +687,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Where groupWhere = exprWhere.and(Expr.getWhere(group));
 
                 Result<SQLQuery> empty = new Result<SQLQuery>();
-                groupWhere = pushWhere(groupWhere, innerJoin.getJoins(), innerJoin.getStatKeys(keyStat), empty);
+                groupWhere = pushWhere(groupWhere, keys, innerJoin.getJoins(), innerJoin.getStatKeys(keyStat), empty);
                 if(groupWhere==null)
                     return empty.result;
 
@@ -748,7 +753,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     Where pushWhere;
                     if((pushWhere = whereJoins.getPartitionPushWhere(innerJoin.getJoins(), innerJoin.getPartitions(), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
                         fullWhere = fullWhere.and(pushWhere);
-                    if(fullWhere.pack().getKeyEquals().isEmpty()) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
+                    if(isEmptySelect(fullWhere, group.valuesSet())) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
                         // getKeyEquals - для надежности, так как идет перетранслирование ключей и условие может стать false, а это критично, так как в emptySelect есть cast'ы, а скажем в GroupSelect, может придти EMPTY, ключи NULL и "Class Cast'ы" будут
                         return getEmptySelect(innerWhere);
                     }
@@ -845,7 +850,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Where innerWhere = innerJoin.getWhere();
 
                 Result<SQLQuery> empty = new Result<SQLQuery>();
-                innerWhere = pushWhere(innerWhere, innerJoin.getJoins(), innerJoin.getStatKeys(keyStat), empty);
+                innerWhere = pushWhere(innerWhere, group.valuesSet(), innerJoin.getJoins(), innerJoin.getStatKeys(keyStat), empty);
                 if(innerWhere==null)
                     return empty.result;
 
@@ -966,7 +971,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 // проталкивание
                 ImMap<KeyExpr, BaseExpr> staticGroup = innerJoin.getJoins().remove(mapIterate.keys());
                 Result<SQLQuery> empty = new Result<SQLQuery>();
-                initialWhere = pushWhere(initialWhere, staticGroup, initialWhere.getStatKeys(staticGroup.keys()), empty);
+                initialWhere = pushWhere(initialWhere, staticGroup.keys(), staticGroup, initialWhere.getStatKeys(staticGroup.keys()), empty);
                 if(initialWhere==null)
                     return empty.result;
 

@@ -249,6 +249,8 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return new Query<KeyExpr,Object>(map.keys().toRevMap(),this).join(map).getWhere();
     }
 
+    // так как используется в подзапросах еще, и может быть сложным вычислением, можно было бы хранить чисто в течении компиляции запроса
+    @IdentityLazy
     public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getPackWhereJoins(boolean tryExclusive, ImSet<K> keepStat, ImOrderSet<Expr> orderTop) {
         Pair<ImCol<GroupJoinsWhere>,Boolean> whereJoinsExcl = getWhereJoins(tryExclusive, keepStat, orderTop);
         ImCol<GroupJoinsWhere> whereJoins = whereJoinsExcl.first;
