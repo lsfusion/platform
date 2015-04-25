@@ -2,17 +2,25 @@ package lsfusion.server.logics.property.actions.importing;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.server.classes.DynamicFormatFileClass;
-import lsfusion.server.classes.FileClass;
-import lsfusion.server.classes.IntegerClass;
-import lsfusion.server.classes.ValueClass;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.classes.*;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.Join;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.NullValue;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.ClassPropertyInterface;
-import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.ImportSourceFormat;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.importing.dbf.ImportDBFDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.jdbc.ImportJDBCDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBDataActionProperty;
@@ -21,6 +29,8 @@ import lsfusion.server.logics.property.actions.importing.xlsx.ImportXLSXDataActi
 import lsfusion.server.logics.property.actions.importing.xml.ImportXMLDataActionProperty;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.session.PropertyChange;
+import lsfusion.server.session.SingleKeyTableUsage;
 import org.jdom.JDOMException;
 import org.xBaseJ.xBaseJException;
 
@@ -78,20 +88,43 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
 
                 List<String> row;
                 int i = 0;
-                while ((row = iterator.nextRow()) != null) {
-                    DataObject rowKey = new DataObject(i, IntegerClass.instance);
-                    LM.baseLM.imported.change(true, context, rowKey);
-                    for (int j = 0; j < Math.min(properties.size(), row.size()); j++) {
-                        LCP property = properties.get(j);
-                        Type type = property.property.getType();
-                        Object parsedObject = null;
-                        try {
-                            parsedObject = type.parseString(row.get(j));
-                        } catch (lsfusion.server.data.type.ParseException ignored) {
-                        }
-                        property.change(parsedObject, context, rowKey);
+                ImOrderSet<LCP> props = SetFact.fromJavaOrderSet(properties).addOrderExcl(LM.baseLM.imported);  
+                SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>(IntegerClass.instance, props, new Type.Getter<LCP>() {
+                    @Override
+                    public Type getType(LCP key) {
+                        return key.property.getType();
                     }
-                    i++;
+                });
+                MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
+                while ((row = iterator.nextRow()) != null) {
+                    DataObject rowKey = new DataObject(i++, IntegerClass.instance);
+                    final List<String> finalRow = row;
+                    mRows.exclAdd(MapFact.singleton("key", rowKey), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
+                        public ObjectValue getMapValue(LCP prop) {
+                            if (prop == LM.baseLM.imported) {
+                                return ObjectValue.getValue(true, LogicalClass.instance);
+                            } else if (properties.indexOf(prop) < finalRow.size()) {
+                                Type type = prop.property.getType();
+                                Object parsedObject = null;
+                                try {
+                                    parsedObject = type.parseString(finalRow.get(properties.indexOf(prop)));
+                                } catch (lsfusion.server.data.type.ParseException ignored) {
+                                }
+                                return ObjectValue.getValue(parsedObject, (ConcreteClass) prop.property.getValueClass(ClassType.editPolicy));
+                            }
+                            
+                            return NullValue.instance;
+                        }}));
+                }
+                OperationOwner owner = context.getSession().getOwner();
+                importTable.writeRows(context.getSession().sql, mRows.immutable(), owner);
+
+                ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
+                Join<LCP> importJoin = importTable.join(mapKeys);
+                Where where = importJoin.getWhere();
+                for (LCP lcp : props) {
+                    PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
+                    context.getEnv().change((CalcProperty) lcp.property, propChange);    
                 }
                 
                 iterator.release();

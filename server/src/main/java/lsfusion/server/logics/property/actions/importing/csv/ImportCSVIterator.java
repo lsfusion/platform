@@ -3,7 +3,7 @@ package lsfusion.server.logics.property.actions.importing.csv;
 import lsfusion.server.logics.property.actions.importing.ImportIterator;
 
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -29,11 +29,7 @@ public class ImportCSVIterator extends ImportIterator {
         if (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             String[] splittedLine = line.split(String.format("\\%s|;", separator));
-            List<String> listRow = new ArrayList<String>();
-            for (int i = 0; i < Math.min(splittedLine.length, propertiesCount); i++) {
-                listRow.add(splittedLine[i]);
-            }
-            return listRow;
+            return Arrays.asList(splittedLine).subList(0, Math.min(splittedLine.length, propertiesCount));
         }
         return null;
     }
