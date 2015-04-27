@@ -1,6 +1,7 @@
 package lsfusion.erp.utils.printer;
 
 import com.google.common.base.Throwables;
+import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -66,6 +67,8 @@ public class WriteToPrinterActionProperty extends ScriptingActionProperty {
                     job.print(doc, attributeSet);
 
                     pjDone.waitForDone();
+                } else {
+                    context.requestUserInteraction(new MessageClientAction(String.format("Принтер %s не найден", printerName), "Ошибка"));
                 }
             }
         } catch (PrintException e) {
