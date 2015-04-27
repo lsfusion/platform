@@ -891,7 +891,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public <T extends PropertyInterface> void executeSessionEvents(FormInstance form) throws SQLException, SQLHandledException {
-
+        ServerLoggers.assertLog(!isInTransaction(), "LOCAL EVENTS IN TRANSACTION");
         if(sessionEventChangedOld.getProperties().size() > 0) { // оптимизационная проверка
 
             ExecutionEnvironment env = (form != null ? form : this);
