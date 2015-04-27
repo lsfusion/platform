@@ -57,6 +57,8 @@ applyOnlyCalc = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnly
 applyOnlyData = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyOnlyDataActionProperty' ();
 applyAll = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyAllActionProperty' ();
 
+executeLocalEvents = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ExecuteLocalEventsActionProperty' ();
+
 staticName 'Статическое имя' = DATA STRING[250] (Object);
 nameStatic (name) = GROUP MAX object BY staticName(object);
 
