@@ -13,7 +13,9 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.debug.ActionDelegationType;
+import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.mutables.interfaces.NFList;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 
@@ -24,7 +26,7 @@ public class ListActionProperty extends ListCaseActionProperty {
     private Object actions;
     public void addAction(ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
         assert action != null;
-        ((MList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).add(action);
+        ((NFList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).add(action, version);
 
         addWhereOperand(action, null, version);
     }
@@ -49,7 +51,7 @@ public class ListActionProperty extends ListCaseActionProperty {
     public <I extends PropertyInterface> ListActionProperty(String caption, boolean isChecked, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
         super(caption, false, isChecked, AbstractType.LIST, innerInterfaces, mapClasses);
 
-        actions = ListFact.mList();
+        actions = NFFact.list();
         localsInScope = SetFact.EMPTY();
     }
 
@@ -87,7 +89,7 @@ public class ListActionProperty extends ListCaseActionProperty {
     protected void finalizeAbstractInit() {
         super.finalizeAbstractInit();
         
-        actions = ((MList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).immutableList();
+        actions = ((NFList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).getList();
     }
 
     @Override

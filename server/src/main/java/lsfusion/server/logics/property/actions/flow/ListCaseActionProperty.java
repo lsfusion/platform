@@ -91,8 +91,12 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
 
         if (isAbstract()) {
             finalizeAbstractInit();
-            markRecursions(this);
         }
+    }
+
+    public void markRecursions() {
+        assert isAbstract();
+        markRecursions(this);
     }
 
     protected abstract ImList<ActionPropertyMapImplement<?, PropertyInterface>> getListActions();
