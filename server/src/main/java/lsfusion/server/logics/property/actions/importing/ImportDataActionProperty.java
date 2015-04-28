@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.type.Type;
@@ -117,14 +118,19 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
                         }}));
                 }
                 OperationOwner owner = context.getSession().getOwner();
-                importTable.writeRows(context.getSession().sql, mRows.immutable(), owner);
+                SQLSession sql = context.getSession().sql;
+                importTable.writeRows(sql, mRows.immutable(), owner);
 
                 ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
                 Join<LCP> importJoin = importTable.join(mapKeys);
                 Where where = importJoin.getWhere();
-                for (LCP lcp : props) {
-                    PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
-                    context.getEnv().change((CalcProperty) lcp.property, propChange);    
+                try {
+                    for (LCP lcp : props) {
+                        PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
+                        context.getEnv().change((CalcProperty) lcp.property, propChange);
+                    }
+                } finally {
+                    importTable.drop(sql, owner);
                 }
                 
                 iterator.release();
