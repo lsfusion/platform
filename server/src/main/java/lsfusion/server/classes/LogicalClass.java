@@ -134,7 +134,10 @@ public class LogicalClass extends DataClass<Boolean> {
 
     public Boolean parseString(String s) throws ParseException {
         try {
-            return Boolean.parseBoolean(s);
+            boolean b = Boolean.parseBoolean(s);
+            if(b)
+                return true;
+            return null;
         } catch (Exception e) {
             throw new ParseException("error parsing boolean", e);
         }
