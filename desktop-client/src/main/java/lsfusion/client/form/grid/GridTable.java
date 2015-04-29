@@ -211,7 +211,7 @@ public class GridTable extends ClientPropertyTable {
                     changeSelection(getSelectedRow(), getSelectedColumn(), false, false);
                 }
 
-                if (getSelectedRow() == previousSelectedRow || isEditOnSingleClick(row, column)) {
+                if (column != -1 && (getSelectedRow() == previousSelectedRow || isEditOnSingleClick(row, column))) {
                     pressedCellColumn = column;
                     pressedCellRow = row;
                     repaint();
