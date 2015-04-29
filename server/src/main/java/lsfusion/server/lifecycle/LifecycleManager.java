@@ -1,6 +1,6 @@
 package lsfusion.server.lifecycle;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -20,7 +20,7 @@ public class LifecycleManager {
     }
 
     public synchronized void addLifecycleListeners(LifecycleListener... newListeners) {
-        Collections.addAll(listeners, newListeners);
+        listeners.addAll(Arrays.asList(newListeners));
     }
 
     public synchronized void removeLifecycleListener(LifecycleListener listener) {
