@@ -66,6 +66,10 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     private SystemEventsLogicsModule systemEventsLM;
     private TimeLogicsModule timeLM;
 
+    public ReflectionManager() {
+        super(REFLECTION_ORDER);
+    }
+
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(initTask, "initTask must be specified");
     }

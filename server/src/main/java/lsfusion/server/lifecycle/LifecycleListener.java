@@ -13,6 +13,8 @@ public interface LifecycleListener {
     public static int RMIMANAGER_ORDER = SYSTEM_ORDER + 300;
     public static int BLLOADER_ORDER = SYSTEM_ORDER + 400;
 
+    //более высокий order ради onStarted
+    public static int REFLECTION_ORDER = 9000;
     public static int DAEMON_ORDER = 10000;
 
     public static final Comparator<LifecycleListener> ORDER_COMPARATOR = new Comparator<LifecycleListener>() {
