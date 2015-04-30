@@ -15,6 +15,7 @@ import lsfusion.base.col.lru.LRULogger;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.interop.Compare;
+import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
@@ -27,6 +28,7 @@ import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
+import lsfusion.server.context.LogMessageLogicsException;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.ScannerDaemonTask;
 import lsfusion.server.data.OperationOwner;
@@ -1375,11 +1377,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 final ActionProperty<?> action = (ActionProperty) property;
                 if (action.hasResolve()) {
                     long start = System.currentTimeMillis();
-                    DBManager.runData(creator, isolatedTransaction, new DBManager.RunServiceData() {
-                        public void run(SessionCreator session) throws SQLException, SQLHandledException {
-                            ((DataSession)session).resolve(action);
-                        }
-                    });
+                    try {
+                        DBManager.runData(creator, isolatedTransaction, new DBManager.RunServiceData() {
+                            public void run(SessionCreator session) throws SQLException, SQLHandledException {
+                                ((DataSession)session).resolve(action);
+                            }
+                        });
+                    } catch (LogMessageLogicsException e) { // suppress'им так как понятная ошибка
+                        systemLogger.info(e.getMessage());
+                    }
                     long time = System.currentTimeMillis() - start;
                     String message = String.format("Recalculate Follows: %s, %sms", property.getSID(), time);
                     systemLogger.info(message);

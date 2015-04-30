@@ -104,7 +104,7 @@ public class LogicsInstanceContext extends AbstractContext {
         if (action instanceof LogMessageClientAction) {
             LogMessageClientAction logAction = (LogMessageClientAction) action;
             if (logAction.failed) {
-                throw new RuntimeException("Server error: " + logAction.message + "\n" + errorDataToTextTable(logAction.titles, logAction.data));
+                throw new LogMessageLogicsException("Server error: " + logAction.message + "\n" + errorDataToTextTable(logAction.titles, logAction.data));
             } else {
                 logger.error(logAction.message);
             }
