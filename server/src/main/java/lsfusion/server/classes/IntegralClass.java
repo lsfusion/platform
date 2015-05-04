@@ -29,7 +29,12 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
         reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
         return true;
     }
-    
+
+    @Override
+    public boolean hasSafeCast() {
+        return true;
+    }
+
     @Override
     public Number getInfiniteValue(boolean min) {
         throw new RuntimeException("not supported");

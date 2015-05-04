@@ -167,9 +167,4 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     public Stat getTypeStat() {
         return new Stat(10, length);
     }
-
-    @Override
-    public boolean hasSafeCast() {
-        return true;
-    }
 }
