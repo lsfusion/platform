@@ -27,11 +27,13 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -117,6 +119,9 @@ public class GridTable extends ClientPropertyTable {
 
     private boolean skipScrollingAdjusments = false;
 
+    private WeakReference<TableCellRenderer> defaultHeaderRendererRef;
+    private TableCellRenderer wrapperHeaderRenderer;
+
     public GridTable(GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         super(new GridTableModel());
 
@@ -164,14 +169,6 @@ public class GridTable extends ClientPropertyTable {
 
         getTableHeader().setUI(new GridTableHeaderUI());
 
-        tableHeader.setDefaultRenderer(new MultiLineHeaderRenderer(tableHeader.getDefaultRenderer(), sortableHeaderManager) {
-            @Override
-            public Component getTableCellRendererComponent(JTable itable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component comp = super.getTableCellRendererComponent(itable, value, isSelected, hasFocus, row, column);
-                model.getColumnProperty(column).design.designHeader(comp);
-                return comp;
-            }
-        });
         tableHeader.addMouseListener(sortableHeaderManager);
 
         addFocusListener(new FocusAdapter() {
@@ -439,7 +436,24 @@ public class GridTable extends ClientPropertyTable {
         int oldColumnCount = columnModel.getColumnCount();
         if (newColumnCount > oldColumnCount) {
             while (newColumnCount > columnModel.getColumnCount()) {
-                addColumn(new TableColumn(columnModel.getColumnCount()));
+                addColumn(new TableColumn(columnModel.getColumnCount()) {
+                    @Override
+                    public TableCellRenderer getHeaderRenderer() {
+                        TableCellRenderer defaultHeaderRenderer = tableHeader.getDefaultRenderer();
+                        if (defaultHeaderRendererRef == null || defaultHeaderRendererRef.get() != defaultHeaderRenderer) {
+                            defaultHeaderRendererRef = new WeakReference<>(defaultHeaderRenderer);
+                            wrapperHeaderRenderer = new MultiLineHeaderRenderer(defaultHeaderRenderer, sortableHeaderManager) {
+                                @Override
+                                public Component getTableCellRendererComponent(JTable itable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                                    Component comp = super.getTableCellRendererComponent(itable, value, isSelected, hasFocus, row, column);
+                                    model.getColumnProperty(column).design.designHeader(comp);
+                                    return comp;
+                                }
+                            };
+                        }
+                        return wrapperHeaderRenderer;
+                    }
+                });
             }
         } else {
             while (newColumnCount < columnModel.getColumnCount()) {

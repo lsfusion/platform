@@ -6,7 +6,10 @@ import com.sun.java.swing.plaf.windows.WindowsTreeUI;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.form.*;
+import lsfusion.client.form.CellTableContextMenuHandler;
+import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.EditBindingMap;
+import lsfusion.client.form.EditPropertyHandler;
 import lsfusion.client.form.cell.CellTableInterface;
 import lsfusion.client.form.cell.ClientAbstractCellEditor;
 import lsfusion.client.form.cell.ClientAbstractCellRenderer;
@@ -30,6 +33,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.ExpandVetoException;
@@ -37,6 +41,7 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
@@ -85,18 +90,22 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     private TableSortableHeaderManager<ClientPropertyDraw> sortableHeaderManager;
 
+    private WeakReference<TableCellRenderer> defaultHeaderRendererRef;
+    private TableCellRenderer wrapperHeaderRenderer;
+
     public TreeGroupTable(ClientFormController iform, ClientTreeGroup itreeGroup) {
         form = iform;
         treeGroup = itreeGroup;
         plainTreeMode = itreeGroup.plainTreeMode;
 
         contextMenuHandler.install();
+        setAutoCreateColumnsFromModel(false);
 
         setTreeTableModel(model = new GroupTreeTableModel(form, plainTreeMode));
+        
+        addColumn(createColumn(0)); // одна колонка для дерева. создаём вручную, чтобы подставить renderer
+        
         setupHierarhicalColumn();
-
-        //после создания колонки для дерева, занимаемся созданием и удалением сами
-        setAutoCreateColumnsFromModel(false);
 
         rootNode = model.getRoot();
         
@@ -125,16 +134,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             }
         };
 
-        tableHeader.setDefaultRenderer(new MultiLineHeaderRenderer(tableHeader.getDefaultRenderer(), sortableHeaderManager) {
-            @Override
-            public Component getTableCellRendererComponent(JTable itable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component comp = super.getTableCellRendererComponent(itable, value, isSelected, hasFocus, row, column);
-                if (column > 0) {
-                    model.getColumnProperty(column).design.designHeader(comp);
-                }
-                return comp;
-            }
-        });
         tableHeader.addMouseListener(sortableHeaderManager);
 
         if (plainTreeMode) {
@@ -450,7 +449,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     public boolean addDrawProperty(ClientGroupObject group, ClientPropertyDraw property) {
         int ind = model.addDrawProperty(form, group, property);
         if (ind > 0 -1 && !plainTreeMode) {
-            createNewColumn(property, ind);
+            createPropertyColumn(property, ind);
         }
         return ind != -1;
     }
@@ -483,8 +482,33 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         getColumnModel().getSelectionModel().setSelectionInterval(0, 0);
     }
 
-    private void createNewColumn(ClientPropertyDraw property, int pos) {
-        TableColumnExt tableColumn = getColumnFactory().createAndConfigureTableColumn(getModel(), pos);
+    private TableColumnExt createColumn(int pos) {
+        TableColumnExt tableColumn = new TableColumnExt(pos) {
+            @Override
+            public TableCellRenderer getHeaderRenderer() {
+                TableCellRenderer defaultHeaderRenderer = tableHeader.getDefaultRenderer();
+                if (defaultHeaderRendererRef == null || defaultHeaderRendererRef.get() != defaultHeaderRenderer) {
+                    defaultHeaderRendererRef = new WeakReference<>(defaultHeaderRenderer);
+                    wrapperHeaderRenderer = new MultiLineHeaderRenderer(tableHeader.getDefaultRenderer(), sortableHeaderManager) {
+                        @Override
+                        public Component getTableCellRendererComponent(JTable itable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                            Component comp = super.getTableCellRendererComponent(itable, value, isSelected, hasFocus, row, column);
+                            if (column > 0) {
+                                model.getColumnProperty(column).design.designHeader(comp);
+                            }
+                            return comp;
+                        }
+                    };
+                }
+                return wrapperHeaderRenderer;
+            }
+        };
+        getColumnFactory().configureTableColumn(getModel(), tableColumn);
+        return tableColumn;
+    } 
+
+    private void createPropertyColumn(ClientPropertyDraw property, int pos) {
+        TableColumnExt tableColumn = createColumn(pos);
         if (tableColumn != null) {
             int rowHeight = getRowHeight();
             int currentSelectedColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
