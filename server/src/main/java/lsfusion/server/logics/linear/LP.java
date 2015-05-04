@@ -187,4 +187,9 @@ public abstract class LP<T extends PropertyInterface, P extends Property<T>> {
     public void setExplicitClasses(List<ResolveClassSet> signature) {
         property.setExplicitClasses(listInterfaces, signature);
     }
+
+    @Override
+    public String toString() {
+        return property.toString();
+    }
 }

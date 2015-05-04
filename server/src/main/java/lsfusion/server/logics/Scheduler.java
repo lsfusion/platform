@@ -233,18 +233,19 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             }
             if (startDate != null) {
                 long start = startDate.getTime();
+                long currentTime = System.currentTimeMillis();
                 if (period != null) {
                     long longPeriod = period.longValue() * 1000;
-                    if (start < System.currentTimeMillis()) {
-                        int periods = (int) ((System.currentTimeMillis() - start) / longPeriod) + 1;
+                    if (start < currentTime) {
+                        int periods = (int) ((currentTime - start) / longPeriod) + 1;
                         start += periods * longPeriod;
                     }
                     if (afterFinish.equals(schedulerStartType))
-                        daemonTasksExecutor.scheduleWithFixedDelay(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), longPeriod, TimeUnit.MILLISECONDS);
+                        daemonTasksExecutor.scheduleWithFixedDelay(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - currentTime, longPeriod, TimeUnit.MILLISECONDS);
                     else
-                        daemonTasksExecutor.scheduleAtFixedRate(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), longPeriod, TimeUnit.MILLISECONDS);
-                } else if (start > System.currentTimeMillis()) {
-                    daemonTasksExecutor.schedule(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+                        daemonTasksExecutor.scheduleAtFixedRate(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - currentTime, longPeriod, TimeUnit.MILLISECONDS);
+                } else if (start > currentTime) {
+                    daemonTasksExecutor.schedule(new SchedulerTask(propertySIDMap, currentScheduledTaskObject), start - currentTime, TimeUnit.MILLISECONDS);
                 }
             }
         }

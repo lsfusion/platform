@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.*;
@@ -26,7 +27,9 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ReflectionLogicsModule;
+import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
@@ -395,6 +398,14 @@ public class ImplementTable extends GlobalTable {
         return query.execute(session).singleValue().singleValue();
     }
 
+    private DataObject safeReadClasses(DataSession session, LCP lcp, DataObject... objects) throws SQLException, SQLHandledException {
+        ObjectValue value = lcp.readClasses(session, objects);
+        if(value instanceof DataObject)
+            return (DataObject) value;
+        ServerLoggers.assertLog(false, "SHOULD BE SYNCHRONIZED : " + lcp + ", keys : " + Arrays.toString(objects));
+        return null;
+    }
+
     public void calculateStat(ReflectionLogicsModule reflectionLM, DataSession session) throws SQLException, SQLHandledException {
         if (!SystemProperties.doNotCalculateStats) {
             ValueExpr one = new ValueExpr(1, IntegerClass.instance);
@@ -416,17 +427,20 @@ public class ImplementTable extends GlobalTable {
             mResult.exclAdd(0, readCount(session, inWhere));
             ImMap<Object, Object> result = mResult.immutable();
 
-            DataObject tableObject = (DataObject) reflectionLM.tableSID.readClasses(session, new DataObject(getName()));
-            reflectionLM.rowsTable.change(BaseUtils.nvl(result.get(0), 0), session, tableObject);
+            DataObject tableObject = safeReadClasses(session, reflectionLM.tableSID, new DataObject(getName()));
+            if(tableObject != null)
+                reflectionLM.rowsTable.change(BaseUtils.nvl(result.get(0), 0), session, (DataObject) tableObject);
 
             for (KeyField key : keys) {
-                DataObject keyObject = (DataObject) reflectionLM.tableKeySID.readClasses(session, new DataObject(getName() + "." + key.getName()));
-                reflectionLM.quantityTableKey.change(BaseUtils.nvl(result.get(key), 0), session, keyObject);
+                DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(getName() + "." + key.getName()));
+                if(keyObject != null)
+                    reflectionLM.quantityTableKey.change(BaseUtils.nvl(result.get(key), 0), session, keyObject);
             }
 
             for (PropertyField property : properties) {
-                DataObject propertyObject = (DataObject) reflectionLM.tableColumnSID.readClasses(session, new DataObject(getName() + "." + property.getName()));
-                reflectionLM.quantityTableColumn.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
+                DataObject propertyObject = safeReadClasses(session, reflectionLM.tableColumnSID, new DataObject(getName() + "." + property.getName()));
+                if(propertyObject != null)
+                    reflectionLM.quantityTableColumn.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
             }
 
             // не null значения и разреженность колонок
@@ -435,9 +449,9 @@ public class ImplementTable extends GlobalTable {
                 mNotNulls.exclAdd(property, readCount(session, join.getExpr(property).getWhere()));
             ImMap<Object, Object> notNulls = mNotNulls.immutable();
             for (PropertyField property : properties) {
-                DataObject propertyObject = (DataObject) reflectionLM.tableColumnSID.readClasses(session, new DataObject(getName() + "." + property.getName()));
-                int notNull = (Integer) BaseUtils.nvl(notNulls.get(property), 0);
-                reflectionLM.notNullQuantityTableColumn.change(notNull, session, propertyObject);
+                DataObject propertyObject = safeReadClasses(session, reflectionLM.tableColumnSID, new DataObject(getName() + "." + property.getName()));
+                if(propertyObject != null)
+                    reflectionLM.notNullQuantityTableColumn.change(BaseUtils.nvl(notNulls.get(property), 0), session, propertyObject);
             }
         }
     }

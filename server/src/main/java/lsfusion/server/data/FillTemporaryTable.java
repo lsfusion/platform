@@ -2,7 +2,11 @@ package lsfusion.server.data;
 
 import java.sql.SQLException;
 
-public interface FillTemporaryTable {
+public abstract class FillTemporaryTable {
 
-    Integer fill(String name) throws SQLException, SQLHandledException;
+    public abstract Integer fill(String name) throws SQLException, SQLHandledException;
+
+    public boolean canBeNotEmptyIfFailed() {
+        return false;
+    }
 }

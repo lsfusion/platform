@@ -626,7 +626,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             try {
                 privateConnection.temporary.fillData(this, fill, count, actual, table, opOwner);
             } catch (Throwable t) {
-                returnTemporaryTable(table, owner, opOwner, t instanceof SQLTimeoutException); // вернем таблицу, если не смогли ее заполнить, truncate при timeoutе потому как в остальных случаях и так должна быть пустая (строго говоря с timeout'ом это тоже перестраховка) 
+                returnTemporaryTable(table, owner, opOwner, t instanceof SQLTimeoutException || fill.canBeNotEmptyIfFailed()); // вернем таблицу, если не смогли ее заполнить, truncate при timeoutе потому как в остальных случаях и так должна быть пустая (строго говоря с timeout'ом это тоже перестраховка)
                 try { ServerLoggers.assertLog(problemInTransaction != null || getSessionCount(table, opOwner) == 0, "TEMPORARY TABLE AFTER FILL NOT EMPTY"); } catch (Throwable i) { ServerLoggers.sqlSuppLog(i); }
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
             } finally {

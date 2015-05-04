@@ -123,6 +123,9 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                 session.insertSessionBatchRecords(name, keys, rows, opOwner, owner);
                 return null;
             }
+            public boolean canBeNotEmptyIfFailed() {
+                return true;
+            }
         }, SessionRows.getClasses(properties, rows), owner, opOwner);
     }
 
