@@ -26,11 +26,15 @@ public abstract class IncrementProps {
     }
 
     public void eventChange(CalcProperty property, boolean sourceChanged) {
+        eventChange(property, true, sourceChanged);
+    }
+
+    public void eventChange(CalcProperty property, boolean dataChanged, boolean sourceChanged) {
         for(OverrideIncrementProps increment : increments)
-            increment.eventChange(property, sourceChanged);
+            increment.eventChange(property, dataChanged, sourceChanged);
 
          for(OverrideSessionModifier modifier : modifiers)
-            modifier.eventIncrementChange(property, sourceChanged);
+            modifier.eventIncrementChange(property, dataChanged, sourceChanged);
     }
     public void eventChanges(Iterable<? extends CalcProperty> properties) {
         for(CalcProperty property : properties)

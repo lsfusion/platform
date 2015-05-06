@@ -49,9 +49,13 @@ public class IncrementChangeProps extends IncrementProps {
     }
 
     public <P extends PropertyInterface> void add(CalcProperty<P> property, PropertyChange<P> change) {
+        add(property, change, true);
+    }
+
+    public <P extends PropertyInterface> void add(CalcProperty<P> property, PropertyChange<P> change, boolean dataChanged) {
         PropertyChange<PropertyInterface> previous = changes.put(property, (PropertyChange<PropertyInterface>) change);
 
-        eventChange(property, previous==null || !BaseUtils.hashEquals(previous, change));
+        eventChange(property, dataChanged, previous==null || !BaseUtils.hashEquals(previous, change));
     }
 
     public int getMaxCount(CalcProperty property) {

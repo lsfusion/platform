@@ -352,7 +352,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                             ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES");
 //                            returnUsed(transactionTable, sessionTablesMap);
                             WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
-//                            fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + SQLSession.this + " " + ExceptionUtils.getStackTrace());                            
+//                            fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + SQLSession.this + " " + ExceptionUtils.getStackTrace());
 //                            
 //                            if(Settings.get().isEnableHacks())
 //                                sessionTablesStackReturned.put(transactionTable, ExceptionUtils.getStackTrace());
