@@ -68,6 +68,7 @@
         <commons.fileupload.version>1.2.2</commons.fileupload.version>
         <cachefilter.version>2.0</cachefilter.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
+        <jaxws-rt-version>2.2.10</jaxws-rt-version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
         <gwt.version>2.6.0-patched-1</gwt.version>
@@ -918,6 +919,11 @@
                 <groupId>org.tuckey</groupId>
                 <artifactId>urlrewritefilter</artifactId>
                 <version>${url.rewriter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.ws</groupId>
+                <artifactId>jaxws-rt</artifactId>
+                <version>${jaxws-rt-version}</version>
             </dependency>
 
             <!-- GWT-related libraries -->
