@@ -1990,12 +1990,12 @@ innerActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic]
 actionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic, boolean modifyContext] returns [LPWithParams property, List<ResolveClassSet> signature]
 @init {
 	int line = self.getParser().getGlobalCurrentLineNumber(); 
-    int offset = self.getParser().getGlobalPositionInLine();
+	int offset = self.getParser().getGlobalPositionInLine();
 }
 @after{
-    if (inPropParseState()) {
-        self.actionPropertyDefinitionBodyCreated($property, line, offset, modifyContext);
-    }
+	if (inPropParseState()) {
+		self.actionPropertyDefinitionBodyCreated($property, line, offset, modifyContext);
+	}
 }
 	:	extPDB=extendContextActionPDB[context, dynamic] { $property = $extPDB.property; if (inPropParseState()) $signature = self.getClassesFromTypedParams(context); }
 	|	keepPDB=keepContextActionPDB[context, dynamic] 	{ $property = $keepPDB.property; if (inPropParseState()) $signature = self.getClassesFromTypedParams(context); }
@@ -3208,13 +3208,15 @@ metaCodeStatement
 @init {
 	int lineNumber = self.getParser().getCurrentParserLineNumber();
 	ScriptParser.State oldState = null; 
+	boolean enabledMeta = false;
 }
 @after {
-	self.runMetaCode($id.sid, $list.ids, lineNumber);
+	self.runMetaCode($id.sid, $list.ids, lineNumber, enabledMeta);
 }
 	:	'@' id=compoundID '(' list=metaCodeIdList ')' 
 		('{' 	
-		{ 	if (self.getParser().enterGeneratedMetaState()) {  
+		{ 	enabledMeta = true; 
+			if (self.getParser().enterGeneratedMetaState()) {  
 				oldState = parseState;
 				parseState = ScriptParser.State.GENMETA; 
 			}

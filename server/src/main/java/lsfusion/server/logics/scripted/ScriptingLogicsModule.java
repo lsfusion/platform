@@ -102,11 +102,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> directLPResolver = new LPResolver(new LPModuleFinder(), true, false);
     private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> implementLPResolver = new LPResolver(new ImplementLPModuleFinder(), true, true);
     private final CompoundNameResolver<LP<?, ?>, List<ResolveClassSet>> indirectLPResolver = new LPResolver(new SoftLPModuleFinder(), false, false);
-    private final CompoundNameResolver<AbstractGroup, ?> groupResolver = new CompoundNameResolver<AbstractGroup, Object>(new GroupNameModuleFinder());
-    private final CompoundNameResolver<NavigatorElement, ?> navigatorResolver = new CompoundNameResolver<NavigatorElement, Object>(new NavigatorElementNameModuleFinder());
-    private final CompoundNameResolver<AbstractWindow, ?> windowResolver = new CompoundNameResolver<AbstractWindow, Object>(new WindowNameModuleFinder());
-    private final CompoundNameResolver<ImplementTable, ?> tableResolver = new CompoundNameResolver<ImplementTable, Object>(new TableNameModuleFinder());
-    private final CompoundNameResolver<CustomClass, ?> classResolver = new CompoundNameResolver<CustomClass, Object>(new ClassNameModuleFinder());
+    private final CompoundNameResolver<AbstractGroup, ?> groupResolver = new CompoundNameResolver<>(new GroupNameModuleFinder());
+    private final CompoundNameResolver<NavigatorElement, ?> navigatorResolver = new CompoundNameResolver<>(new NavigatorElementNameModuleFinder());
+    private final CompoundNameResolver<AbstractWindow, ?> windowResolver = new CompoundNameResolver<>(new WindowNameModuleFinder());
+    private final CompoundNameResolver<ImplementTable, ?> tableResolver = new CompoundNameResolver<>(new TableNameModuleFinder());
+    private final CompoundNameResolver<CustomClass, ?> classResolver = new CompoundNameResolver<>(new ClassNameModuleFinder());
 
     private final BusinessLogics<?> BL;
 
@@ -115,13 +115,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     private String path = null;
     private final ScriptingErrorLog errLog;
     private ScriptParser parser;
-    private List<String> warningList = new ArrayList<String>();
-    private Map<Property, String> alwaysNullProperties = new HashMap<Property, String>();
+    private List<String> warningList = new ArrayList<>();
+    private Map<Property, String> alwaysNullProperties = new HashMap<>();
 
     private String lastOpimizedJPropSID = null;
 
     public static List<String> getUsedNames(List<TypedParameter> context, List<Integer> usedParams) {
-        List<String> usedNames = new ArrayList<String>();
+        List<String> usedNames = new ArrayList<>();
         for (int usedIndex : usedParams) {
             usedNames.add(context.get(usedIndex).paramName);
         }
@@ -129,7 +129,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static List<ResolveClassSet> getUsedClasses(List<TypedParameter> context, List<Integer> usedParams) {
-        List<ResolveClassSet> usedClasses = new ArrayList<ResolveClassSet>();
+        List<ResolveClassSet> usedClasses = new ArrayList<>();
         for (int usedIndex : usedParams) {
             ValueClass cls = context.get(usedIndex).cls;
             if(cls == null)
@@ -260,7 +260,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public List<ResolveClassSet> getMappingClassesArray(FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
-        List<ResolveClassSet> classes = new ArrayList<ResolveClassSet>();
+        List<ResolveClassSet> classes = new ArrayList<>();
         for (String paramName : mapping) {
             ObjectEntity obj = getNFObjectEntityByName(form, paramName);
             classes.add(obj.getResolveClassSet());
@@ -327,7 +327,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-        List<String> captions = new ArrayList<String>();
+        List<String> captions = new ArrayList<>();
         for (String instCaption : instCaptions) {
             captions.add(instCaption == null ? null : instCaption);
         }
@@ -399,7 +399,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LP<?, ?> findLPByNameAndClasses(String name, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
-        List<ResolveClassSet> classSets = new ArrayList<ResolveClassSet>();
+        List<ResolveClassSet> classSets = new ArrayList<>();
         for (ValueClass cls : classes) {
             classSets.add(cls.getResolveSet());
         }
@@ -441,7 +441,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private List<FormEntity> findForms(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
-        List<FormEntity> forms = new ArrayList<FormEntity>();
+        List<FormEntity> forms = new ArrayList<>();
         for (String name : names) {
             forms.add(findForm(name));
         }
@@ -449,11 +449,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public Event createScriptedEvent(BaseEvent base, List<String> formIds, List<PropertyUsage> afterIds) throws ScriptingErrorLog.SemanticErrorException {
-        return new Event(base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<FormEntity>(findForms(formIds)))) : SessionEnvEvent.ALWAYS, afterIds == null? null : SetFact.fromJavaSet(findPropsByPropertyUsages(afterIds)));
+        return new Event(base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<>(findForms(formIds)))) : SessionEnvEvent.ALWAYS, afterIds == null? null : SetFact.fromJavaSet(findPropsByPropertyUsages(afterIds)));
     }
 
     public MetaCodeFragment findMetaCodeFragment(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
-        CompoundNameResolver<MetaCodeFragment, Integer> resolver = new CompoundNameResolver<MetaCodeFragment, Integer>(new MetaCodeNameModuleFinder());
+        CompoundNameResolver<MetaCodeFragment, Integer> resolver = new CompoundNameResolver<>(new MetaCodeNameModuleFinder());
         MetaCodeFragment code = resolver.resolve(name, paramCnt);
         checkMetaCodeFragment(code, name);
         return code;
@@ -535,7 +535,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 return addDProp("", value, params);
             } else {
                 StoredDataProperty storedProperty = new StoredDataProperty("", params, value);
-                return addProperty(null, new LCP<ClassPropertyInterface>(storedProperty));
+                return addProperty(null, new LCP<>(storedProperty));
             }
         }
     }
@@ -565,7 +565,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP abstractLP = findJoinMainProp(abstractPropUsage, context, true);
         checkParamCount(abstractLP, context.size());
 
-        List<LPWithParams> allProps = new ArrayList<LPWithParams>();
+        List<LPWithParams> allProps = new ArrayList<>();
         allProps.add(implement);
         if (when != null) {
             checkCalculationProperty(when.property);
@@ -616,7 +616,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     public List<ResolveClassSet> createClassSetsFromClassNames(List<String> classNames) throws ScriptingErrorLog.SemanticErrorException {
-        List<ResolveClassSet> params = new ArrayList<ResolveClassSet>();
+        List<ResolveClassSet> params = new ArrayList<>();
         for (String className : classNames) {
             ValueClass cls = findClass(className);
             params.add(cls.getResolveSet());
@@ -689,7 +689,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private List<String> getParamNamesFromTypedParams(List<TypedParameter> params) {
-        List<String> paramNames = new ArrayList<String>();
+        List<String> paramNames = new ArrayList<>();
         for (TypedParameter param : params) {
             paramNames.add(param.paramName);
         }
@@ -697,7 +697,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public List<ResolveClassSet> getClassesFromTypedParams(List<TypedParameter> params) {
-        List<ResolveClassSet> paramClasses = new ArrayList<ResolveClassSet>();
+        List<ResolveClassSet> paramClasses = new ArrayList<>();
         for (TypedParameter param : params) {
             if (param.cls == null) {
                 paramClasses.add(null);
@@ -860,7 +860,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setScriptedEditAction(LP property, String actionType, LPWithParams action) {
-        List<Object> params = getParamsPlainList(Arrays.asList(action));
+        List<Object> params = getParamsPlainList(Collections.singletonList(action));
         ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(((LP<PropertyInterface, ?>)property).listInterfaces, params.toArray());
         property.property.setEditAction(actionType, actionImplements.get(0));
     }
@@ -874,7 +874,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             return null;
         }
         
-        List<ResolveClassSet> classes = new ArrayList<ResolveClassSet>();
+        List<ResolveClassSet> classes = new ArrayList<>();
         for (String className : usage.classNames) {
             if (className.equals(PropertyCanonicalNameUtils.UNKNOWNCLASS)) {
                 classes.add(null);
@@ -887,7 +887,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     
     private <T extends PropertyInterface> List<ResolveClassSet> getParamClassesByParamProperties(List<LPWithParams> paramProps, List<TypedParameter> params) {
-        List<ResolveClassSet> classes = new ArrayList<ResolveClassSet>();
+        List<ResolveClassSet> classes = new ArrayList<>();
         for (LPWithParams paramProp : paramProps) {
             if (paramProp.property != null) {
                 LCP<T> lcp = (LCP<T>)paramProp.property;
@@ -1013,7 +1013,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LPWithParams toLogical(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(and(false), Arrays.<LPWithParams>asList(new LPWithParams(baseLM.vtrue, new ArrayList<Integer>()), property));
+        return addScriptedJProp(and(false), Arrays.asList(new LPWithParams(baseLM.vtrue, new ArrayList<Integer>()), property));
     }
 
     public LPWithParams addScriptedIfProp(List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {
@@ -1073,7 +1073,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedIfElseUProp(LPWithParams ifProp, LPWithParams thenProp, LPWithParams elseProp) throws ScriptingErrorLog.SemanticErrorException {
         assert !(thenProp.property instanceof LAP) && (elseProp == null || !(elseProp.property instanceof LAP));
-        List<LPWithParams> lpParams = new ArrayList<LPWithParams>();
+        List<LPWithParams> lpParams = new ArrayList<>();
         lpParams.add(addScriptedJProp(and(false), asList(thenProp, ifProp)));
         if (elseProp != null) {
             lpParams.add(addScriptedJProp(and(true), asList(elseProp, ifProp)));
@@ -1084,7 +1084,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedCaseUProp(List<LPWithParams> whenProps, List<LPWithParams> thenProps, LPWithParams elseProp, boolean isExclusive) throws ScriptingErrorLog.SemanticErrorException {
         assert whenProps.size() > 0 && whenProps.size() == thenProps.size();
 
-        List<LPWithParams> caseParamProps = new ArrayList<LPWithParams>();
+        List<LPWithParams> caseParamProps = new ArrayList<>();
         for (int i = 0; i < whenProps.size(); i++) {
             caseParamProps.add(whenProps.get(i));
             caseParamProps.add(thenProps.get(i));
@@ -1144,7 +1144,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                              List<LPWithParams> attachNames,
                                              List<AttachmentFormat> attachFormats) throws ScriptingErrorLog.SemanticErrorException {
 
-        List<LPWithParams> allProps = new ArrayList<LPWithParams>();
+        List<LPWithParams> allProps = new ArrayList<>();
 
         if (fromProp != null) {
             allProps.add(fromProp);
@@ -1187,7 +1187,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             FormStorageType formType = formTypes.get(j);
             FormEntity form = findForm(formName);
 
-            Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements = new HashMap<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>();
+            Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>> objectsImplements = new HashMap<>();
             for (Map.Entry<String, LPWithParams> entry : mapObjects.get(j).entrySet()) {
                 objectsImplements.put(findObjectEntity(form, entry.getKey()), allImplements.get(i++));
             }
@@ -1247,11 +1247,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedUnaryMinusProp(LPWithParams prop) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(baseLM.minus, asList(prop));
+        return addScriptedJProp(baseLM.minus, Collections.singletonList(prop));
     }
 
     public LPWithParams addScriptedNotProp(LPWithParams prop) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(not(), asList(prop));
+        return addScriptedJProp(not(), Collections.singletonList(prop));
     }
 
     public LPWithParams addScriptedCastProp(String typeName, LPWithParams prop) throws ScriptingErrorLog.SemanticErrorException {
@@ -1260,11 +1260,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         //cls всегда будет DataClass из-за грамматики
         assert cls instanceof DataClass;
 
-        return addScriptedJProp(addCastProp((DataClass) cls), asList(prop));
+        return addScriptedJProp(addCastProp((DataClass) cls), Collections.singletonList(prop));
     }
 
     private boolean doesExtendContext(List<LPWithParams> list, List<LPWithParams> orders) {
-        Set<Integer> listContext = new HashSet<Integer>();
+        Set<Integer> listContext = new HashSet<>();
         for(LPWithParams lp : list)
             if(lp.property != null)
                 listContext.addAll(lp.usedParams);
@@ -1272,19 +1272,19 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private List<Integer> mergeAllParams(List<LPWithParams> lpList) {
-        Set<Integer> s = new TreeSet<Integer>();
+        Set<Integer> s = new TreeSet<>();
         for (LPWithParams mappedLP : lpList) {
             s.addAll(mappedLP.usedParams);
         }
-        return new ArrayList<Integer>(s);
+        return new ArrayList<>(s);
     }
 
     private List<Integer> mergeIntLists(List<List<Integer>> lists) {
-        Set<Integer> s = new TreeSet<Integer>();
+        Set<Integer> s = new TreeSet<>();
         for (List<Integer> list : lists) {
             s.addAll(list);
         }
-        return new ArrayList<Integer>(s);
+        return new ArrayList<>(s);
     }
 
     public LPWithParams addScriptedListAProp(boolean newSession, List<PropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
@@ -1343,7 +1343,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LCP addLocalDataProperty(String name, String returnClassName, List<String> paramClassNames, boolean isNested) throws ScriptingErrorLog.SemanticErrorException {
-        List<ResolveClassSet> signature = new ArrayList<ResolveClassSet>();
+        List<ResolveClassSet> signature = new ArrayList<>();
         for (String className : paramClassNames) {
             signature.add(findClass(className).getResolveSet());
         }
@@ -1459,9 +1459,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<Integer> resultInterfaces = getResultInterfaces(context.size(), toProperty, fromProperty, whereProperty);
 
-        List<LPWithParams> paramsList = new ArrayList<LPWithParams>();
+        List<LPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {
-            paramsList.add(new LPWithParams(null, asList(resI)));
+            paramsList.add(new LPWithParams(null, Collections.singletonList(resI)));
         }
         paramsList.add(toProperty);
         paramsList.add(fromProperty);
@@ -1485,9 +1485,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<Integer> resultInterfaces = getResultInterfaces(context.size(), toProperty, whereProperty);
 
-        List<LPWithParams> paramsList = new ArrayList<LPWithParams>();
+        List<LPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {
-            paramsList.add(new LPWithParams(null, asList(resI)));
+            paramsList.add(new LPWithParams(null, Collections.singletonList(resI)));
         }
         if (toProperty != null) {
             paramsList.add(toProperty);
@@ -1504,7 +1504,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedDeleteAProp(int oldContextSize, List<TypedParameter> newContext, LPWithParams param, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
         LPWithParams res = addScriptedChangeClassAProp(oldContextSize, newContext, param, baseClass.unknown, whereProperty);
-        setDeleteActionOptions((LAP)res.property);
+        setDeleteActionOptions((LAP) res.property);
         return res;
     }
 
@@ -1515,7 +1515,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LPWithParams addScriptedChangeClassAProp(int oldContextSize, List<TypedParameter> newContext, LPWithParams param, ConcreteObjectClass cls, LPWithParams whereProperty) throws ScriptingErrorLog.SemanticErrorException {
-        List<LPWithParams> paramList = new ArrayList<LPWithParams>();
+        List<LPWithParams> paramList = new ArrayList<>();
         paramList.add(param);
         if (whereProperty != null) {
             paramList.add(whereProperty);
@@ -1523,7 +1523,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Integer> allParams = mergeAllParams(paramList);
         int changedIndex = allParams.indexOf(param.usedParams.get(0));
 
-        List<Integer> resultInterfaces = new ArrayList<Integer>();
+        List<Integer> resultInterfaces = new ArrayList<>();
         for (int paramIndex : allParams) {
             if (paramIndex >= oldContextSize) {
                 break;
@@ -1534,9 +1534,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         checkChangeClassWhere(contextExtended, param, whereProperty, newContext);
 
-        List<LPWithParams> paramsList = new ArrayList<LPWithParams>();
+        List<LPWithParams> paramsList = new ArrayList<>();
         for (int resI : resultInterfaces) {
-            paramsList.add(new LPWithParams(null, asList(resI)));
+            paramsList.add(new LPWithParams(null, Collections.singletonList(resI)));
         }
         if (whereProperty != null) {
             paramsList.add(whereProperty);
@@ -1548,7 +1548,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private List<Integer> getResultInterfaces(int contextSize, LPWithParams... params) {
-        List<LPWithParams> lpList = new ArrayList<LPWithParams>();
+        List<LPWithParams> lpList = new ArrayList<>();
         for (LPWithParams lp : params) {
             if (lp != null) {
                 lpList.add(lp);
@@ -1557,7 +1557,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Integer> allParams = mergeAllParams(lpList);
 
         //все использованные параметры, которые были в старом контексте, идут на вход результирующего свойства
-        List<Integer> resultInterfaces = new ArrayList<Integer>();
+        List<Integer> resultInterfaces = new ArrayList<>();
         for (int paramIndex : allParams) {
             if (paramIndex >= contextSize) {
                 break;
@@ -1578,7 +1578,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedTryAProp(LPWithParams tryAction, LPWithParams finallyAction) throws ScriptingErrorLog.SemanticErrorException {
-        List<LPWithParams> propParams = new ArrayList<LPWithParams>();
+        List<LPWithParams> propParams = new ArrayList<>();
         if(tryAction != null)
             propParams.add(tryAction);
         if (finallyAction != null)
@@ -1592,7 +1592,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedCaseAProp(List<LPWithParams> whenProps, List<LPWithParams> thenActions, LPWithParams elseAction, boolean isExclusive) {
         assert whenProps.size() > 0 && whenProps.size() == thenActions.size();
 
-        List<LPWithParams> caseParams = new ArrayList<LPWithParams>();
+        List<LPWithParams> caseParams = new ArrayList<>();
         for (int i = 0; i < whenProps.size(); i++) {
             caseParams.add(whenProps.get(i));
             caseParams.add(thenActions.get(i));
@@ -1615,7 +1615,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedApplyAProp(LPWithParams action, boolean singleApply, List<PropertyUsage> keepSessionProps, boolean keepAllSessionProps, boolean serializable) 
             throws ScriptingErrorLog.SemanticErrorException {
-        List<LPWithParams> propParams = new ArrayList<LPWithParams>();
+        List<LPWithParams> propParams = new ArrayList<>();
         if (action != null) {
             propParams.add(action);
         }
@@ -1645,13 +1645,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     public LPWithParams addScriptedForAProp(List<TypedParameter> oldContext, LPWithParams condition, List<LPWithParams> orders, LPWithParams action, LPWithParams elseAction, Integer addNum, String addClassName, boolean recursive, boolean descending, List<LPWithParams> noInline, boolean forceInline, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
         boolean ordersNotNull = (condition != null ? doesExtendContext(singletonList(condition), orders) : !orders.isEmpty());
 
-        List<LPWithParams> creationParams = new ArrayList<LPWithParams>();
+        List<LPWithParams> creationParams = new ArrayList<>();
         if (condition != null) {
             creationParams.add(condition);
         }
         creationParams.addAll(orders);
         if(addNum != null) {
-            creationParams.add(new LPWithParams(null, asList(addNum)));
+            creationParams.add(new LPWithParams(null, Collections.singletonList(addNum)));
         }
         if (elseAction != null) {
             creationParams.add(elseAction);
@@ -1659,8 +1659,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         creationParams.add(action);
         List<Integer> allParams = mergeAllParams(creationParams);
 
-        List<Integer> usedParams = new ArrayList<Integer>();
-        List<Integer> extParams = new ArrayList<Integer>();
+        List<Integer> usedParams = new ArrayList<>();
+        List<Integer> extParams = new ArrayList<>();
         for (int paramIndex : allParams) {
             if (paramIndex < oldContext.size()) {
                 usedParams.add(paramIndex);
@@ -1675,16 +1675,16 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         checkForActionPropertyConstraints(recursive, usedParams, allParams);
 
-        List<LPWithParams> allCreationParams = new ArrayList<LPWithParams>();
+        List<LPWithParams> allCreationParams = new ArrayList<>();
         for (int usedParam : usedParams) {
-            allCreationParams.add(new LPWithParams(null, asList(usedParam)));
+            allCreationParams.add(new LPWithParams(null, Collections.singletonList(usedParam)));
         }
         allCreationParams.addAll(creationParams);
         if(noInline==null) { // предполагается надо включить все кроме addNum
-            noInline = new ArrayList<LPWithParams>();
+            noInline = new ArrayList<>();
             for (int extParam : extParams)
                 if(addNum==null || !addNum.equals(extParam)) {
-                    noInline.add(new LPWithParams(null, asList(extParam)));
+                    noInline.add(new LPWithParams(null, Collections.singletonList(extParam)));
                 }
         }
         allCreationParams.addAll(noInline);
@@ -1700,8 +1700,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private List<Object> getCoeffParamsPlainList(List<LPWithParams> mappedPropsList, Integer[] coeffs) {
-        List<LP> props = new ArrayList<LP>();
-        List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
+        List<LP> props = new ArrayList<>();
+        List<List<Integer>> usedParams = new ArrayList<>();
         for (LPWithParams mappedProp : mappedPropsList) {
             props.add(mappedProp.property);
             usedParams.add(mappedProp.usedParams);
@@ -1709,9 +1709,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getCoeffParamsPlainList(props, usedParams, coeffs);
     } 
     
-    private List<Object> getParamsPlainList(List<LPWithParams>... mappedPropLists) {
-        List<LP> props = new ArrayList<LP>();
-        List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
+    @SafeVarargs
+    private final List<Object> getParamsPlainList(List<LPWithParams>... mappedPropLists) {
+        List<LP> props = new ArrayList<>();
+        List<List<Integer>> usedParams = new ArrayList<>();
         for (List<LPWithParams> mappedPropList : mappedPropLists) {
             for (LPWithParams mappedProp : mappedPropList) {
                 props.add(mappedProp.property);
@@ -1724,7 +1725,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private List<Object> getCoeffParamsPlainList(List<LP> paramProps, List<List<Integer>> usedParams, Integer[] coeffs) {
         assert coeffs == null || paramProps.size() == coeffs.length;
         List<Integer> allUsedParams = mergeIntLists(usedParams);
-        List<Object> resultParams = new ArrayList<Object>();
+        List<Object> resultParams = new ArrayList<>();
 
         for (int i = 0; i < paramProps.size(); i++) {
             LP property = paramProps.get(i);
@@ -1757,12 +1758,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkGPropAggrConstraints(type, mainProps, groupProps);
         checkGPropWhereConsistence(type, whereProp);
 
-        List<LPWithParams> whereProps = new ArrayList<LPWithParams>();
+        List<LPWithParams> whereProps = new ArrayList<>();
         if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
             if (whereProp != null) {
                 whereProps.add(whereProp);
             } else {
-                whereProps.add(new LPWithParams(null, asList(mainProps.get(0).usedParams.get(0))));
+                whereProps.add(new LPWithParams(null, Collections.singletonList(mainProps.get(0).usedParams.get(0))));
             }
         }
         if (type == GroupingType.LAST) {
@@ -1853,14 +1854,14 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LPWithParams addScriptedDCCProp(LPWithParams ccProp, int index) throws ScriptingErrorLog.SemanticErrorException {
         checkDeconcatenateIndex(ccProp, index);
-        return addScriptedJProp(addDCCProp(index - 1), Arrays.asList(ccProp));
+        return addScriptedJProp(addDCCProp(index - 1), Collections.singletonList(ccProp));
     }
 
     public LCP addScriptedSFProp(String typeName, List<SQLSyntaxType> types, List<String> sources, boolean hasNotNull) throws ScriptingErrorLog.SemanticErrorException {
         Set<Integer> params = findFormulaParameters(sources.get(0));
         
         checkFormulaParameters(params);
-        checkDefaultFormula(types, sources);
+        checkDefaultFormula(types);
         
         assert types.size() == sources.size();
         String defaultFormula = "";
@@ -1884,7 +1885,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private Set<Integer> findFormulaParameters(String text) {
-        Set<Integer> params = new HashSet<Integer>();
+        Set<Integer> params = new HashSet<>();
         Pattern pattern = Pattern.compile("\\$\\d+");
         Matcher matcher = pattern.matcher(text);
         while (matcher.find()) {
@@ -1904,7 +1905,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkRecursionContext(getParamNamesFromTypedParams(context), usedParams);
 
         MOrderExclSet<Integer> mMainParams = SetFact.mOrderExclSetMax(usedParams.size());
-        Map<Integer, Integer> usedToResult = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> usedToResult = new HashMap<>();
         for (int i = 0; i < usedParams.size(); i++) {
             if (!context.get(usedParams.get(i)).paramName.startsWith("$")) {
                 mMainParams.exclAdd(i);
@@ -1913,7 +1914,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
         ImOrderSet<Integer> mainParams = mMainParams.immutableOrder();
 
-        Map<Integer, Integer> mapPrev = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> mapPrev = new HashMap<>();
         for (int i = 0; i < usedParams.size(); i++) {
             String param = context.get(usedParams.get(i)).paramName; // usedParams и context orderSet / revMap'ы
             if (param.startsWith("$")) {
@@ -1931,7 +1932,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<Object> resultParams = getParamsPlainList(Arrays.asList(zeroStep, nextStep));
         LP res = addRProp(null, false, "", cycleType, mainParams, MapFact.fromJavaRevMap(mapPrev), resultParams.toArray());
 
-        List<Integer> resUsedParams = new ArrayList<Integer>();
+        List<Integer> resUsedParams = new ArrayList<>();
         for (Integer usedParam : usedParams) {
             if (!context.get(usedParam).paramName.startsWith("$")) {
                 resUsedParams.add(usedParam);
@@ -2076,9 +2077,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         LAP property = addFAProp(null, "", form, objects, null, contextObject,
-                                 contextProperty == null ? null : (CalcProperty)contextProperty.property.property,
-                                 initFilterProperty,
-                                 sessionScope, modalityType, checkOnOk, showDrop, printType);
+                contextProperty == null ? null : (CalcProperty) contextProperty.property.property,
+                initFilterProperty,
+                sessionScope, modalityType, checkOnOk, showDrop, printType);
 
         if (mapping.size() > 0) {
             if (contextProperty != null) {
@@ -2109,12 +2110,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         addMetaCodeFragment(name, fragment);
     }
 
-    public void runMetaCode(String name, List<String> params, int lineNumber) throws RecognitionException {
+    public void runMetaCode(String name, List<String> params, int lineNumber, boolean enabledMeta) throws RecognitionException {
         MetaCodeFragment metaCode = findMetaCodeFragment(name, params.size());
         checkMetaCodeParamCount(metaCode, params.size());
 
         String code = metaCode.getCode(params);
-        parser.runMetaCode(this, code, metaCode, metaCodeCallString(name, metaCode, params), lineNumber); // no need
+        parser.runMetaCode(this, code, metaCode, metaCodeCallString(name, metaCode, params), lineNumber, enabledMeta); 
     }
 
     private String metaCodeCallString(String name, MetaCodeFragment metaCode, List<String> actualParams) {
@@ -2202,7 +2203,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedImportActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = new ArrayList<LCP>();
+        List<LCP> props = new ArrayList<>();
         for (PropertyUsage propUsage : propUsages) {
             LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
             List<ResolveClassSet> paramClasses = getParamClasses(lcp);
@@ -2217,7 +2218,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedImportExcelActionProperty(ImportSourceFormat format, LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, LPWithParams sheetIndex) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = new ArrayList<LCP>();
+        List<LCP> props = new ArrayList<>();
         for (PropertyUsage propUsage : propUsages) {
             LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
             List<ResolveClassSet> paramClasses = getParamClasses(lcp);
@@ -2234,7 +2235,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedImportCSVActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, String separator, boolean noHeader, String charset) throws ScriptingErrorLog.SemanticErrorException {
-        List<LCP> props = new ArrayList<LCP>();
+        List<LCP> props = new ArrayList<>();
         for (PropertyUsage propUsage : propUsages) {
             LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
             List<ResolveClassSet> paramClasses = getParamClasses(lcp);
@@ -2257,7 +2258,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LP addScriptedTypeExprProp(LP mainProp, LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(mainProp, asList(property)).property;
+        return addScriptedJProp(mainProp, Collections.singletonList(property)).property;
     }
 
     public void addScriptedConstraint(LP property, Event event, boolean checked, List<PropertyUsage> propUsages, String message, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {
@@ -2334,7 +2335,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(propUsages==null)
             return null;
 
-        Set<CalcProperty> props = new HashSet<CalcProperty>(); // функционально из-за exception'а не сделаешь
+        Set<CalcProperty> props = new HashSet<>(); // функционально из-за exception'а не сделаешь
         for (PropertyUsage usage : propUsages) {
             props.add(((LCP<?>)findLPByPropertyUsage(usage)).property); // todo [dale]: добавить семантическую ошибку
         }
@@ -2347,17 +2348,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         }};
 
     public ActionDebugInfo getEventStackDebugInfo() {
-        if (debugger.isEnabled())
+        if (debugger.isEnabled() && !parser.isInsideNonEnabledMeta()) {
             return new ActionDebugInfo(getName(), getParser().getGlobalCurrentLineNumber(), getParser().getGlobalPositionInLine(), ActionDelegationType.AFTER_DELEGATE);
+        }
         return null;
     }
 
     public void addScriptedEvent(LPWithParams whenProp, LPWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent, List<LPWithParams> noInline, boolean forceInline, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {
         checkActionProperty(event.property);
         if(noInline==null) {
-            noInline = new ArrayList<LPWithParams>();
+            noInline = new ArrayList<>();
             for(Integer usedParam : whenProp.usedParams)
-                noInline.add(new LPWithParams(null, asList(usedParam)));
+                noInline.add(new LPWithParams(null, Collections.singletonList(usedParam)));
         }
         List<Object> params = getParamsPlainList(asList(event, whenProp), orders, noInline);
         addEventAction(baseEvent, descending, false, noInline.size(), forceInline, debugInfo, params.toArray());
@@ -2385,7 +2387,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LAP<PropertyInterface> mainActionLP = (LAP<PropertyInterface>) mainProp;
 
-        List<Object> params = getParamsPlainList(Arrays.asList(actionProp));
+        List<Object> params = getParamsPlainList(Collections.singletonList(actionProp));
         ImList<ActionPropertyMapImplement<?, PropertyInterface>> actionImplements = readActionImplements(mainActionLP.listInterfaces, params.toArray());
         addAspectEvent((ActionProperty) mainActionLP.property, actionImplements.get(0), before);
     }
@@ -2400,7 +2402,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         addTable(name, isFull, classes);
     }
 
-    public List<LCP> indexedProperties = new ArrayList<LCP>();
+    public List<LCP> indexedProperties = new ArrayList<>();
     
     public void addScriptedIndex(LP property) throws ScriptingErrorLog.SemanticErrorException {
         checkCalculationProperty(property);
@@ -2636,7 +2638,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void actionPropertyDefinitionBodyCreated(LPWithParams lpWithParams, int line, int offset, boolean modifyContext) throws ScriptingErrorLog.SemanticErrorException {
-        if (debugger.isEnabled()) {
+        if (debugger.isEnabled() && !parser.isInsideNonEnabledMeta()) {
 
             checkActionProperty(lpWithParams.property);
 
@@ -2673,8 +2675,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             ActionProperty property = (ActionProperty) lAction.property;
 
-            Map<String, PropertyInterface> paramsToInterfaces = new HashMap<String, PropertyInterface>();
-            Map<String, String> paramsToClassFQN = new HashMap<String, String>();
+            Map<String, PropertyInterface> paramsToInterfaces = new HashMap<>();
+            Map<String, String> paramsToClassFQN = new HashMap<>();
 
             for (int i = 0; i < lpWithParams.usedParams.size(); i++) {
                 int usedParam = lpWithParams.usedParams.get(i);
@@ -2699,7 +2701,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             return lpWithParams;
         }
         
-        Set<Integer> usedExtendParams = new HashSet<Integer>();
+        Set<Integer> usedExtendParams = new HashSet<>();
         for (int i = 0; i < lpWithParams.usedParams.size(); i++) {
             Integer usedParam = lpWithParams.usedParams.get(i);
             if(usedParam >= oldContext.size()) {
@@ -2712,7 +2714,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         // по сути этот алгоритм эмулирует создание ListAction, с докидыванием в конец виртуального action'а который использует все extend параметры, однако само действие при этом не создает 
-        List<LPWithParams> allCreationParams = new ArrayList<LPWithParams>();
+        List<LPWithParams> allCreationParams = new ArrayList<>();
         allCreationParams.add(lpWithParams);        
         for (int i = oldContext.size(); i < newContext.size(); i++) { // докидываем 
             allCreationParams.add(new LPWithParams(null, Collections.singletonList(i)));
@@ -2868,7 +2870,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             errLog.emitAbstractClassInstancesDefError(parser);
         }
 
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for (String name : instNames) {
             if (names.contains(name)) {
                 errLog.emitAlreadyDefinedError(parser, "instance", name);
@@ -2878,7 +2880,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkClassParents(List<String> parents) throws ScriptingErrorLog.SemanticErrorException {
-        Set<ValueClass> parentsSet = new HashSet<ValueClass>();
+        Set<ValueClass> parentsSet = new HashSet<>();
         for (String parentName : parents) {
             ValueClass valueClass = findClass(parentName);
             if (!(valueClass instanceof CustomClass)) {
@@ -2910,11 +2912,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void checkDefaultFormula(List<SQLSyntaxType> types, List<String> sources) throws ScriptingErrorLog.SemanticErrorException {
-        Set<SQLSyntaxType> foundTypes = new HashSet<SQLSyntaxType>();
-        for (int i=0 ; i < types.size(); i++) {
-            SQLSyntaxType type = types.get(i);
-            if (foundTypes.contains(type)) {
+    private void checkDefaultFormula(List<SQLSyntaxType> types) throws ScriptingErrorLog.SemanticErrorException {
+        Set<SQLSyntaxType> foundTypes = new HashSet<>();
+        for (SQLSyntaxType type : types) {
+            if (!foundTypes.add(type)) {
                 errLog.emitSyntaxTypes(parser, type);
             }
         }
@@ -2935,7 +2936,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkDistinctParameters(List<String> params) throws ScriptingErrorLog.SemanticErrorException {
-        Set<String> paramsSet = new HashSet<String>(params);
+        Set<String> paramsSet = new HashSet<>(params);
         if (paramsSet.size() < params.size()) {
             errLog.emitDistinctParamNamesError(parser);
         }
@@ -3169,7 +3170,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             checkModule(BL.getSysModule(moduleName), moduleName);
         }
 
-        Set<String> prioritySet = new HashSet<String>();
+        Set<String> prioritySet = new HashSet<>();
         for (String namespaceName : namespacePriority) {
             if (prioritySet.contains(namespaceName)) {
                 errLog.emitNonUniquePriorityListError(parser, namespaceName);
@@ -3264,7 +3265,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (requiredModules.isEmpty() && !getName().equals("System")) {
             requiredModules.add("System");
         }
-        setRequiredModules(new HashSet<String>(requiredModules));
+        setRequiredModules(new HashSet<>(requiredModules));
         setNamespacePriority(namespacePriority);
     }
 
@@ -3331,7 +3332,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         protected List<FoundItem<T>> findInNamespace(String namespaceName, String name, P param) throws ScriptingErrorLog.SemanticErrorException {
-            NamespaceElementFinder<T, P> nsFinder = new NamespaceElementFinder<T, P>(finder, namespaceToModules.get(namespaceName));
+            NamespaceElementFinder<T, P> nsFinder = new NamespaceElementFinder<>(finder, namespaceToModules.get(namespaceName));
             return finalizeNamespaceResult(nsFinder.findInNamespace(namespaceName, name, param), name, param);
         }
 
@@ -3342,9 +3343,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         
         // реализация по умолчанию, предполагающая, что не может быть более одного подходящего объекта
         protected FoundItem<T> finalizeResult(List<FoundItem<T>> result, String name, P param) throws ScriptingErrorLog.SemanticErrorException {
-            if (result.isEmpty()) return new FoundItem<T>(null, null);
+            if (result.isEmpty()) return new FoundItem<>(null, null);
             if (result.size() > 1) {
-                List<LogicsModule> resModules = new ArrayList<LogicsModule>();
+                List<LogicsModule> resModules = new ArrayList<>();
                 for (FoundItem<T> item : result) {
                     resModules.add(item.module);
                 }
@@ -3361,12 +3362,12 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }
             }
 
-            List<FoundItem<T>> resultList = new ArrayList<FoundItem<T>>();
+            List<FoundItem<T>> resultList = new ArrayList<>();
             for (Map.Entry<String, List<LogicsModule>> e : namespaceToModules.entrySet()) {
                 for (LogicsModule module : e.getValue()) {
                     List<T> moduleResult = finder.resolveInModule(module, name, param);
                     for (T obj : moduleResult) {
-                        resultList.add(new FoundItem<T>(obj, module));
+                        resultList.add(new FoundItem<>(obj, module));
                     }
                 }
             }
@@ -3386,7 +3387,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 List<FoundItem<T>> foundItems = findInNamespace(namespaceName, name.substring(dotPosition + 1), param);
                 return finalizeResult(foundItems, name, param).value;
             } else {
-                List<String> namespaces = new ArrayList<String>();
+                List<String> namespaces = new ArrayList<>();
                 namespaces.add(getNamespace());
                 namespaces.addAll(getNamespacePriority());
                 result = findInRequiredModules(name, param, namespaces);
@@ -3412,7 +3413,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         @Override
         protected FoundItem<LP<?, ?>> finalizeResult(List<FoundItem<LP<?, ?>>> result, String name, List<ResolveClassSet> param) throws ScriptingErrorLog.SemanticErrorException {
-            FoundItem<LP<?, ?>> finalItem = new FoundItem<LP<?, ?>>(null, null);
+            FoundItem<LP<?, ?>> finalItem = new FoundItem<>(null, null);
             if (!result.isEmpty()) {
                 if (filter) {
                     if(prioritizeNotEquals)
@@ -3420,7 +3421,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                     result = NamespacePropertyFinder.filterFoundProperties(result);
                 }
                 if (result.size() > 1) {
-                    List<LogicsModule> errorModules = new ArrayList<LogicsModule>();
+                    List<LogicsModule> errorModules = new ArrayList<>();
                     for (FoundItem<LP<?, ?>> item : result) {
                         errorModules.add(item.module);
                     }
@@ -3435,8 +3436,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         private List<FoundItem<LP<?, ?>>> prioritizeNotEquals(List<FoundItem<LP<?, ?>>> result, List<ResolveClassSet> param) {
             assert !result.isEmpty();
-            List<FoundItem<LP<?, ?>>> equals = new ArrayList<FoundItem<LP<?, ?>>>();
-            List<FoundItem<LP<?, ?>>> notEquals = new ArrayList<FoundItem<LP<?, ?>>>();
+            List<FoundItem<LP<?, ?>>> equals = new ArrayList<>();
+            List<FoundItem<LP<?, ?>>> notEquals = new ArrayList<>();
             for (FoundItem<LP<?, ?>> item : result) {
                 if (!BaseUtils.nullHashEquals(item.module.getParamClasses(item.value), param))
                     notEquals.add(item);

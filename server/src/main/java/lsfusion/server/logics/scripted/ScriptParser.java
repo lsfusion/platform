@@ -18,14 +18,19 @@ public class ScriptParser {
     public enum State {PRE, INIT, GROUP, CLASS, PROP, TABLE, INDEX, GENMETA}
 
     private State currentState = null;
-    private Stack<ParserInfo> parsers = new Stack<ParserInfo>();
+    private Stack<ParserInfo> parsers = new Stack<>();
     
     private int globalExpandedLines = 0;
     private int globalExpansionLine = 0;
     
     private ScriptingErrorLog errLog;
 
+    // Определяет парсится ли сейчас код "развернутого" в IDE метакода. Проверяется, чтобы задать специальный state парсера, чтобы ничего не выполнялось при этом парсинге. 
     private boolean insideGeneratedMeta = false;
+    
+    // Определяет интерпретируется ли сейчас код сформированный "неразвернутым" в IDE метакодом. Для этого достаточно одного неразвертнутого метакода в цепочке.  
+    // Если равен true, то не нужно создавать делегаты для отладчика
+    private boolean insideNonEnabledMeta = false;
     
     public ScriptParser(ScriptingErrorLog errLog) {
         this.errLog = errLog;
@@ -53,7 +58,7 @@ public class ScriptParser {
         currentState = null;
     }
 
-    public void runMetaCode(ScriptingLogicsModule LM, String code, MetaCodeFragment metaCode, String callString, int lineNumber) throws RecognitionException {
+    public void runMetaCode(ScriptingLogicsModule LM, String code, MetaCodeFragment metaCode, String callString, int lineNumber, boolean enabledMeta) throws RecognitionException {
         LsfLogicsLexer lexer = new LsfLogicsLexer(new ANTLRStringStream(code));
         LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
 
@@ -63,10 +68,17 @@ public class ScriptParser {
         parser.self = LM;
         parser.parseState = insideGeneratedMeta ? State.GENMETA : currentState;
 
-        //lineNumber is 1-based
-        globalExpansionLine += lineNumber - 1;
-
+        if (!insideNonEnabledMeta) {
+            //lineNumber is 1-based
+            globalExpansionLine += lineNumber - 1;
+        }
+        
         ParserInfo lastParser = new ParserInfo(parser, metaCode, callString, lineNumber);
+        
+        boolean enteringTopNonEnabledMeta = !insideNonEnabledMeta && !enabledMeta; 
+        if (enteringTopNonEnabledMeta) {
+            insideNonEnabledMeta = true;
+        }
         
         parsers.push(lastParser);
         parser.metaCodeParsingStatement();
@@ -74,11 +86,17 @@ public class ScriptParser {
 
         if (parsers.size() == 1) {
             globalExpandedLines = 0;
-        } else if (!insideGeneratedMeta && parser.parseState == State.PROP) {
-            globalExpandedLines += linesCount(code) - 1;
+        } else if (!insideGeneratedMeta && !insideNonEnabledMeta && parser.parseState == State.PROP) {
+            globalExpandedLines += linesCount(code) - 1; 
         }
 
-        globalExpansionLine -= lineNumber - 1;
+        if (enteringTopNonEnabledMeta) {
+            insideNonEnabledMeta = false;
+        }
+
+        if (!insideNonEnabledMeta) {
+            globalExpansionLine -= lineNumber - 1;
+        }
     }
     
     private int linesCount(String code) {
@@ -96,7 +114,7 @@ public class ScriptParser {
             errLog.emitMetacodeInsideMetacodeError(this);
         }
 
-        List<String> code = new ArrayList<String>();
+        List<String> code = new ArrayList<>();
         Parser curParser = getCurrentParser();
         while (!curParser.input.LT(1).getText().equals("END")) {
             if (curParser.input.LT(1).getType() == LsfLogicsParser.EOF) {
@@ -135,6 +153,10 @@ public class ScriptParser {
 
     public boolean semicolonNeeded() {
         return !("}".equals(getCurrentParser().input.LT(-1).getText()));
+    }
+
+    public boolean isInsideNonEnabledMeta() {
+        return insideNonEnabledMeta;
     }
 
     public String getCurrentScriptPath(String moduleName, int lineNumber, String separator) {
