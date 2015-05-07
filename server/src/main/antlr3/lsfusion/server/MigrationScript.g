@@ -1,4 +1,4 @@
-grammar AlterationScript;
+grammar MigrationScript;
 
 @header {
 	package lsfusion.server;

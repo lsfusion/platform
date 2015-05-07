@@ -44,12 +44,10 @@ import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.logics.service.RunService;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.*;
@@ -73,7 +71,6 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.SystemUtils.getRevision;
-import static lsfusion.base.SystemUtils.write;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class DBManager extends LifecycleAdapter implements InitializingBean {
@@ -535,7 +532,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         checkModules(oldDBStructure);
 
-        runAlterationScript();
+        runMigrationScript();
 
         Map<String, String> columnsToDrop = new HashMap<String, String>();
 
@@ -1177,7 +1174,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
 
-    private void runAlterationScript() {
+    private void runMigrationScript() {
         if (ignoreMigration) {
             //todo: добавить возможность задавать расположение для migration.script, чтобы можно было запускать разные логики из одного модуля
             return;
@@ -1187,8 +1184,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             InputStream scriptStream = getClass().getResourceAsStream("/migration.script");
             if (scriptStream != null) {
                 ANTLRInputStream stream = new ANTLRInputStream(scriptStream);
-                AlterationScriptLexer lexer = new AlterationScriptLexer(stream);
-                AlterationScriptParser parser = new AlterationScriptParser(new CommonTokenStream(lexer));
+                MigrationScriptLexer lexer = new MigrationScriptLexer(stream);
+                MigrationScriptParser parser = new MigrationScriptParser(new CommonTokenStream(lexer));
 
                 parser.self = this;
 
