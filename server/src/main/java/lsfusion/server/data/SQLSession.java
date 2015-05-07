@@ -1059,7 +1059,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 if(matcher.find()) {
                     rtime = Double.valueOf(matcher.group(1));
                 }
-                if(noAnalyze || rtime > thr) {
+                if(noAnalyze || thr==0 || rtime >= thr) {
                     systemLogger.info(statement.toString() + " volatile : " + isVolatileStats());
                     for(String outRow : out)
                         systemLogger.info(outRow);
