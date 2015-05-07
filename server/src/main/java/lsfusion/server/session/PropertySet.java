@@ -95,8 +95,8 @@ public class PropertySet<T extends PropertyInterface> {
         tableUsage.writeRows(session.sql, new Query<>(mapKeys, objects, where), session.baseClass, session.env);
 
         final Join<Object> join = tableUsage.join(mapKeys);
-        return new Pair<>(new PropertySet<>(mapKeys, join.getWhere(), orders.mapOrderKeys(new GetValue<Expr, Expr>() {
-            public Expr getMapValue(Expr value) {
+        return new Pair<>(new PropertySet<>(mapKeys, join.getWhere(), orders.map(objects.reverse()).mapOrderKeys(new GetValue<Expr, Object>() {
+            public Expr getMapValue(Object value) {
                 return join.getExpr(value);
             }}), ordersNotNull), (SessionTableUsage)tableUsage);
     }
