@@ -1,7 +1,6 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.DProcessor;
-import lsfusion.base.Processor;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
@@ -99,14 +98,14 @@ public class MapCacheAspect {
         return (MAddCol)cacheCol;            
     }
     public static void cleanClassCaches() {
-        mapCaches.proceedLRUEKeyValues(new DProcessor<Type, MAddCol<CacheResult>>() {
+        mapCaches.proceedSafeLockLRUEKeyValues(new DProcessor<Type, MAddCol<CacheResult>>() {
             public void proceed(Type type, MAddCol<CacheResult> caches) {
-                if(type == Type.QUERY || type == Type.JOINEXPR) {
+                if (type == Type.QUERY || type == Type.JOINEXPR) {
                     synchronized (caches) {
-                        for (int i = caches.size() - 1; i>= 0; i--) {
+                        for (int i = caches.size() - 1; i >= 0; i--) {
                             CacheResult<CalcTypeImplement, ?> cache = caches.get(i);
-                            if(cache.implement.getCalcType() instanceof CalcClassType)
-                                caches.remove(i);                            
+                            if (cache.implement.getCalcType() instanceof CalcClassType)
+                                caches.remove(i);
                         }
                     }
                 }

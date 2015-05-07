@@ -181,6 +181,10 @@ public class ListFact {
         return new ArCol<K>();
     }
 
+    public static <K> MAddCol<K> mAddCol(int size) {
+        return new ArCol<K>(size);
+    }
+
     public static <K> Collection<K> mAddRemoveCol() {
         return new ArrayList<K>();
     }
