@@ -15,6 +15,8 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
     public LCP runAtStartScheduledTask;
     public LCP startDateScheduledTask;
+    public LCP timeFromScheduledTask;
+    public LCP timeToScheduledTask;
     public LCP periodScheduledTask;
     public LCP schedulerStartTypeScheduledTask;
     public LCP activeScheduledTask;
@@ -53,6 +55,8 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
 
         runAtStartScheduledTask = findProperty("runAtStartScheduledTask");
         startDateScheduledTask = findProperty("startDateScheduledTask");
+        timeFromScheduledTask = findProperty("timeFromScheduledTask");
+        timeToScheduledTask = findProperty("timeToScheduledTask");
         periodScheduledTask = findProperty("periodScheduledTask");
         schedulerStartTypeScheduledTask = findProperty("schedulerStartTypeScheduledTask");
         activeScheduledTask = findProperty("activeScheduledTask");

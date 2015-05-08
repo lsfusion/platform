@@ -29,6 +29,8 @@ nameScheduledTask 'Имя' = DATA VARSTRING[100] (ScheduledTask);
 scheduledTaskName (name) = GROUP AGGR task BY nameScheduledTask(task) WHERE task IS ScheduledTask;
 
 runAtStartScheduledTask 'Выполнить при старте' = DATA BOOLEAN (ScheduledTask);
+timeFromScheduledTask 'Время с' = DATA TIME (ScheduledTask);
+timeToScheduledTask 'Время по' = DATA TIME (ScheduledTask);
 startDateScheduledTask 'Дата начала' = DATA DATETIME (ScheduledTask);
 periodScheduledTask 'Повторять каждые (секунд)' = DATA INTEGER (ScheduledTask);
 schedulerStartTypeScheduledTask 'Отсчёт времени' = DATA SchedulerStartType (ScheduledTask);
@@ -71,7 +73,7 @@ messageScheduledClientTaskLog 'Сообщение'= DATA TEXT (ScheduledClientTa
 
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty' ();
 
-WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t)) OR CHANGED (periodScheduledTask(t)) 
+WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t)) OR CHANGED (timeFromScheduledTask(t)) OR CHANGED (timeToScheduledTask(t)) OR CHANGED (periodScheduledTask(t)) 
     OR CHANGED (schedulerStartTypeScheduledTask(t)) OR CHANGED (schedulerStartTypeScheduledTask(t))) AND activeScheduledTask(t)
     OR CHANGED (activeScheduledTask(t)))
  DO EXEC runSetupScheduler();
@@ -84,7 +86,7 @@ WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t
 FORM scheduledTask 'Планировщик'
 
     OBJECTS t=ScheduledTask
-    PROPERTIES (t) activeScheduledTask, nameScheduledTask, startDateScheduledTask, periodScheduledTask,
+    PROPERTIES (t) activeScheduledTask, nameScheduledTask, timeFromScheduledTask, timeToScheduledTask, startDateScheduledTask, periodScheduledTask,
                     nameSchedulerStartTypeScheduledTask, runAtStartScheduledTask
     PROPERTIES (t) ADDOBJ, DELETESESSION
          
