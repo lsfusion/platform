@@ -20,7 +20,6 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.entity.drilldown.CaseUnionDrillDownFormEntity;
 import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
-import lsfusion.server.logics.ScriptParsingException;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFList;
@@ -145,7 +144,7 @@ public class CaseUnionProperty extends IncrementUnionProperty {
 
     protected Expr calculateNewExpr(final ImMap<Interface, ? extends Expr> joinImplement, final CalcType calcType, final PropertyChanges propChanges, final WhereBuilder changedWhere) {
         if(isAbstract() && calcType instanceof CalcClassType)
-            return getClassTableExpr(joinImplement, (CalcClassType) calcType);
+            return getVirtualTableExpr(joinImplement, (CalcClassType) calcType);
 
         ImList<CalcCase<Interface>> cases = getCases();
 

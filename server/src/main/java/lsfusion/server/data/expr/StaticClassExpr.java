@@ -8,7 +8,8 @@ import lsfusion.server.classes.ValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.IsClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 
 public abstract class StaticClassExpr extends BaseExpr implements StaticClassExprInterface {
 
@@ -19,13 +20,13 @@ public abstract class StaticClassExpr extends BaseExpr implements StaticClassExp
         return getClassWhere(this, classes);
     }
 
-    public static Expr classExpr(StaticClassExprInterface expr, ImSet<ClassField> classTables, IsClassType type) {
+    public static Expr classExpr(StaticClassExprInterface expr, ImSet<ObjectClassField> classTables, IsClassType type) {
         ConcreteObjectClass staticClass = (ConcreteObjectClass) expr.getStaticClass();
         if(!IsClassExpr.inSet(staticClass, classTables))
             return Expr.NULL;
         return staticClass.getClassObject().getStaticExpr();
     }
-    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
+    public Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type) {
         return classExpr(this, classes, type);
     }
 

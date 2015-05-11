@@ -10,6 +10,8 @@ import lsfusion.server.data.*;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.SingleClassExpr;
+import lsfusion.server.data.expr.where.extra.IsClassWhere;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
@@ -21,7 +23,7 @@ import java.sql.SQLException;
 
 // первично свойство, соответствующее полю хранящему значение класса
 // строго системное свойство, в логике предполагается использование ObjectClassProperty
-public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> implements ClassField {
+public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> implements ObjectClassField {
 
     public final ObjectValueClassSet set;
 
@@ -79,5 +81,9 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
 
     protected boolean useSimpleIncrement() {
         throw new RuntimeException("should not be");
+    }
+
+    public Where getIsClassWhere(SingleClassExpr expr, ObjectValueClassSet set, boolean inconsistent) {
+        return new IsClassWhere(expr, set, inconsistent);
     }
 }

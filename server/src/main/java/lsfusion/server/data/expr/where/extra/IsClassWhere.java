@@ -1,8 +1,11 @@
 package lsfusion.server.data.expr.where.extra;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.caches.OuterContext;
@@ -16,13 +19,13 @@ import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.ExprStatJoin;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.logics.property.IsClassField;
 
 public class IsClassWhere extends DataWhere {
 
@@ -41,7 +44,7 @@ public class IsClassWhere extends DataWhere {
 
         assert !classes.isEmpty();
         if(classes instanceof ObjectValueClassSet)
-            classExpr = new IsClassExpr(expr, (((ObjectValueClassSet) classes).getTables().keys()), inconsistent ? IsClassType.INCONSISTENT : IsClassType.CONSISTENT); // не через classExpr чтобы getWhere
+            classExpr = new IsClassExpr(expr, (((ObjectValueClassSet) classes).getObjectClassFields().keys()), inconsistent ? IsClassType.INCONSISTENT : IsClassType.CONSISTENT); // не через classExpr чтобы getWhere
         else
             classExpr = null;
     }
@@ -49,19 +52,23 @@ public class IsClassWhere extends DataWhere {
     public static Where create(SingleClassExpr expr, ValueClassSet classes, boolean inconsistent) {
         if(classes instanceof ObjectValueClassSet) {
             ObjectValueClassSet objectClasses = (ObjectValueClassSet) packClassSet(Where.TRUE, expr, classes, inconsistent);
-            if(objectClasses.getTables().size()> IsClassExpr.inlineThreshold)
+            ImRevMap<IsClassField, ObjectValueClassSet> tables;
+            if(inconsistent)
+                tables = BaseUtils.immutableCast(objectClasses.getObjectClassFields());
+            else
+                tables = objectClasses.getIsClassFields();
+            if(tables.size()> IsClassExpr.inlineThreshold)
                 return new IsClassWhere(expr, classes, inconsistent);
             else
-                return getTableWhere(expr, objectClasses, inconsistent);
+                return getTableWhere(expr, tables, inconsistent);
         }
         return new IsClassWhere(expr, classes, inconsistent);
     }
 
-    protected static Where getTableWhere(SingleClassExpr expr,ObjectValueClassSet classes, boolean notConsistent) {
+    private static Where getTableWhere(SingleClassExpr expr, ImMap<IsClassField, ObjectValueClassSet> tables, boolean notConsistent) {
         Where result = Where.FALSE;
-        ImSet<ObjectValueClassSet> tableChilds = classes.getTables().valuesSet();
-        for(ObjectValueClassSet tableChild : tableChilds)
-            result = result.exclOr(new IsClassWhere(expr, tableChild, notConsistent));
+        for(int i=0,size=tables.size();i<size;i++)
+            result = result.or(tables.getKey(i).getIsClassWhere(expr, tables.getValue(i), notConsistent));
         return result;
     }
 
@@ -116,7 +123,7 @@ public class IsClassWhere extends DataWhere {
 
     private static ValueClassSet packClassSet(Where trueWhere, SingleClassExpr expr, ValueClassSet classes, boolean inconsistent) {
         ValueClassSet packClasses;
-        if(!inconsistent && classes instanceof ObjectValueClassSet && ((ObjectValueClassSet) classes).getTables().size()>1 && ((packClasses = getPackSet(trueWhere, expr)) != null)) // проверка на ObjectValueClassSet - оптимизация
+        if(!inconsistent && classes instanceof ObjectValueClassSet && ((ObjectValueClassSet) classes).getIsClassFields().size()>1 && ((packClasses = getPackSet(trueWhere, expr)) != null)) // проверка на ObjectValueClassSet - оптимизация
             classes = (ValueClassSet) packClasses.and(classes);
         return classes;
     }
@@ -168,4 +175,8 @@ public class IsClassWhere extends DataWhere {
         return expr.equals(((IsClassWhere)obj).expr) && classes.equals(((IsClassWhere)obj).classes) && inconsistent == (((IsClassWhere)obj).inconsistent);
     }
 
+    @Override
+    public boolean isClassWhere() {
+        return !inconsistent;
+    }
 }

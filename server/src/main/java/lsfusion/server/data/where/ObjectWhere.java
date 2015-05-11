@@ -88,4 +88,9 @@ public abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         return new GroupJoinsWheres(this, type);
     }
+
+    // обозначает что из getClassWhere => this where
+    public boolean isClassWhere() {
+        return false;
+    }
 }

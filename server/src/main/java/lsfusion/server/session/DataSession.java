@@ -1021,13 +1021,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // пока не вытягивает определение, для каких конкретно классов образовалось пересечение, ни сервер приложение ни СУБД
         final KeyExpr key = new KeyExpr("key");
         final int threshold = 30;
-        final ImOrderSet<ClassField> tables = baseClass.getUpTables().keys().toOrderSet();
+        final ImOrderSet<ObjectClassField> tables = baseClass.getUpObjectClassFields().keys().toOrderSet();
 
         final MLinearOperandMap mSum = new MLinearOperandMap();
         final MList<Expr> mAgg = ListFact.mList();
         final MAddCol<SingleKeyTableUsage<String>> usedTables = ListFact.mAddCol();
-        for(ImSet<ClassField> group : tables.getSet().group(new BaseUtils.Group<Integer, ClassField>() {
-            public Integer group(ClassField key) {
+        for(ImSet<ObjectClassField> group : tables.getSet().group(new BaseUtils.Group<Integer, ObjectClassField>() {
+            public Integer group(ObjectClassField key) {
                 return tables.indexOf(key) % threshold;
             }}).values()) {
             SingleKeyTableUsage<String> table = new SingleKeyTableUsage<String>(ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), new Type.Getter<String>() {

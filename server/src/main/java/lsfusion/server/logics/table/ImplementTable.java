@@ -14,13 +14,9 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.*;
-import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.ValueExpr;
+import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.query.IQuery;
-import lsfusion.server.data.query.InnerFollows;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.where.Where;
@@ -35,7 +31,8 @@ import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFOrderSet;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.IsClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.Modifier;
@@ -44,7 +41,7 @@ import lsfusion.server.session.PropertyChanges;
 import java.sql.SQLException;
 import java.util.*;
 
-public class ImplementTable extends GlobalTable {
+public class ImplementTable extends GlobalTable { // последний интерфейс assert что isFull
     public final ImMap<KeyField, ValueClass> mapFields;
     private StatKeys<KeyField> statKeys = null;
     private ImMap<PropertyField, PropStat> statProps = null;
@@ -52,22 +49,37 @@ public class ImplementTable extends GlobalTable {
 
     public boolean markedFull;
 
-    private InnerFollows.Field fullField = null; // поле которое всегда не null, и свойство которого обеспечивает , возможно временно потом совместиться с логикой classExpr
+    private IsClassField fullField = null; // поле которое всегда не null, и свойство которого обеспечивает , возможно временно потом совместиться с логикой classExpr
+    @Override
     public boolean isFull() {
         return fullField != null;
     }
-    public InnerFollows.Field getFullField() {
+    public IsClassField getFullField() {
         return fullField;
     }
+    private void setFullField(IsClassField field) {
+        fullField = field;
+
+        ValueClass fieldClass;
+        if(mapFields.size() == 1 && (fieldClass = mapFields.singleValue()) instanceof CustomClass) {
+            ((CustomClass)fieldClass).setIsClassField(field);
+        }
+    }
     public void setFullField(final PropertyField field) {
-        fullField = new InnerFollows.Field() {
+        setFullField(new IsClassField() {
             public BaseExpr getFollowExpr(BaseExpr joinExpr) {
                 return (BaseExpr) joinAnd(MapFact.singleton(keys.single(), joinExpr)).getExpr(field);
             }
-        };
+            public Where getIsClassWhere(SingleClassExpr expr, ObjectValueClassSet set, boolean inconsistent) {
+                assert isFull();
+                assert !inconsistent;
+                assert getClasses().getCommonClass(keys.single()).containsAll(set, false) && set.containsAll(getClasses().getCommonClass(keys.single()), false);
+                return joinAnd(MapFact.singleton(keys.single(), expr)).getWhere();
+            }
+        });
     }
-    public void setFullField(final ClassField classField) {
-        fullField = classField;
+    public void setFullField(ObjectClassField isClassField) {
+        setFullField((IsClassField) isClassField);
     }
 
     @Override

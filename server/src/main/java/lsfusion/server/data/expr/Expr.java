@@ -40,7 +40,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 
 import java.sql.SQLException;
 import java.util.Set;
@@ -88,12 +88,12 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         return classExpr(baseClass, IsClassType.CONSISTENT);
     }
     public Expr classExpr(BaseClass baseClass, IsClassType type) {
-        return classExpr(baseClass.getUpTables().keys(), type);
+        return classExpr(baseClass.getUpObjectClassFields().keys(), type);
     }
-    public abstract Expr classExpr(ImSet<ClassField> classes, IsClassType type); // classes - за пределами которых можно (и нужно ?) возвращать null
+    public abstract Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type); // classes - за пределами которых можно (и нужно ?) возвращать null
 
     @IdentityLazy
-    public Expr classExpr(ClassField field) {
+    public Expr classExpr(ObjectClassField field) {
         return classExpr(SetFact.singleton(field), IsClassType.CONSISTENT);
     }
 

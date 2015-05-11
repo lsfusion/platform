@@ -84,7 +84,7 @@ public class NotWhere extends ObjectWhere {
     }
 
     public MeanClassWheres calculateMeanClassWheres(boolean useNots) {
-        if(useNots && (where instanceof IsClassWhere || where instanceof PackClassWhere))
+        if(useNots && where.isClassWhere())
             return new MeanClassWheres(new MeanClassWhere(where.getClassWhere(), true), this);
         return new MeanClassWheres(MeanClassWhere.TRUE,this);
     }

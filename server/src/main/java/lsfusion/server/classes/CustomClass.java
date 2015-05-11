@@ -6,11 +6,11 @@ import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
@@ -454,8 +454,8 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         getProperty().fillChangedProps(mSet, type);
     }
     public ImSet<CalcProperty> getDataProps() { // используется не везде, так как в явную ClassDataProperty не используется, только чтобы readStored был после всех изменений
-        return getUpTables().keys().mapSetValues(new GetValue<CalcProperty, ClassField>() {
-            public CalcProperty getMapValue(ClassField value) {
+        return getUpObjectClassFields().keys().mapSetValues(new GetValue<CalcProperty, ObjectClassField>() {
+            public CalcProperty getMapValue(ObjectClassField value) {
                 return value.getProperty();
             }});
     }
@@ -525,13 +525,38 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return getChangeClassAction(this);
     }
 
+    public ImMap<ObjectClassField,ObjectValueClassSet> getUpObjectClassFields() {
+        return BaseUtils.immutableCast(getUpClassFields(true));
+    }
+
+    public ImMap<IsClassField,ObjectValueClassSet> getUpIsClassFields() {
+        return getUpClassFields(false);
+    }
+
+        // в отличии от getMapTables, для того чтобы ходить "вверх" было удобно
+    private IsClassField isClassField;
+
+    public void setIsClassField(IsClassField isClassField) {
+        this.isClassField = isClassField;
+    }
+
     @IdentityLazy
-    public ImMap<ClassField,ObjectValueClassSet> getUpTables() {
-        MMap<ClassField, ObjectValueClassSet> mMap = MapFact.mMap(OrObjectClassSet.<ClassField>objectValueSetAdd());
+    public ImMap<IsClassField,ObjectValueClassSet> getUpClassFields(boolean onlyObjectClassFields) {
+        if(isClassField != null && (!onlyObjectClassFields || isClassField instanceof ObjectClassField)) // последняя проверка оптимизационная
+            return MapFact.<IsClassField, ObjectValueClassSet>singleton(isClassField, getUpSet());
+
+        MMap<IsClassField, ObjectValueClassSet> mMap = MapFact.mMap(OrObjectClassSet.<IsClassField>objectValueSetAdd());
         for(CustomClass customClass : getChildrenIt())
-            mMap.addAll(customClass.getUpTables());
+            mMap.addAll(customClass.getUpClassFields(onlyObjectClassFields));
         if(this instanceof ConcreteCustomClass) // глуповато конечно,
             mMap.add(((ConcreteCustomClass)this).dataProperty, (ConcreteCustomClass)this);
-        return mMap.immutable().toRevExclMap();
+        return pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields);
+    }
+
+
+    public static ImRevMap<IsClassField, ObjectValueClassSet> pack(ImRevMap<IsClassField, ObjectValueClassSet> map, boolean onlyObjectClassFields) {
+        // паковка по идее должна включать в себя случай, когда есть ClassField который полностью покрывает одну из таблиц, то эффективнее ее долить в ClassField, аналогичная оптимизация на количества ClassValueWhere
+        // но пока из способа определения ClassField'а и методологии определения FULL, это большая редкость
+        return map;
     }
 }

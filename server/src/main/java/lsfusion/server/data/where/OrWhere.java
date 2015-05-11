@@ -562,7 +562,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         if(!equalsClassesNot.isTrue()) {
             ClassExprWhere classesOr = ClassExprWhere.FALSE;
             for(int i=numWheres-1;i>=0;i--) {
-                if((wheres[i] instanceof IsClassWhere && !((IsClassWhere)wheres[i]).inconsistent) || wheres[i] instanceof PackClassWhere) {
+                if(((ObjectWhere)wheres[i]).isClassWhere()) {
                     ClassExprWhere classWhere = wheres[i].getClassWhere();
                     if(!equalsClassesNot.and(classWhere).isFalse()) {
                         result[i] = true;

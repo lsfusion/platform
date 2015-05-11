@@ -27,7 +27,7 @@ import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.ClassReader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 
 import java.util.Set;
 
@@ -181,7 +181,7 @@ public class IfExpr extends Expr {
         return new ExprCaseList(ListFact.toList(new ExprCase(ifWhere, trueExpr), new ExprCase(Where.TRUE, falseExpr)));
     }
 
-    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
+    public Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type) {
         return trueExpr.classExpr(classes, type).ifElse(ifWhere, falseExpr.classExpr(classes, type));
     }
 

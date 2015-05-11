@@ -31,7 +31,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -229,7 +229,7 @@ public class CaseExpr extends Expr {
         return result.getExpr();
     }*/
 
-    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
+    public Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type) {
         MExprCaseList result = new MExprCaseList(cases.exclusive);
         for(ExprCase exprCase : cases)
             result.add(exprCase.where,exprCase.data.classExpr(classes, type));

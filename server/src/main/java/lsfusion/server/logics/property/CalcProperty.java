@@ -392,14 +392,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return !noOld();
     }
 
-    protected Expr getClassTableExpr(ImMap<T, ? extends Expr> joinImplement, CalcClassType classType) {
-        ClassTable<T> classTable = getClassTable(classType);
-        return classTable.join(classTable.mapFields.join(joinImplement)).getExpr(classTable.propValue);
+    protected Expr getVirtualTableExpr(ImMap<T, ? extends Expr> joinImplement, CalcClassType classType) {
+        VirtualTable<T> virtualTable = getVirtualTable(classType);
+        return virtualTable.join(virtualTable.mapFields.join(joinImplement)).getExpr(virtualTable.propValue);
     }
 
     @IdentityStrongLazy
-    public ClassTable<T> getClassTable(CalcClassType classType) {
-        return new ClassTable<T>(this, classType);
+    public VirtualTable<T> getVirtualTable(CalcClassType classType) {
+        return new VirtualTable<T>(this, classType);
     }
 
     public boolean usePrevHeur() {
@@ -452,12 +452,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return ExClassSet.fromExValue(inferred).removeNulls();
     }
 
-    public static class ClassTable<P extends PropertyInterface> extends Table {
+    public static class VirtualTable<P extends PropertyInterface> extends Table {
 
         public final ImRevMap<KeyField, P> mapFields;
         public final PropertyField propValue;
 
-        public ClassTable(final CalcProperty<P> property, CalcClassType classType) {
+        public VirtualTable(final CalcProperty<P> property, CalcClassType classType) {
             super(property.getSID());
             
             ImRevMap<P, KeyField> revMapFields = property.interfaces.mapRevValues(new GetValue<KeyField, P>() {

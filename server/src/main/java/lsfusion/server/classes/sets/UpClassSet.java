@@ -1,7 +1,5 @@
 package lsfusion.server.classes.sets;
 
-import lsfusion.base.ExtraMultiIntersectSetWhere;
-import lsfusion.base.ExtraSetWhere;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -11,12 +9,8 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.data.type.ObjectType;
-import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.ClassCanonicalNameUtils;
-import lsfusion.server.logics.property.ClassField;
-
-import java.util.Arrays;
+import lsfusion.server.logics.property.IsClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 
 // не ExtraIntSetWhere потому как intersect несколько, а не один элемент возвращает
 public class UpClassSet extends AUpClassSet<UpClassSet> implements ObjectValueClassSet {
@@ -158,11 +152,17 @@ public class UpClassSet extends AUpClassSet<UpClassSet> implements ObjectValueCl
         return new AndClassSet[]{this};
     }
 
-    public ImRevMap<ClassField, ObjectValueClassSet> getTables() {
-        MMap<ClassField, ObjectValueClassSet> mMap = MapFact.mMap(OrObjectClassSet.<ClassField>objectValueSetAdd());
+    public ImRevMap<ObjectClassField, ObjectValueClassSet> getObjectClassFields() {
+        return OrObjectClassSet.getObjectClassFields(this);
+    }
+    public ImRevMap<IsClassField, ObjectValueClassSet> getIsClassFields() {
+        return OrObjectClassSet.getIsClassFields(this);
+    }
+    public ImRevMap<IsClassField, ObjectValueClassSet> getClassFields(boolean onlyObjectClassFields) {
+        MMap<IsClassField, ObjectValueClassSet> mMap = MapFact.mMap(OrObjectClassSet.<IsClassField>objectValueSetAdd());
         for(CustomClass customClass : wheres)
-            mMap.addAll(customClass.getUpTables());
-        return mMap.immutable().toRevExclMap();
+            mMap.addAll(customClass.getUpClassFields(onlyObjectClassFields));
+        return CustomClass.pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields);
     }
 
     public ValueClassSet getValueClassSet() {

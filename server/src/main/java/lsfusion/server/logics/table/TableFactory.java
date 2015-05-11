@@ -101,15 +101,15 @@ public class TableFactory implements FullTablesInterface {
     }
 
     @IdentityLazy
-    public ImSet<ImplementTable> getFullTables(ObjectValueClassSet findItem, ImplementTable implementTable) {
+    public ImSet<ImplementTable> getFullTables(ObjectValueClassSet findItem, ImplementTable skipTable) {
         ValueClass valueClass;
-        if(implementTable != null && implementTable.mapFields.size() == 1 && implementTable.isFull()) // recursion guard, проверка на isFull нужна, потому что иначе пойдем вверх, а потом вернемся на эту же таблиц
-            valueClass = implementTable.mapFields.singleValue();
+        if(skipTable != null && skipTable.mapFields.size() == 1 && skipTable.isFull()) // recursion guard, проверка на isFull нужна, потому что иначе пойдем вверх, а потом вернемся на эту же таблиц
+            valueClass = skipTable.mapFields.singleValue();
         else {
             valueClass = findItem.getOr().getCommonClass(true);
-            implementTable = null;
+            skipTable = null;
         }
-        return getFullMapTables(MapFact.<String, ValueClass>singleton("key", valueClass), implementTable).mapSetValues(new GetValue<ImplementTable, MapKeysTable<String>>() {
+        return getFullMapTables(MapFact.<String, ValueClass>singleton("key", valueClass), skipTable).mapSetValues(new GetValue<ImplementTable, MapKeysTable<String>>() {
             public ImplementTable getMapValue(MapKeysTable<String> value) {
                 return value.table;
             }

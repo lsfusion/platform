@@ -27,7 +27,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -65,7 +65,7 @@ public class NullExpr extends Expr {
         return this;
     }
 
-    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
+    public Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type) {
         return this;
     }
 

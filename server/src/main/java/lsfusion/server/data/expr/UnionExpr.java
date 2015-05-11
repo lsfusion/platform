@@ -1,24 +1,10 @@
 package lsfusion.server.data.expr;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.server.caches.IdentityLazy;
-import lsfusion.server.caches.OuterContext;
-import lsfusion.server.classes.DataClass;
-import lsfusion.server.classes.ValueClassSet;
-import lsfusion.server.classes.sets.AndClassSet;
-import lsfusion.server.data.expr.formula.FormulaExpr;
-import lsfusion.server.data.expr.query.PropStat;
-import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.JoinData;
-import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.UnionJoin;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.property.ClassField;
 
 // выражение для оптимизации, разворачивание которого в case'ы даст экспоненту
 public abstract class UnionExpr extends StaticClassNotNullExpr {

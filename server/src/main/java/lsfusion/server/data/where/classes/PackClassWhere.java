@@ -78,4 +78,8 @@ public class PackClassWhere extends DataWhere {
         return packWhere;
     }
 
+    @Override
+    public boolean isClassWhere() {
+        return true;
+    }
 }

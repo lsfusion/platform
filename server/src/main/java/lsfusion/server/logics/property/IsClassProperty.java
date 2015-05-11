@@ -143,7 +143,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         ValueClass interfaceClass = getInterfaceClass();
         if(calcType instanceof CalcClassType && (((CalcClassType)calcType).replaceIs() || interfaceClass instanceof BaseClass)) // жесткий хак
-            return getClassTableExpr(joinImplement, ((CalcClassType)calcType));
+            return getVirtualTableExpr(joinImplement, ((CalcClassType) calcType));
 
         return ValueExpr.get(joinImplement.singleValue().isUpClass(interfaceClass));
     }

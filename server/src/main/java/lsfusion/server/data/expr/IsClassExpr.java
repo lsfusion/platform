@@ -31,27 +31,31 @@ import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 
 public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
 
     public final SingleClassExpr expr;
-    private final ImSet<ClassField> classTables;
+    private final ImSet<ObjectClassField> classTables;
 
     private final IsClassType type; // для проверки / перерасчета классов и определения DataClass для неизвестного объекта
 
-    public IsClassExpr(SingleClassExpr expr, ImSet<ClassField> classTables, IsClassType type) {
+    public IsClassExpr(SingleClassExpr expr, ImSet<ObjectClassField> classTables, IsClassType type) {
         this.expr = expr;
 
         this.classTables = classTables;
         this.type = type;
     }
 
+    public boolean isComplex() {
+        return classTables.size() > 0;
+    }
+
     public static final int subqueryThreshold = 6;
     @TwinLazy
     public InnerExpr getJoinExpr() {
         if(classTables.size()==1) {
-            ClassField classTable = classTables.single();
+            ObjectClassField classTable = classTables.single();
             if(type.isInconsistent())
                 return classTable.getInconsistentExpr(expr);
             else
@@ -65,7 +69,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     }
 
     public static final int inlineThreshold = 4;
-    public static Expr create(SingleClassExpr expr, ImSet<ClassField> classes, IsClassType type) {
+    public static Expr create(SingleClassExpr expr, ImSet<ObjectClassField> classes, IsClassType type) {
         classes = packTables(Where.TRUE, expr, classes, type);
 
         if(classes.size()> inlineThreshold || classes.size()==1)
@@ -74,14 +78,14 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
             return getTableExpr(expr, classes, inlineThreshold, type);
     }
 
-    public static Expr getTableExpr(SingleClassExpr expr, ImSet<ClassField> classTables, final int threshold, IsClassType type) {
-        final ImOrderSet<ClassField> orderClassTables = classTables.toOrderSet();
+    public static Expr getTableExpr(SingleClassExpr expr, ImSet<ObjectClassField> classTables, final int threshold, IsClassType type) {
+        final ImOrderSet<ObjectClassField> orderClassTables = classTables.toOrderSet();
         CaseExprInterface mCases = null;
         MLinearOperandMap mLinear = null;
         MList<Expr> mAgg =  null;
 
-        ImMap<Integer, ImSet<ClassField>> group = classTables.group(new BaseUtils.Group<Integer, ClassField>() {
-            public Integer group(ClassField key) {
+        ImMap<Integer, ImSet<ObjectClassField>> group = classTables.group(new BaseUtils.Group<Integer, ObjectClassField>() {
+            public Integer group(ObjectClassField key) {
                 return orderClassTables.indexOf(key) % threshold;
             }});
 
@@ -175,12 +179,12 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return expr.translateQuery(translator).classExpr(classTables, type);
     }
 
-    private static ImSet<ClassField> packTables(Where trueWhere, SingleClassExpr expr, ImSet<ClassField> tables, IsClassType type) {
+    private static ImSet<ObjectClassField> packTables(Where trueWhere, SingleClassExpr expr, ImSet<ObjectClassField> tables, IsClassType type) {
         if(!type.isInconsistent() && tables.size() > 1) {
             final ValueClassSet exprClasses = IsClassWhere.getPackSet(trueWhere, expr);
             if(exprClasses != null)
-                tables = tables.filterFn(new SFunctionSet<ClassField>() {
-                public boolean contains(ClassField element) {
+                tables = tables.filterFn(new SFunctionSet<ObjectClassField>() {
+                public boolean contains(ObjectClassField element) {
                     return !element.getObjectSet().and(exprClasses).isEmpty();
                 }});
         }
@@ -194,8 +198,8 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
         return new IsClassExpr(expr.translateOuter(translator), classTables, type);
     }
 
-    public static boolean inSet(ConcreteObjectClass staticClass, ImSet<ClassField> classTables) {
-        for(ClassField classTable : classTables)
+    public static boolean inSet(ConcreteObjectClass staticClass, ImSet<ObjectClassField> classTables) {
+        for(ObjectClassField classTable : classTables)
             if(staticClass.inSet(classTable.getObjectSet()))
                 return true;
         return false;
@@ -242,7 +246,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     }
 
     @Override
-    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
+    public Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type) {
         return StaticClassExpr.classExpr(this, classes, type);
     }
 

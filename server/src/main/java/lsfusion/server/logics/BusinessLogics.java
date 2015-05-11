@@ -15,7 +15,6 @@ import lsfusion.base.col.lru.LRULogger;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.interop.Compare;
-import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
@@ -1349,7 +1348,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void recalculateClassStat(DataSession session) throws SQLException, SQLHandledException {
-        for(ObjectValueClassSet tableClasses : LM.baseClass.getUpTables().valueIt()) {
+        for(ObjectValueClassSet tableClasses : LM.baseClass.getUpObjectClassFields().valueIt()) {
             QueryBuilder<Integer, Integer> classes = new QueryBuilder<Integer, Integer>(SetFact.singleton(0));
 
             KeyExpr countKeyExpr = new KeyExpr("count");

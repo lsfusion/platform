@@ -9,7 +9,7 @@ import lsfusion.server.classes.sets.OrClassSet;
 import lsfusion.server.data.expr.where.extra.IsClassWhere;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 
 public abstract class SingleClassExpr extends VariableClassExpr {
 
@@ -22,7 +22,7 @@ public abstract class SingleClassExpr extends VariableClassExpr {
         return this instanceof ParamExpr || this instanceof CurrentEnvironmentExpr;
     }
 
-    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
+    public Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type) {
 /*        ConcreteObjectClass singleClass;
         if(!isTrueWhere() && ((singleClass = ((OrObjectClassSet)getSet().and(classes.getOr())).getSingleClass(classes.getBaseClass()))!=null))
             return singleClass.getClassObject().getStaticExpr().and(getWhere());*/

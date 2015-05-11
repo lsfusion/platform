@@ -457,6 +457,10 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         return SetFact.EMPTY();
     }
 
+    protected boolean isFull() {
+        return false;
+    }
+
     public class Join extends AbstractOuterContext<Join> implements InnerJoin<KeyField, Join>, lsfusion.server.data.query.Join<PropertyField> {
 
         public final ImMap<KeyField, BaseExpr> joins;
@@ -659,6 +663,10 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                 return Join.this.hashOuter(hashContext);
             }
 
+            @Override
+            public boolean isClassWhere() {
+                return isFull();
+            }
         }
 
         public class Expr extends InnerExpr {

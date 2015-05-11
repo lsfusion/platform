@@ -13,11 +13,11 @@ import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.IsClassField;
 
 public class InnerExprFollows<K extends OuterContext> extends InnerFollows<K> implements OuterContext<InnerExprFollows<K>> { //InnerFollows<InnerExprFollows<K>>
 
-    private InnerExprFollows(ImMap<K, ImSet<Field>> fields) {
+    private InnerExprFollows(ImMap<K, ImSet<IsClassField>> fields) {
         super(fields);
     }
 

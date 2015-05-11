@@ -17,7 +17,8 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.IsClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 
 import java.util.Comparator;
 
@@ -139,13 +140,8 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         return unknown == ((OrObjectClassSet)o).unknown && up.equals(((OrObjectClassSet)o).up) && set.equals(((OrObjectClassSet)o).set);
     }
 
-    @Override
     public int immutableHashCode() {
         return 31 * (31 * up.hashCode() + set.hashCode()) + (unknown?1:0);
-    }
-
-    public int hashCode() {
-        return 1;
     }
 
     public String toString() {
@@ -387,13 +383,6 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     public static <K> AddValue<K, ObjectValueClassSet> objectValueSetAdd() {
         return (AddValue<K, ObjectValueClassSet>) objectValueSetAdd;
     }
-    public ImRevMap<ClassField, ObjectValueClassSet> getTables() {
-        assert !unknown;
-        MMap<ClassField, ObjectValueClassSet> mMap = MapFact.mMap(up.getTables(), OrObjectClassSet.<ClassField>objectValueSetAdd());
-        for(ConcreteCustomClass customClass : set)
-            mMap.add(customClass.dataProperty, customClass);
-        return mMap.immutable().toRevExclMap();
-    }
 
     public ValueClassSet getValueClassSet() {
         if(!unknown) // оптимизация
@@ -408,5 +397,27 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         if(set.isEmpty()) // оптимизация
             return upResolve;
         return new ResolveOrObjectClassSet(upResolve, set);
+    }
+
+    // множественное наследование
+    public static ImRevMap<ObjectClassField, ObjectValueClassSet> getObjectClassFields(ObjectValueClassSet set) {
+        return BaseUtils.immutableCast(set.getClassFields(true));
+    }
+    public static ImRevMap<IsClassField, ObjectValueClassSet> getIsClassFields(ObjectValueClassSet set) {
+        return set.getClassFields(false);
+    }
+
+    public ImRevMap<ObjectClassField, ObjectValueClassSet> getObjectClassFields() {
+        return getObjectClassFields(this);
+    }
+    public ImRevMap<IsClassField, ObjectValueClassSet> getIsClassFields() {
+        return getIsClassFields(this);
+    }
+    public ImRevMap<IsClassField, ObjectValueClassSet> getClassFields(boolean onlyObjectClassFields) {
+        assert !unknown;
+        MMap<IsClassField, ObjectValueClassSet> mMap = MapFact.mMap(up.getClassFields(onlyObjectClassFields), OrObjectClassSet.<IsClassField>objectValueSetAdd());
+        for(ConcreteCustomClass customClass : set)
+            mMap.add(customClass.dataProperty, customClass);
+        return CustomClass.pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields);
     }
 }

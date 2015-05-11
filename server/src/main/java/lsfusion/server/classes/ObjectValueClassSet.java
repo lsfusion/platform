@@ -3,7 +3,8 @@ package lsfusion.server.classes;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.sets.ObjectClassSet;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.IsClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 
 public interface ObjectValueClassSet extends ObjectClassSet, ValueClassSet {
 
@@ -19,5 +20,10 @@ public interface ObjectValueClassSet extends ObjectClassSet, ValueClassSet {
 
     BaseClass getBaseClass();
 
-    ImRevMap<ClassField, ObjectValueClassSet> getTables(); // CustomClass только как хранитель таблицы
+    ImRevMap<ObjectClassField, ObjectValueClassSet> getObjectClassFields(); // CustomClass только как хранитель таблицы
+
+    ImRevMap<IsClassField, ObjectValueClassSet> getIsClassFields(); // CustomClass только как хранитель таблицы
+
+    ImRevMap<IsClassField, ObjectValueClassSet> getClassFields(boolean onlyObjectClassFields); // по сути protected
+
 }

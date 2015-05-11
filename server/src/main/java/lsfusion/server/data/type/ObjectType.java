@@ -2,6 +2,7 @@ package lsfusion.server.data.type;
 
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.property.ObjectClassField;
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import lsfusion.base.ExtInt;
 import lsfusion.base.col.MapFact;
@@ -26,7 +27,6 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.view.report.ReportDrawField;
-import lsfusion.server.logics.property.ClassField;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -118,7 +118,7 @@ public class ObjectType extends AbstractType<Integer> {
             return baseClass.unknown;
 
         QueryBuilder<Object,String> query = new QueryBuilder<Object,String>(MapFact.<Object, KeyExpr>EMPTYREV());
-        ImRevMap<ClassField,ObjectValueClassSet> readTables = objectClassSet.getTables();
+        ImRevMap<ObjectClassField,ObjectValueClassSet> readTables = objectClassSet.getObjectClassFields();
         CaseExprInterface mCases = Expr.newCases(true, readTables.size()); // именно так а не через classExpr и т.п. чтобы не соптимизировалось, и не убрало вообще запрос к таблице
         for(int i=0,size=readTables.size();i<size;i++) {
             Expr expr = readTables.getKey(i).getStoredExpr(new ValueExpr(value, readTables.getValue(i).getSetConcreteChildren().get(0)));

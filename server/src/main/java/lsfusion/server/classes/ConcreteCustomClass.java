@@ -9,10 +9,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.classes.sets.*;
 import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
@@ -25,10 +23,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.mutables.interfaces.NFSet;
-import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.ClassDataProperty;
-import lsfusion.server.logics.property.ClassField;
-import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -281,8 +276,16 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return (Integer) dataProperty.read(sql, MapFact.singleton(dataProperty.interfaces.single(), new DataObject(data, this)), Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
     }
 
-    public ImRevMap<ClassField, ObjectValueClassSet> getTables() {
-        return MapFact.singletonRev((ClassField)dataProperty, (ObjectValueClassSet)this);
+    public ImRevMap<ObjectClassField, ObjectValueClassSet> getObjectClassFields() {
+        return OrObjectClassSet.getObjectClassFields(this);
+    }
+
+    public ImRevMap<IsClassField, ObjectValueClassSet> getIsClassFields() {
+        return OrObjectClassSet.getIsClassFields(this);
+    }
+
+    public ImRevMap<IsClassField, ObjectValueClassSet> getClassFields(boolean onlyObjectClassFields) {
+        return MapFact.singletonRev((IsClassField)dataProperty, (ObjectValueClassSet)this);
     }
 
     public ValueClassSet getValueClassSet() {

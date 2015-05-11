@@ -1,15 +1,10 @@
 package lsfusion.server.logics.property;
 
-import lsfusion.base.Pair;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.PropertyChanges;
 
 public class SessionDataProperty extends DataProperty {
@@ -41,7 +36,7 @@ public class SessionDataProperty extends DataProperty {
     @Override
     public Expr calculateExpr(ImMap<ClassPropertyInterface, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(calcType instanceof CalcClassType)
-            return getClassTableExpr(joinImplement, (CalcClassType) calcType);
+            return getVirtualTableExpr(joinImplement, (CalcClassType) calcType);
         if(propChanges.isEmpty())
             return CaseExpr.NULL;
         return super.calculateExpr(joinImplement, calcType, propChanges, changedWhere);

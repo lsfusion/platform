@@ -7,6 +7,6 @@ import lsfusion.server.classes.ValueClass;
 
 public interface FullTablesInterface {
 
-    ImSet<ImplementTable> getFullTables(ObjectValueClassSet findItem, ImplementTable implementTable);
+    ImSet<ImplementTable> getFullTables(ObjectValueClassSet findItem, ImplementTable skipTable);
 
 }

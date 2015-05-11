@@ -26,7 +26,7 @@ import lsfusion.server.data.type.ConcatenateType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 
 public class ConcatenateExpr extends VariableClassExpr {
 
@@ -89,7 +89,7 @@ public class ConcatenateExpr extends VariableClassExpr {
         return true;
     }
 
-    public Expr classExpr(ImSet<ClassField> classes, IsClassType type) {
+    public Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type) {
         throw new RuntimeException("not supported");
     }
 

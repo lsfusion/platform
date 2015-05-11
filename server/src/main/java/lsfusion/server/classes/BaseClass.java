@@ -3,8 +3,8 @@ package lsfusion.server.classes;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.Table;
-import lsfusion.server.data.expr.*;
 import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.property.ObjectClassField;
 import lsfusion.server.logics.table.FullTablesInterface;
 import lsfusion.server.logics.table.ImplementTable;
 import org.apache.log4j.Logger;
@@ -19,10 +19,7 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.OrObjectClassSet;
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.Table;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.IsClassExpr;
 import lsfusion.server.data.expr.IsClassType;
@@ -32,12 +29,10 @@ import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
-import lsfusion.server.logics.property.ClassField;
+import lsfusion.server.logics.property.ObjectClassField;
 import lsfusion.server.logics.property.ObjectClassProperty;
 import lsfusion.server.logics.property.actions.ChangeClassValueActionProperty;
-import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
-import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -197,14 +192,14 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     @IdentityLazy
-    public ObjectValueClassSet getSet(ImSet<ClassField> classTables) {
+    public ObjectValueClassSet getSet(ImSet<ObjectClassField> classTables) {
         ObjectValueClassSet set = OrObjectClassSet.FALSE;
-        for(ClassField classTable : classTables)
+        for(ObjectClassField classTable : classTables)
             set = (ObjectValueClassSet) set.or(classTable.getObjectSet());
         return set;
     }
     @IdentityLazy
-    public Pair<KeyExpr, Expr> getSubQuery(ImSet<ClassField> classTables, IsClassType type) {
+    public Pair<KeyExpr, Expr> getSubQuery(ImSet<ObjectClassField> classTables, IsClassType type) {
         KeyExpr keyExpr = new KeyExpr("isSetClass");
         return new Pair<KeyExpr, Expr>(keyExpr, IsClassExpr.getTableExpr(keyExpr, classTables, IsClassExpr.subqueryThreshold, type));
     }
