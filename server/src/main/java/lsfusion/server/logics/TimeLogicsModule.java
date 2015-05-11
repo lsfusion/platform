@@ -1,6 +1,5 @@
 package lsfusion.server.logics;
 
-import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import org.antlr.runtime.RecognitionException;
 import lsfusion.server.classes.ConcreteCustomClass;
@@ -33,6 +32,8 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
     public LCP toDate;
     public LCP sumDate;
     public LCP subtractDate;
+
+    public LCP numberDOW;
 
     public TimeLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(TimeLogicsModule.class.getResourceAsStream("/lsfusion/system/Time.lsf"), "/lsfusion/system/Time.lsf", baseLM, BL);
@@ -69,6 +70,8 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
         toTime = findProperty("toTime");
         sumDate = findProperty("sumDate");
         subtractDate = findProperty("subtractDate");
+
+        numberDOW = findProperty("numberDOW");
 
         currentTime = findProperty("currentTime");
     }

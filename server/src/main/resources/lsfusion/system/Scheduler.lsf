@@ -36,6 +36,10 @@ periodScheduledTask 'Повторять каждые (секунд)' = DATA INTE
 schedulerStartTypeScheduledTask 'Отсчёт времени' = DATA SchedulerStartType (ScheduledTask);
 nameSchedulerStartTypeScheduledTask 'Отсчёт времени' = staticCaption(schedulerStartTypeScheduledTask(ScheduledTask));
 activeScheduledTask 'Активно' = DATA BOOLEAN (ScheduledTask);
+daysOfMonthScheduledTask 'Выполнять по дням (через запятую)' = DATA VARSTRING[255] (ScheduledTask);
+
+inDOWScheduledTask 'Вкл' = DATA BOOLEAN (DOW, ScheduledTask); 
+daysOfWeekScheduledTask (t)= GROUP CONCAT VARSTRING[1](numberDOW(d)) IF inDOWScheduledTask (d,t), ', ' BY t ORDER d;   
 
 CLASS ScheduledTaskDetail 'Строка задания планировщика';
 TABLE scheduledTaskDetail (ScheduledTaskDetail);
@@ -73,21 +77,25 @@ messageScheduledClientTaskLog 'Сообщение'= DATA TEXT (ScheduledClientTa
 
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty' ();
 
-WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t)) OR CHANGED (timeFromScheduledTask(t)) OR CHANGED (timeToScheduledTask(t)) OR CHANGED (periodScheduledTask(t)) 
+WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t)) OR CHANGED (timeFromScheduledTask(t)) 
+    OR CHANGED (timeToScheduledTask(t)) OR CHANGED (periodScheduledTask(t)) OR CHANGED (daysOfMonthScheduledTask(t))
     OR CHANGED (schedulerStartTypeScheduledTask(t)) OR CHANGED (schedulerStartTypeScheduledTask(t))) AND activeScheduledTask(t)
     OR CHANGED (activeScheduledTask(t)))
  DO EXEC runSetupScheduler();
  
- WHEN ((CHANGED (activeScheduledTaskDetail(td)) OR CHANGED (orderScheduledTaskDetail(td)) 
+WHEN ((CHANGED (activeScheduledTaskDetail(td)) OR CHANGED (orderScheduledTaskDetail(td)) 
     OR CHANGED (scheduledTaskScheduledTaskDetail(td)) OR CHANGED (propertyScheduledTaskDetail(td)) OR CHANGED (ignoreExceptionsScheduledTaskDetail(td)))
     AND activeScheduledTask(scheduledTaskScheduledTaskDetail(td)))
-  DO EXEC runSetupScheduler();
+ DO EXEC runSetupScheduler();
+  
+WHEN CHANGED(inDOWScheduledTask(dow, t)) DO EXEC runSetupScheduler();
+  
            
 FORM scheduledTask 'Планировщик'
 
     OBJECTS t=ScheduledTask
     PROPERTIES (t) activeScheduledTask, nameScheduledTask, timeFromScheduledTask, timeToScheduledTask, startDateScheduledTask, periodScheduledTask,
-                    nameSchedulerStartTypeScheduledTask, runAtStartScheduledTask
+                    nameSchedulerStartTypeScheduledTask, runAtStartScheduledTask, daysOfMonthScheduledTask FORCE PANEL
     PROPERTIES (t) ADDOBJ, DELETESESSION
          
     OBJECTS td=ScheduledTaskDetail
@@ -100,7 +108,13 @@ FORM scheduledTask 'Планировщик'
 
     OBJECTS ctl=ScheduledClientTaskLog
     PROPERTIES (ctl) READONLY messageScheduledClientTaskLog
-
+    
+    OBJECTS dow=DOW
+    PROPERTIES (dow) numberDOW, staticCaption 
+    PROPERTIES (dow, t) inDOWScheduledTask 
+    
+    ORDER BY numberDOW(dow)
+    
     FILTERS scheduledTaskScheduledTaskDetail(td)==t,
             scheduledTaskScheduledTaskLog(tl) == t,
             scheduledTaskLogScheduledClientTaskLog(ctl) == tl
@@ -124,6 +138,14 @@ DESIGN scheduledTask {
                 MOVE tl.box;
                 MOVE ctl.box;
             }
+            NEW dowContainer {
+                caption = 'Фильтр по дням';
+                MOVE dow.box;
+                PROPERTY(numberDOW(dow)) {
+                    hide = TRUE;
+                }
+                MOVE PROPERTY(daysOfMonthScheduledTask(t));
+            }        
         }
     }
     MOVE functions.box;

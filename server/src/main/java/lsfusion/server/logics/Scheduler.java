@@ -38,9 +38,7 @@ import org.springframework.util.Assert;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -95,11 +93,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             try {
                 setupScheduledTasks(dbManager.createSession());
                 setupCurrentDateSynchronization();
-            } catch (SQLException e) {
-                throw new RuntimeException("Error starting Scheduler: ", e);
-            } catch (ScriptingErrorLog.SemanticErrorException e) {
-                throw new RuntimeException("Error starting Scheduler: ", e);
-            } catch (SQLHandledException e) {
+            } catch (SQLException | ScriptingErrorLog.SemanticErrorException | SQLHandledException e) {
                 throw new RuntimeException("Error starting Scheduler: ", e);
             }
         }
@@ -144,7 +138,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     } catch (Exception ignore) { // todo : сделать нормальную обработку ошибок
                         try {
                             Thread.sleep(10 * 60 * 1000);
-                        } catch (InterruptedException e) {
+                        } catch (InterruptedException ignored) {
                         }
                     }
                 }
@@ -176,13 +170,15 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         KeyExpr scheduledTaskExpr = new KeyExpr("scheduledTask");
         ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTaskExpr);
 
-        QueryBuilder<Object, Object> scheduledTaskQuery = new QueryBuilder<Object, Object>(scheduledTaskKeys);
-        scheduledTaskQuery.addProperty("runAtStartScheduledTask", businessLogics.schedulerLM.runAtStartScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
-        scheduledTaskQuery.addProperty("startDateScheduledTask", businessLogics.schedulerLM.startDateScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
-        scheduledTaskQuery.addProperty("timeFromScheduledTask", businessLogics.schedulerLM.timeFromScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
-        scheduledTaskQuery.addProperty("timeToScheduledTask", businessLogics.schedulerLM.timeToScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
-        scheduledTaskQuery.addProperty("periodScheduledTask", businessLogics.schedulerLM.periodScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
-        scheduledTaskQuery.addProperty("schedulerStartTypeScheduledTask", businessLogics.schedulerLM.schedulerStartTypeScheduledTask.getExpr(scheduledTaskKeys.singleValue()));
+        QueryBuilder<Object, Object> scheduledTaskQuery = new QueryBuilder<>(scheduledTaskKeys);
+        scheduledTaskQuery.addProperty("runAtStartScheduledTask", businessLogics.schedulerLM.runAtStartScheduledTask.getExpr(scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("startDateScheduledTask", businessLogics.schedulerLM.startDateScheduledTask.getExpr(scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("timeFromScheduledTask", businessLogics.schedulerLM.timeFromScheduledTask.getExpr(scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("timeToScheduledTask", businessLogics.schedulerLM.timeToScheduledTask.getExpr(scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("periodScheduledTask", businessLogics.schedulerLM.periodScheduledTask.getExpr(scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("daysOfWeekScheduledTask", businessLogics.schedulerLM.daysOfWeekScheduledTask.getExpr(scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("daysOfMonthScheduledTask", businessLogics.schedulerLM.daysOfMonthScheduledTask.getExpr(scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("schedulerStartTypeScheduledTask", businessLogics.schedulerLM.schedulerStartTypeScheduledTask.getExpr(scheduledTaskExpr));
 
         scheduledTaskQuery.and(businessLogics.schedulerLM.activeScheduledTask.getExpr(scheduledTaskExpr).getWhere());
 
@@ -205,17 +201,24 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             Integer period = (Integer) value.get("periodScheduledTask");
             Object schedulerStartType = value.get("schedulerStartTypeScheduledTask");
 
+            String daysOfWeekScheduledTask = (String) value.get("daysOfWeekScheduledTask");
+            Set<String> daysOfWeek = daysOfWeekScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfWeekScheduledTask.split(",| ")));
+            daysOfWeek.remove("");
+            String daysOfMonthScheduledTask = (String) value.get("daysOfMonthScheduledTask");
+            Set<String> daysOfMonth = daysOfMonthScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfMonthScheduledTask.split(",| ")));
+            daysOfMonth.remove("");
+
             KeyExpr scheduledTaskDetailExpr = new KeyExpr("scheduledTaskDetail");
             ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTaskDetail", scheduledTaskDetailExpr);
 
-            QueryBuilder<Object, Object> scheduledTaskDetailQuery = new QueryBuilder<Object, Object>(scheduledTaskDetailKeys);
+            QueryBuilder<Object, Object> scheduledTaskDetailQuery = new QueryBuilder<>(scheduledTaskDetailKeys);
             scheduledTaskDetailQuery.addProperty("canonicalNamePropertyScheduledTaskDetail", businessLogics.schedulerLM.canonicalNamePropertyScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
             scheduledTaskDetailQuery.addProperty("ignoreExceptionsScheduledTaskDetail", businessLogics.schedulerLM.ignoreExceptionsScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
             scheduledTaskDetailQuery.addProperty("orderScheduledTaskDetail", businessLogics.schedulerLM.orderScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
             scheduledTaskDetailQuery.and(businessLogics.schedulerLM.activeScheduledTaskDetail.getExpr(scheduledTaskDetailExpr).getWhere());
             scheduledTaskDetailQuery.and(businessLogics.schedulerLM.scheduledTaskScheduledTaskDetail.getExpr(scheduledTaskDetailExpr).compare(currentScheduledTaskObject, Compare.EQUALS));
 
-            TreeMap<Integer, Pair<LAP, Boolean>> propertySIDMap = new TreeMap<Integer, Pair<LAP, Boolean>>();
+            TreeMap<Integer, Pair<LAP, Boolean>> propertySIDMap = new TreeMap<>();
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session);
             int defaultOrder = propertyResult.size() + 100;
             for (ImMap<Object, Object> propertyValues : propertyResult.valueIt()) {
@@ -234,7 +237,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             }
 
             if (runAtStart) {
-                daemonTasksExecutor.schedule(new SchedulerTask(propertySIDMap, currentScheduledTaskObject, timeFrom, timeTo), 0, TimeUnit.MILLISECONDS);
+                daemonTasksExecutor.schedule(new SchedulerTask(propertySIDMap, currentScheduledTaskObject, timeFrom, timeTo, daysOfWeek, daysOfMonth), 0, TimeUnit.MILLISECONDS);
             }
             if (startDate != null) {
                 long start = startDate.getTime();
@@ -246,34 +249,39 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                         start += periods * longPeriod;
                     }
                     if (afterFinish.equals(schedulerStartType))
-                        daemonTasksExecutor.scheduleWithFixedDelay(new SchedulerTask(propertySIDMap, currentScheduledTaskObject, timeFrom, timeTo), start - currentTime, longPeriod, TimeUnit.MILLISECONDS);
+                        daemonTasksExecutor.scheduleWithFixedDelay(new SchedulerTask(propertySIDMap, currentScheduledTaskObject, timeFrom, timeTo, daysOfWeek, daysOfMonth), start - currentTime, longPeriod, TimeUnit.MILLISECONDS);
                     else
-                        daemonTasksExecutor.scheduleAtFixedRate(new SchedulerTask(propertySIDMap, currentScheduledTaskObject, timeFrom, timeTo), start - currentTime, longPeriod, TimeUnit.MILLISECONDS);
+                        daemonTasksExecutor.scheduleAtFixedRate(new SchedulerTask(propertySIDMap, currentScheduledTaskObject, timeFrom, timeTo, daysOfWeek, daysOfMonth), start - currentTime, longPeriod, TimeUnit.MILLISECONDS);
                 } else if (start > currentTime) {
-                    daemonTasksExecutor.schedule(new SchedulerTask(propertySIDMap, currentScheduledTaskObject, timeFrom, timeTo), start - currentTime, TimeUnit.MILLISECONDS);
+                    daemonTasksExecutor.schedule(new SchedulerTask(propertySIDMap, currentScheduledTaskObject, timeFrom, timeTo, daysOfWeek, daysOfMonth), start - currentTime, TimeUnit.MILLISECONDS);
                 }
             }
         }
     }
 
     class SchedulerTask implements Runnable {
+        Time defaultTime = new Time(0, 0, 0);
         TreeMap<Integer, Pair<LAP, Boolean>> lapMap;
         private DataObject scheduledTask;
         private Time timeFrom;
         private Time timeTo;
+        private Set<String> daysOfWeek;
+        private Set<String> daysOfMonth;
         private DataObject currentScheduledTaskLogFinishObject;
         private DataSession afterFinishLogSession;
 
-        public SchedulerTask(TreeMap<Integer, Pair<LAP, Boolean>> lapMap, DataObject scheduledTask, Time timeFrom, Time timeTo) {
+        public SchedulerTask(TreeMap<Integer, Pair<LAP, Boolean>> lapMap, DataObject scheduledTask, Time timeFrom, Time timeTo, Set<String> daysOfWeek, Set<String> daysOfMonth) {
             this.lapMap = lapMap;
             this.scheduledTask = scheduledTask;
-            this.timeFrom = timeFrom;
-            this.timeTo = timeTo;
+            this.timeFrom = timeFrom == null ? defaultTime : timeFrom;
+            this.timeTo = timeTo == null ? defaultTime : timeTo;
+            this.daysOfWeek = daysOfWeek;
+            this.daysOfMonth = daysOfMonth;
         }
 
         public void run() {
             try {
-                if(isTimeToRun(timeFrom, timeTo)) {
+                if(isTimeToRun(timeFrom, timeTo, daysOfWeek, daysOfMonth)) {
                     for (Map.Entry<Integer, Pair<LAP, Boolean>> entry : lapMap.entrySet()) {
                         if (entry.getValue() != null) {
                             LAP lap = entry.getValue().first;
@@ -288,10 +296,14 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             }
         }
 
-        private boolean isTimeToRun(Time timeFrom, Time timeTo) {
-            if(timeFrom == null || timeTo == null) return true;
+        private boolean isTimeToRun(Time timeFrom, Time timeTo, Set<String> daysOfWeek, Set<String> daysOfMonth) {
+            if(timeFrom.equals(defaultTime) && timeTo.equals(defaultTime)) return true;
 
             Calendar currentCal = Calendar.getInstance();
+
+            if((!daysOfWeek.isEmpty() && !daysOfWeek.contains(String.valueOf(currentCal.get(Calendar.DAY_OF_WEEK) - 1)))
+                    || (!daysOfMonth.isEmpty() && !daysOfMonth.contains(String.valueOf(currentCal.get(Calendar.DAY_OF_MONTH)))))
+                return false;
 
             Calendar calendarFrom = Calendar.getInstance();
             calendarFrom.setTime(timeFrom);
@@ -382,9 +394,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                         businessLogics.schedulerLM.scheduledTaskLogScheduledClientTaskLog
                                 .change(currentScheduledTaskLogFinishObject, (ExecutionEnvironment) afterFinishLogSession, scheduledClientTaskLogObject);
                         businessLogics.schedulerLM.messageScheduledClientTaskLog.change(message, afterFinishLogSession, scheduledClientTaskLogObject);
-                    } catch (SQLException e) {
-                        throw Throwables.propagate(e);
-                    } catch (SQLHandledException e) {
+                    } catch (SQLException | SQLHandledException e) {
                         throw Throwables.propagate(e);
                     }
                 }
