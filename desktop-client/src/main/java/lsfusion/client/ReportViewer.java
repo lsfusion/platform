@@ -32,7 +32,8 @@ public class ReportViewer extends JRViewer {
                 try {
                     al[0].actionPerformed(evt);
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(getParent(), "Произошла ошибка при сохранении файла", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(getParent(),
+                            String.format("Произошла ошибка при сохранении файла: \n%s", e.getMessage()), "Ошибка", JOptionPane.ERROR_MESSAGE);
                     ClientExceptionManager.reportClientThrowable(e);
                 }
             }
