@@ -2,6 +2,7 @@ package lsfusion.client;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.SystemUtils;
+import lsfusion.client.exceptions.ClientExceptionManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.view.JRViewer;
 
@@ -16,7 +17,7 @@ public class ReportViewer extends JRViewer {
 
         lastFolder = SystemUtils.loadCurrentDirectory();
 
-        ActionListener[] al = btnSave.getActionListeners();
+        final ActionListener[] al = btnSave.getActionListeners();
 
         btnSave.removeActionListener(al[0]);
 
@@ -25,7 +26,17 @@ public class ReportViewer extends JRViewer {
                 SystemUtils.saveCurrentDirectory(lastFolder);
             }
         });
-        btnSave.addActionListener(al[0]);
+
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                try {
+                    al[0].actionPerformed(evt);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(getParent(), "Произошла ошибка при сохранении файла", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    ClientExceptionManager.reportClientThrowable(e);
+                }
+            }
+        });
 
         if (editInvoker != null) {
             tlbToolBar.add(Box.createHorizontalStrut(10));
