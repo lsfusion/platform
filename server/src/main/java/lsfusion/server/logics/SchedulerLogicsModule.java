@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import lsfusion.server.logics.linear.LAP;
 import org.antlr.runtime.RecognitionException;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.logics.linear.LCP;
@@ -25,6 +26,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP ignoreExceptionsScheduledTaskDetail;
     public LCP activeScheduledTaskDetail;
     public LCP orderScheduledTaskDetail;
+    public LCP scriptScheduledTaskDetail;
     public LCP scheduledTaskScheduledTaskDetail;
 
     public LCP canonicalNamePropertyScheduledTaskDetail;
@@ -36,6 +38,9 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP scheduledTaskScheduledTaskLog;
     public LCP scheduledTaskLogScheduledClientTaskLog;
     public LCP messageScheduledClientTaskLog;
+
+    public LCP scriptText;
+    public LAP evalScript;
 
     public SchedulerLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SchedulerLogicsModule.class.getResourceAsStream("/lsfusion/system/Scheduler.lsf"), "/lsfusion/system/Scheduler.lsf", baseLM, BL);
@@ -67,6 +72,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
         ignoreExceptionsScheduledTaskDetail = findProperty("ignoreExceptionsScheduledTaskDetail");
         activeScheduledTaskDetail = findProperty("activeScheduledTaskDetail");
         orderScheduledTaskDetail = findProperty("orderScheduledTaskDetail");
+        scriptScheduledTaskDetail = findProperty("scriptScheduledTaskDetail");
         scheduledTaskScheduledTaskDetail = findProperty("scheduledTaskScheduledTaskDetail");
 
         canonicalNamePropertyScheduledTaskDetail = findProperty("canonicalNamePropertyScheduledTaskDetail");
@@ -78,5 +84,8 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
         scheduledTaskScheduledTaskLog = findProperty("scheduledTaskScheduledTaskLog");
         scheduledTaskLogScheduledClientTaskLog = findProperty("scheduledTaskLogScheduledClientTaskLog");
         messageScheduledClientTaskLog = findProperty("messageScheduledClientTaskLog");
+
+        scriptText = findProperty("scriptText");
+        evalScript = findAction("evalScript");
     }
 }

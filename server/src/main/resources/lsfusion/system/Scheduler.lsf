@@ -46,6 +46,7 @@ TABLE scheduledTaskDetail (ScheduledTaskDetail);
 
 activeScheduledTaskDetail 'Активно' = DATA BOOLEAN (ScheduledTaskDetail);
 orderScheduledTaskDetail 'Порядок' = DATA INTEGER (ScheduledTaskDetail);
+scriptScheduledTaskDetail 'Скрипт' = DATA TEXT (ScheduledTaskDetail);
 
 scheduledTaskScheduledTaskDetail = DATA ScheduledTask (ScheduledTaskDetail) NOT NULL DELETE;
 propertyScheduledTaskDetail = DATA Property (ScheduledTaskDetail);
@@ -77,13 +78,16 @@ messageScheduledClientTaskLog 'Сообщение'= DATA TEXT (ScheduledClientTa
 
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty' ();
 
+scriptText 'Скрипт' () = DATA TEXT ();
+evalScript 'Выполнить скрипт' () = ACTION EVAL scriptText();
+
 WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t)) OR CHANGED (timeFromScheduledTask(t)) 
     OR CHANGED (timeToScheduledTask(t)) OR CHANGED (periodScheduledTask(t)) OR CHANGED (daysOfMonthScheduledTask(t))
     OR CHANGED (schedulerStartTypeScheduledTask(t)) OR CHANGED (schedulerStartTypeScheduledTask(t))) AND activeScheduledTask(t)
     OR CHANGED (activeScheduledTask(t)))
  DO EXEC runSetupScheduler();
  
-WHEN ((CHANGED (activeScheduledTaskDetail(td)) OR CHANGED (orderScheduledTaskDetail(td)) 
+WHEN ((CHANGED (activeScheduledTaskDetail(td)) OR CHANGED (orderScheduledTaskDetail(td)) OR CHANGED(scriptScheduledTaskDetail(td)) 
     OR CHANGED (scheduledTaskScheduledTaskDetail(td)) OR CHANGED (propertyScheduledTaskDetail(td)) OR CHANGED (ignoreExceptionsScheduledTaskDetail(td)))
     AND activeScheduledTask(scheduledTaskScheduledTaskDetail(td)))
  DO EXEC runSetupScheduler();
@@ -100,7 +104,7 @@ FORM scheduledTask 'Планировщик'
          
     OBJECTS td=ScheduledTaskDetail
     PROPERTIES (td) activeScheduledTaskDetail, ignoreExceptionsScheduledTaskDetail, orderScheduledTaskDetail, captionPropertyScheduledTaskDetail, 
-                    canonicalNamePropertyScheduledTaskDetail, classPropertyScheduledTaskDetail, returnPropertyScheduledTaskDetail
+    canonicalNamePropertyScheduledTaskDetail, classPropertyScheduledTaskDetail, returnPropertyScheduledTaskDetail, scriptScheduledTaskDetail FORCE PANEL
     PROPERTIES (td) ADDOBJ, DELETESESSION
     
     OBJECTS tl=ScheduledTaskLog
@@ -131,7 +135,13 @@ DESIGN scheduledTask {
         NEW south {
             fill = 2;
             type = TABBED;
-            MOVE td.box {caption = 'Свойства';}
+            MOVE td.box {
+                caption = 'Свойства';
+                MOVE PROPERTY(scriptScheduledTaskDetail(td)) {
+                    panelCaptionAbove = TRUE;
+                    fill = 0.5;
+                }
+            }
             NEW logContainer {
                 caption = 'Лог';
                 type = CONTAINERH;
