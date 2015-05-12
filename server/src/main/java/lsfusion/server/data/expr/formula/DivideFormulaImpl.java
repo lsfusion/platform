@@ -1,5 +1,6 @@
 package lsfusion.server.data.expr.formula;
 
+import lsfusion.server.Settings;
 import lsfusion.server.classes.DataClass;
 import lsfusion.server.data.expr.formula.conversion.*;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
@@ -28,14 +29,17 @@ public class DivideFormulaImpl extends ArithmeticFormulaImpl {
         public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env) {
             Type type = conversion.getType(type1, type2);
             if (type != null) {
-                return "(" + src1 + "/" + src2 + ")";
-//                return "(" + src1 + "/syntax.notZero(" + src2 + "))";
+                if(Settings.get().isUseSafeDivision()) {
+                    return "(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")";
+                } else {
+                    return "(" + src1 + "/" + src2 + ")";
+                }
             }
             return null;
         }
     }
 
-/*    public boolean hasNotNull() {
-        return true;
-    }*/
+    public boolean hasNotNull() {
+        return Settings.get().isUseSafeDivision();
+    }
 }

@@ -1181,6 +1181,16 @@ public class Settings {
         this.explainThreshold = explainThreshold;
     }
 
+    private boolean useSafeDivision = false;
+
+    public boolean isUseSafeDivision() {
+        return useSafeDivision;
+    }
+
+    public void setUseSafeDivision(boolean useSafeDivision) {
+        this.useSafeDivision = useSafeDivision;
+    }
+
     public boolean disableCompiledSubQueries = false;
 
     public boolean isDisableCompiledSubQueries() {

@@ -323,7 +323,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     @Override
     public String getNotZero(String expr, Type type, TypeEnvironment typeEnv) {
         if(!Settings.get().isUseMSSQLFuncWrapper())
-            return "CASE WHEN ABS(" + expr + ")>0.0005 THEN " + expr + " ELSE NULL END";
+            return "(CASE WHEN ABS(" + expr + ")>0.0005 THEN " + expr + " ELSE NULL END)";
         
         typeEnv.addNeedTypeFunc(TypeFunc.NOTZERO, type);
         return "dbo." + getTypeFuncName(TypeFunc.NOTZERO, type) + "(" + expr + ")";
