@@ -5,7 +5,7 @@ import lsfusion.interop.form.ReportGenerationData;
 
 import java.io.IOException;
 
-public class ReportClientAction extends ExecuteClientAction {
+public class ReportClientAction implements ClientAction {
 
     public String formSID;
     public boolean isModal;
@@ -22,7 +22,7 @@ public class ReportClientAction extends ExecuteClientAction {
     }
 
     @Override
-    public void execute(ClientActionDispatcher dispatcher) throws IOException {
-        dispatcher.execute(this);
+    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException {
+        return dispatcher.execute(this);
     }
 }

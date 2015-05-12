@@ -20,12 +20,14 @@ import java.io.File;
 import java.io.IOException;
 
 public class ClientReportDockable extends ClientDockable {
+    public Integer pageCount;
     public ClientReportDockable(ReportGenerationData generationData, DockableManager dockableManager, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
         super(null, dockableManager);
 
         try {
             final JasperPrint print = new ReportGenerator(generationData).createReport(false, null);
             print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
+            this.pageCount = print.getPages().size();
             final ReportViewer reportViewer = new ReportViewer(print, editInvoker);
             setContent(print.getName(), prepareViewer(reportViewer));
             addKeyboardListener(new CKeyboardListener() {

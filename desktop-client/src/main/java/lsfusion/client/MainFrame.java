@@ -137,8 +137,8 @@ public abstract class MainFrame extends JFrame {
         setTitle(Main.getMainTitle() + " - " + inputStream.readUTF() + " (" + loginAction.loginInfo.getServerHost() + ":" + loginAction.loginInfo.getServerPort() + ")");
     }
 
-    public abstract void runReport(String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
-    public abstract void runReport(boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException;
+    public abstract Integer runReport(String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
+    public abstract Integer runReport(boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException;
 
     public abstract void runForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, FormCloseListener closeListener);
 }

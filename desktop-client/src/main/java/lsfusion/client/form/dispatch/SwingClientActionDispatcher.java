@@ -164,7 +164,8 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     protected void afterModalActionInSameEDT() {
     }
 
-    public void execute(ReportClientAction action) {
+    public Integer execute(ReportClientAction action) {
+        return null;
     }
 
     public Object execute(RuntimeClientAction action) {

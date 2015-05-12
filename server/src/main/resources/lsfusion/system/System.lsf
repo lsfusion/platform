@@ -99,6 +99,7 @@ addedObject() = DATA LOCAL Object ();
 confirmed() = DATA LOCAL BOOLEAN ();
 requestCanceled() = DATA LOCAL BOOLEAN ();
 formResult() = DATA LOCAL FormResult ();
+formPageCount() = DATA LOCAL INTEGER ();
 
 imported = DATA LOCAL BOOLEAN (INTEGER);
 

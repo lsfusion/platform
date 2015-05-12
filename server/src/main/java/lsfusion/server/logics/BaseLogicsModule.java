@@ -133,6 +133,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     private LCP confirmed;
     private LCP requestCanceled;
     private LCP formResultProp;
+    public LCP formPageCount;
 
     public LCP imported;
 
@@ -395,7 +396,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         confirmed = findProperty("confirmed");
         requestCanceled = findProperty("requestCanceled");
         formResultProp = findProperty("formResult");
-        
+        formPageCount = findProperty("formPageCount");
+
         imported = findProperty("imported");
 
         sleep = findAction("sleep");

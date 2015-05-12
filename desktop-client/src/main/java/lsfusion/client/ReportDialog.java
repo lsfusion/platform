@@ -11,6 +11,7 @@ import java.awt.*;
 import java.io.IOException;
 
 public class ReportDialog extends JDialog {
+    public static Integer pageCount;
     public ReportDialog(JFrame owner, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException, JRException {
         super(owner, true);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -18,6 +19,7 @@ public class ReportDialog extends JDialog {
         ReportGenerator report = new ReportGenerator(generationData);
         JasperPrint print = report.createReport(false, null);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
+        pageCount = print.getPages().size();
 
         final ReportViewer viewer = new ReportViewer(print, editInvoker);
         double realZoom = viewer.getRealZoom();
@@ -30,10 +32,11 @@ public class ReportDialog extends JDialog {
         getContentPane().add(viewer);
     }
 
-    public static void showReportDialog(ReportGenerationData generationData, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
+    public static Integer showReportDialog(ReportGenerationData generationData, EditReportInvoker editInvoker) throws ClassNotFoundException, IOException {
         try {
             ReportDialog dlg = new ReportDialog(Main.frame, generationData, editInvoker);
             dlg.setVisible(true);
+            return pageCount;
         } catch (JRException e) {
             throw new RuntimeException(e);
         }

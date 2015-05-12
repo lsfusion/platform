@@ -47,6 +47,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
     private final ConcreteCustomClass formResultClass;
     private final LCP formResultProperty;
+    private final LCP formPageCount;
 
     private final AnyValuePropertyHolder chosenValueProperty;
 
@@ -87,6 +88,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               FormPrintType printType,
                               ConcreteCustomClass formResultClass,
                               LCP formResultProperty,
+                              LCP formPageCount,
                               AnyValuePropertyHolder chosenValueProperty,
                               ObjectEntity contextObject,
                               CalcProperty contextProperty,
@@ -95,6 +97,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
         this.formResultClass = formResultClass;
         this.formResultProperty = formResultProperty;
+        this.formPageCount = formPageCount;
         this.chosenValueProperty = chosenValueProperty;
 
         this.modalityType = modalityType;
@@ -167,7 +170,8 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
             RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
             if (printType != null) {
-                context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(), printType, SystemProperties.isDebug));
+                Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(), printType, SystemProperties.isDebug));
+                formPageCount.change(pageCount, context);
             } else {
                 context.requestUserInteraction(new FormClientAction(form.getCanonicalName(), form.getSID(), newRemoteForm, modalityType));
             }

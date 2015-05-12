@@ -5,7 +5,7 @@ public interface ClientActionDispatcher {
 
     public void execute(FormClientAction action);
 
-    public void execute(ReportClientAction action);
+    public Integer execute(ReportClientAction action);
 
     public Object execute(RuntimeClientAction action);
 

@@ -95,8 +95,10 @@ public class DockableManager {
         new ClientModalForm(canonicalName, formSID, Main.frame, navigator.remoteNavigator.createForm(formSID, null, true, true)).showDialog(showFullScreen);
     }
 
-    public void openReport(ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
-        openForm(new ClientReportDockable(generationData, this, editInvoker));
+    public Integer openReport(ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
+        ClientReportDockable page = new ClientReportDockable(generationData, this, editInvoker);
+        openForm(page);
+        return page.pageCount;
     }
 
     public void openReport(File file) throws JRException {

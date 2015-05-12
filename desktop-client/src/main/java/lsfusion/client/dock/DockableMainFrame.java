@@ -245,8 +245,8 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(final String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
-        runReport(isModal, generationData, new EditReportInvoker() {
+    public Integer runReport(final String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+        return runReport(isModal, generationData, new EditReportInvoker() {
             @Override
             public void invokeEditReport() throws RemoteException {
                 new ClientFormController(null, formSID, Main.remoteNavigator.createForm(formSID, null, false, true), mainNavigator).runEditReport();
@@ -255,11 +255,11 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
+    public Integer runReport(boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException {
         if (isModal) {
-            ReportDialog.showReportDialog(generationData, editInvoker);
+            return ReportDialog.showReportDialog(generationData, editInvoker);
         } else {
-            dockableManager.openReport(generationData, editInvoker);
+            return dockableManager.openReport(generationData, editInvoker);
         }
     }
 

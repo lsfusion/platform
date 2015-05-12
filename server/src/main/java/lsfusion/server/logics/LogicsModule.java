@@ -602,7 +602,7 @@ public abstract class LogicsModule {
     }
 
     protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType) {
-        return addProperty(group, new LAP(new FormActionProperty(caption, form, objectsToSet, startAction, sessionScope, modalityType, checkOnOk, showDrop, printType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty)));
+        return addProperty(group, new LAP(new FormActionProperty(caption, form, objectsToSet, startAction, sessionScope, modalityType, checkOnOk, showDrop, printType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty)));
     }
 
     // ------------------- Change Class action ----------------- //
