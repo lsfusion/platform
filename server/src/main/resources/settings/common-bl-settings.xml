@@ -99,6 +99,7 @@
                 <entry key="timeoutDegree" value="${settings.timeoutDegree:}"/>
                 <entry key="timeoutStart" value="${settings.timeoutStart:}"/>
                 <entry key="applyAutoAttemptCountLimit" value="${settings.applyAutoAttemptCountLimit:}"/>
+                <entry key="useSafeDivision" value="${settings.useSafeDivision:}"/>
             </map>
         </property>
         </bean>
