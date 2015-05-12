@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ConcreteClass;
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyType;
 import lsfusion.server.data.where.Where;
@@ -12,6 +13,8 @@ import lsfusion.server.data.where.Where;
 public class NullReader extends AbstractReader<Object> implements ClassReader<Object> {
 
     public static NullReader instance = new NullReader();
+
+    public static Type typeInstance = IntegerClass.instance;
 
     public Object read(Object value) {
         assert value==null;

@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.caches.IdentityQuickLazy;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -23,6 +24,7 @@ import lsfusion.server.data.expr.query.PartitionType;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.type.NullReader;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -89,7 +91,13 @@ public class PropertySet<T extends PropertyInterface> {
             }
         }, new Type.Getter<Object>() {
             public Type getType(Object key) {
-                return objects.get(key).getType(fullWhere);
+                Expr expr = objects.get(key);
+                Type type = expr.getType(fullWhere);
+                if(type == null) {
+                    assert expr.isNull();
+                    return NullReader.typeInstance;
+                }
+                return type;
             }
         });
         tableUsage.writeRows(session.sql, new Query<>(mapKeys, objects, where), session.baseClass, session.env);
