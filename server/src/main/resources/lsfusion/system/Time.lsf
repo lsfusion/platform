@@ -30,7 +30,7 @@ sumDate(date, days) = [= FORMULA DATE PG '(($1)+($2))' MS 'DATEADD(dd, $2, $1)']
 sumDateMonth (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 month\'))' MS 'DATEADD(mm, $2, $1)';
 sumDateYear (date, months) = FORMULA DATE PG '(CAST(($1) AS date) + ($2)*(interval \'1 year\'))' MS 'DATEADD(yy, $2, $1)';
 
-iterateDate(dt, from, to) = RECURSION dt==from AND from IS DATE AND to IS DATE STEP dt==sumDate($dt, 1) AND dt<to CYCLES IMPOSSIBLE;
+iterateDate(dt, from, to) = RECURSION dt==from AND from IS DATE AND to IS DATE STEP dt==sumDate($dt, 1) AND dt<=to CYCLES IMPOSSIBLE;
 
 firstDayOfMonth (date) = [= FORMULA DATE PG '(date_trunc(\'MONTH\', $1)::date)' MS 'DATEADD(month, DATEDIFF(month, 0, $1), 0)'](date AS DATE);
 lastDayOfMonth (date) = [= FORMULA DATE PG '((date_trunc(\'MONTH\', $1) + INTERVAL \'1 MONTH - 1 day\')::date)' MS 'DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,$1)+1,0))'](date AS DATE);
