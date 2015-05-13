@@ -103,9 +103,9 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
         ImSet<CalcProperty> result = SetFact.EMPTY();
         
         if(!noClasses()) {
-            result = result.merge(value.getProperty().getUsedChanges(propChanges));
+            result = result.merge(value.getProperty().getRemoveUsedChanges(propChanges));
             for (ClassPropertyInterface remove : interfaces)
-                result = result.merge(remove.interfaceClass.getProperty().getUsedChanges(propChanges));
+                result = result.merge(remove.interfaceClass.getProperty().getRemoveUsedChanges(propChanges));
         }
         if (event != null)
             result = result.merge(event.getUsedDataChanges(propChanges));

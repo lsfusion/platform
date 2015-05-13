@@ -10,28 +10,21 @@ import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
+import lsfusion.server.caches.IdentityQuickLazy;
 import lsfusion.server.logics.property.CalcProperty;
 
 public class StructChanges extends TwinImmutableObject {
 
     public final static GetValue<ChangeType, ModifyChange> getType = new GetValue<ChangeType, ModifyChange>() {
         public ChangeType getMapValue(ModifyChange modify) {
-            ChangeType type;
-            if (modify.isFinal) {
-                if (modify.isEmpty())
-                    type = ChangeType.NOUPDATE;
-                else
-                    type = ChangeType.FINAL;
-            } else {
-                type = ChangeType.NOTFINAL;
-                assert !modify.isEmpty();
-            }
-            return type;
+            return modify.getChangeType();
         }};
 
+    // не используется
     private final static AddValue<CalcProperty, ChangeType> addValue = new SimpleAddValue<CalcProperty, ChangeType>() {
         public ChangeType addValue(CalcProperty key, ChangeType prevValue, ChangeType newValue) {
-            if(prevValue.equals(ChangeType.FINAL) || prevValue.equals(ChangeType.NOUPDATE) || newValue.equals(ChangeType.NOTFINAL))
+            if(prevValue.isFinal() || !newValue.isFinal())
                 return prevValue;
             return newValue;
         }
@@ -83,8 +76,31 @@ public class StructChanges extends TwinImmutableObject {
         this.changes = changes;
     }
 
-    public StructChanges filter(ImSet<CalcProperty> props) {
-        return new StructChanges(changes.filter(props));
+    public StructChanges filterForProperty(CalcProperty<?> prop) {
+        return new StructChanges(transformSetOrDropped(prop, changes.filter(prop.getRecDepends())));
+    }
+
+    private static ImMap<CalcProperty, ChangeType> transformSetOrDropped(CalcProperty<?> prop, ImMap<CalcProperty, ChangeType> filteredChanges) {
+        // assert что recDepends включает SetOrDroppedDepends, внутри вызова есть
+        ImMap<CalcProperty, Boolean> setDroppedDepends = prop.getSetOrDroppedDepends();
+
+        if(!setDroppedDepends.keys().intersect(filteredChanges.keys())) // оптимизация
+            return filteredChanges;
+
+        ImFilterValueMap<CalcProperty, ChangeType> transformedChanges = filteredChanges.mapFilterValues();
+        for(int i=0,size=filteredChanges.size();i<size;i++) {
+            CalcProperty property = filteredChanges.getKey(i);
+            ChangeType type = filteredChanges.getValue(i);
+            Boolean changeSetDropped = type.getSetOrDropped();
+            if (changeSetDropped != null) {
+                Boolean setDropped = setDroppedDepends.get(property);
+                if(setDropped == null || setDropped.equals(changeSetDropped)) // оптимизация
+                    type = ChangeType.get(type.isFinal(), null);
+            }
+
+            transformedChanges.mapValue(i, type);
+        }
+        return transformedChanges.immutableValue();
     }
 
     public ChangeType getUsedChange(CalcProperty property) {

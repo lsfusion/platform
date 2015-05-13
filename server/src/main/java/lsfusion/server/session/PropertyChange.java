@@ -10,10 +10,8 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.caches.AbstractInnerContext;
-import lsfusion.server.caches.AbstractOuterContext;
-import lsfusion.server.caches.IdentityInstanceLazy;
-import lsfusion.server.caches.ParamExpr;
+import lsfusion.server.Settings;
+import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.*;
@@ -26,7 +24,6 @@ import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
-import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -319,4 +316,28 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     public String toString() {
         return where + ", " + expr + ", mv:" + mapValues;
     }
+
+    private byte setOrDropped;
+    @ManualLazy
+    public Boolean getSetOrDropped() {
+        if(setOrDropped == 0) {
+            setOrDropped = calcSetOrDropped();
+        }
+        return setOrDropped == 1 ? null : setOrDropped == 3;
+    }
+
+    private byte calcSetOrDropped() {
+        if(Settings.get().isDisableSetDroppedOptimization())
+            return 1;
+
+        Where exprWhere = expr.getWhere();
+        if(where.means(exprWhere))
+            return 3;
+
+        if(where.means(exprWhere.not())) // assert что Expr.NULL, но этот PropertyChange может быть не спакован
+            return 2;
+
+        return 1;
+    }
+
 }

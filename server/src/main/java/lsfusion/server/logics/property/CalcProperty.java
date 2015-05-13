@@ -6,10 +6,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MCol;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
@@ -676,6 +673,32 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             if(property.isComplex())
                 return true;
         return false;
+    }
+
+    private final AddValue<CalcProperty, Boolean> addSetOrDropped = new SymmAddValue<CalcProperty, Boolean>() {
+        public Boolean addValue(CalcProperty key, Boolean prevValue, Boolean newValue) {
+            if(prevValue.equals(newValue))
+                return prevValue;
+            return null;
+        }
+    };
+
+    @IdentityLazy
+    public ImMap<CalcProperty, Boolean> getSetOrDroppedDepends() {
+        ImSet<SessionCalcProperty> sessionDepends = getSessionCalcDepends(true);
+        MMap<CalcProperty, Boolean> mResult = MapFact.mMap(addSetOrDropped);
+        for(int i=0,size=sessionDepends.size();i<size;i++) {
+            SessionCalcProperty property = sessionDepends.get(i);
+            if(property instanceof ChangedProperty) {
+                ChangedProperty changed = (ChangedProperty) property;
+                Boolean setOrDropped = changed.getSetOrDropped();
+                if(setOrDropped != null)
+                    mResult.add(changed.property, setOrDropped);
+            }
+        }
+        ImMap<CalcProperty, Boolean> result = mResult.immutable().removeNulls();
+        assert getRecDepends().containsAll(result.keys());
+        return result;
     }
 
     @IdentityStartLazy

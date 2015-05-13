@@ -555,6 +555,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         sessionEventNotChangedOld.clear();
 
         applyObject = null; // сбрасываем в том числе когда cancel потому как cancel drop'ает в том числе и добавление объекта
+
+        registerChange(null);
     }
 
     public DataObject addObject() throws SQLException {
@@ -875,7 +877,20 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         updateProperties(changes, sourceChanged ? FullFunctionSet.<CalcProperty>instance() : SetFact.<CalcProperty>EMPTY());
     }
 
+    private final ThreadLocal<Boolean> changedFlag = new ThreadLocal<Boolean>();
+    private void registerChange(ImSet<? extends CalcProperty> changes) { // debug метод
+        if(changedFlag.get() != null) {
+            ServerLoggers.assertLog(changes != null && ((ImSet<CalcProperty>)changes).filterFn(new SFunctionSet<CalcProperty>() {
+                public boolean contains(CalcProperty element) {
+                    return element.isLocal();
+                }
+            }).size() == changes.size(), "SHOULD NOT BE");
+        }
+    }
+
     public void updateProperties(ImSet<? extends CalcProperty> changes, FunctionSet<? extends CalcProperty> sourceChanges) throws SQLException {
+        registerChange(changes);
+
         dataModifier.eventDataChanges(changes, sourceChanges);
 
         for(Pair<FormInstance, UpdateChanges> incrementChange : incrementChanges.entryIt()) {
@@ -936,11 +951,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             try {
                 for(ActionProperty<?> action : getActiveSessionEvents()) {
-                    if(sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends())) { // оптимизация аналогичная верхней
-                        executeSessionEvent(env, action);
-                        if(!isInSessionEvent())
-                            return;
-                    }
+                    executeSessionEvent(env, action);
+                    if(!isInSessionEvent())
+                        return;
                 }
             } finally {
                 inSessionEvent = false;
@@ -956,17 +969,53 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @LogTime
     @ThisMessage
     private void executeSessionEvent(ExecutionEnvironment env, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
+        if(!sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
+            return;
+
         action.execute(env);
     }
 
     @LogTime
     @ThisMessage
+    private void executeGlobalEvent(ExecutionEnvironment env, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
+        boolean hasChanges = false;
+        for(SessionCalcProperty property : action.getGlobalEventSessionCalcDepends()) { // оптимизация основанная на отсутствии последействия
+            if(property.getChangedProperty().hasChanges(getModifier())) {
+                hasChanges = true;
+                break;
+            }
+        }
+
+        if(Settings.get().isDisableGlobalEventOptimization()) {
+            if (!hasChanges)
+                changedFlag.set(true);
+            action.execute(env);
+            if (!hasChanges)
+                changedFlag.set(null);
+        } else {
+            if(hasChanges)
+                action.execute(env);
+        }
+    }
+
+    @LogTime
+    @ThisMessage
+    private void executeActionInTransaction(ExecutionEnvironment env, @ParamMessage ActionPropertyValueImplement<?> action) throws SQLException, SQLHandledException {
+        action.execute(env);
+    }
+
     private boolean executeGlobalEvent(BusinessLogics BL, @ParamMessage Object property, @ParamMessage String progress) throws SQLException, SQLHandledException {
-        if(property instanceof ActionPropertyValueImplement) {
-            startPendingSingles(((ActionPropertyValueImplement) property).property);
-            ((ActionPropertyValueImplement)property).execute(this);
+        if(property instanceof ActionProperty || property instanceof ActionPropertyValueImplement) {
+            startPendingSingles(property instanceof ActionPropertyValueImplement ? ((ActionPropertyValueImplement) property).property : (ActionProperty) property);
+
+            if(property instanceof ActionPropertyValueImplement)
+                executeActionInTransaction(this, (ActionPropertyValueImplement)property);
+            else
+                executeGlobalEvent(this, (ActionProperty) property);
+
             if(!isInTransaction()) // если ушли из транзакции вываливаемся
                 return false;
+
             flushPendingSingles(BL);
         } else // постоянно-хранимые свойства
             readStored((CalcProperty<PropertyInterface>) property, BL);
@@ -1675,7 +1724,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         ImOrderSet<Object> execActions = SetFact.addOrderExcl(actions, BL.getAppliedProperties(this));
         for (int i=0,size=execActions.size();i<size;i++) {
-            if (!executeGlobalEvent(BL, execActions.get(i), i + " of " + size)) 
+            if (!executeGlobalEvent(BL, execActions.get(i), i + " of " + size))
                 return false;
         }
 

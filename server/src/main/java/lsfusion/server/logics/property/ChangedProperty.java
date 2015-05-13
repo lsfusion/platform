@@ -2,10 +2,13 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -19,9 +22,7 @@ import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.session.Modifier;
-import lsfusion.server.session.PropertyChange;
-import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.session.*;
 
 import java.sql.SQLException;
 
@@ -50,10 +51,35 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
         return property.getOld(scope);
     }
 
+    public ChangedProperty<T> getChangedProperty() {
+        return this;
+    }
+
     @Override
     protected void fillDepends(MSet<CalcProperty> depends, boolean events) {
         depends.add(property);
         depends.add(property.getOld(scope));
+    }
+
+
+    @Override
+    public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
+        Boolean setOrDropped = getSetOrDropped();
+        if(setOrDropped != null) {
+            ChangeType type = propChanges.getUsedChange(property);
+            Boolean changeSetOrDropped;
+            if(type != null && (changeSetOrDropped = type.getSetOrDropped())!=null) {
+                if(!setOrDropped.equals(changeSetOrDropped)) { // если SET, а изменение на NULL, или DROPPED и наоборот, считаем что изменение не используется так как все равно всегда NULL будет
+                    boolean isFinal = type.isFinal();
+                    ImSet<CalcProperty> usedChanges = null;
+                    if(isFinal || (usedChanges = property.getUsedChanges(propChanges)).size() == 1) {
+                        ServerLoggers.assertLog(isFinal || usedChanges.contains(property), "SHOULD NOT BE");
+                        return SetFact.EMPTY();
+                    }
+                }
+            }
+        }
+        return super.calculateUsedChanges(propChanges);
     }
 
     protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -122,5 +148,9 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
         return new ChangedDrillDownFormEntity(
                 canonicalName, getString("logics.property.drilldown.form.data"), this, LM
         );
+    }
+
+    public Boolean getSetOrDropped() {
+        return type.getSetOrDropped();
     }
 }

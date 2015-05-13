@@ -1200,4 +1200,24 @@ public class Settings {
     public void setDisableCompiledSubQueries(boolean disableCompiledSubQueries) {
         this.disableCompiledSubQueries = disableCompiledSubQueries;
     }
+
+    private boolean disableSetDroppedOptimization = false; // вообще не сильно полезная оптимизация, но раз сделали
+
+    public boolean isDisableSetDroppedOptimization() {
+        return disableSetDroppedOptimization;
+    }
+
+    public void setDisableSetDroppedOptimization(boolean disableSetDroppedOptimization) {
+        this.disableSetDroppedOptimization = disableSetDroppedOptimization;
+    }
+
+    private boolean disableGlobalEventOptimization = true;
+
+    public boolean isDisableGlobalEventOptimization() {
+        return disableGlobalEventOptimization;
+    }
+
+    public void setDisableGlobalEventOptimization(boolean disableGlobalEventOptimization) {
+        this.disableGlobalEventOptimization = disableGlobalEventOptimization;
+    }
 }

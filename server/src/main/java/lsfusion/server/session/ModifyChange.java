@@ -76,4 +76,16 @@ public class ModifyChange<P extends PropertyInterface> extends AbstractValuesCon
     public String toString() {
         return change + ", f:" + isFinal + ", p:" + preread;
     }
+
+    public ChangeType getChangeType() {
+        if(isEmpty()) {
+            assert isFinal;
+            return ChangeType.NOUPDATE;
+        }
+        Boolean setOrDropped = null;
+        if(preread.isEmpty())
+            setOrDropped = change.getSetOrDropped();
+
+        return ChangeType.get(isFinal, setOrDropped);
+    }
 }

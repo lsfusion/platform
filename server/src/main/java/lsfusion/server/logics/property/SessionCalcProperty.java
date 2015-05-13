@@ -19,6 +19,8 @@ public abstract class SessionCalcProperty<T extends PropertyInterface> extends S
 
     public abstract OldProperty<T> getOldProperty();
 
+    public abstract ChangedProperty<T> getChangedProperty();
+
     @Override
     public ImSet<OldProperty> getParseOldDepends() {
         return SetFact.singleton((OldProperty)getOldProperty());

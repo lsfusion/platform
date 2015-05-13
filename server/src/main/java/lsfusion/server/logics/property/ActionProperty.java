@@ -455,12 +455,18 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         return getEventOldDepends(SystemEvent.SESSION);
     }
     public ImSet<OldProperty> getEventOldDepends(SystemEvent event) { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
-        assert getSessionEnv(event)!=null;
+        assert getSessionEnv(event) != null;
         final PrevScope scope = event.getScope();
         return getOldDepends().filterFn(new SFunctionSet<OldProperty>() {
             public boolean contains(OldProperty element) {
                 return element.scope == scope;
-            }});
+            }
+        });
+    }
+    @IdentityLazy
+    public ImSet<SessionCalcProperty> getGlobalEventSessionCalcDepends() { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
+        assert getSessionEnv(SystemEvent.APPLY) != null;
+        return getSessionCalcDepends(true);
     }
 
     private ActionPropertyMapImplement<?, P> callCompile(boolean forExecution) {

@@ -164,7 +164,7 @@ public class MapCacheAspect {
             return (ImSet<CalcProperty>) thisJoinPoint.proceed();
 
         // оптимизация самого верхнего уровня, проверка на isEmpty нужна для того чтобы до finalize'a (в CaseUnionProperty в частности) не вызвать случайно getRecDepends, там в fillDepends на это assert есть
-        return (ImSet<CalcProperty>) CacheAspect.lazyIdentityExecute(property, thisJoinPoint, new Object[]{!implement.isEmpty() ? implement.filter(property.getRecDepends()) : implement}, true, CacheAspect.Type.SIMPLE);
+        return (ImSet<CalcProperty>) CacheAspect.lazyIdentityExecute(property, thisJoinPoint, new Object[]{!implement.isEmpty() ? implement.filterForProperty(property) : implement}, true, CacheAspect.Type.SIMPLE);
     }
 
     @Around("execution(* lsfusion.server.logics.property.CalcProperty.getUsedChanges(lsfusion.server.session.StructChanges)) " +

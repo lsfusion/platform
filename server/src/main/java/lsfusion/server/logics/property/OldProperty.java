@@ -37,6 +37,10 @@ public class OldProperty<T extends PropertyInterface> extends SessionCalcPropert
         return this;
     }
 
+    public ChangedProperty<T> getChangedProperty() {
+        return property.getChanged(IncrementType.CHANGED, scope);
+    }
+
     protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
         if(calcType instanceof CalcClassType) {
             return getVirtualTableExpr(joinImplement, (CalcClassType) calcType);

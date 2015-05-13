@@ -61,6 +61,7 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
     }
 
     public PropertyChanges(ImMap<? extends CalcProperty, ? extends PropertyChange> mapChanges, final boolean isFinal) {
+        assert isFinal;
         changes = ((ImMap<CalcProperty, PropertyChange>)mapChanges).mapValues(new GetValue<ModifyChange, PropertyChange>() {
                             public ModifyChange getMapValue(PropertyChange value) {
                                 return new ModifyChange(value, isFinal);

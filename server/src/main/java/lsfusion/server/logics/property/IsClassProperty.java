@@ -26,6 +26,7 @@ import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.session.StructChanges;
 
 public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
@@ -156,6 +157,10 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
             return new ActionPropertyMapImplement<PropertyInterface, ClassPropertyInterface>(changeClassAction, MapFact.singletonRev(changeClassAction.interfaces.single(), interfaces.single()));
         }
         return null;
+    }
+
+    public ImSet<CalcProperty> getRemoveUsedChanges(StructChanges newChanges) {
+        return getChanged(IncrementType.DROP, ChangeEvent.scope).getUsedChanges(newChanges);
     }
 
     public Where getRemoveWhere(Expr joinExpr, PropertyChanges newChanges) {

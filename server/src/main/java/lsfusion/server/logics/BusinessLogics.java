@@ -1220,7 +1220,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 mResult.exclAdd(property, SessionEnvEvent.ALWAYS);
             SessionEnvEvent sessionEnv;
             if (property instanceof ActionProperty && (sessionEnv = ((ActionProperty) property).getSessionEnv(SystemEvent.APPLY))!=null)
-                mResult.exclAdd(new ActionPropertyValueImplement((ActionProperty) property), sessionEnv);
+                mResult.exclAdd(property, sessionEnv);
         }
         return mResult.immutableOrder();
     }
@@ -1248,8 +1248,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         MMap<OldProperty, SessionEnvEvent> mSingleAppliedOld = MapFact.mMap(SessionEnvEvent.<OldProperty>mergeSessionEnv());
         for(int i=0,size=appliedProps.size();i<size;i++) {
             Object property = appliedProps.getKey(i);
-            if(property instanceof ActionPropertyValueImplement) {
-                ActionProperty actionProperty = ((ActionPropertyValueImplement) property).property;
+            if(property instanceof ActionPropertyValueImplement || property instanceof ActionProperty) {
+                ActionProperty actionProperty = property instanceof ActionPropertyValueImplement ? ((ActionPropertyValueImplement) property).property : (ActionProperty)property;
                 SessionEnvEvent sessionEnv;
                 if ((sessionEnv = actionProperty.getSessionEnv(SystemEvent.APPLY))!=null)
                     mSingleAppliedOld.addAll(actionProperty.getOldDepends().toMap(sessionEnv));
