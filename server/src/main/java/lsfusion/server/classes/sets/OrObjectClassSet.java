@@ -9,6 +9,8 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
@@ -21,6 +23,7 @@ import lsfusion.server.logics.property.IsClassField;
 import lsfusion.server.logics.property.ObjectClassField;
 
 import java.util.Comparator;
+import java.util.Set;
 
 // IMMUTABLE
 public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet, ObjectValueClassSet {
@@ -115,7 +118,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     }
 
     public OrObjectClassSet and(OrClassSet node) {
-        return and((OrObjectClassSet)node);
+        return and((OrObjectClassSet) node);
     }
 
     public OrObjectClassSet and(OrObjectClassSet node) {
@@ -230,7 +233,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
                 int countOthers = 0;
                 for (int i = 0, size = value.size(); i < size; i++) {
                     CustomClass customClass = value.getKey(i);
-                    if(commonSet.contains(customClass))
+                    if (commonSet.contains(customClass))
                         countCommon += value.getValue(i);
                     else
                         countOthers += value.getValue(i);
@@ -239,17 +242,33 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
             }
         });
 
+        final MAddExclMap<CustomClass, Integer> camelCaches = MapFact.mAddExclMap();
         return firstFulls.sort(new Comparator<CustomClass>() {
             public int compare(CustomClass o1, CustomClass o2) {
-                int cnt1 = pathCounts.get(o1);
-                int cnt2 = pathCounts.get(o2);
-                if (cnt1 > cnt2)
-                    return 1;
-                if (cnt1 < cnt2)
-                    return -1;
+                int result = Integer.compare(pathCounts.get(o1), pathCounts.get(o2));
+                if(result != 0)
+                    return result;
+
+                result = Integer.compare(getCamelCaseCommonWords(o2, camelCaches, commonSet), getCamelCaseCommonWords(o1, camelCaches, commonSet));
+                if(result != 0)
+                    return result;
+
                 return o1.getSID().compareTo(o2.getSID());
             }
         }).get(0);
+    }
+
+    private static int getCamelCaseCommonWords(CustomClass cls, MAddExclMap<CustomClass, Integer> caches, ImSet<CustomClass> commonSet) {
+        Integer result = caches.get(cls);
+        if(result == null) {
+            result = 0;
+            ImSet<String> words = SetFact.toSet(cls.getSID().split("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])"));
+            for(CustomClass commonClass : commonSet) {
+                result += words.filter(SetFact.toSet(commonClass.getSID().split("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])"))).size();
+            }
+            caches.exclAdd(cls, result);
+        }
+        return result;
     }
 
     // получает конкретный класс если он один
