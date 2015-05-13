@@ -12,6 +12,9 @@ fileIsDirectory 'Является директорией' = DATA LOCAL BOOLEAN (
 //ftp://username:password@host:port/path or file://path
 listFiles 'Получить список файлов' = ACTION CUSTOM 'lsfusion.erp.utils.utils.ListFilesActionProperty' (VARISTRING[255]); 
 
+resultCustomFile = DATA LOCAL CUSTOMFILE ();
+//value, charset, extension
+stringToCustomFile 'Запись строки в файл' = ACTION CUSTOM 'lsfusion.erp.utils.utils.StringToFileActionProperty' (VARISTRING[255], VARSTRING[10], VARSTRING[10]);
 // --------------------------------------------- Работа со строками --------------------------------- //
 
 stringEqualsAll(string) = string == STRING[3]('Все');
