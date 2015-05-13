@@ -84,14 +84,14 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     };
 
-    private TreeMap<DBVersion, List<SIDChange>> propertyCNChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
-    private TreeMap<DBVersion, List<SIDChange>> propertyDrawNameChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
-    private TreeMap<DBVersion, List<SIDChange>> storedPropertyCNChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
-    private TreeMap<DBVersion, List<SIDChange>> classSIDChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
-    private TreeMap<DBVersion, List<SIDChange>> tableSIDChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
-    private TreeMap<DBVersion, List<SIDChange>> objectSIDChanges = new TreeMap<DBVersion, List<SIDChange>>(dbVersionComparator);
+    private TreeMap<DBVersion, List<SIDChange>> propertyCNChanges = new TreeMap<>(dbVersionComparator);
+    private TreeMap<DBVersion, List<SIDChange>> propertyDrawNameChanges = new TreeMap<>(dbVersionComparator);
+    private TreeMap<DBVersion, List<SIDChange>> storedPropertyCNChanges = new TreeMap<>(dbVersionComparator);
+    private TreeMap<DBVersion, List<SIDChange>> classSIDChanges = new TreeMap<>(dbVersionComparator);
+    private TreeMap<DBVersion, List<SIDChange>> tableSIDChanges = new TreeMap<>(dbVersionComparator);
+    private TreeMap<DBVersion, List<SIDChange>> objectSIDChanges = new TreeMap<>(dbVersionComparator);
 
-    private Map<String, String> finalPropertyDrawNameChanges = new HashMap<String, String>();
+    private Map<String, String> finalPropertyDrawNameChanges = new HashMap<>();
     
     private DataAdapter adapter;
 
@@ -114,12 +114,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private final ThreadLocal<SQLSession> threadLocalSql;
 
-    private final Map<List<? extends CalcProperty>, Boolean> indexes = new HashMap<List<? extends CalcProperty>, Boolean>();
+    private final Map<List<? extends CalcProperty>, Boolean> indexes = new HashMap<>();
 
     public DBManager() {
         super(DBMANAGER_ORDER);
 
-        threadLocalSql = new ThreadLocal<SQLSession>();
+        threadLocalSql = new ThreadLocal<>();
     }
 
     public String getDataBaseName() {
@@ -325,7 +325,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         try {
             DataSession session = createSession(getSystemSql());
 
-            QueryBuilder<String, Object> q = new QueryBuilder<String, Object>(SetFact.singleton("key"));
+            QueryBuilder<String, Object> q = new QueryBuilder<>(SetFact.singleton("key"));
             q.and(
                     businessLogics.authenticationLM.hostnameComputer.getExpr(
                             session.getModifier(), q.getMapExprs().get("key")
@@ -360,7 +360,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             if (newDBStructure.getTable(table.getName()) == null) {
                 ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
                 Expr expr = GroupExpr.create(MapFact.<KeyField, KeyExpr>EMPTY(), new ValueExpr(new DataObject(1)), table.join(mapKeys).getWhere(), GroupType.SUM, MapFact.<KeyField, Expr>EMPTY());
-                ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> resultMap = new Query<Object, String>(MapFact.<Object, KeyExpr>EMPTYREV(), expr, "value").execute(createSession());
+                ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> resultMap = new Query<>(MapFact.<Object, KeyExpr>EMPTYREV(), expr, "value").execute(createSession());
                 if (!(resultMap instanceof EmptyOrderMap)) {
                     if (!droppedTables.equals("")) {
                         droppedTables += ", ";
@@ -381,12 +381,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             Map<List<Field>, Boolean> newTableIndices = null; Map<List<String>, Pair<Boolean, List<Field>>> newTableIndicesNames = null;
             if(newTable != null) {
                 newTableIndices = newDBStructure.tables.get(newTable);
-                newTableIndicesNames = new HashMap<List<String>, Pair<Boolean, List<Field>>>();
+                newTableIndicesNames = new HashMap<>();
                 for (Map.Entry<List<Field>, Boolean> entry : newTableIndices.entrySet()) {
-                    List<String> names = new ArrayList<String>();
+                    List<String> names = new ArrayList<>();
                     for (Field field : entry.getKey())
                         names.add(field.getName());
-                    newTableIndicesNames.put(names, new Pair<Boolean, List<Field>>(entry.getValue(), entry.getKey()));
+                    newTableIndicesNames.put(names, new Pair<>(entry.getValue(), entry.getKey()));
                 }
             }
 
@@ -410,9 +410,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
     
     private void checkUniqueDBName(NewDBStructure struct) {
-        Map<Pair<String, String>, DBStoredProperty> sids = new HashMap<Pair<String, String>, DBStoredProperty>();
+        Map<Pair<String, String>, DBStoredProperty> sids = new HashMap<>();
         for (DBStoredProperty property : struct.storedProperties) {
-            Pair<String, String> key = new Pair<String, String>(property.getDBName(), property.getTable().getName());
+            Pair<String, String> key = new Pair<>(property.getDBName(), property.getTable().getName());
             if (sids.containsKey(key)) {
                 systemLogger.error(String.format("Equal sid '%s' in table '%s': %s and %s", key.first, key.second, sids.get(key).getCanonicalName(), property.getCanonicalName()));
             }
@@ -448,7 +448,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         sqlTo.truncate(implementTable, owner);
 
         try {
-            final Result<Integer> proceeded = new Result<Integer>(0);
+            final Result<Integer> proceeded = new Result<>(0);
             final int total = sql.getCount(implementTable, owner);
             ResultHandler<KeyField, PropertyField> reader = new ReadBatchResultHandler<KeyField, PropertyField>(10000) {
                 public void start() {
@@ -534,7 +534,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         runMigrationScript();
 
-        Map<String, String> columnsToDrop = new HashMap<String, String>();
+        Map<String, String> columnsToDrop = new HashMap<>();
 
         try {
             sql.pushNoHandled();
@@ -556,7 +556,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             systemLogger.info("Applying migration script");
             
             // применяем к oldDBStructure изменения из migration script, переименовываем таблицы и поля  
-            alterateDBStructure(oldDBStructure, newDBStructure, sql);
+            alterDBStructure(oldDBStructure, newDBStructure, sql);
 
             // проверка, не удалятся ли старые таблицы
             if (denyDropTables) {
@@ -587,12 +587,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 }
             }
 
-            List<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
+            List<AggregateProperty> recalculateProperties = new ArrayList<>();
 
             MExclSet<Pair<String, String>> mDropColumns = SetFact.mExclSet(); // вообще pend'ить нужно только classDataProperty, но их тогда надо будет отличать
 
             // бежим по свойствам
-            List<DBStoredProperty> restNewDBStored = new ArrayList<DBStoredProperty>(newDBStructure.storedProperties);
+            List<DBStoredProperty> restNewDBStored = new ArrayList<>(newDBStructure.storedProperties);
             for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
                 Table oldTable = oldDBStructure.getTable(oldProperty.tableName);
 
@@ -643,10 +643,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                             columnsToDrop.put(newName, oldProperty.tableName);
                         } catch (PSQLException e) { // колонка с новым именем уже существует
                             connection.rollback(savepoint);
-                            mDropColumns.exclAdd(new Pair<String, String>(oldTable.getName(syntax), oldProperty.getDBName()));
+                            mDropColumns.exclAdd(new Pair<>(oldTable.getName(syntax), oldProperty.getDBName()));
                         }
                     } else
-                        mDropColumns.exclAdd(new Pair<String, String>(oldTable.getName(syntax), oldProperty.getDBName()));
+                        mDropColumns.exclAdd(new Pair<>(oldTable.getName(syntax), oldProperty.getDBName()));
                 }
             }
 
@@ -672,7 +672,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 DBStoredProperty classProp = newDBStructure.getProperty(toCopy.getKey(i));
                 Table table = newDBStructure.getTable(classProp.tableName);
 
-                QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<KeyField, PropertyField>(table);
+                QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
                 Expr keyExpr = copyObjects.getMapExprs().singleValue();
                 Where moveWhere = Where.FALSE;
                 ImMap<String, ImSet<Integer>> copyFrom = toCopy.getValue(i);
@@ -701,7 +701,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 DBStoredProperty classProp = oldDBStructure.getProperty(toClean.getKey(i));
                 Table table = oldDBStructure.getTable(classProp.tableName);
 
-                QueryBuilder<KeyField, PropertyField> dropClassObjects = new QueryBuilder<KeyField, PropertyField>(table);
+                QueryBuilder<KeyField, PropertyField> dropClassObjects = new QueryBuilder<>(table);
                 Where moveWhere = Where.FALSE;
 
                 PropertyField oldField = table.findProperty(classProp.getDBName());
@@ -758,9 +758,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             newDBStructure.writeConcreteClasses(outDB);
 
             try {
-                sql.insertRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
+                sql.insertRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(outDBStruct.toByteArray(), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
             } catch (Exception e) {
-                ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(structTable.struct, (ObjectValue) new DataObject((Object) new byte[0], ByteArrayClass.instance));
+                ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(structTable.struct, (ObjectValue) new DataObject(new byte[0], ByteArrayClass.instance));
                 sql.insertRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, TableOwner.global, OperationOwner.unknown);
             }
 
@@ -819,26 +819,26 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private boolean migrateReflectionProperties(OldDBStructure oldDBStructure, SQLSession sql) throws SQLException, SQLHandledException {
         DBVersion oldDBVersion = oldDBStructure.dbVersion;
-        Map<String, String> nameChanges = alteratePropertyChangesNewInferAlgorithm(oldDBStructure, getChangesAfter(oldDBVersion, propertyCNChanges), sql, businessLogics.getOrderProperties());;
+        Map<String, String> nameChanges = alterPropertyChangesNewInferAlgorithm(oldDBStructure, getChangesAfter(oldDBVersion, propertyCNChanges), sql, businessLogics.getOrderProperties());
         ImportField oldCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
         ImportField newCanonicalNameField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
 
         ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertyCanonicalName.getMapping(oldCanonicalNameField));
 
         try {
-            List<List<Object>> data = new ArrayList<List<Object>>();
+            List<List<Object>> data = new ArrayList<>();
             for (String oldName : nameChanges.keySet()) {
                 data.add(Arrays.<Object>asList(oldName, nameChanges.get(oldName)));
             }
 
-            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+            List<ImportProperty<?>> properties = new ArrayList<>();
             properties.add(new ImportProperty(newCanonicalNameField, reflectionLM.canonicalNameProperty.getMapping(keyProperty)));
 
             ImportTable table = new ImportTable(asList(oldCanonicalNameField, newCanonicalNameField), data);
 
             DataSession session = createSession(OperationOwner.unknown); // создание сессии аналогично fillIDs
 
-            IntegrationService service = new IntegrationService(session, table, asList(keyProperty), properties);
+            IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties);
             service.synchronize(false, false);
 
             boolean result = session.apply(businessLogics);
@@ -856,7 +856,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         ImportKey<?> keyNavigatorElement = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementSID.getMapping(sidNavigatorElementField));
 
         try {
-            List<List<Object>> data = new ArrayList<List<Object>>();
+            List<List<Object>> data = new ArrayList<>();
             
             for (NavigatorElement element : businessLogics.getNavigatorElements()) {
                 if (element.isNamed()) {
@@ -867,16 +867,16 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 }
             }
 
-            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+            List<ImportProperty<?>> properties = new ArrayList<>();
             properties.add(new ImportProperty(sidNavigatorElementField, reflectionLM.sidNavigatorElement.getMapping(keyNavigatorElement)));
             properties.add(new ImportProperty(canonicalNameNavigatorElementField, reflectionLM.canonicalNameNavigatorElement.getMapping(keyNavigatorElement)));
 
-            List<ImportDelete> deletes = new ArrayList<ImportDelete>();
+            List<ImportDelete> deletes = new ArrayList<>();
             deletes.add(new ImportDelete(keyNavigatorElement, LM.is(reflectionLM.navigatorElement).getMapping(keyNavigatorElement), false));
 
             ImportTable table = new ImportTable(asList(sidNavigatorElementField, canonicalNameNavigatorElementField), data);
 
-            IntegrationService service = new IntegrationService(session, table, asList(keyNavigatorElement), properties, deletes);
+            IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyNavigatorElement), properties, deletes);
             service.synchronize(true, false);
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -897,12 +897,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private void updateClassStat(SQLSession session) throws SQLException, SQLHandledException {        
 
-        Map<Integer, Integer> customObjectClassMap = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> customObjectClassMap = new HashMap<>();
 
         KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
         ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object)"innerInvoice", customObjectClassExpr);
 
-        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
         query.addProperty("statCustomObjectClass", LM.statCustomObjectClass.getExpr(customObjectClassExpr));
         query.and(LM.statCustomObjectClass.getExpr(customObjectClassExpr).getWhere());
 
@@ -926,7 +926,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public String checkAggregations(SQLSession session) throws SQLException, SQLHandledException {
         List<AggregateProperty> checkProperties = businessLogics.getAggregateStoredProperties();
 
-        final Result<Integer> proceeded = new Result<Integer>(0);
+        final Result<Integer> proceeded = new Result<>(0);
         int total = checkProperties.size();
         ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
         try {
@@ -1009,7 +1009,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         adapter.ensureLogLevel(Settings.get().getLogLevelJDBC());
     }
 
-    public static interface RunServiceData {
+    public interface RunServiceData {
         void run(SessionCreator sql) throws SQLException, SQLHandledException;
     }
 
@@ -1024,7 +1024,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             run.run(creator);
     }
 
-    public static interface RunService {
+    public interface RunService {
         void run(SQLSession sql) throws SQLException, SQLHandledException;
     }
 
@@ -1052,8 +1052,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             run.run(session);
     }
     public String recalculateAggregations(SQLSession session, final List<AggregateProperty> recalculateProperties, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        final List<String> messageList = new ArrayList<String>();
-        final Result<Integer> proceeded = new Result<Integer>(0);
+        final List<String> messageList = new ArrayList<>();
+        final Result<Integer> proceeded = new Result<>(0);
         final int total = recalculateProperties.size();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
@@ -1207,7 +1207,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
     
     private void renameMigratingProperties(SQLSession sql, OldDBStructure oldData) throws SQLException, SQLHandledException {
-        Map<String, String> propertyChanges = alteratePropertyChangesNewInferAlgorithm(oldData, getChangesAfter(oldData.dbVersion, storedPropertyCNChanges), sql, businessLogics.getStoredProperties());
+        Map<String, String> propertyChanges = alterPropertyChangesNewInferAlgorithm(oldData, getChangesAfter(oldData.dbVersion, storedPropertyCNChanges), sql, businessLogics.getStoredProperties());
         for (Map.Entry<String, String> entry : propertyChanges.entrySet()) {
             boolean found = false;
             for (DBStoredProperty oldProperty : oldData.storedProperties) {
@@ -1269,7 +1269,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
 
         // Теперь изменим в старой структуре классовые свойства. Предполагаем, что в одной таблице может быть только одно классовое свойство. Переименовываем поля в таблицах
-        Map<String, String> tableNewClassProps = new HashMap<String, String>();
+        Map<String, String> tableNewClassProps = new HashMap<>();
         for (DBConcreteClass cls : newData.concreteClasses) {
             DBStoredProperty classProp = newData.getProperty(cls.sDataPropID);
             assert classProp != null;
@@ -1281,7 +1281,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
         }
         
-        Map<String, String> nameRenames = new HashMap<String, String>();
+        Map<String, String> nameRenames = new HashMap<>();
         for (DBConcreteClass cls : oldData.concreteClasses) {
             if (!nameRenames.containsKey(cls.sDataPropID)) {
                 DBStoredProperty oldClassProp = oldData.getProperty(cls.sDataPropID);
@@ -1302,7 +1302,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     } 
     
     private void migrateDBNames(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
-        Map<String, DBStoredProperty> newProperties = new HashMap<String, DBStoredProperty>();
+        Map<String, DBStoredProperty> newProperties = new HashMap<>();
         for (DBStoredProperty newProperty : newData.storedProperties) {
             newProperties.put(newProperty.getCanonicalName(), newProperty);
         }
@@ -1319,7 +1319,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
     
-    private Map<String, String> alteratePropertyChangesNewInferAlgorithm(SQLSession sql, ImOrderSet<? extends Property> props) throws SQLException, SQLHandledException {
+    private Map<String, String> alterPropertyChangesNewInferAlgorithm(SQLSession sql, ImOrderSet<? extends Property> props) throws SQLException, SQLHandledException {
         // бежим по всем свойствам
         OperationOwner opOwner = OperationOwner.unknown;
 
@@ -1327,7 +1327,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         final StringClass nameClass = StringClass.get(false, false, 1000);
         final StringClass maskClass = StringClass.get(false, false, 1000);
         final StringClass captionClass = StringClass.get(false, false, 1000);
-        SingleKeyTableUsage table = new SingleKeyTableUsage<String>(nameClass, SetFact.toOrderExclSet("mask", "shortname"), new Type.Getter<String>() {
+        SingleKeyTableUsage table = new SingleKeyTableUsage<>(nameClass, SetFact.toOrderExclSet("mask", "shortname"), new Type.Getter<String>() {
             public Type getType(String key) {
                 return key.equals("mask") ? maskClass : captionClass;
             }
@@ -1357,9 +1357,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
         }), opOwner);
 
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
 
-        QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.toSet("key1", "key2"));
+        QueryBuilder<String, String> query = new QueryBuilder<>(SetFact.toSet("key1", "key2"));
         Expr key1Expr = query.getMapExprs().get("key1");
         Expr key2Expr = query.getMapExprs().get("key2");
 
@@ -1396,10 +1396,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return new SerializedTable("reflection_property", SetFact.singletonOrder(kf), SetFact.singleton(pf), LM.baseClass).join(MapFact.singleton(kf, key1Expr)).getExpr(pf);
     }
 
-    private Map<String, String> alteratePropertyChangesNewInferAlgorithm(OldDBStructure oldDBStructure, Map<String, String> map, SQLSession sql, ImOrderSet<? extends Property> props) throws SQLException, SQLHandledException {
+    private Map<String, String> alterPropertyChangesNewInferAlgorithm(OldDBStructure oldDBStructure, Map<String, String> map, SQLSession sql, ImOrderSet<? extends Property> props) throws SQLException, SQLHandledException {
         if(oldDBStructure.version < 19 && oldDBStructure.version > 0) {
-            Map<String, String> resultChanges = alteratePropertyChangesNewInferAlgorithm(sql, props);
-            Map<String, String> versionChangesMap = new HashMap<String, String>(map);
+            Map<String, String> resultChanges = alterPropertyChangesNewInferAlgorithm(sql, props);
+            Map<String, String> versionChangesMap = new HashMap<>(map);
             // todo [dale]: копипаст из getChangesAfter, нужно все это убрать после перехода всех проектов на 18 версию базы
             
             // Если в текущей версии есть переименование a -> b, а в предыдущих версиях есть c -> a, то заменяем c -> a на c -> b
@@ -1420,7 +1420,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
 
             // Проверяем, чтобы не было нескольких переименований в одно и то же
-            Set<String> renameToSIDs = new HashSet<String>();
+            Set<String> renameToSIDs = new HashSet<>();
             for (String renameTo : resultChanges.values()) {
                 if (renameToSIDs.contains(renameTo)) {
                     throw new RuntimeException(String.format("Renaming to '%s' twice.", renameTo));
@@ -1434,7 +1434,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     // Не разбирается с индексами. Было решено, что сохранять индексы необязательно.
-    private void alterateDBStructure(OldDBStructure oldData, NewDBStructure newData, SQLSession sql) throws SQLException, SQLHandledException {
+    private void alterDBStructure(OldDBStructure oldData, NewDBStructure newData, SQLSession sql) throws SQLException, SQLHandledException {
         // Сохраним изменения имен свойств на форме для reflectionManager
         finalPropertyDrawNameChanges = getChangesAfter(oldData.dbVersion, propertyDrawNameChanges);
         
@@ -1525,12 +1525,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     } 
     
     private Map<String, String> getChangesAfter(DBVersion versionAfter, TreeMap<DBVersion, List<SIDChange>> allChanges) {
-        Map<String, String> resultChanges = new OrderedMap<String, String>();
+        Map<String, String> resultChanges = new OrderedMap<>();
 
         for (Map.Entry<DBVersion, List<SIDChange>> changesEntry : allChanges.entrySet()) {
             if (changesEntry.getKey().compare(versionAfter) > 0) {
                 List<SIDChange> versionChanges = changesEntry.getValue();
-                Map<String, String> versionChangesMap = new OrderedMap<String, String>();
+                Map<String, String> versionChangesMap = new OrderedMap<>();
 
                 for (SIDChange change : versionChanges) {
                     if (versionChangesMap.containsKey(change.oldSID)) {
@@ -1557,7 +1557,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 }
 
                 // Проверяем, чтобы не было нескольких переименований в одно и то же
-                Set<String> renameToSIDs = new HashSet<String>();
+                Set<String> renameToSIDs = new HashSet<>();
                 for (String renameTo : resultChanges.values()) {
                     if (renameToSIDs.contains(renameTo)) {
                         throw new RuntimeException(String.format("Renaming to '%s' twice.", renameTo));
@@ -1571,7 +1571,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     @NFLazy
     public void addIndex(LCP<?>... lps) {
-        List<CalcProperty> index = new ArrayList<CalcProperty>();
+        List<CalcProperty> index = new ArrayList<>();
         for (LCP<?> lp : lps) {
             index.add((CalcProperty) lp.property);
         }
@@ -1610,7 +1610,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public static int SESSION_TIL = -1;
     public static int ID_TIL = Connection.TRANSACTION_REPEATABLE_READ;
     
-    private static Stack<Integer> STACK_TIL = new Stack<Integer>();
+    private static Stack<Integer> STACK_TIL = new Stack<>();
     
     public static void pushTIL(Integer TIL) {
         STACK_TIL.push(TIL);
@@ -1649,7 +1649,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         try {
             DataSession session = createSession();
 
-            QueryBuilder<String, Object> query = new QueryBuilder<String, Object>(SetFact.singleton("key"));
+            QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
             query.and(query.getMapExprs().singleValue().isClass(businessLogics.authenticationLM.systemUser));
             ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
             if (rows.size() == 0) { // если нету добавим
@@ -1658,7 +1658,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             } else
                 systemUserObject = (Integer) rows.single().get("key");
 
-            query = new QueryBuilder<String, Object>(SetFact.singleton("key"));
+            query = new QueryBuilder<>(SetFact.singleton("key"));
             query.and(businessLogics.authenticationLM.hostnameComputer.getExpr(session.getModifier(), query.getMapExprs().singleValue()).compare(new DataObject("systemhost"), Compare.EQUALS));
             rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
             if (rows.size() == 0) { // если нету добавим
@@ -1766,10 +1766,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private abstract class DBStructure<F> {
         public int version;
         public DBVersion dbVersion;
-        public List<String> modulesList = new ArrayList<String>();
-        public Map<Table, Map<List<F>, Boolean>> tables = new HashMap<Table, Map<List<F>, Boolean>>();
-        public List<DBStoredProperty> storedProperties = new ArrayList<DBStoredProperty>();
-        public Set<DBConcreteClass> concreteClasses = new HashSet<DBConcreteClass>();
+        public List<String> modulesList = new ArrayList<>();
+        public Map<Table, Map<List<F>, Boolean>> tables = new HashMap<>();
+        public List<DBStoredProperty> storedProperties = new ArrayList<>();
+        public Set<DBConcreteClass> concreteClasses = new HashSet<>();
 
         public void writeConcreteClasses(DataOutputStream outDB) throws IOException { // отдельно от write, так как ID заполняются после fillIDs
             outDB.writeInt(concreteClasses.size());
@@ -1819,7 +1819,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
                 ImplementTable indexTable = baseProperty.mapTable.table;
 
-                List<Field> tableIndex = new ArrayList<Field>();
+                List<Field> tableIndex = new ArrayList<>();
                 tableIndex.add(baseProperty.field);
 
                 while (i.hasNext()) {
@@ -1899,9 +1899,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
                 for (int i = inputDB.readInt(); i > 0; i--) {
                     SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass);
-                    Map<List<String>, Boolean> indices = new HashMap<List<String>, Boolean>();
+                    Map<List<String>, Boolean> indices = new HashMap<>();
                     for (int j = inputDB.readInt(); j > 0; j--) {
-                        List<String> index = new ArrayList<String>();
+                        List<String> index = new ArrayList<>();
                         for (int k = inputDB.readInt(); k > 0; k--) {
                             index.add(inputDB.readUTF());
                         }
@@ -1925,8 +1925,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     } else {
                         sID = inputDB.readUTF();
                     }
-                    boolean isDataProperty = true;
-                    isDataProperty = inputDB.readBoolean();
+                    boolean isDataProperty = inputDB.readBoolean();
                     
                     String tableName = inputDB.readUTF();
                     Table prevTable = getTable(tableName);
@@ -1962,9 +1961,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
 
         public static List<Integer> versionToList(String version) {
-            String[] splittedArr = version.split("\\.");
-            List<Integer> intVersion = new ArrayList<Integer>();
-            for (String part : splittedArr) {
+            String[] splitArr = version.split("\\.");
+            List<Integer> intVersion = new ArrayList<>();
+            for (String part : splitArr) {
                 intVersion.add(Integer.parseInt(part));
             }
             return intVersion;

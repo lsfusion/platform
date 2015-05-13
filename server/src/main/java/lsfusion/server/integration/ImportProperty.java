@@ -3,7 +3,6 @@ package lsfusion.server.integration;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.Message;
 import lsfusion.server.ThisMessage;
@@ -13,7 +12,6 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.Where;
-import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyImplement;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.*;
@@ -123,6 +121,6 @@ public class ImportProperty <P extends PropertyInterface> {
             changeWhere = changeWhere.and(implement.property.getExpr(mapKeys, modifier).getWhere().not());
         }
 
-        return ((CalcProperty<P>)implement.property).getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), modifier);
+        return (implement.property).getDataChanges(new PropertyChange<>(mapKeys, changeExpr, changeWhere), modifier);
     }
 }

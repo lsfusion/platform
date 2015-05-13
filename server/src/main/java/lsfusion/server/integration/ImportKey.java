@@ -33,7 +33,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
     CustomClass keyClass;
     final CalcPropertyImplement<P, ImportFieldInterface> implement;
 
-    public ImportKey(ImportKey key) {
+    public ImportKey(ImportKey<P> key) {
         this.keyClass = key.keyClass;
         this.implement = key.implement;
     }
@@ -100,7 +100,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
         Where where = GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), Where.TRUE, mapKeys).getWhere().and( // в импортируемой таблице
                 implement.property.getExpr(mapKeys, session.getModifier()).getWhere().not()); // для которых не определился объект
 
-        return session.addObjects((ConcreteCustomClass)keyClass, new PropertySet<P>(mapKeys, where, MapFact.<Expr, Boolean>EMPTYORDER(), false));
+        return session.addObjects((ConcreteCustomClass)keyClass, new PropertySet<>(mapKeys, where, MapFact.<Expr, Boolean>EMPTYORDER(), false));
     }
 
     @Override
