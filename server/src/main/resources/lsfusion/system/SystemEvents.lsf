@@ -69,6 +69,9 @@ remoteAddressConnection 'IP пользователя' = DATA VARSTRING[40] (Conn
 userConnection 'Пользователь' = DATA CustomUser (Connection);
 userLoginConnection 'Логин пользователя' (connection) = loginCustomUser(userConnection(connection));
 
+osVersionConnection 'Операционная система' = DATA TEXT (Connection);
+javaVersionConnection 'Версия java' = DATA VARSTRING[100] (Connection);
+
 countConnectionUser 'Кол-во подключений' = GROUP SUM 1 BY userConnection(connection) PERSISTENT; 
 CONSTRAINT DROPPED(u IS CustomUser) AND PREV(countConnectionUser(u))
     MESSAGE 'Запрещено удалять пользователей, которые подключались к системе';
@@ -119,8 +122,8 @@ userLoginConnectionSession 'Логин пользователя' = userLoginConn
 FORM connections 'Журнал подключений'
 
     OBJECTS c=Connection
-    PROPERTIES (c) READONLY hostnameComputerConnection, remoteAddressConnection, userLoginConnection, nameConnectionStatusConnection,
-                            connectTimeConnection, disconnectTimeConnection
+    PROPERTIES (c) READONLY hostnameComputerConnection, remoteAddressConnection, userLoginConnection, osVersionConnection, javaVersionConnection,
+                            nameConnectionStatusConnection, connectTimeConnection, disconnectTimeConnection
 
     OBJECTS n=NavigatorElement
     PROPERTIES (n) READONLY captionNavigatorElement, canonicalNameNavigatorElement

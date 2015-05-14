@@ -39,6 +39,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP remoteAddressConnection;
     public LCP userConnection;
     public LCP userLoginConnection;
+    public LCP osVersionConnection;
+    public LCP javaVersionConnection;
     public LCP<PropertyInterface> connectionStatusConnection;
     public LCP connectTimeConnection;
     public LCP disconnectTimeConnection;
@@ -100,6 +102,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         remoteAddressConnection = findProperty("remoteAddressConnection");
         userConnection = findProperty("userConnection");
         userLoginConnection = findProperty("userLoginConnection");
+        osVersionConnection = findProperty("osVersionConnection");
+        javaVersionConnection = findProperty("javaVersionConnection");
         connectionStatusConnection = (LCP<PropertyInterface>) findProperty("connectionStatusConnection");
 
         connectTimeConnection = findProperty("connectTimeConnection");

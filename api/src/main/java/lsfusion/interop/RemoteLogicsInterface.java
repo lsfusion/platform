@@ -16,7 +16,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     
     String getUserTimeZone() throws RemoteException;
 
-    RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean forceCreateNew) throws RemoteException;
+    RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, String osVersion, String javaVersion, boolean forceCreateNew) throws RemoteException;
 
     Integer getComputer(String hostname) throws RemoteException;
 

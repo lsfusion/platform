@@ -9,6 +9,8 @@ import lsfusion.interop.exceptions.LoginException;
 import lsfusion.interop.exceptions.RemoteInternalException;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 
+import javax.swing.*;
+import java.awt.*;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -131,7 +133,9 @@ public final class LoginAction {
             remoteLogics = new RemoteBusinessLogicProxy(remote);
             computerId = remoteLogics.getComputer(SystemUtils.getLocalHostName());
 
-            remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), loginInfo.getUserName(), loginInfo.getPassword(), computerId, SystemUtils.getLocalHostIP(), true);
+            String osVersion = getOsVersion();
+            String javaVersion = System.getProperty("java.version") + " " + System.getProperty("sun.arch.data.model") + " bit";
+            remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), loginInfo.getUserName(), loginInfo.getPassword(), computerId, SystemUtils.getLocalHostIP(), osVersion, javaVersion, true);
             if (remoteNavigator == null) {
                 Main.remoteLoader = null;
                 return PENDING_RESTART_WARNING;
@@ -176,5 +180,26 @@ public final class LoginAction {
 
     public void setAutoLogin(boolean autoLogin) {
         this.autoLogin = autoLogin;
+    }
+
+    private String getOsVersion() {
+
+        String memory = String.format("\nProcessor: %s, %s\n", System.getenv("PROCESSOR_IDENTIFIER"), System.getenv("PROCESSOR_ARCHITECTURE"));
+        /* Total number of processors or cores available to the JVM */
+        memory += String.format("Cores: %s\n", Runtime.getRuntime().availableProcessors());
+        /* Total amount of physical memory */
+        com.sun.management.OperatingSystemMXBean os = (com.sun.management.OperatingSystemMXBean)
+                java.lang.management.ManagementFactory.getOperatingSystemMXBean();
+        memory += String.format("Physical memory: %s MB\n", os.getTotalPhysicalMemorySize() / 1048576);
+        /* Total amount of free memory available to the JVM */
+        memory += String.format("Free memory: %s MB\n", Runtime.getRuntime().freeMemory() / 1048576);
+        /* Maximum amount of memory the JVM will attempt to use */
+        memory += String.format("Maximum memory: %s MB\n", Runtime.getRuntime().maxMemory() / 1048576);
+        /* Total memory currently available to the JVM */
+        memory += String.format("Total memory available to JVM: %s MB\n", Runtime.getRuntime().totalMemory() / 1048576);
+
+        Object notClassic = Toolkit.getDefaultToolkit().getDesktopProperty("win.xpstyle.themeActive");
+        return System.getProperty("os.name") + (UIManager.getLookAndFeel().getID().equals("Windows")
+                && (notClassic instanceof Boolean && !(Boolean) notClassic) ? " Classic" : "") + memory;
     }
 }

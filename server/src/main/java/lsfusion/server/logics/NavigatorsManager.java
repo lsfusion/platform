@@ -97,7 +97,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         executor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(logicsInstance.getContext(), "navigator-manager-daemon"));
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, boolean reuseSession) {
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, String osVersion, String javaVersion, boolean reuseSession) {
         //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
         reuseSession = false;
 
@@ -126,7 +126,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
             }
 
             RemoteNavigator navigator = new RemoteNavigator(logicsInstance, isFullClient, remoteAddress, user, computer, rmiManager.getExportPort(), session);
-            addNavigator(loginKey, navigator, securityManager.isUniversalPassword(password));
+            addNavigator(loginKey, navigator, osVersion, javaVersion, securityManager.isUniversalPassword(password));
 
             return navigator;
         } catch (Exception e) {
@@ -141,7 +141,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
     }
 
-    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator, boolean skipLogging) throws SQLException, SQLHandledException {
+    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator, String osVersion, String javaVersion, boolean skipLogging) throws SQLException, SQLHandledException {
         synchronized (navigators) {
 
             if (!skipLogging) {
@@ -149,6 +149,8 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
                 DataObject newConnection = session.addObject(businessLogics.systemEventsLM.connection);
                 businessLogics.systemEventsLM.userConnection.change(navigator.getUser().object, session, newConnection);
+                businessLogics.systemEventsLM.osVersionConnection.change(osVersion, session, newConnection);
+                businessLogics.systemEventsLM.javaVersionConnection.change(javaVersion, session, newConnection);
                 businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer().object, session, newConnection);
                 businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
                 businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.read(session), session, newConnection);
