@@ -35,7 +35,8 @@ public class ImportXLSXIterator extends ImportIterator {
 
         XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(file));
         sheet = wb.getSheetAt(sheetIndex == null ? 0 : (sheetIndex - 1));
-        lastRow = sheet.getLastRowNum() + 1;
+        lastRow = sheet.getLastRowNum();
+        lastRow = lastRow == 0 && sheet.getRow(0) == null ? 0 : (lastRow + 1);
     }
 
     @Override

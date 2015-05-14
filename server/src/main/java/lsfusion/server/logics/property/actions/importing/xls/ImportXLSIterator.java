@@ -35,7 +35,8 @@ public class ImportXLSIterator extends ImportIterator {
         HSSFWorkbook wb = new HSSFWorkbook(new ByteArrayInputStream(file));
         
         sheet = wb.getSheetAt(sheetIndex == null ? 0 : (sheetIndex - 1));
-        lastRow = sheet.getLastRowNum() + 1;
+        lastRow = sheet.getLastRowNum();
+        lastRow = lastRow == 0 && sheet.getRow(0) == null ? 0 : (lastRow + 1);
     }
 
     @Override
