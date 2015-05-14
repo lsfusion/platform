@@ -405,7 +405,7 @@ public abstract class LogicsModule {
     protected ConcreteCustomClass addConcreteClass(String name, String caption, List<String> sids, List<String> names, CustomClass... parents) {
         assert parents.length > 0;
         ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, getVersion(), parents);
-        customClass.addStaticObjects(sids, names, version);        
+        customClass.addStaticObjects(sids, names, getVersion());
         storeCustomClass(customClass);
         return customClass;
     }

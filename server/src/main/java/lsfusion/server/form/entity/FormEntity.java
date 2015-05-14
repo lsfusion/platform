@@ -83,7 +83,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return eventActions.getListIt(eventObject);
     }
 
-    private NFOrderSet<GroupObjectEntity> groups = NFFact.orderSet();
+    private NFOrderSet<GroupObjectEntity> groups = NFFact.orderSet(true); // для script'ов, findObjectEntity в FORM / EMAIL objects
     public Iterable<GroupObjectEntity> getGroupsIt() {
         return groups.getIt();
     }
