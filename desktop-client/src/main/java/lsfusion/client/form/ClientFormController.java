@@ -119,11 +119,11 @@ public class ClientFormController implements AsyncListener {
 
     private ScheduledExecutorService autoRefreshScheduler;
 
-    public ClientFormController(String canonicalName, String formSID, RemoteFormInterface remoteForm, ClientNavigator clientNavigator) {
-        this(canonicalName, formSID, remoteForm, clientNavigator, false, false);
+    public ClientFormController(String canonicalName, String formSID, RemoteFormInterface remoteForm, byte[] firstChanges, ClientNavigator clientNavigator) {
+        this(canonicalName, formSID, remoteForm, firstChanges, clientNavigator, false, false);
     }
 
-    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
+    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
         formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
         canonicalName = icanonicalName;
         isDialog = iisDialog;
@@ -151,7 +151,7 @@ public class ClientFormController implements AsyncListener {
 
             formLayout = new ClientFormLayout(this, form.mainContainer);
 
-            initializeForm();
+            initializeForm(firstChanges);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -196,16 +196,20 @@ public class ClientFormController implements AsyncListener {
     // ------------------------------------------------------------------------------------ //
     // ----------------------------------- Инициализация ---------------------------------- //
     // ------------------------------------------------------------------------------------ //
-    private void initializeForm() throws Exception {
+    private void initializeForm(byte[] firstChanges) throws Exception {
         initializeColorPreferences();
         
         initializeControllers();
 
         initializeRegularFilters();
 
-        initializeDefaultOrders();
+        if(firstChanges != null) {
+            applyFormChanges(-1, firstChanges);
+        } else {
+            getRemoteChanges(false);
+        }
 
-        getRemoteChanges(false);
+        initializeDefaultOrders();
 
         initializeAutoRefresh();
     }
@@ -490,33 +494,60 @@ public class ClientFormController implements AsyncListener {
         return simpleDispatcher;
     }
 
+    private Map<ClientGroupObject, OrderedMap<ClientPropertyDraw, Boolean>> groupDefaultOrders() {
+        Map<ClientGroupObject, OrderedMap<ClientPropertyDraw, Boolean>> orders = new HashMap<>();
+        for(Map.Entry<ClientPropertyDraw, Boolean> defaultOrder : form.defaultOrders.entrySet()) {
+            ClientGroupObject groupObject = defaultOrder.getKey().getGroupObject();
+            OrderedMap<ClientPropertyDraw, Boolean> order = orders.get(groupObject);
+            if(order == null) {
+                order = new OrderedMap<>();
+                orders.put(groupObject,order);
+            }
+            order.put(defaultOrder.getKey(), defaultOrder.getValue());
+        }
+        return orders;
+    }
+
     public void initializeDefaultOrders() throws IOException {
-        getRemoteChanges(false);
         try {
             //применяем все свойства по умолчанию
-            applyOrders(form.defaultOrders);
+            applyOrders(form.defaultOrders, null);
             defaultOrdersInitialized = true;
 
             //применяем пользовательские свойства
-            OrderedMap<ClientPropertyDraw, Boolean> userOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
+            boolean hasUserOrders = false;
+            Map<ClientGroupObject, OrderedMap<ClientPropertyDraw, Boolean>> defaultOrders = null;
             for (GroupObjectController controller : controllers.values()) {
-                userOrders.putAll(controller.getUserOrders());
+                OrderedMap<ClientPropertyDraw, Boolean> objectUserOrders = controller.getUserOrders();
+                if(objectUserOrders != null) {
+                    if(defaultOrders == null)
+                        defaultOrders = groupDefaultOrders();
+                    OrderedMap<ClientPropertyDraw, Boolean> defaultObjectOrders = defaultOrders.get(controller.getGroupObject());
+                    if(defaultObjectOrders == null)
+                        defaultObjectOrders = new OrderedMap<>();
+                    if(!BaseUtils.hashEquals(defaultObjectOrders, objectUserOrders)) {
+                        applyOrders(objectUserOrders, controller);
+                        hasUserOrders = true;
+                    }
+                }
             }
-            applyOrders(userOrders);
+            if(hasUserOrders)
+                getRemoteChanges(false);
         } catch (IOException e) {
             throw new RuntimeException(getString("form.error.cant.initialize.default.orders"));
         }
     }
 
-    public void applyDefaultOrders(ClientGroupObject groupObject) throws IOException {
-        applyOrders(form.getDefaultOrders(groupObject));    
+    public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders(ClientGroupObject groupObject) {
+        return form.getDefaultOrders(groupObject);
     }
 
-    public void applyOrders(OrderedMap<ClientPropertyDraw, Boolean> orders) throws IOException {
+    public void applyOrders(OrderedMap<ClientPropertyDraw, Boolean> orders, GroupObjectController groupObjectController) throws IOException {
         Set<ClientGroupObject> wasOrder = new HashSet<ClientGroupObject>();
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet()) {
             ClientPropertyDraw property = entry.getKey();
             ClientGroupObject groupObject = property.getGroupObject();
+            assert groupObjectController == null || groupObject.equals(groupObjectController.getGroupObject());
             GroupObjectLogicsSupplier groupObjectLogicsSupplier = getGroupObjectLogicsSupplier(groupObject);
             if (groupObjectLogicsSupplier != null) {
                 groupObjectLogicsSupplier.changeOrder(property, !wasOrder.contains(groupObject) ? REPLACE : ADD);
@@ -524,6 +555,12 @@ public class ClientFormController implements AsyncListener {
                 if (!entry.getValue()) {
                     groupObjectLogicsSupplier.changeOrder(property, DIR);
                 }
+            }
+        }
+        if(groupObjectController != null) {
+            ClientGroupObject groupObject = groupObjectController.getGroupObject();
+            if(!wasOrder.contains(groupObject)) {
+                groupObjectController.clearOrders();
             }
         }
     }
@@ -587,6 +624,8 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void modifyFormChangesWithChangeCurrentObjectAsyncs(long currentDispatchingRequestIndex, ClientFormChanges formChanges) {
+        assert currentDispatchingRequestIndex >= 0 || pendingChangeCurrentObjectsRequests.isEmpty();
+
         for (Iterator<Map.Entry<ClientGroupObject, Long>> iterator = pendingChangeCurrentObjectsRequests.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<ClientGroupObject, Long> entry = iterator.next();
 
@@ -599,6 +638,8 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void modifyFormChangesWithChangePropertyAsyncs(long currentDispatchingRequestIndex, ClientFormChanges formChanges) {
+        assert currentDispatchingRequestIndex >= 0 || pendingChangePropertyRequests.isEmpty();
+
         for (Iterator<Table.Cell<ClientPropertyDraw, ClientGroupObjectValue, PropertyChange>> iterator = pendingChangePropertyRequests.cellSet().iterator(); iterator.hasNext(); ) {
             Table.Cell<ClientPropertyDraw, ClientGroupObjectValue, PropertyChange> cell = iterator.next();
             PropertyChange change = cell.getValue();
@@ -635,6 +676,8 @@ public class ClientFormController implements AsyncListener {
     }
 
     private void modifyFormChangesWithModifyObjectAsyncs(long currentDispatchingRequestIndex, ClientFormChanges formChanges) {
+        assert currentDispatchingRequestIndex >= 0 || pendingModifyObjectRequests.isEmpty();
+
         for (Iterator<Map.Entry<Long,ModifyObject>> iterator = pendingModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<Long, ModifyObject> cell = iterator.next();
             if(cell.getKey() <= currentDispatchingRequestIndex)

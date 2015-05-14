@@ -10,6 +10,7 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
 import lsfusion.interop.form.UserInputResult;
+import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.DataClass;
@@ -61,11 +62,14 @@ public abstract class AbstractContext implements Context {
             return null;
         }
 
+        RemoteForm remoteForm = createRemoteForm(dialogInstance);
         requestUserInteraction(
                 new FormClientAction(
                         dialogInstance.entity.getCanonicalName(),
                         dialogInstance.entity.getSID(),
-                        createRemoteForm(dialogInstance),
+                        remoteForm,
+                        remoteForm.getImmutableMethods(),
+                        Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(),
                         ModalityType.DIALOG_MODAL));
         
         if (dialogInstance.getFormResult() == FormCloseType.CLOSE) {

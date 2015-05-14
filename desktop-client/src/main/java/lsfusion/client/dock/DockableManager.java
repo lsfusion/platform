@@ -85,8 +85,8 @@ public class DockableManager {
         return page;
     }
 
-    public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
-        ClientFormDockable page = new ClientFormDockable(navigator, canonicalName, formSID, remoteForm, this, closeListener);
+    public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) throws IOException, ClassNotFoundException, JRException {
+        ClientFormDockable page = new ClientFormDockable(navigator, canonicalName, formSID, remoteForm, this, closeListener, firstChanges);
         openForm(page);
         return page;
     }

@@ -11,6 +11,7 @@ import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
+import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.ValueClass;
@@ -173,7 +174,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                 Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(), printType, SystemProperties.isDebug));
                 formPageCount.change(pageCount, context);
             } else {
-                context.requestUserInteraction(new FormClientAction(form.getCanonicalName(), form.getSID(), newRemoteForm, modalityType));
+                context.requestUserInteraction(new FormClientAction(form.getCanonicalName(), form.getSID(), newRemoteForm, newRemoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : newRemoteForm.getFormChangesByteArray(), modalityType));
             }
 
             if (modalityType.isModal()) {

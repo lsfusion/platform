@@ -139,11 +139,17 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     public void execute(FormClientAction action) {
         RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm);
+        if(action.immutableMethods != null) {
+            for (int i = 0; i < FormClientAction.methodNames.length; i++) {
+                remoteForm.setProperty(FormClientAction.methodNames[i], action.immutableMethods[i]);
+            }
+        }
+
         ModalityType modality = action.modalityType;
         if (modality == ModalityType.DOCKED_MODAL) {
             pauseDispatching();
             beforeModalActionInSameEDT();
-            Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, new MainFrame.FormCloseListener() {
+            Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, action.firstChanges, new MainFrame.FormCloseListener() {
                 @Override
                 public void formClosed() {
                     afterModalActionInSameEDT();
@@ -152,9 +158,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             });
         } else if (modality.isModal()) {
             Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-            new ClientModalForm(action.canonicalName, action.formSID, owner, remoteForm, modality.isDialog(), editEvent).showDialog(modality.isFullScreen());
+            new ClientModalForm(action.canonicalName, action.formSID, owner, remoteForm, action.firstChanges, modality.isDialog(), editEvent).showDialog(modality.isFullScreen());
         } else {
-            Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, null);
+            Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, action.firstChanges, null);
         }
     }
 

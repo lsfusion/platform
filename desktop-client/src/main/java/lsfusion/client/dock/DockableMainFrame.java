@@ -249,7 +249,7 @@ public class DockableMainFrame extends MainFrame {
         return runReport(isModal, generationData, new EditReportInvoker() {
             @Override
             public void invokeEditReport() throws RemoteException {
-                new ClientFormController(null, formSID, Main.remoteNavigator.createForm(formSID, null, false, true), mainNavigator).runEditReport();
+                new ClientFormController(null, formSID, Main.remoteNavigator.createForm(formSID, null, false, true), null, mainNavigator).runEditReport();
             }
         });
     }
@@ -264,9 +264,9 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public void runForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, FormCloseListener closeListener) {
+    public void runForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
         try {
-            dockableManager.openForm(mainNavigator, canonicalName, formSID, remoteForm, closeListener);
+            dockableManager.openForm(mainNavigator, canonicalName, formSID, remoteForm, firstChanges, closeListener);
         } catch (Exception e) {
             if(closeListener != null)
                 closeListener.formClosed();

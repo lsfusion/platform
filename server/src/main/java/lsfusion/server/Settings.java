@@ -1220,4 +1220,14 @@ public class Settings {
     public void setDisableGlobalEventOptimization(boolean disableGlobalEventOptimization) {
         this.disableGlobalEventOptimization = disableGlobalEventOptimization;
     }
+
+    private boolean disableFirstChangesOptimization = false;
+
+    public boolean isDisableFirstChangesOptimization() {
+        return disableFirstChangesOptimization;
+    }
+
+    public void setDisableFirstChangesOptimization(boolean disableFirstChangesOptimization) {
+        this.disableFirstChangesOptimization = disableFirstChangesOptimization;
+    }
 }

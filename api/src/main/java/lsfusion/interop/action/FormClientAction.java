@@ -12,8 +12,15 @@ public class FormClientAction extends ExecuteClientAction {
     public RemoteFormInterface remoteForm;
     public ModalityType modalityType;
 
-    public FormClientAction(String canonicalName, String formSID, RemoteFormInterface remoteForm, ModalityType modalityType) {
+    public Object[] immutableMethods;
+    public byte[] firstChanges;
+
+    public static String[] methodNames = new String[] {"getUserPreferences", "getColorPreferences", "getRichDesignByteArray", "getInitFilterPropertyDraw"};
+
+    public FormClientAction(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, ModalityType modalityType) {
         this.formSID = formSID;
+        this.immutableMethods = immutableMethods;
+        this.firstChanges = firstChanges;
         this.canonicalName = canonicalName;
         this.remoteForm = remoteForm;
         this.modalityType = modalityType;

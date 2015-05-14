@@ -339,30 +339,28 @@ public class GroupObjectController extends AbstractGroupObjectController {
     }
 
     public OrderedMap<ClientPropertyDraw, Boolean> getUserOrders() throws IOException {
-        OrderedMap<ClientPropertyDraw, Boolean> userOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
-        boolean userPreferencesEmpty = true;
-        boolean hasUserPreferences = grid != null && grid.table.hasUserPreferences();
-        if (hasUserPreferences) {
+        if (grid != null && grid.table.hasUserPreferences()) {
+            OrderedMap<ClientPropertyDraw, Boolean> userOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
             List<ClientPropertyDraw> clientPropertyDrawList = getGroupObjectProperties();
             Collections.sort(clientPropertyDrawList, grid.table.getUserSortComparator());
             for (ClientPropertyDraw property : clientPropertyDrawList) {
                 if (grid.table.getUserSort(property) != null && grid.table.getUserAscendingSort(property) != null) {
                     userOrders.put(property, grid.table.getUserAscendingSort(property));
-                    userPreferencesEmpty = false;
                 }
             }
+            return userOrders;
         }
-        if (userPreferencesEmpty && hasUserPreferences)
-            clearOrders();
-        return userOrders;
+        return null;
     }
 
     public void applyUserOrders() throws IOException {
-        form.applyOrders(getUserOrders());
+        OrderedMap<ClientPropertyDraw, Boolean> userOrders = getUserOrders();
+        assert userOrders != null;
+        form.applyOrders(userOrders == null ? new OrderedMap<ClientPropertyDraw, Boolean>() : userOrders, this);
     }
     
     public void applyDefaultOrders() throws IOException {
-        form.applyDefaultOrders(groupObject);
+        form.applyOrders(form.getDefaultOrders(groupObject), this);
     }
     
     public GroupObjectUserPreferences getUserGridPreferences() {

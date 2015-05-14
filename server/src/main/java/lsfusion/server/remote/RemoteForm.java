@@ -102,7 +102,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 if (logger.isTraceEnabled()) {
                     logger.trace(String.format("getReportData Action. GroupID: %s", groupId));
                 }
-                
+
                 return reportManager.getReportData(groupId, toExcel, userPreferences);
             }
         });
@@ -472,12 +472,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             public Integer call() throws Exception {
 
                 int result = form.countRecords(groupObjectID);
-                
+
                 if (logger.isTraceEnabled()) {
-                    GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);                    
+                    GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);
                     logger.trace(String.format("countRecords Action. GroupObjectID: %s. Result: %s", groupObject.getID(), result));
                 }
-                
+
                 return result;
             }
         });
@@ -628,7 +628,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 if (logger.isTraceEnabled()) {
                     logger.trace("closedPressed Action");
                 }
-                
+
                 form.onQueryClose();
             }
         });
@@ -878,7 +878,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return new ServerResponse(requestIndex, resultActions.toArray(new ClientAction[resultActions.size()]), false);
     }
 
-    private byte[] getFormChangesByteArray() {
+    public byte[] getFormChangesByteArray() {
         try {
             FormChanges formChanges = form.endApply();
 
@@ -991,5 +991,13 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             listener.formDestroyed(this);
         }
         super.unexportAndClean();
+    }
+
+    public Object[] getImmutableMethods() {
+        try {
+            return new Object[]{getUserPreferences(), getColorPreferences(), getRichDesignByteArray(), getInitFilterPropertyDraw()};
+        } catch (RemoteException e) {
+            return null;
+        }
     }
 }

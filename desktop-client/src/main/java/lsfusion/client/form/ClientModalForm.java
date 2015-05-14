@@ -20,10 +20,10 @@ public class ClientModalForm extends JDialog {
     private ClientFormController form;
 
     public ClientModalForm(String canonicalName, String formSID, Component owner, final RemoteFormInterface remoteForm) {
-        this(canonicalName, formSID, owner, remoteForm, false, null);
+        this(canonicalName, formSID, owner, remoteForm, null, false, null);
     }
 
-    public ClientModalForm(String canonicalName, String formSID, Component owner, final RemoteFormInterface remoteForm, boolean isDialog, EventObject initFilterEvent) {
+    public ClientModalForm(String canonicalName, String formSID, Component owner, final RemoteFormInterface remoteForm, byte[] firstChanges, boolean isDialog, EventObject initFilterEvent) {
         super(getWindow(owner), ModalityType.DOCUMENT_MODAL);
 
         this.remoteForm = remoteForm;
@@ -37,7 +37,7 @@ public class ClientModalForm extends JDialog {
         // делаем, чтобы не выглядел как диалог
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
 
-        form = new ClientFormController(canonicalName, formSID, ClientModalForm.this.remoteForm, null, true, isDialog) {
+        form = new ClientFormController(canonicalName, formSID, ClientModalForm.this.remoteForm, firstChanges, null, true, isDialog) {
             @Override
             public void hideForm() {
                 hideDialog();

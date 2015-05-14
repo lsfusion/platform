@@ -13,13 +13,13 @@ public class ClientFormDockable extends ClientDockable {
     private ClientFormController clientForm;
 
     public ClientFormDockable(ClientNavigator navigator, String canonicalName, String formSID, DockableManager dockableManager) throws IOException, JRException {
-        this(navigator, canonicalName, formSID, navigator.remoteNavigator.createForm(formSID, null, false, true), dockableManager, null);
+        this(navigator, canonicalName, formSID, navigator.remoteNavigator.createForm(formSID, null, false, true), dockableManager, null, null);
     }
 
-    public ClientFormDockable(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, DockableManager dockableManager, final MainFrame.FormCloseListener closeListener) throws IOException {
+    public ClientFormDockable(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, DockableManager dockableManager, final MainFrame.FormCloseListener closeListener, byte[] firstChanges) throws IOException {
         super(canonicalName, dockableManager);
 
-        clientForm = new ClientFormController(canonicalName, formSID, remoteForm, navigator) {
+        clientForm = new ClientFormController(canonicalName, formSID, remoteForm, firstChanges, navigator) {
             @Override
             public void hideForm() {
                 if (control() != null) {
