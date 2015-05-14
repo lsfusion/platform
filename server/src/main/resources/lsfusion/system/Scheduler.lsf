@@ -78,7 +78,7 @@ messageScheduledClientTaskLog 'Сообщение'= DATA TEXT (ScheduledClientTa
 
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty' ();
 
-scriptText 'Скрипт' () = DATA TEXT ();
+scriptText 'Скрипт' () = DATA LOCAL TEXT ();
 evalScript 'Выполнить скрипт' () = ACTION EVAL scriptText();
 
 WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t)) OR CHANGED (timeFromScheduledTask(t)) 
