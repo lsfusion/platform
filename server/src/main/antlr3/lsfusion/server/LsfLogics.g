@@ -1175,12 +1175,12 @@ expressionUnfriendlyPD[List<TypedParameter> context, boolean dynamic, boolean in
 contextIndependentPD[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	int line = self.getParser().getGlobalCurrentLineNumber(); 
-    int offset = self.getParser().getGlobalPositionInLine();
+	int offset = self.getParser().getGlobalPositionInLine();
 }
 @after{
-    if (inPropParseState()) {
-        self.propertyDefinitionCreated($property, line, offset);
-    }
+	if (inPropParseState()) {
+		self.propertyDefinitionCreated($property, line, offset);
+	}
 }
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $signature = $dataDef.signature; }
 	|	abstractDef=abstractPropertyDefinition { $property = $abstractDef.property; $signature = $abstractDef.signature; }
@@ -1294,16 +1294,16 @@ partitionPropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 dataPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean localProp = false;
+	boolean isNested = false;
 }
 @after {
 	if (inPropParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, localProp, innerPD, false, $nlm.isNested);
+		$property = self.addScriptedDProp($returnClass.sid, $paramClassNames.ids, localProp, innerPD, false, isNested);
 	}
 }
 	:	'DATA'
-		('LOCAL' { localProp = true; } )?
-		nlm = nestedLocalModifier
+		('LOCAL' nlm=nestedLocalModifier { localProp = true; isNested = $nlm.isNested; })?
 		returnClass=classId
 		'('
 			paramClassNames=classIdList
@@ -1311,7 +1311,7 @@ dataPropertyDefinition[boolean innerPD] returns [LP property, List<ResolveClassS
 	;
 
 nestedLocalModifier returns[boolean isNested = false]
-	:   (   'NESTED' { $isNested = true; }	)?
+	:	('NESTED' { $isNested = true; }	)?
 	;
 
 abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
