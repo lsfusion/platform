@@ -41,7 +41,7 @@ public class ImportXLSXIterator extends ImportIterator {
 
     @Override
     public List<String> nextRow() {
-        List<String> listRow = new ArrayList<String>();
+        List<String> listRow = new ArrayList<>();
         try {
             XSSFRow xssfRow = sheet.getRow(current);
             if (xssfRow != null) {
