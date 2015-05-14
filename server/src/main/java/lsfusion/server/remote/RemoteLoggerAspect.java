@@ -38,14 +38,11 @@ public class RemoteLoggerAspect {
         long runTime = System.currentTimeMillis() - startTime;
         
         userActivityMap.put(user, startTime);
-        
+
         boolean debugEnabled = user != null && isRemoteLoggerDebugEnabled(user);
 
-        if (debugEnabled) {
-            logger.debug(logCall(thisJoinPoint, runTime));
-        } else {
-            if(runTime > Settings.get().getRemoteLogTime())
-                logger.info(logCall(thisJoinPoint, runTime));
+        if (debugEnabled || runTime > Settings.get().getRemoteLogTime()) {
+            logger.info(logCall(thisJoinPoint, runTime));
         }
 
         return result;
