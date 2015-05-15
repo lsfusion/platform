@@ -437,6 +437,10 @@ META defineDocumentInterfaceClosed (object)
     @defineDocumentDetailClosed(object);
 END
 
+allowedEditClosedDocumentsCustomUser 'Разрешить редактирование закрытых документов' = DATA BOOLEAN (CustomUser);
+EXTEND FORM customUser
+    PROPERTIES (u) allowedEditClosedDocumentsCustomUser
+;
 
 // In dex
 META defineDocumentDetailIndex (object, detailClass)
