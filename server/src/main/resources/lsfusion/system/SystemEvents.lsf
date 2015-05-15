@@ -89,8 +89,9 @@ disconnectConnection 'Отключить' = ACTION CUSTOM 'lsfusion.server.logic
 @defineLog (Connection, 'подключений', log, connectDate);
 
 //заменили user на customUser
-userSession 'Пользователь сессии' = DATA CustomUser (Session);
-nameUserSession 'Пользователь сессии' (session) = nameContact(userSession(session));
+userSession 'Пользователь сессии' = DATA User (Session);
+nameUserSession 'Пользователь сессии' (session) = nameUser(userSession(session));
+nameContactSession 'Пользователь сессии' (session) = nameContact(userSession(session));
 userSession (session) <- currentUser() WHEN SET(session IS Session);
 
 connectionFormCount 'Количество открытых форм' = DATA INTEGER (Connection, NavigatorElement);
@@ -113,7 +114,7 @@ dateTimeSession(session) <- currentDateTime() WHEN SET (session IS Session);
 navigatorElementSession 'Элемент навигатора сессии' = DATA NavigatorElement (Session);
 captionNavigatorElementSession 'Название формы' (session) = captionNavigatorElement(navigatorElementSession(session));
 
-connectionSession 'Подключение сессии' = DATA Connection(Session);
+connectionSession 'Подключение сессии' = DATA Connection(Session) INDEXED;
 hostnameComputerConnectionSession 'Имя компьютера' = hostnameComputerConnection(connectionSession(session))IN recognize;
 userLoginConnectionSession 'Логин пользователя' = userLoginConnection(connectionSession(session)) IN recognize;
 
