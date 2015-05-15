@@ -38,6 +38,7 @@ nameSchedulerStartTypeScheduledTask 'Отсчёт времени' = staticCaptio
 activeScheduledTask 'Активно' = DATA BOOLEAN (ScheduledTask);
 daysOfMonthScheduledTask 'Выполнять по дням (через запятую)' = DATA VARSTRING[255] (ScheduledTask);
 
+TABLE DOWScheduledTask(DOW, ScheduledTask);
 inDOWScheduledTask 'Вкл' = DATA BOOLEAN (DOW, ScheduledTask); 
 daysOfWeekScheduledTask (t)= GROUP CONCAT VARSTRING[1](numberDOW(d)) IF inDOWScheduledTask (d,t), ', ' BY t ORDER d;   
 
