@@ -10,6 +10,7 @@ import lsfusion.gwt.form.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.form.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
@@ -40,8 +41,9 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
 
     public FormSessionManagerImpl() {}
 
-    public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) throws IOException {
-        ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
+    public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) throws IOException {
+        FormClientAction.methodNames = FormClientAction.methodNames; // чтобы не потерять
+        ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(immutableMethods != null ? (byte[])immutableMethods[2] : remoteForm.getRichDesignByteArray())));
 
         GForm gForm = new ClientComponentToGwtConverter().convertOrCast(clientForm);
 
@@ -49,14 +51,14 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
         gForm.canonicalName = canonicalName;
         gForm.sessionID = nextFormSessionID();
 
-        ProcessFormChangesClientAction clientAction = (ProcessFormChangesClientAction) remoteForm.getRemoteChanges(-1, -1, false).actions[0];
+        byte[] changes = firstChanges != null ? firstChanges : ((ProcessFormChangesClientAction) remoteForm.getRemoteChanges(-1, -1, false).actions[0]).formChanges;
         gForm.initialFormChanges = ClientFormChangesToGwtConverter.getInstance().convertOrCast(
-                new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(clientAction.formChanges)), clientForm),
+                new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(changes)), clientForm),
                 -1,
                 blProvider
         );
 
-        FormUserPreferences formUP = remoteForm.getUserPreferences();
+        FormUserPreferences formUP = immutableMethods != null ? (FormUserPreferences)immutableMethods[0] : remoteForm.getUserPreferences();
         
         if (formUP != null) {
             gForm.userPreferences = new GFormUserPreferences(convertUserPreferences(gForm, formUP.getGroupObjectGeneralPreferencesList()), 

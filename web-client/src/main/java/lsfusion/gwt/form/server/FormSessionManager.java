@@ -8,7 +8,7 @@ import lsfusion.interop.form.RemoteFormInterface;
 import java.io.IOException;
 
 public interface FormSessionManager {
-    public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) throws IOException;
+    public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, LogicsAwareDispatchServlet<RemoteLogicsInterface> servlet) throws IOException;
 
     public FormSessionObject getFormSessionObjectOrNull(String formSessionID);
 
