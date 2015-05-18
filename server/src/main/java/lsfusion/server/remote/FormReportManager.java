@@ -102,7 +102,11 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
     }
 
     public ReportGenerationData getReportData() {
-        return getReportData(null, false, null);
+        return getReportData(false);
+    }
+
+    public ReportGenerationData getReportData(boolean toExcel) {
+        return getReportData(null, toExcel, null);
     }
 
     public ReportGenerationData getReportData(Integer groupId, boolean toExcel, FormUserPreferences userPreferences) {
