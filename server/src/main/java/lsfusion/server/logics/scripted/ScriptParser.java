@@ -28,8 +28,7 @@ public class ScriptParser {
     // Определяет парсится ли сейчас код "развернутого" в IDE метакода. Проверяется, чтобы задать специальный state парсера, чтобы ничего не выполнялось при этом парсинге. 
     private boolean insideGeneratedMeta = false;
     
-    // Определяет интерпретируется ли сейчас код сформированный "неразвернутым" в IDE метакодом. Для этого достаточно одного неразвертнутого метакода в цепочке.  
-    // Если равен true, то не нужно создавать делегаты для отладчика
+    // Определяет интерпретируется ли сейчас код сформированный "неразвернутым" в IDE метакодом. Если равен true, то не нужно создавать делегаты для отладчика
     private boolean insideNonEnabledMeta = false;
     
     public ScriptParser(ScriptingErrorLog errLog) {
@@ -75,11 +74,7 @@ public class ScriptParser {
         
         ParserInfo lastParser = new ParserInfo(parser, metaCode, callString, lineNumber);
         
-        if (parsers.size() > 1) {
-            enabledMeta = true;
-        }
-        boolean enteringTopNonEnabledMeta = !insideNonEnabledMeta && !enabledMeta; 
-        if (enteringTopNonEnabledMeta) {
+        if (!enabledMeta && parsers.size() == 1) {
             insideNonEnabledMeta = true;
         }
         
@@ -93,7 +88,7 @@ public class ScriptParser {
             globalExpandedLines += linesCount(code) - 1; 
         }
 
-        if (enteringTopNonEnabledMeta) {
+        if (!enabledMeta && parsers.size() == 1) {
             insideNonEnabledMeta = false;
         }
 
