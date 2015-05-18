@@ -75,6 +75,9 @@ public class ScriptParser {
         
         ParserInfo lastParser = new ParserInfo(parser, metaCode, callString, lineNumber);
         
+        if (parsers.size() > 1) {
+            enabledMeta = true;
+        }
         boolean enteringTopNonEnabledMeta = !insideNonEnabledMeta && !enabledMeta; 
         if (enteringTopNonEnabledMeta) {
             insideNonEnabledMeta = true;
