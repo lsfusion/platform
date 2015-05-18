@@ -129,6 +129,18 @@ public class ExecutionContext<P extends PropertyInterface> implements UpdateCurr
         this.newDebugStack = newDebugStack;        
     }
 
+    private boolean hasNewDebugStack() {
+        if(newDebugStack)
+            return true;
+        if(stack != null)
+            return stack.hasNewDebugStack();
+        return false;
+    }
+
+    public boolean isPrevEventScope() { // если не в объявлении действия и не в локальном событии
+        return getSession().isInSessionEvent() && !hasNewDebugStack();
+    }
+
     public void setWatcher(Processor<ImMap<String, ObjectValue>> watcher) {
         this.watcher = watcher;
     }

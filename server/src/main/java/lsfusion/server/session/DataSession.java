@@ -937,7 +937,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         sessionEventNotChangedOld.add(changedOld, changedOld.property.getIncrementChange(env.getModifier()), dataChanged);
     }
 
-    private boolean isInSessionEvent() {
+    public boolean isInSessionEvent() {
         return inSessionEvent;
     }
 

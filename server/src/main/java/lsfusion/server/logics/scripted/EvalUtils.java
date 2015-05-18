@@ -9,6 +9,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.property.Event;
 import org.antlr.runtime.RecognitionException;
 
 import java.util.List;
@@ -28,15 +29,17 @@ public class EvalUtils {
     }
 
     public static ScriptingLogicsModule evaluate(BusinessLogics BL, String script) throws EvaluationException {
-        return evaluate(BL, null, null, null, null, script);
+        return evaluate(BL, null, null, null, null, false, script);
     }
     
-    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String namespace, String require, String priorities, ImSet<Pair<LP, List<ResolveClassSet>>> locals, String script) throws EvaluationException {
+    public static ScriptingLogicsModule evaluate(BusinessLogics BL, String namespace, String require, String priorities, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, String script) throws EvaluationException {
         String name = getUniqueName();
 
         ScriptingLogicsModule module = new ScriptingLogicsModule(BL.LM, BL, wrapScript(BL, namespace, require, priorities, script, name));
         module.order = BL.getOrderedModules().size() + 1;
         module.visible = FullFunctionSet.<Version>instance();
+        if(prevEventScope)
+            module.setPrevScope(Event.SESSION);
         String errString = "";
         try {
             module.initModuleDependencies();
@@ -60,6 +63,9 @@ public class EvalUtils {
             } else {
                 throw Throwables.propagate(e);
             }
+        } finally {
+            if(prevEventScope)
+                module.dropPrevScope(Event.SESSION);
         }
 
         if (!errString.isEmpty()) {

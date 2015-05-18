@@ -281,11 +281,12 @@ public class ActionPropertyDebugger implements DebuggerService {
 
         ImSet<Pair<LP, List<ResolveClassSet>>> locals = context.getAllLocalsInStack();
 
-        Pair<LAP<PropertyInterface>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, context.getBL());
+        ExecutionContext<PropertyInterface> watchContext = new ExecutionContext<PropertyInterface>(MapFact.<PropertyInterface, ObjectValue>EMPTY(), context.getEnv());
+
+        Pair<LAP<PropertyInterface>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, watchContext.isPrevEventScope(), context.getBL());
         LAP<PropertyInterface> evalAction = evalResult.first;
         boolean forExHack = evalResult.second;
 
-        ExecutionContext<PropertyInterface> watchContext = new ExecutionContext<PropertyInterface>(MapFact.<PropertyInterface, ObjectValue>EMPTY(), context.getEnv());
         final MOrderExclSet<ImMap<String, ObjectValue>> mResult = SetFact.mOrderExclSet();
         final ImSet<String> externalParamNames = paramsWithClasses.keys();
         watchContext.setWatcher(new Processor<ImMap<String, ObjectValue>>() {
@@ -317,7 +318,7 @@ public class ActionPropertyDebugger implements DebuggerService {
     }
 
     @IdentityLazy
-    private Pair<LAP<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
+    private Pair<LAP<PropertyInterface>, Boolean> evalAction(String namespace, String require, String priorities, String action, ImOrderMap<String, String> paramWithClasses, ImSet<Pair<LP, List<ResolveClassSet>>> locals, boolean prevEventScope, BusinessLogics bl) throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException {
         
         String paramString = "";
         for (int i = 0, size = paramWithClasses.size(); i < size; i++) {
@@ -339,7 +340,7 @@ public class ActionPropertyDebugger implements DebuggerService {
 
         watchHack.set(false);
 
-        ScriptingLogicsModule module = EvalUtils.evaluate(bl, namespace, require, priorities, locals, script);
+        ScriptingLogicsModule module = EvalUtils.evaluate(bl, namespace, require, priorities, locals, prevEventScope, script);
 
         boolean forExHack = watchHack.get();
         watchHack.set(null);
