@@ -194,7 +194,7 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "it's illegal to add navigator element to system window '" + sid + "'");
     }
 
-    public void emitParamIndexError(ScriptParser parser, int paramIndex, int paramCount) throws SemanticErrorException {
+    public void emitFormulaParamIndexError(ScriptParser parser, int paramIndex, int paramCount) throws SemanticErrorException {
         String errText = "wrong parameter index $" + String.valueOf(paramIndex);
         if (paramIndex < 1) {
             errText += ", first parameter is $1";
@@ -204,10 +204,14 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, errText);
     }
 
-    public void emitSyntaxTypes(ScriptParser parser, SQLSyntaxType type) throws SemanticErrorException {
+    public void emitFormulaMultipleImplementationError(ScriptParser parser, SQLSyntaxType type) throws SemanticErrorException {
         emitSimpleError(parser, "two implementations for syntax " + (type == null ? "DEFAULT" : type));
     }
 
+    public void emitFormulaDifferentParamCountError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "implementations have different number of parameters");
+    }
+    
     public void emitParamClassRedefinitionError(ScriptParser parser, String paramName) throws SemanticErrorException {
         emitSimpleError(parser, format("class of parameter '%s' was already defined", paramName));
     }

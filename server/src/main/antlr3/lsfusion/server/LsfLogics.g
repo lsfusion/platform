@@ -686,15 +686,15 @@ formMappedProperty returns [PropertyUsage propUsage, List<String> mapping]
 formPropertySelector[FormEntity form] returns [PropertyDrawEntity propertyDraw = null]
 	:	pname=ID
 		{
-		    if (inPropParseState()) {
-                $propertyDraw = form == null ? null : ScriptingFormEntity.getPropertyDraw(self, form, $pname.text, self.getVersion());
-            }
+			if (inPropParseState()) {
+				$propertyDraw = form == null ? null : ScriptingFormEntity.getPropertyDraw(self, form, $pname.text, self.getVersion());
+			}
 		}
 	|	mappedProp=mappedPropertyDraw	
 		{
-		    if (inPropParseState()) {
-                $propertyDraw = ScriptingFormEntity.getPropertyDraw(self, form, $mappedProp.name, $mappedProp.mapping, self.getVersion());
-            }
+			if (inPropParseState()) {
+				$propertyDraw = ScriptingFormEntity.getPropertyDraw(self, form, $mappedProp.name, $mappedProp.mapping, self.getVersion());
+			}
 		}
 	;
 
@@ -1535,29 +1535,30 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 	: 	'CLASS' '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
-formulaPropertySyntaxType returns [SQLSyntaxType type = null]
-    : ('PG' { $type = SQLSyntaxType.POSTGRES; } | 'MS' { $type = SQLSyntaxType.MSSQL; })? 
-;
-formulaPropertySyntax returns [List<SQLSyntaxType> types = new ArrayList<SQLSyntaxType>(), List<String> strings = new ArrayList<String>()]
-    :
-    (type=formulaPropertySyntaxType { $types.add($type.type); } formulaText=stringLiteral { $strings.add($formulaText.val); })+
-;
-
 formulaPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	String className = null;
-	boolean hasNotNull = false;
+	boolean hasNotNullCondition = false;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedSFProp(className, $synt.types, $synt.strings, hasNotNull);
+		$property = self.addScriptedSFProp(className, $synt.types, $synt.strings, hasNotNullCondition);
 		$signature = Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null);
 	}
 }
 	:	'FORMULA'
-		('NULL' { hasNotNull = true; })?
+		('NULL' { hasNotNullCondition = true; })?
 		(clsName=classId { className = $clsName.sid; })?
-		synt = formulaPropertySyntax
+		synt=formulaPropertySyntaxList
+	;
+
+formulaPropertySyntaxList returns [List<SQLSyntaxType> types = new ArrayList<SQLSyntaxType>(), List<String> strings = new ArrayList<String>()]
+	:	firstType=formulaPropertySyntaxType firstText=stringLiteral { $types.add($firstType.type); $strings.add($firstText.val); }
+		(',' nextType=formulaPropertySyntaxType nextText=stringLiteral { $types.add($nextType.type); $strings.add($nextText.val); })*
+	;
+
+formulaPropertySyntaxType returns [SQLSyntaxType type = null]
+	:	('PG' { $type = SQLSyntaxType.POSTGRES; } | 'MS' { $type = SQLSyntaxType.MSSQL; })? 
 	;
 
 filterPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
@@ -2319,13 +2320,13 @@ focusActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic]
 	}
 }
 	:	'FOCUS'
-	    (namespacePart=ID '.')? formPart=ID '.'
-	    {   
-	        if (inPropParseState()) {
-	            form = self.findForm(($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text);
-            }
-	    }
-	    prop=formPropertySelector[form]
+		(namespacePart=ID '.')? formPart=ID '.'
+		{   
+			if (inPropParseState()) {
+				form = self.findForm(($namespacePart != null ? $namespacePart.text + '.' : "") + $formPart.text);
+			}
+		}
+		prop=formPropertySelector[form]
 	;	
 
 requestInputActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -2602,7 +2603,10 @@ constraintStatement
 @init {
 	boolean checked = false;
 	List<PropertyUsage> propUsages = null;
-	ActionDebugInfo debugInfo = self.getEventStackDebugInfo();
+	ActionDebugInfo debugInfo = null; 
+	if (inPropParseState()) {
+		debugInfo = self.getEventStackDebugInfo();
+	}
 }
 @after {
 	if (inPropParseState()) {
@@ -2694,8 +2698,11 @@ eventStatement
 	List<TypedParameter> context = new ArrayList<TypedParameter>();
 	List<LPWithParams> orderProps = new ArrayList<LPWithParams>();
 	boolean descending = false;
+	ActionDebugInfo debug = null;
 	
-	ActionDebugInfo debug = self.getEventStackDebugInfo(); 
+	if (inPropParseState()) {
+		debug = self.getEventStackDebugInfo(); 
+	}
 }
 @after {
 	if (inPropParseState()) {

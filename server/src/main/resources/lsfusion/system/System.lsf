@@ -32,11 +32,11 @@ cancel = ACTION CUSTOM 'lsfusion.server.logics.property.actions.flow.CancelActio
 onStarted = ABSTRACT ACTION LIST ();
 
 upper = FORMULA 'upper($1)';
-substring = FORMULA PG 'substr($1, 1, $2)' MS 'SUBSTRING($1, 1, $2)';
-position = FORMULA PG 'strpos($1, $2)' MS 'CHARINDEX($2, $1)';
-leftTo = FORMULA PG 'left($1, strpos($1, $2) - 1)' MS 'LEFT($1, CHARINDEX($2, $1) - 1)';
+substring = FORMULA PG 'substr($1, 1, $2)', MS 'SUBSTRING($1, 1, $2)';
+position = FORMULA PG 'strpos($1, $2)', MS 'CHARINDEX($2, $1)';
+leftTo = FORMULA PG 'left($1, strpos($1, $2) - 1)', MS 'LEFT($1, CHARINDEX($2, $1) - 1)';
 
-subtractInteger(dateFrom, dateTo) = [= FORMULA INTEGER PG '(($1)-($2))' MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
+subtractInteger(dateFrom, dateTo) = [= FORMULA INTEGER PG '(($1)-($2))', MS 'DATEDIFF(dd, $2, $1)'](dateFrom AS DATE, dateTo AS DATE);
 
 formApply 'Сохранить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormApplyActionProperty' ();
 formCancel 'Отменить' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.form.FormCancelActionProperty' ();

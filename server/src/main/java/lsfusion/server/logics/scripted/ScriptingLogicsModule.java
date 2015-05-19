@@ -635,7 +635,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (Character.isDigit(paramName.charAt(1))) {
                 index = Integer.parseInt(paramName.substring(1)) - 1;
                 if (index < 0 || !dynamic && context != null && index >= context.size()) {
-                    errLog.emitParamIndexError(parser, index + 1, context == null ? 0 : context.size());
+                    errLog.emitFormulaParamIndexError(parser, index + 1, context == null ? 0 : context.size());
                 }
             } else if (!insideRecursion) {
                 errLog.emitRecursiveParamsOutideRecursionError(parser, paramName);
@@ -1857,22 +1857,30 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addDCCProp(index - 1), Collections.singletonList(ccProp));
     }
 
-    public LCP addScriptedSFProp(String typeName, List<SQLSyntaxType> types, List<String> sources, boolean hasNotNull) throws ScriptingErrorLog.SemanticErrorException {
-        Set<Integer> params = findFormulaParameters(sources.get(0));
+    public LCP addScriptedSFProp(String typeName, List<SQLSyntaxType> types, List<String> texts, boolean hasNotNull) throws ScriptingErrorLog.SemanticErrorException {
+        assert types.size() == texts.size();
+        checkSingleImplementation(types);
+
+        Set<Integer> params = findFormulaParameters(texts.get(0));
         
-        checkFormulaParameters(params);
-        checkDefaultFormula(types);
+        for (String text : texts) {
+            Set<Integer> formulaParams = findFormulaParameters(text);
+            checkFormulaParameters(formulaParams);
+            if (formulaParams.size() != params.size()) {
+                errLog.emitFormulaDifferentParamCountError(parser);
+            }
+        }
         
-        assert types.size() == sources.size();
         String defaultFormula = "";
         MExclMap<SQLSyntaxType, String> mSyntaxes = MapFact.mExclMap();
-        for(int i=0;i<types.size();i++) {
+        for (int i = 0; i < types.size(); i++) {
             SQLSyntaxType type = types.get(i);
-            String source = transformFormulaText(sources.get(i));
-            if(type == null)
-                defaultFormula = source; 
-            else 
-                mSyntaxes.exclAdd(type, source);
+            String text = transformFormulaText(texts.get(i));
+            if (type == null) {
+                defaultFormula = text;
+            } else {
+                mSyntaxes.exclAdd(type, text);
+            }
         }
         CustomFormulaSyntax formula = new CustomFormulaSyntax(defaultFormula, mSyntaxes.immutable());
         if (typeName != null) {
@@ -2912,11 +2920,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void checkDefaultFormula(List<SQLSyntaxType> types) throws ScriptingErrorLog.SemanticErrorException {
+    private void checkSingleImplementation(List<SQLSyntaxType> types) throws ScriptingErrorLog.SemanticErrorException {
         Set<SQLSyntaxType> foundTypes = new HashSet<>();
         for (SQLSyntaxType type : types) {
             if (!foundTypes.add(type)) {
-                errLog.emitSyntaxTypes(parser, type);
+                errLog.emitFormulaMultipleImplementationError(parser, type);
             }
         }
     }
@@ -2924,7 +2932,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void checkFormulaParameters(Set<Integer> params) throws ScriptingErrorLog.SemanticErrorException {
         for (int param : params) {
             if (param == 0 || param > params.size()) {
-                errLog.emitParamIndexError(parser, param, params.size());
+                errLog.emitFormulaParamIndexError(parser, param, params.size());
             }
         }
     }
