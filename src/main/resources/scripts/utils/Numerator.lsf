@@ -19,7 +19,7 @@ stringLengthNumerator 'Длина' = DATA INTEGER (Numerator) IN base;
 curValueNumerator 'Тек. значение' = DATA LONG (Numerator) IN recognize MINCHARWIDTH 15;
 curValueNumerator(numerator) <- minValueNumerator(numerator) WHEN SET(numerator IS Numerator);
 
-lpadStringWithZero = FORMULA STRING[18] PG 'lpad(CAST($1 AS text),$2,\'0\')' MS 'RIGHT(REPLICATE(\'0\', $2) + $1, $2)';
+lpadStringWithZero = FORMULA STRING[18] PG 'lpad(CAST($1 AS text),$2,\'0\')', MS 'RIGHT(REPLICATE(\'0\', $2) + $1, $2)';
 
 curStringValueNumerator 'Тек. значение (строка)' (numerator) = lpadStringWithZero(curValueNumerator(numerator), stringLengthNumerator(numerator)) IN base;
 
