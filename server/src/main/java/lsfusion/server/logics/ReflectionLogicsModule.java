@@ -123,10 +123,12 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP propertyTableColumn;
     public LCP sidTableColumn;
     public LCP longSIDTableColumn;
+    public LCP tableColumnLongSID;
     public LCP tableColumnSID;
 
     public LCP quantityTableColumn;
     public LCP notNullQuantityTableColumn;
+    public LCP notRecalculateTableColumn;
     public LAP recalculateAggregationTableColumn;
 
     public LCP<?> sidTableDropColumn;
@@ -308,11 +310,13 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         sidTableColumn = findProperty("sidTableColumn");
         longSIDTableColumn = findProperty("longSIDTableColumn");
-        tableColumnSID = findProperty("tableColumnSID");    
-        
+        tableColumnLongSID = findProperty("tableColumnLongSID");
+        tableColumnSID = findProperty("tableColumnSID");
+
         quantityTableColumn = findProperty("quantityTableColumn");
         notNullQuantityTableColumn = findProperty("notNullQuantityTableColumn");
 
+        notRecalculateTableColumn = findProperty("notRecalculateTableColumn");
         recalculateAggregationTableColumn = findAction("recalculateAggregationTableColumn");
 
         // Удаленные колонки

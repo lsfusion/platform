@@ -577,7 +577,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
         ImportKey<?> tableKey = new ImportKey(reflectionLM.table, reflectionLM.tableSID.getMapping(tableSidField));
         ImportKey<?> tableKeyKey = new ImportKey(reflectionLM.tableKey, reflectionLM.tableKeySID.getMapping(tableKeySidField));
-        ImportKey<?> tableColumnKey = new ImportKey(reflectionLM.tableColumn, reflectionLM.tableColumnSID.getMapping(tableColumnLongSIDField));
+        ImportKey<?> tableColumnKey = new ImportKey(reflectionLM.tableColumn, reflectionLM.tableColumnLongSID.getMapping(tableColumnLongSIDField));
 
         List<List<Object>> data = new ArrayList<>();
         List<List<Object>> dataKeys = new ArrayList<>();

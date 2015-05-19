@@ -738,7 +738,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         } else {
             tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null);
             keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.quantityTableKey, null);
-            propStats = readStatsFromDB(sql, reflectionLM.tableColumnSID, reflectionLM.quantityTableColumn, reflectionLM.notNullQuantityTableColumn);
+            propStats = readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.quantityTableColumn, reflectionLM.notNullQuantityTableColumn);
         }
 
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
@@ -1150,10 +1150,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     List<AggregateProperty> getAggregateStoredProperties() {
-        List<AggregateProperty> result = new ArrayList<AggregateProperty>();
-        for (Property property : getStoredProperties())
-            if (property instanceof AggregateProperty)
-                result.add((AggregateProperty) property);
+        return getAggregateStoredProperties(false);
+    }
+
+    List<AggregateProperty> getAggregateStoredProperties(boolean filterRecalculate) {
+        List<AggregateProperty> result = new ArrayList<>();
+        try {
+            final DataSession dataSession = getDbManager().createSession();
+            for (Property property : getStoredProperties())
+                if (property instanceof AggregateProperty) {
+                    boolean recalculate = filterRecalculate || reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+                    if(recalculate)
+                        result.add((AggregateProperty) property);
+                }
+        } catch (SQLException | SQLHandledException e) {
+            systemLogger.info(e.getMessage());
+        }
         return result;
     }
 

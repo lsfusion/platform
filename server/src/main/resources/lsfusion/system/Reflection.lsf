@@ -145,7 +145,8 @@ tableTableColumn 'Таблица' = DATA Table(TableColumn);
 sidTableColumn 'Имя колонки' = DATA VARSTRING[100] (TableColumn);
 
 longSIDTableColumn(tableColumn) = sidTable(tableTableColumn(tableColumn)) + '.' + sidTableColumn(tableColumn);
-tableColumnSID 'Колонка' (sID) = GROUP AGGR tableColumn BY longSIDTableColumn(tableColumn) WHERE tableColumn IS TableColumn; 
+tableColumnLongSID 'Колонка' (sID) = GROUP AGGR tableColumn BY longSIDTableColumn(tableColumn) WHERE tableColumn IS TableColumn; 
+tableColumnSID (sid) = GROUP MAX tableColumn BY sidTableColumn(tableColumn);
 propertyTableColumn 'Свойство' (tableColumn) = propertyTableSID(sidTable(tableTableColumn(tableColumn)), sidTableColumn(tableColumn));
 captionTableColumn 'Заголовок свойства' (tableColumn) = captionProperty(propertyTableColumn(tableColumn));
 canonicalNameTableColumn 'Каноническое имя свойства' (tableColumn) = canonicalNameProperty(propertyTableColumn(tableColumn));
@@ -157,6 +158,8 @@ percentNotNullTableColumn 'Не null, %' (tableColumn) = IF rowsTable (tableTabl
                                                           THEN 100.00
                                                           ELSE toNumeric15p2(notNullQuantityTableColumn(tableColumn)) / rowsTable (tableTableColumn(tableColumn)) * 100;
 sparseColumnsTable 'Количество разреженных колонок' (table) = GROUP SUM 1 BY tableTableColumn(tableColumn) IF percentNotNullTableColumn(tableColumn) < 50;
+
+notRecalculateTableColumn 'Не пересчитывать аггрегации' = DATA BOOLEAN (TableColumn);
 
 recalculateAggregationTableColumn 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnActionProperty' (TableColumn);
 recalculateAggregationWithDependenciesTableColumn 'Пересчитать агрегации (+зависимости)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
@@ -218,7 +221,7 @@ FORM physicalModel 'Таблицы'
     OBJECTS tc=TableColumn
     PROPERTIES(tc) READONLY sidTableColumn, captionTableColumn, canonicalNameTableColumn, propertyTableColumn, quantityTableColumn, notNullQuantityTableColumn,
                    percentNotNullTableColumn
-    PROPERTIES(tc) recalculateAggregationTableColumn, recalculateAggregationWithDependenciesTableColumn, 
+    PROPERTIES(tc) notRecalculateTableColumn, recalculateAggregationTableColumn, recalculateAggregationWithDependenciesTableColumn, 
             recalculateAggregationWithDependentsTableColumn, checkAggregationTableColumn
 
     OBJECTS dc=DropColumn

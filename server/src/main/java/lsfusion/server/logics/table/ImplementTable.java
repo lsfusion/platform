@@ -450,7 +450,7 @@ public class ImplementTable extends GlobalTable { // последний инте
             }
 
             for (PropertyField property : properties) {
-                DataObject propertyObject = safeReadClasses(session, reflectionLM.tableColumnSID, new DataObject(getName() + "." + property.getName()));
+                DataObject propertyObject = safeReadClasses(session, reflectionLM.tableColumnLongSID, new DataObject(getName() + "." + property.getName()));
                 if(propertyObject != null)
                     reflectionLM.quantityTableColumn.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
             }
@@ -461,7 +461,7 @@ public class ImplementTable extends GlobalTable { // последний инте
                 mNotNulls.exclAdd(property, readCount(session, join.getExpr(property).getWhere()));
             ImMap<Object, Object> notNulls = mNotNulls.immutable();
             for (PropertyField property : properties) {
-                DataObject propertyObject = safeReadClasses(session, reflectionLM.tableColumnSID, new DataObject(getName() + "." + property.getName()));
+                DataObject propertyObject = safeReadClasses(session, reflectionLM.tableColumnLongSID, new DataObject(getName() + "." + property.getName()));
                 if(propertyObject != null)
                     reflectionLM.notNullQuantityTableColumn.change(BaseUtils.nvl(notNulls.get(property), 0), session, propertyObject);
             }
