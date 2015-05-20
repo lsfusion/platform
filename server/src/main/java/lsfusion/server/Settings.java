@@ -1201,7 +1201,7 @@ public class Settings {
         this.disableCompiledSubQueries = disableCompiledSubQueries;
     }
 
-    private boolean disableSetDroppedOptimization = true; // вообще не сильно полезная оптимизация, но раз сделали
+    private boolean disableSetDroppedOptimization = false; // вообще не сильно полезная оптимизация, но раз сделали
 
     public boolean isDisableSetDroppedOptimization() {
         return disableSetDroppedOptimization;

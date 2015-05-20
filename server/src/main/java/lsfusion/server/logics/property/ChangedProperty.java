@@ -66,20 +66,32 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     public ImSet<CalcProperty> calculateUsedChanges(StructChanges propChanges) {
         Boolean setOrDropped = getSetOrDropped();
         if(setOrDropped != null) {
-            ChangeType type = propChanges.getUsedChange(property);
-            Boolean changeSetOrDropped;
-            if(type != null && (changeSetOrDropped = type.getSetOrDropped())!=null) {
-                if(!setOrDropped.equals(changeSetOrDropped)) { // если SET, а изменение на NULL, или DROPPED и наоборот, считаем что изменение не используется так как все равно всегда NULL будет
-                    boolean isFinal = type.isFinal();
-                    ImSet<CalcProperty> usedChanges = null;
-                    if(isFinal || (usedChanges = property.getUsedChanges(propChanges)).size() == 1) {
-                        ServerLoggers.assertLog(isFinal || usedChanges.contains(property), "SHOULD NOT BE");
-                        return SetFact.EMPTY();
-                    }
-                }
-            }
+            if (isFakeChange(propChanges, setOrDropped))
+                return SetFact.EMPTY();
         }
         return super.calculateUsedChanges(propChanges);
+    }
+
+    // должно быть синхронизировано с аналогичным методом в StructChanges
+    private boolean isFakeChange(StructChanges propChanges, Boolean setOrDropped) {
+        return isSingleFakeChange(propChanges, property, setOrDropped) && isSingleFakeChange(propChanges, property.getOld(scope), !setOrDropped);
+    }
+
+    private static boolean isSingleFakeChange(StructChanges propChanges, CalcProperty property, boolean setOrDropped) {
+        ChangeType type = propChanges.getUsedChange(property);
+        if(type == null) // нет изменений
+            return true;
+
+        Boolean changeSetOrDropped = type.getSetOrDropped();
+        if(changeSetOrDropped != null && !changeSetOrDropped.equals(setOrDropped)) { // если SET, а изменение на NULL, или DROPPED и наоборот, считаем что изменение не используется так как все равно всегда NULL будет
+            boolean isFinal = type.isFinal();
+            ImSet<CalcProperty> usedChanges = null;
+            if(isFinal || (usedChanges = property.getUsedChanges(propChanges)).size() == 1) {
+                ServerLoggers.assertLog(isFinal || usedChanges.contains(property), "SHOULD NOT BE");
+                return true;
+            }
+        }
+        return false;
     }
 
     protected Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
