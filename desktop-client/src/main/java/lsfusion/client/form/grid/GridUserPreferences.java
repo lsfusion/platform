@@ -131,10 +131,10 @@ public class GridUserPreferences {
     public Comparator<ClientPropertyDraw> getUserSortComparator() {
         return  new Comparator<ClientPropertyDraw>() {
             public int compare(ClientPropertyDraw c1, ClientPropertyDraw c2) {
-                if (getUserAscendingSort(c1) != null && getUserAscendingSort(c2) != null) {
-                    return getUserSort(c1) - getUserSort(c2);
+                if(getUserAscendingSort(c1) == null) {
+                    return getUserAscendingSort(c2) == null ? 0 : -1;
                 } else {
-                    return 0;
+                    return getUserAscendingSort(c2) == null ? 1 : (getUserSort(c1) - getUserSort(c2));
                 }
             }
         };
