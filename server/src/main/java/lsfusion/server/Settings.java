@@ -1230,4 +1230,15 @@ public class Settings {
     public void setDisableFirstChangesOptimization(boolean disableFirstChangesOptimization) {
         this.disableFirstChangesOptimization = disableFirstChangesOptimization;
     }
+
+    // временно
+    private boolean newForceChangeObject = true;
+
+    public boolean isNewForceChangeObject() {
+        return newForceChangeObject;
+    }
+
+    public void setNewForceChangeObject(boolean newForceChangeObject) {
+        this.newForceChangeObject = newForceChangeObject;
+    }
 }

@@ -79,4 +79,9 @@ public class SingletonRevMap<K, V> extends ARevMap<K, V> implements ImValueMap<K
     public ImRevMap<V, K> reverse() {
         return new SingletonRevMap<V, K>(value, key);
     }
+
+    @Override
+    public String toString() {
+        return key + " -> " + value;
+    }
 }

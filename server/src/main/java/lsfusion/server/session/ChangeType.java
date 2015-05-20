@@ -15,7 +15,7 @@ public class ChangeType {
 
     @Override
     public String toString() {
-        return isFinal ? "FINAL" : "NOTFINAL"  + (setOrDropped == null ? "" : (setOrDropped ? " SET" : " DROPPED"));
+        return (isFinal ? "FINAL" : "NOTFINAL")  + (setOrDropped == null ? "" : (setOrDropped ? " SET" : " DROPPED"));
     }
 
     private static final ChangeType[] types = new ChangeType[6];

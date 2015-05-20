@@ -354,9 +354,10 @@ public class ActionPropertyDebugger implements DebuggerService {
         ObjectValue value = null;
         if(valueName !=  null) {
             value = row.get(valueName);
-            if (value instanceof DataObject && ((DataObject) value).objectClass instanceof LogicalClass) {
-                value = null;
-            }
+            // непонятно зачем, сбивает в свойствах с Logical значениями
+//            if (value instanceof DataObject && ((DataObject) value).objectClass instanceof LogicalClass) {
+//                value = null;
+//            }
             row = row.remove(valueName);
         }
         return new ActionWatchEntry(row.toOrderMap().mapOrderSetValues(new GetKeyValue<ActionWatchEntry.Param, String, ObjectValue>() {

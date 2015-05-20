@@ -51,4 +51,9 @@ public class SingletonOrderMap<K, V> extends AOrderMap<K, V> implements ImOrderV
     public <M> ImOrderValueMap<K, M> mapItOrderValues() {
         return new SingletonOrderMap<K, M>(revMap.getKey(0));
     }
+
+    @Override
+    public String toString() {
+        return revMap.toString();
+    }
 }
