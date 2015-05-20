@@ -566,9 +566,6 @@ public class GridTable extends ClientPropertyTable {
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 Throwables.propagate(e);
             }
-
-            threadLocalUIAction.set(null);
-            threadLocalIsStopCellEditing.set(null);
         }
     }
     
@@ -880,7 +877,7 @@ public class GridTable extends ClientPropertyTable {
 
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-        boolean result = super.processKeyBinding(ks, e, condition, pressed);
+        boolean result = false;
 
         try {
             Method getInputMapMethod = JComponent.class.getDeclaredMethod("getInputMap", int.class, boolean.class);
@@ -903,8 +900,12 @@ public class GridTable extends ClientPropertyTable {
                     threadLocalUIAction.set((UIAction) action);
                 }
             }
+
+            result = super.processKeyBinding(ks, e, condition, pressed);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
             Throwables.propagate(ex);
+        } finally {
+            threadLocalUIAction.set(null);
         }
 
         return result;
@@ -916,7 +917,11 @@ public class GridTable extends ClientPropertyTable {
         if (editor != null) {
             threadLocalIsStopCellEditing.set(true);
         }
-        super.editingStopped(e);
+        try {
+            super.editingStopped(e);
+        } finally {
+            threadLocalIsStopCellEditing.set(null);
+        }
     }
 
     private void updateSelectionInfo() {
