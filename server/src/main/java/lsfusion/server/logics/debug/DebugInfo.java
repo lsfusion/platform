@@ -40,4 +40,9 @@ public class DebugInfo {
         result = 31 * result + offset;
         return result;
     }
+
+    @Override
+    public String toString() {
+        return moduleName + "(" + (line + 1) + ":" + (offset + 1) + ")";
+    }
 }
