@@ -22,18 +22,20 @@ import lsfusion.interop.Order;
 import lsfusion.interop.Scroll;
 import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.ServerResponse;
+import sun.swing.UIAction;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -121,6 +123,13 @@ public class GridTable extends ClientPropertyTable {
 
     private WeakReference<TableCellRenderer> defaultHeaderRendererRef;
     private TableCellRenderer wrapperHeaderRenderer;
+
+    // Хак. См. BasicTableUI.Actions метод actionPerformed(). Проблема при изменении ряда сразу после редактирования и
+    // одновременном изменении ключей. Между вычислением значения leadRow и изменением selection'а на это значение
+    // вызывается stopCellEditing(), который приводит к обновлению таблицы и текущего ряда. Таким образом на момент
+    // вызова changeSelection() значение leadRow оказывается устаревшим. Подменяем его для избежания прыжков.
+    private ThreadLocal<UIAction> threadLocalUIAction = new ThreadLocal<>();
+    private ThreadLocal<Boolean> threadLocalIsStopCellEditing = new ThreadLocal<>();
 
     public GridTable(GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         super(new GridTableModel());
@@ -538,6 +547,29 @@ public class GridTable extends ClientPropertyTable {
         scrollToIndex = -1;
         selectIndex = -1;
         scrollToOldObject = true;
+
+        if (threadLocalIsStopCellEditing.get() != null && threadLocalUIAction.get() != null) {
+            UIAction uiAction = threadLocalUIAction.get();
+            int index = getSelectionModel().getLeadSelectionIndex();
+            int newLeadRow = index < getRowCount() ? index : -1;
+
+            Field leadRowField;
+            try {
+                leadRowField = uiAction.getClass().getDeclaredField("leadRow");
+                if (leadRowField != null) {
+                    leadRowField.setAccessible(true);
+                    int oldLeadRow = leadRowField.getInt(uiAction);
+                    if (newLeadRow != oldLeadRow) {
+                        leadRowField.set(uiAction, newLeadRow);
+                    }
+                }
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                Throwables.propagate(e);
+            }
+
+            threadLocalUIAction.set(null);
+            threadLocalIsStopCellEditing.set(null);
+        }
     }
     
     private void selectColumn(int columnNumber) {
@@ -844,6 +876,47 @@ public class GridTable extends ClientPropertyTable {
             updateSelectionInfo();
             repaint();
         }
+    }
+
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        boolean result = super.processKeyBinding(ks, e, condition, pressed);
+
+        try {
+            Method getInputMapMethod = JComponent.class.getDeclaredMethod("getInputMap", int.class, boolean.class);
+            Object inputMap = null;
+            if (getInputMapMethod != null) {
+                getInputMapMethod.setAccessible(true);
+                inputMap = getInputMapMethod.invoke(this, condition, false);
+            }
+
+            Method getActionMapMethod = JComponent.class.getDeclaredMethod("getActionMap", boolean.class);
+            Object actionMap = null;
+            if (getActionMapMethod != null) {
+                getActionMapMethod.setAccessible(true);
+                actionMap = getActionMapMethod.invoke(this, false);
+            }
+            if(inputMap != null && actionMap != null && isEnabled()) {
+                Object binding = ((InputMap) inputMap).get(ks);
+                Action action = (binding == null) ? null : ((ActionMap) actionMap).get(binding);
+                if (action instanceof UIAction) {
+                    threadLocalUIAction.set((UIAction) action);
+                }
+            }
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
+            Throwables.propagate(ex);
+        }
+
+        return result;
+    }
+
+    @Override
+    public void editingStopped(ChangeEvent e) {
+        TableCellEditor editor = getCellEditor();
+        if (editor != null) {
+            threadLocalIsStopCellEditing.set(true);
+        }
+        super.editingStopped(e);
     }
 
     private void updateSelectionInfo() {
