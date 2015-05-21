@@ -3613,9 +3613,11 @@ formPrintTypeLiteral returns [FormPrintType val]
 	
 formExportTypeLiteral returns [FormExportType val]
 	:	'EXPORT'
-		(	'XLS'  { $val = FormExportType.XLS; }
+		(	'DOC'  { $val = FormExportType.DOC; }
+		|	'DOCX' { $val = FormExportType.DOCX; }
+		|	'PDF'  { $val = FormExportType.PDF; }
+		|	'XLS' { $val = FormExportType.XLS; }
 		|	'XLSX' { $val = FormExportType.XLSX; }
-		|	'PDF' { $val = FormExportType.PDF; }
 		)
 	;	
 

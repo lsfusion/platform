@@ -11,6 +11,7 @@ import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.JRXlsExporter;
+import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 
 import javax.print.attribute.standard.MediaTray;
@@ -418,6 +419,14 @@ public class ReportGenerator {
     
     public static File exportToPdf(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
         return exportToFile(generationData, new JRPdfExporter(), "pdf");
+    }
+
+    public static File exportToDoc(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
+        return exportToFile(generationData, new JRDocxExporter(), "doc");
+    }
+
+    public static File exportToDocx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
+        return exportToFile(generationData, new JRDocxExporter(), "docx");
     }
     
     private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension) throws IOException, JRException, ClassNotFoundException {

@@ -191,12 +191,16 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                 ReportGenerationData generationData = newRemoteForm.reportManager.getReportData();
                 DataObject[] dataObjects = dataKeys.values().toArray(new DataObject[dataKeys.size()]);
                 try {
-                    if(exportType == FormExportType.XLS) {
+                    if(exportType == FormExportType.DOC) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDoc(generationData)), "doc".getBytes()), context, dataObjects);
+                    } else if(exportType == FormExportType.DOCX) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDocx(generationData)), "docx".getBytes()), context, dataObjects);
+                    } else if(exportType == FormExportType.PDF) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToPdf(generationData)), "pdf".getBytes()), context, dataObjects);
+                    } else if(exportType == FormExportType.XLS) {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXls(generationData)), "xls".getBytes()), context, dataObjects);
                     } else if(exportType == FormExportType.XLSX) {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXlsx(generationData)), "xlsx".getBytes()), context, dataObjects);
-                    } else if(exportType == FormExportType.PDF) {
-                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToPdf(generationData)), "pdf".getBytes()), context, dataObjects);
                     }
                 } catch (JRException | IOException | ClassNotFoundException e) {
                     ServerLoggers.systemLogger.error(e);

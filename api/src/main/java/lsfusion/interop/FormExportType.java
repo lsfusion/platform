@@ -1,5 +1,5 @@
 package lsfusion.interop;
 
 public enum FormExportType {
-    XLSX, XLS, PDF
+    DOC, DOCX, PDF, XLS, XLSX
 }
