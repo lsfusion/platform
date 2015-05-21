@@ -11,8 +11,8 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
+import lsfusion.server.caches.IdentityQuickLazy;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.OldProperty;
 
 public class StructChanges extends TwinImmutableObject {
 
@@ -84,7 +84,7 @@ public class StructChanges extends TwinImmutableObject {
         // assert что recDepends включает SetOrDroppedDepends, внутри вызова есть
         ImMap<CalcProperty, Boolean> setDroppedDepends = prop.getSetOrDroppedDepends();
 
-        if(!setDroppedDepends.keys().intersect(filteredChanges.keys())) // оптимизация, тут с prev'ом может быть пересечение, которое можно не заметить, но опять таки см. isFakeChange
+        if(!setDroppedDepends.keys().intersect(filteredChanges.keys())) // оптимизация
             return filteredChanges;
 
         ImFilterValueMap<CalcProperty, ChangeType> transformedChanges = filteredChanges.mapFilterValues();
@@ -93,26 +93,14 @@ public class StructChanges extends TwinImmutableObject {
             ChangeType type = filteredChanges.getValue(i);
             Boolean changeSetDropped = type.getSetOrDropped();
             if (changeSetDropped != null) {
-                if(!isFakeChange(setDroppedDepends, property, changeSetDropped))
+                Boolean setDropped = setDroppedDepends.get(property);
+                if(setDropped == null || setDropped.equals(changeSetDropped)) // оптимизация
                     type = ChangeType.get(type.isFinal(), null);
             }
 
             transformedChanges.mapValue(i, type);
         }
         return transformedChanges.immutableValue();
-    }
-
-    // должно быть синхронизировано с аналогичным методом в ChangedProperty
-    // хотя тут ошибиться не так критично, так как в худшем случае пойдет по правильной но пессимистичной ветке (собсно уже сейчас может быть что Prev убьет SetOrChanged, а прямое свойство нет, но пока не хочется заморачиваться такой сложной оптимизацией)
-    private static boolean isFakeChange(ImMap<CalcProperty, Boolean> setDroppedDepends, CalcProperty property, Boolean changeSetDropped) {
-        if(property instanceof OldProperty)
-            return isSingleFakeChange(setDroppedDepends, ((OldProperty) property).property, !changeSetDropped);
-        return isSingleFakeChange(setDroppedDepends, property, changeSetDropped);
-    }
-
-    private static boolean isSingleFakeChange(ImMap<CalcProperty, Boolean> setDroppedDepends, CalcProperty property, boolean changeSetDropped) {
-        Boolean setDropped = setDroppedDepends.get(property);
-        return setDropped != null && !setDropped.equals(changeSetDropped);
     }
 
     public ChangeType getUsedChange(CalcProperty property) {
