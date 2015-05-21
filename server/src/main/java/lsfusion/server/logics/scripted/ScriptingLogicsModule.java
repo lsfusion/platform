@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.interop.FormExportType;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.form.layout.Alignment;
@@ -2062,7 +2063,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                           String contextObjectName, LPWithParams contextProperty,
                                           String initFilterPropertyName, List<String> initFilterPropertyMapping,
                                           ModalityType modalityType, FormSessionScope sessionScope,
-                                          boolean checkOnOk, boolean showDrop, FormPrintType printType) throws ScriptingErrorLog.SemanticErrorException {
+                                          boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType) throws ScriptingErrorLog.SemanticErrorException {
         if (contextProperty != null) {
             checkCalculationProperty(contextProperty.property);
         }
@@ -2087,7 +2088,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LAP property = addFAProp(null, "", form, objects, null, contextObject,
                 contextProperty == null ? null : (CalcProperty) contextProperty.property.property,
                 initFilterProperty,
-                sessionScope, modalityType, checkOnOk, showDrop, printType);
+                sessionScope, modalityType, checkOnOk, showDrop, printType, exportType);
 
         if (mapping.size() > 0) {
             if (contextProperty != null) {

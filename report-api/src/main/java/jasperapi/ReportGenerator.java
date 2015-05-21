@@ -416,7 +416,7 @@ public class ReportGenerator {
         return exportToFile(generationData, new JRXlsxExporter(), "xlsx");
     }
     
-    private static File exportToPdf(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
+    public static File exportToPdf(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
         return exportToFile(generationData, new JRPdfExporter(), "pdf");
     }
     

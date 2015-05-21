@@ -12,6 +12,7 @@ grammar LsfLogics;
 	import lsfusion.interop.form.ServerResponse;
 	import lsfusion.interop.FormEventType;
 	import lsfusion.interop.FormPrintType;
+	import lsfusion.interop.FormExportType;
 	import lsfusion.interop.ModalityType;
 	import lsfusion.server.form.instance.FormSessionScope;
 	import lsfusion.server.data.Union;
@@ -2059,6 +2060,7 @@ formActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	boolean checkOnOk = false;
 	boolean showDrop = false;
 	FormPrintType printType = null;
+	FormExportType exportType = null;
 	List<String> objects = new ArrayList<String>();
 	List<LPWithParams> mapping = new ArrayList<LPWithParams>();
 	String contextObjectName = null;
@@ -2068,7 +2070,7 @@ formActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, printType);
+		$property = self.addScriptedFAProp($formName.sid, objects, mapping, contextObjectName, contextProperty, initFilterPropertyName, initFilterPropertyMapping, modalityType, sessionScope, checkOnOk, showDrop, printType, exportType);
 	}
 }
 	:	'FORM' formName=compoundID 
@@ -2079,7 +2081,7 @@ formActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('CHECK' { checkOnOk = true; })?
 		('SHOWDROP' { showDrop = true; })?
-		(print = formPrintTypeLiteral { printType = $print.val; })?
+		((print = formPrintTypeLiteral { printType = $print.val; }) | (export = formExportTypeLiteral { exportType = $export.val; }))?
 	;
 
 initFilterDefinition returns [String propName, List<String> mapping]
@@ -3608,6 +3610,14 @@ formPrintTypeLiteral returns [FormPrintType val]
 		|	'PDF' { $val = FormPrintType.PDF; }
 		)?
 	;
+	
+formExportTypeLiteral returns [FormExportType val]
+	:	'EXPORT'
+		(	'XLS'  { $val = FormExportType.XLS; }
+		|	'XLSX' { $val = FormExportType.XLSX; }
+		|	'PDF' { $val = FormExportType.PDF; }
+		)
+	;	
 
 formSessionScopeLiteral returns [FormSessionScope val]
 	:	'OLDSESSION' { $val = FormSessionScope.OLDSESSION; }

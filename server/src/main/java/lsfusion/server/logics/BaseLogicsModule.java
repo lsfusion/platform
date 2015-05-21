@@ -134,6 +134,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     private LCP requestCanceled;
     private LCP formResultProp;
     public LCP formPageCount;
+    public LCP formExportFile;
 
     public LCP imported;
 
@@ -397,6 +398,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         requestCanceled = findProperty("requestCanceled");
         formResultProp = findProperty("formResult");
         formPageCount = findProperty("formPageCount");
+        formExportFile = findProperty("formExportFile");
 
         imported = findProperty("imported");
 

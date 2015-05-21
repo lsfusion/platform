@@ -1,16 +1,22 @@
 package lsfusion.server.logics.property.actions;
 
+import jasperapi.ReportGenerator;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.IOUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
+import lsfusion.interop.FormExportType;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
+import lsfusion.interop.form.ReportGenerationData;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.classes.ConcreteCustomClass;
@@ -27,7 +33,9 @@ import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.remote.RemoteForm;
+import net.sf.jasperreports.engine.JRException;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,16 +47,18 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     public final ImRevMap<ObjectEntity, ClassPropertyInterface> mapObjects;
     private final ActionPropertyObjectEntity<?> startAction;
     public ActionPropertyObjectEntity<?> closeAction;
-    public Set<ObjectEntity> seekOnOk = new HashSet<ObjectEntity>();
+    public Set<ObjectEntity> seekOnOk = new HashSet<>();
     private final boolean checkOnOk;
     private final FormSessionScope sessionScope;
     private final ModalityType modalityType;
     private final boolean showDrop;
     private final FormPrintType printType;
+    private final FormExportType exportType;
 
     private final ConcreteCustomClass formResultClass;
     private final LCP formResultProperty;
     private final LCP formPageCount;
+    private final LCP formExportFile;
 
     private final AnyValuePropertyHolder chosenValueProperty;
 
@@ -87,9 +97,11 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               boolean checkOnOk,
                               boolean showDrop,
                               FormPrintType printType,
+                              FormExportType exportType,
                               ConcreteCustomClass formResultClass,
                               LCP formResultProperty,
                               LCP formPageCount,
+                              LCP formExportFile,
                               AnyValuePropertyHolder chosenValueProperty,
                               ObjectEntity contextObject,
                               CalcProperty contextProperty,
@@ -99,12 +111,14 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.formResultClass = formResultClass;
         this.formResultProperty = formResultProperty;
         this.formPageCount = formPageCount;
+        this.formExportFile = formExportFile;
         this.chosenValueProperty = chosenValueProperty;
 
         this.modalityType = modalityType;
         this.checkOnOk = checkOnOk;
         this.showDrop = showDrop;
         this.printType = printType;
+        this.exportType = exportType;
         this.sessionScope = sessionScope;
         this.startAction = startAction;
 
@@ -135,10 +149,11 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        Result<ImSet<PullChangeProperty>> pullProps = new Result<ImSet<PullChangeProperty>>();
+        Result<ImSet<PullChangeProperty>> pullProps = new Result<>();
         ImSet<FilterEntity> contextFilters = null;
+        ImMap<ClassPropertyInterface, DataObject> dataKeys = context.getDataKeys();
         if (contextPropertyImplement != null) {
-            final CalcPropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapValues(context.getDataKeys());
+            final CalcPropertyValueImplement<PropertyInterface> propertyValues = contextPropertyImplement.mapValues(dataKeys);
             final FormInstance thisFormInstance = context.getFormInstance();
             contextFilters = thisFormInstance.getContextFilters(contextObject, propertyValues, context.getChangingPropertyToDraw(), pullProps);
         }
@@ -172,9 +187,23 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             }
 
             RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
-            if (printType != null) {
-                Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(), printType, SystemProperties.isDebug));
-                formPageCount.change(pageCount, context);
+            if(exportType != null) {
+                ReportGenerationData generationData = newRemoteForm.reportManager.getReportData();
+                DataObject[] dataObjects = dataKeys.values().toArray(new DataObject[dataKeys.size()]);
+                try {
+                    if(exportType == FormExportType.XLS) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXls(generationData)), "xls".getBytes()), context, dataObjects);
+                    } else if(exportType == FormExportType.XLSX) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXlsx(generationData)), "xlsx".getBytes()), context, dataObjects);
+                    } else if(exportType == FormExportType.PDF) {
+                        formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToPdf(generationData)), "pdf".getBytes()), context, dataObjects);
+                    }
+                } catch (JRException | IOException | ClassNotFoundException e) {
+                    ServerLoggers.systemLogger.error(e);
+                }
+            } else if (printType != null) {
+                    Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(), printType, SystemProperties.isDebug));
+                    formPageCount.change(pageCount, context);
             } else {
                 context.requestUserInteraction(new FormClientAction(form.getCanonicalName(), form.getSID(), newRemoteForm, newRemoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : newRemoteForm.getFormChangesByteArray(), modalityType));
             }

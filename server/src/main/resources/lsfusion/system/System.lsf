@@ -100,6 +100,7 @@ confirmed() = DATA LOCAL BOOLEAN ();
 requestCanceled() = DATA LOCAL BOOLEAN ();
 formResult() = DATA LOCAL FormResult ();
 formPageCount() = DATA LOCAL INTEGER ();
+formExportFile() = DATA LOCAL CUSTOMFILE ();
 
 imported = DATA LOCAL BOOLEAN (INTEGER);
 
