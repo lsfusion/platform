@@ -49,7 +49,7 @@ public class WriteActionProperty extends ScriptingActionProperty {
                     
                     if (type.equals("file")) {
                         File file = new File(url);
-                        if(!file.getParentFile().exists() && !file.getParentFile().mkdirs())
+                        if(!file.getParentFile().exists())
                             throw Throwables.propagate(new RuntimeException(String.format("Path is incorrect or not found: %s", url)));
                         else
                             IOUtils.putFileBytes(file, fileBytes);
