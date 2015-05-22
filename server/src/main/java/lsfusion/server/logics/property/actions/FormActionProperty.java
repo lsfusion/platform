@@ -187,28 +187,30 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             }
 
             RemoteForm newRemoteForm = context.createRemoteForm(newFormInstance);
-            if(exportType != null) {
+            if (exportType != null) {
                 ReportGenerationData generationData = newRemoteForm.reportManager.getReportData();
                 DataObject[] dataObjects = dataKeys.values().toArray(new DataObject[dataKeys.size()]);
                 try {
-                    if(exportType == FormExportType.DOC) {
+                    if (exportType == FormExportType.DOC) {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDoc(generationData)), "doc".getBytes()), context, dataObjects);
-                    } else if(exportType == FormExportType.DOCX) {
+                    } else if (exportType == FormExportType.DOCX) {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToDocx(generationData)), "docx".getBytes()), context, dataObjects);
-                    } else if(exportType == FormExportType.PDF) {
+                    } else if (exportType == FormExportType.PDF) {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToPdf(generationData)), "pdf".getBytes()), context, dataObjects);
-                    } else if(exportType == FormExportType.XLS) {
+                    } else if (exportType == FormExportType.XLS) {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXls(generationData)), "xls".getBytes()), context, dataObjects);
-                    } else if(exportType == FormExportType.XLSX) {
+                    } else if (exportType == FormExportType.XLSX) {
                         formExportFile.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(ReportGenerator.exportToXlsx(generationData)), "xlsx".getBytes()), context, dataObjects);
                     }
                 } catch (JRException | IOException | ClassNotFoundException e) {
                     ServerLoggers.systemLogger.error(e);
                 }
-            } else if (printType != null) {
-                    Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(), printType, SystemProperties.isDebug));
-                    formPageCount.change(pageCount, context);
-            } else {
+            }
+            if (printType != null) {
+                Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(), printType, SystemProperties.isDebug));
+                formPageCount.change(pageCount, context);
+            }
+            if (exportType == null && printType == null) {
                 context.requestUserInteraction(new FormClientAction(form.getCanonicalName(), form.getSID(), newRemoteForm, newRemoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : newRemoteForm.getFormChangesByteArray(), modalityType));
             }
 

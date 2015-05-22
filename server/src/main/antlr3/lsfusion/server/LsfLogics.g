@@ -2081,7 +2081,8 @@ formActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 		(modality = modalityTypeLiteral { modalityType = $modality.val; })?
 		('CHECK' { checkOnOk = true; })?
 		('SHOWDROP' { showDrop = true; })?
-		((print = formPrintTypeLiteral { printType = $print.val; }) | (export = formExportTypeLiteral { exportType = $export.val; }))?
+		(print = formPrintTypeLiteral { printType = $print.val; })?
+		(export = formExportTypeLiteral { exportType = $export.val; })?
 	;
 
 initFilterDefinition returns [String propName, List<String> mapping]
