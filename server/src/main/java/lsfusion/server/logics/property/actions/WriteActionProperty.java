@@ -1,7 +1,9 @@
 package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
+import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -34,6 +36,9 @@ public class WriteActionProperty extends ScriptingActionProperty {
 
         String path = (String) value.object;
         byte[] fileBytes = (byte[]) sourceProp.read(context);
+        if(sourceProp.property.getType() instanceof DynamicFormatFileClass) {
+            fileBytes = BaseUtils.getFile(fileBytes);
+        }
         try {
             if (path != null && fileBytes != null) {
                 Pattern p = Pattern.compile("(file|ftp):\\/\\/(.*)");
@@ -44,13 +49,18 @@ public class WriteActionProperty extends ScriptingActionProperty {
                     
                     if (type.equals("file")) {
                         File file = new File(url);
-                        IOUtils.putFileBytes(file, fileBytes);
+                        if(!file.getParentFile().exists() && !file.getParentFile().mkdirs())
+                            throw Throwables.propagate(new RuntimeException(String.format("Path is incorrect or not found: %s", url)));
+                        else
+                            IOUtils.putFileBytes(file, fileBytes);
                     } else if (type.equals("ftp")) {
                         File file = File.createTempFile("downloaded", ".tmp");
                         IOUtils.putFileBytes(file, fileBytes);
                         storeFileToFTP(path, file);
                         file.delete();
                     }
+                } else {
+                    throw Throwables.propagate(new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp://username:password@host:port/path_to_file"));
                 }
             }
         } catch (Exception e) {
