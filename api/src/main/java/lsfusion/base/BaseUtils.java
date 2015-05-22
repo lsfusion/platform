@@ -1936,14 +1936,26 @@ public class BaseUtils {
     }
 
     public static String formatRussian(Date date, TimeZone timeZone) {
-        return formatRussian(date, false, false, timeZone);
+        return formatRussian(date, false, false, timeZone, false);
+    }
+
+    public static String formatRussian(Date date, TimeZone timeZone, boolean noYear) {
+        return formatRussian(date, false, false, timeZone, noYear);
     }
 
     public static String formatRussian(Date date, boolean quotes, boolean leadZero) {
-        return formatRussian(date, quotes, leadZero, null);
+        return formatRussian(date, quotes, leadZero, null, false);
+    }
+
+    public static String formatRussian(Date date, boolean quotes, boolean leadZero, boolean noYear) {
+        return formatRussian(date, quotes, leadZero, null, noYear);
     }
 
     public static String formatRussian(Date date, boolean quotes, boolean leadZero, TimeZone timeZone) {
+        return formatRussian(date, quotes, leadZero, timeZone, false);
+    }
+
+    public static String formatRussian(Date date, boolean quotes, boolean leadZero, TimeZone timeZone, boolean noYear) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         if (timeZone != null)
@@ -1954,7 +1966,7 @@ public class BaseUtils {
         if (quotes)
             dayOfMonth = "«" + dayOfMonth + "»";
 
-        return "" + dayOfMonth + " " + monthsRussian[calendar.get(Calendar.MONTH)] + " " + calendar.get(Calendar.YEAR);
+        return "" + dayOfMonth + " " + monthsRussian[calendar.get(Calendar.MONTH)] + (noYear ? "" : (" " + calendar.get(Calendar.YEAR)));
     }
 
     public static String[] monthsEnglish = new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
