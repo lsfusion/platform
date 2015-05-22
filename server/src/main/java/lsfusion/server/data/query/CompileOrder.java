@@ -21,4 +21,12 @@ public class CompileOrder {
                 return new CompileOrder(value.desc, value.reader, true);
             }});
     }
+
+    public static <K> ImOrderMap<K, CompileOrder> reverseOrder(ImOrderMap<K, CompileOrder> map) {
+        return map.mapOrderValues(new GetValue<CompileOrder, CompileOrder>() {
+            public CompileOrder getMapValue(CompileOrder value) {
+                return new CompileOrder(!value.desc, value.reader, value.notNull);
+            }});
+    }
+
 }
