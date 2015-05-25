@@ -52,6 +52,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     private final FormSessionScope sessionScope;
     private final ModalityType modalityType;
     private final boolean showDrop;
+    private final boolean isAdd;
     private final FormPrintType printType;
     private final FormExportType exportType;
 
@@ -92,7 +93,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               FormEntity form,
                               final ObjectEntity[] objectsToSet,
                               ActionPropertyObjectEntity startAction,
-                              FormSessionScope sessionScope,
+                              boolean isAdd, FormSessionScope sessionScope,
                               ModalityType modalityType,
                               boolean checkOnOk,
                               boolean showDrop,
@@ -121,6 +122,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.exportType = exportType;
         this.sessionScope = sessionScope;
         this.startAction = startAction;
+        this.isAdd = isAdd;
 
         this.contextObject = contextObject;
         this.initFilterProperty = initFilterProperty;
@@ -162,7 +164,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                                                                         mapObjects.join(context.getKeys()),
                                                                         context.getSession(),
                                                                         modalityType.isModal(),
-                                                                        sessionScope,
+                                                                        isAdd, sessionScope,
                                                                         checkOnOk,
                                                                         showDrop,
                                                                         printType == null,

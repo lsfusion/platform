@@ -145,12 +145,12 @@ public abstract class AbstractContext implements Context {
         return outerUpdateCurrentClasses;
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, FormSessionScope sessionScope, UpdateCurrentClasses outerUpdateCurrentClasses, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, UpdateCurrentClasses outerUpdateCurrentClasses, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
         return new FormInstance(formEntity, getLogicsInstance(),
                 sessionScope.createSession(session),
                 getSecurityPolicy(), getFocusListener(), getClassListener(),
                 getComputer(), getConnection(), mapObjects, getUpdateCurrentClasses(outerUpdateCurrentClasses), isModal,
-                sessionScope,
+                isAdd, sessionScope,
                 checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
     }
 

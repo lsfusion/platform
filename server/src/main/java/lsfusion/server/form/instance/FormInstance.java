@@ -49,7 +49,6 @@ import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.*;
-import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
@@ -145,20 +144,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                         FocusListener<T> focusListener, CustomClassListener classListener,
                         PropertyObjectInterfaceInstance computer, DataObject connection,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
-                        UpdateCurrentClasses outerUpdateCurrentClasses, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk,
+                        UpdateCurrentClasses outerUpdateCurrentClasses, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk,
                         boolean showDrop, boolean interactive,
                         ImSet<FilterEntity> contextFilters,
                         PropertyDrawEntity initFilterPropertyDraw,
                         ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
-        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, outerUpdateCurrentClasses, isModal, sessionScope, checkOnOk, showDrop, interactive, false, contextFilters, initFilterPropertyDraw, pullProps);
+        this(entity, logicsInstance, session, securityPolicy, focusListener, classListener, computer, connection, mapObjects, outerUpdateCurrentClasses, isModal, isAdd, sessionScope, checkOnOk, showDrop, interactive, false, contextFilters, initFilterPropertyDraw, pullProps);
     }
 
-    public FormInstance(FormEntity <T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
+    public FormInstance(FormEntity<T> entity, LogicsInstance logicsInstance, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener<T> focusListener, CustomClassListener classListener,
                         PropertyObjectInterfaceInstance computer, DataObject connection,
-                        ImMap<ObjectEntity, ? extends ObjectValue > mapObjects,
+                        ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
                         UpdateCurrentClasses outerUpdateCurrentClasses,
-                        boolean isModal, FormSessionScope sessionScope, boolean checkOnOk,
+                        boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk,
                         boolean showDrop, boolean interactive, boolean isDialog,
                         ImSet<FilterEntity> contextFilters,
                         PropertyDrawEntity initFilterPropertyDraw,
@@ -299,7 +298,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         this.session.registerForm(this);
 
-        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, sessionScope.isManageSession(), entity.isReadOnly(), showDrop);
+        environmentIncrement = createEnvironmentIncrement(isModal, isDialog, isAdd, sessionScope.isManageSession(), entity.isReadOnly(), showDrop);
 
         if (!interactive) {
             endApply();
@@ -324,10 +323,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean manageSession, boolean isReadOnly, boolean showDrop) {
+    private static IncrementChangeProps createEnvironmentIncrement(boolean isModal, boolean isDialog, boolean isAdd, boolean manageSession, boolean isReadOnly, boolean showDrop) {
         IncrementChangeProps environment = new IncrementChangeProps();
         environment.add(FormEntity.isModal, PropertyChange.<ClassPropertyInterface>STATIC(isModal));
         environment.add(FormEntity.isDialog, PropertyChange.<ClassPropertyInterface>STATIC(isDialog));
+        environment.add(FormEntity.isAdd, PropertyChange.<ClassPropertyInterface>STATIC(isAdd));
         environment.add(FormEntity.manageSession, PropertyChange.<ClassPropertyInterface>STATIC(manageSession));
         environment.add(FormEntity.isReadOnly, PropertyChange.<ClassPropertyInterface>STATIC(isReadOnly));
         environment.add(FormEntity.showDrop, PropertyChange.<ClassPropertyInterface>STATIC(showDrop));
@@ -2006,7 +2006,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                                 instanceFactory.computer, instanceFactory.connection,
                                 MapFact.singleton(dialogEntity, dialogValue),
                                 update,
-                                true, FormSessionScope.OLDSESSION, false, true, true, true,
+                                true, false, FormSessionScope.OLDSESSION, false, true, true, true,
                                 additionalFilters, initFilterPropertyDraw, pullProps);
     }
 
@@ -2119,7 +2119,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     public void formApply(UserInteraction interaction) throws SQLException, SQLHandledException {
-        apply(BL, interaction);
+        if(apply(BL, interaction))
+            environmentIncrement.add(FormEntity.isAdd, PropertyChange.<ClassPropertyInterface>STATIC(false));
     }
 
     public void formCancel(UserInteraction interfaction) throws SQLException, SQLHandledException {

@@ -86,8 +86,8 @@ public class ThreadLocalContext {
         return get().getFormInstance();
     }
 
-    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, UpdateCurrentClasses outerUpdateCurrentClasses, DataSession session, boolean isModal, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
-        return get().createFormInstance(formEntity, mapObjects, session, isModal, sessionScope, outerUpdateCurrentClasses, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
+    public static FormInstance createFormInstance(FormEntity formEntity, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, UpdateCurrentClasses outerUpdateCurrentClasses, DataSession session, boolean isModal, boolean isAdd, FormSessionScope sessionScope, boolean checkOnOk, boolean showDrop, boolean interactive, ImSet<FilterEntity> contextFilters, PropertyDrawEntity initFilterProperty, ImSet<PullChangeProperty> pullProps) throws SQLException, SQLHandledException {
+        return get().createFormInstance(formEntity, mapObjects, session, isModal, isAdd, sessionScope, outerUpdateCurrentClasses, checkOnOk, showDrop, interactive, contextFilters, initFilterProperty, pullProps);
     }
 
     public static RemoteForm createRemoteForm(FormInstance formInstance) {

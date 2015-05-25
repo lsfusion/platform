@@ -12,7 +12,7 @@ import lsfusion.server.session.DataSession;
 import java.sql.SQLException;
 
 public class FormCancelActionProperty extends FormToolbarActionProperty {
-    private static LCP showIf = createShowIfProperty(new CalcProperty[] {FormEntity.manageSession, FormEntity.isReadOnly}, new boolean[] {false, true});
+    private static LCP showIf = createShowIfProperty(new CalcProperty[] {FormEntity.manageSession, FormEntity.isAdd, FormEntity.isReadOnly}, new boolean[] {false, true, true});
 
     public FormCancelActionProperty(BaseLogicsModule lm) {
         super(lm);

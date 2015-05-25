@@ -61,6 +61,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public static final IsDebugFormulaProperty isDebug = IsDebugFormulaProperty.instance;
     public static final SessionDataProperty isDialog = new SessionDataProperty("Is dialog", LogicalClass.instance);
     public static final SessionDataProperty isModal = new SessionDataProperty("Is modal", LogicalClass.instance);
+    public static final SessionDataProperty isAdd = new SessionDataProperty("Is add", LogicalClass.instance);
     public static final SessionDataProperty manageSession = new SessionDataProperty("Manage session", LogicalClass.instance);
     public static final SessionDataProperty isReadOnly = new SessionDataProperty("Is read only form", LogicalClass.instance);
     public static final SessionDataProperty showDrop = new SessionDataProperty("Show drop", LogicalClass.instance);

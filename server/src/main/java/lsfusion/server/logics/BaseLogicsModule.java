@@ -727,7 +727,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         String name = "_ADDFORM" + scope + "_" + cls.getSID() + (form.form.isNamed() ? "_" + form.form.getCanonicalName().replace('.', '_') : "");
         LAP result = addDMFAProp(null, ServerResourceBundle.getString("logics.add"), //+ "(" + cls + ")",
                 form.form, new ObjectEntity[]{},
-                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope);
+                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope, true);
         makePropertyPublic(result, name, new ArrayList<ResolveClassSet>());
 
         setAddFormActionProperties(result, form, scope);

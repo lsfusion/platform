@@ -2085,7 +2085,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  : getPropertyDraw(this, form, PropertyDrawEntity.createSID(initFilterPropertyName, initFilterPropertyMapping), version);
         }
 
-        LAP property = addFAProp(null, "", form, objects, null, contextObject,
+        LAP property = addFAProp(null, "", form, objects, null, false, contextObject,
                 contextProperty == null ? null : (CalcProperty) contextProperty.property.property,
                 initFilterProperty,
                 sessionScope, modalityType, checkOnOk, showDrop, printType, exportType);

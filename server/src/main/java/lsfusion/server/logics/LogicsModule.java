@@ -12,13 +12,11 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.*;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
-import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.Time;
 import lsfusion.server.data.Union;
@@ -570,11 +568,11 @@ public abstract class LogicsModule {
     // ------------------- Data Multi File action ----------------- //
 
     protected LAP addDMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, FormSessionScope scope) {
-        return addDMFAProp(group, caption, form, objectsToSet, null, scope);
+        return addDMFAProp(group, caption, form, objectsToSet, null, scope, false);
     }
 
-    protected LAP addDMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope scope) {
-        return addFAProp(group, caption, form, objectsToSet, startAction, scope, ModalityType.DOCKED_MODAL, false);
+    protected LAP addDMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope scope, boolean isAdd) {
+        return addFAProp(group, caption, form, objectsToSet, startAction, isAdd, scope, ModalityType.DOCKED_MODAL, false);
     }
 
     // ------------------- File action ----------------- //
@@ -589,20 +587,20 @@ public abstract class LogicsModule {
                 isModal ? ModalityType.MODAL : ModalityType.DOCKED, checkOnOk, printType);
     }
 
-    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk) {
-        return addFAProp(group, caption, form, objectsToSet, startAction, null, null, sessionScope, modalityType, checkOnOk, false);
+    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean isAdd, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk) {
+        return addFAProp(group, caption, form, objectsToSet, startAction, isAdd, null, null, sessionScope, modalityType, checkOnOk, false);
     }
 
     protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, FormPrintType printType) {
-        return addFAProp(group, caption, form, objectsToSet, startAction, null, null, null, sessionScope, modalityType, checkOnOk, false, printType, null);
+        return addFAProp(group, caption, form, objectsToSet, startAction, false, null, null, null, sessionScope, modalityType, checkOnOk, false, printType, null);
     }
 
-    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, ObjectEntity contextObject, CalcProperty contextProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop) {
-        return addFAProp(group, caption, form, objectsToSet, startAction, null, null, null, sessionScope, modalityType, checkOnOk, false, null, null);
+    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop) {
+        return addFAProp(group, caption, form, objectsToSet, startAction, isAdd, null, null, null, sessionScope, modalityType, checkOnOk, false, null, null);
     }
 
-    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType) {
-        return addProperty(group, new LAP(new FormActionProperty(caption, form, objectsToSet, startAction, sessionScope, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty)));
+    protected LAP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, ActionPropertyObjectEntity startAction, boolean isAdd, ObjectEntity contextObject, CalcProperty contextProperty, PropertyDrawEntity initFilterProperty, FormSessionScope sessionScope, ModalityType modalityType, boolean checkOnOk, boolean showDrop, FormPrintType printType, FormExportType exportType) {
+        return addProperty(group, new LAP(new FormActionProperty(caption, form, objectsToSet, startAction, isAdd, sessionScope, modalityType, checkOnOk, showDrop, printType, exportType, baseLM.formResult, baseLM.getFormResultProperty(), baseLM.formPageCount, baseLM.formExportFile, baseLM.getChosenValueProperty(), contextObject, contextProperty, initFilterProperty)));
     }
 
     // ------------------- Change Class action ----------------- //
@@ -1597,7 +1595,7 @@ public abstract class LogicsModule {
 
         LAP property = addDMFAProp(null, ServerResourceBundle.getString("logics.add"),
                 form.form, new ObjectEntity[] {},
-                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope);
+                form.form.addPropertyObject(getAddObjectAction(cls, form.form, form.object)), scope, true);
         setAddFormActionProperties(property, form, scope);
         return property;
     }
