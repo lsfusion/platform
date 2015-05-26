@@ -87,7 +87,7 @@ lock(object) = ACTION NEWSESSION {
 }
 
 unlock(object) = ACTION NEWSESSION { 
-    IF lockResult() THEN APPLY locked(object) <- NULL;
+    APPLY locked(object) <- NULL;
 }
 
 changeSHA256PasswordCustomUser = ACTION(customUser) {
