@@ -9,6 +9,7 @@ import lsfusion.interop.remote.PendingRemoteInterface;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public interface RemoteLogicsInterface extends PendingRemoteInterface {
     
@@ -51,4 +52,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     void ping() throws RemoteException;
 
     int generateNewID() throws RemoteException;
+
+    void sendPingInfo(Integer computerId, Map<Long, List<Long>> pingInfoMap) throws RemoteException;
 }

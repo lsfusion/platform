@@ -161,6 +161,8 @@ public class Settings {
     
     private int updateUserLastActivity = 30000;
 
+    private int updatePingInfo = 3600000;
+
     private boolean autoAnalyzeTempStats = true; // автоматически анализировать статистику после каждого заполнения временной таблицы (прикол в том что после удаления таблицы и добавления новых записей статистика сама увеличивается)
 
     private boolean useGreaterEquals = true;
@@ -709,6 +711,14 @@ public class Settings {
 
     public void setUpdateUserLastActivity(int updateUserLastActivity) {
         this.updateUserLastActivity = updateUserLastActivity;
+    }
+
+    public int getUpdatePingInfo() {
+        return updatePingInfo;
+    }
+
+    public void setUpdatePingInfo(int updatePingInfo) {
+        this.updatePingInfo = updatePingInfo;
     }
 
     public boolean isAutoAnalyzeTempStats() {

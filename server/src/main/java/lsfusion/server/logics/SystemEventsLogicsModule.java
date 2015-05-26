@@ -71,6 +71,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP quantityChangedClassesSession;
     public LCP changesSession;
 
+    public LCP pingComputerDateTimeFromDateTimeTo;
+
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SystemEventsLogicsModule.class.getResourceAsStream("/lsfusion/system/SystemEvents.lsf"), "/lsfusion/system/SystemEvents.lsf", baseLM, BL);
         setBaseLogicsModule(baseLM);
@@ -138,6 +140,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         quantityChangedClassesSession = findProperty("quantityChangedClassesSession");
         changesSession = findProperty("changesSession");
 //        baseLM.objectClassName.makeLoggable(this, true);
+
+        pingComputerDateTimeFromDateTimeTo = findProperty("pingComputerDateTimeFromDateTimeTo");
     }
 
     public void logException(BusinessLogics bl, Throwable t, DataObject user, String clientName, boolean client) throws SQLException, SQLHandledException {

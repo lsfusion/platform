@@ -18,6 +18,7 @@ import lsfusion.server.auth.User;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
+import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.OperationOwner;
@@ -388,7 +389,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             DataSession session = ThreadLocalContext.getDbManager().createSession();
 
             Map<Integer, Long> userActivityMap;
-            userActivityMap = new HashMap<Integer, Long>(RemoteLoggerAspect.userActivityMap);
+            userActivityMap = new HashMap<>(RemoteLoggerAspect.userActivityMap);
             RemoteLoggerAspect.userActivityMap.clear();
             
             try {
@@ -397,6 +398,31 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     DataObject customUserObject = new DataObject(userActivity.getKey(), businessLogics.authenticationLM.customUser);
                     businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue()), session, customUserObject);
                     
+                }
+                session.apply(businessLogics);
+            } finally {
+                session.close();
+            }
+        } catch (Exception e) {
+            logger.error("Error updating user activity: ", e);
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static void updatePingInfo(BusinessLogics businessLogics) {
+        try {
+            DataSession session = ThreadLocalContext.getDbManager().createSession();
+            Map<Integer, Map<Long, List<Long>>> pingInfoMap = new HashMap<>(RemoteLoggerAspect.pingInfoMap);
+            RemoteLoggerAspect.pingInfoMap.clear();
+            try {
+                for (Map.Entry<Integer, Map<Long, List<Long>>> entry : pingInfoMap.entrySet()) {
+                    DataObject computerObject = new DataObject(entry.getKey(), businessLogics.authenticationLM.computer);
+                    for(Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
+                        DataObject dateFrom = new DataObject(new Timestamp(pingEntry.getKey()), DateTimeClass.instance);
+                        DataObject dateTo = new DataObject(new Timestamp(pingEntry.getValue().get(0)), DateTimeClass.instance);
+                        Integer ping = pingEntry.getValue().get(1).intValue();
+                        businessLogics.systemEventsLM.pingComputerDateTimeFromDateTimeTo.change(ping, session, computerObject, dateFrom, dateTo);
+                    }
                 }
                 session.apply(businessLogics);
             } finally {

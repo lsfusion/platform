@@ -11,6 +11,7 @@ import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends RemoteObjectProxy<T> implements RemoteLogicsInterface {
 
@@ -69,6 +70,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
 
     public int generateNewID()  throws RemoteException {
         return target.generateNewID();
+    }
+
+    public void sendPingInfo(Integer computerId, Map<Long, List<Long>> pingInfoMap)  throws RemoteException {
+        target.sendPingInfo(computerId, pingInfoMap);
     }
 
     public void ping() throws RemoteException {

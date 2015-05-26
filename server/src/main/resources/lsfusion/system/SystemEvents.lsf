@@ -120,6 +120,9 @@ userLoginConnectionSession 'Логин пользователя' = userLoginConn
 
 @defineLog (Session, 'изменений', log, date);
 
+TABLE pingTable(INTEGER, DATETIME, DATETIME);
+pingComputerDateTimeFromDateTimeTo 'Пинг' = DATA INTEGER (Computer, DATETIME, DATETIME);
+
 FORM connections 'Журнал подключений'
 
     OBJECTS c=Connection
@@ -215,11 +218,20 @@ DESIGN changes {
     }
 }
 
+FORM pings 'Журнал статистики пингов'
+    OBJECTS c = Computer, (dFrom = DATETIME, dTo = DATETIME)
+    PROPERTIES(c) hostnameComputer
+    PROPERTIES OBJVALUE(dFrom) TODRAW dFrom, OBJVALUE(dTo) TODRAW dTo
+    PROPERTIES(c,dFrom,dTo) pingComputerDateTimeFromDateTimeTo TODRAW dFrom
+    FILTERS pingComputerDateTimeFromDateTimeTo(c,dFrom,dTo)
+;
+
 NAVIGATOR {
     systemEvents {
         ADD SystemEvents.exceptions;
         ADD SystemEvents.connections;
         ADD SystemEvents.launches;
         ADD SystemEvents.changes;
+        ADD SystemEvents.pings;
     }
 }

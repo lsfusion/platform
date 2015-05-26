@@ -35,7 +35,9 @@ import org.springframework.util.Assert;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -137,6 +139,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         } else if (LifecycleEvent.STARTED.equals(event.getType())) {
             initOpenFormCountUpdate();
             initUserLastActivityUpdate();
+            initPingInfoUpdate();
         }
     }
 
@@ -163,6 +166,16 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
                 RemoteNavigator.updateUserLastActivity(businessLogics);
             }
         }, Settings.get().getUpdateUserLastActivity(), Settings.get().getUpdateUserLastActivity(), TimeUnit.MILLISECONDS);
+    }
+
+    private void initPingInfoUpdate() {
+        ScheduledExecutorService pingInfoUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "ping-info-daemon"));
+        pingInfoUpdateExecutor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                RemoteNavigator.updatePingInfo(businessLogics);
+            }
+        }, Settings.get().getUpdatePingInfo(), Settings.get().getUpdatePingInfo(), TimeUnit.MILLISECONDS);
     }
 
     public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, String osVersion, String javaVersion, boolean reuseSession) {
@@ -208,6 +221,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     public int generateNewID() throws RemoteException {
         return BaseLogicsModule.generateStaticNewID();
+    }
+
+    public void sendPingInfo(Integer computerId, Map<Long, List<Long>> pingInfoMap) {
+        Map<Long, List<Long>> pingInfoEntry = RemoteLoggerAspect.pingInfoMap.containsKey(computerId) ? RemoteLoggerAspect.pingInfoMap.get(computerId) : new HashMap<Long, List<Long>>();
+        pingInfoEntry.putAll(pingInfoMap);
+        RemoteLoggerAspect.pingInfoMap.put(computerId, pingInfoEntry);
     }
 
     @Override

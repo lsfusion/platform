@@ -9,6 +9,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,7 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RemoteLoggerAspect {
     private final static Logger logger = ServerLoggers.remoteLogger;
 
-    public static final Map<Integer, Long> userActivityMap = new ConcurrentHashMap<Integer, Long>();
+    public static final Map<Integer, Long> userActivityMap = new ConcurrentHashMap<>();
+    public static final Map<Integer, Map<Long, List<Long>>> pingInfoMap = new ConcurrentHashMap<>();
     private static Map<Integer, Boolean> remoteLoggerDebugEnabled = new ConcurrentHashMap<Integer, Boolean>();
 
     @Around("(execution(* lsfusion.interop.RemoteLogicsInterface.*(..))" +
