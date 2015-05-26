@@ -39,9 +39,6 @@ public class PingThread extends Thread {
     private int globalCounter;
     private int pingCounter;
 
-    private Integer computerId;
-    private boolean computerRead;
-
     private AtomicBoolean abandoned = new AtomicBoolean();
 
     public PingThread(ClientCallBackInterface remoteClient) {
@@ -57,13 +54,11 @@ public class PingThread extends Thread {
 
     public void run() {
 
-        if(!computerRead) {
-            try {
-                computerId = Main.remoteLogics.getComputer(SystemUtils.getLocalHostName());
-            } catch (RemoteException e) {
-                computerId = null;
-            }
-            computerRead = true;
+        Integer computerId;
+        try {
+            computerId = Main.remoteLogics.getComputer(SystemUtils.getLocalHostName());
+        } catch (RemoteException e) {
+            computerId = null;
         }
 
         while (true) {

@@ -35,9 +35,9 @@ import org.springframework.util.Assert;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -224,7 +224,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     public void sendPingInfo(Integer computerId, Map<Long, List<Long>> pingInfoMap) {
-        Map<Long, List<Long>> pingInfoEntry = RemoteLoggerAspect.pingInfoMap.containsKey(computerId) ? RemoteLoggerAspect.pingInfoMap.get(computerId) : new HashMap<Long, List<Long>>();
+        Map<Long, List<Long>> pingInfoEntry = RemoteLoggerAspect.pingInfoMap.get(computerId);
+        pingInfoEntry = pingInfoEntry != null ? pingInfoEntry : new ConcurrentHashMap<Long, List<Long>>();
         pingInfoEntry.putAll(pingInfoMap);
         RemoteLoggerAspect.pingInfoMap.put(computerId, pingInfoEntry);
     }
