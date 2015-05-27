@@ -5,6 +5,7 @@ import jasperapi.ReportGenerator;
 import lsfusion.base.BaseUtils;
 import lsfusion.gwt.form.shared.view.ImageDescription;
 import lsfusion.gwt.form.shared.view.changes.dto.GFilesDTO;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.SerializableImageIconHolder;
 import lsfusion.interop.form.ReportGenerationData;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -139,11 +140,16 @@ public class FileUtils {
         return null;
     }
 
-    public static String exportReport(boolean toExcel, ReportGenerationData reportData) {
+    public static String exportReport(FormPrintType type, ReportGenerationData reportData) {
         try {
             ReportGenerator generator = new ReportGenerator(reportData);
-            byte[] report = !toExcel ? JasperExportManager.exportReportToPdf(generator.createReport(false, null)) : ReportGenerator.exportToExcelByteArray(reportData);
-            String fileName = "lsfReport" + BaseUtils.randomString(15) + (toExcel ? ".xls" : ".pdf");
+            byte[] report;
+            if (type != null && type.isExcel()) {
+                report = ReportGenerator.exportToExcelByteArray(reportData, type);
+            } else {
+                report = JasperExportManager.exportReportToPdf(generator.createReport(false, null));
+            }
+            String fileName = "lsfReport" + BaseUtils.randomString(15) + "." + (type != null ? type.getFileExtension() : "pdf");
             File file = new File(APP_TEMP_FOLDER_URL, fileName);
             FileOutputStream fos = new FileOutputStream(file);
             fos.write(report);

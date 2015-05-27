@@ -12,7 +12,6 @@ import lsfusion.gwt.form.shared.view.changes.dto.GFormChangesDTO;
 import lsfusion.gwt.form.shared.view.classes.GObjectClass;
 import lsfusion.gwt.form.shared.view.classes.GType;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
-import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
 import lsfusion.interop.action.*;
 
@@ -116,7 +115,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ReportClientAction.class)
     public GReportAction convertAction(ReportClientAction action, FormSessionObject form) throws IOException {
-        return new GReportAction(FileUtils.exportReport(action.printType == FormPrintType.XLSX, action.generationData));
+        return new GReportAction(FileUtils.exportReport(action.printType, action.generationData));
     }
 
     @Converter(from = RequestUserInputClientAction.class)

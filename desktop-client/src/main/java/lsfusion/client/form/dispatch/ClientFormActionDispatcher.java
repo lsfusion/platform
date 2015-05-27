@@ -69,7 +69,7 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
         try {
             if (action.printType == FormPrintType.AUTO) {
                 ClientReportUtils.autoprintReport(action.generationData);
-            } else if (action.printType == FormPrintType.XLSX || action.printType == FormPrintType.XLS) {
+            } else if (action.printType != null && action.printType.isExcel()) {
                 ReportGenerator.exportToExcelAndOpen(action.generationData, action.printType);
             } else if (action.printType == FormPrintType.PDF) {
                 ReportGenerator.exportToPdfAndOpen(action.generationData);

@@ -5,6 +5,7 @@ import lsfusion.gwt.form.server.FormDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
 import lsfusion.gwt.form.server.convert.GwtToClientConverter;
 import lsfusion.gwt.form.shared.actions.form.GroupReport;
+import lsfusion.interop.FormPrintType;
 import lsfusion.interop.form.ReportGenerationData;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
@@ -25,7 +26,7 @@ public class GroupReportHandler extends FormActionHandler<GroupReport, StringRes
         
         ReportGenerationData reportData = form.remoteForm.getReportData(action.requestIndex, -1, action.groupObjectID, action.toExcel, converter.convertFormUserPreferences(action.preferences));
 
-        return new StringResult(FileUtils.exportReport(action.toExcel, reportData));
+        return new StringResult(FileUtils.exportReport(action.toExcel ? FormPrintType.XLS : FormPrintType.PDF, reportData));
     }
 
 

@@ -381,7 +381,7 @@ public class ReportGenerator {
 
     public static void exportToExcelAndOpen(ReportGenerationData generationData, FormPrintType type) {
         try {
-            assert type == FormPrintType.XLS || type == FormPrintType.XLSX;
+            assert type.isExcel();
             File tempFile = (type == FormPrintType.XLSX ? exportToXlsx(generationData) : exportToXls(generationData));
             
             if (Desktop.isDesktopSupported()) {
@@ -444,9 +444,10 @@ public class ReportGenerator {
         return tempFile;    
     }
 
-    public static byte[] exportToExcelByteArray(ReportGenerationData generationData) {
+    public static byte[] exportToExcelByteArray(ReportGenerationData generationData, FormPrintType type) {
         try {
-            File tempFile = exportToXlsx(generationData);
+            assert type.isExcel();
+            File tempFile = type == FormPrintType.XLS ? exportToXls(generationData) : exportToXlsx(generationData);
             FileInputStream fis = new FileInputStream(tempFile);
             byte[] array = new byte[(int) tempFile.length()];
             fis.read(array);
