@@ -210,18 +210,12 @@ public class ScriptingFormEntity {
         return groupObjects;
     }
 
-    public GroupObjectEntity getGroupObjectEntity(String objectSID, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        GroupObjectEntity groupObject = form.getNFGroupObject(objectSID, version);
-        if (groupObject != null)
-            return groupObject;
-        ObjectEntity objectEntity = form.getNFObject(objectSID, version);
-        GroupObjectEntity groupObjectEntity = null;
-        if (objectEntity == null) {
-            LM.getErrLog().emitComponentNotFoundError(LM.getParser(), objectSID);
-        } else {
-            groupObjectEntity = objectEntity.groupTo;
+    public GroupObjectEntity getGroupObjectEntity(String groupSID, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        GroupObjectEntity groupObject = form.getNFGroupObject(groupSID, version);
+        if (groupObject == null) {
+            LM.getErrLog().emitNotFoundError(LM.getParser(), "groupObject", groupSID);
         }
-        return groupObjectEntity;
+        return groupObject;
     }
     
     public void setReportPath(GroupObjectEntity groupObject, ScriptingLogicsModule.PropertyUsage propUsage, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {

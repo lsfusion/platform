@@ -221,8 +221,8 @@ DESIGN changes {
 FORM pings 'Журнал статистики пингов'
     OBJECTS c = Computer, (dFrom = DATETIME, dTo = DATETIME)
     PROPERTIES(c) hostnameComputer
-    PROPERTIES OBJVALUE(dFrom) TODRAW dFrom, OBJVALUE(dTo) TODRAW dTo
-    PROPERTIES(c,dFrom,dTo) pingComputerDateTimeFromDateTimeTo TODRAW dFrom
+    PROPERTIES OBJVALUE(dFrom), OBJVALUE(dTo) 
+    PROPERTIES(c,dFrom,dTo) pingComputerDateTimeFromDateTimeTo 
     FILTERS pingComputerDateTimeFromDateTimeTo(c,dFrom,dTo)
 ;
 

@@ -924,7 +924,7 @@ propertyDeclaration returns [String name, String caption, List<TypedParameter> p
 propertyExpression[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	int line = self.getParser().getGlobalCurrentLineNumber(); 
-    int offset = self.getParser().getGlobalPositionInLine();
+	int offset = self.getParser().getGlobalPositionInLine();
 }
 @after{
     if (inPropParseState()) {
@@ -1230,8 +1230,7 @@ groupPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 	:	'GROUP'
 		type=groupingType
 		mainList=nonEmptyPropertyExpressionList[groupContext, true]
-		('BY'
-		exprList=nonEmptyPropertyExpressionList[groupContext, true] { groupProps.addAll($exprList.props); })?
+		('BY' exprList=nonEmptyPropertyExpressionList[groupContext, true] { groupProps.addAll($exprList.props); })?
 		('ORDER' ('DESC' { ascending = false; } )?
 		orderList=nonEmptyPropertyExpressionList[groupContext, true] { orderProps.addAll($orderList.props); })?
 		('WHERE' whereExpr=propertyExpression[groupContext, false])?
@@ -2379,11 +2378,11 @@ listActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] 
 	;
 
 nestedPropertiesSelector returns[boolean all = false, List<PropertyUsage> props = new ArrayList<PropertyUsage>()]
-    :   'NESTED'
-            (   'LOCAL' { $all = true; }
-            |   list=nonEmptyPropertyUsageList { $props = $list.propUsages; }
-            )
-    ;
+	:	'NESTED'
+		(	'LOCAL' { $all = true; }
+		|	list=nonEmptyPropertyUsageList { $props = $list.propUsages; }
+		)
+	;
 	
 localDataPropertyDefinition returns [LP property]
 @after {
@@ -3661,8 +3660,8 @@ relOperand
 	;
 	
 multOperand
-    : MULT | DIV
-    ;
+	:	MULT | DIV
+	;
 
 /////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////// LEXER //////////////////////////////////////
@@ -3689,7 +3688,7 @@ COMMENTS	:	('//' .* '\n') { $channel=HIDDEN; };
 UINT_LITERAL 	:	DIGITS;
 ULONG_LITERAL	:	DIGITS('l'|'L');
 UDOUBLE_LITERAL	:	DIGITS '.' EDIGITS('d'|'D');
-UNUMERIC_LITERAL: 	DIGITS '.' EDIGITS;	  
+UNUMERIC_LITERAL:	DIGITS '.' EDIGITS;	  
 DATE_LITERAL	:	DIGIT DIGIT DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT; 
 DATETIME_LITERAL:	DIGIT DIGIT DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT '_' DIGIT DIGIT ':' DIGIT DIGIT;	
 TIME_LITERAL	:	DIGIT DIGIT ':' DIGIT DIGIT;
@@ -3699,10 +3698,10 @@ EQ_OPERAND	:	('==') | ('!=');
 LESS_OPERAND	: 	('<');
 GR_OPERAND	:	('>');
 RELEQ_OPERAND	: 	('<=') | ('>=');
-MINUS       :	'-';
-PLUS        :	'+';
-MULT        :	'*';
-DIV         :	'/';
+MINUS		:	'-';
+PLUS		:	'+';
+MULT		:	'*';
+DIV		:	'/';
 ADDOR_OPERAND	:	'(+)' | {ahead("(-)")}?=> '(-)';
 CONCAT_OPERAND	:	'##';
 CONCAT_CAPITALIZE_OPERAND	:	'###';	
