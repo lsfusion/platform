@@ -109,7 +109,7 @@ public class PingThread extends Thread {
                 globalPingList.addAll(currentPingList);
                 long newPing = currentPingList.get(15); //medium
                 long currentTime = System.currentTimeMillis();
-                if (lastPing == 0 || (newPing != 0 && ((double) lastPing / newPing < 0.5 || (double) newPing / lastPing < 0.5))) {
+                if (((newPing != 0 && (double) lastPing / newPing < 0.5) || (lastPing != 0 && (double) newPing / lastPing < 0.5))) {
                     Collections.sort(globalPingList);
                     pingInfoMap.put(lastTimeFrom, Arrays.asList(currentTime, globalPingList.get(globalPingList.size() / 2)));
                     globalPingList.clear();
