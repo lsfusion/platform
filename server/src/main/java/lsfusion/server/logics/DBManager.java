@@ -1062,6 +1062,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 run(session, isolatedTransaction, new RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         long start = System.currentTimeMillis();
+                        systemLogger.info(String.format("Recalculate Aggregation started: %s", property.getSID()));
                         property.recalculateAggregation(sql, LM.baseClass);
 
                         proceeded.set(proceeded.result + 1);
