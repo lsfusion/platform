@@ -20,7 +20,7 @@ public class SetHostnameServerComputerActionProperty extends ScriptingActionProp
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         Object value = context.getSingleKeyObject();
         DBManager.HOSTNAME_COMPUTER = (String) value;
-        ServerLoggers.systemLogger.info("Hostname: " + value);
+        ServerLoggers.systemLogger.info("Setting hostname: " + value);
     }
 
     @Override
