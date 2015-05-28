@@ -1,5 +1,6 @@
 package lsfusion.server.logics.service;
 
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DBManager;
@@ -19,6 +20,7 @@ public class SetHostnameServerComputerActionProperty extends ScriptingActionProp
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         Object value = context.getSingleKeyObject();
         DBManager.HOSTNAME_COMPUTER = (String) value;
+        ServerLoggers.systemLogger.info("Hostname: " + value);
     }
 
     @Override
