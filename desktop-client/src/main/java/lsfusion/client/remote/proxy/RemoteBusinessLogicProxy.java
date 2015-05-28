@@ -19,8 +19,11 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         super(target);
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, String osVersion, String javaVersion, boolean forceCreateNew) throws RemoteException {
-        RemoteNavigatorInterface remote = target.createNavigator(isFullClient, login, password, computer, remoteAddress, osVersion, javaVersion, forceCreateNew);
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress,
+                                                    String osVersion, String processor, String architecture, Integer cores, Integer physicalMemory, Integer totalMemory,
+                                                    Integer maximumMemory, Integer freeMemory, String javaVersion, boolean forceCreateNew) throws RemoteException {
+        RemoteNavigatorInterface remote = target.createNavigator(isFullClient, login, password, computer, remoteAddress, osVersion,
+                processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, forceCreateNew);
         if (remote == null) {
             return null;
         }

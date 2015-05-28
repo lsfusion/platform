@@ -40,6 +40,13 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP userConnection;
     public LCP userLoginConnection;
     public LCP osVersionConnection;
+    public LCP processorConnection;
+    public LCP architectureConnection;
+    public LCP coresConnection;
+    public LCP physicalMemoryConnection;
+    public LCP totalMemoryConnection;
+    public LCP maximumMemoryConnection;
+    public LCP freeMemoryConnection;
     public LCP javaVersionConnection;
     public LCP<PropertyInterface> connectionStatusConnection;
     public LCP connectTimeConnection;
@@ -105,6 +112,13 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         userConnection = findProperty("userConnection");
         userLoginConnection = findProperty("userLoginConnection");
         osVersionConnection = findProperty("osVersionConnection");
+        processorConnection = findProperty("processorConnection");
+        architectureConnection = findProperty("architectureConnection");
+        coresConnection = findProperty("coresConnection");
+        physicalMemoryConnection = findProperty("physicalMemoryConnection");
+        totalMemoryConnection = findProperty("totalMemoryConnection");
+        maximumMemoryConnection = findProperty("maximumMemoryConnection");
+        freeMemoryConnection = findProperty("freeMemoryConnection");
         javaVersionConnection = findProperty("javaVersionConnection");
         connectionStatusConnection = (LCP<PropertyInterface>) findProperty("connectionStatusConnection");
 

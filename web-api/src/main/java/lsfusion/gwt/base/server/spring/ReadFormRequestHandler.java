@@ -56,23 +56,19 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             String exportUser = context.getInitParameter("serviceUserLogin");
             String exportPassword = context.getInitParameter("serviceUserPassword");
             String osVersion = System.getProperty("os.name");
-
-            String memory = String.format("\nProcessor: %s, %s\n", System.getenv("PROCESSOR_IDENTIFIER"), System.getenv("PROCESSOR_ARCHITECTURE"));
-                    /* Total number of processors or cores available to the JVM */
-            memory += String.format("Cores: %s\n", Runtime.getRuntime().availableProcessors());
-                    /* Total amount of physical memory */
+            String processor = System.getenv("PROCESSOR_IDENTIFIER");
+            String architecture = System.getenv("PROCESSOR_ARCHITECTURE");
+            Integer cores = Runtime.getRuntime().availableProcessors();
             com.sun.management.OperatingSystemMXBean os = (com.sun.management.OperatingSystemMXBean)
                     java.lang.management.ManagementFactory.getOperatingSystemMXBean();
-            memory += String.format("Physical memory: %s MB\n", os.getTotalPhysicalMemorySize() / 1048576);
-                    /* Total amount of free memory available to the JVM */
-            memory += String.format("Free memory: %s MB\n", Runtime.getRuntime().freeMemory() / 1048576);
-                    /* Maximum amount of memory the JVM will attempt to use */
-            memory += String.format("Maximum memory: %s MB\n", Runtime.getRuntime().maxMemory() / 1048576);
-                    /* Total memory currently available to the JVM */
-            memory += String.format("Total memory available to JVM: %s MB\n", Runtime.getRuntime().totalMemory() / 1048576);
+            Integer physicalMemory = (int) (os.getTotalPhysicalMemorySize() / 1048576);
+            Integer totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1048576);
+            Integer maximumMemory = (int) (Runtime.getRuntime().maxMemory() / 1048576);
+            Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
 
             String javaVersion = System.getProperty("java.version") + " " + System.getProperty("sun.arch.data.model") + " bit";
-            RemoteNavigatorInterface navigator = bl.createNavigator(true, exportUser, exportPassword, bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion + memory, javaVersion, false);
+            RemoteNavigatorInterface navigator = bl.createNavigator(true, exportUser, exportPassword, bl.getComputer(SystemUtils.getLocalHostName()),
+                    "127.0.0.1", osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, false);
 
             if (!bl.checkFormExportPermission(canonicalName)) {
                 blProvider.invalidate();

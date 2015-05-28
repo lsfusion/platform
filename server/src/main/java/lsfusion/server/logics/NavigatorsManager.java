@@ -97,7 +97,9 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         executor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(logicsInstance.getContext(), "navigator-manager-daemon"));
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress, String osVersion, String javaVersion, boolean reuseSession) {
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer,
+                                                    String remoteAddress, String osVersion, String processor, String architecture, Integer cores, Integer physicalMemory,
+                                                    Integer totalMemory, Integer maximumMemory, Integer freeMemory, String javaVersion, boolean reuseSession) {
         //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
         reuseSession = false;
 
@@ -126,7 +128,8 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
             }
 
             RemoteNavigator navigator = new RemoteNavigator(logicsInstance, isFullClient, remoteAddress, user, computer, rmiManager.getExportPort(), session);
-            addNavigator(loginKey, navigator, osVersion, javaVersion, securityManager.isUniversalPassword(password));
+            addNavigator(loginKey, navigator, osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory,
+                    javaVersion, securityManager.isUniversalPassword(password));
 
             return navigator;
         } catch (Exception e) {
@@ -141,7 +144,8 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
     }
 
-    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator, String osVersion, String javaVersion, boolean skipLogging) throws SQLException, SQLHandledException {
+    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator, String osVersion, String processor, String architecture, Integer cores, Integer physicalMemory,
+                              Integer totalMemory, Integer maximumMemory, Integer freeMemory, String javaVersion, boolean skipLogging) throws SQLException, SQLHandledException {
         synchronized (navigators) {
 
             if (!skipLogging) {
@@ -150,6 +154,13 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
                 DataObject newConnection = session.addObject(businessLogics.systemEventsLM.connection);
                 businessLogics.systemEventsLM.userConnection.change(navigator.getUser().object, session, newConnection);
                 businessLogics.systemEventsLM.osVersionConnection.change(osVersion, session, newConnection);
+                businessLogics.systemEventsLM.processorConnection.change(processor, session, newConnection);
+                businessLogics.systemEventsLM.architectureConnection.change(architecture, session, newConnection);
+                businessLogics.systemEventsLM.coresConnection.change(cores, session, newConnection);
+                businessLogics.systemEventsLM.physicalMemoryConnection.change(physicalMemory, session, newConnection);
+                businessLogics.systemEventsLM.totalMemoryConnection.change(totalMemory, session, newConnection);
+                businessLogics.systemEventsLM.maximumMemoryConnection.change(maximumMemory, session, newConnection);
+                businessLogics.systemEventsLM.freeMemoryConnection.change(freeMemory, session, newConnection);
                 businessLogics.systemEventsLM.javaVersionConnection.change(javaVersion, session, newConnection);
                 businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer().object, session, newConnection);
                 businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);

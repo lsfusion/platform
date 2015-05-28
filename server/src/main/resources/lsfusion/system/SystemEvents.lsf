@@ -69,7 +69,15 @@ remoteAddressConnection 'IP пользователя' = DATA VARSTRING[40] (Conn
 userConnection 'Пользователь' = DATA CustomUser (Connection);
 userLoginConnection 'Логин пользователя' (connection) = loginCustomUser(userConnection(connection));
 
-osVersionConnection 'Операционная система' = DATA TEXT (Connection);
+osVersionConnection 'Операционная система' = DATA VARSTRING[100] (Connection);
+processorConnection 'Процессор' = DATA VARSTRING[100] (Connection);
+architectureConnection 'Архитектура' = DATA VARSTRING[10] (Connection);
+coresConnection 'Количество ядер' = DATA INTEGER (Connection);
+physicalMemoryConnection 'Физическая память, МБ' = DATA INTEGER (Connection);
+totalMemoryConnection 'Всего память для JVM, МБ' = DATA INTEGER (Connection);
+maximumMemoryConnection 'Максимально доступная память для JVM, МБ' = DATA INTEGER (Connection);
+freeMemoryConnection 'Свободная память для JVM, МБ' = DATA INTEGER (Connection);
+
 javaVersionConnection 'Версия java' = DATA VARSTRING[100] (Connection);
 
 countConnectionUser 'Кол-во подключений' = GROUP SUM 1 BY userConnection(connection) PERSISTENT; 
@@ -126,8 +134,10 @@ pingComputerDateTimeFromDateTimeTo 'Пинг' = DATA INTEGER (Computer, DATETIME
 FORM connections 'Журнал подключений'
 
     OBJECTS c=Connection
-    PROPERTIES (c) READONLY hostnameComputerConnection, remoteAddressConnection, userLoginConnection, osVersionConnection, javaVersionConnection,
-                            nameConnectionStatusConnection, connectTimeConnection, disconnectTimeConnection
+    PROPERTIES (c) READONLY hostnameComputerConnection, remoteAddressConnection, userLoginConnection, osVersionConnection,
+                            javaVersionConnection, processorConnection, architectureConnection, coresConnection, physicalMemoryConnection,
+                            totalMemoryConnection, maximumMemoryConnection, freeMemoryConnection, nameConnectionStatusConnection, connectTimeConnection,
+                            disconnectTimeConnection
 
     OBJECTS n=NavigatorElement
     PROPERTIES (n) READONLY captionNavigatorElement, canonicalNameNavigatorElement
