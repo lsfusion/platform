@@ -56,6 +56,7 @@ import static lsfusion.server.ServerLoggers.systemLogger;
 public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static final Logger logger = ServerLoggers.sqlLogger;
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
+    private Integer idActiveThread;
 
     private static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = new ConcurrentWeakHashMap<SQLSession, Integer>();
 
@@ -126,7 +127,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         } else {
             resultConnection = connectionPool.getCommon(this);
         }
-        
+
         resultConnection.checkClosed();
         resultConnection.updateLogLevel(syntax);
         return resultConnection;
@@ -234,7 +235,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         checkClosed();
 
         lock.readLock().lock();
-        
+        setActiveThread();
         owner.checkThreadSafeAccess(writeOwner);
     }
 
@@ -249,6 +250,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private void unlockRead() {
         lock.readLock().unlock();
+        resetActiveThread();
     }
     
     private OperationOwner writeOwner; 
@@ -257,7 +259,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         checkClosed();
 
         lock.writeLock().lock();
-        
+        setActiveThread();
         writeOwner = owner;
     }
 
@@ -265,6 +267,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         writeOwner = null;
         
         lock.writeLock().unlock();
+        resetActiveThread();
     }
     
     private Integer prevIsolation;
@@ -294,6 +297,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     privateConnection.sql.setTransactionIsolation(isolationLevel);
                 }
                 setACID(privateConnection.sql, true, syntax);
+
             }
         } catch (SQLException e) {
             throw ExceptionUtils.propagate(handle(e, "START TRANSACTION", privateConnection), SQLException.class, SQLHandledException.class);
@@ -2000,6 +2004,18 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     public static ImOrderMap<String, String> mapNames(ImMap<String, String> exprs, Result<ImOrderSet<String>> order) {
         return mapNames(exprs, exprs.keys().toRevMap(), order);
+    }
+
+    public Integer getActiveThread() {
+        return idActiveThread;
+    }
+
+    private void setActiveThread() {
+        idActiveThread = (int) Thread.currentThread().getId();
+    }
+
+    private void resetActiveThread() {
+        idActiveThread = null;
     }
 
 }
