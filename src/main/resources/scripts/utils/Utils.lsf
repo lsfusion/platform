@@ -19,18 +19,18 @@ stringToCustomFile 'Запись строки в файл' = ACTION CUSTOM 'lsfu
 
 stringEqualsAll(string) = string == STRING[3]('Все');
 
-isWordInCSV = FORMULA INTEGER PG 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE NULL END', MS 'CASE WHEN CHARINDEX(\' \' + CAST($1 AS nvarchar(max)) + \' \',\' \' + REPLACE($2,\',\',\' \') + \' \') > 0 THEN 1 ELSE NULL END';
+isWordInCSV = FORMULA NULL INTEGER PG 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE NULL END', MS 'CASE WHEN CHARINDEX(\' \' + CAST($1 AS nvarchar(max)) + \' \',\' \' + REPLACE($2,\',\',\' \') + \' \') > 0 THEN 1 ELSE NULL END';
 
 getWord = FORMULA '(string_to_array($1,$2))[($3)]';
 wordCount = FORMULA 'array_length((string_to_array($1,$2)),1)';
 
-istartsWith = FORMULA INTEGER PG 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
-startsWith = FORMULA INTEGER PG 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
-endsWith = FORMULA INTEGER PG 'CASE WHEN (($1) LIKE (\'%\'||($2))) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2))) THEN 1 ELSE NULL END';
+istartsWith = FORMULA NULL INTEGER PG 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
+startsWith = FORMULA NULL INTEGER PG 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
+endsWith = FORMULA NULL INTEGER PG 'CASE WHEN (($1) LIKE (\'%\'||($2))) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2))) THEN 1 ELSE NULL END';
 
 // todo : для MS SQL пофиксить формулу, чтобы правильно работало, если в подстроке есть %
-isISubstring = FORMULA INTEGER PG 'CASE WHEN position(lower($2) in lower($1)) > 0 THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END'; 
-isSubstring = FORMULA INTEGER PG 'CASE WHEN position(($2) in ($1)) > 0 THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END';
+isISubstring = FORMULA NULL INTEGER PG 'CASE WHEN position(lower($2) in lower($1)) > 0 THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END'; 
+isSubstring = FORMULA NULL INTEGER PG 'CASE WHEN position(($2) in ($1)) > 0 THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END';
 
 replace = FORMULA TEXT 'replace($1,$2,$3)';
 
