@@ -1,6 +1,6 @@
 MODULE SQLUtils;
 
-REQUIRE System, Authentication;
+REQUIRE System, Authentication, Utils;
 
 getActiveTasksAction 'Обновить список активных процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveTasksActionProperty' () TOOLBAR;  
 getAllTasksAction 'Обновить список всех процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetAllTasksActionProperty' () TOOLBAR;  
@@ -39,9 +39,75 @@ FORM activeBlocks 'Активные блокировки'
     FILTERS processIdActiveBlock(i)
 ;
 
+CLASS StateProcess 'Статус процесса' {
+    active 'Active',
+    idle 'Idle in transaction'
+}
+
+updateProcessMonitorAction 'Обновить монитор процессов' = ACTION CUSTOM 'lsfusion.erp.utils.UpdateProcessMonitorActionProperty' () TOOLBAR; 
+testAction 'Test' = ACTION CUSTOM 'lsfusion.erp.utils.TestActionActionProperty' () TOOLBAR;
+previousCountProcess =  DATA LOCAL INTEGER();
+idThreadProcess 'ID потока процесса' = DATA LOCAL INTEGER (INTEGER);
+computerProcess 'Компьютер' = DATA LOCAL VARSTRING[100] (INTEGER);
+userProcess 'Пользователь' = DATA LOCAL VARSTRING[100] (INTEGER);
+
+querySQLProcess 'Запрос (SQL)' = DATA LOCAL TEXT (INTEGER);
+addressUserSQLProcess 'Адрес пользователя (SQL)' = DATA LOCAL VARSTRING[100] (INTEGER);
+dateTimeSQLProcess 'Время запуска (SQL)' = DATA LOCAL DATETIME (INTEGER);
+stateSQLProcess 'Статус процесса (SQL)' = DATA StateProcess (INTEGER);
+nameStateSQLProcess 'Статус процесса (SQL)' (i) = staticCaption(stateSQLProcess(i));
+
+stackTraceJavaProcess 'След java-потока (Java)' = DATA LOCAL TEXT (INTEGER);
+hasStackTraceJavaProcess (i) = stackTraceJavaProcess(i) AND i IS INTEGER;
+nameJavaProcess 'Имя java-потока (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
+statusJavaProcess 'Статус (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
+lockNameJavaProcess 'Блокировка (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);     
+lockOwnerIdJavaProcess 'ID блокирующего потока (Java)' = DATA LOCAL INTEGER (INTEGER);     
+lockOwnerNameJavaProcess 'Имя блокирующего потока (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);   
+
+option1 (i) = querySQLProcess(i) AND stateSQLProcess(i) == StateProcess.active;
+option11 (i) = (statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i)
+                           AND (NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1) AND i IS INTEGER)
+                           AND (NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1) AND i IS INTEGER)
+                           AND (NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketInputStream.socketRead0') == 1) AND i IS INTEGER)
+                           AND (NOT (startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0') == 1) AND i IS INTEGER));
+              
+option2 (i) = statusJavaProcess(i) == 'RUNNABLE';
+option3 (i) = NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1) AND i IS INTEGER;
+option4 (i) = NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1) AND i IS INTEGER;
+option5 (i) = NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketInputStream.socketRead0') == 1) AND i IS INTEGER;
+option6 (i) = NOT (startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0') == 1) AND i IS INTEGER;
+
+option34 (i) = NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1)
+                          AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1) AND i IS INTEGER;
+
+option12 (i) = hasStackTraceJavaProcess(i) AND option2(i) AND option3(i) AND option4(i) AND option5(i) AND option6(i) AND i IS INTEGER;     
+option13 (i) = hasStackTraceJavaProcess(i) AND option2(i) AND option3(i) AND option4(i) AND option5(i) AND i IS INTEGER;         
+option121 (i) = hasStackTraceJavaProcess(i) AND option2(i) AND option3(i);  
+option122 (i) = option4(i) AND option5(i) AND option6(i);  
+option123(i) = option121(i) AND option122(i);
+
+activeProcess 'Активный' (i) = (querySQLProcess(i) AND stateSQLProcess(i) == StateProcess.active)
+                                          OR (statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i) AND i IS INTEGER
+                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1)
+                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1)
+                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketInputStream.socketRead0') == 1)
+                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0') == 1));
+FORM processMonitor 'Монитор процессов' 
+    OBJECTS i = INTEGER
+    PROPERTIES(i) READONLY activeProcess, option1, option11, option12, option121, option122, option123, option13, hasStackTraceJavaProcess, option2, option3, option4, option5, option6, idThreadProcess, computerProcess, userProcess, 
+                           querySQLProcess, addressUserSQLProcess, dateTimeSQLProcess, nameStateSQLProcess,
+                           stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
+                           lockOwnerIdJavaProcess, lockOwnerNameJavaProcess
+    PROPERTIES() updateProcessMonitorAction TOOLBAR TODRAW i, testAction
+    FILTERS idThreadProcess(i)
+    FILTERGROUP active FILTER 'Только активные' activeProcess(i) DEFAULT
+;
+
 NAVIGATOR {
     systemEvents {
         ADD activeTasks;
         ADD activeBlocks;
+        ADD processMonitor;
     }
 }
