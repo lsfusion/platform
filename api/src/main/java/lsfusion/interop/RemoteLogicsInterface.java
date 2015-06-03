@@ -1,5 +1,6 @@
 package lsfusion.interop;
 
+import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
@@ -17,9 +18,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     
     String getUserTimeZone() throws RemoteException;
 
-    RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress,
-                                             String osVersion, String processor, String architecture, Integer cores, Integer physicalMemory, Integer totalMemory,
-                                             Integer maximumMemory, Integer freeMemory, String javaVersion, boolean forceCreateNew) throws RemoteException;
+    RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException;
 
     Integer getComputer(String hostname) throws RemoteException;
 

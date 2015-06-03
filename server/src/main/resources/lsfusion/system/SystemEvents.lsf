@@ -78,6 +78,7 @@ totalMemoryConnection 'Всего память для JVM, МБ' = DATA INTEGER 
 maximumMemoryConnection 'Максимально доступная память для JVM, МБ' = DATA INTEGER (Connection);
 freeMemoryConnection 'Свободная память для JVM, МБ' = DATA INTEGER (Connection);
 javaVersionConnection 'Версия java' = DATA VARSTRING[100] (Connection);
+screenSizeConnection 'Разрешение экрана' = DATA VARSTRING[20] (Connection);
 
 countConnectionUser 'Кол-во подключений' = GROUP SUM 1 BY userConnection(connection) PERSISTENT; 
 CONSTRAINT DROPPED(u IS CustomUser) AND PREV(countConnectionUser(u))
@@ -146,7 +147,7 @@ FORM connections 'Журнал подключений'
 
     OBJECTS c=Connection
     PROPERTIES (c) READONLY hostnameComputerConnection, remoteAddressConnection, userLoginConnection, remoteAddressConnection, osVersionConnection,
-                            javaVersionConnection, processorConnection, architectureConnection, coresConnection, physicalMemoryConnection,
+                            javaVersionConnection, screenSizeConnection, processorConnection, architectureConnection, coresConnection, physicalMemoryConnection,
                             totalMemoryConnection, maximumMemoryConnection, freeMemoryConnection, nameConnectionStatusConnection, connectTimeConnection,
                             disconnectTimeConnection
 

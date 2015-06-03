@@ -48,6 +48,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP maximumMemoryConnection;
     public LCP freeMemoryConnection;
     public LCP javaVersionConnection;
+    public LCP screenSizeConnection;
     public LCP<PropertyInterface> connectionStatusConnection;
     public LCP connectTimeConnection;
     public LCP disconnectTimeConnection;
@@ -120,6 +121,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         maximumMemoryConnection = findProperty("maximumMemoryConnection");
         freeMemoryConnection = findProperty("freeMemoryConnection");
         javaVersionConnection = findProperty("javaVersionConnection");
+        screenSizeConnection = findProperty("screenSizeConnection");
         connectionStatusConnection = (LCP<PropertyInterface>) findProperty("connectionStatusConnection");
 
         connectTimeConnection = findProperty("connectTimeConnection");

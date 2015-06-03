@@ -1,5 +1,6 @@
 package lsfusion.client;
 
+import lsfusion.base.NavigatorInfo;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.remote.proxy.RemoteBusinessLogicProxy;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
@@ -146,8 +147,16 @@ public final class LoginAction {
             Integer maximumMemory = (int) (Runtime.getRuntime().maxMemory() / 1048576);
             Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
             String javaVersion = System.getProperty("java.version") + " " + System.getProperty("sun.arch.data.model") + " bit";
-            remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), loginInfo.getUserName(), loginInfo.getPassword(), computerId,
-                    SystemUtils.getLocalHostIP(), osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, true);
+
+            String screenSize = null;
+            Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+            if(dimension != null) {
+                screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
+            }
+
+            remoteNavigator = remoteLogics.createNavigator(Main.module.isFull(), new NavigatorInfo(loginInfo.getUserName(),
+                    loginInfo.getPassword(), computerId, SystemUtils.getLocalHostIP(), osVersion, processor, architecture,
+                    cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, screenSize), true);
             if (remoteNavigator == null) {
                 Main.remoteLoader = null;
                 return PENDING_RESTART_WARNING;

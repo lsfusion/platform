@@ -1,5 +1,6 @@
 package lsfusion.client.remote.proxy;
 
+import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.VMOptions;
@@ -19,11 +20,8 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         super(target);
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress,
-                                                    String osVersion, String processor, String architecture, Integer cores, Integer physicalMemory, Integer totalMemory,
-                                                    Integer maximumMemory, Integer freeMemory, String javaVersion, boolean forceCreateNew) throws RemoteException {
-        RemoteNavigatorInterface remote = target.createNavigator(isFullClient, login, password, computer, remoteAddress, osVersion,
-                processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, forceCreateNew);
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean forceCreateNew) throws RemoteException {
+        RemoteNavigatorInterface remote = target.createNavigator(isFullClient, navigatorInfo, forceCreateNew);
         if (remote == null) {
             return null;
         }

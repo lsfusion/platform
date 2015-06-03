@@ -1,6 +1,7 @@
 package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.NavigatorInfo;
 import lsfusion.base.Pair;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.auth.User;
@@ -97,9 +98,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         executor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(logicsInstance.getContext(), "navigator-manager-daemon"));
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer,
-                                                    String remoteAddress, String osVersion, String processor, String architecture, Integer cores, Integer physicalMemory,
-                                                    Integer totalMemory, Integer maximumMemory, Integer freeMemory, String javaVersion, boolean reuseSession) {
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {
         //пока отключаем механизм восстановления сессии... т.к. он не работает с текущей схемой последовательных запросов в форме
         reuseSession = false;
 
@@ -114,9 +113,9 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
 
         try {
-            User user = securityManager.authenticateUser(session, login, password);
+            User user = securityManager.authenticateUser(session, navigatorInfo.login, navigatorInfo.password);
 
-            Pair<String, Integer> loginKey = new Pair<String, Integer>(login, computer);
+            Pair<String, Integer> loginKey = new Pair<>(navigatorInfo.login, navigatorInfo.computer);
 
             if (reuseSession) {
                 RemoteNavigator navigator = navigators.get(loginKey);
@@ -127,9 +126,8 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
                 }
             }
 
-            RemoteNavigator navigator = new RemoteNavigator(logicsInstance, isFullClient, remoteAddress, user, computer, rmiManager.getExportPort(), session);
-            addNavigator(loginKey, navigator, osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory,
-                    javaVersion, securityManager.isUniversalPassword(password));
+            RemoteNavigator navigator = new RemoteNavigator(logicsInstance, isFullClient, navigatorInfo.remoteAddress, user, navigatorInfo.computer, rmiManager.getExportPort(), session);
+            addNavigator(loginKey, navigator, navigatorInfo, securityManager.isUniversalPassword(navigatorInfo.password));
 
             return navigator;
         } catch (Exception e) {
@@ -144,8 +142,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         }
     }
 
-    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator, String osVersion, String processor, String architecture, Integer cores, Integer physicalMemory,
-                              Integer totalMemory, Integer maximumMemory, Integer freeMemory, String javaVersion, boolean skipLogging) throws SQLException, SQLHandledException {
+    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator, NavigatorInfo navigatorInfo, boolean skipLogging) throws SQLException, SQLHandledException {
         synchronized (navigators) {
 
             if (!skipLogging) {
@@ -153,15 +150,16 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
                 DataObject newConnection = session.addObject(businessLogics.systemEventsLM.connection);
                 businessLogics.systemEventsLM.userConnection.change(navigator.getUser().object, session, newConnection);
-                businessLogics.systemEventsLM.osVersionConnection.change(osVersion, session, newConnection);
-                businessLogics.systemEventsLM.processorConnection.change(processor, session, newConnection);
-                businessLogics.systemEventsLM.architectureConnection.change(architecture, session, newConnection);
-                businessLogics.systemEventsLM.coresConnection.change(cores, session, newConnection);
-                businessLogics.systemEventsLM.physicalMemoryConnection.change(physicalMemory, session, newConnection);
-                businessLogics.systemEventsLM.totalMemoryConnection.change(totalMemory, session, newConnection);
-                businessLogics.systemEventsLM.maximumMemoryConnection.change(maximumMemory, session, newConnection);
-                businessLogics.systemEventsLM.freeMemoryConnection.change(freeMemory, session, newConnection);
-                businessLogics.systemEventsLM.javaVersionConnection.change(javaVersion, session, newConnection);
+                businessLogics.systemEventsLM.osVersionConnection.change(navigatorInfo.osVersion, session, newConnection);
+                businessLogics.systemEventsLM.processorConnection.change(navigatorInfo.processor, session, newConnection);
+                businessLogics.systemEventsLM.architectureConnection.change(navigatorInfo.architecture, session, newConnection);
+                businessLogics.systemEventsLM.coresConnection.change(navigatorInfo.cores, session, newConnection);
+                businessLogics.systemEventsLM.physicalMemoryConnection.change(navigatorInfo.physicalMemory, session, newConnection);
+                businessLogics.systemEventsLM.totalMemoryConnection.change(navigatorInfo.totalMemory, session, newConnection);
+                businessLogics.systemEventsLM.maximumMemoryConnection.change(navigatorInfo.maximumMemory, session, newConnection);
+                businessLogics.systemEventsLM.freeMemoryConnection.change(navigatorInfo.freeMemory, session, newConnection);
+                businessLogics.systemEventsLM.javaVersionConnection.change(navigatorInfo.javaVersion, session, newConnection);
+                businessLogics.systemEventsLM.screenSizeConnection.change(navigatorInfo.screenSize, session, newConnection);
                 businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer().object, session, newConnection);
                 businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
                 businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.read(session), session, newConnection);

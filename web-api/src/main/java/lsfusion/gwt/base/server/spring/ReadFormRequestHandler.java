@@ -5,6 +5,7 @@ import com.google.common.io.ByteStreams;
 import jasperapi.ClientReportData;
 import jasperapi.ReportGenerator;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.NavigatorInfo;
 import lsfusion.base.Pair;
 import lsfusion.base.SystemUtils;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
@@ -23,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import java.awt.*;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.*;
@@ -65,10 +67,16 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             Integer totalMemory = (int) (Runtime.getRuntime().totalMemory() / 1048576);
             Integer maximumMemory = (int) (Runtime.getRuntime().maxMemory() / 1048576);
             Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
-
             String javaVersion = System.getProperty("java.version") + " " + System.getProperty("sun.arch.data.model") + " bit";
-            RemoteNavigatorInterface navigator = bl.createNavigator(true, exportUser, exportPassword, bl.getComputer(SystemUtils.getLocalHostName()),
-                    "127.0.0.1", osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, false);
+
+            String screenSize = null;
+            Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+            if(dimension != null) {
+                screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
+            }
+            RemoteNavigatorInterface navigator = bl.createNavigator(true, new NavigatorInfo(exportUser, exportPassword,
+                    bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion, processor, architecture, cores,
+                    physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, screenSize), false);
 
             if (!bl.checkFormExportPermission(canonicalName)) {
                 blProvider.invalidate();
