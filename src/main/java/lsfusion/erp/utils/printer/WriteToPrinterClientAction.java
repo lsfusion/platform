@@ -35,12 +35,19 @@ public class WriteToPrinterClientAction implements ClientAction {
 
                 PrintService[] printServices = PrintServiceLookup.lookupPrintServices(flavor, attributeSet);
                 PrintService service = null;
+                String printerNames = "";
                 for (PrintService printService : printServices) {
                     if (printService.getName().equals(printerName)) {
                         service = printService;
                         break;
+                    } else {
+                        printerNames += printService.getName() + '\n';
                     }
                 }
+                if(printerNames.isEmpty())
+                    printerNames = "Нет доступных принтеров";
+                else
+                    printerNames = "Доступны принтеры:\n" + printerNames;
 
                 if (service != null) {
 
@@ -53,7 +60,7 @@ public class WriteToPrinterClientAction implements ClientAction {
 
                     pjDone.waitForDone();
                 } else {
-                    return String.format("Принтер %s не найден", printerName);
+                    return String.format("Принтер %s не найден.\n%s", printerName, printerNames);
                 }
             } catch (PrintException e) {
                 throw Throwables.propagate(e);
