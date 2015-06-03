@@ -2,6 +2,7 @@ package lsfusion.server.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.NavigatorInfo;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.GUIPreferences;
@@ -178,15 +179,12 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         }, Settings.get().getUpdatePingInfo(), Settings.get().getUpdatePingInfo(), TimeUnit.MILLISECONDS);
     }
 
-    public RemoteNavigatorInterface createNavigator(boolean isFullClient, String login, String password, int computer, String remoteAddress,
-                                                    String osVersion, String processor, String architecture, Integer cores, Integer physicalMemory,
-                                                    Integer totalMemory, Integer maximumMemory, Integer freeMemory, String javaVersion, boolean reuseSession) {
+    public RemoteNavigatorInterface createNavigator(boolean isFullClient, NavigatorInfo navigatorInfo, boolean reuseSession) {
         if (restartManager.isPendingRestart()) {
             return null;
         }
 
-        return navigatorsManager.createNavigator(isFullClient, login, password, computer, remoteAddress, osVersion, processor, architecture, cores, physicalMemory,
-                                                 totalMemory, maximumMemory, freeMemory, javaVersion, reuseSession);
+        return navigatorsManager.createNavigator(isFullClient, navigatorInfo, reuseSession);
     }
 
     protected DataSession createSession() throws SQLException {
