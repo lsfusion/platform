@@ -10,7 +10,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
-import java.awt.*;
 import java.rmi.RemoteException;
 
 public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean, InvalidateListener {
@@ -51,22 +50,12 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
                     Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
                     String javaVersion = System.getProperty("java.version") + " " + System.getProperty("sun.arch.data.model") + " bit";
 
-                    String screenSize = null;
-                    try {
-                        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-                        if (dimension != null) {
-                            screenSize = (int) dimension.getWidth() + "x" + (int) dimension.getHeight();
-                        }
-                    } catch (Exception e) {
-                        screenSize = null;
-                    }
-
                     try {
                         RemoteLogicsInterface bl = blProvider.getLogics();
                         RemoteNavigatorInterface unsynced = bl.createNavigator(true, new NavigatorInfo(username, password,
                                 bl.getComputer(SystemUtils.getLocalHostName()), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(),
                                 osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory,
-                                javaVersion, screenSize), true);
+                                javaVersion, null), true);
 //                        RemoteNavigatorInterface unsynced = bl.createNavigator(true, username, password, bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion + memory, javaVersion, true);
                         if (unsynced == null) {
                             throw new IllegalStateException("Не могу создать навигатор.");
