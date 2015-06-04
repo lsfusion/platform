@@ -1,5 +1,6 @@
 package lsfusion.server.context;
 
+import lsfusion.interop.exceptions.LogMessageLogicsException;
 import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;

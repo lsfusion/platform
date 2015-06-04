@@ -27,7 +27,7 @@ import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
-import lsfusion.server.context.LogMessageLogicsException;
+import lsfusion.interop.exceptions.LogMessageLogicsException;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.ScannerDaemonTask;
 import lsfusion.server.data.OperationOwner;

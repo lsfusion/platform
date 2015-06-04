@@ -1,4 +1,4 @@
-package lsfusion.server.context;
+package lsfusion.interop.exceptions;
 
 public class LogMessageLogicsException extends RuntimeException {
 
