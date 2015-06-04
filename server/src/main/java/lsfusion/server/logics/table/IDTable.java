@@ -7,6 +7,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.SystemClass;
@@ -143,6 +144,8 @@ public class IDTable extends GlobalTable {
 
             dataSession.commitTransaction();
         } catch (Throwable e) {
+            ServerLoggers.sqlSuppLog(e); // just in case if rollback will fail
+
             dataSession.rollbackTransaction();
 
             if(e instanceof SQLHandledException && ((SQLHandledException)e).repeatApply(dataSession, OperationOwner.unknown, attempts)) // update conflict или deadlock или timeout - пробуем еще раз
