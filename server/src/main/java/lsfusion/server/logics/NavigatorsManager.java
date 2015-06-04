@@ -143,33 +143,35 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
     }
 
     private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator, NavigatorInfo navigatorInfo, boolean skipLogging) throws SQLException, SQLHandledException {
+        DataObject newConnection = null;
+
+        if(!skipLogging) {
+            DataSession session = dbManager.createSession();
+
+            newConnection = session.addObject(businessLogics.systemEventsLM.connection);
+            businessLogics.systemEventsLM.userConnection.change(navigator.getUser().object, session, newConnection);
+            businessLogics.systemEventsLM.osVersionConnection.change(navigatorInfo.osVersion, session, newConnection);
+            businessLogics.systemEventsLM.processorConnection.change(navigatorInfo.processor, session, newConnection);
+            businessLogics.systemEventsLM.architectureConnection.change(navigatorInfo.architecture, session, newConnection);
+            businessLogics.systemEventsLM.coresConnection.change(navigatorInfo.cores, session, newConnection);
+            businessLogics.systemEventsLM.physicalMemoryConnection.change(navigatorInfo.physicalMemory, session, newConnection);
+            businessLogics.systemEventsLM.totalMemoryConnection.change(navigatorInfo.totalMemory, session, newConnection);
+            businessLogics.systemEventsLM.maximumMemoryConnection.change(navigatorInfo.maximumMemory, session, newConnection);
+            businessLogics.systemEventsLM.freeMemoryConnection.change(navigatorInfo.freeMemory, session, newConnection);
+            businessLogics.systemEventsLM.javaVersionConnection.change(navigatorInfo.javaVersion, session, newConnection);
+            businessLogics.systemEventsLM.screenSizeConnection.change(navigatorInfo.screenSize, session, newConnection);
+            businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer().object, session, newConnection);
+            businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
+            businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.read(session), session, newConnection);
+            businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getRemoteAddress(), session, newConnection);
+            session.apply(businessLogics);
+            session.close();
+        }
+
         synchronized (navigators) {
-
-            if (!skipLogging) {
-                DataSession session = dbManager.createSession();
-
-                DataObject newConnection = session.addObject(businessLogics.systemEventsLM.connection);
-                businessLogics.systemEventsLM.userConnection.change(navigator.getUser().object, session, newConnection);
-                businessLogics.systemEventsLM.osVersionConnection.change(navigatorInfo.osVersion, session, newConnection);
-                businessLogics.systemEventsLM.processorConnection.change(navigatorInfo.processor, session, newConnection);
-                businessLogics.systemEventsLM.architectureConnection.change(navigatorInfo.architecture, session, newConnection);
-                businessLogics.systemEventsLM.coresConnection.change(navigatorInfo.cores, session, newConnection);
-                businessLogics.systemEventsLM.physicalMemoryConnection.change(navigatorInfo.physicalMemory, session, newConnection);
-                businessLogics.systemEventsLM.totalMemoryConnection.change(navigatorInfo.totalMemory, session, newConnection);
-                businessLogics.systemEventsLM.maximumMemoryConnection.change(navigatorInfo.maximumMemory, session, newConnection);
-                businessLogics.systemEventsLM.freeMemoryConnection.change(navigatorInfo.freeMemory, session, newConnection);
-                businessLogics.systemEventsLM.javaVersionConnection.change(navigatorInfo.javaVersion, session, newConnection);
-                businessLogics.systemEventsLM.screenSizeConnection.change(navigatorInfo.screenSize, session, newConnection);
-                businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer().object, session, newConnection);
-                businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
-                businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.read(session), session, newConnection);
-                businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getRemoteAddress(), session, newConnection);
-                session.apply(businessLogics);
-                session.close();
-
+            if (newConnection != null) {
                 navigator.setConnection(new DataObject(newConnection.object, businessLogics.systemEventsLM.connection));
             }
-
             navigators.put(key, navigator);
         }
     }
