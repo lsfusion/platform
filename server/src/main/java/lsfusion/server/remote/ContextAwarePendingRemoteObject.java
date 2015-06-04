@@ -1,6 +1,8 @@
 package lsfusion.server.remote;
 
+import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.remote.PendingRemoteObject;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.Context;
 import lsfusion.server.context.ThreadLocalContext;
 
@@ -51,6 +53,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     public void unexportAndClean() {
         synchronized (threads) {
             for (Thread thread : threads) {
+                ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace(thread.getStackTrace()));
                 thread.stop();
             }
         }

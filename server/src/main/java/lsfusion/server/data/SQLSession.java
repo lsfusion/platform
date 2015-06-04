@@ -83,6 +83,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         try {
             run.run();
         } catch (Throwable t) {
+            if(t instanceof ThreadDeath)
+                ServerLoggers.exinfoLog("UNEXPECTED THREAD DEATH");
             if(firstException.result == null)
                 firstException.set(t);
             else

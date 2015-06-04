@@ -1,5 +1,6 @@
 package lsfusion.server.data.query;
 
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.session.PropertyChange;
 import org.apache.commons.lang.StringUtils;
 import lsfusion.base.*;
@@ -1542,7 +1543,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
     }
 
     public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        System.out.println(sql + " " + params + '\n' + readSelect(session, env));
+        ServerLoggers.exinfoLog(sql + " " + params + '\n' + readSelect(session, env));
     }
 
     public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {

@@ -62,9 +62,11 @@ applyAll = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ApplyAllAction
 check() = ACTION {
     applyOnlyCheck();
     
-    apply();
-    
-    applyAll();
+    TRY { 
+        apply();
+    } FINALLY {
+        applyAll();
+    }    
 }
 
 executeLocalEvents = ACTION CUSTOM 'lsfusion.server.logics.property.actions.ExecuteLocalEventsActionProperty' ();
