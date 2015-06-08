@@ -47,7 +47,7 @@ CLASS StateProcess 'Статус процесса' {
 updateProcessMonitorAction 'Обновить монитор процессов' = ACTION CUSTOM 'lsfusion.erp.utils.UpdateProcessMonitorActionProperty' () TOOLBAR; 
 testAction 'Test' = ACTION CUSTOM 'lsfusion.erp.utils.TestActionActionProperty' () TOOLBAR;
 previousCountProcess =  DATA LOCAL INTEGER();
-idThreadProcess 'ID потока процесса' = DATA LOCAL INTEGER (INTEGER);
+idThreadProcess 'ID потока процесса' = DATA LOCAL VARSTRING[10] (INTEGER);
 computerProcess 'Компьютер' = DATA LOCAL VARSTRING[100] (INTEGER);
 userProcess 'Пользователь' = DATA LOCAL VARSTRING[100] (INTEGER);
 
@@ -62,30 +62,19 @@ hasStackTraceJavaProcess (i) = stackTraceJavaProcess(i) AND i IS INTEGER;
 nameJavaProcess 'Имя java-потока (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
 statusJavaProcess 'Статус (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
 lockNameJavaProcess 'Блокировка (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);     
-lockOwnerIdJavaProcess 'ID блокирующего потока (Java)' = DATA LOCAL INTEGER (INTEGER);     
-lockOwnerNameJavaProcess 'Имя блокирующего потока (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);   
-
-option1 (i) = querySQLProcess(i) AND stateSQLProcess(i) == StateProcess.active;
-option11 (i) = (statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i)
-                           AND (NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1) AND i IS INTEGER)
-                           AND (NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1) AND i IS INTEGER)
-                           AND (NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketInputStream.socketRead0') == 1) AND i IS INTEGER)
-                           AND (NOT (startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0') == 1) AND i IS INTEGER));
-              
-option2 (i) = statusJavaProcess(i) == 'RUNNABLE';
-option3 (i) = NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1) AND i IS INTEGER;
-option4 (i) = NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1) AND i IS INTEGER;
-option5 (i) = NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketInputStream.socketRead0') == 1) AND i IS INTEGER;
-option6 (i) = NOT (startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0') == 1) AND i IS INTEGER;
-
-option34 (i) = NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1)
-                          AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1) AND i IS INTEGER;
-
-option12 (i) = hasStackTraceJavaProcess(i) AND option2(i) AND option3(i) AND option4(i) AND option5(i) AND option6(i) AND i IS INTEGER;     
-option13 (i) = hasStackTraceJavaProcess(i) AND option2(i) AND option3(i) AND option4(i) AND option5(i) AND i IS INTEGER;         
-option121 (i) = hasStackTraceJavaProcess(i) AND option2(i) AND option3(i);  
-option122 (i) = option4(i) AND option5(i) AND option6(i);  
-option123(i) = option121(i) AND option122(i);
+lockOwnerIdJavaProcess 'ID блокирующего потока (Java)' = DATA LOCAL VARSTRING[10] (INTEGER);     
+lockOwnerNameJavaProcess 'Имя блокирующего потока (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
+   
+processIdThread (id) = GROUP AGGR process BY idThreadProcess(process) WHERE process IS INTEGER;  
+threadOwnerProcess (i) = processIdThread(lockOwnerIdJavaProcess(i));                                                             
+                                                                                                                                                                                                                                                          
+blockingProcess 'Уровень' (child, parent) = RECURSION 1l IF child IS INTEGER AND parent == child
+                                                        STEP 1l IF parent == threadOwnerProcess($parent);                                                                                                                                                                                                                                                               
+isBlockingProcess 'Блокируется' (child, parent) = TRUE IF blockingProcess(child, parent);
+sumPlusOneBlockedProcess  (process) = GROUP SUM 1 IF isBlockingProcess(child, parent) BY parent;
+sumBlockedProcess 'Кол-во заблокированных процессов' (process) = sumPlusOneBlockedProcess(process) - 1;
+sumPlusOneBlockingProcess 'Кол-во блокирующих процессов' (process) = GROUP SUM 1 IF isBlockingProcess(parent, child) BY parent;
+sumBlockingProcess 'Глубина блокировки' (process) = sumPlusOneBlockingProcess(process) - 1;
 
 activeProcess 'Активный' (i) = (querySQLProcess(i) AND stateSQLProcess(i) == StateProcess.active)
                                           OR (statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i) AND i IS INTEGER
@@ -95,14 +84,66 @@ activeProcess 'Активный' (i) = (querySQLProcess(i) AND stateSQLProcess(i
                                           AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0') == 1));
 FORM processMonitor 'Монитор процессов' 
     OBJECTS i = INTEGER
-    PROPERTIES(i) READONLY activeProcess, option1, option11, option12, option121, option122, option123, option13, hasStackTraceJavaProcess, option2, option3, option4, option5, option6, idThreadProcess, computerProcess, userProcess, 
+    PROPERTIES(i) READONLY idThreadProcess, computerProcess, userProcess, 
                            querySQLProcess, addressUserSQLProcess, dateTimeSQLProcess, nameStateSQLProcess,
                            stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
-                           lockOwnerIdJavaProcess, lockOwnerNameJavaProcess
-    PROPERTIES() updateProcessMonitorAction TOOLBAR TODRAW i, testAction
+                           lockOwnerIdJavaProcess, lockOwnerNameJavaProcess, threadOwnerProcess
     FILTERS idThreadProcess(i)
     FILTERGROUP active FILTER 'Только активные' activeProcess(i) DEFAULT
+    //ORDER BY sumBlockedProcess(i)
+    
+    TREE blocking i2 = INTEGER PARENT threadOwnerProcess
+    PROPERTIES(i2) READONLY sumBlockedProcess,
+                            idThreadProcess, computerProcess, userProcess, 
+                            querySQLProcess, addressUserSQLProcess, dateTimeSQLProcess, nameStateSQLProcess,
+                            stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
+                            lockOwnerIdJavaProcess, lockOwnerNameJavaProcess, threadOwnerProcess                                                
+
+    FILTERS idThreadProcess(i2)
+    FILTERGROUP active2 FILTER 'Только активные' activeProcess(i2) OR sumPlusOneBlockingProcess(i2) > 1 DEFAULT
+    //ORDER BY sumBlockedProcess(i2)
+    
+//    TREE blocked i3 = INTEGER PARENT threadSlaveProcess
+//    PROPERTIES(i3) READONLY idThreadSlaveProcess, sumBlockingProcess,
+//                            idThreadProcess, computerProcess, userProcess, 
+//                            querySQLProcess, addressUserSQLProcess, dateTimeSQLProcess, nameStateSQLProcess,
+//                            stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
+//                            lockOwnerIdJavaProcess, lockOwnerNameJavaProcess, threadOwnerProcess                                                
+//    FILTERS idThreadProcess(i3)
+//    FILTERGROUP active3 FILTER 'Только активные' activeProcess(i3) OR sumPlusOneBlockingProcess(i3) > 1 DEFAULT
+    //ORDER BY sumBlockingProcess(i3)
+    
+    PROPERTIES() updateProcessMonitorAction TODRAW i TOOLBAR, testAction TODRAW i TOOLBAR
 ;
+
+DESIGN processMonitor {
+    NEW top {
+        type = TABBED;
+        fill = 1;
+        NEW allProcesses {
+            fill = 1;
+            caption = 'Все процессы';
+            MOVE i.box;
+        }
+        NEW blockingProcesses {
+            fill = 1;
+            caption = 'Блокирующие';
+            MOVE blocking.tree.box;
+        }
+//        NEW blockedProcesses {
+//            fill = 1;
+//            caption = 'Блокированные';
+//            MOVE blocked.tree.box;
+//        }
+    }    
+    MOVE PROPERTY(updateProcessMonitorAction()) {
+        align = TRAILING;
+    }
+    MOVE PROPERTY(testAction()) {
+        align = TRAILING; 
+    }
+    MOVE functions.box;
+}
 
 NAVIGATOR {
     systemEvents {

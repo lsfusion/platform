@@ -29,7 +29,7 @@ public class TestActionActionProperty extends ScriptingActionProperty {
 
     }
 
-    protected void testAction() throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    synchronized protected void testAction() throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
         long j = 0;
         for(long z = 0; z < 1000000000; z++) {

@@ -89,31 +89,33 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
 
         Map<Integer, SQLSession> sessionMap = SQLSession.getSQLSessionMap();
-        Map<Integer, List<Object>> javaProcesses = getActiveJavaThreads();
-        Map<Integer, List<Object>> sqlProcesses = syntaxType == SQLSyntaxType.POSTGRES ? getPostgresProcesses(context) : getMSSQLProcesses(context);
+        Map<String, List<Object>> javaProcesses = getActiveJavaThreads();
+        Map<String, List<Object>> sqlProcesses = syntaxType == SQLSyntaxType.POSTGRES ? getPostgresProcesses(context) : getMSSQLProcesses(context);
         int i = 0;
 
         for (SQLSession sessionEntry : sessionMap.values()) {
 
-            DataObject currentObject = new DataObject(i);
-            Integer threadId = sessionEntry.getActiveThread();
+            if(sessionEntry.getActiveThread() != null) {
+                DataObject currentObject = new DataObject(i);
+                String threadId = String.valueOf(sessionEntry.getActiveThread());
 
-            findProperty("idThreadProcess").change(threadId, session, currentObject);
+                findProperty("idThreadProcess").change(threadId, session, currentObject);
 
-            List<Object> sqlProcess = sqlProcesses.get(threadId);
-            if(sqlProcess != null)
-                writeSQLProcess(session, currentObject, sqlProcess);
-            sqlProcesses.remove(threadId);
+                List<Object> sqlProcess = sqlProcesses.get(threadId);
+                if (sqlProcess != null)
+                    writeSQLProcess(session, currentObject, sqlProcess);
+                sqlProcesses.remove(threadId);
 
-            List<Object> javaProcess = javaProcesses.get(threadId);
-            if(javaProcess != null)
-                writeJavaProcess(session, currentObject, javaProcess, true);
-            javaProcesses.remove(threadId);
+                List<Object> javaProcess = javaProcesses.get(threadId);
+                if (javaProcess != null)
+                    writeJavaProcess(session, currentObject, javaProcess, true);
+                javaProcesses.remove(threadId);
 
-            i++;
+                i++;
+            }
         }
 
-        for(Map.Entry<Integer, List<Object>> sqlProcess : sqlProcesses.entrySet()) {
+        for(Map.Entry<String, List<Object>> sqlProcess : sqlProcesses.entrySet()) {
             if (sqlProcess.getValue() != null) {
                 DataObject currentObject = new DataObject(i);
                 findProperty("idThreadProcess").change(sqlProcess.getKey(), session, currentObject);
@@ -122,7 +124,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             }
         }
 
-        for(Map.Entry<Integer, List<Object>> javaProcess : javaProcesses.entrySet()) {
+        for(Map.Entry<String, List<Object>> javaProcess : javaProcesses.entrySet()) {
             if(javaProcess.getValue() != null) {
                 DataObject currentObject = new DataObject(i);
                 findProperty("idThreadProcess").change(javaProcess.getKey(), session, currentObject);
@@ -161,7 +163,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         String name = (String) javaProcess.get(1);
         String status = (String) javaProcess.get(2);
         String lockName = (String) javaProcess.get(3);
-        Integer lockOwnerId = (Integer) javaProcess.get(4);
+        String lockOwnerId = (String) javaProcess.get(4);
         String lockOwnerName = (String) javaProcess.get(5);
         String computer = (String) javaProcess.get(6);
         String user = (String) javaProcess.get(7);
@@ -179,7 +181,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         findProperty("lockOwnerNameJavaProcess").change(lockOwnerName, session, currentObject);
     }
 
-    private Map<Integer, List<Object>> getMSSQLProcesses(ExecutionContext context) throws SQLException, SQLHandledException {
+    private Map<String, List<Object>> getMSSQLProcesses(ExecutionContext context) throws SQLException, SQLHandledException {
         Map<Integer, SQLSession> sessionMap = SQLSession.getSQLSessionMap();
         String originalQuery = "Select A.session_id,B.start_time, A.[host_name], A.[login_name], C.client_net_address, text\n" +
                 "from sys.dm_exec_sessions A\n" +
@@ -216,26 +218,26 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
                 DynamicExecuteEnvironment.DEFAULT, 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
-        Map<Integer, List<Object>> resultMap = new HashMap<>();
+        Map<String, List<Object>> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
 
             HMap entry = (HMap) rsValue;
 
             String query = trim((String) entry.get("text"));
             Integer processId = (Integer) entry.get("session_id");
-            SQLSession session = sessionMap.get(processId);
+            SQLSession sqlSession = sessionMap.get(processId);
             String userActiveTask = trim((String) entry.get("host_name"));
             String address = trim((String) entry.get("client_net_address"));
             Timestamp dateTime = (Timestamp) entry.get("start_time");
 
             if (!query.equals(originalQuery)) {
-                resultMap.put(session == null ? processId : session.getActiveThread(), Arrays.asList((Object) query, userActiveTask, null, address, dateTime, null));
+                resultMap.put(getSQLThreadId(sqlSession, processId), Arrays.asList((Object) query, userActiveTask, null, address, dateTime, null));
             }
         }
         return resultMap;
     }
 
-    private Map<Integer, List<Object>> getPostgresProcesses(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private Map<String, List<Object>> getPostgresProcesses(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s'"/* + (onlyActive ? " AND state!='idle'" : "")*/, context.getBL().getDataBaseName());
 
         MExclSet<String> keyNames = SetFact.mExclSet();
@@ -269,7 +271,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         Map<Integer, SQLSession> sessionMap = SQLSession.getSQLSessionMap();
 
-        Map<Integer, List<Object>> resultMap = new HashMap<>();
+        Map<String, List<Object>> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
 
             HMap entry = (HMap) rsValue;
@@ -290,18 +292,21 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     computerActiveTask = (String) findProperty("hostnameComputer").read(context.getSession(),
                             context.getSession().getObjectValue(context.getBL().authenticationLM.computer, sqlSession.userProvider.getCurrentComputer()));
                 }
-                resultMap.put(sqlSession == null ? processId : sqlSession.getActiveThread(),
-                        Arrays.asList(query, userActiveTask, computerActiveTask, address, dateTime,
-                                state.equals("active") ? findProperty("nameStatic").readClasses(context, new DataObject("SQLUtils_StateProcess.active")) : null));///*"SQLUtils_StateProcess.active"*/))));
+                resultMap.put(getSQLThreadId(sqlSession, processId), Arrays.asList(query, userActiveTask, computerActiveTask, address, dateTime,
+                                state.equals("active") ? findProperty("nameStatic").readClasses(context, new DataObject("SQLUtils_StateProcess.active")) : null));
             }
         }
         return resultMap;
     }
 
-    private Map<Integer, List<Object>> getActiveJavaThreads() {
+    private String getSQLThreadId(SQLSession sqlSession, Integer processId) {
+        return sqlSession != null && sqlSession.getActiveThread() != null ? String.valueOf(sqlSession.getActiveThread()) : ("s" + processId);
+    }
+
+    private Map<String, List<Object>> getActiveJavaThreads() {
         ThreadInfo[] threadsInfo = ManagementFactory.getThreadMXBean().dumpAllThreads(true, false);
 
-        Map<Integer, List<Object>> resultMap = new HashMap<>();
+        Map<String, List<Object>> resultMap = new HashMap<>();
         for(ThreadInfo threadInfo : threadsInfo) {
             int id = (int) threadInfo.getThreadId();
             Thread thread = getThreadById(id);
@@ -310,13 +315,13 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             String stackTrace = stackTraceToString(threadInfo.getStackTrace());
             String name = threadInfo.getThreadName();
             String lockName = threadInfo.getLockName();
-            int lockOwnerId = (int) threadInfo.getLockOwnerId();
+            String lockOwnerId = String.valueOf(threadInfo.getLockOwnerId());
             String lockOwnerName = threadInfo.getLockOwnerName();
             LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
             String computer = logInfo == null ? null : logInfo.hostnameComputer;
             String user = logInfo == null ? null : logInfo.userName;
 
-            resultMap.put(id, Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId, lockOwnerName, computer, user));
+            resultMap.put(String.valueOf(id), Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId, lockOwnerName, computer, user));
         }
         return resultMap;
     }
