@@ -145,7 +145,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public final StringClass propertySIDValueClass = StringClass.get(100);
     public final StringClass propertyCanonicalNameValueClass = StringClass.get(512);
     public final StringClass propertyCaptionValueClass = StringClass.get(250);
-    public final StringClass propertySignatureValueClass = StringClass.get(100);
+    public final StringClass propertyClassValueClass = StringClass.get(100);
     public final StringClass propertyTableValueClass = StringClass.get(100);
     public final StringClass propertyDrawSIDClass = StringClass.get(100);
     public final LogicalClass propertyLoggableValueClass = LogicalClass.instance;
@@ -199,7 +199,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         userLoggableProperty = findProperty("userLoggableProperty");
         storedProperty = findProperty("storedProperty");
         isSetNotNullProperty = findProperty("isSetNotNullProperty");
-        signatureProperty = findProperty("signatureProperty");
         returnProperty = findProperty("returnProperty");
         classProperty = findProperty("classProperty");
         complexityProperty = findProperty("complexityProperty");

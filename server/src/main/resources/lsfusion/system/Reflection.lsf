@@ -43,7 +43,6 @@ loggableProperty 'Логируется' = DATA BOOLEAN (Property);
 userLoggableProperty 'Логируется пользователем' = DATA BOOLEAN (Property);
 storedProperty 'Постоянно хранимое' = DATA BOOLEAN (Property);
 isSetNotNullProperty 'Не может быть null' = DATA BOOLEAN (Property);
-signatureProperty 'Сигнатура' = DATA VARSTRING[100] (Property);
 returnProperty 'Возвращаемый класс' = DATA VARSTRING[100] (Property);
 classProperty 'Класс свойства' = DATA VARSTRING[100] (Property);
 complexityProperty 'Сложность свойства' = DATA LONG (Property);
@@ -324,11 +323,11 @@ dumbPropertyGroup (pg) = ' ' IF pg IS PropertyGroup;
 
 FORM properties 'Свойства'
     OBJECTS p=Property
-    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty, dbNameProperty, tableSIDProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
+    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty, dbNameProperty, tableSIDProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     TREE treePropertiesObject tps=PropertyGroup PARENT parentPropertyGroup, ps=Property
     PROPERTIES(tps) READONLY captionPropertyGroup, SIDPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, parentPropertyGroup, numberPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup
-    PROPERTIES(ps) READONLY captionProperty, canonicalNameProperty, dbNameProperty, signatureProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
+    PROPERTIES(ps) READONLY captionProperty, canonicalNameProperty, dbNameProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     ORDER BY numberProperty(p)
     ORDER BY numberPropertyGroup(tps)

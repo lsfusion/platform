@@ -361,7 +361,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     private boolean needsToBeSynchronized(Property property) {
-        return property.isNamed() && (property instanceof ActionProperty || (((CalcProperty)property).isFull(AlgType.syncType) && !(((CalcProperty)property).isEmpty(AlgType.syncType))));
+        return property.isNamed() && (property instanceof ActionProperty || !((CalcProperty)property).isEmpty(AlgType.syncType));
     }
 
     public void synchronizePropertyEntities() {
@@ -371,9 +371,8 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportField loggablePropertyField = new ImportField(reflectionLM.propertyLoggableValueClass);
         ImportField storedPropertyField = new ImportField(reflectionLM.propertyStoredValueClass);
         ImportField isSetNotNullPropertyField = new ImportField(reflectionLM.propertyIsSetNotNullValueClass);
-        ImportField signaturePropertyField = new ImportField(reflectionLM.propertySignatureValueClass);
-        ImportField returnPropertyField = new ImportField(reflectionLM.propertySignatureValueClass);
-        ImportField classPropertyField = new ImportField(reflectionLM.propertySignatureValueClass);
+        ImportField returnPropertyField = new ImportField(reflectionLM.propertyClassValueClass);
+        ImportField classPropertyField = new ImportField(reflectionLM.propertyClassValueClass);
         ImportField complexityPropertyField = new ImportField(LongClass.instance);
         ImportField tableSIDPropertyField = new ImportField(reflectionLM.propertyTableValueClass);
 
@@ -383,13 +382,14 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             List<List<Object>> dataProperty = new ArrayList<>();
             for (Property property : businessLogics.getOrderProperties()) {
                 if (needsToBeSynchronized(property)) {
-                    String commonClasses = "";
                     String returnClass = "";
                     String classProperty = "";
                     String tableSID = "";
                     Long complexityProperty = null;
+                    
                     try {
                         classProperty = property.getClass().getSimpleName();
+                        
                         if(property instanceof CalcProperty) {
                             CalcProperty calcProperty = (CalcProperty)property;
                             complexityProperty = calcProperty.getComplexity();
@@ -399,22 +399,15 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                                 tableSID = "";
                             }
                         }
+                        
                         returnClass = property.getValueClass(ClassType.syncPolicy).getSID();
-                        for (Object cc : property.getInterfaceClasses(ClassType.syncPolicy).valueIt()) {
-                            if (cc instanceof CustomClass)
-                                commonClasses += ((CustomClass) cc).getSID() + ", ";
-                            else if (cc instanceof DataClass)
-                                commonClasses += ((DataClass) cc).getSID() + ", ";
-                        }
-                        if (!"".equals(commonClasses))
-                            commonClasses = commonClasses.substring(0, commonClasses.length() - 2);
-                    } catch (NullPointerException | ArrayIndexOutOfBoundsException e) {
-                        commonClasses = "";
+                    } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {
                     }
+                    
                     dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), property.caption, property.loggable ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
-                            commonClasses, returnClass, classProperty, complexityProperty, tableSID));
+                            returnClass, classProperty, complexityProperty, tableSID));
                 }
             }
 
@@ -425,7 +418,6 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             properties.add(new ImportProperty(loggablePropertyField, reflectionLM.loggableProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(storedPropertyField, reflectionLM.storedProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(isSetNotNullPropertyField, reflectionLM.isSetNotNullProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(signaturePropertyField, reflectionLM.signatureProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(returnPropertyField, reflectionLM.returnProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(classPropertyField, reflectionLM.classProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(complexityPropertyField, reflectionLM.complexityProperty.getMapping(keyProperty)));
@@ -435,7 +427,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             deletes.add(new ImportDelete(keyProperty, LM.is(reflectionLM.property).getMapping(keyProperty), false));
 
             ImportTable table = new ImportTable(asList(canonicalNamePropertyField, dbNamePropertyField, captionPropertyField, loggablePropertyField,
-                    storedPropertyField, isSetNotNullPropertyField, signaturePropertyField, returnPropertyField,
+                    storedPropertyField, isSetNotNullPropertyField, returnPropertyField,
                     classPropertyField, complexityPropertyField, tableSIDPropertyField), dataProperty);
 
             DataSession session = createSession();

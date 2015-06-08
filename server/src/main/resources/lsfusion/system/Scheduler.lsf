@@ -55,7 +55,6 @@ captionPropertyScheduledTaskDetail 'Свойство' (scheduledTaskDetail) = ca
 canonicalNamePropertyScheduledTaskDetail 'Код свойства' (scheduledTaskDetail) = canonicalNameProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
 classPropertyScheduledTaskDetail 'Класс свойства' (scheduledTaskDetail) = classProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
 returnPropertyScheduledTaskDetail 'Возвращаемый класс' (scheduledTaskDetail) = returnProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
-signaturePropertyScheduledTaskDetail 'Сигнатура' (scheduledTaskDetail) = signatureProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
 ignoreExceptionsScheduledTaskDetail 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTaskDetail);
 
 CLASS ScheduledTaskLog 'Лог планировщика';
@@ -165,8 +164,7 @@ DESIGN scheduledTask {
 FORM scheduledTaskProperties 'Свойства'
     OBJECTS p = Property
     PROPERTIES(p) READONLY captionProperty, canonicalNameProperty, classProperty, returnProperty
-    FILTERS signatureProperty(p) == '',
-            returnProperty(p) == 'ActionClass'
+    FILTERS returnProperty(p) == 'ActionClass'
 ;
 
 NAVIGATOR {
