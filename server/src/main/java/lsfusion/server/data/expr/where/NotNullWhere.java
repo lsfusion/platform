@@ -14,9 +14,8 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NotNullExpr;
 import lsfusion.server.data.expr.NotNullExprInterface;
 import lsfusion.server.data.expr.where.extra.BinaryWhere;
-import lsfusion.server.data.expr.where.extra.CompareWhere;
 import lsfusion.server.data.query.CompileSource;
-import lsfusion.server.data.query.ExprOrderTopJoin;
+import lsfusion.server.data.query.ExprIndexedJoin;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.stat.KeyStat;
@@ -50,8 +49,8 @@ public abstract class NotNullWhere extends DataWhere {
     @Override
     public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         BaseExpr expr = getExpr();
-        if(BinaryWhere.needOrderTopJoin(expr, orderTop, null))
-            return new GroupJoinsWheres(new ExprOrderTopJoin(expr, Compare.LESS, Expr.NULL, true), not(), type); // кривовато конечно, но пока достаточно
+        if(BinaryWhere.needIndexedJoin(expr, orderTop, null))
+            return new GroupJoinsWheres(new ExprIndexedJoin(expr, Compare.LESS, Expr.NULL, true), not(), type); // кривовато конечно, но пока достаточно
         return super.groupNotJoinsWheres(keepStat, keyStat, orderTop, type);
     }
 

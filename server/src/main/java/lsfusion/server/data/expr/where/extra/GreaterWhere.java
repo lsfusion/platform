@@ -70,8 +70,8 @@ public class GreaterWhere<T> extends CompareWhere<GreaterWhere<T>> {
     // тут есть нюанс, что может неявно появится keyEquals (при текущей реализации с orEquals не появится), поэтому правильнее может быть было бы в getKeyEquals перенести, но пока не важно
     @Override
     public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
-        if (needOrderTopJoin(operator2, orderTop, operator1) || // избаляемся от not'ов, NOT EQUALS не интересует так как в индексе не помогает
-                needOrderTopJoin(operator1, orderTop, operator2))
+        if (needIndexedJoin(operator2, orderTop, operator1) || // избаляемся от not'ов, NOT EQUALS не интересует так как в индексе не помогает
+                needIndexedJoin(operator1, orderTop, operator2))
             return getSymmetricGreaterWhere().not().groupJoinsWheres(keepStat, keyStat, orderTop, type);
 
         return super.groupNotJoinsWheres(keepStat, keyStat, orderTop, type);

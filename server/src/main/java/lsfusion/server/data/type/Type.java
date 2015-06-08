@@ -19,6 +19,8 @@ import java.text.Format;
 
 public interface Type<T> extends ClassReader<T>, FunctionType {
 
+    boolean useIndexedJoin();
+
     public static interface Getter<K> {
         Type getType(K key);
     }

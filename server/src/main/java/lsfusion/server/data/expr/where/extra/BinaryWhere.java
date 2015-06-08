@@ -14,15 +14,14 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NotNullExpr;
 import lsfusion.server.data.expr.NotNullExprInterface;
-import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
-import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
@@ -71,22 +70,31 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return packOpMap.get(0).compare(packOpMap.get(1), getCompare());
     }
 
-    public static boolean needOrderTopJoin(BaseExpr expr, ImOrderSet<Expr> orderTop, BaseExpr valueExpr) {
-        if((valueExpr == null || valueExpr.isValue()) && orderTop.contains(expr) && expr.isTableIndexed()) {
+    public static boolean needIndexedJoin(BaseExpr expr, ImOrderSet<Expr> orderTop, BaseExpr valueExpr) {
+        if((valueExpr == null || valueExpr.isValue()) && expr.isTableIndexed()) {
+            if(orderTop.contains(expr)) {
+                if (valueExpr == null)
+                    return !expr.hasALotOfNulls();
+                else
+                    return true; // тут надо смотреть на то сколько distinct'ов, хотя может и не надо, разве что если их очень мало и для одного distinct значения в n раз больше записей чем в окне
+            }
+            // доступ по индексированному полю, нужно для поиска интервалов в WhereJoins.getStatKeys() и соответствующего уменьшения статистики
             if(valueExpr == null)
-                return !expr.hasALotOfNulls();
-            else
-                return true; // тут надо смотреть на то сколько distinct'ов, хотя может и не надо, разве что если их очень мало и для одного distinct значения в n раз больше записей чем в окне
+                return false;
+            else {
+                Type type = valueExpr.getSelfType();
+                return type != null && type.useIndexedJoin();
+            }
         }
         return false;
     }
 
     public WhereJoin groupJoinsWheres(ImOrderSet<Expr> orderTop) {
         assert !getCompare().equals(Compare.EQUALS); // перегружена реализация по идее
-        if(needOrderTopJoin(operator2, orderTop, operator1)) // для Like'ов тоже надо так как там может быть git индекс
-            return new ExprOrderTopJoin(operator2, getCompare().reverse(), operator1, false);
-        if(needOrderTopJoin(operator1, orderTop, operator2))
-            return new ExprOrderTopJoin(operator1, getCompare(), operator2, false);
+        if(needIndexedJoin(operator2, orderTop, operator1)) // для Like'ов тоже надо так как там может быть git индекс
+            return new ExprIndexedJoin(operator2, getCompare().reverse(), operator1, false);
+        if(needIndexedJoin(operator1, orderTop, operator2))
+            return new ExprIndexedJoin(operator1, getCompare(), operator2, false);
         return null;
     }
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {

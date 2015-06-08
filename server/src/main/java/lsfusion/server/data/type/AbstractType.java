@@ -62,4 +62,8 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     public int getDotNetSize() {
         return getBaseDotNetSize() + 1; // для boolean
     }
+
+    public boolean useIndexedJoin() {
+        return false;
+    }
 }

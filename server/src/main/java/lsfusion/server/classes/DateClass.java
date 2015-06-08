@@ -159,4 +159,9 @@ public class DateClass extends DataClass<Date> {
     public Object castValue(Object object, Type typeFrom, SQLSyntax syntax) {
         return syntax.fixDate((Date) object);
     }
+
+    @Override
+    public boolean useIndexedJoin() {
+        return true;
+    }
 }

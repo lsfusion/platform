@@ -101,6 +101,8 @@ public class Settings {
 
     private int statDegree = 5;
 
+    private int averageIntervalStat = 1;
+
     private int barcodeLength = 13;
 
     private boolean useUniPass;
@@ -511,6 +513,14 @@ public class Settings {
 
     public void setStatDegree(int statDegree) {
         this.statDegree = statDegree;
+    }
+
+    public int getAverageIntervalStat() {
+        return averageIntervalStat;
+    }
+
+    public void setAverageIntervalStat(int averageIntervalStat) {
+        this.averageIntervalStat = averageIntervalStat;
     }
 
     public int getBarcodeLength() {

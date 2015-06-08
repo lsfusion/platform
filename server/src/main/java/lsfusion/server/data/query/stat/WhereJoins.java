@@ -14,6 +14,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
 import lsfusion.base.col.lru.LRUWVSMap;
+import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.ManualLazy;
@@ -54,7 +55,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     public int getOrderTopCount() {
         int orderTopCount = 0;
         for(WhereJoin where : wheres)
-            if(where instanceof ExprOrderTopJoin)
+            if(where instanceof ExprIndexedJoin)
                 orderTopCount++;
         return orderTopCount;
     }
@@ -263,6 +264,11 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
         for(BaseJoin join : joins)
             joinStats.add(join, join.getStatKeys(keyStat).rows);
+
+        int intStat = Settings.get().getAverageIntervalStat();
+        if(intStat >= 0)
+            for(ExprIndexedJoin join : ExprIndexedJoin.getIntervals(wheres))
+                joinStats.add(join, new Stat(intStat, true));
 
         // читаем статистику по значениям
         for(BaseExpr expr : exprs) {
@@ -684,7 +690,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             InnerJoins joinFollows = null; Result<ImMap<InnerJoin, Where>> joinUpWheres = null;
             if (!remove && whereJoin instanceof ExprStatJoin && ((ExprStatJoin) whereJoin).depends(removeJoin)) // без этой проверки может бесконечно проталкивать
                 remove = true;
-            if (!remove && whereJoin instanceof ExprOrderTopJoin && ((ExprOrderTopJoin)whereJoin).givesNoKeys()) // даст висячий ключ при проталкивании, вообще рекурсивно пойти не может, но смысла нет разбирать
+            if (!remove && whereJoin instanceof ExprIndexedJoin && ((ExprIndexedJoin)whereJoin).givesNoKeys()) // даст висячий ключ при проталкивании, вообще рекурсивно пойти не может, но смысла нет разбирать
                 remove = true;
             // нижние проверки должны соответствовать calculateOrWhere 
             if(!remove && whereJoin instanceof PartitionJoin) {
@@ -823,7 +829,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     public Where fillInnerJoins(ImMap<WhereJoin, Where> upWheres, MList<String> whereSelect, CompileSource source, ImSet<KeyExpr> keys, KeyStat keyStat) {
         Where innerWhere = Where.TRUE;
         for (WhereJoin where : wheres)
-            if(!(where instanceof ExprOrderTopJoin && ((ExprOrderTopJoin)where).givesNoKeys())) {
+            if(!(where instanceof ExprIndexedJoin && ((ExprIndexedJoin)where).givesNoKeys())) {
                 Where upWhere = upWheres.get(where);
                 String upSource = upWhere.getSource(source);
                 if(where instanceof ExprJoin && ((ExprJoin)where).isClassJoin()) {
