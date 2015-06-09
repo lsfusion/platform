@@ -68,7 +68,7 @@ lockOwnerNameJavaProcess 'Имя блокирующего потока (Java)' =
 processIdThread (id) = GROUP AGGR process BY idThreadProcess(process) WHERE process IS INTEGER;  
 threadOwnerProcess (i) = processIdThread(lockOwnerIdJavaProcess(i));                                                             
                                                                                                                                                                                                                                                           
-blockingProcess 'Уровень' (child, parent) = RECURSION 1l IF child IS INTEGER AND parent == child
+blockingProcess 'Уровень' (child, parent) = RECURSION 1l IF idThreadProcess(child) AND parent == child
                                                         STEP 1l IF parent == threadOwnerProcess($parent);                                                                                                                                                                                                                                                               
 isBlockingProcess 'Блокируется' (child, parent) = TRUE IF blockingProcess(child, parent);
 sumPlusOneBlockedProcess  (process) = GROUP SUM 1 IF isBlockingProcess(child, parent) BY parent;
