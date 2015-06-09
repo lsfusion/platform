@@ -141,15 +141,13 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable table = new ImportTable(asList(nameField, captionField), elementsData);
 
         try {
-            DataSession session = createSession();
-            session.pushVolatileStats("RM_NE");
-
-            IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyNavigatorElement), propsNavigatorElement, deletes);
-            service.synchronize(true, false);
-
-            session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
+            try (DataSession session = createSession()) {
+                session.pushVolatileStats("RM_NE");
+                IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyNavigatorElement), propsNavigatorElement, deletes);
+                service.synchronize(true, false);
+                session.popVolatileStats();
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -170,15 +168,13 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         propsParent.add(new ImportProperty(numberField, reflectionLM.numberNavigatorElement.getMapping(keyElement), GroupType.MIN));
         ImportTable table = new ImportTable(asList(nameField, parentNameField, numberField), dataParents);
         try {
-            DataSession session = createSession();
-            session.pushVolatileStats("RM_PT");
-
-            IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
-            service.synchronize(true, false);
-
-            session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
+            try (DataSession session = createSession()) {
+                session.pushVolatileStats("RM_PT");
+                IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
+                service.synchronize(true, false);
+                session.popVolatileStats();
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -251,13 +247,11 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
             ImportTable table = new ImportTable(asList(oldPropertyDrawSIDField, oldFormCanonicalNameField, newPropertyDrawSIDField, newFormCanonicalNameField), data);
 
-            DataSession session = createSession();
-
-            IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyProperty), properties);
-            service.synchronize(false, false);
-
-            session.apply(businessLogics);
-            session.close();
+            try (DataSession session = createSession()) {
+                IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyProperty), properties);
+                service.synchronize(false, false);
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             Throwables.propagate(e);
         }
@@ -300,15 +294,13 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable table = new ImportTable(asList(captionPropertyDrawField, sidPropertyDrawField, nameNavigatorElementField, sidGroupObjectField), dataPropertyDraws);
 
         try {
-            DataSession session = createSession();
-            session.pushVolatileStats("RM_PD");
-
-            IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw, keyGroupObject), propsPropertyDraw, deletes);
-            service.synchronize(true, false);
-
-            session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
+            try (DataSession session = createSession()) {
+                session.pushVolatileStats("RM_PD");
+                IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw, keyGroupObject), propsPropertyDraw, deletes);
+                service.synchronize(true, false);
+                session.popVolatileStats();
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -346,15 +338,13 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable table = new ImportTable(asList(canonicalNameNavigatorElementField, sidGroupObjectField), dataGroupObjectList);
 
         try {
-            DataSession session = createSession();
-            session.pushVolatileStats("RM_GO");
-
-            IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyGroupObject), propsGroupObject, deletes);
-            service.synchronize(true, false);
-
-            session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
+            try(DataSession session = createSession()) {
+                session.pushVolatileStats("RM_GO");
+                IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyGroupObject), propsGroupObject, deletes);
+                service.synchronize(true, false);
+                session.popVolatileStats();
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -430,15 +420,13 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                     storedPropertyField, isSetNotNullPropertyField, returnPropertyField,
                     classPropertyField, complexityPropertyField, tableSIDPropertyField), dataProperty);
 
-            DataSession session = createSession();
-            session.pushVolatileStats("RM_PE");
-
-            IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties, deletes);
-            service.synchronize(true, false);
-
-            session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
+            try (DataSession session = createSession()) {
+                session.pushVolatileStats("RM_PE");
+                IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties, deletes);
+                service.synchronize(true, false);
+                session.popVolatileStats();
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -465,15 +453,13 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable table = new ImportTable(asList(canonicalNamePropertyField, parentSidField, numberPropertyField), dataParent);
 
         try {
-            DataSession session = createSession();
-            session.pushVolatileStats("RM_PP");
-
-            IntegrationService service = new IntegrationService(session, table, asList(keyProperty, keyParent), properties);
-            service.synchronize(true, false);
-
-            session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
+            try (DataSession session = createSession()) {
+                session.pushVolatileStats("RM_PP");
+                IntegrationService service = new IntegrationService(session, table, asList(keyProperty, keyParent), properties);
+                service.synchronize(true, false);
+                session.popVolatileStats();
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -518,18 +504,15 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable table2 = new ImportTable(asList(sidField, parentSidField, numberField), data2);
 
         try {
-            DataSession session = createSession();
-            session.pushVolatileStats("RM_GP");
-            
-            IntegrationService service = new IntegrationService(session, table, Collections.singletonList(key), props, deletes);
-            service.synchronize(true, false);
-
-            service = new IntegrationService(session, table2, asList(key, key2), props2);
-            service.synchronize(true, false);
-
-            session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
+            try (DataSession session = createSession()) {
+                session.pushVolatileStats("RM_GP");
+                IntegrationService service = new IntegrationService(session, table, Collections.singletonList(key), props, deletes);
+                service.synchronize(true, false);
+                service = new IntegrationService(session, table2, asList(key, key2), props2);
+                service.synchronize(true, false);
+                session.popVolatileStats();
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -614,21 +597,21 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable tableColumns = new ImportTable(asList(tableSidField, tableColumnSidField, tableColumnLongSIDField), dataProps);
 
         try {
-            DataSession session = createSession();
-            session.pushVolatileStats("RM_TE");
+            try(DataSession session = createSession()) {
+                session.pushVolatileStats("RM_TE");
 
-            IntegrationService service = new IntegrationService(session, table, Collections.singletonList(tableKey), properties, delete);
-            service.synchronize(true, false);
+                IntegrationService service = new IntegrationService(session, table, Collections.singletonList(tableKey), properties, delete);
+                service.synchronize(true, false);
 
-            service = new IntegrationService(session, tableKeys, Collections.singletonList(tableKeyKey), propertiesKeys, deleteKeys);
-            service.synchronize(true, false);
+                service = new IntegrationService(session, tableKeys, Collections.singletonList(tableKeyKey), propertiesKeys, deleteKeys);
+                service.synchronize(true, false);
 
-            service = new IntegrationService(session, tableColumns, Collections.singletonList(tableColumnKey), propertiesColumns, deleteColumns);
-            service.synchronize(true, false);
+                service = new IntegrationService(session, tableColumns, Collections.singletonList(tableColumnKey), propertiesColumns, deleteColumns);
+                service.synchronize(true, false);
 
-            session.popVolatileStats();
-            session.apply(businessLogics);
-            session.close();
+                session.popVolatileStats();
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -636,16 +619,13 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
     public void resetConnectionStatus() {
         try {
-            DataSession session = createSession();
-
-            PropertyChange statusChanges = new PropertyChange(systemEventsLM.connectionStatus.getDataObject("disconnectedConnection"),
-                    systemEventsLM.connectionStatusConnection.property.interfaces.single(),
-                    systemEventsLM.connectionStatus.getDataObject("connectedConnection"));
-
-            session.change((CalcProperty) systemEventsLM.connectionStatusConnection.property, statusChanges);
-
-            session.apply(businessLogics);
-            session.close();
+            try (DataSession session = createSession()) {
+                PropertyChange statusChanges = new PropertyChange(systemEventsLM.connectionStatus.getDataObject("disconnectedConnection"),
+                        systemEventsLM.connectionStatusConnection.property.interfaces.single(),
+                        systemEventsLM.connectionStatus.getDataObject("connectedConnection"));
+                session.change((CalcProperty) systemEventsLM.connectionStatusConnection.property, statusChanges);
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -653,12 +633,10 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
     public void runOnStarted() {
         try {
-            DataSession session = dbManager.createSession();
-
-            LM.onStarted.execute(session);
-
-            session.apply(businessLogics);
-            session.close();
+            try (DataSession session = dbManager.createSession()) {
+                LM.onStarted.execute(session);
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -666,15 +644,13 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     
     public void logLaunch() {
         try {
-            DataSession session = createSession();
-    
-            DataObject newLaunch = session.addObject(systemEventsLM.launch);
-            systemEventsLM.computerLaunch.change(getServerComputer(), session, newLaunch);
-            systemEventsLM.timeLaunch.change(timeLM.currentDateTime.read(session), session, newLaunch);
-            systemEventsLM.revisionLaunch.change(getRevision(), session, newLaunch);
-    
-            session.apply(businessLogics);
-            session.close();
+            try (DataSession session = createSession()) {
+                DataObject newLaunch = session.addObject(systemEventsLM.launch);
+                systemEventsLM.computerLaunch.change(getServerComputer(), session, newLaunch);
+                systemEventsLM.timeLaunch.change(timeLM.currentDateTime.read(session), session, newLaunch);
+                systemEventsLM.revisionLaunch.change(getRevision(), session, newLaunch);
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

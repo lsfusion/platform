@@ -22,12 +22,10 @@ public class VacuumDBActionProperty extends ScriptingActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        DataSession session = context.createSession();
-
-        context.getDbManager().vacuumDB(session.sql);
-
-        session.apply(context);
-        session.close();
+        try (DataSession session = context.createSession()) {
+            context.getDbManager().vacuumDB(session.sql);
+            session.apply(context);
+        }
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.vacuum.db.was.completed"), getString("logics.vacuum.db")));
     }

@@ -103,13 +103,13 @@ public class EmailReceiver {
         
         ImportTable table = new ImportTable(fields, data);
 
-        DataSession session = context.createSession();
-        session.pushVolatileStats("ER_AT");
-        IntegrationService service = new IntegrationService(session, table, keys, props);
-        service.synchronize(true, false);
-        session.apply(context);
-        session.popVolatileStats();
-        session.close();
+        try (DataSession session = context.createSession()) {
+            session.pushVolatileStats("ER_AT");
+            IntegrationService service = new IntegrationService(session, table, keys, props);
+            service.synchronize(true, false);
+            session.apply(context);
+            session.popVolatileStats();
+        }
     }
 
     public void importAttachments(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
@@ -144,13 +144,13 @@ public class EmailReceiver {
 
         ImportTable table = new ImportTable(fields, data);
 
-        DataSession session = context.createSession();
-        session.pushVolatileStats("ER_EL");
-        IntegrationService service = new IntegrationService(session, table, keys, props);
-        service.synchronize(true, false);
-        session.apply(context);
-        session.popVolatileStats();
-        session.close();
+        try (DataSession session = context.createSession()) {
+            session.pushVolatileStats("ER_EL");
+            IntegrationService service = new IntegrationService(session, table, keys, props);
+            service.synchronize(true, false);
+            session.apply(context);
+            session.popVolatileStats();
+        }
     }
 
     public List<List<List<Object>>> downloadEmailList() throws MessagingException, SQLException, IOException, GeneralSecurityException {

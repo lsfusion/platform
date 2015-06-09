@@ -173,10 +173,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public String getUserLogin() {
         try {
-            DataSession session = createSession();
-            String userLogin = (String) businessLogics.authenticationLM.loginCustomUser.read(session, user);
-            session.close();
-            return userLogin;
+            try (DataSession session = createSession()) {
+                return (String) businessLogics.authenticationLM.loginCustomUser.read(session, user);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -191,12 +190,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         try {
             if(closed)
                 return LogInfo.system;
-                
-            DataSession session = createSession();
-            String userName = (String) businessLogics.authenticationLM.currentUserName.read(session);
-            String computerName = (String) businessLogics.authenticationLM.hostnameCurrentComputer.read(session);
-            session.close();
-            return new LogInfo(userName, computerName, remoteAddress);
+
+            try (DataSession session = createSession()) {
+                String userName = (String) businessLogics.authenticationLM.currentUserName.read(session);
+                String computerName = (String) businessLogics.authenticationLM.hostnameCurrentComputer.read(session);
+                return new LogInfo(userName, computerName, remoteAddress);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -224,11 +223,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public byte[] getCurrentUserInfoByteArray() {
         try {
-            DataSession session = createSession();
-            QueryBuilder<Object, String> query = new QueryBuilder<Object, String>(MapFact.<Object, KeyExpr>EMPTYREV());
-            query.addProperty("name", businessLogics.authenticationLM.currentUserName.getExpr());
-            String userName = BaseUtils.nvl((String) query.execute(session).singleValue().get("name"), "(без имени)").trim();
-            session.close();
+            String userName;
+            try (DataSession session = createSession()) {
+                QueryBuilder<Object, String> query = new QueryBuilder<Object, String>(MapFact.<Object, KeyExpr>EMPTYREV());
+                query.addProperty("name", businessLogics.authenticationLM.currentUserName.getExpr());
+                userName = BaseUtils.nvl((String) query.execute(session).singleValue().get("name"), "(без имени)").trim();
+            }
 
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
@@ -344,9 +344,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public static void updateOpenFormCount(BusinessLogics businessLogics) {
         try {
-            DataSession session = ThreadLocalContext.getDbManager().createSession();
 
-            try {
+            try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
                 List<Pair<DataObject, String>> openForms;
                 synchronized (recentlyOpenForms) {
                     openForms = new ArrayList<Pair<DataObject, String>>(recentlyOpenForms);
@@ -363,7 +362,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     Integer formId = (Integer) businessLogics.reflectionLM.navigatorElementCanonicalName.read(
                             session,
                             new DataObject(canonicalName, businessLogics.reflectionLM.navigatorElementCanonicalNameClass));
-                    
+
                     if (formId == null) {
                         continue;
                     }
@@ -374,34 +373,27 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     businessLogics.systemEventsLM.connectionFormCount.change(count, session, connection, formObject);
                 }
                 session.apply(businessLogics);
-            } finally {
-                session.close();
             }
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
 
     public static void updateUserLastActivity(BusinessLogics businessLogics) {
         try {
-            DataSession session = ThreadLocalContext.getDbManager().createSession();
 
             Map<Integer, Long> userActivityMap;
             userActivityMap = new HashMap<>(RemoteLoggerAspect.userActivityMap);
             RemoteLoggerAspect.userActivityMap.clear();
-            
-            try {
+
+            try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
 
                 for (Map.Entry<Integer, Long> userActivity : userActivityMap.entrySet()) {
                     DataObject customUserObject = new DataObject(userActivity.getKey(), businessLogics.authenticationLM.customUser);
                     businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue()), session, customUserObject);
-                    
+
                 }
                 session.apply(businessLogics);
-            } finally {
-                session.close();
             }
         } catch (Exception e) {
             logger.error("Error updating user activity: ", e);
@@ -411,13 +403,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public static void updatePingInfo(BusinessLogics businessLogics) {
         try {
-            DataSession session = ThreadLocalContext.getDbManager().createSession();
             Map<Integer, Map<Long, List<Long>>> pingInfoMap = new HashMap<>(RemoteLoggerAspect.pingInfoMap);
             RemoteLoggerAspect.pingInfoMap.clear();
-            try {
+            try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
                 for (Map.Entry<Integer, Map<Long, List<Long>>> entry : pingInfoMap.entrySet()) {
                     DataObject computerObject = new DataObject(entry.getKey(), businessLogics.authenticationLM.computer);
-                    for(Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
+                    for (Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
                         DataObject dateFrom = new DataObject(new Timestamp(pingEntry.getKey()), DateTimeClass.instance);
                         DataObject dateTo = new DataObject(new Timestamp(pingEntry.getValue().get(0)), DateTimeClass.instance);
                         Integer ping = pingEntry.getValue().get(1).intValue();
@@ -425,8 +416,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     }
                 }
                 session.apply(businessLogics);
-            } finally {
-                session.close();
             }
         } catch (Exception e) {
             logger.error("Error updating user activity: ", e);
@@ -631,10 +620,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         currentInvocation = new RemotePausableInvocation(pausablesExecutor, this) {
             @Override
             protected ServerResponse callInvocation() throws Throwable {
-                DataSession session = createSession();
-                property.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, null);
-                session.apply(businessLogics);
-                session.close();
+                try(DataSession session = createSession()) {
+                    property.execute(MapFact.<ClassPropertyInterface, DataObject>EMPTY(), session, null);
+                    session.apply(businessLogics);
+                }
                 assert !delayedGetRemoteChanges && !delayedHideForm; // тут не должно быть никаких delayRemote или hideForm
                 return new ServerResponse(delayedActions.toArray(new ClientAction[delayedActions.size()]), false);
             }

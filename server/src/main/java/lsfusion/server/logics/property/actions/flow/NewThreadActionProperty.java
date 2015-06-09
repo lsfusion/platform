@@ -39,16 +39,9 @@ public class NewThreadActionProperty extends AroundAspectActionProperty {
             public void run() {
                 try {
                     ThreadLocalContext.set(logicsContext);
-                    DataSession session = dbManager.createSession();
-                    try {
+                    try (DataSession session = dbManager.createSession()) {
                         proceed(context.override(session));
-                    } finally {
-                        session.close();
                     }
-                } catch (SQLException e) {
-                    throw Throwables.propagate(e);
-                } catch (SQLHandledException e) {
-                    throw Throwables.propagate(e);
                 } catch (Throwable t) {
                     throw Throwables.propagate(t);
                 }

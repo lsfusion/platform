@@ -2,7 +2,6 @@ package lsfusion.server.data;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
-import lsfusion.base.MutableClosedObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;

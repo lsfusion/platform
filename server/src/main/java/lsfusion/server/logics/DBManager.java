@@ -323,31 +323,31 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public Integer getComputer(String strHostName) {
         try {
-            DataSession session = createSession(getSystemSql());
+            try (DataSession session = createSession(getSystemSql())) {
 
-            QueryBuilder<String, Object> q = new QueryBuilder<>(SetFact.singleton("key"));
-            q.and(
-                    businessLogics.authenticationLM.hostnameComputer.getExpr(
-                            session.getModifier(), q.getMapExprs().get("key")
-                    ).compare(new DataObject(strHostName), Compare.EQUALS)
-            );
+                QueryBuilder<String, Object> q = new QueryBuilder<>(SetFact.singleton("key"));
+                q.and(
+                        businessLogics.authenticationLM.hostnameComputer.getExpr(
+                                session.getModifier(), q.getMapExprs().get("key")
+                        ).compare(new DataObject(strHostName), Compare.EQUALS)
+                );
 
-            Integer result;
+                Integer result;
 
-            ImSet<ImMap<String, Object>> keys = q.execute(session).keys();
-            if (keys.size() == 0) {
-                DataObject addObject = session.addObject(businessLogics.authenticationLM.computer);
-                businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
+                ImSet<ImMap<String, Object>> keys = q.execute(session).keys();
+                if (keys.size() == 0) {
+                    DataObject addObject = session.addObject(businessLogics.authenticationLM.computer);
+                    businessLogics.authenticationLM.hostnameComputer.change(strHostName, session, addObject);
 
-                result = (Integer) addObject.object;
-                session.apply(businessLogics);
-            } else {
-                result = (Integer) keys.iterator().next().get("key");
+                    result = (Integer) addObject.object;
+                    session.apply(businessLogics);
+                } else {
+                    result = (Integer) keys.iterator().next().get("key");
+                }
+
+                logger.debug("Begin user session " + strHostName + " " + result);
+                return result;
             }
-
-            session.close();
-            logger.debug("Begin user session " + strHostName + " " + result);
-            return result;
         } catch (Exception e) {
             logger.error("Error reading computer: ", e);
             throw new RuntimeException(e);
@@ -786,25 +786,25 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             sql.popNoHandled();
         }
 
-        DataSession session = createSession();
-        for (String sid : columnsToDrop.keySet()) {
-            DataObject object = session.addObject(reflectionLM.dropColumn);
-            reflectionLM.sidDropColumn.change(sid, session, object);
-            reflectionLM.sidTableDropColumn.change(columnsToDrop.get(sid), session, object);
-            reflectionLM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
-            reflectionLM.revisionDropColumn.change(getRevision(), session, object);
-        }
-        if (oldDBStructure.version < 16) {
-            convertReflectionPropertyTableToVersion16(session);
-        }
-        session.apply(businessLogics);
-        session.close();
+        try (DataSession session = createSession()) {
+            for (String sid : columnsToDrop.keySet()) {
+                DataObject object = session.addObject(reflectionLM.dropColumn);
+                reflectionLM.sidDropColumn.change(sid, session, object);
+                reflectionLM.sidTableDropColumn.change(columnsToDrop.get(sid), session, object);
+                reflectionLM.timeDropColumn.change(new Timestamp(Calendar.getInstance().getTimeInMillis()), session, object);
+                reflectionLM.revisionDropColumn.change(getRevision(), session, object);
+            }
+            if (oldDBStructure.version < 16) {
+                convertReflectionPropertyTableToVersion16(session);
+            }
+            session.apply(businessLogics);
 
-        initSystemUser();
+            initSystemUser();
 
-        String oldHashModules = (String) businessLogics.LM.findProperty("hashModules").read(session);
-        hashModules = calculateHashModules();
-        return checkHashModulesChanged(oldHashModules, hashModules);
+            String oldHashModules = (String) businessLogics.LM.findProperty("hashModules").read(session);
+            hashModules = calculateHashModules();
+            return checkHashModulesChanged(oldHashModules, hashModules);
+        }
     }
 
     public void writeModulesHash() {
@@ -836,14 +836,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             ImportTable table = new ImportTable(asList(oldCanonicalNameField, newCanonicalNameField), data);
 
-            DataSession session = createSession(OperationOwner.unknown); // создание сессии аналогично fillIDs
-
-            IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties);
-            service.synchronize(false, false);
-
-            boolean result = session.apply(businessLogics);
-            session.close();
-            return result;
+            try (DataSession session = createSession(OperationOwner.unknown)) { // создание сессии аналогично fillIDs
+                IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties);
+                service.synchronize(false, false);
+                return session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -884,15 +881,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
     
     private boolean fillIDs(Map<String, String> sIDChanges, Map<String, String> objectSIDChanges) throws SQLException, SQLHandledException {
-        DataSession session = createSession(OperationOwner.unknown); // по сути вложенная транзакция
-
-        LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
-
-        boolean result = session.apply(businessLogics);
-
-        session.close();
-        
-        return result;
+        try (DataSession session = createSession(OperationOwner.unknown)) { // по сути вложенная транзакция
+            LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
+            return session.apply(businessLogics);
+        }
     }
 
     private void updateClassStat(SQLSession session) throws SQLException, SQLHandledException {        
@@ -1016,10 +1008,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public static void runData(SessionCreator creator, boolean runInTransaction, RunServiceData run) throws SQLException, SQLHandledException {
         if(runInTransaction) {
             ExecutionContext context = (ExecutionContext) creator;
-            DataSession session = context.createSession();
-            run.run(session);
-            session.apply(context);            
-            session.close();
+            try(DataSession session = context.createSession()) {
+                run.run(session);
+                session.apply(context);
+            }
         } else
             run.run(creator);
     }
@@ -1648,29 +1640,29 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private void initSystemUser() {
         // считаем системного пользователя
         try {
-            DataSession session = createSession();
+            try (DataSession session = createSession()) {
 
-            QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
-            query.and(query.getMapExprs().singleValue().isClass(businessLogics.authenticationLM.systemUser));
-            ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
-            if (rows.size() == 0) { // если нету добавим
-                systemUserObject = (Integer) session.addObject(businessLogics.authenticationLM.systemUser).object;
-                session.apply(businessLogics);
-            } else
-                systemUserObject = (Integer) rows.single().get("key");
+                QueryBuilder<String, Object> query = new QueryBuilder<>(SetFact.singleton("key"));
+                query.and(query.getMapExprs().singleValue().isClass(businessLogics.authenticationLM.systemUser));
+                ImOrderSet<ImMap<String, Object>> rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
+                if (rows.size() == 0) { // если нету добавим
+                    systemUserObject = (Integer) session.addObject(businessLogics.authenticationLM.systemUser).object;
+                    session.apply(businessLogics);
+                } else
+                    systemUserObject = (Integer) rows.single().get("key");
 
-            query = new QueryBuilder<>(SetFact.singleton("key"));
-            query.and(businessLogics.authenticationLM.hostnameComputer.getExpr(session.getModifier(), query.getMapExprs().singleValue()).compare(new DataObject("systemhost"), Compare.EQUALS));
-            rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
-            if (rows.size() == 0) { // если нету добавим
-                DataObject computerObject = session.addObject(businessLogics.authenticationLM.computer);
-                systemComputer = (Integer) computerObject.object;
-                businessLogics.authenticationLM.hostnameComputer.change("systemhost", session, computerObject);
-                session.apply(businessLogics);
-            } else
-                systemComputer = (Integer) rows.single().get("key");
+                query = new QueryBuilder<>(SetFact.singleton("key"));
+                query.and(businessLogics.authenticationLM.hostnameComputer.getExpr(session.getModifier(), query.getMapExprs().singleValue()).compare(new DataObject("systemhost"), Compare.EQUALS));
+                rows = query.execute(session, MapFact.<Object, Boolean>EMPTYORDER(), 1).keyOrderSet();
+                if (rows.size() == 0) { // если нету добавим
+                    DataObject computerObject = session.addObject(businessLogics.authenticationLM.computer);
+                    systemComputer = (Integer) computerObject.object;
+                    businessLogics.authenticationLM.hostnameComputer.change("systemhost", session, computerObject);
+                    session.apply(businessLogics);
+                } else
+                    systemComputer = (Integer) rows.single().get("key");
 
-            session.close();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

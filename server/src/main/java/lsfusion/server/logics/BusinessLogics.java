@@ -194,11 +194,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     public ConcreteClass getDataClass(Object object, Type type) {
         try {
-            DataSession session = getDbManager().createSession();
-            ConcreteClass result = type.getDataClass(object, session.sql, LM.baseClass.getUpSet(), LM.baseClass, OperationOwner.unknown);
-            session.close();
-
-            return result;
+            try (DataSession session = getDbManager().createSession()) {
+                return type.getDataClass(object, session.sql, LM.baseClass.getUpSet(), LM.baseClass, OperationOwner.unknown);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -210,10 +208,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         Integer scannerComPort;
         Boolean scannerSingleRead;
         try {
-            DataSession session = getDbManager().createSession();
-            scannerComPort = (Integer) authenticationLM.scannerComPortComputer.read(session, new DataObject(compId, authenticationLM.computer));
-            scannerSingleRead = (Boolean) authenticationLM.scannerSingleReadComputer.read(session, new DataObject(compId, authenticationLM.computer));
-            session.close();
+            try(DataSession session = getDbManager().createSession()) {
+                scannerComPort = (Integer) authenticationLM.scannerComPortComputer.read(session, new DataObject(compId, authenticationLM.computer));
+                scannerSingleRead = (Boolean) authenticationLM.scannerSingleReadComputer.read(session, new DataObject(compId, authenticationLM.computer));
+            }
         } catch (SQLException e) {
             throw Throwables.propagate(e);
         } catch (SQLHandledException e) {

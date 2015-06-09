@@ -146,26 +146,25 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         DataObject newConnection = null;
 
         if(!skipLogging) {
-            DataSession session = dbManager.createSession();
-
-            newConnection = session.addObject(businessLogics.systemEventsLM.connection);
-            businessLogics.systemEventsLM.userConnection.change(navigator.getUser().object, session, newConnection);
-            businessLogics.systemEventsLM.osVersionConnection.change(navigatorInfo.osVersion, session, newConnection);
-            businessLogics.systemEventsLM.processorConnection.change(navigatorInfo.processor, session, newConnection);
-            businessLogics.systemEventsLM.architectureConnection.change(navigatorInfo.architecture, session, newConnection);
-            businessLogics.systemEventsLM.coresConnection.change(navigatorInfo.cores, session, newConnection);
-            businessLogics.systemEventsLM.physicalMemoryConnection.change(navigatorInfo.physicalMemory, session, newConnection);
-            businessLogics.systemEventsLM.totalMemoryConnection.change(navigatorInfo.totalMemory, session, newConnection);
-            businessLogics.systemEventsLM.maximumMemoryConnection.change(navigatorInfo.maximumMemory, session, newConnection);
-            businessLogics.systemEventsLM.freeMemoryConnection.change(navigatorInfo.freeMemory, session, newConnection);
-            businessLogics.systemEventsLM.javaVersionConnection.change(navigatorInfo.javaVersion, session, newConnection);
-            businessLogics.systemEventsLM.screenSizeConnection.change(navigatorInfo.screenSize, session, newConnection);
-            businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer().object, session, newConnection);
-            businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
-            businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.read(session), session, newConnection);
-            businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getRemoteAddress(), session, newConnection);
-            session.apply(businessLogics);
-            session.close();
+            try (DataSession session = dbManager.createSession()) {
+                newConnection = session.addObject(businessLogics.systemEventsLM.connection);
+                businessLogics.systemEventsLM.userConnection.change(navigator.getUser().object, session, newConnection);
+                businessLogics.systemEventsLM.osVersionConnection.change(navigatorInfo.osVersion, session, newConnection);
+                businessLogics.systemEventsLM.processorConnection.change(navigatorInfo.processor, session, newConnection);
+                businessLogics.systemEventsLM.architectureConnection.change(navigatorInfo.architecture, session, newConnection);
+                businessLogics.systemEventsLM.coresConnection.change(navigatorInfo.cores, session, newConnection);
+                businessLogics.systemEventsLM.physicalMemoryConnection.change(navigatorInfo.physicalMemory, session, newConnection);
+                businessLogics.systemEventsLM.totalMemoryConnection.change(navigatorInfo.totalMemory, session, newConnection);
+                businessLogics.systemEventsLM.maximumMemoryConnection.change(navigatorInfo.maximumMemory, session, newConnection);
+                businessLogics.systemEventsLM.freeMemoryConnection.change(navigatorInfo.freeMemory, session, newConnection);
+                businessLogics.systemEventsLM.javaVersionConnection.change(navigatorInfo.javaVersion, session, newConnection);
+                businessLogics.systemEventsLM.screenSizeConnection.change(navigatorInfo.screenSize, session, newConnection);
+                businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer().object, session, newConnection);
+                businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
+                businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.read(session), session, newConnection);
+                businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getRemoteAddress(), session, newConnection);
+                session.apply(businessLogics);
+            }
         }
 
         synchronized (navigators) {
@@ -178,13 +177,13 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
     private void removeNavigator(Pair<String, Integer> key) {
         try {
-            DataSession session = dbManager.createSession();
-            synchronized (navigators) {
-                removeNavigator(navigators.get(key), session);
-                navigators.remove(key);
+            try (DataSession session = dbManager.createSession()) {
+                synchronized (navigators) {
+                    removeNavigator(navigators.get(key), session);
+                    navigators.remove(key);
+                }
+                session.apply(businessLogics);
             }
-            session.apply(businessLogics);
-            session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -202,23 +201,23 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
     private void removeNavigators(NavigatorFilter filter) {
         try {
-            DataSession session = dbManager.createSession();
-            synchronized (navigators) {
-                for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext(); ) {
-                    RemoteNavigator navigator = iterator.next().getValue();
-                    //логика EXPIRED навигаторов неактуальна, пока не работает механизм восстановления сессии
-//                    if (NavigatorFilter.EXPIRED.accept(navigator) || filter.accept(navigator)) {
-                    if (filter.accept(navigator)) {
-                        removeNavigator(navigator, session);
-                        iterator.remove();
+            try (DataSession session = dbManager.createSession()) {
+                synchronized (navigators) {
+                    for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext(); ) {
+                        RemoteNavigator navigator = iterator.next().getValue();
+                        //логика EXPIRED навигаторов неактуальна, пока не работает механизм восстановления сессии
+                        //if (NavigatorFilter.EXPIRED.accept(navigator) || filter.accept(navigator)) {
+                        if (filter.accept(navigator)) {
+                            removeNavigator(navigator, session);
+                            iterator.remove();
+                        }
+                    }
+                    if (navigators.isEmpty()) {
+                        restartManager.forcedRestartIfPending();
                     }
                 }
-                if (navigators.isEmpty()) {
-                    restartManager.forcedRestartIfPending();
-                }
+                session.apply(businessLogics);
             }
-            session.apply(businessLogics);
-            session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

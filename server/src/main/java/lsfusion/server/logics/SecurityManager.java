@@ -162,10 +162,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     }
 
     public SecurityPolicy addPolicy(String policyName, String description) throws SQLException, SQLHandledException {
-        DataSession session = createSession();
 
         Integer policyID;
-        try {
+        try (DataSession session = createSession()) {
             policyID = readPolicy(policyName, session);
             if (policyID == null) {
                 DataObject addObject = session.addObject(securityLM.policy);
@@ -174,8 +173,6 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 policyID = (Integer) addObject.object;
                 session.apply(businessLogics);
             }
-        } finally {
-            session.close();
         }
 
         SecurityPolicy policyObject = new SecurityPolicy(policyID);
@@ -274,24 +271,23 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     }
 
     private void applyTimeout(User user) throws SQLException, SQLHandledException {
-        DataSession session = createSession();
+        try (DataSession session = createSession()) {
 
-        DataObject userObject = user.getDataObject(authenticationLM.customUser, session);
+            DataObject userObject = user.getDataObject(authenticationLM.customUser, session);
 
-        QueryBuilder<String, String> qu = new QueryBuilder<String, String>(SetFact.toExclSet("userId"));
-        Expr userExpr = qu.getMapExprs().get("userId");
-        qu.and(userExpr.compare(userObject, Compare.EQUALS));
-        qu.addProperty("transactTimeoutUser", securityLM.transactTimeoutUser.getExpr(session.getModifier(), userExpr));
+            QueryBuilder<String, String> qu = new QueryBuilder<>(SetFact.toExclSet("userId"));
+            Expr userExpr = qu.getMapExprs().get("userId");
+            qu.and(userExpr.compare(userObject, Compare.EQUALS));
+            qu.addProperty("transactTimeoutUser", securityLM.transactTimeoutUser.getExpr(session.getModifier(), userExpr));
 
-        ImCol<ImMap<String, Object>> timeoutValues = qu.execute(session).values();
-        for (ImMap<String, Object> valueMap : timeoutValues) {
-            Integer timeout = (Integer)valueMap.get("transactTimeoutUser");
-            if (timeout != null) {
-                user.setTimeout(timeout);
+            ImCol<ImMap<String, Object>> timeoutValues = qu.execute(session).values();
+            for (ImMap<String, Object> valueMap : timeoutValues) {
+                Integer timeout = (Integer) valueMap.get("transactTimeoutUser");
+                if (timeout != null) {
+                    user.setTimeout(timeout);
+                }
             }
         }
-        
-        session.close();
     }
 
     private List<Integer> readUserPoliciesIds(User user, DataSession session) {
@@ -587,8 +583,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
     public List<String> getUserRolesNames(String username, List<String> extraUserRoleNames) {
         try {
-            DataSession session = createSession();
-            try {
+            try (DataSession session = createSession()) {
                 ImRevMap<String, KeyExpr> keys = KeyExpr.getMapKeys(SetFact.toExclSet("user", "role"));
                 Expr userExpr = keys.get("user");
                 Expr roleExpr = keys.get("role");
@@ -614,8 +609,6 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 roles.addAll(extraUserRoleNames);
 
                 return roles;
-            } finally {
-                session.close();
             }
 
         } catch (SQLException e) {

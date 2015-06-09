@@ -56,12 +56,10 @@ public class ModulesHashManager extends LifecycleAdapter implements Initializing
 
     public void runOnStarted() {
         try {
-            DataSession session = dbManager.createSession();
-
-            LM.onStarted.execute(session);
-
-            session.apply(businessLogics);
-            session.close();
+            try(DataSession session = dbManager.createSession()) {
+                LM.onStarted.execute(session);
+                session.apply(businessLogics);
+            }
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

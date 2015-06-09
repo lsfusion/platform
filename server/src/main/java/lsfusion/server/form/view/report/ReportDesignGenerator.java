@@ -103,11 +103,11 @@ public class ReportDesignGenerator {
     public Map<String, JasperDesign> generate() throws JRException {
         try {
             BaseLogicsModule baseLM = ThreadLocalContext.getBusinessLogics().LM;
-            DataSession session = ThreadLocalContext.getDbManager().createSession();
-            charWidth = (Integer) baseLM.reportCharWidth.read(session);
-            rowHeight = (Integer) baseLM.reportRowHeight.read(session);
-            toStretch = BaseUtils.nvl((Boolean) baseLM.reportToStretch.read(session), false);
-            session.close();
+            try(DataSession session = ThreadLocalContext.getDbManager().createSession()) {
+                charWidth = (Integer) baseLM.reportCharWidth.read(session);
+                rowHeight = (Integer) baseLM.reportRowHeight.read(session);
+                toStretch = BaseUtils.nvl((Boolean) baseLM.reportToStretch.read(session), false);
+            }
         } catch (SQLException e) {
             ServerLoggers.systemLogger.warn("Error when reading report parameters", e);
         } catch (SQLHandledException e) {

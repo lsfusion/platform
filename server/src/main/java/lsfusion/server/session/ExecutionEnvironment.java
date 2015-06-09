@@ -1,11 +1,11 @@
 package lsfusion.server.session;
 
 import lsfusion.base.FunctionSet;
-import lsfusion.base.MutableClosedObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.classes.ConcreteObjectClass;
+import lsfusion.server.data.MutableClosedObject;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.FormInstance;

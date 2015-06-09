@@ -166,42 +166,42 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         String errorType = t.getClass().getName();
         String erTrace = ExceptionUtils.getStackTraceString(t);
 
-        DataSession session = createSession();
-        DataObject exceptionObject;
-        if (client) {
-            if(t instanceof RemoteServerException) {
-                exceptionObject = session.addObject(remoteServerException);
-            } else if (t instanceof RemoteException) {
-                exceptionObject = session.addObject(unhandledRemoteException);
-            } else if (t instanceof HandledRemoteException) {
-                HandledRemoteException handled = (HandledRemoteException) t;
+        try (DataSession session = createSession()) {
+            DataObject exceptionObject;
+            if (client) {
+                if (t instanceof RemoteServerException) {
+                    exceptionObject = session.addObject(remoteServerException);
+                } else if (t instanceof RemoteException) {
+                    exceptionObject = session.addObject(unhandledRemoteException);
+                } else if (t instanceof HandledRemoteException) {
+                    HandledRemoteException handled = (HandledRemoteException) t;
 
-                if(t instanceof FatalHandledRemoteException)
-                    exceptionObject = session.addObject(fatalHandledRemoteException);
-                else {
-                    exceptionObject = session.addObject(nonFatalHandledRemoteException);
-                    
-                    NonFatalHandledRemoteException nonFatal = (NonFatalHandledRemoteException) t;
-                    countNonFatalHandledException.change(nonFatal.count, session, exceptionObject);
-                    abandonedNonFatalHandledException.change(nonFatal.abandoned, session, exceptionObject);
+                    if (t instanceof FatalHandledRemoteException)
+                        exceptionObject = session.addObject(fatalHandledRemoteException);
+                    else {
+                        exceptionObject = session.addObject(nonFatalHandledRemoteException);
+
+                        NonFatalHandledRemoteException nonFatal = (NonFatalHandledRemoteException) t;
+                        countNonFatalHandledException.change(nonFatal.count, session, exceptionObject);
+                        abandonedNonFatalHandledException.change(nonFatal.abandoned, session, exceptionObject);
+                    }
+
+                    reqIdHandledException.change(handled.reqId, session, exceptionObject);
+                } else {
+                    exceptionObject = session.addObject(clientException);
                 }
-                
-                reqIdHandledException.change(handled.reqId, session, exceptionObject);
+                clientClientException.change(clientName, session, exceptionObject);
+                String userLogin = (String) authenticationLM.loginCustomUser.read(session, user);
+                loginClientException.change(userLogin, session, exceptionObject);
             } else {
-                exceptionObject = session.addObject(clientException);
+                exceptionObject = session.addObject(serverException);
             }
-            clientClientException.change(clientName, session, exceptionObject);
-            String userLogin = (String) authenticationLM.loginCustomUser.read(session, user);
-            loginClientException.change(userLogin, session, exceptionObject);
-        } else {
-            exceptionObject = session.addObject(serverException);
-        }
-        messageException.change(message, session, exceptionObject);
-        typeException.change(errorType, session, exceptionObject);
-        erTraceException.change(erTrace, session, exceptionObject);
-        dateException.change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
+            messageException.change(message, session, exceptionObject);
+            typeException.change(errorType, session, exceptionObject);
+            erTraceException.change(erTrace, session, exceptionObject);
+            dateException.change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
 
-        session.apply(bl);
-        session.close();
+            session.apply(bl);
+        }
     }
 }

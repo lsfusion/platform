@@ -1,13 +1,12 @@
-package lsfusion.base;
+package lsfusion.server.data;
 
+import lsfusion.base.MutableObject;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.data.AssertSynchronized;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 // local (not remote) object with SQL resources 
-public abstract class MutableClosedObject<O> extends MutableObject {
+public abstract class MutableClosedObject<O> extends MutableObject implements AutoCloseable {
 
     private boolean closed;
     @AssertSynchronized
@@ -19,7 +18,8 @@ public abstract class MutableClosedObject<O> extends MutableObject {
     protected boolean isClosed() {
         return closed;
     }
-    
+
+    @Override
     public void close() throws SQLException {
         close(null);
     }

@@ -274,16 +274,13 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         //todo: в будущем нужно поменять на проставление локали в Context
 //            ServerResourceBundle.load(localeLanguage);
         try {
-            DataSession session = createSession();
-            try {
+            try (DataSession session = createSession()) {
                 Integer userId = getUserByEmail(session, email);
                 if (userId == null) {
                     throw new RuntimeException(getString("mail.user.not.found") + ": " + email);
                 }
 
                 businessLogics.emailLM.emailUserPassUser.execute(session, new DataObject(userId, businessLogics.authenticationLM.customUser));
-            } finally {
-                session.close();
             }
         } catch (Exception e) {
             logger.error("Error reminding password: ", e);
