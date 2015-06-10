@@ -30,8 +30,7 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        try {
-            DataSession session = context.createSession();
+        try (DataSession session = context.createSession()) {
 
             long currentDate = Calendar.getInstance().getTime().getTime();
             long month = new Long("2592000000"); // 30 * 24 * 3600 * 1000

@@ -26,9 +26,7 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        try {
-
-            DataSession session = context.createSession();
+        try (DataSession session = context.createSession()) {
             DataObject backupObject = context.getDataKeyValue(backupInterface);
 
             String backupFilePath = (String) findProperty("fileBackup").read(session, backupObject);

@@ -36,8 +36,7 @@ public class BackupActionProperty extends ScriptingActionProperty {
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        try {
-            DataSession session = context.createSession();
+        try (DataSession session = context.createSession()) {
 
             Date currentDate = Calendar.getInstance().getTime();
             long currentTime = currentDate.getTime();
