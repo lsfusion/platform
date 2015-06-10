@@ -1153,8 +1153,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     List<AggregateProperty> getAggregateStoredProperties(boolean filterRecalculate) {
         List<AggregateProperty> result = new ArrayList<>();
-        try {
-            final DataSession dataSession = getDbManager().createSession();
+        try (final DataSession dataSession = getDbManager().createSession()) {
             for (Property property : getStoredProperties())
                 if (property instanceof AggregateProperty) {
                     boolean recalculate = filterRecalculate || reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;

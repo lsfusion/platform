@@ -481,8 +481,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return null;
         }
         
-        try {
-            DataSession dataSession = session.createSession();
+        try (DataSession dataSession = session.createSession()) {
             DataObject userObject = dataSession.getDataObject(BL.authenticationLM.user, BL.authenticationLM.currentUser.read(dataSession));
             for (Map.Entry<String, ColumnUserPreferences> entry : preferences.getColumnUserPreferences().entrySet()) {
                 ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementNamePropertyDraw.readClasses(
@@ -527,9 +526,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 BL.reflectionLM.isFontItalicGroupObjectCustomUser.change(preferences.fontInfo.isItalic() ? true : null, dataSession, groupObjectObject, userObject);
             }
             return dataSession.applyMessage(BL);
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
@@ -1105,46 +1102,47 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return;
         }
         
-        DataSession dataSession = session.createSession();
-        ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDNavigatorElementNameGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
-        if (!(groupObjectObjectValue instanceof DataObject)) {
-            throw new RuntimeException("Объект " + grouping.groupObjectSID + " (" + entity.getCanonicalName() + ") не найден");    
-        }
-        DataObject groupObjectObject = (DataObject) groupObjectObjectValue;
-        ObjectValue groupingObjectValue = BL.reflectionLM.formGroupingNameFormGroupingGroupObject.readClasses(dataSession, new DataObject(grouping.name, StringClass.get(100)), groupObjectObject);
-        DataObject groupingObject;
-        if (groupingObjectValue instanceof DataObject) {
-            groupingObject = (DataObject) groupingObjectValue;
-
-            if (grouping.propertyGroupings == null) { // признак удаления группировки
-                dataSession.changeClass(groupingObject, null);
-                dataSession.apply(BL);
-                return;
+        try (DataSession dataSession = session.createSession()) {
+            ObjectValue groupObjectObjectValue = BL.reflectionLM.groupObjectSIDNavigatorElementNameGroupObject.readClasses(dataSession, new DataObject(grouping.groupObjectSID, StringClass.get(50)), new DataObject(entity.getCanonicalName(), StringClass.get(50)));
+            if (!(groupObjectObjectValue instanceof DataObject)) {
+                throw new RuntimeException("Объект " + grouping.groupObjectSID + " (" + entity.getCanonicalName() + ") не найден");
             }
-        } else {
-            assert grouping.propertyGroupings != null;
-            groupingObject = dataSession.addObject((ConcreteCustomClass) BL.reflectionLM.findClass("FormGrouping"));
-            BL.reflectionLM.groupObjectFormGrouping.change(groupObjectObject.getValue(), dataSession, groupingObject);
-            BL.reflectionLM.nameFormGrouping.change(grouping.name, dataSession, groupingObject);
-        }
-        assert grouping.propertyGroupings != null;
-        BL.reflectionLM.itemQuantityFormGrouping.change(grouping.showItemQuantity, dataSession, groupingObject);
+            DataObject groupObjectObject = (DataObject) groupObjectObjectValue;
+            ObjectValue groupingObjectValue = BL.reflectionLM.formGroupingNameFormGroupingGroupObject.readClasses(dataSession, new DataObject(grouping.name, StringClass.get(100)), groupObjectObject);
+            DataObject groupingObject;
+            if (groupingObjectValue instanceof DataObject) {
+                groupingObject = (DataObject) groupingObjectValue;
 
-        for (FormGrouping.PropertyGrouping propGrouping : grouping.propertyGroupings) {
-            ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementNamePropertyDraw.readClasses(dataSession,
-                    new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 50)),
-                    new DataObject(propGrouping.propertySID, StringClass.get(false, false, 100)));
-            if (propertyDrawObjectValue instanceof DataObject) {
-                DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
-                BL.reflectionLM.groupOrderFormGroupingPropertyDraw.change(propGrouping.groupingOrder, dataSession, groupingObject, propertyDrawObject);
-                BL.reflectionLM.sumFormGroupingPropertyDraw.change(propGrouping.sum, dataSession, groupingObject, propertyDrawObject);
-                BL.reflectionLM.maxFormGroupingPropertyDraw.change(propGrouping.max, dataSession, groupingObject, propertyDrawObject);
-                BL.reflectionLM.pivotFormGroupingPropertyDraw.change(propGrouping.pivot, dataSession, groupingObject, propertyDrawObject);
+                if (grouping.propertyGroupings == null) { // признак удаления группировки
+                    dataSession.changeClass(groupingObject, null);
+                    dataSession.apply(BL);
+                    return;
+                }
             } else {
-                throw new RuntimeException("Свойство " + propGrouping.propertySID + " (" + entity.getCanonicalName() + ") не найдено");
+                assert grouping.propertyGroupings != null;
+                groupingObject = dataSession.addObject((ConcreteCustomClass) BL.reflectionLM.findClass("FormGrouping"));
+                BL.reflectionLM.groupObjectFormGrouping.change(groupObjectObject.getValue(), dataSession, groupingObject);
+                BL.reflectionLM.nameFormGrouping.change(grouping.name, dataSession, groupingObject);
             }
+            assert grouping.propertyGroupings != null;
+            BL.reflectionLM.itemQuantityFormGrouping.change(grouping.showItemQuantity, dataSession, groupingObject);
+
+            for (FormGrouping.PropertyGrouping propGrouping : grouping.propertyGroupings) {
+                ObjectValue propertyDrawObjectValue = BL.reflectionLM.propertyDrawSIDNavigatorElementNamePropertyDraw.readClasses(dataSession,
+                        new DataObject(entity.getCanonicalName(), StringClass.get(false, false, 50)),
+                        new DataObject(propGrouping.propertySID, StringClass.get(false, false, 100)));
+                if (propertyDrawObjectValue instanceof DataObject) {
+                    DataObject propertyDrawObject = (DataObject) propertyDrawObjectValue;
+                    BL.reflectionLM.groupOrderFormGroupingPropertyDraw.change(propGrouping.groupingOrder, dataSession, groupingObject, propertyDrawObject);
+                    BL.reflectionLM.sumFormGroupingPropertyDraw.change(propGrouping.sum, dataSession, groupingObject, propertyDrawObject);
+                    BL.reflectionLM.maxFormGroupingPropertyDraw.change(propGrouping.max, dataSession, groupingObject, propertyDrawObject);
+                    BL.reflectionLM.pivotFormGroupingPropertyDraw.change(propGrouping.pivot, dataSession, groupingObject, propertyDrawObject);
+                } else {
+                    throw new RuntimeException("Свойство " + propGrouping.propertySID + " (" + entity.getCanonicalName() + ") не найдено");
+                }
+            }
+            dataSession.apply(BL);
         }
-        dataSession.apply(BL);
     }
 
     // Обновление данных
