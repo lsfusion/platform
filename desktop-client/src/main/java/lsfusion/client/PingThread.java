@@ -116,7 +116,7 @@ public class PingThread extends Thread {
                         pingInfoMap.put(lastTimeFrom, Arrays.asList(currentTime, globalMedian));
                         globalPingList.clear();
                         lastTimeFrom = currentTime;
-                        lastPing = newPing;
+                        lastPing = globalMedian;
                     }
                 } else {
                     pingInfoMap.put(lastTimeFrom, Arrays.asList(currentTime, newPing));
