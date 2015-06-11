@@ -109,12 +109,15 @@ public class PingThread extends Thread {
                 globalPingList.addAll(currentPingList);
                 long newPing = currentPingList.get(15); //medium
                 long currentTime = System.currentTimeMillis();
-                if (((newPing != 0 && (double) lastPing / newPing < 0.5) || (lastPing != 0 && (double) newPing / lastPing < 0.5))) {
+                if (differs(lastPing, newPing)) {
                     Collections.sort(globalPingList);
-                    pingInfoMap.put(lastTimeFrom, Arrays.asList(currentTime, globalPingList.get(globalPingList.size() / 2)));
-                    globalPingList.clear();
-                    lastTimeFrom = currentTime;
-                    lastPing = newPing;
+                    long globalMedian = globalPingList.get(globalPingList.size() / 2);
+                    if(differs(lastPing, globalMedian)) {
+                        pingInfoMap.put(lastTimeFrom, Arrays.asList(currentTime, globalMedian));
+                        globalPingList.clear();
+                        lastTimeFrom = currentTime;
+                        lastPing = newPing;
+                    }
                 } else {
                     pingInfoMap.put(lastTimeFrom, Arrays.asList(currentTime, newPing));
                 }
@@ -151,5 +154,9 @@ public class PingThread extends Thread {
                 break;
             }
         }
+    }
+
+    private boolean differs(long ping1, long ping2) {
+        return (ping2 != 0 && (double) ping1 / ping2 < 0.5) || (ping1 != 0 && (double) ping2 / ping1 < 0.5);
     }
 }

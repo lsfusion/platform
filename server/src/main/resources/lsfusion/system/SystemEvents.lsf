@@ -143,6 +143,18 @@ maximumMemoryComputer 'Максимально доступная память д
 freeMemoryComputer 'Свободная память для JVM, МБ' (computer) = freeMemoryConnection(lastConnectionComputer(computer));
 javaVersionComputer 'Версия java' (computer) = javaVersionConnection(lastConnectionComputer(computer));
 
+countDaysClearPings 'За сколько дней хранить статистику пингов' = DATA INTEGER (); 
+    
+EXTEND FORM options PROPERTIES countDaysClearPings();
+DESIGN options { log { MOVE PROPERTY(countDaysClearPings());} }    
+    
+clearApplicationLog () += ACTION () NEWSESSION {
+    IF countDaysClearPings() THEN {
+        pingComputerDateTimeFromDateTimeTo(c, dFrom, dTo) <- NULL WHERE dTo <= subtractDateTimeDay(currentDateTime(), countDaysClearPings());
+    }
+    apply();
+}   
+
 FORM connections 'Журнал подключений'
 
     OBJECTS c=Connection
