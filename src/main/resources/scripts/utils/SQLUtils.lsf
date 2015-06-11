@@ -45,6 +45,11 @@ CLASS StateProcess 'Статус процесса' {
 }
 
 updateProcessMonitorAction 'Обновить монитор процессов' = ACTION CUSTOM 'lsfusion.erp.utils.UpdateProcessMonitorActionProperty' () TOOLBAR;
+killJavaProcess 'Убить java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillJavaProcessActionProperty' (INTEGER);
+killSQLProcess 'Убить SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillSQLProcessActionProperty' (INTEGER);
+cancelJavaProcess 'Снять java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelJavaProcessActionProperty' (INTEGER);
+cancelSQLProcess 'Снять SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelSQLProcessActionProperty' (INTEGER);
+
 //test1Action 'test1' = ACTION CUSTOM 'lsfusion.erp.utils.Test1ActionActionProperty' () TOOLBAR;
 //test2Action 'test2' = ACTION CUSTOM 'lsfusion.erp.utils.Test2ActionActionProperty' () TOOLBAR;
 //test3Action 'test3' = ACTION CUSTOM 'lsfusion.erp.utils.Test3ActionActionProperty' () TOOLBAR;
@@ -87,12 +92,18 @@ activeProcess 'Активный' (i) = (querySQLProcess(i) AND stateSQLProcess(i
                                           AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0') == 1));
 blockedProcess 'Заблокированный' (i) = statusJavaProcess(i) == 'BLOCKED' AND i IS INTEGER;             
 
-isSQLProcess(i) = startsWith(idThreadProcess(i), 's') OR (querySQLProcess(i) AND stateSQLProcess(i) == StateProcess.active);
+isSQLProcess(i) = startsWith(idThreadProcess(i), 's');// OR (querySQLProcess(i) AND stateSQLProcess(i) == StateProcess.active);
 isJavaProcess(i) = NOT isSQLProcess(i);
-backgroundProcess(i) = IF isSQLProcess(i) THEN RGB(255, 255, 240) ELSE RGB(240, 255, 255);
-            //WHEN i IS RemoteServerException THEN RGB(255, 240, 255)
-            //WHEN i IS ClientException THEN ;                             
-
+backgroundProcess(i) = IF isSQLProcess(i) THEN RGB(255, 255, 240) ELSE RGB(240, 255, 255);  
+                   
+cancelProcess 'Снять процесс' (i) = ACTION {
+    IF isSQLProcess(i) THEN cancelSQLProcess(i) ELSE cancelJavaProcess(i);
+    updateProcessMonitorAction();
+}           
+killProcess 'Убить процесс' (i) = ACTION { 
+    IF isSQLProcess(i) THEN killSQLProcess(i) ELSE killJavaProcess(i);
+    updateProcessMonitorAction();
+}
                              
 FORM processMonitor 'Монитор процессов'
     OBJECTS i = INTEGER
@@ -100,6 +111,7 @@ FORM processMonitor 'Монитор процессов'
                            querySQLProcess, dateTimeSQLProcess, nameStateSQLProcess, addressUserSQLProcess,
                            stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
                            lockOwnerIdJavaProcess, lockOwnerNameJavaProcess
+    PROPERTIES(i) TOOLBAR cancelProcess, killProcess                       
     FILTERS idThreadProcess(i)
     FILTERGROUP javaSQL 
         FILTER 'Java-процессы' isJavaProcess(i)
@@ -107,7 +119,7 @@ FORM processMonitor 'Монитор процессов'
     FILTERGROUP active FILTER 'Только активные' activeProcess(i) DEFAULT
     
     TREE blocking i2 = INTEGER PARENT threadOwnerProcess
-    PROPERTIES(i2) READONLY sumBlockedProcess,
+    PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i) sumBlockedProcess,
                             activeProcess, idThreadProcess, computerProcess, userProcess,
                             querySQLProcess, dateTimeSQLProcess, nameStateSQLProcess, addressUserSQLProcess,
                             stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
@@ -128,7 +140,7 @@ FORM processMonitor 'Монитор процессов'
     FILTERGROUP nonBlocking FILTER 'Только не блокирующие' sumBlockedProcess(blocked) == 0 DEFAULT
     ORDER BY sumBlockingProcess(blocked) DESC, sumBlockingProcess(blocking) DESC
     
-    PROPERTIES() updateProcessMonitorAction//, test1Action, test2Action, test3Action, test4Action
+    PROPERTIES() updateProcessMonitorAction//, test1Action, test2Action, test3Action,test4Action
 ;
 
 DESIGN processMonitor {
@@ -163,10 +175,10 @@ DESIGN processMonitor {
     MOVE PROPERTY(updateProcessMonitorAction()) {
         align = TRAILING;
     }
-//    MOVE PROPERTY(test1Action());
-//    MOVE PROPERTY(test2Action());
-//    MOVE PROPERTY(test3Action());
-//    MOVE PROPERTY(test4Action());
+    //MOVE PROPERTY(test1Action());
+    //MOVE PROPERTY(test2Action());
+    //MOVE PROPERTY(test3Action());
+    //MOVE PROPERTY(test4Action());
     MOVE functions.box;
 }
 
