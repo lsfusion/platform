@@ -26,6 +26,16 @@ FORM computers 'Рабочие места'
     PROPERTIES(c) ADDFORM, EDITFORM, DELETE
 ;
 
+FORM computersDialog 'Рабочие места'
+    OBJECTS c = Computer
+    
+    PROPERTIES(c) READONLY hostnameComputer, scannerComPortComputer, scannerSingleReadComputer
+    PROPERTIES(c) ADDFORM, EDITFORM, DELETE FORCE PANEL TOOLBAR
+    
+    DIALOG Computer OBJECT c     
+;
+DESIGN computersDialog { main{ preferredSize = (1024, 768); }}
+
 // -------------------------- Пользователи ---------------------------- //
 CLASS ABSTRACT User 'Пользователь';
 TABLE user (User);
@@ -126,9 +136,18 @@ FORM customUsers 'Пользователи'
                   lastActivityCustomUser, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
+;
+
+FORM customUsersDialog 'Пользователи'
+    OBJECTS u=CustomUser
+    
+    PROPERTIES(u) READONLY nameContact, loginCustomUser, emailContact
+    PROPERTIES(u) ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     DIALOG CustomUser OBJECT u
 ;
+
+DESIGN customUsersDialog { main{ preferredSize = (1024, 768); }}
 
 FORM editProfile 'Редактировать профиль' IMAGE '/images/editReport.png'
     OBJECTS u=CustomUser FIXED PANEL
