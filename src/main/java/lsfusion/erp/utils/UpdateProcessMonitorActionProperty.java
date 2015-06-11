@@ -65,6 +65,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     protected void updateProcessMonitor(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
         DataSession session = context.getSession();
+        //session.cancel();
 
         Integer previousCount = (Integer) findProperty("previousCountProcess").read(session);
         previousCount = previousCount == null ? 0 : previousCount;
@@ -167,6 +168,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         //step3: writeRows (sql)
         writeRows(context, propsSQL, mRowsSQL);
 
+        //чтобы ошибка падала каждый раз, а не только первый необходимо закомментить следующую строку. Для работы без ошибок почему-то
+        //требуется в начале заполнить таблицу null'ами
         findProperty("previousCountProcess").change(i, session);
     }
 
