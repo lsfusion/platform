@@ -615,6 +615,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         throw new UnsupportedOperationException();
     }
 
+    public String wrapSubQueryRecursion(String string) {
+        return string;
+    }
+
     public String getArrayConstructor(String source, ArrayClass rowType, TypeEnvironment env) {
         throw new UnsupportedOperationException();
     }

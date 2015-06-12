@@ -4,6 +4,7 @@ import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.ParsedStatement;
+import lsfusion.server.data.sql.SQLSyntax;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -15,6 +16,10 @@ public class ParsedParamString extends ParsedString {
     public ParsedParamString(String string, ImList<String> params) {
         super(string);
         this.params = params;
+    }
+
+    public ParsedParamString wrapSubQueryRecursion(SQLSyntax syntax) {
+        return new ParsedParamString(syntax.wrapSubQueryRecursion(string), params);
     }
 
     @Override

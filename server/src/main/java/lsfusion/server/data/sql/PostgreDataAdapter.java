@@ -565,6 +565,11 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
+    public String wrapSubQueryRecursion(String string) {
+        return StringEscapeUtils.escapeSql(string);
+    }
+
+    @Override
     public String getArrayConstructor(String source, ArrayClass rowType, TypeEnvironment env) {
         return rowType.getCast("ARRAY[" + source + "]", this, env);
     }

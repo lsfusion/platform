@@ -8,10 +8,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.Settings;
 import lsfusion.server.data.query.StaticExecuteEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.type.ParseInterface;
-import lsfusion.server.data.type.ParsedString;
-import lsfusion.server.data.type.Type;
-import lsfusion.server.data.type.TypeObject;
+import lsfusion.server.data.type.*;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -29,14 +26,21 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
         this.env = env;
     }
 
+    protected boolean isRecursionFunction() {
+        return false;
+    }
+
     public PreParsedStatement preparseStatement(final boolean parseParams, final ImMap<String, ParseInterface> paramObjects, final SQLSyntax syntax, final boolean isVolatileStats, final ImMap<SQLQuery, String> materializedQueries, final boolean usedRecursion) {
         ImMap<String, ParsedString> parsedSubQueries = subQueries.mapValues(new GetValue<ParsedString, SQLQuery>() {
             public ParsedString getMapValue(SQLQuery value) {
                 String tableName = materializedQueries.get(value);
                 if(tableName != null)
                     return new ParsedString(tableName);
-                else
-                    return value.preparseStatement(parseParams, paramObjects, syntax, isVolatileStats, materializedQueries, usedRecursion).getString(syntax);
+
+                ParsedParamString result = value.preparseStatement(parseParams, paramObjects, syntax, isVolatileStats, materializedQueries, usedRecursion).getString(syntax);
+                if(isRecursionFunction())
+                    result = result.wrapSubQueryRecursion(syntax);
+                return result;
             }
         });
 

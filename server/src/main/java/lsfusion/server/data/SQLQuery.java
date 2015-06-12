@@ -25,11 +25,12 @@ import java.sql.SQLException;
 
 public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
-    public SQLQuery(String command, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, boolean union) {
+    public SQLQuery(String command, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, boolean union, boolean recursionFunction) {
         super(command, subQueries, env);
         this.keyReaders = keyReaders;
         this.propertyReaders = propertyReaders;
         this.union = union;
+        this.recursionFunction = recursionFunction;
     }
 
     public static ImMap<String, SQLQuery> translate(ImMap<String, SQLQuery> subQueries, final GetValue<String, String> translator) {
@@ -40,20 +41,26 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         });
     }
     public SQLQuery translate(GetValue<String, String> translator) {
-        return new SQLQuery(translator.getMapValue(command), translate(subQueries, translator), env, keyReaders, propertyReaders, union);
+        return new SQLQuery(translator.getMapValue(command), translate(subQueries, translator), env, keyReaders, propertyReaders, union, recursionFunction);
     }
 
     final public ImMap<String, ? extends Reader> keyReaders;
     final public ImMap<String, ? extends Reader> propertyReaders;
     final public boolean union;
+    final private boolean recursionFunction;
+
+    @Override
+    protected boolean isRecursionFunction() {
+        return recursionFunction;
+    }
 
     protected boolean calcTwins(TwinImmutableObject o) {
-        return super.calcTwins(o) && keyReaders.equals(((SQLQuery) o).keyReaders) && propertyReaders.equals(((SQLQuery) o).propertyReaders) && union == (((SQLQuery) o).union);
+        return super.calcTwins(o) && keyReaders.equals(((SQLQuery) o).keyReaders) && propertyReaders.equals(((SQLQuery) o).propertyReaders) && union == (((SQLQuery) o).union) && recursionFunction == (((SQLQuery) o).recursionFunction);
     }
 
     @Override
     public int immutableHashCode() {
-        return ((super.immutableHashCode() * 31 + keyReaders.hashCode()) * 31  + propertyReaders.hashCode()) * 31 + (union ? 1 : 0);
+        return ((super.immutableHashCode() * 31 + keyReaders.hashCode()) * 31  + propertyReaders.hashCode()) * 31 + (union ? 1 : 0) + (recursionFunction ? 3 : 0);
     }
 
     private <K> boolean hasUnlimited(ImMap<K, ? extends Reader> keyReaders) {
@@ -213,7 +220,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     public SQLQuery fixConcSelect(SQLSyntax syntax) {
         if(syntax.hasDriverCompositeProblem() && hasConc(keyReaders, propertyReaders)) {
             MStaticExecuteEnvironment mEnv = StaticExecuteEnvironmentImpl.mEnv(env);
-            return new SQLQuery(fixConcSelect(command, keyReaders, propertyReaders, syntax, mEnv), subQueries, mEnv.finish(), keyReaders, propertyReaders, union);
+            return new SQLQuery(fixConcSelect(command, keyReaders, propertyReaders, syntax, mEnv), subQueries, mEnv.finish(), keyReaders, propertyReaders, union, false);
         }
         return this;
     }

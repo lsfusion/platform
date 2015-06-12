@@ -265,7 +265,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         queryExecEnv = (select.length() > Settings.get().getQueryLengthTimeout() && syntax.supportsDisableNestedLoop() ? new AdjustVolatileExecuteEnvironment() : DynamicExecuteEnvironment.DEFAULT);
 
         env = mEnv.finish();
-        sql = new SQLQuery(select, mSubQueries.immutable(), env, keyNames.crossJoin(keyReaders), propertyNames.crossJoin(propertyReaders), union);
+        sql = new SQLQuery(select, mSubQueries.immutable(), env, keyNames.crossJoin(keyReaders), propertyNames.crossJoin(propertyReaders), union, false);
         keyOrder = resultKeyOrder.result; propertyOrder = resultPropertyOrder.result;
 
         assert checkQuery();
@@ -600,10 +600,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
 
             protected SQLQuery getEmptySelect(final Where groupWhere) {
-                return getSQLQuery(null, MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.mEnv(), groupWhere);
+                return getSQLQuery(null, MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.mEnv(), groupWhere, false);
             }
 
-            protected SQLQuery getSQLQuery(String select, ImMap<String, SQLQuery> subQueries, final MStaticExecuteEnvironment mSubEnv, final Where innerWhere) {
+            protected SQLQuery getSQLQuery(String select, ImMap<String, SQLQuery> subQueries, final MStaticExecuteEnvironment mSubEnv, final Where innerWhere, boolean recursionFunction) {
                 ImMap<String, Type> keyTypes = group.mapValues(new GetValue<Type, K>() {
                     public Type getMapValue(K value) {
                         return value.getType(innerWhere);
@@ -621,7 +621,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     ImMap<String, String> propertySelect = propertyTypes.mapValues(nullGetter);
                     select = "(" + syntax.getSelect("empty", SQLSession.stringExpr(keySelect, propertySelect), "", "", "", "", "") + ")";
                 }
-                return new SQLQuery(select, subQueries, mSubEnv.finish(), keyTypes, propertyTypes, false);
+                return new SQLQuery(select, subQueries, mSubEnv.finish(), keyTypes, propertyTypes, false, recursionFunction);
             }
 
             // чтобы разбить рекурсию
@@ -711,7 +711,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     havingSelect = SetFact.singleton(propertySelect.get(queries.singleKey()) + " IS NOT NULL");
                 else
                     havingSelect = SetFact.EMPTY();
-                return getSQLQuery("(" + getGroupSelect(fromSelect, keySelect, propertySelect, whereSelect.result, havingSelect, areKeyValues) + ")", subQueries.result, mSubEnv, groupWhere);
+                return getSQLQuery("(" + getGroupSelect(fromSelect, keySelect, propertySelect, whereSelect.result, havingSelect, areKeyValues) + ")", subQueries.result, mSubEnv, groupWhere, false);
             }
 
             protected Where getInnerWhere() {
@@ -806,7 +806,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     ImSet<PartitionToken> next = mNext.immutable();
                     
                     if(last)
-                        return getSQLQuery(fromSelect, subQueries.result, mSubEnv, innerWhere);
+                        return getSQLQuery(fromSelect, subQueries.result, mSubEnv, innerWhere, false);
 
                     ImRevMap<PartitionToken, String> nextTokens = next.mapRevValues(new GetIndexValue<String, PartitionToken>() {
                         public String getMapValue(int i, PartitionToken token) {
@@ -861,7 +861,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 Result<ImMap<String, SQLQuery>> subQueries = new Result<ImMap<String, SQLQuery>>();
                 String fromSelect = new Query<String, String>(group, queries, innerWhere).compile(syntax, subcontext).fillSelect(keySelect, propertySelect, whereSelect, subQueries, params, mSubEnv);
                 return getSQLQuery("(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect.result,propertySelect.result),
-                    whereSelect.result.toString(" AND "),"","","", "") + ")", subQueries.result, mSubEnv, innerWhere);
+                    whereSelect.result.toString(" AND "),"","","", "") + ")", subQueries.result, mSubEnv, innerWhere, false);
 
             }
 
@@ -1107,7 +1107,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     select = recursiveWith + (isLogical ? syntax.getSelect(recName, SQLSession.stringExpr(keySelect, propertySelect), "", "", "", "", "")
                             : getGroupSelect(recName, keySelect, propertySelect, SetFact.<String>EMPTY(), havingSelect, SetFact.<String>EMPTY()));
                 }
-                return getSQLQuery("(" + select + ")", subQueries.result, mSubEnv, baseInitialWhere);
+                return getSQLQuery("(" + select + ")", subQueries.result, mSubEnv, baseInitialWhere, useRecursionFunction);
             }
 
             private SQLQuery getCTESource(boolean wrapExpr) {

@@ -1227,7 +1227,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     // системные вызовы
     public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(String select, OperationOwner owner, StaticExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<String, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<String, ? extends Reader> propertyReaders) throws SQLException, SQLHandledException {
         ReadAllResultHandler<K, V> result = new ReadAllResultHandler<K, V>();
-        executeSelect(new SQLQuery(select, MapFact.<String, SQLQuery>EMPTY(), env,keyReaders, propertyReaders, false), owner, paramObjects, queryExecEnv, transactTimeout, keyNames, propertyNames, result);
+        executeSelect(new SQLQuery(select, MapFact.<String, SQLQuery>EMPTY(), env,keyReaders, propertyReaders, false, false), owner, paramObjects, queryExecEnv, transactTimeout, keyNames, propertyNames, result);
         return result.terminate();
     }
 
