@@ -77,8 +77,8 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         assertNoRecheckBefore(); // assert что предыдущие не recheck
 
         Step nextStep = current;
-//        if(previousStep != null && nextStep.getIndex() < previousStep.getIndex()) // если current "вернулся назад", просто идем вперед, назад никогда смысла идти нет
-//            nextStep = getNextStep(previousStep, command, snapshot);
+        if(previousStep != null && nextStep.getIndex() < previousStep.getIndex()) // если current "вернулся назад", просто идем вперед, назад никогда смысла идти нет
+            nextStep = getNextStep(previousStep, command, snapshot);
         return new Snapshot(nextStep, previousStep, command, transactTimeout, materializedQueries);
     }
 
