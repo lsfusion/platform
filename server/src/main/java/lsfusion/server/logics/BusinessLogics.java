@@ -1149,7 +1149,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     List<AggregateProperty> getAggregateStoredProperties() {
-        return getAggregateStoredProperties(false);
+        return getAggregateStoredProperties(true);
     }
 
     List<AggregateProperty> getAggregateStoredProperties(boolean filterRecalculate) {
@@ -1157,7 +1157,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         try (final DataSession dataSession = getDbManager().createSession()) {
             for (Property property : getStoredProperties())
                 if (property instanceof AggregateProperty) {
-                    boolean recalculate = filterRecalculate || reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+                    boolean recalculate = !filterRecalculate || reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
                         result.add((AggregateProperty) property);
                 }
@@ -1177,12 +1177,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     @IdentityLazy
-    public ImOrderSet<CalcProperty> getStoredDataProperties() {
-        return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<Property>() {
-            public boolean contains(Property property) {
-                return property instanceof StoredDataProperty || property instanceof ClassDataProperty;
-            }
-        }));
+    public ImOrderSet<CalcProperty> getStoredDataProperties(final boolean filterRecalculate) {
+        try (final DataSession dataSession = getDbManager().createSession()) {
+            return BaseUtils.immutableCast(getPropertyList().filterOrder(new SFunctionSet<Property>() {
+                public boolean contains(Property property) {
+                    boolean recalculate = true;
+                    try {
+                        recalculate = !filterRecalculate || property.getDBName() == null || reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
+                    } catch (SQLException | SQLHandledException e) {
+                        systemLogger.error(e.getMessage());
+                    }
+                    return recalculate && (property instanceof StoredDataProperty || property instanceof ClassDataProperty);
+                }
+            }));
+        } catch (SQLException e) {
+            systemLogger.info(e.getMessage());
+        }
+        return SetFact.EMPTYORDER();
     }
 
     public ImSet<CustomClass> getCustomClasses() {
@@ -1421,7 +1432,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for(ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
             message += DataSession.checkTableClasses(implementTable, session, LM.baseClass);
         }
-        for (CalcProperty property : getStoredDataProperties()) // getStoredProperties()
+        for (CalcProperty property : getStoredDataProperties(false)) // getStoredProperties()
             message += DataSession.checkClasses(property, session, LM.baseClass);
         return message;
     }
@@ -1483,7 +1494,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public String recalculateClasses(SQLSession session, boolean isolatedTransactions) throws SQLException, SQLHandledException {
         recalculateExclusiveness(session, isolatedTransactions);
 
-        final List<String> messageList = new ArrayList<String>();
+        final List<String> messageList = new ArrayList<>();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         for(final ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
             DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
@@ -1499,7 +1510,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             });
         }
 
-        for (final CalcProperty property : getStoredDataProperties())
+        for (final CalcProperty property : getStoredDataProperties(true))
             DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
                     long start = System.currentTimeMillis();
