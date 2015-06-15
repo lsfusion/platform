@@ -93,7 +93,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
 
-        Map<Integer, SQLSession> sessionMap = SQLSession.getSQLSessionMap();
+        Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
         final Map<String, List<Object>> javaProcesses = getActiveJavaThreads();
         Map<String, List<Object>> sqlProcesses = syntaxType == SQLSyntaxType.POSTGRES ? getPostgresProcesses(context) : getMSSQLProcesses(context);
         int i = 0;
@@ -108,17 +108,18 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 "isActiveSQLProcess", "inTransactionSQLProcess", "computerProcess", "userProcess"));
         MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRowsSQL = MapFact.mExclMap();
 
-        for (final SQLSession sessionEntry : sessionMap.values()) {
-
-            if(sessionEntry.getActiveThread() != null) {
-                final String idThread = String.valueOf(sessionEntry.getActiveThread());
+        for (final List<Object> sessionThread : sessionThreadMap.values()) {
+            Integer activeThread = (Integer) sessionThread.get(0);
+            final boolean isInTransaction = (boolean) sessionThread.get(1);
+            if(activeThread != null) {
+                final String idThread = String.valueOf(activeThread);
                 final List<Object> sqlProcess = sqlProcesses.get(idThread);
+                Boolean skip = sqlProcess != null && !(Boolean) sqlProcess.get(5);
                 if (sqlProcess != null) {
                     //step2: exclAdd (sql1)
-                    DataObject rowKey = new DataObject(i, IntegerClass.instance);
-                    mRowsSQL.exclAdd(MapFact.singleton("key", rowKey), propsSQL.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
+                    mRowsSQL.exclAdd(MapFact.singleton("key", new DataObject(i, IntegerClass.instance)), propsSQL.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
                         public ObjectValue getMapValue(LCP prop) {
-                            return getSQLMapValue(prop, sqlProcess, idThread, sessionEntry);
+                            return getSQLMapValue(prop, sqlProcess, idThread, isInTransaction);
                         }
                     }));
                 }
@@ -126,10 +127,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
 
                 final List<Object> javaProcess = javaProcesses.get(idThread);
-                if (javaProcess != null) {
-                    //step2: exclAdd (java)
-                    DataObject rowKey = new DataObject(i, IntegerClass.instance);
-                    mRowsJava.exclAdd(MapFact.singleton("key", rowKey), propsJava.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
+                if (javaProcess != null && !skip) {
+                    //step2: exclAdd (java1)
+                    mRowsJava.exclAdd(MapFact.singleton("key", new DataObject(i, IntegerClass.instance)), propsJava.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
                         public ObjectValue getMapValue(LCP prop) {
                             return getJavaMapValue(prop, javaProcess, idThread);
                         }}));
@@ -208,7 +208,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         }
     }
 
-    private ObjectValue getSQLMapValue(LCP prop, List<Object> sqlProcess, String idThread, SQLSession sessionEntry) {
+    private ObjectValue getSQLMapValue(LCP prop, List<Object> sqlProcess, String idThread, Boolean baseInTransaction) {
         switch (prop.property.getName()) {
             case "idThreadProcess":
                 return idThread == null ? NullValue.instance : new DataObject(idThread);
@@ -232,10 +232,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 return isActive == null || !isActive ? NullValue.instance : new DataObject(true);
             case "inTransactionSQLProcess":
                 boolean fusionInTransaction = (Boolean) sqlProcess.get(6);
-                boolean baseInTransaction = sessionEntry != null && sessionEntry.isInTransaction();
-                if(sessionEntry != null)
+                if(baseInTransaction != null)
                     ServerLoggers.assertLog(fusionInTransaction != baseInTransaction, "FUSION AND BASE INTRANSACTION DIFFERS");
-                Boolean inTransaction = sessionEntry != null ? baseInTransaction : fusionInTransaction;
+                Boolean inTransaction = baseInTransaction != null ? baseInTransaction : fusionInTransaction;
                 return !inTransaction ? NullValue.instance : new DataObject(true);
             default:
                 return NullValue.instance;
@@ -271,7 +270,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     }
 
     private Map<String, List<Object>> getMSSQLProcesses(ExecutionContext context) throws SQLException, SQLHandledException {
-        Map<Integer, SQLSession> sessionMap = SQLSession.getSQLSessionMap();
+        Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
         String originalQuery = "Select A.session_id,B.start_time, A.[host_name], A.[login_name], C.client_net_address, text\n" +
                 "from sys.dm_exec_sessions A\n" +
                 "Left Join sys.dm_exec_requests B\n" +
@@ -314,13 +313,13 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
             String query = trim((String) entry.get("text"));
             Integer processId = (Integer) entry.get("session_id");
-            SQLSession sqlSession = sessionMap.get(processId);
+            List<Object> sessionThread = sessionThreadMap.get(processId);
             String userActiveTask = trim((String) entry.get("host_name"));
             String address = trim((String) entry.get("client_net_address"));
             Timestamp dateTime = (Timestamp) entry.get("start_time");
 
             if (!query.equals(originalQuery)) {
-                resultMap.put(getSQLThreadId(sqlSession, processId), Arrays.asList((Object) query, userActiveTask, null, address, dateTime, null, null));
+                resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, userActiveTask, null, address, dateTime, null, null));
             }
         }
         return resultMap;
@@ -358,7 +357,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
                 DynamicExecuteEnvironment.DEFAULT, 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
-        Map<Integer, SQLSession> sessionMap = SQLSession.getSQLSessionMap();
+        Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
 
         Map<String, List<Object>> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
@@ -372,24 +371,24 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             String state = trim((String) entry.get("state"));
             if (!query.equals(originalQuery)) {
 
-                SQLSession sqlSession = sessionMap.get(processId);
+                List<Object> sessionThread = sessionThreadMap.get(processId);
                 String userActiveTask = null;
                 String computerActiveTask = null;
-                if (sqlSession != null) {
+                if (sessionThread != null) {
                     userActiveTask = (String) findProperty("nameUser").read(context.getSession(),
-                            context.getSession().getObjectValue(context.getBL().authenticationLM.user, sqlSession.userProvider.getCurrentUser()));
+                            context.getSession().getObjectValue(context.getBL().authenticationLM.user, sessionThread.get(2)));
                     computerActiveTask = (String) findProperty("hostnameComputer").read(context.getSession(),
-                            context.getSession().getObjectValue(context.getBL().authenticationLM.computer, sqlSession.userProvider.getCurrentComputer()));
+                            context.getSession().getObjectValue(context.getBL().authenticationLM.computer, sessionThread.get(3)));
                 }
-                resultMap.put(getSQLThreadId(sqlSession, processId), Arrays.<Object>asList(query, userActiveTask, computerActiveTask, address, dateTime,
+                resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.<Object>asList(query, userActiveTask, computerActiveTask, address, dateTime,
                                 state.equals("active"), state.equals("idle in transaction")));
             }
         }
         return resultMap;
     }
 
-    private String getSQLThreadId(SQLSession sqlSession, Integer processId) {
-        return sqlSession != null && sqlSession.getActiveThread() != null ? String.valueOf(sqlSession.getActiveThread()) : ("s" + processId);
+    private String getSQLThreadId(List<Object> sessionThread, Integer processId) {
+        return sessionThread != null && sessionThread.get(0) != null ? String.valueOf(sessionThread.get(0)) : ("s" + processId);
     }
 
     private Map<String, List<Object>> getActiveJavaThreads() {

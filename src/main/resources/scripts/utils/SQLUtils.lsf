@@ -1,6 +1,6 @@
 MODULE SQLUtils;
 
-REQUIRE System, Authentication, Utils;
+REQUIRE System, Authentication, Utils, Time;
 
 getActiveTasksAction 'Обновить список активных процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveTasksActionProperty' () TOOLBAR;
 getAllTasksAction 'Обновить список всех процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetAllTasksActionProperty' () TOOLBAR;
@@ -81,8 +81,8 @@ blockingProcess 'Уровень' (child, parent) = RECURSION 1l IF idThreadProce
 isBlockingProcess 'Блокируется' (child, parent) = TRUE IF blockingProcess(child, parent);
 sumPlusOneBlockedProcess  (process) = GROUP SUM 1 IF isBlockingProcess(child, parent) BY parent;
 sumBlockedProcess 'Кол-во заблокированных процессов' (process) = sumPlusOneBlockedProcess(process) - 1;
-//deadlockProcess 'Deadlock' (process) = GROUP SUM 1 IF isBlockingProcess(child, parent) AND statusJavaProcess(parent) == 'RUNNABLE' BY parent;
-//isDeadlockProcess(process) = deadlockProcess(process) == 1;
+deadlockProcess (process) = GROUP SUM 1 IF isBlockingProcess(parent, child) AND statusJavaProcess(child) != 'BLOCKED' BY parent;
+isDeadlockProcess 'Deadlock' (process) = NOT deadlockProcess(process) AND process IS INTEGER;
 sumPlusOneBlockingProcess 'Кол-во блокирующих процессов' (process) = GROUP SUM 1 IF isBlockingProcess(parent, child) BY parent;
 sumBlockingProcess 'Глубина блокировки' (process) = sumPlusOneBlockingProcess(process) - 1;
 
@@ -91,12 +91,24 @@ activeProcess 'Активный' (i) = (querySQLProcess(i) AND isActiveSQLProces
                                           AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1)
                                           AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1)
                                           AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketInputStream.socketRead0') == 1)
-                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0') == 1));
+                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0') == 1)
+                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketOutputStream.socketWrite') == 1)                                        
+                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.PlainSocketImpl') == 1));
 blockedProcess 'Заблокированный' (i) = statusJavaProcess(i) == 'BLOCKED' AND i IS INTEGER;             
 
-//isSQLProcess(i) = startsWith(idThreadProcess(i), 's');// OR (querySQLProcess(i) AND stateSQLProcess(i) == StateProcess.active);
-//isJavaProcess(i) = NOT isSQLProcess(i);
-backgroundProcess(i) = IF isActiveSQLProcess(i) OR startsWith(idThreadProcess(i), 's') THEN RGB(255, 255, 240) ELSE RGB(240, 255, 255);  
+deltaDateTimeProcess(i) = subtractSeconds(dateTimeSQLProcess(i), currentDateTime());
+sqlColorProcess(i) = CASE
+                                    WHEN deltaDateTimeProcess(i) > 90 THEN RGB(255, 160, 0)
+                                    WHEN deltaDateTimeProcess(i) > 80 THEN RGB(255, 255, 30)
+                                    WHEN deltaDateTimeProcess(i) > 70 THEN RGB(255, 255, 60)
+                                    WHEN deltaDateTimeProcess(i) > 60 THEN RGB(255, 255, 90)
+                                    WHEN deltaDateTimeProcess(i) > 50 THEN RGB(255, 255, 120)
+                                    WHEN deltaDateTimeProcess(i) > 40 THEN RGB(255, 255, 150)
+                                    WHEN deltaDateTimeProcess(i) > 30 THEN RGB(255, 255, 180)
+                                    WHEN deltaDateTimeProcess(i) > 20 THEN RGB(255, 255, 210)
+                                    WHEN i IS INTEGER THEN RGB(255, 255, 240)
+                                      ;
+backgroundProcess(i) = IF isActiveSQLProcess(i) OR startsWith(idThreadProcess(i), 's') THEN sqlColorProcess(i) ELSE RGB(240, 255, 255);  
                    
 cancelProcess 'Снять процесс' (i) = ACTION {
     IF isActiveSQLProcess(i) THEN cancelSQLProcess(i) ELSE cancelJavaProcess(i);
@@ -106,14 +118,14 @@ killProcess 'Убить процесс' (i) = ACTION {
     IF isActiveSQLProcess(i) THEN killSQLProcess(i) ELSE killJavaProcess(i);
     updateProcessMonitorAction();
 }
-                             
+showExtraButtons(i) = isActiveSQLProcess(i) AND statusJavaProcess(i);                             
 FORM processMonitor 'Монитор процессов'
     OBJECTS i = INTEGER
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, computerProcess, userProcess,
                            querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                            stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
                            lockOwnerIdJavaProcess, lockOwnerNameJavaProcess
-    PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i), killJavaProcess SHOWIF isActiveSQLProcess(i)                       
+    PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     FILTERS idThreadProcess(i)
     FILTERGROUP active
         FILTER 'Все активные' activeProcess(i) DEFAULT
@@ -121,17 +133,16 @@ FORM processMonitor 'Монитор процессов'
         FILTER 'Активные (SQL)' isActiveSQLProcess(i)
     
     TREE blocking i2 = INTEGER PARENT threadOwnerProcess
-    PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i) sumBlockedProcess,
+    PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlockedProcess,
                             activeProcess, idThreadProcess, computerProcess, userProcess,
                             querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                             stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
                             lockOwnerIdJavaProcess, lockOwnerNameJavaProcess
-    PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i), killJavaProcess SHOWIF isActiveSQLProcess(i)  
+    PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
     FILTERS idThreadProcess(i2), (activeProcess(i2) AND sumBlockedProcess(i2) > 0) OR blockedProcess(i2)
     
     OBJECTS blocked = INTEGER, blocking = INTEGER
-    PROPERTIES(blocked) READONLY idThreadProcess, 
-                                 //deadlockProcess, isDeadlockProcess, 
+    PROPERTIES(blocked) READONLY idThreadProcess, isDeadlockProcess, 
                                  sumBlockingProcess, computerProcess, userProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess,
                                  stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
@@ -140,11 +151,12 @@ FORM processMonitor 'Монитор процессов'
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                                  stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
                                  lockOwnerIdJavaProcess, lockOwnerNameJavaProcess
+    PROPERTIES(blocking) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(blocking), killJavaProcess SHOWIF isActiveSQLProcess(blocking)                                   
     FILTERS idThreadProcess(blocked), sumBlockingProcess(blocked) > 0, sumBlockedProcess(blocking) > 0, isBlockingProcess(blocked, blocking) AND blocked != blocking
-    FILTERGROUP nonBlocking FILTER 'Только не блокирующие' sumBlockedProcess(blocked) == 0 DEFAULT //OR isDeadlockProcess(blocked)
+    FILTERGROUP nonBlocking FILTER 'Только не блокирующие' sumBlockedProcess(blocked) == 0 OR isDeadlockProcess(blocked) DEFAULT 
     ORDER BY sumBlockingProcess(blocked) DESC, sumBlockingProcess(blocking) DESC
     
-    PROPERTIES() updateProcessMonitorAction//, test1Action, test2Action, test3Action,test4Action
+    PROPERTIES() updateProcessMonitorAction//, test1Action, test2Action, test3Action, test4Action
 ;
 
 DESIGN processMonitor {
