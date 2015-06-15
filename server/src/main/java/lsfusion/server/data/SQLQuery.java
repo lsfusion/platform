@@ -305,6 +305,9 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     }
 
     public int getLength() {
-        return command.length();
+        int result = command.length();
+        for(SQLQuery subQuery : subQueries.valueIt())
+            result += subQuery.getLength();
+        return result;
     }
 }
