@@ -9,14 +9,15 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.classes.*;
+import lsfusion.server.classes.DateTimeClass;
+import lsfusion.server.classes.IntegerClass;
+import lsfusion.server.classes.StringClass;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
-import lsfusion.server.data.query.DynamicExecuteEnvironment;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
 import lsfusion.server.data.type.ParseInterface;
@@ -75,8 +76,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         //step1: props, mRows (all)
         ImOrderSet<LCP> propsAll = getProps(findProperties("idThreadProcess", "computerProcess", "userProcess",
                 "querySQLProcess", "addressUserSQLProcess", "dateTimeSQLProcess", "isActiveSQLProcess", "inTransactionSQLProcess",
-                "stackTraceJavaProcess", "nameJavaProcess", "statusJavaProcess", "lockNameJavaProcess", "lockOwnerIdJavaProcess",
-                "lockOwnerNameJavaProcess"));
+                "stackTraceJavaProcess", "nameJavaProcess", "statusJavaProcess", "lockNameJavaProcess", "lockOwnerIdProcess",
+                "lockOwnerNameProcess"));
         MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRowsAll = MapFact.mExclMap();
 
         for (int i = 0; i < previousCount; i++) {
@@ -100,12 +101,12 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         //step1: props, mRows (java)
         ImOrderSet<LCP> propsJava = getProps(findProperties("idThreadProcess", "stackTraceJavaProcess", "nameJavaProcess", "statusJavaProcess",
-                "lockNameJavaProcess", "lockOwnerIdJavaProcess", "lockOwnerNameJavaProcess", "computerProcess", "userProcess"));
+                "lockNameJavaProcess", "lockOwnerIdProcess", "lockOwnerNameProcess", "computerProcess", "userProcess"));
         MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRowsJava = MapFact.mExclMap();
 
         //step1: props, mRows (sql)
         ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess", "querySQLProcess", "addressUserSQLProcess", "dateTimeSQLProcess",
-                "isActiveSQLProcess", "inTransactionSQLProcess", "computerProcess", "userProcess"));
+                "isActiveSQLProcess", "inTransactionSQLProcess", "computerProcess", "userProcess", "lockOwnerIdProcess", "lockOwnerNameProcess"));
         MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRowsSQL = MapFact.mExclMap();
 
         for (final List<Object> sessionThread : sessionThreadMap.values()) {
@@ -191,12 +192,12 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             case "lockNameJavaProcess":
                 String lockName = (String) javaProcess.get(3);
                 return lockName == null ? NullValue.instance : new DataObject(lockName);
-            case "lockOwnerIdJavaProcess":
+            case "lockOwnerIdProcess":
                 String lockOwnerId = (String) javaProcess.get(4);
                 return lockOwnerId == null ? NullValue.instance : new DataObject(lockOwnerId);
-            case "lockOwnerNameJavaProcess":
-                String lockOwnerNameJavaProcess = (String) javaProcess.get(5);
-                return lockOwnerNameJavaProcess == null ? NullValue.instance : new DataObject(lockOwnerNameJavaProcess);
+            case "lockOwnerNameProcess":
+                String lockOwnerName = (String) javaProcess.get(5);
+                return lockOwnerName == null ? NullValue.instance : new DataObject(lockOwnerName);
             case "computerProcess":
                 String computer = (String) javaProcess.get(6);
                 return computer == null ? NullValue.instance : new DataObject(computer);
@@ -236,6 +237,12 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     ServerLoggers.assertLog(fusionInTransaction != baseInTransaction, "FUSION AND BASE INTRANSACTION DIFFERS");
                 Boolean inTransaction = baseInTransaction != null ? baseInTransaction : fusionInTransaction;
                 return !inTransaction ? NullValue.instance : new DataObject(true);
+            case "lockOwnerIdProcess":
+                String lockOwnerId = (String) sqlProcess.get(7);
+                return lockOwnerId == null ? NullValue.instance : new DataObject(lockOwnerId);
+            case "lockOwnerNameProcess":
+                String lockOwnerName = (String) sqlProcess.get(8);
+                return lockOwnerName == null ? NullValue.instance : new DataObject(lockOwnerName);
             default:
                 return NullValue.instance;
         }
@@ -319,13 +326,16 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             Timestamp dateTime = (Timestamp) entry.get("start_time");
 
             if (!query.equals(originalQuery)) {
-                resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, userActiveTask, null, address, dateTime, null, null));
+                resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, userActiveTask, null,
+                        address, dateTime, null, null, null, null));
             }
         }
         return resultMap;
     }
 
     private Map<String, List<Object>> getPostgresProcesses(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+        Map<Integer, List<Object>> lockingMap = getPostgresLockMap(context);
+
         String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s'"/* + (onlyActive ? " AND state!='idle'" : "")*/, context.getBL().getDataBaseName());
 
         MExclSet<String> keyNames = SetFact.mExclSet();
@@ -380,9 +390,76 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     computerActiveTask = (String) findProperty("hostnameComputer").read(context.getSession(),
                             context.getSession().getObjectValue(context.getBL().authenticationLM.computer, sessionThread.get(3)));
                 }
+                List<Object> lockingProcess = lockingMap.get(processId);
+                String lockOwnerId = lockingProcess == null ? null : getSQLThreadId(sessionThreadMap.get(lockingProcess.get(0)), (Integer) lockingProcess.get(0));
+                String lockOwnerName = lockingProcess == null ? null : (String) lockingProcess.get(1);
                 resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.<Object>asList(query, userActiveTask, computerActiveTask, address, dateTime,
-                                state.equals("active"), state.equals("idle in transaction")));
+                                state.equals("active"), state.equals("idle in transaction"), lockOwnerId, lockOwnerName));
             }
+        }
+        return resultMap;
+    }
+
+    private Map<Integer, List<Object>> getPostgresLockMap(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+        String originalQuery = "SELECT blocked_locks.pid     AS blocked_pid,\n" +
+                "         blocked_activity.usename  AS blocked_user,\n" +
+                "         blocking_locks.pid     AS blocking_pid,\n" +
+                "         blocking_activity.usename AS blocking_user,\n" +
+                "         blocked_activity.query    AS blocked_statement,\n" +
+                "         blocking_activity.query   AS blocking_statement\n" +
+                "   FROM  pg_catalog.pg_locks         blocked_locks\n" +
+                "    JOIN pg_catalog.pg_stat_activity blocked_activity  ON blocked_activity.pid = blocked_locks.pid\n" +
+                "    JOIN pg_catalog.pg_locks         blocking_locks \n" +
+                "        ON blocking_locks.locktype = blocked_locks.locktype\n" +
+                "        AND blocking_locks.DATABASE IS NOT DISTINCT FROM blocked_locks.DATABASE\n" +
+                "        AND blocking_locks.relation IS NOT DISTINCT FROM blocked_locks.relation\n" +
+                "        AND blocking_locks.page IS NOT DISTINCT FROM blocked_locks.page\n" +
+                "        AND blocking_locks.tuple IS NOT DISTINCT FROM blocked_locks.tuple\n" +
+                "        AND blocking_locks.virtualxid IS NOT DISTINCT FROM blocked_locks.virtualxid\n" +
+                "        AND blocking_locks.transactionid IS NOT DISTINCT FROM blocked_locks.transactionid\n" +
+                "        AND blocking_locks.classid IS NOT DISTINCT FROM blocked_locks.classid\n" +
+                "        AND blocking_locks.objid IS NOT DISTINCT FROM blocked_locks.objid\n" +
+                "        AND blocking_locks.objsubid IS NOT DISTINCT FROM blocked_locks.objsubid\n" +
+                "        AND blocking_locks.pid != blocked_locks.pid\n" +
+                "    JOIN pg_catalog.pg_stat_activity blocking_activity ON blocking_activity.pid = blocking_locks.pid\n" +
+                "   WHERE NOT blocked_locks.granted";
+
+        MExclSet<String> keyNames = SetFact.mExclSet();
+        keyNames.exclAdd("numberrow");
+        keyNames.immutable();
+
+        MExclMap<String, Reader> keyReaders = MapFact.mExclMap();
+        keyReaders.exclAdd("numberrow", new CustomReader());
+        keyReaders.immutable();
+
+        MExclSet<String> propertyNames = SetFact.mExclSet();
+        propertyNames.exclAdd("blocked_pid");
+        propertyNames.exclAdd("blocked_user");
+        propertyNames.exclAdd("blocking_pid");
+        propertyNames.exclAdd("blocking_user");
+        propertyNames.exclAdd("blocked_statement");
+        propertyNames.exclAdd("blocking_statement");
+        propertyNames.immutable();
+
+        MExclMap<String, Reader> propertyReaders = MapFact.mExclMap();
+        propertyReaders.exclAdd("blocked_pid", IntegerClass.instance);
+        propertyReaders.exclAdd("blocked_user", StringClass.get(100));
+        propertyReaders.exclAdd("blocking_pid", IntegerClass.instance);
+        propertyReaders.exclAdd("blocking_user", StringClass.get(100));
+        propertyReaders.exclAdd("blocked_statement", StringClass.get(100));
+        propertyReaders.exclAdd("blocking_statement", StringClass.get(100));
+        propertyReaders.immutable();
+
+        ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
+                0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
+
+        Map<Integer, List<Object>> resultMap = new HashMap<>();
+        for (Object rsValue : rs.values()) {
+            HMap entry = (HMap) rsValue;
+            Integer blocked_pid = (Integer) entry.get("blocked_pid");
+            Integer blocking_pid = (Integer) entry.get("blocking_pid");
+            String blocking_statement = trim((String) entry.get("blocking_statement"), 100);
+            resultMap.put(blocked_pid, Arrays.<Object>asList(blocking_pid, blocking_statement));
         }
         return resultMap;
     }
@@ -435,5 +512,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
     private String trim(String input) {
         return input == null ? null : input.trim();
+    }
+
+    protected String trim(String input, Integer length) {
+        return input == null ? null : (length == null || length >= input.trim().length() ? input.trim() : input.trim().substring(0, length));
     }
 }
