@@ -267,12 +267,12 @@ public abstract class BaseExpr extends Expr {
         return result;
     }
 
-    public boolean isTableIndexed() {
+    public boolean isIndexed() {
         return false;
     }
 
     public boolean hasALotOfNulls() {
-        assert isTableIndexed();
+        assert isIndexed();
         return false;
     }
     

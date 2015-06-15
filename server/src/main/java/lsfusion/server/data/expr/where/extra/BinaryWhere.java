@@ -1,6 +1,7 @@
 package lsfusion.server.data.expr.where.extra;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -70,9 +71,12 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return packOpMap.get(0).compare(packOpMap.get(1), getCompare());
     }
 
-    public static boolean needIndexedJoin(BaseExpr expr, ImOrderSet<Expr> orderTop, BaseExpr valueExpr) {
-        if((valueExpr == null || valueExpr.isValue()) && expr.isTableIndexed()) {
-            if(orderTop.contains(expr)) {
+    public static boolean needIndexedJoin(BaseExpr expr, ImOrderSet<Expr> orderTop, BaseExpr valueExpr, Result<Boolean> resultIsOrderTop) {
+        if((valueExpr == null || valueExpr.isValue()) && expr.isIndexed()) {
+            boolean isOrderTop = orderTop.contains(expr);
+            if(resultIsOrderTop != null)
+                resultIsOrderTop.set(isOrderTop);
+            if(isOrderTop) {
                 if (valueExpr == null)
                     return !expr.hasALotOfNulls();
                 else
@@ -91,10 +95,11 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
 
     public WhereJoin groupJoinsWheres(ImOrderSet<Expr> orderTop) {
         assert !getCompare().equals(Compare.EQUALS); // перегружена реализация по идее
-        if(needIndexedJoin(operator2, orderTop, operator1)) // для Like'ов тоже надо так как там может быть git индекс
-            return new ExprIndexedJoin(operator2, getCompare().reverse(), operator1, false);
-        if(needIndexedJoin(operator1, orderTop, operator2))
-            return new ExprIndexedJoin(operator1, getCompare(), operator2, false);
+        Result<Boolean> isOrderTop = new Result<>();
+        if(needIndexedJoin(operator2, orderTop, operator1, isOrderTop)) // для Like'ов тоже надо так как там может быть git индекс
+            return new ExprIndexedJoin(operator2, getCompare().reverse(), operator1, false, isOrderTop.result);
+        if(needIndexedJoin(operator1, orderTop, operator2, isOrderTop))
+            return new ExprIndexedJoin(operator1, getCompare(), operator2, false, isOrderTop.result);
         return null;
     }
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {

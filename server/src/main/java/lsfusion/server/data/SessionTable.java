@@ -59,7 +59,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     public StatKeys<KeyField> getStatKeys() {
         if(distinctKeys == null)
             return getStatKeys(this, count);
-        return StatKeys.create(new Stat(count), distinctKeys);
+        return StatKeys.createForTable(new Stat(count), distinctKeys);
     }
 
     public ImMap<PropertyField,PropStat> getStatProps() {

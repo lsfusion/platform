@@ -68,7 +68,7 @@ public class NotNullKeyExpr extends ParamExpr implements NotNullExprInterface {
     }
 
     @Override
-    public boolean isTableIndexed() {
+    public boolean isIndexed() {
         throw new RuntimeException("not supported yet");
     }
 

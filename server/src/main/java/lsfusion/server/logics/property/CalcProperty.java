@@ -1148,18 +1148,12 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
     public Expr changeExpr;
 
-    public <D extends PropertyInterface> void setEventChange(boolean valueChanged, final IncrementType incrementType, CalcPropertyImplement<D, CalcPropertyInterfaceImplement<T>> valueImplement, ImList<CalcPropertyMapImplement<?, T>> whereImplements, ImCol<CalcPropertyMapImplement<?, T>> onChangeImplements) {
-        // нужно onChange обернуть в getChange, and where, and change implement'ы
-        if(!valueChanged)
-            valueImplement = new CalcPropertyImplement<D, CalcPropertyInterfaceImplement<T>>(valueImplement.property.getOld(ChangeEvent.scope), valueImplement.mapping); // вычисляемое событие, нужно значение из базы
+    public <D extends PropertyInterface> void setEventChange(CalcPropertyMapImplement<D, T> valueImplement, ImList<CalcPropertyMapImplement<?, T>> whereImplements, ImCol<CalcPropertyMapImplement<?, T>> onChangeImplements) {
 
         ImCol<CalcPropertyMapImplement<?, T>> onChangeWhereImplements = onChangeImplements.mapColValues(new GetValue<CalcPropertyMapImplement<?, T>, CalcPropertyMapImplement<?, T>>() {
                     public CalcPropertyMapImplement<?, T> getMapValue(CalcPropertyMapImplement<?, T> value) {
-                        return value.mapChanged(incrementType, ChangeEvent.scope);
-                    }}).mergeCol(CalcPropertyMapImplement.filter(valueImplement.mapping.values()).mapColValues(new GetValue<CalcPropertyMapImplement<?, T>, CalcPropertyMapImplement<?, T>>() {
-                    public CalcPropertyMapImplement<?, T> getMapValue(CalcPropertyMapImplement<?, T> value) {
-                        return value.mapChanged(IncrementType.CHANGED, ChangeEvent.scope);
-                    }}));
+                        return value.mapChanged(IncrementType.SETCHANGED, ChangeEvent.scope);
+                    }});
 
         CalcPropertyMapImplement<?, T> where;
         if(onChangeWhereImplements.size() > 0) {
@@ -1174,7 +1168,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
             if(whereImplements.size() > 1)
                 where = DerivedProperty.createAnd(interfaces, where, whereImplements.subList(1, whereImplements.size()).getCol());
         }
-        setEventChange(null, false, DerivedProperty.createJoin(valueImplement), where);
+        setEventChange(null, false, valueImplement, where);
     }
 
     public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, CalcPropertyInterfaceImplement<T> valueImplement, CalcPropertyMapImplement<W, T> whereImplement) {

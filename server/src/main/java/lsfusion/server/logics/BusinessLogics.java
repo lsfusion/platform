@@ -610,6 +610,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             setupPropertyNotifications(sql);
             
         } catch (Exception ignored) {
+            ignored = ignored;
         }
 
     }

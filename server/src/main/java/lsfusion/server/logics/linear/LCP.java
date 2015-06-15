@@ -133,54 +133,13 @@ public class LCP<T extends PropertyInterface> extends LP<T, CalcProperty<T>> {
         }
     }
 
-    public <D extends PropertyInterface> void setEventChangePrev(LCP<D> valueProperty, Object... params) {
-        setEventChange(false, valueProperty, params);
-    }
+    public <D extends PropertyInterface> void setEventChange(LCP<D> valueProperty, int whereNum, Object... params) {
 
-    public <D extends PropertyInterface> void setEventChangeNew(LCP<D> valueProperty, Object... params) {
-        setEventChange(true, valueProperty, params); // assert что все интерфейсы есть
-    }
-
-    private <D extends PropertyInterface> void setEventChange(boolean valueChanged, LCP<D> valueProperty, Object... params) {
-        setEventChange(valueChanged, valueProperty, 0, params);
-    }
-
-    private <D extends PropertyInterface> void setEventChange(boolean valueChanged, LCP<D> valueProperty, int whereNum, Object... params) {
-        setEventChange(valueChanged, false, valueProperty, whereNum, params);
-    }
-
-    public <D extends PropertyInterface> void setEventChangePrevSet(LCP<D> valueProperty, Object... params) {
-        setEventChangeSet(false, valueProperty, params);
-    }
-
-    public <D extends PropertyInterface> void setEventChangeNewSet(LCP<D> valueProperty, Object... params) {
-        setEventChangeSet(true, valueProperty, params); // params только с интерфейсами
-    }
-
-    private <D extends PropertyInterface> void setEventChangeSet(boolean valueChanged, LCP<D> valueProperty, Object... params) {
-        setEventChangeSet(valueChanged, 0, valueProperty, params);
-    }
-
-    // для DCProp
-    public <D extends PropertyInterface> void setEventChange(boolean valueChanged, int whereNum, LCP<D> valueProperty, Object... params) {
-        setEventChange(valueChanged, valueProperty, whereNum, params);
-    }
-
-    public <D extends PropertyInterface> void setEventChangeSet(boolean valueChanged, int whereNum, LCP<D> valueProperty, Object... params) {
-        setEventChange(valueChanged, true, valueProperty, whereNum, params);
-    }
-
-    private <D extends PropertyInterface> void setEventChange(boolean valueChanged, boolean setChanged, LCP<D> valueProperty, int whereNum, Object... params) {
-        int intValue = valueProperty.listInterfaces.size();
         ImList<CalcPropertyInterfaceImplement<T>> defImplements = readCalcImplements(listInterfaces, params);
 
-        property.setEventChange(valueChanged, setChanged ? IncrementType.SET : IncrementType.SETCHANGED, mapCalcImplement(valueProperty, defImplements.subList(0, intValue)),
-                BaseUtils.<ImList<CalcPropertyMapImplement<?, T>>>immutableCast(defImplements.subList(intValue, intValue + whereNum)),
-                BaseUtils.<ImList<CalcPropertyMapImplement<?, T>>>immutableCast(defImplements.subList(intValue + whereNum, defImplements.size())).getCol());
-    }
-
-    public <D extends PropertyInterface> void setEventChange(Object... params) {
-        setEventChange(null, false, params);
+        property.setEventChange(LogicsModule.mapCalcListImplement(valueProperty, listInterfaces),
+                BaseUtils.<ImList<CalcPropertyMapImplement<?, T>>>immutableCast(defImplements.subList(0, whereNum)),
+                BaseUtils.<ImList<CalcPropertyMapImplement<?, T>>>immutableCast(defImplements.subList(whereNum, defImplements.size())).getCol());
     }
 
     public <D extends PropertyInterface> void setEventChange(LogicsModule lm, boolean action, Object... params) {

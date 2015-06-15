@@ -235,11 +235,11 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     }    
     
     // минимум изменения, абсолютной статистики, количества сршдвкутэjd    
-    private static int[] getPriority(int rdmin, int rdmax, int r, int oc, int c) {
+    private static int[] getPriority(int rdmin, int oc, int rdmax, int r, int c) {
         if(collapseStats)
-            return new int[] {rdmin, rdmax, r, oc, c};
+            return new int[] {rdmin, oc, rdmax, r, c};
 
-        return new int[] {rdmin, 0, rdmin == 0 ? 0 : r, oc, c};
+        return new int[] {rdmin, oc, 0, rdmin == 0 ? 0 : r, c};
     }
 
     private static int[] getMaxPriority() {
@@ -249,9 +249,9 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
     private static int[] getMinPriority(boolean saveStat) {
         if(collapseStats) {
             if (saveStat)
-                return getPriority(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE); // при сохранении статистики главное не терять статистику
+                return getPriority(0, 0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE); // при сохранении статистики главное не терять статистику
             else
-                return getPriority(0, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE); // при не сохранении статистики надо хотя бы чтобы одна сохранилась поддержать
+                return getPriority(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE); // при не сохранении статистики надо хотя бы чтобы одна сохранилась поддержать
         }
 
         return getPriority(0, 0, 0, 0, 0);
@@ -316,7 +316,7 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
                 assert ocm <= oc1 && ocm <= oc2;
 
                 assert cm <= c1 && cm <= c2;
-                priority = GroupJoinsWheres.getPriority(getRowMinDiff(), getRowMaxDiff(), rows, BaseUtils.min(oc1 - ocm, oc2 - ocm), BaseUtils.min(c1 - cm, c2 - cm));
+                priority = GroupJoinsWheres.getPriority(getRowMinDiff(), BaseUtils.min(oc1 - ocm, oc2 - ocm), getRowMaxDiff(), rows, BaseUtils.min(c1 - cm, c2 - cm));
             }
             return priority;
         }

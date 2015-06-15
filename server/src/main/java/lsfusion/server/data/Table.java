@@ -80,7 +80,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             }});
         DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>(statMap);
 
-        return StatKeys.create(stat, distinctKeys);
+        return StatKeys.createForTable(stat, distinctKeys);
     }
 
     protected static ImMap<PropertyField, PropStat> getStatProps(Table table, final Stat stat) { // для мн-го наследования
@@ -754,13 +754,13 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             }
 
             @Override
-            public boolean isTableIndexed() {
-                return isIndexed(property);
+            public boolean isIndexed() {
+                return Table.this.isIndexed(property);
             }
 
             @Override
             public boolean hasALotOfNulls() {
-                assert isTableIndexed();
+                assert isIndexed();
                 Stat notNull = getStatProps().get(property).notNull;
                 return notNull != null && notNull.less(Table.this.getStatKeys().rows);
             }

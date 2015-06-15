@@ -1191,6 +1191,36 @@ public class Settings {
         this.disableGroupNotJoinsWheres = disableGroupNotJoinsWheres;
     }
 
+    private int defaultTypeExecuteEnvironment = 1;
+
+    public int getDefaultTypeExecuteEnvironment() {
+        return defaultTypeExecuteEnvironment;
+    }
+
+    public void setDefaultTypeExecuteEnvironment(int defaultTypeExecuteEnvironment) {
+        this.defaultTypeExecuteEnvironment = defaultTypeExecuteEnvironment;
+    }
+
+    private int timeoutNanosPerRow = 1;
+
+    public int getTimeoutNanosPerRow() {
+        return timeoutNanosPerRow;
+    }
+
+    public void setTimeoutNanosPerRow(int timeoutNanosPerRow) {
+        this.timeoutNanosPerRow = timeoutNanosPerRow;
+    }
+
+    private int timeoutIncreaseCoeff = 2;
+
+    public int getTimeoutIncreaseCoeff() {
+        return timeoutIncreaseCoeff;
+    }
+
+    public void setTimeoutIncreaseCoeff(int timeoutIncreaseCoeff) {
+        this.timeoutIncreaseCoeff = timeoutIncreaseCoeff;
+    }
+
     private int explainThreshold = 100;
 
     public int getExplainThreshold() {

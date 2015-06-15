@@ -6,7 +6,11 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.server.Settings;
+import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.data.expr.query.Stat;
+import lsfusion.server.data.query.MaterializedQuery;
 import lsfusion.server.data.query.StaticExecuteEnvironment;
+import lsfusion.server.data.query.stat.ExecCost;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
 
@@ -17,11 +21,28 @@ import java.sql.SQLException;
 public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
 
     protected final String command;
+    public final ExecCost baseCost;
     public final ImMap<String, SQLQuery> subQueries;
     protected final StaticExecuteEnvironment env;
 
-    public SQLCommand(String command, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env) {
+    @IdentityLazy
+    public ExecCost getCost(ImMap<SQLQuery, Stat> materializedQueries) {
+        ExecCost result = baseCost;
+        for(SQLQuery subQuery : subQueries.valueIt()) {
+            ExecCost subQueryCost;
+            Stat matStat = materializedQueries.get(subQuery);
+            if(matStat != null)
+                subQueryCost = new ExecCost(matStat);
+            else
+                subQueryCost = subQuery.getCost(materializedQueries);
+            result = result.or(subQueryCost);
+        }
+        return result;
+    }
+
+    public SQLCommand(String command, ExecCost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env) {
         this.command = command;
+        this.baseCost = baseCost;
         this.subQueries = subQueries;
         this.env = env;
     }
@@ -30,21 +51,23 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
         return false;
     }
 
-    public PreParsedStatement preparseStatement(final boolean parseParams, final ImMap<String, ParseInterface> paramObjects, final SQLSyntax syntax, final boolean isVolatileStats, final ImMap<SQLQuery, String> materializedQueries, final boolean usedRecursion) {
+    public PreParsedStatement preparseStatement(final boolean parseParams, final ImMap<String, ParseInterface> paramObjects, final SQLSyntax syntax, final boolean isVolatileStats, final ImMap<SQLQuery, MaterializedQuery> materializedQueries, final boolean usedRecursion) {
+        final StringBuilder envString = new StringBuilder();
+
         ImMap<String, ParsedString> parsedSubQueries = subQueries.mapValues(new GetValue<ParsedString, SQLQuery>() {
             public ParsedString getMapValue(SQLQuery value) {
-                String tableName = materializedQueries.get(value);
-                if(tableName != null)
-                    return new ParsedString(tableName);
+                MaterializedQuery matQuery = materializedQueries.get(value);
+                if(matQuery != null)
+                    return new ParsedString(matQuery.getParsedString(syntax, envString, usedRecursion));
 
                 ParsedParamString result = value.preparseStatement(parseParams, paramObjects, syntax, isVolatileStats, materializedQueries, usedRecursion).getString(syntax);
                 if(isRecursionFunction())
                     result = result.wrapSubQueryRecursion(syntax);
                 return result;
+
             }
         });
 
-        StringBuilder envString = new StringBuilder();
         ImFilterValueMap<String, ParsedString> mvSafeStrings = paramObjects.mapFilterValues();
         ImFilterValueMap<String, Type> mvNotSafeTypes = paramObjects.mapFilterValues();
         for(int i=0,size=paramObjects.size();i<size;i++) {

@@ -55,21 +55,28 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         return new PropertyChange<P>(map.join(mapKeys), join.getExpr(value), join.getWhere());
     }
 
-    public SessionTableUsage(ImOrderSet<K> keys, ImOrderSet<V> properties, final Type.Getter<K> keyType, final Type.Getter<V> propertyType) {
-        ImRevMap<K, KeyField> revMapKeys = keys.mapOrderRevValues(new GetIndexValue<KeyField, K>() {
+    public static <K> ImRevMap<KeyField, K> genKeys(ImOrderSet<K> keys, final Type.Getter<K> keyType) {
+        return keys.mapOrderRevKeys(new GetIndexValue<KeyField, K>() {
             public KeyField getMapValue(int i, K value) {
                 return new KeyField("k" + i, keyType.getType(value));
-            }});
-        mapKeys = revMapKeys.reverse();
-
-        mapProps = properties.mapOrderRevKeys(new GetIndexValue<PropertyField, V>() { // нужен детерминированный порядок, хотя бы для StructChanges
-            public PropertyField getMapValue(int i, V value) {
-                return new PropertyField("p" + i, propertyType.getType(value));
-            }});
-
-        table = new SessionRows(keys.mapOrder(revMapKeys), mapProps.keys());
+            }
+        });
     }
 
+    public static <V> ImRevMap<PropertyField, V> genProps(ImOrderSet<V> properties, final Type.Getter<V> propertyType) {
+        return properties.mapOrderRevKeys(new GetIndexValue<PropertyField, V>() { // нужен детерминированный порядок, хотя бы для StructChanges
+            public PropertyField getMapValue(int i, V value) {
+                return new PropertyField("p" + i, propertyType.getType(value));
+            }
+        });
+    }
+
+    public SessionTableUsage(ImOrderSet<K> keys, ImOrderSet<V> properties, final Type.Getter<K> keyType, final Type.Getter<V> propertyType) {
+        mapKeys = genKeys(keys, keyType);
+        mapProps = genProps(properties, propertyType);
+
+        table = new SessionRows(keys.mapOrder(mapKeys.reverse()), mapProps.keys());
+    }
 
     public SessionTableUsage(SQLSession sql, final Query<K,V> query, BaseClass baseClass, QueryEnvironment env,
                              final ImMap<K, Type> keyTypes, final ImMap<V, Type> propertyTypes) throws SQLException, SQLHandledException { // здесь порядок особо не важен, так как assert что getUsage'а не будет

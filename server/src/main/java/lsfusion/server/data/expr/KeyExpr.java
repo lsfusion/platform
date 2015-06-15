@@ -54,7 +54,7 @@ public class KeyExpr extends ParamExpr {
     public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
     }
 
-    public boolean isTableIndexed() {
+    public boolean isIndexed() {
         return true;
     }
 

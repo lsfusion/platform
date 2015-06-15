@@ -24,7 +24,6 @@ import lsfusion.server.data.query.innerjoins.GroupJoinsWhere;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.*;
 import lsfusion.server.data.type.ClassReader;
-import lsfusion.server.data.type.Reader;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -34,7 +33,6 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
-import org.apache.xmlbeans.impl.common.XPath;
 
 import java.sql.SQLException;
 
@@ -301,15 +299,12 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public CompiledQuery<K,V> compile(SQLSyntax syntax, SubQueryContext subcontext) {
-        return compile(syntax, MapFact.<V, Boolean>EMPTYORDER(), 0, subcontext);
-    }
-    public CompiledQuery<K,V> compile(SQLSyntax syntax, SubQueryContext subcontext, boolean recursive) {
-        return compile(syntax, MapFact.<V, Boolean>EMPTYORDER(), 0, subcontext, recursive);
+        return compile(syntax, MapFact.<V, Boolean>EMPTYORDER(), LimitOptions.NOLIMIT, subcontext);
     }
     @IdentityLazy
     @Pack
     @Message("message.core.query.compile")
-    public CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer selectTop, SubQueryContext subcontext, boolean noExclusive) {
+    public CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, LimitOptions selectTop, SubQueryContext subcontext, boolean noExclusive) {
         return new CompiledQuery<K,V>(this, syntax, orders, selectTop, subcontext, noExclusive);
     }
 

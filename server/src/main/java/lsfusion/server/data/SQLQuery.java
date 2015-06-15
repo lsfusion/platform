@@ -1,11 +1,9 @@
 package lsfusion.server.data;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
-import lsfusion.base.ExtInt;
-import lsfusion.base.Provider;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -15,8 +13,11 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.data.query.*;
+import lsfusion.server.data.query.stat.ExecCost;
+import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.*;
+import lsfusion.server.session.SessionTableUsage;
 import org.apache.commons.lang.StringUtils;
 
 import java.sql.PreparedStatement;
@@ -25,8 +26,8 @@ import java.sql.SQLException;
 
 public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
-    public SQLQuery(String command, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, boolean union, boolean recursionFunction) {
-        super(command, subQueries, env);
+    public SQLQuery(String command, ExecCost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, boolean union, boolean recursionFunction) {
+        super(command, baseCost, subQueries, env);
         this.keyReaders = keyReaders;
         this.propertyReaders = propertyReaders;
         this.union = union;
@@ -40,8 +41,9 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
             }
         });
     }
+
     public SQLQuery translate(GetValue<String, String> translator) {
-        return new SQLQuery(translator.getMapValue(command), translate(subQueries, translator), env, keyReaders, propertyReaders, union, recursionFunction);
+        return new SQLQuery(translator.getMapValue(command), baseCost, translate(subQueries, translator), env, keyReaders, propertyReaders, union, recursionFunction);
     }
 
     final public ImMap<String, ? extends Reader> keyReaders;
@@ -155,10 +157,14 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         }
     }
 
-    public String readSelect(SQLSession session, QueryEnvironment env, ImMap<String, ParseInterface> queryParams, DynamicExecuteEnvironment queryExecEnv) throws SQLException, SQLHandledException {
+    public void outSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
+        ServerLoggers.exinfoLog(this + " " + queryParams + '\n' + readSelect(session, queryExecEnv, queryParams, transactTimeout, owner));
+    }
+
+    public String readSelect(SQLSession session, DynamicExecuteEnvironment queryExecEnv, ImMap<String, ParseInterface> queryParams, int transactTimeout, OperationOwner owner) throws SQLException, SQLHandledException {
         // выведем на экран
         ReadAllResultHandler<String, String> handler = new ReadAllResultHandler<String, String>();
-        session.executeSelect(this, env.getOpOwner(), queryParams, queryExecEnv, env.getTransactTimeout(), handler);
+        session.executeSelect(this, queryExecEnv, owner, queryParams, transactTimeout, handler);
         ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> result = handler.terminate();
 
         String resultString = "";
@@ -220,9 +226,18 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     public SQLQuery fixConcSelect(SQLSyntax syntax) {
         if(syntax.hasDriverCompositeProblem() && hasConc(keyReaders, propertyReaders)) {
             MStaticExecuteEnvironment mEnv = StaticExecuteEnvironmentImpl.mEnv(env);
-            return new SQLQuery(fixConcSelect(command, keyReaders, propertyReaders, syntax, mEnv), subQueries, mEnv.finish(), keyReaders, propertyReaders, union, false);
+            return new SQLQuery(fixConcSelect(command, keyReaders, propertyReaders, syntax, mEnv), baseCost, subQueries, mEnv.finish(), keyReaders, propertyReaders, union, recursionFunction);
         }
         return this;
+    }
+
+    public SQLDML getInsertDML(String name, ImOrderSet<KeyField> keyFieldOrder, ImOrderSet<PropertyField> propertyFieldOrder, boolean orderPreserved, ImOrderSet<String> keySelectOrder, ImOrderSet<String> propertySelectOrder, SQLSyntax syntax) {
+        String insertString = SetFact.addOrderExcl(keyFieldOrder, propertyFieldOrder).toString(Field.<Field>nameGetter(syntax), ",");
+
+        MStaticExecuteEnvironment execEnv = StaticExecuteEnvironmentImpl.mEnv(this.env);
+        return new SQLDML("INSERT INTO " + name + " (" + (insertString.length() == 0 ? "dumb" : insertString) + ") " +
+                getInsertSelect(orderPreserved, keySelectOrder, propertySelectOrder,
+                        propertyFieldOrder, syntax, execEnv), baseCost, subQueries, execEnv.finish());
     }
 
     public String getInsertSelect(boolean orderPreserved, ImOrderSet<String> keyOrder, ImOrderSet<String> propertyOrder, ImOrderSet<PropertyField> fields, SQLSyntax syntax, MStaticExecuteEnvironment env) {
@@ -253,5 +268,43 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
     public StaticExecuteEnvironment getEnv() {
         return env;
+    }
+
+    public MaterializedQuery materialize(final SQLSession session, final DynamicExecuteEnvironment subQueryExecEnv, final OperationOwner owner, final ImMap<SQLQuery, MaterializedQuery> materializedQueries, final ImMap<String, ParseInterface> queryParams, final int transactTimeout) throws SQLException, SQLHandledException {
+        Result<Integer> actual = new Result<Integer>();
+        final MaterializedQuery.Owner tableOwner = new MaterializedQuery.Owner();
+
+        final ImOrderSet<String> keys = keyReaders.keys().toOrderSet();
+        final ImOrderSet<String> properties = propertyReaders.keys().toOrderSet();
+
+        final ImOrderSet<KeyField> keyOrder = keys.mapOrder(SessionTableUsage.genKeys(keys, NullReader.typeGetter(keyReaders)).reverse());
+        final ImOrderSet<PropertyField> propOrder = properties.mapOrder(SessionTableUsage.genProps(properties, NullReader.typeGetter(propertyReaders)).reverse());
+
+        final PureTime pureTime = new PureTime();
+        String table = session.getTemporaryTable(keyOrder, propOrder.getSet(), new FillTemporaryTable() {
+            public Integer fill(String name) throws SQLException, SQLHandledException {
+                SQLDML dml = getInsertDML(name, keyOrder, propOrder, false, keys, properties, session.syntax);
+                SQLExecute execute = getExecute(dml, queryParams, subQueryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner);
+                return session.insertSessionSelect(execute, new ERunnable() {
+                    public void run() throws Exception {
+                        outSelect(session, subQueryExecEnv, queryParams, transactTimeout, owner);
+                    }
+                });
+            }
+        }, null, actual, tableOwner, owner);
+
+        String mapFields = SQLSession.stringExpr(keys.mapSet(keyOrder.mapOrderSetValues(Field.<KeyField>nameGetter(session.syntax))),
+                                                properties.mapSet(propOrder.mapOrderSetValues(Field.<PropertyField>nameGetter(session.syntax))));
+        return new MaterializedQuery(table, mapFields, actual.result, pureTime.get(), tableOwner);
+    }
+
+    private static SQLExecute getExecute(SQLDML dml, ImMap<String, ParseInterface> queryParams, DynamicExecuteEnvironment queryExecEnv, ImMap<SQLQuery, MaterializedQuery> materializedQueries, PureTimeInterface pureTime, int transactTimeout, OperationOwner owner, TableOwner tableOwner) {
+        if(queryExecEnv instanceof AdjustMaterializedExecuteEnvironment)
+            return new SQLExecute<ImMap<SQLQuery, MaterializedQuery>, AdjustMaterializedExecuteEnvironment.Snapshot>(dml, queryParams, (AdjustMaterializedExecuteEnvironment)queryExecEnv, materializedQueries, pureTime, transactTimeout, owner, tableOwner);
+        return new SQLExecute(dml, queryParams, queryExecEnv, transactTimeout, owner, tableOwner);
+    }
+
+    public int getLength() {
+        return command.length();
     }
 }

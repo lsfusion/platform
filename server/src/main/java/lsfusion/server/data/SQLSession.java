@@ -21,6 +21,7 @@ import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.PropStat;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.*;
+import lsfusion.server.data.query.stat.ExecCost;
 import lsfusion.server.data.sql.DataAdapter;
 import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -167,6 +168,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public final static String computerParam = "fjruwidskldsor";
     public final static String isDebugParam = "dsiljdsiowee";
     public final static String isFullClientParam = "fdfdijir";
+
+    public final static String limitParam = "sdsnjklirens";
 
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
     private ReentrantLock temporaryTablesLock = new ReentrantLock(true);
@@ -683,10 +686,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void returnTemporaryTable(final SessionTable table, TableOwner owner, final OperationOwner opOwner) throws SQLException {
+        lockedReturnTemporaryTable(table.getName(), owner, opOwner);
+    }
+
+    public void lockedReturnTemporaryTable(String name, TableOwner owner, OperationOwner opOwner) throws SQLException {
         lockRead(opOwner);
 
         try {
-            returnTemporaryTable(table.getName(), owner, opOwner, true);
+            returnTemporaryTable(name, owner, opOwner, true);
         } finally {
             unlockRead();
         }
@@ -799,6 +806,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private void assertConnectionLock() {
         ServerLoggers.assertLog(connectionLock.isWriteLocked(), "CONNECTION SHOULD BY LOCKED");
     }
+
+    public boolean isDisabledNestLoop;
     public void setEnableNestLoop(ExConnection connection, OperationOwner owner, boolean on) throws SQLException {
         assertConnectionLock();
         assert syntax.supportsDisableNestedLoop();
@@ -808,6 +817,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             return;
         }
 
+        isDisabledNestLoop = !on;
         Statement statement = createSingleStatement(connection.sql);
         try {
             statement.execute("SET enable_nestloop=" + (on ? "on" : "off"));
@@ -959,8 +969,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         finishExceptions(firstException);
     }
 
-    private int executeDML(SQLExecute execute) throws SQLException, SQLHandledException {
-        return executeDML(execute.command, execute.owner, execute.tableOwner, execute.params, execute.queryExecEnv, execute.transactTimeout);
+    private <OE, S extends DynamicExecEnvSnapshot<OE, S>> int executeDML(SQLExecute<OE, S> execute) throws SQLException, SQLHandledException {
+        return executeDML(execute.command, execute.owner, execute.tableOwner, execute.params, execute.queryExecEnv, execute.outerEnv, execute.pureTime, execute.transactTimeout);
     }
 
     private static Map<Integer, Boolean> explainUserMode = new ConcurrentHashMap<Integer, Boolean>();
@@ -1076,7 +1086,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     rtime = Double.valueOf(matcher.group(1));
                 }
                 if(noAnalyze || thr==0 || rtime >= thr) {
-                    systemLogger.info(statement.toString() + " volatile : " + isVolatileStats());
+                    systemLogger.info(statement.toString() + " volatile : " + isVolatileStats() + " disabled nested loop : " + isDisabledNestLoop);
                     for(String outRow : out)
                         systemLogger.info(outRow);
                 } //else {
@@ -1236,54 +1246,63 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     // системные вызовы
-    public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(String select, OperationOwner owner, StaticExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<String, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<String, ? extends Reader> propertyReaders) throws SQLException, SQLHandledException {
+    public <K,V> ImOrderMap<ImMap<K, Object>, ImMap<V, Object>> executeSelect(String select, OperationOwner owner, StaticExecuteEnvironment env, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ImRevMap<K, String> keyNames, final ImMap<String, ? extends Reader> keyReaders, ImRevMap<V, String> propertyNames, ImMap<String, ? extends Reader> propertyReaders) throws SQLException, SQLHandledException {
         ReadAllResultHandler<K, V> result = new ReadAllResultHandler<K, V>();
-        executeSelect(new SQLQuery(select, MapFact.<String, SQLQuery>EMPTY(), env,keyReaders, propertyReaders, false, false), owner, paramObjects, queryExecEnv, transactTimeout, keyNames, propertyNames, result);
+        executeSelect(new SQLQuery(select, ExecCost.MIN, MapFact.<String, SQLQuery>EMPTY(), env,keyReaders, propertyReaders, false, false), DynamicExecuteEnvironment.DEFAULT, owner, paramObjects, transactTimeout, keyNames, propertyNames, result);
         return result.terminate();
     }
 
-    public <K,V> void executeSelect(SQLQuery query, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, int transactTimeout, ImRevMap<K, String> keyNames, ImRevMap<V, String> propertyNames, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
-        executeSelect(query, owner, paramObjects, queryExecEnv, transactTimeout, new MapResultHandler<K, V, String, String>(handler, keyNames, propertyNames));
+    public <K,V> void executeSelect(SQLQuery query, DynamicExecuteEnvironment queryExecEnv, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ImRevMap<K, String> keyNames, ImRevMap<V, String> propertyNames, ResultHandler<K, V> handler) throws SQLException, SQLHandledException {
+        executeSelect(query, queryExecEnv, owner, paramObjects, transactTimeout, new MapResultHandler<K, V, String, String>(handler, keyNames, propertyNames));
     }
 
-    public void executeSelect(SQLQuery query, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, int transactTimeout, ResultHandler<String, String> handler) throws SQLException, SQLHandledException {
-        executeCommand(query.fixConcSelect(syntax), queryExecEnv, owner, paramObjects, transactTimeout, handler);
+    public <OE, S extends DynamicExecEnvSnapshot> void executeSelect(SQLQuery query, DynamicExecuteEnvironment queryExecEnv, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ResultHandler<String, String> handler) throws SQLException, SQLHandledException {
+        executeCommand(query.fixConcSelect(syntax), queryExecEnv, owner, paramObjects, transactTimeout, handler, DynamicExecuteEnvironment.<OE, S>create(null), PureTime.VOID);
     }
 
-    public int executeDML(@ParamMessage SQLDML command, OperationOwner owner, TableOwner tableOwner, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment queryExecEnv, int transactTimeout) throws SQLException, SQLHandledException { // public для аспекта
+    public <OE, S extends DynamicExecEnvSnapshot<OE, S>> int executeDML(@ParamMessage SQLDML command, OperationOwner owner, TableOwner tableOwner, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment<OE, S> queryExecEnv, OE outerEnv, PureTimeInterface pureTime, int transactTimeout) throws SQLException, SQLHandledException { // public для аспекта
         Result<Integer> handler = new Result<Integer>(0);
-        executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler);
+        executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, DynamicExecuteEnvironment.<OE,S>create(outerEnv), pureTime);
         return handler.result;
     }
 
     // можно было бы сделать аспектом, но во-первых вся логика before / after аспектная и реализована в явную, плюс непонятно как соотносить snapshot с mutable объектом (env)
-    public <H> void executeCommand(@ParamMessage final SQLCommand<H> command, final DynamicExecuteEnvironment queryExecEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, H handler) throws SQLException, SQLHandledException {
+    public <H, OE, S extends DynamicExecEnvSnapshot<OE, S>> void executeCommand(@ParamMessage final SQLCommand<H> command, final DynamicExecuteEnvironment<OE, S> queryExecEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, H handler, DynamicExecEnvOuter<OE, S> outerEnv, PureTimeInterface pureTime) throws SQLException, SQLHandledException {
         if(command.command.length() > Settings.get().getQueryLengthLimit())
             throw new SQLTooLongQueryException(command.command);
 
-        DynamicExecEnvSnapshot snapEnv = queryExecEnv.getSnapshot(transactTimeout);
-
+        S snapEnv = queryExecEnv.getSnapshot(command, transactTimeout, outerEnv);
         try {
-            executeCommand(command, snapEnv, owner, paramObjects, handler);
+            snapEnv.beforeOuter(command, this, paramObjects, owner, pureTime);
 
-            queryExecEnv.succeeded(snapEnv);
+            try {
+                long timeStarted = System.currentTimeMillis();
 
-            return;
-        } catch (SQLClosedException e) {
-            if(e.isInTransaction() || !tryRestore(owner, e.connection, e.isPrivate))
-                throw e;
-        } catch (SQLHandledException e) {
-            if (!(e instanceof SQLTimeoutException && !((SQLTimeoutException) e).isTransactTimeout))
-                throw e; // update conflict'ы, deadlock'и, transactTimeout'ы
+                executeCommand(command, snapEnv, owner, paramObjects, handler);
 
-            queryExecEnv.failed(snapEnv);
+                long runTime = System.currentTimeMillis() - timeStarted;
+                pureTime.add(runTime); // тут теоретически вопрос с AnalyzeAspect'ом мог бы быть, но так как DML сразу выполняется не проблема
+                queryExecEnv.succeeded(command, snapEnv, runTime);
 
-            if (e.isInTransaction()) // транзакция все равно прервана
-                throw e;
+                return;
+            } catch (SQLClosedException e) {
+                if (e.isInTransaction() || !tryRestore(owner, e.connection, e.isPrivate))
+                    throw e;
+            } catch (SQLHandledException e) {
+                if (!(e instanceof SQLTimeoutException && !((SQLTimeoutException) e).isTransactTimeout))
+                    throw e; // update conflict'ы, deadlock'и, transactTimeout'ы
+
+                queryExecEnv.failed(command, snapEnv);
+
+                if (e.isInTransaction()) // транзакция все равно прервана
+                    throw e;
+            }
+
+            // повторяем
+            executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, snapEnv, pureTime);
+        } finally {
+            snapEnv.afterOuter(this, owner);
         }
-
-        // повторяем
-        executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler);
     }
 
     @Message("message.sql.execute")
@@ -1319,7 +1338,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             runTime = System.currentTimeMillis() - started;
         } catch (Throwable t) { // по хорошему тоже надо через runSuppressed, но будут проблемы с final'ами
-            t = handle(t, statement != null ? statement.toString() : "PREPARING STATEMENT", snapEnv.isTransactTimeout, connection, privateConnection != null);
+            t = handle(t, statement != null ? statement.toString() : "PREPARING STATEMENT", snapEnv.isTransactTimeout(), connection, privateConnection != null);
             firstException.set(t);
         }
 
@@ -1511,7 +1530,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
 
         try {
-            executeDML(new SQLDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.EMPTY), owner, tableOwner, params.immutable(), DynamicExecuteEnvironment.DEFAULT, 0);
+            executeDML(new SQLDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", ExecCost.MIN, MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.EMPTY), owner, tableOwner, params.immutable(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0);
         } catch (SQLHandledException e) {
             throw new UnsupportedOperationException(); // по идее ни deadlock'а, ни update conflict'а, ни timeout'а
         }
@@ -1636,7 +1655,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public int getCount(String table, OperationOwner opOwner) throws SQLException {
 //        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
         try {
-            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, StaticExecuteEnvironmentImpl.EMPTY, MapFact.<String, ParseInterface>EMPTY(), DynamicExecuteEnvironment.DEFAULT, 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance), MapFact.<String, String>EMPTYREV(), MapFact.<String, Reader>EMPTY()).singleKey().singleValue();
+            return (Integer)executeSelect("SELECT COUNT(*) AS cnt FROM " + table, opOwner, StaticExecuteEnvironmentImpl.EMPTY, MapFact.<String, ParseInterface>EMPTY(), 0, MapFact.singletonRev("cnt", "cnt"), MapFact.singleton("cnt", IntegerClass.instance), MapFact.<String, String>EMPTYREV(), MapFact.<String, Reader>EMPTY()).singleKey().singleValue();
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }
@@ -1797,44 +1816,56 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         if(modify.isEmpty()) // иначе exception кидает
             return 0;
 
-        return executeDML(modify.getDelete(syntax));
+        return executeDML(modify.getDelete(syntax, userProvider));
     }
 
     public int updateRecords(ModifyQuery modify) throws SQLException, SQLHandledException {
         checkTableOwner(modify);
-        return executeDML(modify.getUpdate(syntax));
+        return executeDML(modify.getUpdate(syntax, userProvider));
     }
 
     public int insertSelect(ModifyQuery modify) throws SQLException, SQLHandledException {
         checkTableOwner(modify);
-        return executeDML(modify.getInsertSelect(syntax));
+        return executeDML(modify.getInsertSelect(syntax, userProvider));
     }
-    public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner) throws SQLException, SQLHandledException {
-//        query.outSelect(this, env);
-        checkTableOwner(name, owner);
+    public int insertSessionSelect(SQLExecute execute, final ERunnable out) throws SQLException, SQLHandledException {
+        // out.run();
 
         try {
-            return executeDML(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax));
+            return executeDML(execute);
         } catch(Throwable t) {
             Result<Throwable> firstException = new Result<Throwable>();
             firstException.set(t);
-            
+
             if(!isInTransaction())
                 runSuppressed(new SQLRunnable() {
                     public void run() throws SQLException, SQLHandledException {
-                        query.outSelect(SQLSession.this, env);
+                        try {
+                            out.run();
+                        } catch (Exception e) {
+                            throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
+                        }
                     }
                 }, firstException);
-            
+
             finishHandledExceptions(firstException);
             throw new UnsupportedOperationException();
         }
+
+    }
+    public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner) throws SQLException, SQLHandledException {
+        checkTableOwner(name, owner);
+
+        return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, userProvider), new ERunnable() {
+            public void run() throws Exception {
+                query.outSelect(SQLSession.this, env);
+            }});
     }
 
     public int insertLeftSelect(ModifyQuery modify, boolean updateProps, boolean insertOnlyNotNull) throws SQLException, SQLHandledException {
         checkTableOwner(modify);
 //        modify.getInsertLeftQuery(updateProps, insertOnlyNotNull).outSelect(this, modify.env);
-        return executeDML(modify.getInsertLeftKeys(syntax, updateProps, insertOnlyNotNull));
+        return executeDML(modify.getInsertLeftKeys(syntax, userProvider, updateProps, insertOnlyNotNull));
     }
 
     public int modifyRecords(ModifyQuery modify) throws SQLException, SQLHandledException {

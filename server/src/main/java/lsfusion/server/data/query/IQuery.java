@@ -47,16 +47,18 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     public abstract IQuery<K, V> translateQuery(MapTranslate translate);
 
     public CompiledQuery<K,V> compile(SQLSyntax syntax) {
-        return compile(syntax, MapFact.<V, Boolean>EMPTYORDER(), 0, SubQueryContext.EMPTY, false);
+        return compile(syntax, SubQueryContext.EMPTY, false);
     }
-
-    public CompiledQuery<K,V> compile(SQLSyntax syntax,ImOrderMap<V,Boolean> orders,int selectTop) {
-        return compile(syntax, orders, selectTop, SubQueryContext.EMPTY);
+    public CompiledQuery<K,V> compile(SQLSyntax syntax, SubQueryContext subcontext, boolean recursive) {
+        return compile(syntax, MapFact.<V, Boolean>EMPTYORDER(), LimitOptions.NOLIMIT, subcontext, recursive);
     }
-    public CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer selectTop, SubQueryContext subcontext) {
-        return compile(syntax, orders, selectTop, subcontext, false);
+    public CompiledQuery<K,V> compile(SQLSyntax syntax,ImOrderMap<V,Boolean> orders,LimitOptions limit) {
+        return compile(syntax, orders, limit, SubQueryContext.EMPTY);
     }
-    public abstract CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Integer top, SubQueryContext subcontext, boolean recursive);
+    public CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, LimitOptions limit, SubQueryContext subcontext) {
+        return compile(syntax, orders, limit, subcontext, false);
+    }
+    public abstract CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, LimitOptions limit, SubQueryContext subcontext, boolean recursive);
 
     public abstract ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders);
 
@@ -68,7 +70,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
 
     @Message("message.query.execute")
     public void executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env, ResultHandler<K, V> result) throws SQLException, SQLHandledException {
-        compile(session.syntax, orders, selectTop).execute(session, env, result);
+        compile(session.syntax, orders, LimitOptions.get(selectTop)).execute(session, env, selectTop, result);
     }
 
     public abstract <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps);

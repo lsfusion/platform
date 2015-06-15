@@ -21,7 +21,7 @@ public abstract class CalculateJoin<K> extends TwinImmutableObject implements In
             }});
         for(Stat stat : distinct.valueIt())
             totalStat = totalStat.mult(stat);
-        return new StatKeys<K>(totalStat, new DistinctKeys<K>(distinct));
+        return new StatKeys<K>(totalStat, new DistinctKeys<K>(distinct)); // , ExecCost.CALC
     }
 
     public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {

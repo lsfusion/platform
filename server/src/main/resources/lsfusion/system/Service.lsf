@@ -99,6 +99,28 @@ WHEN CHANGED(remoteLoggerDebugEnabledUser(user)) DO {
     refreshRemoteLoggerDebugEnabledUser(user);
 }
 
+CLASS TypeExecEnv {
+    materialize 'Материализация подзапросов', 
+    disablenestloop 'Отключение nested loop', 
+    none 'Нет'
+}
+
+captionTypeExecEnv 'Название' (type) = staticCaption (type) IN base;
+idTypeExecEnv (type) = CASE EXCLUSIVE
+                        WHEN type == TypeExecEnv.materialize THEN 2
+                        WHEN type == TypeExecEnv.disablenestloop THEN 1
+                        WHEN type == TypeExecEnv.none THEN 0 IN base;
+
+setExecEnvUser 'Выводить в лог EXPLAIN запросов' = ACTION CUSTOM 'lsfusion.server.logics.service.SetExecEnvUserActionProperty' (INTEGER, User);
+execEnvUser 'Тип адаптивного выполнения' = DATA TypeExecEnv (User);
+refreshExecEnvUser 'Обновить Explain' = ACTION (user) {
+    setExecEnvUser(idTypeExecEnv(execEnvUser(user)), user);  
+}
+WHEN CHANGED(execEnvUser(user)) DO {
+    refreshExecEnvUser(user);
+}
+nameExecEnvUser 'Тип адаптивного выполнения' (user) = captionTypeExecEnv(execEnvUser(user));
+
 // --------------- Удаление прикладных логов ------------------------ //
 
 clearApplicationLog 'Очистить прикладные логи' = ABSTRACT ACTION LIST () ;
@@ -146,6 +168,7 @@ onStarted() += ACTION {
         refreshLoggerDebugEnabledUser(u);
         refreshVolatileStatsEnabledUser(u);
         refreshRemoteLoggerDebugEnabledUser(u);
+        refreshExecEnvUser(u);
     }
 } 
 
@@ -189,7 +212,7 @@ FORM admin 'Администрирование'
                  nameReflectionSetting, turnExplainAnalizeOnCurrentUser, clearApplicationLog,
                  valueReflectionSetting SHOWIF nameReflectionSetting()
     OBJECTS u=User
-    PROPERTIES(u) nameUser READONLY, explainAnalyzeModeUser, explainModeUser, loggerDebugEnabledUser, remoteLoggerDebugEnabledUser, volatileStatsEnabledUser;
+    PROPERTIES(u) nameUser READONLY, explainAnalyzeModeUser, explainModeUser, loggerDebugEnabledUser, remoteLoggerDebugEnabledUser, nameExecEnvUser, volatileStatsEnabledUser;
 ;
 
 DESIGN admin {

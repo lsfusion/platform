@@ -6,11 +6,8 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
-import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.hash.HashContext;
@@ -28,20 +25,26 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
     private final Compare compare;
     private final Expr compareExpr;
     private boolean not;
+    private boolean isOrderTop;
 
     @Override
     public String toString() {
         return baseExpr + " " + compare + " " + compareExpr + " " + not;
     }
 
-    public ExprIndexedJoin(BaseExpr baseExpr, Compare compare, Expr compareExpr, boolean not) {
+    public ExprIndexedJoin(BaseExpr baseExpr, Compare compare, Expr compareExpr, boolean not, boolean isOrderTop) {
         super(baseExpr);
         assert !compare.equals(Compare.EQUALS);
         assert compareExpr.isValue();
-        assert baseExpr.isTableIndexed();
+        assert baseExpr.isIndexed();
         this.compareExpr = compareExpr;
         this.compare = compare;
         this.not = not;
+        this.isOrderTop = isOrderTop;
+    }
+
+    public boolean isOrderTop() {
+        return isOrderTop;
     }
 
     public StatKeys<Integer> getStatKeys(KeyStat keyStat) {
@@ -55,15 +58,15 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
     }
 
     protected int hash(HashContext hashContext) {
-        return 31 * (31 * super.hash(hashContext) + compare.hashCode()) + compareExpr.hashOuter(hashContext) + 13 + (not?1:0);
+        return 31 * (31 * super.hash(hashContext) + compare.hashCode()) + compareExpr.hashOuter(hashContext) + 13 + (not ? 1 : 0) + (isOrderTop ? 3 : 0);
     }
 
     protected ExprIndexedJoin translate(MapTranslate translator) {
-        return new ExprIndexedJoin(baseExpr.translateOuter(translator), compare, compareExpr, not);
+        return new ExprIndexedJoin(baseExpr.translateOuter(translator), compare, compareExpr, not, isOrderTop);
     }
 
     public boolean calcTwins(TwinImmutableObject o) {
-        return super.calcTwins(o) && compare.equals(((ExprIndexedJoin)o).compare) && compareExpr.equals(((ExprIndexedJoin)o).compareExpr) && not==((ExprIndexedJoin)o).not;
+        return super.calcTwins(o) && compare.equals(((ExprIndexedJoin)o).compare) && compareExpr.equals(((ExprIndexedJoin)o).compareExpr) && not == ((ExprIndexedJoin)o).not && isOrderTop == ((ExprIndexedJoin)o).isOrderTop;
     }
 
     @Override

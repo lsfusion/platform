@@ -21,6 +21,7 @@ import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.data.Table;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
@@ -55,7 +56,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     public int getOrderTopCount() {
         int orderTopCount = 0;
         for(WhereJoin where : wheres)
-            if(where instanceof ExprIndexedJoin)
+            if((where instanceof ExprIndexedJoin) && ((ExprIndexedJoin)where).isOrderTop())
                 orderTopCount++;
         return orderTopCount;
     }
@@ -209,98 +210,77 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat) {
-        return getStatKeys(groups, rows, keyStat, null, null);
+        return getStatKeys(groups, rows, keyStat, null, null, null);
     }
 
     // assert что rows >= result
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, Result<BaseExpr> newNotNull, MAddMap<BaseExpr, Boolean> proceededNotNulls) {
+    // можно rows в StatKeys было закинуть как и ExecCost, но используется только в одном месте и могут быть проблемы с кэшированием
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, Result<BaseExpr> newNotNull, MAddMap<BaseExpr, Boolean> proceededNotNulls, Result<ExecCost> tableCosts) {
+
         final MAddMap<BaseJoin, Stat> joinStats = MapFact.mAddOverrideMap();
         final MAddMap<BaseExpr, Stat> exprStats = MapFact.mAddOverrideMap();
 
-        Set<Edge> edges = SetFact.mAddRemoveSet();
-
-        // собираем все ребра и вершины
-        Set<BaseJoin> joins = SetFact.mAddRemoveSet();
-        Set<BaseExpr> exprs = SetFact.mAddRemoveSet();
-        Queue<BaseJoin> queue = new LinkedList<BaseJoin>();
-        for(WhereJoin valueJoin : wheres) {
-            queue.add(valueJoin);
-            joins.add(valueJoin);
-        }
-        for(BaseExpr group : groups) {
-            exprs.add(group);
-            InnerBaseJoin<?> valueJoin = group.getBaseJoin();
-            if(!joins.contains(valueJoin)) {
-                queue.add(valueJoin);
-                joins.add(valueJoin);
-            }
-        }
-        while(!queue.isEmpty()) {
-            BaseJoin<Object> join = queue.poll();
-            ImMap<?, BaseExpr> joinExprs = getJoinsForStat(join);
-
-/*            if(((BaseJoin)join) instanceof UnionJoin) { // UnionJoin может потерять ключи, а они важны
-                for(ParamExpr lostKey : ((UnionJoin) (BaseJoin)join).getLostKeys())
-                    if(!joins.contains(lostKey)) {
-                        queue.add(lostKey);
-                        joins.add(lostKey);
-                    }
-            }*/
-
-            for(int i=0,size=joinExprs.size();i<size;i++) {
-                Object joinKey = joinExprs.getKey(i);
-                BaseExpr joinExpr = joinExprs.getValue(i);
-                
-                edges.add(new Edge(join, join.getStatKeys(keyStat).distinct.get(joinKey), joinExpr));
-
-                exprs.add(joinExpr);
-                InnerBaseJoin<?> valueJoin = joinExpr.getBaseJoin();
-                if(!joins.contains(valueJoin)) {
-                    queue.add(valueJoin);
-                    joins.add(valueJoin);
-                }
-            }
-        }
-
-        for(BaseJoin join : joins)
-            joinStats.add(join, join.getStatKeys(keyStat).rows);
-
-        int intStat = Settings.get().getAverageIntervalStat();
-        if(intStat >= 0)
-            for(ExprIndexedJoin join : ExprIndexedJoin.getIntervals(wheres))
-                joinStats.add(join, new Stat(intStat, true));
-
-        // читаем статистику по значениям
-        for(BaseExpr expr : exprs) {
-            PropStat exprStat = expr.getStatValue(keyStat);
-            exprStats.add(expr, exprStat.distinct);
-
-            Stat notNullStat = exprStat.notNull;
-            Boolean proceededNotNull = null;
-            if(notNullStat !=null && !(newNotNull != null && (proceededNotNull = proceededNotNulls.get(expr)) != null && proceededNotNull)) { // пропускаем notNull
-                InnerBaseJoin<?> notNullJoin = expr.getBaseJoin();
-                Stat joinStat = joinStats.get(notNullJoin);
-//                assert notNullStat.lessEquals(joinStat);
-                joinStats.add(notNullJoin, notNullStat.min(joinStat)); // уменьшаем статистику join'а до notNull значения, min нужен так как может быть несколько notNull
-                if(newNotNull != null && proceededNotNull == null && notNullStat.less(joinStat) && expr.isTableIndexed()) { // если уменьшаем статистику, индексированы, и есть проблема с notNull
-                    newNotNull.set(expr);
-                }
-            }
-        }
+        final MAddMap<Table.Join, Stat> indexedStats = tableCosts != null ? MapFact.<Table.Join, Stat>mAddOverrideMap() : null;
 
         MAddExclMap<BaseExpr, Set<Edge>> balancedEdges = MapFact.mAddExclMap(); // assert edge.expr == key
         MAddExclMap<BaseExpr, Stat> balancedStats = MapFact.mAddExclMap();
 
+        buildBalancedGraph(groups, keyStat, joinStats, exprStats, balancedEdges, balancedStats, newNotNull, proceededNotNulls, indexedStats);
+
+        // pessimistic adjust - строим остовное дерево (на        
+        Stat edgeRowStat = getEdgeRowStat(joinStats, balancedEdges, balancedStats);
+
+        // бежим по всем сбалансированным ребрам суммируем, бежим по всем нодам суммируем, возвращаем разность
+        Stat rowStat = Stat.ONE;
+        for(int i=0,size=joinStats.size();i<size;i++)
+            rowStat = rowStat.mult(joinStats.getValue(i));
+        final Stat finalStat = rowStat.div(edgeRowStat);
+        
+        if(rows!=null)
+            rows.set(finalStat);
+
+        if(tableCosts != null) {
+            Stat tableStat = Stat.ONE;
+            for(int i=0,size=indexedStats.size();i<size;i++)
+                tableStat = tableStat.or(indexedStats.getValue(i));
+            tableCosts.set(new ExecCost(tableStat));
+        }
+
+        DistinctKeys<K> distinct = new DistinctKeys<K>(groups.mapValues(new GetValue<Stat, K>() {
+            public Stat getMapValue(K value) { // для groups, берем min(из статистики значения, статистики его join'а)
+                return getPropStat(value, joinStats, exprStats).min(finalStat);
+            }}));
+        return StatKeys.create(finalStat, distinct); // возвращаем min(суммы groups, расчитанного результата)
+    }
+
+    private <K extends BaseExpr> void buildBalancedGraph(ImSet<K> groups, KeyStat keyStat, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, Stat> exprStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats, Result<BaseExpr> newNotNull, MAddMap<BaseExpr, Boolean> proceededNotNulls, MAddMap<Table.Join, Stat> indexedStats) {
+        Set<Edge> edges = SetFact.mAddRemoveSet();
+        
+        buildGraph(groups, keyStat, exprStats, joinStats, edges, proceededNotNulls, newNotNull);
+
+        balanceGraph(joinStats, exprStats, edges, balancedEdges, balancedStats, indexedStats);
+    }
+
+    // balancedEdges - исходящие edges для всех "внутренних" expr, название конечно не совсем корректное
+    // balancedStats - уже скорректированная статистика, только для "внутренних" expr, не включая groups, в принципе можно совместить с exprStats, пробежав по groups и хакинув туда getPropStat(value, joinStats, exprStats), но пока особого смысла нет
+    private void balanceGraph(MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, Stat> exprStats, Set<Edge> unbalancedEdges, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats, MAddMap<Table.Join, Stat> indexedStats) {
         // ищем несбалансированное ребро с минимальной статистикой
         Stat currentStat = null;
         MAddExclMap<BaseExpr, Set<Edge>> currentBalancedEdges = MapFact.mAddExclMap();
 
-        while(edges.size() > 0 || currentBalancedEdges.size() > 0) {
+        if(indexedStats != null)
+            for(int i=0,size=joinStats.size();i<size;i++) {
+                BaseJoin join = joinStats.getKey(i);
+                if(join instanceof Table.Join)
+                    indexedStats.add((Table.Join)join, joinStats.getValue(i));
+            }
+
+        while(unbalancedEdges.size() > 0 || currentBalancedEdges.size() > 0) {
             Edge<?> unbalancedEdge = null;
             Pair<Stat, Stat> unbalancedStat = null;
-            
+
             Stat stat = Stat.MAX;
-            for(Edge edge : edges) {
+            for(Edge edge : unbalancedEdges) {
                 Stat keys = edge.getKeyStat(joinStats);
                 Stat values = edge.getPropStat(joinStats, exprStats);
                 Stat min = keys.min(values);
@@ -328,7 +308,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                             Iterator<Edge> it = exprEdges.iterator();
                             while(it.hasNext()) {
                                 Edge exprEdge = it.next();
-                                
+
                                 Edge bExprEdge = null;
                                 boolean found = false;
                                 Iterator<Edge> bit = bExprEdges.iterator();
@@ -357,7 +337,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                                 for(Pair<Edge, Edge> mergeEdge : mergeEdges) { // добавляем внешние (возможно не сбалансированные edge'и)
                                     assert BaseUtils.hashEquals(mergeEdge.first.join, mergeEdge.second.join);
                                     Edge mergedEdge = new Edge(mergeEdge.first.join, mergedStat, concExpr);
-                                    edges.add(mergedEdge);
+                                    unbalancedEdges.add(mergedEdge);
                                 }
                                 unbalancedEdge = null; // сбрасываем текущую итерацию и начинаем заново
                             } else {
@@ -372,23 +352,30 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                         balancedStats.exclAdd(expr, currentStat);
                     }
                 }
-                
+
                 if(unbalancedEdge!=null)
                     currentStat = stat;
                 currentBalancedEdges = MapFact.mAddExclMap();
             }
 
             if(unbalancedEdge!=null) { // потому что edges может быть пустой или объединенные ребра будут с минимальной статистикой
+                BaseJoin decreaseJoin; Stat decrease; boolean keyReduce = false;
                 if(unbalancedStat.first.less(unbalancedStat.second)) { // балансируем значение
-                    Stat decrease = unbalancedStat.second.div(unbalancedStat.first);
+                    decrease = unbalancedStat.second.div(unbalancedStat.first);
                     exprStats.add(unbalancedEdge.expr, unbalancedStat.first); // это и есть разница
-                    BaseJoin valueJoin = unbalancedEdge.expr.getBaseJoin();
-                    joinStats.add(valueJoin, joinStats.get(valueJoin).div(decrease));
+                    decreaseJoin = unbalancedEdge.expr.getBaseJoin();
                 } else { // балансируем ключ, больше он использоваться не будет
-                    Stat decrease = unbalancedStat.first.div(unbalancedStat.second);
-                    joinStats.add(unbalancedEdge.join, joinStats.get(unbalancedEdge.join).div(decrease));
+                    decrease = unbalancedStat.first.div(unbalancedStat.second);
+                    decreaseJoin = unbalancedEdge.join;
+                    keyReduce = true;
                 }
-                edges.remove(unbalancedEdge);
+                joinStats.add(decreaseJoin, joinStats.get(decreaseJoin).div(decrease));
+                unbalancedEdges.remove(unbalancedEdge);
+
+                // помечаем уменьшения статистики по индексу приполагается что будет bitmap scan с bitmap and всех индексов
+                if(indexedStats != null && decreaseJoin instanceof Table.Join && (keyReduce || (unbalancedEdge.expr.isIndexed() && !(unbalancedEdge.join instanceof CalculateJoin))))
+                    indexedStats.add((Table.Join) decreaseJoin, indexedStats.get((Table.Join) decreaseJoin).div(decrease));
+
                 Set<Edge> exprEdges = currentBalancedEdges.get(unbalancedEdge.expr);
                 if(exprEdges==null) {
                     exprEdges = SetFact.mAddRemoveSet();
@@ -397,24 +384,82 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 exprEdges.add(unbalancedEdge);
             }
         }
+    }
 
-        // pessimistic adjust - строим остовное дерево (на        
-        Stat edgeRowStat = getEdgeRowStat(joinStats, balancedEdges, balancedStats);
+    private <K extends BaseExpr> void buildGraph(ImSet<K> groups, KeyStat keyStat, MAddMap<BaseExpr, Stat> exprStats, MAddMap<BaseJoin, Stat> joinStats, Set<Edge> edges, MAddMap<BaseExpr, Boolean> proceededNotNulls, Result<BaseExpr> newNotNull) {
+        Set<BaseExpr> exprs = SetFact.mAddRemoveSet();
+        Set<BaseJoin> joins = SetFact.mAddRemoveSet();
 
-        // бежим по всем сбалансированным ребрам суммируем, бежим по всем нодам суммируем, возвращаем разность
-        Stat rowStat = Stat.ONE;
-        for(int i=0,size=joinStats.size();i<size;i++)
-            rowStat = rowStat.mult(joinStats.getValue(i));
-        final Stat finalStat = rowStat.div(edgeRowStat);
-        
-        if(rows!=null)
-            rows.set(finalStat);
+        buildEdgesExprsJoins(groups, keyStat, edges, exprs, joins);
 
-        DistinctKeys<K> distinct = new DistinctKeys<K>(groups.mapValues(new GetValue<Stat, K>() {
-            public Stat getMapValue(K value) { // для groups, берем min(из статистики значения, статистики его join'а)
-                return getPropStat(value, joinStats, exprStats).min(finalStat);
-            }}));
-        return StatKeys.create(finalStat, distinct); // возвращаем min(суммы groups, расчитанного результата)
+        for(BaseJoin join : joins)
+            joinStats.add(join, join.getStatKeys(keyStat).rows);
+
+        int intStat = Settings.get().getAverageIntervalStat();
+        if(intStat >= 0)
+            for(ExprIndexedJoin join : ExprIndexedJoin.getIntervals(wheres))
+                joinStats.add(join, new Stat(intStat, true));
+
+        // читаем статистику по значениям
+        for(BaseExpr expr : exprs) {
+            PropStat exprStat = expr.getStatValue(keyStat);
+            exprStats.add(expr, exprStat.distinct);
+
+            Stat notNullStat = exprStat.notNull;
+            Boolean proceededNotNull = null;
+            if(notNullStat !=null && !(newNotNull != null && (proceededNotNull = proceededNotNulls.get(expr)) != null && proceededNotNull)) { // пропускаем notNull
+                InnerBaseJoin<?> notNullJoin = expr.getBaseJoin();
+                Stat joinStat = joinStats.get(notNullJoin);
+//                assert notNullStat.lessEquals(joinStat);
+                joinStats.add(notNullJoin, notNullStat.min(joinStat)); // уменьшаем статистику join'а до notNull значения, min нужен так как может быть несколько notNull
+                if(newNotNull != null && proceededNotNull == null && notNullStat.less(joinStat) && expr.isIndexed()) { // если уменьшаем статистику, индексированы, и есть проблема с notNull
+                    newNotNull.set(expr);
+                }
+            }
+        }
+    }
+
+    private <K extends BaseExpr> void buildEdgesExprsJoins(ImSet<K> groups, KeyStat keyStat, Set<Edge> edges, Set<BaseExpr> exprs, Set<BaseJoin> joins) {
+        // собираем все ребра и вершины
+        Queue<BaseJoin> queue = new LinkedList<BaseJoin>();
+        for(WhereJoin valueJoin : wheres) {
+            queue.add(valueJoin);
+            joins.add(valueJoin);
+        }
+        for(BaseExpr group : groups) {
+            exprs.add(group);
+            InnerBaseJoin<?> valueJoin = group.getBaseJoin();
+            if(!joins.contains(valueJoin)) {
+                queue.add(valueJoin);
+                joins.add(valueJoin);
+            }
+        }
+        while(!queue.isEmpty()) {
+            BaseJoin<Object> join = queue.poll();
+            ImMap<?, BaseExpr> joinExprs = getJoinsForStat(join);
+
+/*            if(((BaseJoin)join) instanceof UnionJoin) { // UnionJoin может потерять ключи, а они важны
+                for(ParamExpr lostKey : ((UnionJoin) (BaseJoin)join).getLostKeys())
+                    if(!joins.contains(lostKey)) {
+                        queue.add(lostKey);
+                        joins.add(lostKey);
+                    }
+            }*/
+
+            for(int i=0,size=joinExprs.size();i<size;i++) {
+                Object joinKey = joinExprs.getKey(i);
+                BaseExpr joinExpr = joinExprs.getValue(i);
+
+                edges.add(new Edge(join, join.getStatKeys(keyStat).distinct.get(joinKey), joinExpr));
+
+                exprs.add(joinExpr);
+                InnerBaseJoin<?> valueJoin = joinExpr.getBaseJoin();
+                if(!joins.contains(valueJoin)) {
+                    queue.add(valueJoin);
+                    joins.add(valueJoin);
+                }
+            }
+        }
     }
 
     private Stat getEdgeRowStat(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats) {
@@ -826,7 +871,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
     
     // вообще при таком подходе, скажем из-за формул в ExprJoin, LEFT JOIN'ы могут быть раньше INNER, но так как SQL Server это позволяет бороться до конца за это не имеет особого смысла 
-    public Where fillInnerJoins(ImMap<WhereJoin, Where> upWheres, MList<String> whereSelect, CompileSource source, ImSet<KeyExpr> keys, KeyStat keyStat) {
+    public Where fillInnerJoins(ImMap<WhereJoin, Where> upWheres, MList<String> whereSelect, Result<ExecCost> mBaseCost, CompileSource source, ImSet<KeyExpr> keys, KeyStat keyStat) {
         Where innerWhere = Where.TRUE;
         for (WhereJoin where : wheres)
             if(!(where instanceof ExprIndexedJoin && ((ExprIndexedJoin)where).givesNoKeys())) {
@@ -837,10 +882,18 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                     innerWhere = innerWhere.and(upWhere);
                 }
             }
+
+        Result<BaseExpr> newNotNull = new Result<BaseExpr>();
+        MAddMap<BaseExpr, Boolean> proceedNotNulls = MapFact.mAddOverrideMap();
+        Result<ExecCost> mTableCosts = new Result<ExecCost>();
+        Stat baseStat = getStatKeys(keys, null, keyStat, newNotNull, proceedNotNulls, mTableCosts).rows;
+
+        ExecCost baseCost = mTableCosts.result;
+        if(mBaseCost.result != null)
+            baseCost = baseCost.or(mBaseCost.result);
+        mBaseCost.set(baseCost);
+
         if(source.syntax.hasNotNullIndexProblem()) {
-            Result<BaseExpr> newNotNull = new Result<BaseExpr>();
-            MAddMap<BaseExpr, Boolean> proceedNotNulls = MapFact.mAddOverrideMap();
-            Stat prevStat = getStatKeys(keys, null, keyStat, newNotNull, proceedNotNulls).rows;
             while(true) {
                 BaseExpr notNull = newNotNull.result;
                 if(notNull == null)
@@ -848,8 +901,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
                 proceedNotNulls.add(notNull, true); // пробуем без этого notNull
                 newNotNull.set(null);
-                Stat newStat = getStatKeys(keys, null, keyStat, newNotNull, proceedNotNulls).rows;
-                if(prevStat.less(newStat)) // если реально использовался помечаем как "важный"
+                Stat newStat = getStatKeys(keys, null, keyStat, newNotNull, proceedNotNulls, null).rows;
+                if(baseStat.less(newStat)) // если реально использовался помечаем как "важный"
                     proceedNotNulls.add(notNull, false);
             }
             for(int i=0,size=proceedNotNulls.size();i<size;i++) {

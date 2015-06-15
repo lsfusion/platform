@@ -13,6 +13,7 @@ import lsfusion.server.data.query.*;
 import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.session.DataSession;
 
 public class ModifyQuery {
@@ -36,7 +37,7 @@ public class ModifyQuery {
         this.owner = owner;
     }
 
-    public SQLExecute getUpdate(final SQLSyntax syntax) {
+    public SQLExecute getUpdate(final SQLSyntax syntax, SQLSessionUserProvider userProvider) {
 
         assert !change.getProperties().isEmpty();
         
@@ -108,11 +109,11 @@ public class ModifyQuery {
                 throw new RuntimeException();
         }
 
-        SQLDML dml = new SQLDML(update, changeCompile.sql.subQueries, changeCompile.sql.env);
-        return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
+        SQLDML dml = new SQLDML(update, changeCompile.sql.baseCost, changeCompile.sql.subQueries, changeCompile.sql.env);
+        return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner);
     }
 
-    public SQLExecute getDelete(final SQLSyntax syntax) {
+    public SQLExecute getDelete(final SQLSyntax syntax, SQLSessionUserProvider userProvider) {
 
         int updateModel = syntax.updateModel();
         final CompiledQuery<KeyField, PropertyField> deleteCompile = change.compile(syntax);
@@ -145,13 +146,13 @@ public class ModifyQuery {
                 throw new UnsupportedOperationException();
         }
 
-        SQLDML dml = new SQLDML(delete, deleteCompile.sql.subQueries, deleteCompile.sql.env);
-        return new SQLExecute(dml, deleteCompile.getQueryParams(env), deleteCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
+        SQLDML dml = new SQLDML(delete, deleteCompile.sql.baseCost, deleteCompile.sql.subQueries, deleteCompile.sql.env);
+        return new SQLExecute(dml, deleteCompile.getQueryParams(env), deleteCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner);
     }
 
 
-    public SQLExecute getInsertLeftKeys(SQLSyntax syntax, boolean updateProps, boolean insertOnlyNotNull) {
-        return (new ModifyQuery(table, getInsertLeftQuery(updateProps, insertOnlyNotNull), env, owner)).getInsertSelect(syntax);
+    public SQLExecute getInsertLeftKeys(SQLSyntax syntax, SQLSessionUserProvider userProvider, boolean updateProps, boolean insertOnlyNotNull) {
+        return (new ModifyQuery(table, getInsertLeftQuery(updateProps, insertOnlyNotNull), env, owner)).getInsertSelect(syntax, userProvider);
     }
 
     public Query<KeyField, PropertyField> getInsertLeftQuery(boolean updateProps, boolean insertOnlyNotNull) {
@@ -176,21 +177,15 @@ public class ModifyQuery {
         return leftKeysQuery.getQuery();
     }
 
-    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax) {
+    public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionUserProvider userProvider) {
         CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(syntax);
 
-        String insertString = SetFact.addOrderExcl(changeCompile.keyOrder, changeCompile.propertyOrder).toString(Field.<Field>nameGetter(syntax), ",");
-
-        MStaticExecuteEnvironment execEnv = StaticExecuteEnvironmentImpl.mEnv(changeCompile.sql.env);
-        SQLDML dml = new SQLDML("INSERT INTO " + name + " (" + (insertString.length() == 0 ? "dumb" : insertString) + ") " +
-                changeCompile.sql.getInsertSelect(true, changeCompile.keyOrder.mapOrder(changeCompile.keyNames), changeCompile.propertyOrder.mapOrder(changeCompile.propertyNames),
-                        changeCompile.propertyOrder, syntax, execEnv), changeCompile.sql.subQueries, execEnv.finish());
-
-        return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.queryExecEnv, env.getTransactTimeout(), env.getOpOwner(), owner);
+        SQLDML dml = changeCompile.sql.getInsertDML(name, changeCompile.keyOrder, changeCompile.propertyOrder, true, changeCompile.keyOrder.mapOrder(changeCompile.keyNames), changeCompile.propertyOrder.mapOrder(changeCompile.propertyNames), syntax);
+        return new SQLExecute(dml, changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner);
     }
 
-    public SQLExecute getInsertSelect(SQLSyntax syntax) {
-        return getInsertSelect(table.getName(syntax), change, env, owner, syntax);
+    public SQLExecute getInsertSelect(SQLSyntax syntax, SQLSessionUserProvider userProvider) {
+        return getInsertSelect(table.getName(syntax), change, env, owner, syntax, userProvider);
     }
 
     public boolean isEmpty() {

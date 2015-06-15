@@ -466,32 +466,19 @@ public abstract class LogicsModule {
 
     // ------------------- Loggable ----------------- //
 
-    protected <D extends PropertyInterface> LCP addDCProp(String caption, int whereNum, LCP<D> derivedProp, Object... params) {
-        return addDCProp(null, caption, whereNum, derivedProp, params);
+    protected <D extends PropertyInterface> LCP addDCProp(AbstractGroup group, String caption, int whereNum, LCP<D> derivedProp, Object... params) {
+        Pair<ValueClass[], ValueClass> signature = getSignature(derivedProp, params);
+
+        // выполняем само создание свойства
+        StoredDataProperty dataProperty = new StoredDataProperty(caption, signature.first, signature.second);
+        LCP derDataProp = addProperty(group, false, new LCP<ClassPropertyInterface>(dataProperty));
+
+        derDataProp.setEventChange(derivedProp, whereNum, params);
+        return derDataProp;
     }
 
-    protected <D extends PropertyInterface> LCP addDCProp(AbstractGroup group, String caption, int whereNum,  LCP<D> derivedProp, Object... params) {
-        return addDCProp(group, false, caption, false, whereNum, derivedProp, params);
-    }
-
-    protected <D extends PropertyInterface> LCP addDCProp(AbstractGroup group, boolean persistent, String caption, boolean forced, int whereNum, LCP<D> derivedProp, Object... params) {
-
-        // считываем override'ы с конца
-        List<ValueClass> backClasses = new ArrayList<ValueClass>();
-        int i = params.length - 1;
-        while (i > 0 && (params[i] == null || params[i] instanceof ValueClass))
-            backClasses.add((ValueClass) params[i--]);
-        params = copyOfRange(params, 0, i + 1);
-        ValueClass[] overrideClasses = BaseUtils.reverseThis(backClasses).toArray(new ValueClass[0]);
-
-        boolean defaultChanged = false;
-        if (params[0] instanceof Boolean) {
-            defaultChanged = (Boolean) params[0];
-            params = copyOfRange(params, 1, params.length);
-        }
-
+    private <D extends PropertyInterface> Pair<ValueClass[], ValueClass> getSignature(LCP<D> derivedProp, Object[] params) {
         // придется создавать Join свойство чтобы считать его класс
-
         int propsize = derivedProp.listInterfaces.size();
         int dersize = getIntNum(params);
         ImOrderSet<JoinProperty.Interface> listInterfaces = JoinProperty.getInterfaces(dersize);
@@ -508,30 +495,14 @@ public abstract class LogicsModule {
                                 }
                             }), andProperty.objectInterface, DerivedProperty.createJoin(mapCalcImplement(derivedProp, list.subList(0, propsize))));
 
-        JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<AndFormulaProperty.Interface>(caption, listInterfaces, 
+        JoinProperty<AndFormulaProperty.Interface> joinProperty = new JoinProperty<AndFormulaProperty.Interface>("sys", listInterfaces,
                 new CalcPropertyImplement<AndFormulaProperty.Interface, CalcPropertyInterfaceImplement<JoinProperty.Interface>>(andProperty, mapImplement));
         LCP<JoinProperty.Interface> listProperty = new LCP<JoinProperty.Interface>(joinProperty, listInterfaces);
 
         // получаем классы
         ValueClass[] commonClasses = listProperty.getInterfaceClasses(ClassType.logPolicy); // есть и другие obsolete использования
-
-        // override'им классы
         ValueClass valueClass = listProperty.property.getValueClass(ClassType.logPolicy);
-        if (overrideClasses.length > dersize) {
-            valueClass = overrideClasses[dersize];
-            assert !overrideClasses[dersize].isCompatibleParent(valueClass);
-            overrideClasses = copyOfRange(params, 0, dersize, ValueClass[].class);
-        }
-
-        // выполняем само создание свойства
-        StoredDataProperty dataProperty = new StoredDataProperty(caption, overrideClasses(commonClasses, overrideClasses), valueClass);
-        LCP derDataProp = addProperty(group, persistent, new LCP<ClassPropertyInterface>(dataProperty));
-
-        if (forced)
-            derDataProp.setEventChangeSet(defaultChanged, whereNum, derivedProp, params);
-        else
-            derDataProp.setEventChange(defaultChanged, whereNum, derivedProp, params);
-        return derDataProp;
+        return new Pair<ValueClass[], ValueClass>(commonClasses, valueClass);
     }
 
     // ------------------- Scripted DATA ----------------- //
@@ -1333,9 +1304,11 @@ public abstract class LogicsModule {
         for (ValueClass cls : lp.getInterfaceClasses(ClassType.logPolicy)) {
             signature.add(cls.getResolveSet());
         }
+//        ValueClass valueClass = lp.property.getValueClass(ClassType.logPolicy);
         signature.add(systemEventsLM.currentSession.property.getValueClass(ClassType.aroundPolicy).getResolveSet());
-        LCP result = addDCProp(baseLM.privateGroup, ServerResourceBundle.getString("logics.log") + " " + lp.property, 1, lp,
-                add(new Object[]{true}, add(getParams(lp), add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)))));
+//        if(valueClass instanceof StaticClass)
+//            addSUProp(false, "sys", Union.OVERRIDE, lp, addCProp(valueClass, ))
+        LCP result = addDCProp(baseLM.privateGroup, ServerResourceBundle.getString("logics.log") + " " + lp.property, 1, lp, add(new Object[]{addJProp(baseLM.equals2, 1, systemEventsLM.currentSession), lp.listInterfaces.size() + 1}, directLI(lp)));
         makePropertyPublic(result, name, signature);
         ((StoredDataProperty)result.property).markStored(baseLM.tableFactory);
         return result;
