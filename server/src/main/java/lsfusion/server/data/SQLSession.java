@@ -69,6 +69,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return sessionMap;
     }
 
+    public static Map<Integer, List<Object>> getSQLThreadMap() {
+        Map<Integer, List<Object>> sessionMap = new HashMap<>();
+        for(SQLSession sqlSession : sqlSessionMap.keySet()) {
+            ExConnection connection = sqlSession.getDebugConnection();
+            if(connection != null)
+                sessionMap.put(((PGConnection) connection.sql).getBackendPID(), Arrays.<Object>asList(sqlSession.getActiveThread(),
+                        sqlSession.isInTransaction(), sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer()));
+        }
+        return sessionMap;
+    }
+
     // [todo]: переопределен из-за того, что используется ConcurrentWeakHashMap (желательно какой-нибудь ConcurrentIdentityHashMap)
     @Override
     public boolean equals(Object obj) {
@@ -251,7 +262,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private void unlockRead() {
         lock.readLock().unlock();
-        resetActiveThread();
+        //resetActiveThread();
     }
     
     private OperationOwner writeOwner; 
@@ -268,7 +279,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         writeOwner = null;
         
         lock.writeLock().unlock();
-        resetActiveThread();
+        //resetActiveThread();
     }
     
     private Integer prevIsolation;
@@ -2015,8 +2026,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         idActiveThread = (int) Thread.currentThread().getId();
     }
 
-    private void resetActiveThread() {
+    /*private void resetActiveThread() {
         idActiveThread = null;
-    }
+    }*/
 
 }
