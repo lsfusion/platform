@@ -88,7 +88,8 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
         Step runBack = snapshot.step;
 
-        if(runtime / 1000 > runBack.getTimeout() && runBack.getTimeout() < snapshot.secondsFromTransactStart) { // если на самом деле больше timeout, то по сути можно считать failed
+        int stepTimeout = runBack.getTimeout();
+        if(stepTimeout != 0 && runtime / 1000 > stepTimeout && stepTimeout < snapshot.secondsFromTransactStart) { // если на самом деле больше timeout, то по сути можно считать failed
             failed(command, snapshot);
             return;
         }
