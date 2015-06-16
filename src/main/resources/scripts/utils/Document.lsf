@@ -86,9 +86,9 @@ END
 // ----- Time ----- //
 
 META defineDocumentHeaderTimePrefix (objectClass, prefix, caption)
-    prefix###date##objectClass 'Дата'##caption = DATA DATE (objectClass) IN documentHeader;
+    prefix###date##objectClass 'Дата'##caption = DATA DATE (objectClass) IN documentHeader INDEXED;
     prefix###time##objectClass 'Время'##caption = DATA TIME (objectClass) IN documentHeader;
-    prefix###dateTime##objectClass 'Дата/время'##caption (o) = dateTimeToDateTime(prefix###date##objectClass(o), prefix###time##objectClass(o)) PERSISTENT;
+    prefix###dateTime##objectClass 'Дата/время'##caption (o) = dateTimeToDateTime(prefix###date##objectClass(o), prefix###time##objectClass(o)) PERSISTENT INDEXED;
 END
 
 META deriveDocumentHeaderTimePrefix (objectClass, prefix)
