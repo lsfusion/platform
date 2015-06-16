@@ -404,6 +404,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 }
                 if (drop) {
                     sql.dropIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
+                } else {
+                    if(oldDBStructure.version <= 19) {
+                        sql.renameIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
+                    }
                 }
             }
         }
@@ -550,6 +554,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             checkUniqueDBName(newDBStructure);
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
             newDBStructure.write(outDB);
+
+            systemLogger.info("Checking indices");
 
             checkIndices(sql, oldDBStructure, newDBStructure);
             
@@ -1795,7 +1801,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public NewDBStructure(DBVersion dbVersion) {
-            version = 19;
+            version = 20;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {

@@ -484,7 +484,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     static String getIndexName(Table table, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
-        return syntax.getIndexName((syntax.isIndexNameLocal() ? "" : table.getName() + "_") + fields.keys().toString("_") + "_idx");
+        return syntax.getIndexName(fields.keyOrderSet().toString("_") + "_idx" + (syntax.isIndexNameLocal() ? "" : "_" + table.getName()));
+    }
+
+    static String getOldIndexName(Table table, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
+        return syntax.getIndexName((syntax.isIndexNameLocal() ? "" : table.getName() + "_") + fields.keyOrderSet().toString("_") + "_idx");
     }
 
     static String getIndexName(Table table, SQLSyntax syntax, ImOrderMap<Field, Boolean> fields) {
@@ -524,6 +528,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     
     public void dropIndex(Table table, ImOrderMap<String, Boolean> fields) throws SQLException {
         executeDDL("DROP INDEX " + getIndexName(table, fields, syntax) + (syntax.isIndexNameLocal() ? " ON " + table.getName(syntax) : ""));
+    }
+
+    public void renameIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) throws SQLException {
+        renameIndex(table, getOrderFields(keyFields, fields, order));
+    }
+
+    public void renameIndex(Table table, ImOrderMap<String, Boolean> fields) throws SQLException {
+        executeDDL("ALTER INDEX " + getOldIndexName(table, fields, syntax) + " RENAME TO " + getIndexName(table, fields, syntax));
     }
 
 /*    public void addKeyColumns(String table, Map<KeyField, Object> fields, List<KeyField> keys) throws SQLException {
