@@ -67,30 +67,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     protected void updateProcessMonitor(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
         DataSession session = context.getSession();
-        //session.cancel();
-
-        Integer previousCount = (Integer) findProperty("previousCountProcess").read(session);
-        previousCount = previousCount == null ? 0 : previousCount;
-        findProperty("previousCountProcess").change((Object) null, session);
-
-        //step1: props, mRows (all)
-        ImOrderSet<LCP> propsAll = getProps(findProperties("idThreadProcess", "computerProcess", "userProcess",
-                "querySQLProcess", "addressUserSQLProcess", "dateTimeSQLProcess", "isActiveSQLProcess", "inTransactionSQLProcess",
-                "stackTraceJavaProcess", "nameJavaProcess", "statusJavaProcess", "lockNameJavaProcess", "lockOwnerIdProcess",
-                "lockOwnerNameProcess"));
-        MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRowsAll = MapFact.mExclMap();
-
-        for (int i = 0; i < previousCount; i++) {
-            //step2: exclAdd (all)
-            DataObject rowKey = new DataObject(i, IntegerClass.instance);
-            mRowsAll.exclAdd(MapFact.singleton("key", rowKey), propsAll.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
-                public ObjectValue getMapValue(LCP prop) {
-                    return NullValue.instance;
-                }
-            }));
-        }
-        //step3: writeRows (all)
-        writeRows(context, propsAll, mRowsAll);
+        session.cancel();
 
         SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
 
@@ -170,10 +147,6 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         //step3: writeRows (sql)
         writeRows(context, propsSQL, mRowsSQL);
-
-        //чтобы ошибка падала каждый раз, а не только первый необходимо закомментить следующую строку. Для работы без ошибок почему-то
-        //требуется в начале заполнить таблицу null'ами
-        findProperty("previousCountProcess").change(i, session);
     }
 
     private ObjectValue getJavaMapValue(LCP prop, List<Object> javaProcess, String idThread) {

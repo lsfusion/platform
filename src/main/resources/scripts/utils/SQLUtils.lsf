@@ -54,7 +54,6 @@ cancelSQLProcess 'Снять SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.u
 //test2Action 'test2' = ACTION CUSTOM 'lsfusion.erp.utils.Test2ActionActionProperty' () TOOLBAR;
 //test3Action 'test3' = ACTION CUSTOM 'lsfusion.erp.utils.Test3ActionActionProperty' () TOOLBAR;
 //test4Action 'test4' = ACTION CUSTOM 'lsfusion.erp.utils.Test4ActionActionProperty' () TOOLBAR;
-previousCountProcess =  DATA LOCAL INTEGER();
 idThreadProcess 'ID потока процесса' = DATA LOCAL VARSTRING[10] (INTEGER);
 computerProcess 'Компьютер' = DATA LOCAL VARSTRING[100] (INTEGER);
 userProcess 'Пользователь' = DATA LOCAL VARSTRING[100] (INTEGER);
