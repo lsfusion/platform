@@ -87,16 +87,18 @@ isDeadlockProcess 'Deadlock' (process) = NOT deadlockProcess(process) AND proces
 sumPlusOneBlockingProcess 'Кол-во блокирующих процессов' (process) = GROUP SUM 1 IF isBlockingProcess(parent, child) BY parent;
 sumBlockingProcess 'Глубина блокировки' (process) = sumPlusOneBlockingProcess(process) - 1;
 
-activeProcess 'Активный' (i) = (querySQLProcess(i) AND isActiveSQLProcess(i))
-                                          OR (statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i) AND i IS INTEGER
-                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1)
-                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1)
-                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketInputStream.socketRead0') == 1)
-                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0') == 1)
-                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketOutputStream.socketWrite') == 1)                                        
-                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.PlainSocketImpl') == 1)
-                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'java.io.FileInputStream.readBytes') == 1)
-                                          AND NOT (startsWith(stackTraceJavaProcess(i), 'java.lang.UNIXProcess.waitForProcessExit') == 1));
+activeSQLProcess (i) = querySQLProcess(i) AND isActiveSQLProcess(i);
+activeJavaProcess (i) = statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i)
+                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1)
+                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1)
+                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketInputStream.socketRead0') == 1)
+                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.management.ThreadImpl.dumpThreads0') == 1)
+                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketOutputStream.socketWrite') == 1)                                        
+                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.PlainSocketImpl') == 1)
+                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'java.io.FileInputStream.readBytes') == 1)
+                                   AND NOT (startsWith(stackTraceJavaProcess(i), 'java.lang.UNIXProcess.waitForProcessExit') == 1);
+activeProcess 'Активный' (i) = activeSQLProcess(i) OR activeJavaProcess(i);
+
 blockedProcess 'Заблокированный' (i) = statusJavaProcess(i) == 'BLOCKED' OR lockOwnerIdProcess(i);             
 
 deltaDateTimeProcess(i) = subtractSeconds(dateTimeSQLProcess(i), currentDateTime());
@@ -131,8 +133,8 @@ FORM processMonitor 'Монитор процессов'
     FILTERS idThreadProcess(i)
     FILTERGROUP active
         FILTER 'Все активные' activeProcess(i) DEFAULT
-        FILTER 'Активные (Java)' statusJavaProcess(i) == 'RUNNABLE'
-        FILTER 'Активные (SQL)' isActiveSQLProcess(i)
+        FILTER 'Активные (Java)' activeJavaProcess(i)
+        FILTER 'Активные (SQL)' activeSQLProcess(i)
     
     TREE blocking i2 = INTEGER PARENT threadOwnerProcess
     PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlockedProcess,
