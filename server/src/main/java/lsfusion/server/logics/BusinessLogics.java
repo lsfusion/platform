@@ -1362,14 +1362,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void recalculateStats(DataSession session) throws SQLException, SQLHandledException {
-        for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
+        int count = 0;
+        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables();
+        for (ImplementTable dataTable : tables) {
+            count++;
+            long start = System.currentTimeMillis();
+            systemLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), String.valueOf(dataTable)));
             dataTable.calculateStat(this.reflectionLM, session);
+            long time = System.currentTimeMillis() - start;
+            systemLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
         }
         recalculateClassStat(session);
     }
 
     public void recalculateClassStat(DataSession session) throws SQLException, SQLHandledException {
         for(ObjectValueClassSet tableClasses : LM.baseClass.getUpObjectClassFields().valueIt()) {
+            long start = System.currentTimeMillis();
+            systemLogger.info(String.format("Recalculate Stats: %s", String.valueOf(tableClasses)));
             QueryBuilder<Integer, Integer> classes = new QueryBuilder<Integer, Integer>(SetFact.singleton(0));
 
             KeyExpr countKeyExpr = new KeyExpr("count");
@@ -1386,6 +1395,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, (Object) customClass.ID));
                 LM.statCustomObjectClass.change(classStat==null ? 1 : (Integer)classStat.singleValue(), session, customClass.getClassObject());
             }
+            long time = System.currentTimeMillis() - start;
+            systemLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(tableClasses), time));
         }
     }
 
