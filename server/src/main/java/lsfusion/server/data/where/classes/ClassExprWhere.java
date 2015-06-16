@@ -292,7 +292,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
             }
             protected ClassExprWhere proceedBase(Where data, ImMap<BaseExpr, BaseExpr> outerInner) {
                 Result<ImRevMap<BaseExpr, BaseExpr>> innerOuter = new Result<ImRevMap<BaseExpr, BaseExpr>>();
-                Where where = Expr.andExprCheck(outerWhere, GroupExpr.getEqualsWhere(GroupExpr.groupMap(outerInner, outerWhere.getExprValues(), innerOuter)));
+                Where where = Expr.andExprCheck(outerWhere, GroupExpr.getEqualsWhere(GroupExpr.groupMap(outerInner, data.getExprValues(), innerOuter)));
                 return where.getClassWhere().mapBack(innerOuter.result).and(data.and(Expr.getWhere(outerInner)).getClassWhere()); // см. выше
             }
             protected ClassExprWhere add(ClassExprWhere op1, ClassExprWhere op2) {

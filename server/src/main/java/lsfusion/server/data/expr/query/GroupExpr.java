@@ -495,6 +495,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
                 }, MapFact.<BaseExpr, BaseExpr>EMPTY(), outerInner));
     }
 
+    // exprValues в "контексте" B - правой части map'а
     public static <A extends Expr, B extends Expr> ImList<Pair<Expr, A>> groupMap(final ImMap<A, B> map, ImMap<BaseExpr, BaseExpr> exprValues, Result<ImRevMap<B, A>> reversed) {
         Iterable<Pair<B, A>> iterable = new Iterable<Pair<B, A>>() {
             public Iterator<Pair<B, A>> iterator() {
