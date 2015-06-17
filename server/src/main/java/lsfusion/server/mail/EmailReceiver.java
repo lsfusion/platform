@@ -14,7 +14,6 @@ import lsfusion.server.logics.EmailLogicsModule;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
-import org.apache.log4j.Logger;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -27,22 +26,23 @@ import java.sql.Timestamp;
 import java.util.*;
 
 public class EmailReceiver {
-    private final static Logger logger = ServerLoggers.mailLogger;
     EmailLogicsModule LM;
     Properties mailProps = new Properties();
     DataObject accountObject;
-    String hostAccount;
+    String receiveHostAccount;
+    Integer receivePortAccount;
     String nameAccount;
     String passwordAccount;
     boolean isPOP3;
     boolean deleteMessagesAccount;
 
-    public EmailReceiver(EmailLogicsModule emailLM, DataObject accountObject, String hostAccount, 
+    public EmailReceiver(EmailLogicsModule emailLM, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
                          String nameAccount, String passwordAccount, boolean isPOP3, boolean deleteMessagesAccount) {
-            mailProps.setProperty(isPOP3 ? "mail.pop3.host" : "mail.imap.host", hostAccount);
+            mailProps.setProperty(isPOP3 ? "mail.pop3.host" : "mail.imap.host", receiveHostAccount);
         this.LM = emailLM;
         this.accountObject = accountObject;
-        this.hostAccount = hostAccount;
+        this.receiveHostAccount = receiveHostAccount;
+        this.receivePortAccount = receivePortAccount;
         this.nameAccount = nameAccount;
         this.passwordAccount = passwordAccount;
         this.isPOP3 = isPOP3;
@@ -165,7 +165,10 @@ public class EmailReceiver {
         }
         Session emailSession = Session.getInstance(mailProps);
         Store emailStore = emailSession.getStore(isPOP3 ? "pop3" : "imaps");
-        emailStore.connect(hostAccount, nameAccount, passwordAccount);
+        if(receivePortAccount != null)
+            emailStore.connect(receiveHostAccount, receivePortAccount, nameAccount, passwordAccount);
+        else
+            emailStore.connect(receiveHostAccount, nameAccount, passwordAccount);
 
         Folder emailFolder = emailStore.getFolder("INBOX");
         emailFolder.open(Folder.READ_WRITE);

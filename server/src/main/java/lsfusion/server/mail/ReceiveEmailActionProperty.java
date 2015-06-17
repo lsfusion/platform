@@ -2,7 +2,6 @@ package lsfusion.server.mail;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.EmailLogicsModule;
@@ -52,13 +51,14 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
                 }
 
                 String receiveHostAccount = (String) emailLM.receiveHostAccount.read(context, accountObject);
+                Integer receivePortAccount = (Integer) emailLM.receivePortAccount.read(context, accountObject);
                 String nameAccount = (String) emailLM.nameAccount.read(context, accountObject);
                 String passwordAccount = (String) emailLM.passwordAccount.read(context, accountObject);
                 String nameReceiveAccountTypeAccount = (String) emailLM.nameReceiveAccountTypeAccount.read(context, accountObject);
                 boolean isPop3Account = nameReceiveAccountTypeAccount == null || nullTrim(nameReceiveAccountTypeAccount).equals("POP3");
                 boolean deleteMessagesAccount = emailLM.deleteMessagesAccount.read(context, accountObject) != null;
 
-                receiveEmail(context, (DataObject) accountObject, receiveHostAccount, nameAccount, passwordAccount,
+                receiveEmail(context, (DataObject) accountObject, receiveHostAccount, receivePortAccount, nameAccount, passwordAccount,
                         isPop3Account, deleteMessagesAccount);
 
             } catch (Exception e) {
@@ -68,7 +68,7 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private void receiveEmail(ExecutionContext context, DataObject accountObject, String receiveHostAccount,
+    private void receiveEmail(ExecutionContext context, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
                               String nameAccount, String passwordAccount, boolean isPop3, boolean deleteMessagesAccount)
             throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException, GeneralSecurityException {
         if (receiveHostAccount == null) {
@@ -77,7 +77,7 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
         }
 
         EmailReceiver receiver = new EmailReceiver(emailLM, accountObject, nullTrim(receiveHostAccount),
-                nullTrim(nameAccount), nullTrim(passwordAccount), isPop3, deleteMessagesAccount);
+                receivePortAccount, nullTrim(nameAccount), nullTrim(passwordAccount), isPop3, deleteMessagesAccount);
 
         receiver.receiveEmail(context);
     }

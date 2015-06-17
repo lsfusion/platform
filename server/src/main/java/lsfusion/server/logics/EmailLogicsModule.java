@@ -39,6 +39,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LCP smtpHostAccount;
     public LCP smtpPortAccount;
     public LCP receiveHostAccount;
+    public LCP receivePortAccount;
     public LCP nameAccount;
     public LCP passwordAccount;
     public LCP nameReceiveAccountTypeAccount;
@@ -83,6 +84,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         smtpHostAccount = findProperty("smtpHostAccount");
         smtpPortAccount = findProperty("smtpPortAccount");
         receiveHostAccount = findProperty("receiveHostAccount");
+        receivePortAccount = findProperty("receivePortAccount");
 
         nameAccount = findProperty("nameAccount");
         passwordAccount = findProperty("passwordAccount");

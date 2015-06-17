@@ -54,7 +54,8 @@ defaultInboxAccount 'E-mail аккаунт для отправки/получе�
 
 smtpHostAccount 'SMTP хост' = DATA VARSTRING[50](Account);
 smtpPortAccount 'SMTP порт' = DATA VARSTRING[10](Account);
-receiveHostAccount 'Хост' = DATA VARSTRING[50](Account);
+receiveHostAccount 'Хост входящей почты' = DATA VARSTRING[50](Account);
+receivePortAccount 'Порт входящей почты' = DATA INTEGER(Account);
 receiveAccountTypeAccount 'Тип учётной записи' = DATA ReceiveAccountType(Account);
 nameReceiveAccountTypeAccount 'Тип учётной записи' (account) = staticCaption(receiveAccountTypeAccount(account));
 blindCarbonCopyAccount 'Копия (BCC)'= DATA VARSTRING[50](Account);
@@ -85,7 +86,7 @@ receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.serve
 FORM account 'E-mail аккаунт'
     OBJECTS a = Account FIXED PANEL
     PROPERTIES(a) nameAccount, passwordAccount, fromAddressAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount,
-                  nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, 
+                  receivePortAccount, nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, 
                   isDefaultNotificationAccount, isDefaultInboxAccount, disableAccount
     EDIT Account OBJECT a
 ;
@@ -94,7 +95,7 @@ FORM accounts 'E-mail аккаунты'
    
     OBJECTS a = Account
     PROPERTIES(a) READONLY nameAccount, passwordAccount, fromAddressAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount,
-                  nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, 
+                  receivePortAccount, nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, 
                   isDefaultNotificationAccount, disableAccount
     PROPERTIES(a) ADDFORM, EDITFORM, DELETE TOOLBAR
 
@@ -133,7 +134,7 @@ FORM mail 'Почта'
 
     OBJECTS a=Account
 
-    PROPERTIES(a) nameAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount, nameEncryptedConnectionTypeAccount,
+    PROPERTIES(a) nameAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount, receivePortAccount, nameEncryptedConnectionTypeAccount,
                   fromAddressAccount, passwordAccount, blindCarbonCopyAccount, deleteMessagesAccount, 
                   isDefaultNotificationAccount, isDefaultInboxAccount, disableAccount 
     PROPERTIES(a) FORCE PANEL ADDOBJ, DELETE TOOLBAR
