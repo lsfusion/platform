@@ -36,6 +36,7 @@ import static lsfusion.base.ApiResourceBundle.getString;
 
 public class BaseUtils {
     public static final Logger systemLogger = Logger.getLogger("SystemLogger");
+    public static final Logger serviceLogger = Logger.getLogger("ServiceLogger");
 
     public static final String lineSeparator = System.getProperty("line.separator");
 

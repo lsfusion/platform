@@ -12,6 +12,8 @@ import java.util.concurrent.TimeUnit;
 public class ServerLoggers {
     public static final Logger systemLogger = Logger.getLogger("SystemLogger");
 
+    public static final Logger serviceLogger = Logger.getLogger("ServiceLogger");
+
     public static final Logger remoteLogger = Logger.getLogger("RemoteLogger");
 
     public static final Logger mailLogger = Logger.getLogger("MailLogger");

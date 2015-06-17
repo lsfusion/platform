@@ -89,6 +89,7 @@ import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.BaseUtils.systemLogger;
+import static lsfusion.base.BaseUtils.serviceLogger;
 import static lsfusion.server.logics.LogicsModule.*;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -1162,7 +1163,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                         result.add((AggregateProperty) property);
                 }
         } catch (SQLException | SQLHandledException e) {
-            systemLogger.info(e.getMessage());
+            serviceLogger.info(e.getMessage());
         }
         return result;
     }
@@ -1185,13 +1186,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     try {
                         recalculate = !filterRecalculate || property.getDBName() == null || reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     } catch (SQLException | SQLHandledException e) {
-                        systemLogger.error(e.getMessage());
+                        serviceLogger.error(e.getMessage());
                     }
                     return recalculate && (property instanceof StoredDataProperty || property instanceof ClassDataProperty);
                 }
             }));
         } catch (SQLException e) {
-            systemLogger.info(e.getMessage());
+            serviceLogger.info(e.getMessage());
         }
         return SetFact.EMPTYORDER();
     }
@@ -1367,10 +1368,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();
-            systemLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), String.valueOf(dataTable)));
+            serviceLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), String.valueOf(dataTable)));
             dataTable.calculateStat(this.reflectionLM, session);
             long time = System.currentTimeMillis() - start;
-            systemLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
+            serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
         }
         recalculateClassStat(session);
     }
@@ -1378,7 +1379,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public void recalculateClassStat(DataSession session) throws SQLException, SQLHandledException {
         for(ObjectValueClassSet tableClasses : LM.baseClass.getUpObjectClassFields().valueIt()) {
             long start = System.currentTimeMillis();
-            systemLogger.info(String.format("Recalculate Stats: %s", String.valueOf(tableClasses)));
+            serviceLogger.info(String.format("Recalculate Stats: %s", String.valueOf(tableClasses)));
             QueryBuilder<Integer, Integer> classes = new QueryBuilder<Integer, Integer>(SetFact.singleton(0));
 
             KeyExpr countKeyExpr = new KeyExpr("count");
@@ -1396,7 +1397,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 LM.statCustomObjectClass.change(classStat==null ? 1 : (Integer)classStat.singleValue(), session, customClass.getClassObject());
             }
             long time = System.currentTimeMillis() - start;
-            systemLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(tableClasses), time));
+            serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(tableClasses), time));
         }
     }
 
@@ -1415,11 +1416,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                             }
                         });
                     } catch (LogMessageLogicsException e) { // suppress'им так как понятная ошибка
-                        systemLogger.info(e.getMessage());
+                        serviceLogger.info(e.getMessage());
                     }
                     long time = System.currentTimeMillis() - start;
                     String message = String.format("Recalculate Follows: %s, %sms", property.getSID(), time);
-                    systemLogger.info(message);
+                    serviceLogger.info(message);
                     if(time > maxRecalculateTime)
                         messageList.add(message);                    
                 }
@@ -1514,7 +1515,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     DataSession.recalculateTableClasses(implementTable, sql, LM.baseClass);
                     long time = System.currentTimeMillis() - start;
                     String message = String.format("Recalculate Table Classes: %s, %s", implementTable.toString(), time);
-                    systemLogger.info(message);
+                    serviceLogger.info(message);
                     if(time > maxRecalculateTime)
                         messageList.add(message);
                 }
@@ -1528,7 +1529,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     property.recalculateClasses(sql, LM.baseClass);
                     long time = System.currentTimeMillis() - start;
                     String message = String.format("Recalculate Class: %s, %s", property.getSID(), time);
-                    systemLogger.info(message);
+                    serviceLogger.info(message);
                     if(time > maxRecalculateTime)
                         messageList.add(message);
                 }});

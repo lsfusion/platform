@@ -76,6 +76,7 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 public class DBManager extends LifecycleAdapter implements InitializingBean {
     public static final Logger logger = Logger.getLogger(DBManager.class);
     public static final Logger systemLogger = ServerLoggers.systemLogger;
+    public static final Logger serviceLogger = ServerLoggers.serviceLogger;
 
     private static Comparator<DBVersion> dbVersionComparator = new Comparator<DBVersion>() {
         @Override
@@ -1060,7 +1061,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 run(session, isolatedTransaction, new RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         long start = System.currentTimeMillis();
-                        systemLogger.info(String.format("Recalculate Aggregation started: %s", property.getSID()));
+                        serviceLogger.info(String.format("Recalculate Aggregation started: %s", property.getSID()));
                         property.recalculateAggregation(sql, LM.baseClass);
 
                         proceeded.set(proceeded.result + 1);
@@ -1068,7 +1069,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
                         long time = System.currentTimeMillis() - start;
                         String message = String.format("Recalculate Aggregation: %s, %sms", property.getSID(), time);
-                        systemLogger.info(message);
+                        serviceLogger.info(message);
                         if(time > maxRecalculateTime)
                             messageList.add(message);
                     }
