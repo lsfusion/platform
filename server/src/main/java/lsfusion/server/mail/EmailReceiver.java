@@ -17,6 +17,7 @@ import lsfusion.server.session.DataSession;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import java.io.*;
@@ -184,7 +185,7 @@ public class EmailReceiver {
             String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
             String idEmail = String.valueOf(dateTimeSentEmail.getTime()) + fromAddressEmail;
             String subjectEmail = message.getSubject();
-            Object messageContent = message.getContent();
+            Object messageContent = getEmailContent(message);
             MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) : 
                                          messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, message.getFileName()) : 
                                          messageContent instanceof String ? new MultipartBody((String) message.getContent(), null) : null;
@@ -208,6 +209,21 @@ public class EmailReceiver {
         emailStore.close();
 
         return Arrays.asList(dataEmails, dataAttachments);
+    }
+
+    private Object getEmailContent(Message email) throws IOException, MessagingException {
+        Object content;
+        try {
+            content = email.getContent();
+        } catch (MessagingException e) {
+            // did this due to a bug
+            if (email instanceof MimeMessage && "Unable to load BODYSTRUCTURE".equalsIgnoreCase(e.getMessage())) {
+                content = new MimeMessage((MimeMessage) email).getContent();
+            } else {
+                throw e;
+            }
+        }
+        return content;
     }
 
     private byte[] getEMLByteArray (Message msg) throws IOException, MessagingException {
