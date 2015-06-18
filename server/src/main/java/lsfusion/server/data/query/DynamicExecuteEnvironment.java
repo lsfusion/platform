@@ -1,6 +1,5 @@
 package lsfusion.server.data.query;
 
-import lsfusion.server.Settings;
 import lsfusion.server.data.SQLCommand;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
 
@@ -12,7 +11,7 @@ public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnap
 
     public abstract S getSnapshot(SQLCommand command, int transactTimeout, DynamicExecEnvOuter<OE, S> outerEnv); // nullable последний параметр
 
-    public abstract void succeeded(SQLCommand command, S snapshot, long l);
+    public abstract void succeeded(SQLCommand command, S snapshot, long l, DynamicExecEnvOuter<OE, S> outerEnv);
 
     public abstract TypeExecuteEnvironment getType();
 
@@ -31,7 +30,7 @@ public abstract class DynamicExecuteEnvironment<OE, S extends DynamicExecEnvSnap
             return null;
         }
 
-        public void succeeded(SQLCommand command, AdjustVolatileExecuteEnvironment.Snapshot snapshot, long l) {
+        public void succeeded(SQLCommand command, AdjustVolatileExecuteEnvironment.Snapshot snapshot, long l, DynamicExecEnvOuter<Object, AdjustVolatileExecuteEnvironment.Snapshot> outerEnv) {
         }
 
         public void failed(SQLCommand command, AdjustVolatileExecuteEnvironment.Snapshot snapshot) {

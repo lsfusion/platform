@@ -1221,6 +1221,16 @@ public class Settings {
         this.timeoutIncreaseCoeff = timeoutIncreaseCoeff;
     }
 
+    private int subQueriesSplit = 4;
+
+    public int getSubQueriesSplit() {
+        return subQueriesSplit;
+    }
+
+    public void setSubQueriesSplit(int subQueriesSplit) {
+        this.subQueriesSplit = subQueriesSplit;
+    }
+
     private int explainThreshold = 100;
 
     public int getExplainThreshold() {

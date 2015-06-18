@@ -1,14 +1,13 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.MOrderSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
@@ -26,7 +25,51 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
     private Step current;
 
-    public AdjustMaterializedExecuteEnvironment() {
+    private static class SubQueryContext {
+        private final SQLQuery query;
+
+        public SubQueryContext(SQLQuery query) {
+            this.query = query;
+        }
+
+        public String toString() {
+            return query.hashCode() +  " " + query.toString();
+        }
+
+        public void toStrings(MList<String> mList) {
+            mList.add(toString());
+        }
+    }
+
+    private static class SubQueryUpContext extends SubQueryContext {
+        private final Step step;
+        private final AdjustMaterializedExecuteEnvironment env;
+
+        public SubQueryUpContext(Step step, SQLQuery query, AdjustMaterializedExecuteEnvironment env) {
+            super(query);
+            this.step = step;
+            this.env = env;
+        }
+
+        @Override
+        public void toStrings(MList<String> mList) {
+            env.toStrings(mList);
+            mList.add(step + " " + toString());
+        }
+    }
+
+    private final SubQueryContext context;
+
+    private AdjustMaterializedExecuteEnvironment(SubQueryContext context) {
+        this.context = context;
+    }
+
+    public AdjustMaterializedExecuteEnvironment(SQLQuery query) {
+        this(new SubQueryContext(query));
+    }
+
+    public AdjustMaterializedExecuteEnvironment(SubQueryUpContext upContext) {
+        this((SubQueryContext)upContext);
     }
 
     public TypeExecuteEnvironment getType() {
@@ -82,21 +125,24 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         return new Snapshot(nextStep, previousStep, command, transactTimeout, materializedQueries);
     }
 
-    public synchronized void succeeded(SQLCommand command, Snapshot snapshot, long runtime) {
+    public synchronized void succeeded(SQLCommand command, Snapshot snapshot, long runtime, DynamicExecEnvOuter<ImMap<SQLQuery, MaterializedQuery>, Snapshot> outerEnv) {
         if(snapshot.noHandled || snapshot.isTransactTimeout)
             return;
 
-        Step runBack = snapshot.step;
+        Step step = snapshot.step;
 
-        int stepTimeout = runBack.getTimeout();
+        int stepTimeout = step.getTimeout();
         if(stepTimeout != 0 && runtime / 1000 > stepTimeout && stepTimeout < snapshot.secondsFromTransactStart) { // если на самом деле больше timeout, то по сути можно считать failed
-            failed(command, snapshot);
+            innerFailed(command, snapshot, " [SUCCEEDED - RUN : " + (runtime / 1000) + ", STEP : " + stepTimeout + ", TRANSACT : " + snapshot.secondsFromTransactStart + "]");
             return;
         }
 
         // пытаемся вернуться назад
         long totalTime = runtime;
         int coeff = Settings.get().getTimeoutIncreaseCoeff();
+        Step runBack = step;
+        assertNoRecheckBefore();
+        MOrderExclSet<Step> mBackSteps = SetFact.mOrderExclSet();
         while (true) {
             totalTime += runBack.getMaterializeTime(snapshot.getMaterializedQueries()); // достаточно inner
 
@@ -111,24 +157,49 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 //                        return String.valueOf(value.hashCode());
 //                    }}, ",") + " " + runBack.disableNestedLoop + " " + command);
                 runBack.setTimeout((int) adjtime);
+                mBackSteps.exclAdd(runBack);
                 runBack.recheck = true;
                 current = runBack;
-            } else
-                runBack.recheck = false; // касается в общем то только первой итерации, но больше не меньше
+            }
+//            else
+//                runBack.recheck = false; // касается в общем то только первой итерации, но больше не меньше
         }
+
+        boolean failedBefore = outerEnv.getSnapshot() != null; // не очень красиво конечно
+        ImOrderSet<Step> backSteps = mBackSteps.immutableOrder();
+        if(failedBefore || !backSteps.isEmpty())
+            log("SUCCEEDED" + (failedBefore ? " (AFTER FAILURE)" : "" ) + " TIME (" + (runtime / 1000) + " OF " + snapshot.setTimeout + ")" + (backSteps.isEmpty() ? "" : " - BACK"), step, backSteps);
     }
 
-    public synchronized void failed(SQLCommand command, Snapshot snapshot) {
-        assert !snapshot.noHandled;
-        if(snapshot.isTransactTimeout)
-            return;
-
+    public void innerFailed(SQLCommand command, Snapshot snapshot, String outerMessage) {
         // если current до, ничего не трогаем и так идет recheck
         // если current после, тоже ничего не трогаем, current и так уже подвинут
         if(BaseUtils.hashEquals(current, snapshot.step)) { // подвигаем current до следующего recheck'а
             current.recheck = false; // при succeded'е он и так сбросится, так что на всякий случай
-            current = getNextStep(current, command, snapshot);
+            Step nextStep = getNextStep(current, command, snapshot);
+            log("FAILED TIMEOUT (" + snapshot.setTimeout + ")" + outerMessage + " - NEXT", current, SetFact.singletonOrder(nextStep));
+            current = nextStep;
         }
+    }
+    public synchronized void failed(SQLCommand command, Snapshot snapshot) {
+        assert !snapshot.noHandled;
+        if(snapshot.isTransactTimeout)
+            return;
+        innerFailed(command, snapshot, "");
+    }
+
+    private void toStrings(MList<String> mList) {
+        context.toStrings(mList);
+    }
+
+    private void log(String message, Step baseStep, ImOrderSet<Step> changeTo) {
+        // step + его timeout
+        MList<String> mList = ListFact.mList();
+        toStrings(mList);
+        mList.add(message + (changeTo.isEmpty() ? "" : " FROM") + " : " + baseStep);
+        for(Step change : changeTo)
+            mList.add(" TO : " + change);
+        ServerLoggers.handledLog(mList.immutableList());
     }
 
     private static Step getNextStep(Step current, SQLCommand command, Snapshot snapshot) {
@@ -137,24 +208,23 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         int coeff = Settings.get().getTimeoutIncreaseCoeff();
         while (true) {
             Step next;
-//            if(current.isLastStep()) {
-//                next = current.previous;
-//                next.setTimeout(next.getTimeout() * coeff);
-//                next.recheck = true;
-//                current.setTimeout(current.getTimeout() * coeff);
-//                current.recheck = true;
-//            } else {// идем назад, но этому шагу и себе увеличиваем timeout
+            if(current.isLastStep()) { // идем назад, но этому шагу и себе увеличиваем timeout
+                next = current.previous;
+                next.setTimeout(next.getTimeout() * coeff);
+                next.recheck = true;
+                current.setTimeout(current.getTimeout() * coeff);
+                current.recheck = true;
+            } else {
                 next = current.next;
                 if (next == null) {
                     next = createNextStep(command, current, materializedQueries.keys());
                     assert next.recheck;
                     current.next = next;
                 }
-//            }
+            }
             current = next;
             if (current.recheck) {
-                if(!current.isLastStep())
-                    current.setTimeout(BaseUtils.max(current.getTimeout(), getDefaultTimeout(command, materializedQueries))); // adjust'м timeout в любом случае
+                current.setTimeout(BaseUtils.max(current.getTimeout(), getDefaultTimeout(command, materializedQueries))); // adjust'м timeout в любом случае
                 return current;
             }
         }
@@ -207,7 +277,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             return new Step(true, step); // включение disableNestedLoop
         }
 
-        final int target = (int) Math.sqrt(nodes.size());
+        final int target = (int) Math.round(((double)nodes.size()) / Settings.get().getSubQueriesSplit());
 
         Comparator<Node> comparator = new Comparator<Node>() {
             private int getPriority(Node o) {
@@ -261,13 +331,13 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         session.lockedReturnTemporaryTable(query.tableName, query.owner, owner);
     }
 
-    private static class SubQueryEnv {
+    private class SubQueryEnv {
         private final MAddExclMap<SQLQuery, DynamicExecuteEnvironment> map = MapFact.mAddExclMap();
 
-        public synchronized DynamicExecuteEnvironment get(SQLQuery subQuery) {
+        public synchronized DynamicExecuteEnvironment get(SQLQuery subQuery, Step step) {
             DynamicExecuteEnvironment subEnv = map.get(subQuery);
             if(subEnv == null) {
-                subEnv = new AdjustMaterializedExecuteEnvironment();
+                subEnv = new AdjustMaterializedExecuteEnvironment(new SubQueryUpContext(step, subQuery, AdjustMaterializedExecuteEnvironment.this));
                 map.exclAdd(subQuery, subEnv);
             }
             return subEnv;
@@ -321,7 +391,12 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         }
 
         public int getIndex() {
-            return previous == null ? 0 : (previous.getIndex() + 1);
+            return previous == null ? 0 : (previous.getIndex() + (disableNestedLoop ? 0 : 1));
+        }
+
+        @Override
+        public String toString() {
+            return "step : " + getIndex() + " timeout : " + timeout + " " + (disableNestedLoop ? "NONESTED" : "");
         }
 
         public long getMaterializeTime(ImMap<SQLQuery, MaterializedQuery> materializedQueries) {
@@ -395,7 +470,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
                 for (int i = 0, size = queries.size(); i < size; i++) {
                     SQLQuery query = queries.get(i);
                     ImMap<SQLQuery, MaterializedQuery> copyMaterializedQueries = MapFact.addExcl(mMaterializedQueries.immutableCopy(), materializedOuterQueries);
-                    MaterializedQuery materialized = query.materialize(session, subQueryEnv.get(query), owner, copyMaterializedQueries, paramObjects, transactTimeout);
+                    MaterializedQuery materialized = query.materialize(session, subQueryEnv.get(query, step), owner, copyMaterializedQueries, paramObjects, transactTimeout);
                     mMaterializedQueries.exclAdd(query, materialized);
                     pureTime.add(materialized.timeExec);
                 }

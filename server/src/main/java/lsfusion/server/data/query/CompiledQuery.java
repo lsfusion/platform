@@ -73,19 +73,19 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         TypeExecuteEnvironment typeEnv = getTypeExecEnv(userProvider);
         if(queryExecEnv.getType().equals(typeEnv))
             return queryExecEnv;
-        return extraEnvs.getEnv(typeEnv);
+        return extraEnvs.getEnv(typeEnv, sql);
     }
 
     private static class ExtraEnvs {
         private MAddExclMap<TypeExecuteEnvironment, DynamicExecuteEnvironment> extraQueryExecEnvs;
 
-        private synchronized DynamicExecuteEnvironment getEnv(TypeExecuteEnvironment type) {
+        private synchronized DynamicExecuteEnvironment getEnv(TypeExecuteEnvironment type, SQLQuery query) {
             if(extraQueryExecEnvs == null)
                 extraQueryExecEnvs = MapFact.mAddExclMap();
 
             DynamicExecuteEnvironment execEnv = extraQueryExecEnvs.get(type);
             if (execEnv == null) {
-                execEnv = type.create();
+                execEnv = type.create(query);
                 extraQueryExecEnvs.exclAdd(type, execEnv);
             }
             return execEnv;
@@ -304,7 +304,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
 
         env = mEnv.finish();
         sql = new SQLQuery(select, mBaseCost.result, mSubQueries.immutable(), env, keyNames.crossJoin(keyReaders), propertyNames.crossJoin(propertyReaders), union, false);
-        queryExecEnv = getTypeExecEnv(null).create();
+        queryExecEnv = getTypeExecEnv(null).create(sql);
         extraEnvs = new ExtraEnvs();
         keyOrder = resultKeyOrder.result; propertyOrder = resultPropertyOrder.result;
 

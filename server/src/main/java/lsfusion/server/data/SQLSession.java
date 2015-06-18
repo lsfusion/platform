@@ -1294,7 +1294,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
                 long runTime = System.currentTimeMillis() - timeStarted;
                 pureTime.add(runTime); // тут теоретически вопрос с AnalyzeAspect'ом мог бы быть, но так как DML сразу выполняется не проблема
-                queryExecEnv.succeeded(command, snapEnv, runTime);
+                queryExecEnv.succeeded(command, snapEnv, runTime, outerEnv);
 
                 return;
             } catch (SQLClosedException e) {

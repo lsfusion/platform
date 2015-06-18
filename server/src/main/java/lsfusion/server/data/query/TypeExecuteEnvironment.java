@@ -1,5 +1,7 @@
 package lsfusion.server.data.query;
 
+import lsfusion.server.data.SQLQuery;
+
 public enum TypeExecuteEnvironment {
     MATERIALIZE, DISABLENESTLOOP, NONE;
 
@@ -17,10 +19,10 @@ public enum TypeExecuteEnvironment {
         return NONE;
     }
 
-    public DynamicExecuteEnvironment create() {
+    public DynamicExecuteEnvironment create(SQLQuery sql) {
         switch (this) {
             case MATERIALIZE:
-                return new AdjustMaterializedExecuteEnvironment();
+                return new AdjustMaterializedExecuteEnvironment(sql);
             case DISABLENESTLOOP:
                 return new AdjustVolatileExecuteEnvironment();
             case NONE:

@@ -1,6 +1,7 @@
 package lsfusion.server;
 
 import lsfusion.base.ExceptionUtils;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.logging.FlushableRollingFileAppender;
 import org.apache.log4j.Logger;
@@ -64,6 +65,16 @@ public class ServerLoggers {
     
     public static void handledLog(String message) {
         sqlHandLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
+    }
+
+    public static void handledLog(ImList<String> messages) {
+        String result = "";
+        String tab = "";
+        for(String message : messages) {
+            result += '\n' + tab + message;
+            tab += '\t';
+        }
+        handledLog(result);
     }
 
     public static void exinfoLog(String message) {

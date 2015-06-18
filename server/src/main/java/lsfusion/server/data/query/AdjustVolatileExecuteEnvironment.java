@@ -38,7 +38,7 @@ public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment<
         return true;
     }
 
-    public synchronized void succeeded(SQLCommand command, Snapshot snapshot, long l) {
+    public synchronized void succeeded(SQLCommand command, Snapshot snapshot, long l, DynamicExecEnvOuter<Object, Snapshot> outerEnv) {
         if(snapshot.volatileStats && timeout > snapshot.secondsFromTransactStart) { // проверка checkSnapshot не первая для оптимизации
             if(!checkSnapshot(snapshot))
                 return;
