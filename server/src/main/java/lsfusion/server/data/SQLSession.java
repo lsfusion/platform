@@ -1040,6 +1040,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public int executeExplain(PreparedStatement statement, boolean noAnalyze, boolean dml) throws SQLException {
         long l = System.currentTimeMillis();
         ResultSet result = statement.executeQuery();
+        long actualTime = System.currentTimeMillis() - l;
         Integer rows = null;
         try {
             int thr = Settings.get().getExplainThreshold();
@@ -1098,7 +1099,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     rtime = Double.valueOf(matcher.group(1));
                 }
                 if(noAnalyze || thr==0 || rtime >= thr) {
-                    systemLogger.info(statement.toString() + " volatile : " + isVolatileStats() + " disabled nested loop : " + isDisabledNestLoop);
+                    systemLogger.info(statement.toString() + " volatile : " + isVolatileStats() + " disabled nested loop : " + isDisabledNestLoop + " actual time : " + actualTime);
                     for(String outRow : out)
                         systemLogger.info(outRow);
                 } //else {
