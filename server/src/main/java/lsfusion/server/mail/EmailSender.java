@@ -1,6 +1,7 @@
 package lsfusion.server.mail;
 
 
+import com.sun.mail.smtp.SMTPMessage;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
 import lsfusion.server.ServerLoggers;
@@ -32,13 +33,14 @@ import java.util.Properties;
 public class EmailSender {
     private final static Logger logger = ServerLoggers.mailLogger;
 
-    MimeMessage message;
+    SMTPMessage message;
     Multipart mp = new MimeMultipart();
     Properties mailProps = new Properties();
     String userName;
     String password;
     String smtpHost;
     String smtpPort;
+    String fromAddress;
     Map<String, Message.RecipientType> emails = new HashMap<String, Message.RecipientType>();
 
     public static class AttachmentProperties {
@@ -80,14 +82,15 @@ public class EmailSender {
         }
         this.smtpHost = smtpHostAccount;
         this.smtpPort = smtpPortAccount;
+        this.fromAddress = fromAddressAccount;
     }
 
     private Session getSession() {
         return Session.getInstance(mailProps, null);
     }
 
-    private void setMessageHeading(Session session) throws MessagingException {
-        message = new MimeMessage(session);
+    private void setMessageHeading() throws MessagingException {
+        message = new SMTPMessage(getSession());
         message.setFrom();
         message.setSentDate(new java.util.Date());
         setRecipients(emails);
@@ -164,8 +167,7 @@ public class EmailSender {
     public void sendMail(String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException {
         assert inlineFiles != null && attachments != null && files != null;
 
-        Session session = getSession();
-        setMessageHeading(session);
+        setMessageHeading();
         message.setSubject(subject, "utf-8");
 
         setText(createInlinePart(inlineFiles));
@@ -178,14 +180,13 @@ public class EmailSender {
         }
 
         message.setContent(mp);
-        sendMail(session, message, subject);
+        sendMail(message, subject);
     }
 
     public void sendSimpleMail(String subject, List<AttachmentProperties> attachments) throws MessagingException, IOException {
         assert attachments != null;
 
-        Session session = getSession();
-        setMessageHeading(session);
+        setMessageHeading();
         message.setSubject(subject, "utf-8");
         for (AttachmentProperties attachment : attachments) {
             attachFile(attachment);
@@ -205,7 +206,7 @@ public class EmailSender {
         }
 
         try {
-            sendMessage(session, message, smtpHost, smtpPort, userName, password);
+            sendMessage(message, smtpHost, smtpPort, userName, password);
         } catch (MessagingException e) {
             throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo, e);
         }
@@ -214,8 +215,7 @@ public class EmailSender {
     public void sendPlainMail(String subject, String inlineForms, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException {
         assert inlineForms != null && attachments != null && files != null;
 
-        Session session = getSession();
-        setMessageHeading(session);
+        setMessageHeading();
         message.setSubject(subject, "utf-8");
 
         setText(inlineForms);
@@ -228,10 +228,10 @@ public class EmailSender {
         }
 
         message.setContent(mp);
-        sendMail(session, message, subject);
+        sendMail(message, subject);
     }
 
-    private void sendMail(final Session session, final MimeMessage message, final String subject) {
+    private void sendMail(final SMTPMessage message, final String subject) {
         new Thread() {
             public void run() {
 
@@ -253,7 +253,7 @@ public class EmailSender {
                     send = true;
                     count++;
                     try {
-                        sendMessage(session, message, smtpHost, smtpPort, userName, password);
+                        sendMessage(message, smtpHost, smtpPort, userName, password);
                     } catch (MessagingException e) {
                         if (count < 40) {
                             logger.info(ServerResourceBundle.getString("mail.unsuccessful.attempt.to.send.mail") + " " + messageInfo);
@@ -273,9 +273,9 @@ public class EmailSender {
         }.start();
     }
 
-    private void sendMessage(Session session, Message message, String smtpHost, String smtpPort, String userName, String password) throws MessagingException {
+    private void sendMessage(SMTPMessage message, String smtpHost, String smtpPort, String userName, String password) throws MessagingException {
         trustAllCerts();
-        Transport transport = session.getTransport("smtps");
+        Transport transport = message.getSession().getTransport("smtps");
         Integer port = parsePort(smtpPort);
         if(port == null)
             transport.connect(smtpHost, userName, password);
