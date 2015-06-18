@@ -15,10 +15,15 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +37,8 @@ public class EmailSender {
     Properties mailProps = new Properties();
     String userName;
     String password;
+    String smtpHost;
+    String smtpPort;
     Map<String, Message.RecipientType> emails = new HashMap<String, Message.RecipientType>();
 
     public static class AttachmentProperties {
@@ -71,22 +78,16 @@ public class EmailSender {
             this.userName = userName;
             this.password = password;
         }
+        this.smtpHost = smtpHostAccount;
+        this.smtpPort = smtpPortAccount;
     }
 
     private Session getSession() {
-        if (mailProps.containsKey("mail.smtp.auth") && mailProps.getProperty("mail.smtp.auth").equals("true")) {
-            return Session.getInstance(mailProps, new Authenticator() {
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return (new PasswordAuthentication(userName, password));
-                }
-            });
-        } else {
-            return Session.getInstance(mailProps, null);
-        }
+        return Session.getInstance(mailProps, null);
     }
 
-    private void setMessageHeading() throws MessagingException {
-        message = new MimeMessage(getSession());
+    private void setMessageHeading(Session session) throws MessagingException {
+        message = new MimeMessage(session);
         message.setFrom();
         message.setSentDate(new java.util.Date());
         setRecipients(emails);
@@ -163,7 +164,8 @@ public class EmailSender {
     public void sendMail(String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException {
         assert inlineFiles != null && attachments != null && files != null;
 
-        setMessageHeading();
+        Session session = getSession();
+        setMessageHeading(session);
         message.setSubject(subject, "utf-8");
 
         setText(createInlinePart(inlineFiles));
@@ -176,13 +178,14 @@ public class EmailSender {
         }
 
         message.setContent(mp);
-        sendMail(message, subject);
+        sendMail(session, message, subject);
     }
 
     public void sendSimpleMail(String subject, List<AttachmentProperties> attachments) throws MessagingException, IOException {
         assert attachments != null;
 
-        setMessageHeading();
+        Session session = getSession();
+        setMessageHeading(session);
         message.setSubject(subject, "utf-8");
         for (AttachmentProperties attachment : attachments) {
             attachFile(attachment);
@@ -202,7 +205,7 @@ public class EmailSender {
         }
 
         try {
-            Transport.send(message);
+            sendMessage(session, message, smtpHost, smtpPort, userName, password);
         } catch (MessagingException e) {
             throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo, e);
         }
@@ -211,7 +214,8 @@ public class EmailSender {
     public void sendPlainMail(String subject, String inlineForms, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException {
         assert inlineForms != null && attachments != null && files != null;
 
-        setMessageHeading();
+        Session session = getSession();
+        setMessageHeading(session);
         message.setSubject(subject, "utf-8");
 
         setText(inlineForms);
@@ -224,10 +228,10 @@ public class EmailSender {
         }
 
         message.setContent(mp);
-        sendMail(message, subject);
+        sendMail(session, message, subject);
     }
 
-    private void sendMail(final MimeMessage message, final String subject) {
+    private void sendMail(final Session session, final MimeMessage message, final String subject) {
         new Thread() {
             public void run() {
 
@@ -249,7 +253,7 @@ public class EmailSender {
                     send = true;
                     count++;
                     try {
-                        Transport.send(message);
+                        sendMessage(session, message, smtpHost, smtpPort, userName, password);
                     } catch (MessagingException e) {
                         if (count < 40) {
                             logger.info(ServerResourceBundle.getString("mail.unsuccessful.attempt.to.send.mail") + " " + messageInfo);
@@ -267,5 +271,40 @@ public class EmailSender {
                 logger.info(ServerResourceBundle.getString("mail.successful.mail.sending") + messageInfo);
             }
         }.start();
+    }
+
+    private void sendMessage(Session session, Message message, String smtpHost, String smtpPort, String userName, String password) throws MessagingException {
+        trustAllCerts();
+        Transport transport = session.getTransport("smtps");
+        Integer port = parsePort(smtpPort);
+        if(port == null)
+            transport.connect(smtpHost, userName, password);
+        else
+            transport.connect(smtpHost, port, userName, password);
+        transport.sendMessage(message, message.getAllRecipients());
+    }
+
+    private void trustAllCerts() {
+        SSLContext ctx;
+        TrustManager[] trustAllCerts = new X509TrustManager[]{new X509TrustManager(){
+            public java.security.cert.X509Certificate[] getAcceptedIssuers(){return null;}
+            public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType){}
+            public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType){}
+        }};
+        try {
+            ctx = SSLContext.getInstance("SSL");
+            ctx.init(null, trustAllCerts, null);
+            SSLContext.setDefault(ctx);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            logger.info("Error loading ssl context {}", e);
+        }
+    }
+
+    private Integer parsePort(String port) {
+        try {
+            return Integer.parseInt(port);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
