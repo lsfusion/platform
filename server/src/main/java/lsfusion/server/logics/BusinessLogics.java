@@ -29,6 +29,7 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
 import lsfusion.interop.exceptions.LogMessageLogicsException;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.daemons.DiscountCardDaemonTask;
 import lsfusion.server.daemons.ScannerDaemonTask;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
@@ -218,6 +219,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         } catch (SQLHandledException e) {
             throw Throwables.propagate(e);
         }
+        daemons.add(new DiscountCardDaemonTask());
         if (scannerComPort != null) {
             IDaemonTask task = new ScannerDaemonTask(scannerComPort, ((Boolean)true).equals(scannerSingleRead));
             daemons.add(task);
