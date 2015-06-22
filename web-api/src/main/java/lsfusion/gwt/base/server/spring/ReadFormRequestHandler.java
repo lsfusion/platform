@@ -59,7 +59,14 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             String exportPassword = context.getInitParameter("serviceUserPassword");
             String osVersion = System.getProperty("os.name");
             String processor = System.getenv("PROCESSOR_IDENTIFIER");
-            String architecture = System.getenv("PROCESSOR_ARCHITECTURE");
+            String architecture = System.getProperty("os.arch");
+
+            if (osVersion.startsWith("Windows")) {
+                String arch = System.getenv("PROCESSOR_ARCHITECTURE");
+                String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
+                architecture = arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64") ? "x64" : "x32";
+            }
+
             Integer cores = Runtime.getRuntime().availableProcessors();
             com.sun.management.OperatingSystemMXBean os = (com.sun.management.OperatingSystemMXBean)
                     java.lang.management.ManagementFactory.getOperatingSystemMXBean();
