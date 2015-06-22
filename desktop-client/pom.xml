@@ -114,5 +114,10 @@
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.sf.fax4j</groupId>
+            <artifactId>fax4j</artifactId>
+            <version>0.43.1</version>
+        </dependency>
     </dependencies>
 </project>
