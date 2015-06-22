@@ -29,6 +29,11 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.sf.fax4j</groupId>
+            <artifactId>fax4j</artifactId>
+            <version>0.43.1</version>
+        </dependency>
     </dependencies>
 
     <scm>
