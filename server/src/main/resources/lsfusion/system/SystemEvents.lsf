@@ -128,7 +128,7 @@ userLoginConnectionSession 'Логин пользователя' = userLoginConn
 
 @defineLog (Session, 'изменений', log, date);
 
-TABLE pingTable(INTEGER, DATETIME, DATETIME);
+TABLE pingTable(Computer, DATETIME, DATETIME);
 pingComputerDateTimeFromDateTimeTo 'Пинг' = DATA INTEGER (Computer, DATETIME, DATETIME);
 
 lastConnectionComputer(computer) = GROUP LAST connection BY computerConnection(connection);
