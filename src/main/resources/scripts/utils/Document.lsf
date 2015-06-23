@@ -407,12 +407,14 @@ END
 META defineDocumentAbstractHeaderClosed (objectClass)
     isClosed##objectClass 'Закрыт' = ABSTRACT BOOLEAN(objectClass) PERSISTENT;
     isOpened##objectClass 'Не закрыт' (o) = o IS objectClass AND NOT isClosed##objectClass(o) PERSISTENT;
+    close##objectClass 'Закрыть' (o) = ABSTRACT ACTION LIST (objectClass);
 END
 
 META defineDocumentInterfaceHeaderClosed (objectClass)
     @defineDocumentAbstractHeaderClosed(objectClass);
     @defineDocumentHeaderClosed(User##objectClass);
     isClosed##objectClass(o) += isClosedUser##objectClass(o);
+    close##objectClass(o) += ACTION closeUser##objectClass(o);
 END
 
 META defineDocumentDetailClosed (object, detailClass)
