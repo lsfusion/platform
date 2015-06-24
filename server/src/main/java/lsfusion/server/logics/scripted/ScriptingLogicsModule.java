@@ -55,6 +55,7 @@ import lsfusion.server.logics.property.actions.WriteActionProperty;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.csv.ImportCSVDataActionProperty;
+import lsfusion.server.logics.property.actions.importing.xml.ImportXMLDataActionProperty;
 import lsfusion.server.logics.property.group.AbstractGroup;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.mail.AttachmentFormat;
@@ -2258,6 +2259,21 @@ public class ScriptingLogicsModule extends LogicsModule {
             props.add(lcp);
         }
         return addScriptedJoinAProp(addAProp(new ImportCSVDataActionProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), this, ids, props, separator, noHeader, charset)), Collections.singletonList(fileProp));
+    }
+
+    public LPWithParams addScriptedImportXMLActionProperty(LPWithParams fileProp, List<String> ids, List<PropertyUsage> propUsages, boolean attr) throws ScriptingErrorLog.SemanticErrorException {
+        List<LCP> props = new ArrayList<>();
+        for (PropertyUsage propUsage : propUsages) {
+            LCP<?> lcp = (LCP<?>) findLPByPropertyUsage(propUsage);
+            List<ResolveClassSet> paramClasses = getParamClasses(lcp);
+
+            if (paramClasses.size() != 1 || paramClasses.get(0).getType() != IntegerClass.instance) {
+                errLog.emitPropertyWithParamsExpected(getParser(), propUsage.name, "INTEGER");
+            }
+
+            props.add(lcp);
+        }
+        return addScriptedJoinAProp(addAProp(new ImportXMLDataActionProperty(fileProp.property.property.getValueClass(ClassType.valuePolicy), this, ids, props, attr)), Collections.singletonList(fileProp));
     }
 
     public LCP addScriptedTypeProp(String className, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {

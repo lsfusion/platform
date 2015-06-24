@@ -12,10 +12,12 @@ import java.io.IOException;
 import java.util.*;
 
 public abstract class ImportXMLIterator extends ImportIterator {
+    private boolean attr;
     private Iterator iterator;
     private List<Integer> columns = null;
 
-    public ImportXMLIterator(byte[] file) throws JDOMException, IOException {
+    public ImportXMLIterator(byte[] file, boolean attr) throws JDOMException, IOException {
+        this.attr = attr;
         SAXBuilder builder = new SAXBuilder();
         Document document = builder.build(new ByteArrayInputStream(file));
         Element rootNode = document.getRootElement();
@@ -26,20 +28,39 @@ public abstract class ImportXMLIterator extends ImportIterator {
     @Override
     public List<String> nextRow() {
         if (iterator.hasNext()) {
-            List<Attribute> attributes = ((Element) iterator.next()).getAttributes();
-            if (columns == null) {
-                Map<String, Integer> mapping = new HashMap<String, Integer>();
-                for (int i = 0; i < attributes.size(); i++) {
-                    mapping.put(attributes.get(i).getName(), i);
+            List<String> listRow = new ArrayList<>();
+            if(attr) {
+                List<Attribute> attributes = ((Element) iterator.next()).getAttributes();
+                if (columns == null) {
+                    Map<String, Integer> mapping = new HashMap<>();
+                    for (int i = 0; i < attributes.size(); i++) {
+                        mapping.put(attributes.get(i).getName(), i);
+                    }
+                    columns = getColumns(mapping);
                 }
-                columns = getColumns(mapping);
-            }
 
-            List<String> listRow = new ArrayList<String>();
-            for (Integer column : columns) {
-                if (column < attributes.size()) {
-                    Attribute attribute = attributes.get(column);
-                    listRow.add(attribute.getValue());
+
+                for (Integer column : columns) {
+                    if (column < attributes.size()) {
+                        Attribute attribute = attributes.get(column);
+                        listRow.add(attribute.getValue());
+                    }
+                }
+            } else {
+                List<Element> children = ((Element) iterator.next()).getChildren();
+                if (columns == null) {
+                    Map<String, Integer> mapping = new HashMap<>();
+                    for (int i = 0; i < children.size(); i++) {
+                        mapping.put(children.get(i).getName(), i);
+                    }
+                    columns = getColumns(mapping);
+                }
+
+                for (Integer column : columns) {
+                    if (column < children.size()) {
+                        Element child = children.get(column);
+                        listRow.add(child.getValue());
+                    }
                 }
             }
             return listRow;

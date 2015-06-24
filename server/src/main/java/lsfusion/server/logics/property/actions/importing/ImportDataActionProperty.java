@@ -58,8 +58,6 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
     public static ImportDataActionProperty createProperty(ValueClass valueClass, ImportSourceFormat format, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
         if (format == ImportSourceFormat.DBF) {
             return new ImportDBFDataActionProperty(valueClass, LM, ids, properties);
-        } else if (format == ImportSourceFormat.XML) {
-            return new ImportXMLDataActionProperty(valueClass, LM, ids, properties);
         } else if (format == ImportSourceFormat.JDBC) {
             return new ImportJDBCDataActionProperty(valueClass, LM, ids, properties);
         } else if (format == ImportSourceFormat.MDB) {

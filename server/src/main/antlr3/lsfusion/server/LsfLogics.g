@@ -1607,6 +1607,7 @@ importActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic
 	String separator = null;
 	boolean noHeader = false;
 	String charset = null;
+	boolean attr = false;
 
 }
 @after {
@@ -1615,12 +1616,14 @@ importActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic
 			$property = self.addScriptedImportExcelActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages, sheet);
 		else if($type.format == ImportSourceFormat.CSV)
         	$property = self.addScriptedImportCSVActionProperty($expr.property, $plist.ids, $plist.propUsages, separator, noHeader, charset);
+        else if($type.format == ImportSourceFormat.XML)
+        	$property = self.addScriptedImportXMLActionProperty($expr.property, $plist.ids, $plist.propUsages, attr);
 		else
 			$property = self.addScriptedImportActionProperty($type.format, $expr.property, $plist.ids, $plist.propUsages);
 	}
 } 
 	:	'IMPORT' 
-		type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; separator = $type.separator; noHeader = $type.noHeader; charset = $type.charset; }
+		type = importSourceFormat [context, dynamic] { format = $type.format; sheet = $type.sheet; separator = $type.separator; noHeader = $type.noHeader; attr = $type.attr; charset = $type.charset; }
 		'TO' plist=nonEmptyPropertyUsageListWithIds 
 		'FROM' expr=propertyExpression[context, dynamic]
 	;
@@ -1638,12 +1641,12 @@ propertyUsageWithId returns [String id = null, PropertyUsage propUsage]
 	:	(pid=ID '=' { $id = $pid.text; } )? pu=propertyUsage { $propUsage = $pu.propUsage; }
 	;
 
-importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, String separator, boolean noHeader, String charset]
+importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, String separator, boolean noHeader, String charset, boolean attr]
 	: 'XLS' { $format = ImportSourceFormat.XLS; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
 	| 'XLSX' { $format = ImportSourceFormat.XLSX; } ('SHEET' sheetProperty = propertyExpression[context, dynamic] { $sheet = $sheetProperty.property; })?
 	| 'DBF'  { $format = ImportSourceFormat.DBF; }
 	| 'CSV'  { $format = ImportSourceFormat.CSV; } (separatorVal = stringLiteral { $separator = separatorVal.val; })? ('NOHEADER' { $noHeader = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = charsetVal.val; })?
-	| 'XML'  { $format = ImportSourceFormat.XML; }
+	| 'XML'  { $format = ImportSourceFormat.XML; } ('ATTR' { $attr = true; })?
 	| 'JDBC' { $format = ImportSourceFormat.JDBC; }
 	| 'MDB'  { $format = ImportSourceFormat.MDB; }
 	;
