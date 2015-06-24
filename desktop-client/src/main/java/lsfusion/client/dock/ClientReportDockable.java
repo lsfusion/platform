@@ -65,7 +65,7 @@ public class ClientReportDockable extends ClientDockable {
     private JRViewer prepareViewer(final JRViewer viewer) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                viewer.setFitPageZoomRatio();
+                viewer.setZoomRatio(1);
             }
         });
         return viewer;
