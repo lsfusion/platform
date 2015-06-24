@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.Settings;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.sql.SQLExecute;
@@ -45,7 +46,7 @@ public class ModifyQuery {
         String update;
         String setString;
         ImCol<String> whereSelect;
-        final CompiledQuery<KeyField, PropertyField> changeCompile = change.compile(syntax);
+        final CompiledQuery<KeyField, PropertyField> changeCompile = change.compile(new CompileOptions(syntax));
 
         switch(updateModel) {
             case 2:
@@ -116,7 +117,10 @@ public class ModifyQuery {
     public SQLExecute getDelete(final SQLSyntax syntax, SQLSessionUserProvider userProvider) {
 
         int updateModel = syntax.updateModel();
-        final CompiledQuery<KeyField, PropertyField> deleteCompile = change.compile(syntax);
+        // noInline'ом пытаемся предотвратить self join у которого все очень плохо со статистикой
+        // конечно из-за этого может быть проблема когда изменяемая таблица маленькая, а запрос большой, но в таком случае все равно будет проблема с predicate push down, поэтому будем assert'ить что такой ситуации не будет
+        // вообще аналогичная проблема возможна и в getUpdate, но пока с ней не сталкивались
+        final CompiledQuery<KeyField, PropertyField> deleteCompile = change.compile(new CompileOptions(syntax, syntax.inlineSelfJoinTrouble() && Settings.get().isUseDeleteNoInline()));
         ImSet<String> whereSelect;
         String delete; final String deleteAlias;
 
@@ -178,7 +182,7 @@ public class ModifyQuery {
     }
 
     public static SQLExecute getInsertSelect(String name, IQuery<KeyField, PropertyField> query, QueryEnvironment env, TableOwner owner, SQLSyntax syntax, SQLSessionUserProvider userProvider) {
-        CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(syntax);
+        CompiledQuery<KeyField, PropertyField> changeCompile = query.compile(new CompileOptions(syntax));
 
         SQLDML dml = changeCompile.sql.getInsertDML(name, changeCompile.keyOrder, changeCompile.propertyOrder, true, changeCompile.keyOrder.mapOrder(changeCompile.keyNames), changeCompile.propertyOrder.mapOrder(changeCompile.propertyNames), syntax);
         return new SQLExecute(dml, changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner);

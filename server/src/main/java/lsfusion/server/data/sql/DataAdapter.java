@@ -237,6 +237,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public boolean inlineTrouble() {
         return false;
     }
+    public boolean inlineSelfJoinTrouble() {
+        return false;
+    }
 
     public String getHour() {
         return "EXTRACT(HOUR FROM CURRENT_TIME)";

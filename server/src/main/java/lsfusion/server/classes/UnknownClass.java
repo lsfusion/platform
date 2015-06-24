@@ -83,7 +83,7 @@ public class UnknownClass extends ImmutableObject implements FormulaClass, Concr
         return CustomClass.getChangeClassAction(this);
     }
 
-    public ValueClassSet getValueClassSet() {
+    public ObjectValueClassSet getValueClassSet() {
         return OrObjectClassSet.FALSE;
     }
 

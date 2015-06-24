@@ -207,6 +207,11 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
+    public boolean inlineSelfJoinTrouble() {
+        return true;
+    }
+
+    @Override
     public String getTypeChange(Type oldType, Type type, String name, MStaticExecuteEnvironment env) {
         String newType = type.getDB(this, env);
         return "TYPE " + newType + " USING " + name + "::" + newType;

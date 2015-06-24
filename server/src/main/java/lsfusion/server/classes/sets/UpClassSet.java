@@ -102,6 +102,13 @@ public class UpClassSet extends AUpClassSet<UpClassSet> implements ObjectValueCl
         return OrObjectClassSet.getClassCount(this);
     }
 
+    public boolean hasComplex() {
+        for(CustomClass node : wheres)
+            if(node.hasComplex())
+                return true;
+        return false;
+    }
+
     public String getWhereString(String source) {
         return OrObjectClassSet.getWhereString(this, source);
     }
@@ -165,7 +172,7 @@ public class UpClassSet extends AUpClassSet<UpClassSet> implements ObjectValueCl
         return CustomClass.pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields);
     }
 
-    public ValueClassSet getValueClassSet() {
+    public ObjectValueClassSet getValueClassSet() {
         return this;
     }
 

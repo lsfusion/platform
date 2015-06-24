@@ -31,6 +31,7 @@ import lsfusion.server.data.expr.where.ifs.IfExpr;
 import lsfusion.server.data.expr.where.ifs.MIfCases;
 import lsfusion.server.data.expr.where.ifs.NullExpr;
 import lsfusion.server.data.query.AbstractSourceJoin;
+import lsfusion.server.data.query.CompileOptions;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.sql.PostgreDataAdapter;
 import lsfusion.server.data.translator.PartialQueryTranslator;
@@ -89,6 +90,10 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }
     public Expr classExpr(BaseClass baseClass, IsClassType type) {
         return classExpr(baseClass.getUpObjectClassFields().keys(), type);
+    }
+    public Expr classExpr(ObjectValueClassSet valueClassSet) {
+        assert !valueClassSet.isEmpty();
+        return classExpr(valueClassSet.getObjectClassFields().keys(), IsClassType.CONSISTENT);
     }
     public abstract Expr classExpr(ImSet<ObjectClassField> classes, IsClassType type); // classes - за пределами которых можно (и нужно ?) возвращать null
 
@@ -224,7 +229,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
                      translateQuery(new PartialQueryTranslator(keyValues.mapValues(new GetValue<Expr, KeyExpr>() {
                          public Expr getMapValue(KeyExpr key) {
                              return ((DataClass)key.getType(getWhere())).getDefaultExpr();
-                         }}), true)).getWhere()).compile(PostgreDataAdapter.debugSyntax);
+                         }}), true)).getWhere()).compile(new CompileOptions(PostgreDataAdapter.debugSyntax));
     }
 
     public static <K> ImMap<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, ImMap<K,Expr> mapExprs, QueryEnvironment env) throws SQLException, SQLHandledException { // assert что в mapExprs только values

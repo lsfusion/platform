@@ -49,8 +49,8 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         assert mapValues.assertValuesContains(query.getInnerValues()); // например pack может убирать часть значений
     }
 
-    public CompiledQuery<K, V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, LimitOptions limit, SubQueryContext subcontext, boolean recursive) {
-        return new CompiledQuery<K,V>(query.compile(syntax, orders.map(mapProps), limit, subcontext, recursive),mapKeys,mapProps,mapValues);
+    public CompiledQuery<K, V> compile(ImOrderMap<V, Boolean> orders, CompileOptions options) {
+        return new CompiledQuery<K,V>(query.compile(orders.map(mapProps), options),mapKeys,mapProps,mapValues);
     }
 
     public ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders) {

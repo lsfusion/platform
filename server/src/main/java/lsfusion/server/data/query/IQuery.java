@@ -11,7 +11,6 @@ import lsfusion.server.caches.AbstractInnerContext;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.translator.MapValuesTranslator;
@@ -46,19 +45,10 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     public abstract MapQuery<K, V, ?, ?> translateMap(MapValuesTranslate translate);
     public abstract IQuery<K, V> translateQuery(MapTranslate translate);
 
-    public CompiledQuery<K,V> compile(SQLSyntax syntax) {
-        return compile(syntax, SubQueryContext.EMPTY, false);
+    public CompiledQuery<K,V> compile(CompileOptions options) {
+        return compile(MapFact.<V, Boolean>EMPTYORDER(), options);
     }
-    public CompiledQuery<K,V> compile(SQLSyntax syntax, SubQueryContext subcontext, boolean recursive) {
-        return compile(syntax, MapFact.<V, Boolean>EMPTYORDER(), LimitOptions.NOLIMIT, subcontext, recursive);
-    }
-    public CompiledQuery<K,V> compile(SQLSyntax syntax,ImOrderMap<V,Boolean> orders,LimitOptions limit) {
-        return compile(syntax, orders, limit, SubQueryContext.EMPTY);
-    }
-    public CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, LimitOptions limit, SubQueryContext subcontext) {
-        return compile(syntax, orders, limit, subcontext, false);
-    }
-    public abstract CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, LimitOptions limit, SubQueryContext subcontext, boolean recursive);
+    public abstract CompiledQuery<K,V> compile(ImOrderMap<V, Boolean> orders, CompileOptions options);
 
     public abstract ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders);
 
@@ -70,7 +60,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
 
     @Message("message.query.execute")
     public void executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env, ResultHandler<K, V> result) throws SQLException, SQLHandledException {
-        compile(session.syntax, orders, LimitOptions.get(selectTop)).execute(session, env, selectTop, result);
+        compile(orders, new CompileOptions(session.syntax, LimitOptions.get(selectTop))).execute(session, env, selectTop, result);
     }
 
     public abstract <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps);
@@ -96,14 +86,14 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         outSelect(session, DataSession.emptyEnv(OperationOwner.debug));
     }
     public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        compile(session.syntax).outSelect(session, env);
+        compile(new CompileOptions(session.syntax)).outSelect(session, env);
     }
 
     public String readSelect(SQLSession session) throws SQLException, SQLHandledException {
         return readSelect(session,  DataSession.emptyEnv(OperationOwner.debug));
     }
     public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return compile(session.syntax).readSelect(session, env);
+        return compile(new CompileOptions(session.syntax)).readSelect(session, env);
     }
 
     public abstract Query<K, V> getQuery(); // по сути protectedQ  GH  N

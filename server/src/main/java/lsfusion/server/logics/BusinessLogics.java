@@ -34,6 +34,7 @@ import lsfusion.server.daemons.ScannerDaemonTask;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -1461,7 +1462,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                                 return key.equals("sum") ? ValueExpr.COUNTCLASS : StringClass.getv(false, ExtInt.UNLIMITED);
                             }});
 
-                        table.writeRows(sql, query, LM.baseClass, DataSession.emptyEnv(OperationOwner.unknown));
+                        table.writeRows(sql, query, LM.baseClass, DataSession.emptyEnv(OperationOwner.unknown), SessionTable.nonead);
                         
                         MExclMap<ConcreteCustomClass, MExclSet<String>> mRemoveClasses = MapFact.mExclMap();
                         for(Object distinct : table.readDistinct("agg", sql, OperationOwner.unknown)) { // разновидности agg читаем

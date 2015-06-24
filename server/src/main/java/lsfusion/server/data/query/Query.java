@@ -298,14 +298,11 @@ public class Query<K,V> extends IQuery<K,V> {
                 transProps.remove(pullProps.keys()), transWhere), pullKeys, pullProps);
     }
 
-    public CompiledQuery<K,V> compile(SQLSyntax syntax, SubQueryContext subcontext) {
-        return compile(syntax, MapFact.<V, Boolean>EMPTYORDER(), LimitOptions.NOLIMIT, subcontext);
-    }
     @IdentityLazy
     @Pack
     @Message("message.core.query.compile")
-    public CompiledQuery<K,V> compile(SQLSyntax syntax, ImOrderMap<V, Boolean> orders, LimitOptions selectTop, SubQueryContext subcontext, boolean noExclusive) {
-        return new CompiledQuery<K,V>(this, syntax, orders, selectTop, subcontext, noExclusive);
+    public CompiledQuery<K, V> compile(ImOrderMap<V, Boolean> orders, CompileOptions options) {
+        return new CompiledQuery<K,V>(this, options.syntax, orders, options.limit, options.subcontext, options.recursive, options.noInline);
     }
 
     @IdentityLazy

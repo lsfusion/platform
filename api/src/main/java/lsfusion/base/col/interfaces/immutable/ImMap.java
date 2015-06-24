@@ -87,6 +87,7 @@ public interface ImMap<K, V> {
     public <M> ImRevValueMap<K,M> mapItRevValues();
 
     <M> ImMap<K,M> mapItValues(GetValue<M,V> getter); // с последействием
+    <M> ImMap<K,M> mapItValues(GetKeyValue<M,K,V> getter); // с последействием
 
     // "функциональщина"
     <M> ImMap<K,M> mapValues(GetValue<M,V> getter);

@@ -288,7 +288,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return MapFact.singletonRev((IsClassField)dataProperty, (ObjectValueClassSet)this);
     }
 
-    public ValueClassSet getValueClassSet() {
+    public ObjectValueClassSet getValueClassSet() {
         return this;
     }
 

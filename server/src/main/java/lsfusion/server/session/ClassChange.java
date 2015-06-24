@@ -12,7 +12,6 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.query.Join;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
-import lsfusion.server.data.translator.MapTranslator;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
@@ -51,11 +50,11 @@ public class ClassChange extends ImmutableObject {
         this.propValue = null;
     }
 
-    public ModifyResult modifyRows(SingleKeyPropertyUsage table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv, OperationOwner owner) throws SQLException, SQLHandledException {
+    public ModifyResult modifyRows(SingleKeyPropertyUsage table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv, OperationOwner owner, boolean updateClasses) throws SQLException, SQLHandledException {
         if(keyValue !=null)
             return table.modifyRecord(session, keyValue, propValue, type, owner);
         else
-            return table.modifyRows(session, getQuery(), baseClass, type, queryEnv);
+            return table.modifyRows(session, getQuery(), baseClass, type, queryEnv, updateClasses);
     }
     
     public boolean containsObject(SQLSession sql, DataObject object, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
@@ -90,7 +89,7 @@ public class ClassChange extends ImmutableObject {
 
     public SingleKeyPropertyUsage materialize(SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         SingleKeyPropertyUsage changedClasses = new SingleKeyPropertyUsage(ObjectType.instance, ObjectType.instance);
-        changedClasses.writeRows(sql, getQuery(), baseClass, env);
+        changedClasses.writeRows(sql, getQuery(), baseClass, env, SessionTable.matLocalQuery);
         return changedClasses;
     }
     

@@ -403,7 +403,7 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         return (AddValue<K, ObjectValueClassSet>) objectValueSetAdd;
     }
 
-    public ValueClassSet getValueClassSet() {
+    public ObjectValueClassSet getValueClassSet() {
         if(!unknown) // оптимизация
             return this;
         return new OrObjectClassSet(up, set, false);
@@ -424,6 +424,19 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
     }
     public static ImRevMap<IsClassField, ObjectValueClassSet> getIsClassFields(ObjectValueClassSet set) {
         return set.getClassFields(false);
+    }
+
+    @Override
+    public boolean hasComplex() {
+        assert !unknown;
+        if(up.hasComplex())
+            return true;
+
+        for(ConcreteCustomClass customClass : set)
+            if(customClass.hasComplex())
+                return true;
+
+        return false;
     }
 
     public ImRevMap<ObjectClassField, ObjectValueClassSet> getObjectClassFields() {

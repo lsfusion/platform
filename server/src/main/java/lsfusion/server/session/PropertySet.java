@@ -10,10 +10,9 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
-import lsfusion.server.caches.IdentityQuickLazy;
 import lsfusion.server.classes.BaseClass;
-import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -100,7 +99,7 @@ public class PropertySet<T extends PropertyInterface> {
                 return type;
             }
         });
-        tableUsage.writeRows(session.sql, new Query<>(mapKeys, objects, where), session.baseClass, session.env);
+        tableUsage.writeRows(session.sql, new Query<>(mapKeys, objects, where), session.baseClass, session.env, SessionTable.matLocalQuery);
 
         final Join<Object> join = tableUsage.join(mapKeys);
         return new Pair<>(new PropertySet<>(mapKeys, join.getWhere(), orders.map(objects.reverse()).mapOrderKeys(new GetValue<Expr, Object>() {

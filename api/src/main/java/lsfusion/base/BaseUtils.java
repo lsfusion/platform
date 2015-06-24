@@ -1144,6 +1144,15 @@ public class BaseUtils {
         }
     }
 
+    public static double nullAdd(Double p1, Double p2) {
+        double result = 0.0;
+        if(p1 != null)
+            result += p1;
+        if(p2 != null)
+            result += p2;
+        return result;
+    }
+
     public static abstract class Group<G, K> {
         public abstract G group(K key);
     }

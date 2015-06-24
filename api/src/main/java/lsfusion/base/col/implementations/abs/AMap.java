@@ -441,6 +441,13 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
         return mvResult.immutableValue();
     }
 
+    public <M> ImMap<K, M> mapItValues(GetKeyValue<M, K, V> getter) {
+        ImValueMap<K, M> mvResult = mapItValues();
+        for(int i=0,size=size();i<size;i++)
+            mvResult.mapValue(i, getter.getMapValue(getKey(i), getValue(i)));
+        return mvResult.immutableValue();
+    }
+
     public <M> ImMap<K, M> mapValues(GetValue<M, V> getter) {
         return mapItValues(getter);
     }
@@ -486,10 +493,7 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
     }
 
     public <M> ImMap<K, M> mapValues(GetKeyValue<M, K, V> getter) {
-        ImValueMap<K, M> mvResult = mapItValues();
-        for(int i=0,size=size();i<size;i++)
-            mvResult.mapValue(i, getter.getMapValue(getKey(i), getValue(i)));
-        return mvResult.immutableValue();
+        return mapItValues(getter);
     }
 
     public <M> ImRevMap<K, M> mapRevValues(GetIndex<M> getter) {

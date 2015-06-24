@@ -17,6 +17,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 
@@ -116,6 +117,17 @@ public class MapFact {
 
     public static <K, V> ImMap<K, V> override(ImMap<? extends K, ? extends V> map1, ImMap<? extends K, ? extends V> map2) {
         return ((ImMap<K, V>)map1).override(map2);
+    }
+
+    public static <B, K extends B, V> ImRevMap<K, V> replaceValues(ImRevMap<K, ? extends V> map1, final ImRevMap<B, ? extends V> map2) {
+        return ((ImMap<K, V>)map1).mapRevValues(new GetKeyValue<V, K, V>() {
+            public V getMapValue(K key, V value) {
+                V value2 = map2.get(key);
+                if(value2 != null)
+                    return value2;
+                return value;
+            }
+        });
     }
 
     public static <K, V> ImMap<K, V> addExcl(ImMap<? extends K, ? extends V> map, K key, V value) {

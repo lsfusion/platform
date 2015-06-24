@@ -220,20 +220,20 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
         return getQuery().executeClasses(env);
     }
 
-    public ModifyResult modifyRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv, OperationOwner owner) throws SQLException, SQLHandledException {
+    public ModifyResult modifyRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, Modify type, QueryEnvironment queryEnv, OperationOwner owner, boolean updateClasses) throws SQLException, SQLHandledException {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
             return table.modifyRecord(session, mapValues, exprValue, type, owner);
         else
-            return table.modifyRows(session, getQuery(), baseClass, type, queryEnv);
+            return table.modifyRows(session, getQuery(), baseClass, type, queryEnv, updateClasses);
     }
 
-    public void writeRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, QueryEnvironment queryEnv) throws SQLException, SQLHandledException {
+    public void writeRows(SinglePropertyTableUsage<T> table, SQLSession session, BaseClass baseClass, QueryEnvironment queryEnv, boolean updateClasses) throws SQLException, SQLHandledException {
         ObjectValue exprValue;
         if(mapKeys.isEmpty() && where.isTrue() && (exprValue = expr.getObjectValue())!=null)
             table.writeRows(session, MapFact.singleton(mapValues, MapFact.singleton("value", exprValue)), queryEnv.getOpOwner());
         else
-            table.writeRows(session, getQuery(), baseClass, queryEnv);
+            table.writeRows(session, getQuery(), baseClass, queryEnv, updateClasses);
     }
 
     @IdentityInstanceLazy
@@ -290,7 +290,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
     
     public SinglePropertyTableUsage<T> materialize(CalcProperty<T> property, SQLSession sql, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         SinglePropertyTableUsage<T> result = property.createChangeTable();
-        writeRows(result, sql, baseClass, env);
+        writeRows(result, sql, baseClass, env, SessionTable.matLocalQuery);
         return result;
     }
 
@@ -304,7 +304,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractInnerCo
                 return where.getKeyType(mapKeys.get(key));
             }
         });
-        result.writeRows(session.sql, new Query<K, Object>(mapKeys, where), session.baseClass, session.env);
+        result.writeRows(session.sql, new Query<K, Object>(mapKeys, where), session.baseClass, session.env, SessionTable.matExprLocalQuery);
         return result;
     }
 

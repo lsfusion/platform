@@ -89,7 +89,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
                 return propertyTypes.get(key);
             }
         });
-        writeRows(sql, query, baseClass, env);
+        writeRows(sql, query, baseClass, env, SessionTable.matExprLocalQuery);
     }
 
     public Join<V> join(ImMap<K, ? extends Expr> joinImplement) {
@@ -130,14 +130,14 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
         table = table.rewrite(session, mapWriteRows, this, opOwner);
     }
 
-    public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
-        table = table.rewrite(session, query.map(mapKeys, mapProps), baseClass, env, this);
+    public void writeRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, QueryEnvironment env, boolean updateClasses) throws SQLException, SQLHandledException {
+        table = table.rewrite(session, query.map(mapKeys, mapProps), baseClass, env, this, updateClasses);
     }
 
     // добавляет ряды которых не было в таблице, или modify'ит
-    public ModifyResult modifyRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException, SQLHandledException {
+    public ModifyResult modifyRows(SQLSession session, IQuery<K, V> query, BaseClass baseClass, Modify type, QueryEnvironment env, boolean updateClasses) throws SQLException, SQLHandledException {
         Result<Boolean> changed = new Result<Boolean>();
-        return aspectModify(table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps), baseClass, type, env, this, changed), changed.result);
+        return aspectModify(table.modifyRows(session, query.map(mapKeys, type == Modify.DELETE ? MapFact.<PropertyField, V>EMPTYREV() : mapProps), baseClass, type, env, this, changed, updateClasses), changed.result);
     }
     // оптимизационная штука
     public void updateAdded(SQLSession session, BaseClass baseClass, V property, Pair<Integer,Integer>[] shifts, OperationOwner owner) throws SQLException, SQLHandledException {

@@ -35,8 +35,8 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         return modifyRecord(session, keyFields, MapFact.singleton("value", propertyValue), type, owner);
     }
 
-    public ModifyResult modifyRows(SQLSession session, ImRevMap<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, Modify type, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return modifyRows(session, new Query<K, String>(mapKeys, expr, "value", where), baseClass, type, env);
+    public ModifyResult modifyRows(SQLSession session, ImRevMap<K, KeyExpr> mapKeys, Expr expr, Where where, BaseClass baseClass, Modify type, QueryEnvironment env, boolean updateClasses) throws SQLException, SQLHandledException {
+        return modifyRows(session, new Query<K, String>(mapKeys, expr, "value", where), baseClass, type, env, updateClasses);
     }
 
     public static <P extends PropertyInterface> PropertyChange<P> getChange(SinglePropertyTableUsage<P> table) {
@@ -57,7 +57,7 @@ public class SinglePropertyTableUsage<K> extends SessionTableUsage<K, String> {
         updateAdded(sql, baseClass, "value", shifts, owner);
     }
 
-    public void checkClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-        table = table.checkClasses(session, baseClass);
+    public void checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner) throws SQLException, SQLHandledException {
+        table = table.checkClasses(session, baseClass, updateClasses, owner);
     }
 }

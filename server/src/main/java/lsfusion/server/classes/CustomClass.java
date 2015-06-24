@@ -559,4 +559,21 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         // но пока из способа определения ClassField'а и методологии определения FULL, это большая редкость
         return map;
     }
+
+    public boolean isComplex;
+
+    @IdentityLazy
+    public boolean hasComplex(boolean up) {
+        if(isComplex)
+            return true;
+
+        for(CustomClass customClass : (up ? getParentsIt() : getChildrenIt()))
+            if(customClass.hasComplex(up))
+                return true;
+        return false;
+    }
+
+    public boolean hasComplex() {
+        return hasComplex(true) || hasComplex(false);
+    }
 }

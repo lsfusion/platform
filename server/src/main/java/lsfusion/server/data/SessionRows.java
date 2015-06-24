@@ -236,7 +236,7 @@ public class SessionRows extends SessionData<SessionRows> {
         return rows.toString();
     }
 
-    public SessionRows checkClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+    public SessionRows checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner) throws SQLException {
         return this;
     }
 }

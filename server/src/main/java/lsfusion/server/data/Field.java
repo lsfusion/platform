@@ -1,6 +1,7 @@
 package lsfusion.server.data;
 
 import lsfusion.base.BinarySerializable;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -50,6 +51,18 @@ public abstract class Field extends TwinImmutableObject implements BinarySeriali
                 return value.getName();
             }};
     }
+
+    public final static SFunctionSet<Field> onlyKeys = new SFunctionSet<Field>() {
+        public boolean contains(Field element) {
+            return element instanceof KeyField;
+        }
+    };
+
+    public final static SFunctionSet<Field> onlyProps = new SFunctionSet<Field>() {
+        public boolean contains(Field element) {
+            return element instanceof PropertyField;
+        }
+    };
 
     protected Field(String name,Type type) {
         this.name = name;

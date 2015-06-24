@@ -567,14 +567,14 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         // при вызове readChangeTable, используется assertion (см. assert fitKeyClasses) что если таблица подходит по классам для значения, то подходит по классам и для ключей
         // этот assertion может нарушаться если определилось конкретное значение и оно было null, как правило с комбинаторными event'ами (вообще может нарушиться и если не null, но так как propertyClasses просто вырезаются то не может), соответственно необходимо устранить этот случай
         readTable.fixKeyClasses(getClassWhere(ClassType.materializeChangePolicy));
-        readTable.checkClasses(session, null); // нужен как раз для проверки fixKeyClasses
+        readTable.checkClasses(session, null, SessionTable.nonead, env.getOpOwner()); // нужен как раз для проверки fixKeyClasses
 
         return readTable;
     }
 
     public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, PropertyChange<T> change, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         SinglePropertyTableUsage<T> changeTable = createChangeTable();
-        change.writeRows(changeTable, session, baseClass, env);
+        change.writeRows(changeTable, session, baseClass, env, SessionTable.matGlobalQuery);
         return changeTable;
     }
 

@@ -12,6 +12,7 @@ import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.classes.sets.ObjectClassSet;
 import lsfusion.server.data.expr.*;
 import lsfusion.server.data.expr.query.*;
 import lsfusion.server.data.expr.where.cases.MCaseList;
@@ -114,7 +115,17 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         this.propertyClasses = propertyClasses;
 
         // assert classes.fitTypes();
-        assert (this instanceof SerializedTable || this instanceof ImplementTable.InconsistentTable) || classes.isEqual(keys.getSet()) && propClassesFull(); // см. ClassExprWhere.getKeyType
+        assert (this instanceof SerializedTable || this instanceof ImplementTable.InconsistentTable) || classes.isEqual(keys.getSet()) && propClassesFull() && assertClasses(); // см. ClassExprWhere.getKeyType
+    }
+
+    private boolean assertClasses() {
+        if(classes == null)
+            return true;
+
+        for(ClassWhere<Field> pClasses : propertyClasses.valueIt()) {
+            assert pClasses.means(BaseUtils.<ClassWhere<Field>>immutableCast(classes), true);
+        }
+        return true;
     }
 
     private <K extends Field> ImMap<K, DataClass> getDataFields(ImSet<K> fields) {
@@ -239,56 +250,58 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         query.getQuery().executeSQL(session, MapFact.<PropertyField, Boolean>EMPTYORDER(), 0, DataSession.emptyEnv(owner), result);
     }
 
-    private static <T extends Field> ImSet<T> splitData(ImSet<T> fields, Result<ImMap<T, DataClass>> dataClasses) {
-        MExclSet<T> mObjectFields = SetFact.mExclSetMax(fields.size());
-        MExclMap<T, DataClass> mDataClasses = MapFact.mExclMapMax(fields.size());
+    private static <B extends Field, T extends B> ImMap<T, ObjectValueClassSet> splitComplex(ImSet<T> fields, GetValue<AndClassSet, T> fieldClasses) {
+        MExclMap<T, ObjectValueClassSet> mObjectFields = MapFact.mExclMapMax(fields.size());
         for(T field : fields) {
-            if(field.type instanceof DataClass)
-                mDataClasses.exclAdd(field, (DataClass) field.type);
-            else
-            if(field.type instanceof ObjectType)
-                mObjectFields.exclAdd(field);
-            else
-                return null;
+            if(field.type instanceof ObjectType) {
+                ObjectClassSet classSet = (ObjectClassSet)fieldClasses.getMapValue(field);
+                ObjectValueClassSet valueClassSet = classSet.getValueClassSet();
+                if((!BaseUtils.hashEquals(classSet, valueClassSet) && !valueClassSet.isEmpty()) || (valueClassSet.hasComplex() && valueClassSet.getSetConcreteChildren().size() > 1))
+                    mObjectFields.exclAdd(field, valueClassSet);
+            } else
+                if(!(field.type instanceof DataClass))
+                    return null; // concatenate type
         }
-        dataClasses.set(mDataClasses.immutable());
         return mObjectFields.immutable();
     }
 
-    public ImMap<ImMap<KeyField,ConcreteClass>,ImMap<PropertyField,ConcreteClass>> readClasses(SQLSession session, final BaseClass baseClass, OperationOwner owner) throws SQLException, SQLHandledException {
-        final Result<ImMap<KeyField, DataClass>> dataKeys = new Result<ImMap<KeyField, DataClass>>();
-        final Result<ImMap<PropertyField, DataClass>> dataProps = new Result<ImMap<PropertyField, DataClass>>();
-        final ImSet<KeyField> objectKeys = splitData(keys.getSet(), dataKeys);
-        if(objectKeys == null)
+    public ImMap<ImMap<KeyField,ConcreteClass>,ImMap<PropertyField,ConcreteClass>> readClasses(SQLSession session, final BaseClass baseClass, Result<ImSet<KeyField>> resultKeys, Result<ImSet<PropertyField>> resultProps, OperationOwner owner) throws SQLException, SQLHandledException {
+        final ImMap<KeyField, ObjectValueClassSet> objectKeyClasses = splitComplex(getTableKeys(), classes.getCommonClasses(getTableKeys()).fnGetValue());
+        if(objectKeyClasses == null)
             return null;
-        final ImSet<PropertyField> objectProps = splitData(properties, dataProps);
-        if(objectProps == null)
+        final ImMap<PropertyField, ObjectValueClassSet> objectPropClasses = splitComplex(properties, new GetValue<AndClassSet, PropertyField>() {
+            public AndClassSet getMapValue(PropertyField value) {
+                return propertyClasses.get(value).getCommonClass(value);
+            }});
+        if(objectPropClasses == null)
             return null;
+
+        final ImSet<KeyField> objectKeys = objectKeyClasses.keys();
+        final ImSet<PropertyField> objectProps = objectPropClasses.keys();
+        resultKeys.set(objectKeys);
+        resultProps.set(objectProps);
+
+        if(objectKeyClasses.isEmpty() && objectPropClasses.isEmpty()) // no complex
+            return MapFact.singleton(MapFact.<KeyField, ConcreteClass>EMPTY(), MapFact.<PropertyField, ConcreteClass>EMPTY());
 
         ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
-        ImRevMap<KeyField, KeyExpr> objectMapKeys = mapKeys.filterRev(objectKeys);
-        ImRevMap<Field, KeyExpr> classKeys = MapFact.addRevExcl(objectMapKeys, KeyExpr.getMapKeys(properties));
-        if(classKeys.isEmpty())
-            return MapFact.singleton(BaseUtils.<ImMap<KeyField, ConcreteClass>>immutableCast(dataKeys.result), BaseUtils.<ImMap<PropertyField, ConcreteClass>>immutableCast(dataProps.result));
-
         final lsfusion.server.data.query.Join<PropertyField> tableJoin = join(mapKeys);
+
+        ImRevMap<KeyField, KeyExpr> objectMapKeys = mapKeys.filterRev(objectKeys);
+        ImRevMap<Field, KeyExpr> classKeys = MapFact.addRevExcl(objectMapKeys, KeyExpr.getMapKeys(objectProps));
+        ImMap<Field, Expr> fieldExprs = MapFact.addExcl(objectMapKeys, objectProps.mapValues(new GetValue<Expr, PropertyField>() {
+            public Expr getMapValue(PropertyField value) {
+                return tableJoin.getExpr(value);
+            }}));
 
         final ValueExpr nullExpr = new ValueExpr(-2, baseClass.unknown);
         final ValueExpr unknownExpr = new ValueExpr(-1, baseClass.unknown);
+        final ImMap<Field, ObjectValueClassSet> fieldClasses = MapFact.addExcl(objectKeyClasses, objectPropClasses);
         GetKeyValue<Expr, Field, Expr> classExpr = new GetKeyValue<Expr, Field, Expr>() {
             public Expr getMapValue(Field key, Expr value) {
-                Expr resultExpr;
-                if((key instanceof PropertyField && !objectProps.contains((PropertyField) key)))
-                    resultExpr = unknownExpr;
-                else
-                    resultExpr = value.classExpr(baseClass).nvl(unknownExpr);
-                return resultExpr.ifElse(value.getWhere(), nullExpr);
+                return value.classExpr(fieldClasses.get(key)).nvl(unknownExpr).ifElse(value.getWhere(), nullExpr);
             }};
-        ImMap<Field, Expr> group = MapFact.addExcl(objectMapKeys, properties.mapValues(new GetValue<Expr, PropertyField>() {
-            public Expr getMapValue(PropertyField value) {
-                return tableJoin.getExpr(value);
-            }
-        })).mapValues(classExpr);
+        ImMap<Field, Expr> group = fieldExprs.mapValues(classExpr);
 
         ImSet<ImMap<Field, ConcreteClass>> readClasses = new Query<Field, Object>(classKeys, GroupExpr.create(group, tableJoin.getWhere(), classKeys).getWhere()).execute(session, owner).keyOrderSet().getSet().mapSetValues(new GetValue<ImMap<Field, ConcreteClass>, ImMap<Field, Object>>() {
             public ImMap<Field, ConcreteClass> getMapValue(ImMap<Field, Object> value) {
@@ -298,10 +311,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
                     }
                 }).mapValues(new GetKeyValue<ConcreteClass, Field, Object>() {
                     public ConcreteClass getMapValue(Field key, Object id) {
-                        if(key instanceof PropertyField && !objectProps.contains((PropertyField) key))
-                            return dataProps.result.get((PropertyField) key);
-                        else
-                            return baseClass.findConcreteClassID(((Integer) id) != -1 ? (Integer) id : null);
+                        return baseClass.findConcreteClassID(((Integer) id) != -1 ? (Integer) id : null);
                     }
                 });
             }
@@ -309,10 +319,10 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
 
         return readClasses.mapKeyValues(new GetValue<ImMap<KeyField, ConcreteClass>, ImMap<Field, ConcreteClass>>() {
             public ImMap<KeyField, ConcreteClass> getMapValue(ImMap<Field, ConcreteClass> value) {
-                return MapFact.addExcl(value.filter(objectKeys), dataKeys.result);
+                return value.filter(objectKeys);
             }}, new GetValue<ImMap<PropertyField, ConcreteClass>, ImMap<Field, ConcreteClass>>() {
             public ImMap<PropertyField, ConcreteClass> getMapValue(ImMap<Field, ConcreteClass> value) {
-                return value.filter(properties);
+                return value.filter(objectProps);
             }});
     }
 

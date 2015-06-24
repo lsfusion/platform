@@ -20,6 +20,8 @@ public interface ObjectValueClassSet extends ObjectClassSet, ValueClassSet {
 
     BaseClass getBaseClass();
 
+    boolean hasComplex();
+
     ImRevMap<ObjectClassField, ObjectValueClassSet> getObjectClassFields(); // CustomClass только как хранитель таблицы
 
     ImRevMap<IsClassField, ObjectValueClassSet> getIsClassFields(); // CustomClass только как хранитель таблицы

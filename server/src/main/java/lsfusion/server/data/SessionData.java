@@ -107,7 +107,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         return null;
     }
 
-    private static SessionData write(final SQLSession session, final ImOrderSet<KeyField> keys, final ImSet<PropertyField> properties, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, final TableOwner owner) throws SQLException, SQLHandledException {
+    private static SessionData write(final SQLSession session, final ImOrderSet<KeyField> keys, final ImSet<PropertyField> properties, IQuery<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, final TableOwner owner, boolean updateClasses) throws SQLException, SQLHandledException {
 
         assert properties.equals(query.getProperties());
 
@@ -154,7 +154,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                     }}), opOwner).addExcl(propValues.result));
                 table = table.removeFields(session, actualKeyValues.result.keys(), actualPropValues.result.keys(), owner, opOwner).updateKeyPropStats(statKeys.result, statProps.result);
             }
-
+            table = table.checkClasses(session, baseClass, updateClasses, opOwner);
             return new SessionDataTable(table, keys, keyValues.result, propValues.result);
         } else {
             ImOrderMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> readRows = (table.count == 0 ? MapFact.<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>>EMPTYORDER() : table.read(session, baseClass, opOwner));
@@ -179,7 +179,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         return new Pair<ClassWhere<KeyField>, ImMap<PropertyField, ClassWhere<Field>>>(classes, propertyClasses);
     }
 
-    public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, TableOwner owner) throws SQLException, SQLHandledException {
+    public SessionData rewrite(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, TableOwner owner, boolean updateClasses) throws SQLException, SQLHandledException {
         boolean dropBefore = !Settings.get().isAlwaysDropSessionTableAfter() && !used(query);
         OperationOwner opOwner = env.getOpOwner();
         if(dropBefore)
@@ -187,7 +187,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
         SessionData result;
         try {
-            result = write(session, getOrderKeys(), getProperties(), query, baseClass, env, owner);
+            result = write(session, getOrderKeys(), getProperties(), query, baseClass, env, owner, updateClasses);
         } catch (SQLHandledException e) {
             rollDrop(session, owner, opOwner);
             throw e;
@@ -198,7 +198,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
         return result;
     }
 
-    public SessionData modifyRows(final SQLSession session, final IQuery<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, final QueryEnvironment env, final TableOwner owner, final Result<Boolean> changed) throws SQLException, SQLHandledException {
+    public SessionData modifyRows(final SQLSession session, final IQuery<KeyField, PropertyField> query, BaseClass baseClass, final Modify type, final QueryEnvironment env, final TableOwner owner, final Result<Boolean> changed, boolean updateClasses) throws SQLException, SQLHandledException {
         if(!Settings.get().isDisableReadSingleValues()) {
             SessionData singleResult = readSingleValues(session, baseClass, env, query, new Result<IQuery<KeyField, PropertyField>>(), new Result<ImMap<KeyField, DataObject>>(),
                     new Result<ImMap<PropertyField, ObjectValue>>(), new ResultSingleValues<SessionData>() {
@@ -230,7 +230,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                         newExpr.ifElse(newWhere, prevExpr) : prevExpr.ifElse(prevWhere, newExpr));
             }
         }));
-        SessionData result = rewrite(session, modifyQuery.getQuery(), baseClass, env, owner);
+        SessionData result = rewrite(session, modifyQuery.getQuery(), baseClass, env, owner, updateClasses);
         if(!(((SessionData)this) instanceof SessionRows && result instanceof SessionRows && BaseUtils.hashEquals(this, result))) // оптимизация
             changed.set(true);
         return result;
@@ -265,5 +265,5 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
     
     public abstract int getCount();
 
-    public abstract T checkClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException;
+    public abstract T checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner) throws SQLException, SQLHandledException;
 }

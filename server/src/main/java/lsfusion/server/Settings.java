@@ -196,6 +196,8 @@ public class Settings {
 
     private boolean disableReadSingleValues = false; // определять ли конкретные значения при записи запроса в таблицы
 
+    private boolean disableReadClasses = false; // определять ли конкретные кдассы при записи запроса в таблицы
+
     private int reserveIDStep = 50; // по сколько ID'ков будут резервировать себе сервера приложений у сервера БД
 
     private boolean mergeUpClassSets = AlgType.useInfer; // проблема в том что с false детерменированность не гарантирована
@@ -859,6 +861,14 @@ public class Settings {
         this.disableReadSingleValues = disableReadSingleValues;
     }
 
+    public boolean isDisableReadClasses() {
+        return disableReadClasses;
+    }
+
+    public void setDisableReadClasses(boolean disableReadClasses) {
+        this.disableReadClasses = disableReadClasses;
+    }
+
     public int getReserveIDStep() {
         return reserveIDStep;
     }
@@ -1289,6 +1299,16 @@ public class Settings {
 
     public void setDisableFirstChangesOptimization(boolean disableFirstChangesOptimization) {
         this.disableFirstChangesOptimization = disableFirstChangesOptimization;
+    }
+
+    private boolean useDeleteNoInline = true;
+
+    public boolean isUseDeleteNoInline() {
+        return useDeleteNoInline;
+    }
+
+    public void setUseDeleteNoInline(boolean useDeleteNoInline) {
+        this.useDeleteNoInline = useDeleteNoInline;
     }
 
     // временно

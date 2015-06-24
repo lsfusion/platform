@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractValuesContext;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
@@ -357,13 +358,14 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
 
     public SessionTable modifyRecord(final SQLSession session, ImMap<KeyField, DataObject> keyFields, ImMap<PropertyField, ObjectValue> propFields, Modify type, final TableOwner owner, OperationOwner opOwner, Result<Boolean> changed) throws SQLException, SQLHandledException {
 
+        boolean updateClasses = changeTable;
         if(type==Modify.DELETE) { // статистику пока не учитываем
             int proceeded = deleteRecords(session, keyFields, opOwner, owner);
             if(proceeded == 0)
                 return this;
             changed.set(true);
             return new SessionTable(name, keys, properties, classes, propertyClasses, count - proceeded).
-                    updateStatistics(session, count, owner, opOwner).checkClasses(session, null);
+                    updateStatistics(session, count, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
         }
         if (type == Modify.LEFT && session.isRecord(this, keyFields, opOwner))
             return this;
@@ -384,10 +386,10 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         changed.set(true);
         return new SessionTable(name, keys, properties, count + (update?0:1),
                         orFieldsClassWheres(classes, propertyClasses, keyFields, propFields)).
-                            updateStatistics(session, count, owner, opOwner).checkClasses(session, null);
+                            updateStatistics(session, count, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
     }
 
-    public SessionTable modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, Modify type, QueryEnvironment env, TableOwner owner, Result<Boolean> changed) throws SQLException, SQLHandledException {
+    public SessionTable modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, Modify type, QueryEnvironment env, TableOwner owner, Result<Boolean> changed, boolean updateClasses) throws SQLException, SQLHandledException {
 
         if(query.isEmpty()) // оптимизация
             return this;
@@ -420,7 +422,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     return this;
 
                 return new SessionTable(name, keys, properties, classes, propertyClasses, count - proceeded).
-                        updateStatistics(session, count, owner, opOwner).checkClasses(session, null);
+                        updateStatistics(session, count, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
             default:
                 throw new RuntimeException("should not be");
         }
@@ -430,7 +432,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         changed.set(true);
         return new SessionTable(name, keys, properties, count + inserted,
                         orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
-                            updateStatistics(session, count, owner, opOwner).checkClasses(session, null);
+                            updateStatistics(session, count, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
     }
     public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Integer, Integer>[] shifts, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
@@ -493,7 +495,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     return value.or(new ClassWhere<Field>(result.filterIncl(SetFact.addExcl(getTableKeys(), key))));
                 }});
         }
-        return new SessionTable(name, keys, properties, updatedClasses, updatedPropertyClasses, count, distinctKeys, statProps).checkClasses(session.sql, null);
+        return new SessionTable(name, keys, properties, updatedClasses, updatedPropertyClasses, count, distinctKeys, statProps).checkClasses(session.sql, null, nonead, session.getOwner());
     }
 
     public SessionTable updateStatistics(final SQLSession session, int prevCount, final TableOwner owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
@@ -603,55 +605,110 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     }
 
     // для проверки общей целостности есть специальные административные процедуры
-    private boolean assertCheckClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-        if(1==1 || session.inconsistent)
-            return true;
+//    private boolean assertCheckClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
+//        if(1==1 || session.inconsistent)
+//            return true;
+//
+//        if(baseClass==null)
+//            baseClass = ThreadLocalContext.getBusinessLogics().LM.baseClass;
+//
+//        final Pair<ClassWhere<KeyField>,ImMap<PropertyField,ClassWhere<Field>>> readClasses;
+//        ImMap<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> readData = readClasses(session, baseClass, OperationOwner.debug); // теоретически может очень долго работать, когда много колонок, из-за большого количества case'ов по которым надо группировать
+//        if(readData!=null)
+//            readClasses = SessionRows.getClasses(readData,  properties);
+//        else // если concatenate type есть, читаем сами значения
+//            readClasses = SessionRows.getClasses(properties, read(session, baseClass, OperationOwner.debug).getMap());
+//
+//        // похоже все же не имеет смысла пока
+///*        if(!classes.means(readClasses.first, true))
+//            classes = readClasses.first;
+//        propertyClasses = propertyClasses.mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ClassWhere<Field>>() {
+//            public ClassWhere<Field> getMapValue(PropertyField key, ClassWhere<Field> value) {
+//                ClassWhere<Field> readWhere = readClasses.second.get(key);
+//                if(!value.means(readWhere, true))
+//                    return readWhere;
+//                return value;
+//            }});*/
+//
+//        if(!readClasses.first.means(classes, true))
+//            return false;
+//
+//        for(PropertyField property : properties)
+//            if(!readClasses.second.get(property).means(propertyClasses.get(property), true))
+//                return false;
+//
+//        return true;
+//    }
+
+    public final static boolean matGlobalQuery = true; // local expr usage
+    public final static boolean matLocalQuery = false; // local usage разбить на совсем local + сохр. в change'и
+    public final static boolean matGlobalQueryFromTable = false; // global query, но таблицу уже читалась readChangeTable
+    public final static boolean matExprLocalQuery = false; // local expr usage, но потом может использоваться для property.getExpr (но так как пока оптимизаций нет, особого смысла тоже нет)
+    public final static boolean changeTable = false; // changing table with specific values
+    public final static boolean nonead = false; // all the rest
+
+    public SessionTable checkClasses(SQLSession session, BaseClass baseClass, boolean checkClassesUpdate, OperationOwner owner) throws SQLException, SQLHandledException {
+//        assert assertCheckClasses(session, baseClass);
+
+        if(session.inconsistent || !checkClassesUpdate || Settings.get().isDisableReadClasses())
+            return this;
 
         if(baseClass==null)
             baseClass = ThreadLocalContext.getBusinessLogics().LM.baseClass;
 
         final Pair<ClassWhere<KeyField>,ImMap<PropertyField,ClassWhere<Field>>> readClasses;
-        ImMap<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> readData = readClasses(session, baseClass, OperationOwner.debug); // теоретически может очень долго работать, когда много колонок, из-за большого количества case'ов по которым надо группировать
-        if(readData!=null)
-            readClasses = SessionRows.getClasses(readData,  properties);
-        else
-            readClasses = SessionRows.getClasses(properties, read(session, baseClass, OperationOwner.debug).getMap());
+        Result<ImSet<KeyField>> objectKeys = new Result<>(); final Result<ImSet<PropertyField>> objectProps = new Result<>();
+        ImMap<ImMap<KeyField, ConcreteClass>, ImMap<PropertyField, ConcreteClass>> readData = readClasses(session, baseClass, objectKeys, objectProps, owner); // теоретически может очень долго работать, когда много колонок, из-за большого количества case'ов по которым надо группировать
 
-        // похоже все же не имеет смысла пока
-/*        if(!classes.means(readClasses.first, true))
-            classes = readClasses.first;
-        propertyClasses = propertyClasses.mapValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ClassWhere<Field>>() {
+        if(readData!=null && !(objectKeys.result.isEmpty() && objectProps.result.isEmpty())) // вторая проверка оптимизация
+            readClasses = SessionRows.getClasses(readData,  objectProps.result);
+        else // если concatenate type есть, читаем сами значения
+            return this;
+//            readClasses = SessionRows.getClasses(properties, read(session, baseClass, OperationOwner.debug).getMap());
+
+        // assert что readClasses.first => classes + readClasses.second => propertyClasses.
+        assert readClasses.first.means(classes.filterKeys(objectKeys.result), true);
+        for(PropertyField property : objectProps.result)
+            assert readClasses.second.get(property).means(propertyClasses.get(property).filterKeys(SetFact.addExcl(objectKeys.result, property)), true);
+
+        // проверяем что у classes \ propertyClasses есть complex - классы \ unknown
+
+        ClassWhere<KeyField> newClasses = classes; ImMap<PropertyField,ClassWhere<Field>> newPropertyClasses;
+
+        final boolean updatedClasses = !classes.means(readClasses.first, true); // оптимизация
+        if(updatedClasses)
+            newClasses = newClasses.and(readClasses.first);
+
+        final Result<Boolean> updatedProps = new Result<>(false); // оптимизация
+        final ClassWhere<KeyField> fNewClasses = newClasses;
+        newPropertyClasses = propertyClasses.mapItValues(new GetKeyValue<ClassWhere<Field>, PropertyField, ClassWhere<Field>>() {
             public ClassWhere<Field> getMapValue(PropertyField key, ClassWhere<Field> value) {
                 ClassWhere<Field> readWhere = readClasses.second.get(key);
-                if(!value.means(readWhere, true))
-                    return readWhere;
+                assert (readWhere != null) == objectProps.result.contains(key);
+                if (readWhere != null && !value.means(readWhere, true)) {
+                    updatedProps.set(true);
+                    value = value.and(readWhere);
+                }
+                if(updatedClasses)
+                    value = value.and(BaseUtils.<ClassWhere<Field>>immutableCast(fNewClasses));
                 return value;
-            }});*/
+            }
+        });
 
-        if(!readClasses.first.means(classes, true))
-            return false;
-
-        for(PropertyField property : properties)
-            if(!readClasses.second.get(property).means(propertyClasses.get(property), true))
-                return false;
-
-        return true;
-    }
-
-    public SessionTable checkClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-        assert assertCheckClasses(session, baseClass);
+        if(updatedClasses || updatedProps.result)
+            return new SessionTable(name, keys, properties, newClasses, newPropertyClasses, count, distinctKeys, statProps);
 
         return this;
     }
     
     public void saveToDBForDebug(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
         SQLSession dbSql = ThreadLocalContext.getDbManager().createSQL();
-        
+
         dbSql.startTransaction(DBManager.DEBUG_TIL, OperationOwner.unknown);
         dbSql.ensureTable(this);
         dbSql.insertSessionBatchRecords(getName(sql.syntax), keys, read(sql, ThreadLocalContext.getBusinessLogics().LM.baseClass, OperationOwner.debug).getMap(), OperationOwner.debug, TableOwner.debug);
         dbSql.commitTransaction();
-        
+
         dbSql.close(OperationOwner.unknown);
     }
     

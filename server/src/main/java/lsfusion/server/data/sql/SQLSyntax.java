@@ -100,6 +100,7 @@ public interface SQLSyntax {
 
     // проблема что inline'ся query и идут duplicate subplan'ы
     boolean inlineTrouble();
+    boolean inlineSelfJoinTrouble();
 
     String getOrderDirection(boolean descending, boolean notNull);
 

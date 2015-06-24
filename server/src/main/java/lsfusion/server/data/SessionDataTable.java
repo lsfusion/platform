@@ -117,10 +117,10 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
     }
 
     @Override
-    public SessionData modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, Modify type, QueryEnvironment env, TableOwner owner, Result<Boolean> changed) throws SQLException, SQLHandledException {
+    public SessionData modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, BaseClass baseClass, Modify type, QueryEnvironment env, TableOwner owner, Result<Boolean> changed, boolean updateClasses) throws SQLException, SQLHandledException {
         if(keyValues.isEmpty() && propertyValues.isEmpty() && (type == Modify.LEFT || type== Modify.ADD || type==Modify.DELETE || (Settings.get().isModifySessionTableInsteadOfRewrite() && !used(query)))) // если и так все различны, то не зачем проверять разновидности, добавлять поля и т.п.
-            return new SessionDataTable(table.modifyRows(session, query, type, env, owner, changed), keys, keyValues, propertyValues);
-        return super.modifyRows(session, query, baseClass, type, env, owner, changed);
+            return new SessionDataTable(table.modifyRows(session, query, type, env, owner, changed, updateClasses), keys, keyValues, propertyValues);
+        return super.modifyRows(session, query, baseClass, type, env, owner, changed, updateClasses);
     }
 
     @Override
@@ -224,8 +224,8 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         return table + "{k:" + keyValues + ",v:" + propertyValues + "}";
     }
 
-    public SessionDataTable checkClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-        SessionTable checkTable = table.checkClasses(session, baseClass);
+    public SessionDataTable checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner) throws SQLException, SQLHandledException {
+        SessionTable checkTable = table.checkClasses(session, baseClass, updateClasses, owner);
         if(BaseUtils.hashEquals(checkTable, table))
             return this;
         else

@@ -599,7 +599,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     return query.getKeyType(key);
                 }
             }, ObjectType.instance);
-            table.modifyRows(sql, query, baseClass, Modify.ADD, env);
+            table.modifyRows(sql, query, baseClass, Modify.ADD, env, SessionTable.matLocalQuery);
         } finally {
             if(matSetTable != null)
                 matSetTable.drop(sql, getOwner());
@@ -1085,7 +1085,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 }});
             Expr sumExpr = IsClassExpr.create(key, group, IsClassType.SUMCONSISTENT);
             Expr aggExpr = IsClassExpr.create(key, group, IsClassType.AGGCONSISTENT);
-            table.writeRows(sql, new Query<String,String>(MapFact.singletonRev("key", key), MapFact.toMap("sum", sumExpr, "agg", aggExpr), sumExpr.getWhere()), baseClass, DataSession.emptyEnv(OperationOwner.unknown));
+            table.writeRows(sql, new Query<String,String>(MapFact.singletonRev("key", key), MapFact.toMap("sum", sumExpr, "agg", aggExpr), sumExpr.getWhere()), baseClass, DataSession.emptyEnv(OperationOwner.unknown), SessionTable.nonead);
 
             Join<String> tableJoin = table.join(key);
             mSum.add(tableJoin.getExpr("sum"), 1);
@@ -1441,7 +1441,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             pendingSingleTables.put(property, prevTable);
         }
         ImRevMap<P, KeyExpr> mapKeys = property.getMapKeys();
-        ModifyResult result = prevTable.modifyRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, Modify.LEFT, env);// если он уже был в базе он не заместится
+        ModifyResult result = prevTable.modifyRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, Modify.LEFT, env, SessionTable.matGlobalQueryFromTable);// если он уже был в базе он не заместится
         if(!result.dataChanged() && prevTable.isEmpty())
             pendingSingleTables.remove(property);
     }
@@ -1734,13 +1734,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         sql.inconsistent = true;
-        
-        ImOrderSet<ActionPropertyValueImplement> updatedRecursiveActions;
-        updatedRecursiveActions = updateCurrentClasses(keepProps);
-        if(update != null)
-            update.update(this);
 
+        ImOrderSet<ActionPropertyValueImplement> updatedRecursiveActions;
         try {
+            updatedRecursiveActions = updateCurrentClasses(keepProps);
+            if(update != null)
+                update.update(this);
+
             // записываем в базу, то что туда еще не сохранено, приходится сохранять группами, так могут не подходить по классам
             packRemoveClasses(BL); // нужно делать до, так как классы должны быть актуальными, иначе спакует свои же изменения
             ImMap<ImplementTable, ImSet<CalcProperty>> groupTables = groupPropertiesByTables();
@@ -1935,7 +1935,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 changeTable = change.materialize(sql, baseClass, env);
                 change = changeTable.getChange();
             }
-            ModifyResult tableChanged = change.modifyRows(news, sql, baseClass, Modify.MODIFY, env, getOwner());
+            ModifyResult tableChanged = change.modifyRows(news, sql, baseClass, Modify.MODIFY, env, getOwner(), SessionTable.matGlobalQuery);
             if(!tableChanged.dataChanged()) {
                 if(news.isEmpty())
                     news = null;
@@ -1982,7 +1982,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                             changeTable = change.materialize(sql, baseClass, env);
                             change = changeTable.getChange();
                         }
-                        ModifyResult tableRemoveChanged = table.modifyRows(sql, new Query<ClassPropertyInterface, String>(mapKeys, removeWhere), baseClass, Modify.DELETE, getQueryEnv());
+                        ModifyResult tableRemoveChanged = table.modifyRows(sql, new Query<ClassPropertyInterface, String>(mapKeys, removeWhere), baseClass, Modify.DELETE, getQueryEnv(), SessionTable.matGlobalQuery);
                         if(tableRemoveChanged.dataChanged())
                             dataModifier.eventChange(property, true, tableRemoveChanged.sourceChanged());
                     }
@@ -2035,7 +2035,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             dataChange = property.createChangeTable();
             data.put(property, dataChange);
         }
-        ModifyResult result = change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, getQueryEnv(), getOwner());
+        ModifyResult result = change.modifyRows(dataChange, sql, baseClass, Modify.MODIFY, getQueryEnv(), getOwner(), SessionTable.matGlobalQuery);
         if(!result.dataChanged() && dataChange.isEmpty())
             data.remove(property);
         return result;
@@ -2174,7 +2174,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 apply.add(property, prevTable);
             }
             ImRevMap<P, KeyExpr> mapKeys = property.getMapKeys();
-            ModifyResult tableChanges = prevTable.modifyRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, Modify.LEFT, env); // если он уже был в базе он не заместится
+            ModifyResult tableChanges = prevTable.modifyRows(sql, mapKeys, property.getExpr(mapKeys), tableUsage.join(mapKeys).getWhere(), baseClass, Modify.LEFT, env, SessionTable.matGlobalQueryFromTable); // если он уже был в базе он не заместится
             if(tableChanges.dataChanged())
                 apply.eventChange(property, tableChanges.sourceChanged());
             else
@@ -2252,7 +2252,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                                 return key.getType();
                             }
                         });
-        changeTable.writeRows(sql, table.getReadSaveQuery(properties, modifier), baseClass, env);
+        changeTable.writeRows(sql, table.getReadSaveQuery(properties, modifier), baseClass, env, SessionTable.nonead);
         return changeTable;
     }
 

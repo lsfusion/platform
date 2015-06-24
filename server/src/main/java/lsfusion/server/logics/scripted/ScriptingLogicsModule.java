@@ -310,7 +310,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void addScriptedClass(String className, String captionStr, boolean isAbstract,
-                                 List<String> instNames, List<String> instCaptions, List<String> parentNames) throws ScriptingErrorLog.SemanticErrorException {
+                                 List<String> instNames, List<String> instCaptions, List<String> parentNames, boolean isComplex) throws ScriptingErrorLog.SemanticErrorException {
         checkDuplicateClass(className);
         checkStaticClassConstraints(isAbstract, instNames, instCaptions);
         checkClassParents(parentNames);
@@ -333,11 +333,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             captions.add(instCaption == null ? null : instCaption);
         }
 
+        CustomClass cls;
         if (isAbstract) {
-            addAbstractClass(className, caption, parents);
+            cls = addAbstractClass(className, caption, parents);
         } else {
-            addConcreteClass(className, caption, instNames, captions, parents);
+            cls = addConcreteClass(className, caption, instNames, captions, parents);
         }
+        cls.isComplex = isComplex;
     }
 
     public void extendClass(String className, List<String> instNames, List<String> instCaptions, List<String> parentNames) throws ScriptingErrorLog.SemanticErrorException {
