@@ -275,8 +275,8 @@ public class EmailSender {
 
     private void sendMessage(SMTPMessage message, String smtpHost, String smtpPort, String userName, String password) throws MessagingException {
         trustAllCerts();
-        Transport transport = message.getSession().getTransport("smtps");
         Integer port = parsePort(smtpPort);
+        Transport transport = message.getSession().getTransport(port != null && port.equals(25) ? "smtp" : "smtps");
         if(port == null)
             transport.connect(smtpHost, userName, password);
         else
