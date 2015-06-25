@@ -294,6 +294,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             String query = trim((String) entry.get("text"));
             Integer processId = (Integer) entry.get("session_id");
             List<Object> sessionThread = sessionThreadMap.get(processId);
+            if(sessionThread != null && sessionThread.get(4) != null) {
+                query = (String) sessionThread.get(4);
+            }
             String userActiveTask = trim((String) entry.get("host_name"));
             String address = trim((String) entry.get("client_net_address"));
             Timestamp dateTime = (Timestamp) entry.get("start_time");
@@ -362,6 +365,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                             context.getSession().getObjectValue(context.getBL().authenticationLM.user, sessionThread.get(2)));
                     computerActiveTask = (String) findProperty("hostnameComputer").read(context.getSession(),
                             context.getSession().getObjectValue(context.getBL().authenticationLM.computer, sessionThread.get(3)));
+                    if(sessionThread.get(4) != null)
+                        query = (String) sessionThread.get(4);
                 }
                 List<Object> lockingProcess = lockingMap.get(processId);
                 String lockOwnerId = lockingProcess == null ? null : getSQLThreadId(sessionThreadMap.get(lockingProcess.get(0)), (Integer) lockingProcess.get(0));
