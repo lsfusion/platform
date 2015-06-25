@@ -304,13 +304,13 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         }
 
         private boolean isTimeToRun(Time timeFrom, Time timeTo, Set<String> daysOfWeek, Set<String> daysOfMonth) {
-            if(timeFrom.equals(defaultTime) && timeTo.equals(defaultTime)) return true;
-
             Calendar currentCal = Calendar.getInstance();
 
             if((!daysOfWeek.isEmpty() && !daysOfWeek.contains(String.valueOf(currentCal.get(Calendar.DAY_OF_WEEK) - 1)))
                     || (!daysOfMonth.isEmpty() && !daysOfMonth.contains(String.valueOf(currentCal.get(Calendar.DAY_OF_MONTH)))))
                 return false;
+
+            if(timeFrom.equals(defaultTime) && timeTo.equals(defaultTime)) return true;
 
             Calendar calendarFrom = Calendar.getInstance();
             calendarFrom.setTime(timeFrom);
