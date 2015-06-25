@@ -11,7 +11,6 @@ import lsfusion.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.Format;
 
 // по умолчанию будем считать, что у ActionClass'а данные как у LogicalClass
 public class ActionClass extends DataClass<Object> {
@@ -82,10 +81,6 @@ public class ActionClass extends DataClass<Object> {
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         assert (Boolean)value;
         statement.setByte(num, (byte)1);
-    }
-
-    public Format getReportFormat() {
-        return null;
     }
 
     public Object read(Object value) {

@@ -12,8 +12,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
-import java.text.DateFormat;
-import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -36,10 +34,6 @@ public class TimeClass extends DataClass<Time> {
 
     protected Class getReportJavaClass() {
         return Time.class;
-    }
-
-    public Format getReportFormat() {
-        return DateFormat.getTimeInstance(DateFormat.SHORT);
     }
 
     public SimpleDateFormat getDefaultFormat() {

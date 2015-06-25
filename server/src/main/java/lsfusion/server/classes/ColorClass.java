@@ -10,7 +10,6 @@ import java.awt.*;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.Format;
 
 public class ColorClass extends DataClass<Color> {
 
@@ -74,11 +73,6 @@ public class ColorClass extends DataClass<Color> {
     @Override
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setInt(num, ((Color) value).getRGB());
-    }
-
-    @Override
-    public Format getReportFormat() {
-        throw new RuntimeException("not supported");
     }
 
     @Override

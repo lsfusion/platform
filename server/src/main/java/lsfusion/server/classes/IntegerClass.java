@@ -9,8 +9,6 @@ import lsfusion.server.logics.ServerResourceBundle;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.Format;
-import java.text.NumberFormat;
 
 public class IntegerClass extends IntegralClass<Integer> {
 
@@ -90,10 +88,6 @@ public class IntegerClass extends IntegralClass<Integer> {
 
     public Object getDefaultValue() {
         return 0;
-    }
-
-    public Format getReportFormat() {
-        return NumberFormat.getIntegerInstance();
     }
 
     public Integer parseString(String s) throws ParseException {

@@ -8,7 +8,6 @@ import lsfusion.server.logics.ServerResourceBundle;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.text.Format;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -23,10 +22,6 @@ public class ArrayClass<T> extends DataClass<T[]> {
     
     public Type getArrayType() {
         return type;
-    }
-
-    public Format getReportFormat() {
-        throw new RuntimeException("not supported");
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {

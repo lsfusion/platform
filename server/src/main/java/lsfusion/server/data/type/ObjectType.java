@@ -1,9 +1,5 @@
 package lsfusion.server.data.type;
 
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.property.ObjectClassField;
-import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import lsfusion.base.ExtInt;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -16,6 +12,8 @@ import lsfusion.server.classes.ConcreteClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
+import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -27,12 +25,12 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.form.view.report.ReportDrawField;
+import lsfusion.server.logics.property.ObjectClassField;
+import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.Format;
-import java.text.NumberFormat;
 
 public class ObjectType extends AbstractType<Integer> {
 
@@ -101,10 +99,6 @@ public class ObjectType extends AbstractType<Integer> {
     public int getPreferredWidth() { return 45; }
     public int getMaximumWidth() { return getPreferredWidth(); }
     public int getMinimumWidth() { return getPreferredWidth(); }
-
-    public Format getReportFormat() {
-        return NumberFormat.getInstance();
-    }
 
     public boolean fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = Integer.class;

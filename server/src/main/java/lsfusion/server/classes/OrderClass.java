@@ -20,7 +20,6 @@ import lsfusion.server.data.type.Type;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.Format;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -79,7 +78,8 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         return source.getSyntax().getAndExpr(mExprs.immutableList().toString(new GetValue<String, String>() {
             public String getMapValue(String value) {
                 return value + " IS NOT NULL";
-            }}, " OR "), resultSource, resultType, source.getMEnv());
+            }
+        }, " OR "), resultSource, resultType, source.getMEnv());
     }
 
     public ImOrderMap<String, CompileOrder> getCompileOrders(String source, final CompileOrder order) {
@@ -119,10 +119,6 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
     }
 
     protected Class getReportJavaClass() {
-        throw new UnsupportedOperationException();
-    }
-
-    public Format getReportFormat() {
         throw new UnsupportedOperationException();
     }
 

@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.Format;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -200,10 +199,6 @@ public class ConcatenateType extends AbstractType<Object[]> {
         }
 
         return super.read(set, syntax, name);
-    }
-
-    public Format getReportFormat() {
-        throw new RuntimeException("not supported");
     }
 
     public int getMinimumWidth() {

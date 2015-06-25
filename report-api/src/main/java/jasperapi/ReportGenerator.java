@@ -18,10 +18,12 @@ import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.Sides;
 import java.awt.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static lsfusion.interop.form.ReportConstants.footerSuffix;
 import static lsfusion.interop.form.ReportConstants.headerSuffix;
@@ -352,6 +354,21 @@ public class ReportGenerator {
                     subFields.get(i).setExpression(subExpr);
                 }
                 toAdd.addAll(subFields);
+            }
+        }
+        if (textField.getPattern() == null) {
+            Class<?> valueClass = textField.getExpression().getValueClass();
+            DateFormat format = null;
+            if (valueClass == Timestamp.class) {
+                format = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+            } else if (valueClass == Date.class) {
+                format = DateFormat.getDateInstance(DateFormat.SHORT);
+            } else if (valueClass == Time.class) {
+                format = DateFormat.getTimeInstance(DateFormat.SHORT);
+            }
+            
+            if (format != null) {
+                textField.setPattern(((SimpleDateFormat) format).toPattern());
             }
         }
     }

@@ -9,13 +9,11 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.query.TypeEnvironment;
-import lsfusion.server.data.sql.MSSQLDataAdapter;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.form.view.report.ReportDrawField;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.Format;
 
 public interface Type<T> extends ClassReader<T>, FunctionType {
 
@@ -45,7 +43,6 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     void writeParam(PreparedStatement statement, SQLSession.ParamNum num, Object value, SQLSyntax syntax) throws SQLException;
     void writeNullParam(PreparedStatement statement, SQLSession.ParamNum num, SQLSyntax syntax) throws SQLException;
 
-    Format getReportFormat();
     int getMinimumWidth();
     int getPreferredWidth();
     int getMaximumWidth();

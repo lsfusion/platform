@@ -3,8 +3,6 @@ package lsfusion.server.classes;
 import lsfusion.interop.Data;
 import lsfusion.server.logics.ServerResourceBundle;
 
-import java.text.DateFormat;
-import java.text.Format;
 import java.util.Calendar;
 
 public class YearClass extends IntegerClass {
@@ -16,11 +14,6 @@ public class YearClass extends IntegerClass {
     }
 
     private YearClass() { caption = ServerResourceBundle.getString("classes.year"); }
-
-    @Override
-    public Format getReportFormat() {
-        return DateFormat.getDateInstance(DateFormat.SHORT);
-    }
 
     @Override
     public String toString() {

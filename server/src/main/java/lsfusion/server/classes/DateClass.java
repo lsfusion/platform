@@ -1,7 +1,5 @@
 package lsfusion.server.classes;
 
-import lsfusion.server.data.type.Type;
-import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import lsfusion.base.DateConverter;
 import lsfusion.base.ExtInt;
 import lsfusion.base.SystemUtils;
@@ -10,15 +8,16 @@ import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.ServerResourceBundle;
+import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
-import java.text.Format;
 
 public class DateClass extends DataClass<Date> {
 
@@ -35,10 +34,6 @@ public class DateClass extends DataClass<Date> {
     }
 
     public int getPreferredWidth() { return 70; }
-
-    public Format getReportFormat() {
-        return DateFormat.getDateInstance(DateFormat.SHORT);
-    }
 
     public Class getReportJavaClass() {
         return java.util.Date.class;

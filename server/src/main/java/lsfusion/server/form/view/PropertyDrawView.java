@@ -27,9 +27,7 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.util.Map;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -123,14 +121,6 @@ public class PropertyDrawView extends ComponentView {
 
         if (getPreferredCharWidth() != 0) {
             reportField.fixedCharWidth = getPreferredCharWidth() * scale;
-        }
-
-        Format format = type.getReportFormat();
-        if (format instanceof DecimalFormat) {
-            reportField.pattern = ((DecimalFormat) format).toPattern();
-        }
-        if (format instanceof SimpleDateFormat) {
-            reportField.pattern = ((SimpleDateFormat) format).toPattern();
         }
 
         reportField.hasColumnGroupObjects = !entity.getColumnGroupObjects().isEmpty();

@@ -1,6 +1,5 @@
 package lsfusion.server.classes;
 
-import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
 import lsfusion.server.data.expr.query.Stat;
@@ -9,11 +8,11 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.form.view.report.ReportDrawField;
 import lsfusion.server.logics.ServerResourceBundle;
+import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.Format;
 
 public class LogicalClass extends DataClass<Boolean> {
 
@@ -30,10 +29,6 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public int getPreferredWidth() { return 50; }
-
-    public Format getReportFormat() {
-        return null;
-    }
 
     public Class getReportJavaClass() {
         return Boolean.class;

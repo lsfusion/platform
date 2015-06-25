@@ -12,7 +12,6 @@ import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.GroupObjectHierarchy;
-import lsfusion.server.form.entity.PropertyObjectEntity;
 import lsfusion.server.form.view.FormView;
 import lsfusion.server.form.view.GroupObjectView;
 import lsfusion.server.form.view.ObjectView;
@@ -29,14 +28,10 @@ import net.sf.jasperreports.engine.type.OrientationEnum;
 import net.sf.jasperreports.engine.type.PositionTypeEnum;
 import net.sf.jasperreports.engine.type.StretchTypeEnum;
 
-import java.awt.*;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.List;
 
-import static lsfusion.interop.form.ReportConstants.footerSuffix;
-import static lsfusion.interop.form.ReportConstants.headerSuffix;
-import static lsfusion.interop.form.ReportConstants.objectSuffix;
+import static lsfusion.interop.form.ReportConstants.*;
 import static lsfusion.server.form.entity.GroupObjectHierarchy.ReportNode;
 
 /**
@@ -327,10 +322,6 @@ public class ReportDesignGenerator {
         dataField.setHorizontalAlignment(HorizontalAlignEnum.getByValue(reportField.alignment));
         dataField.setPositionType(PositionTypeEnum.FLOAT);
         dataField.setBlankWhenNull(true);
-
-        if (!toExcel || reportField.valueClass != Double.class) {
-            dataField.setPattern(reportField.pattern);
-        }
 
         layout.add(reportField, captionField, dataField);
     }

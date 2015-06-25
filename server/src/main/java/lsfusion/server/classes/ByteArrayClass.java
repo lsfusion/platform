@@ -6,12 +6,12 @@ import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ParseException;
 import lsfusion.server.logics.ServerResourceBundle;
-//import net.sourceforge.jtds.jdbc.BlobImpl;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.Format;
+
+//import net.sourceforge.jtds.jdbc.BlobImpl;
 
 public class ByteArrayClass extends DataClass<byte[]> {
 
@@ -37,10 +37,6 @@ public class ByteArrayClass extends DataClass<byte[]> {
 
     public Class getReportJavaClass() {
         return new byte[0].getClass();
-    }
-
-    public Format getReportFormat() {
-        throw new RuntimeException("not supported");
     }
 
     public byte getTypeID() {

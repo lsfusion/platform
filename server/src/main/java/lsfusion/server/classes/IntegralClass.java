@@ -1,12 +1,9 @@
 package lsfusion.server.classes;
 
 import lsfusion.base.BaseUtils;
-import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.form.view.report.ReportDrawField;
-
-import java.text.Format;
-import java.text.NumberFormat;
+import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 
 // класс который можно сравнивать
 public abstract class IntegralClass<T extends Number> extends DataClass<T> {
@@ -16,10 +13,6 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 
     protected IntegralClass(String caption) {
         super(caption);
-    }
-
-    public Format getReportFormat() {
-        return NumberFormat.getInstance();
     }
 
     public boolean fillReportDrawField(ReportDrawField reportField) {

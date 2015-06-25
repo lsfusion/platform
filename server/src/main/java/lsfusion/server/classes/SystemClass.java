@@ -9,7 +9,6 @@ import lsfusion.server.logics.ServerResourceBundle;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.Format;
 
 public class SystemClass extends DataClass<Integer> {
 
@@ -26,10 +25,6 @@ public class SystemClass extends DataClass<Integer> {
     }
 
     public byte getTypeID() {
-        throw new RuntimeException("not supported yet");
-    }
-
-    public Format getReportFormat() {
         throw new RuntimeException("not supported yet");
     }
 

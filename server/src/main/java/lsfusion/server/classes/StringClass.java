@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.Format;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -32,10 +31,6 @@ public class StringClass extends DataClass {
     public final boolean caseInsensitive;
     public final boolean rich;
     public final ExtInt length;
-
-    public Format getReportFormat() {
-        return null;
-    }
 
     public Class getReportJavaClass() {
         return String.class;

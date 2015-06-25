@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.Format;
 import java.util.*;
 
 
@@ -35,10 +34,6 @@ public abstract class FileClass extends DataClass<byte[]> {
 
     public Class getReportJavaClass() {
         return Object.class;
-    }
-
-    public Format getReportFormat() {
-        return null;
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
