@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.mutables.impl.changes.NFAddFirstList;
 import lsfusion.server.logics.mutables.impl.changes.NFListChange;
 import lsfusion.server.logics.mutables.impl.changes.NFRemoveAll;
 import lsfusion.server.logics.mutables.interfaces.NFList;
@@ -64,5 +65,16 @@ public class NFListImpl<T> extends NFAColImpl<T, NFListChange<T>, ImList<T>> imp
 
     public void removeAll(Version version) {
         addChange(NFRemoveAll.<T>getInstance(), version);
+    }
+
+    public void addFirst(T element, Version version) {
+        addChange(new NFAddFirstList<T>(element), version);
+    }
+
+    public static <T> void add(boolean isLast, NFList<T> list, T element, Version version) {
+        if(isLast)
+            list.add(element, version);
+        else
+            list.addFirst(element, version);
     }
 }

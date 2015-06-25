@@ -10,6 +10,8 @@ public interface NFList<T> extends NFCol<T> {
     Iterable<T> getNFListIt(Version version);
     Iterable<T> getListIt();
     ImList<T> getList();
+
+    void addFirst(T element, Version version);
     
     void removeAll(Version version);
 }

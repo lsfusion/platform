@@ -1320,21 +1320,22 @@ nestedLocalModifier returns[boolean isNested = false]
 abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
 	boolean isExclusive = true;
+	boolean isLast = true;
 	boolean isChecked = false;
 	CaseUnionProperty.Type type = CaseUnionProperty.Type.MULTI;	
 }
 @after {
 	if (inPropParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, isExclusive, isChecked);	
+		$property = self.addScriptedAbstractProp(type, $returnClass.sid, $paramClassNames.ids, isExclusive, isChecked, isLast);
 	}
 }
 	:	'ABSTRACT'
 		(
-			'CASE' { type = CaseUnionProperty.Type.CASE; isExclusive = false; } (opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
-		|	'MULTI'	{ type = CaseUnionProperty.Type.MULTI; isExclusive = true; } (opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
-		|	'OVERRIDE' { type = CaseUnionProperty.Type.VALUE; isExclusive = false; }
-		|	'EXCLUSIVE'{ type = CaseUnionProperty.Type.VALUE; isExclusive = true; }	
+			(('CASE' { type = CaseUnionProperty.Type.CASE; isExclusive = false; }
+			|	'MULTI'	{ type = CaseUnionProperty.Type.MULTI; isExclusive = true; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; isLast = $opt.isLast;})?)
+		|   ('OVERRIDE' { type = CaseUnionProperty.Type.VALUE; isExclusive = false; } (acopt=abstractCaseAddOption { isLast = $acopt.isLast; } )?)
+		|	'EXCLUSIVE'{ type = CaseUnionProperty.Type.VALUE; isExclusive = true; }
 		)?
 		('CHECKED' { isChecked = true; })?
 		returnClass=classId
@@ -1345,21 +1346,22 @@ abstractPropertyDefinition returns [LP property, List<ResolveClassSet> signature
 
 abstractActionPropertyDefinition returns [LP property, List<ResolveClassSet> signature]
 @init {
-	boolean isExclusive = true;	
+	boolean isExclusive = true;
+    boolean isLast = true;
 	boolean isChecked = false;
 	ListCaseActionProperty.AbstractType type = ListCaseActionProperty.AbstractType.MULTI;
 }
 @after {
 	if (inPropParseState()) {
 		$signature = self.createClassSetsFromClassNames($paramClassNames.ids); 
-		$property = self.addScriptedAbstractActionProp(type, $paramClassNames.ids, isExclusive, isChecked);
+		$property = self.addScriptedAbstractActionProp(type, $paramClassNames.ids, isExclusive, isChecked, isLast);
 	}
 }
 	:	'ABSTRACT' 'ACTION' 
 		(
-			'CASE' (opt=exclusiveOverrideOption { type = ListCaseActionProperty.AbstractType.CASE; isExclusive = $opt.isExclusive; })?
-		|	'MULTI'	(opt=exclusiveOverrideOption { isExclusive = $opt.isExclusive; })?
-		|	'LIST' { type = ListCaseActionProperty.AbstractType.LIST; }
+			(('CASE' { type = ListCaseActionProperty.AbstractType.CASE; isExclusive = false; }
+			|	'MULTI'	{ type = ListCaseActionProperty.AbstractType.MULTI; isExclusive = true; }) (opt=abstractExclusiveOverrideOption { isExclusive = $opt.isExclusive; isLast = $opt.isLast;})?)
+		|	('LIST' { type = ListCaseActionProperty.AbstractType.LIST; } (acopt=abstractCaseAddOption { isLast = $acopt.isLast; } )?)
 		)?
 		('CHECKED' { isChecked = true; })?
 		'(' 
@@ -3500,6 +3502,16 @@ multiCompoundID returns [String sid]
 exclusiveOverrideOption returns [boolean isExclusive]
 	:	'OVERRIDE' { $isExclusive = false; }
 	|	'EXCLUSIVE'{ $isExclusive = true; } 
+	;
+
+abstractExclusiveOverrideOption returns [boolean isExclusive, boolean isLast = true]
+	:	('OVERRIDE' { $isExclusive = false; } (acopt = abstractCaseAddOption {$isLast = $acopt.isLast; } )? )
+	|	'EXCLUSIVE'{ $isExclusive = true; }
+	;
+
+abstractCaseAddOption returns [boolean isLast]
+	:	'FIRST' { $isLast = false; }
+	|	'LAST'{ $isLast = true; }
 	;
 
 colorLiteral returns [Color val]

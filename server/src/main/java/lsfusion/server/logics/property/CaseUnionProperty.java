@@ -22,6 +22,7 @@ import lsfusion.server.form.entity.drilldown.DrillDownFormEntity;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.mutables.impl.NFListImpl;
 import lsfusion.server.logics.mutables.interfaces.NFList;
 import lsfusion.server.logics.property.cases.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
@@ -259,8 +260,9 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     private Object cases;
+    private boolean isLast;
     private void addAbstractCase(AbstractCalcCase<Interface> aCase, Version version) {
-        ((NFList<AbstractCalcCase<Interface>>)cases).add(aCase, version);
+        NFListImpl.add(isLast, (NFList<AbstractCalcCase<Interface>>) cases, aCase, version);
     }
     
     private ClassWhere<Object> classValueWhere;
@@ -295,12 +297,13 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     }
 
     // для постзадания
-    public CaseUnionProperty(boolean checkExclusiveImplementations, boolean checkAllImplementations, Type type, String caption, ImOrderSet<Interface> interfaces, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
+    public CaseUnionProperty(boolean checkExclusiveImplementations, boolean checkAllImplementations, boolean isLast, Type type, String caption, ImOrderSet<Interface> interfaces, ValueClass valueClass, ImMap<Interface, ValueClass> interfaceClasses) {
         super(caption, interfaces);
 
         abs = new AbstractInfo(checkExclusiveImplementations, checkAllImplementations, type); 
 
         cases = NFFact.list();
+        this.isLast = isLast;
 
         classValueWhere = new ClassWhere<Object>(MapFact.<Object, ValueClass>addExcl(interfaceClasses, "value", valueClass), true);
     }

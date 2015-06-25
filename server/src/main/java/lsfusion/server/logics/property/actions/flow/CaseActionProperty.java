@@ -1,7 +1,6 @@
 package lsfusion.server.logics.property.actions.flow;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -16,6 +15,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.mutables.NFFact;
+import lsfusion.server.logics.mutables.impl.NFListImpl;
 import lsfusion.server.logics.mutables.interfaces.NFList;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
@@ -58,7 +58,7 @@ public class CaseActionProperty extends ListCaseActionProperty {
     }
 
     private void addAbstractCase(AbstractActionCase<PropertyInterface> aCase, Version version) {
-        ((NFList<AbstractActionCase<PropertyInterface>>)cases).add(aCase, version);
+        NFListImpl.add(isLast, (NFList<AbstractActionCase<PropertyInterface>>) cases, aCase, version);
     }
 
     public void addOperand(ActionPropertyMapImplement<?,PropertyInterface> action, List<ResolveClassSet> signature, Version version) {
@@ -102,8 +102,8 @@ public class CaseActionProperty extends ListCaseActionProperty {
         finalizeInit();
     }
 
-    public <I extends PropertyInterface> CaseActionProperty(String caption, boolean isExclusive, boolean isChecked, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
-        super(caption, isExclusive, isChecked, type, innerInterfaces, mapClasses);
+    public <I extends PropertyInterface> CaseActionProperty(String caption, boolean isExclusive, boolean isChecked, boolean isLast, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+        super(caption, isExclusive, isChecked, isLast, type, innerInterfaces, mapClasses);
 
         cases = NFFact.list();
     }

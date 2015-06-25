@@ -15,6 +15,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.Version;
+import lsfusion.server.logics.mutables.impl.NFListImpl;
 import lsfusion.server.logics.mutables.interfaces.NFList;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -26,7 +27,7 @@ public class ListActionProperty extends ListCaseActionProperty {
     private Object actions;
     public void addAction(ActionPropertyMapImplement<?, PropertyInterface> action, Version version) {
         assert action != null;
-        ((NFList<ActionPropertyMapImplement<?, PropertyInterface>>)actions).add(action, version);
+        NFListImpl.add(isLast, (NFList<ActionPropertyMapImplement<?, PropertyInterface>>) actions, action, version);
 
         addWhereOperand(action, null, version);
     }
@@ -48,8 +49,8 @@ public class ListActionProperty extends ListCaseActionProperty {
     }
 
     // abstract конструктор без finalize'а
-    public <I extends PropertyInterface> ListActionProperty(String caption, boolean isChecked, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
-        super(caption, false, isChecked, AbstractType.LIST, innerInterfaces, mapClasses);
+    public <I extends PropertyInterface> ListActionProperty(String caption, boolean isChecked, boolean isLast, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+        super(caption, false, isChecked, isLast, AbstractType.LIST, innerInterfaces, mapClasses);
 
         actions = NFFact.list();
         localsInScope = SetFact.EMPTY();

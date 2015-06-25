@@ -46,6 +46,12 @@ public class ArCol<K> extends ACol<K> implements MCol<K>, MAddCol<K> {
         array[size++] = key;
     }
 
+    public void addFirst(K key) {
+        if(size>=array.length) resize(2 * array.length + 1);
+        System.arraycopy(array, 0, array, 1, size++);
+        array[0] = key;
+    }
+
     public void remove(int i) {
         System.arraycopy(array, i + 1, array, i, size-1-i);
         array[(size--) - 1] = null;

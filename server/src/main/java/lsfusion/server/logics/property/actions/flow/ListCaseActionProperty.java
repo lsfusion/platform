@@ -20,6 +20,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
     public enum AbstractType { CASE, MULTI, LIST }
 
     protected boolean checkExclusiveImplementations;
+    protected boolean isLast;
     protected final AbstractType type;
 
     public boolean isAbstract() {
@@ -50,10 +51,11 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
     }
 
     // mutable реализация
-    public <I extends PropertyInterface> ListCaseActionProperty(String caption, boolean checkExclusiveImplementations, boolean checkAllImplementations, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
+    public <I extends PropertyInterface> ListCaseActionProperty(String caption, boolean checkExclusiveImplementations, boolean checkAllImplementations, boolean isLast, AbstractType type, ImOrderSet<I> innerInterfaces, ImMap<I, ValueClass> mapClasses)  {
         super(caption, innerInterfaces.size());
 
-        this.checkExclusiveImplementations = checkExclusiveImplementations; 
+        this.checkExclusiveImplementations = checkExclusiveImplementations;
+        this.isLast = isLast;
         this.type = type;
 
         CaseUnionProperty.Type caseType = null;
@@ -62,7 +64,7 @@ public abstract class ListCaseActionProperty extends KeepContextActionProperty {
             case MULTI: caseType = CaseUnionProperty.Type.MULTI; break;
             case LIST: caseType = CaseUnionProperty.Type.VALUE; break;
         }
-        abstractWhere = DerivedProperty.createUnion(checkExclusiveImplementations, checkAllImplementations, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
+        abstractWhere = DerivedProperty.createUnion(checkExclusiveImplementations, checkAllImplementations, isLast, caseType, interfaces, LogicalClass.instance, getMapInterfaces(innerInterfaces).join(mapClasses));
     }
 
     protected abstract CalcPropertyMapImplement<?, PropertyInterface> calcCaseWhereProperty();

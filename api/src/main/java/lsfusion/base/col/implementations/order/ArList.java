@@ -32,6 +32,10 @@ public class ArList<K> extends AList<K> implements MList<K> {
         col.add(key);
     }
 
+    public void addFirst(K key) {
+        col.addFirst(key);
+    }
+
     public void addAll(ImList<? extends K> list) {
         for(int i=0,size=list.size();i<size;i++)
             add(list.get(i));

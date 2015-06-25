@@ -544,24 +544,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LP<?, ?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, List<String> paramClasses, boolean isExclusive, boolean isChecked) throws ScriptingErrorLog.SemanticErrorException {
+    public LP<?, ?> addScriptedAbstractProp(CaseUnionProperty.Type type, String returnClass, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass value = findClass(returnClass);
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClass(paramClasses.get(i));
         }
-        return addAUProp(null, false, isExclusive, isChecked, type, "", value, params);
+        return addAUProp(null, false, isExclusive, isChecked, isLast, type, "", value, params);
     }
 
-    public LP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedAbstractActionProp(ListCaseActionProperty.AbstractType type, List<String> paramClasses, boolean isExclusive, boolean isChecked, boolean isLast) throws ScriptingErrorLog.SemanticErrorException {
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = findClass(paramClasses.get(i));
         }
         if (type == ListCaseActionProperty.AbstractType.LIST) {
-            return addAbstractListAProp(isChecked, params);
+            return addAbstractListAProp(isChecked, isLast, params);
         } else {
-            return addAbstractCaseAProp(type, isExclusive, isChecked, params);
+            return addAbstractCaseAProp(type, isExclusive, isChecked, isLast, params);
         }
     }
 
