@@ -54,7 +54,7 @@ import java.util.regex.Pattern;
 import static lsfusion.server.ServerLoggers.systemLogger;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> {
-    private PreparedStatement sqlStatement;
+    private PreparedStatement executingStatement;
     private static final Logger logger = ServerLoggers.sqlLogger;
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
     private Integer idActiveThread;
@@ -78,7 +78,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             if(connection != null)
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), Arrays.<Object>asList(sqlSession.getActiveThread(),
                         sqlSession.isInTransaction(), sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
-                        sqlSession.getSqlStatement()));
+                        sqlSession.getExecutingStatement()));
         }
         return sessionMap;
     }
@@ -89,8 +89,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return this == obj;
     }
 
-    public String getSqlStatement() {
-        return sqlStatement == null ? null : sqlStatement.toString();
+    public String getExecutingStatement() {
+        return executingStatement == null ? null : executingStatement.toString();
     }
 
     private static interface SQLRunnable {
@@ -1370,10 +1370,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             long started = System.currentTimeMillis();
 
             try {
-                sqlStatement = statement;
+                executingStatement = statement;
                 command.execute(statement, handler, this);
             } finally {
-                sqlStatement = null;
+                executingStatement = null;
             }
 
             runTime = System.currentTimeMillis() - started;
