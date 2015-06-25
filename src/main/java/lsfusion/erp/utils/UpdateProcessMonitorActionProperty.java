@@ -83,7 +83,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         //step1: props, mRows (sql)
         ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess", "querySQLProcess", "addressUserSQLProcess", "dateTimeSQLProcess",
-                "isActiveSQLProcess", "inTransactionSQLProcess", "computerProcess", "userProcess", "lockOwnerIdProcess", "lockOwnerNameProcess"));
+                "isActiveSQLProcess", "inTransactionSQLProcess", "computerProcess", "userProcess", "lockOwnerIdProcess", "lockOwnerNameProcess",
+                "fullQuerySQLProcess"));
         MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRowsSQL = MapFact.mExclMap();
 
         for (final List<Object> sessionThread : sessionThreadMap.values()) {
@@ -92,7 +93,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             if(activeThread != null) {
                 final String idThread = String.valueOf(activeThread);
                 final List<Object> sqlProcess = sqlProcesses.get(idThread);
-                Boolean skip = sqlProcess != null && !(Boolean) sqlProcess.get(5);
+                Boolean skip = sqlProcess != null && !(Boolean) sqlProcess.get(6);
                 if (sqlProcess != null) {
                     //step2: exclAdd (sql1)
                     mRowsSQL.exclAdd(MapFact.singleton("key", new DataObject(i, IntegerClass.instance)), propsSQL.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
@@ -189,32 +190,35 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             case "querySQLProcess":
                 String query = (String) sqlProcess.get(0);
                 return query == null ? NullValue.instance : new DataObject(query);
+            case "fullQuerySQLProcess":
+                String fullQuery = (String) sqlProcess.get(1);
+                return fullQuery == null ? NullValue.instance : new DataObject(fullQuery);
             case "userProcess":
-                String user = (String) sqlProcess.get(1);
+                String user = (String) sqlProcess.get(2);
                 return user == null ? NullValue.instance : new DataObject(user);
             case "computerProcess":
-                String computer = (String) sqlProcess.get(2);
+                String computer = (String) sqlProcess.get(3);
                 return computer == null ? NullValue.instance : new DataObject(computer);
             case "addressUserSQLProcess":
-                String address = (String) sqlProcess.get(3);
+                String address = (String) sqlProcess.get(4);
                 return address == null ? NullValue.instance : new DataObject(address);
             case "dateTimeSQLProcess":
-                Timestamp dateTime = (Timestamp) sqlProcess.get(4);
+                Timestamp dateTime = (Timestamp) sqlProcess.get(5);
                 return dateTime == null ? NullValue.instance : new DataObject(dateTime, DateTimeClass.instance);
             case "isActiveSQLProcess":
-                Boolean isActive = (Boolean) sqlProcess.get(5);
+                Boolean isActive = (Boolean) sqlProcess.get(6);
                 return isActive == null || !isActive ? NullValue.instance : new DataObject(true);
             case "inTransactionSQLProcess":
-                boolean fusionInTransaction = (Boolean) sqlProcess.get(6);
+                boolean fusionInTransaction = (Boolean) sqlProcess.get(7);
                 if(baseInTransaction != null)
                     ServerLoggers.assertLog(fusionInTransaction != baseInTransaction, "FUSION AND BASE INTRANSACTION DIFFERS");
                 Boolean inTransaction = baseInTransaction != null ? baseInTransaction : fusionInTransaction;
                 return !inTransaction ? NullValue.instance : new DataObject(true);
             case "lockOwnerIdProcess":
-                String lockOwnerId = (String) sqlProcess.get(7);
+                String lockOwnerId = (String) sqlProcess.get(8);
                 return lockOwnerId == null ? NullValue.instance : new DataObject(lockOwnerId);
             case "lockOwnerNameProcess":
-                String lockOwnerName = (String) sqlProcess.get(8);
+                String lockOwnerName = (String) sqlProcess.get(9);
                 return lockOwnerName == null ? NullValue.instance : new DataObject(lockOwnerName);
             default:
                 return NullValue.instance;
@@ -292,17 +296,18 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             HMap entry = (HMap) rsValue;
 
             String query = trim((String) entry.get("text"));
+            String fullQuery =  null;
             Integer processId = (Integer) entry.get("session_id");
             List<Object> sessionThread = sessionThreadMap.get(processId);
             if(sessionThread != null && sessionThread.get(4) != null) {
-                query = (String) sessionThread.get(4);
+                fullQuery = (String) sessionThread.get(4);
             }
             String userActiveTask = trim((String) entry.get("host_name"));
             String address = trim((String) entry.get("client_net_address"));
             Timestamp dateTime = (Timestamp) entry.get("start_time");
 
             if (!query.equals(originalQuery)) {
-                resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, userActiveTask, null,
+                resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, fullQuery, userActiveTask, null,
                         address, dateTime, null, null, null, null));
             }
         }
@@ -351,6 +356,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             HMap entry = (HMap) rsValue;
 
             String query = trim((String) entry.get("query"));
+            String fullQuery = null;
             Integer processId = (Integer) entry.get("pid");
             String address = trim((String) entry.get("client_addr"));
             Timestamp dateTime = (Timestamp) entry.get("query_start");
@@ -366,12 +372,12 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     computerActiveTask = (String) findProperty("hostnameComputer").read(context.getSession(),
                             context.getSession().getObjectValue(context.getBL().authenticationLM.computer, sessionThread.get(3)));
                     if(sessionThread.get(4) != null)
-                        query = (String) sessionThread.get(4);
+                        fullQuery = (String) sessionThread.get(4);
                 }
                 List<Object> lockingProcess = lockingMap.get(processId);
                 String lockOwnerId = lockingProcess == null ? null : getSQLThreadId(sessionThreadMap.get(lockingProcess.get(0)), (Integer) lockingProcess.get(0));
                 String lockOwnerName = lockingProcess == null ? null : (String) lockingProcess.get(1);
-                resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.<Object>asList(query, userActiveTask, computerActiveTask, address, dateTime,
+                resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.<Object>asList(query, fullQuery, userActiveTask, computerActiveTask, address, dateTime,
                                 state.equals("active"), state.equals("idle in transaction"), lockOwnerId, lockOwnerName));
             }
         }

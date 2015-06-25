@@ -59,6 +59,7 @@ computerProcess 'Компьютер' = DATA LOCAL VARSTRING[100] (INTEGER);
 userProcess 'Пользователь' = DATA LOCAL VARSTRING[100] (INTEGER);
 
 querySQLProcess 'Запрос (SQL)' = DATA LOCAL TEXT (INTEGER);
+fullQuerySQLProcess 'Полный запрос (SQL)' = DATA LOCAL TEXT (INTEGER);
 addressUserSQLProcess 'Адрес пользователя (SQL)' = DATA LOCAL VARSTRING[100] (INTEGER);
 dateTimeSQLProcess 'Время запуска (SQL)' = DATA LOCAL DATETIME (INTEGER);
 isActiveSQLProcess 'Активный (SQL)' = DATA BOOLEAN (INTEGER);
@@ -127,7 +128,7 @@ FORM processMonitor 'Монитор процессов'
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, computerProcess, userProcess,
                            querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                            stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
-                           lockOwnerIdProcess, lockOwnerNameProcess
+                           lockOwnerIdProcess, lockOwnerNameProcess, fullQuerySQLProcess
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     FILTERS idThreadProcess(i)
     FILTERGROUP active
@@ -140,7 +141,7 @@ FORM processMonitor 'Монитор процессов'
                             activeProcess, idThreadProcess, computerProcess, userProcess,
                             querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                             stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
-                            lockOwnerIdProcess, lockOwnerNameProcess
+                            lockOwnerIdProcess, lockOwnerNameProcess, fullQuerySQLProcess
     PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
     FILTERS idThreadProcess(i2), (activeProcess(i2) AND sumBlockedProcess(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') 
     
@@ -149,11 +150,11 @@ FORM processMonitor 'Монитор процессов'
                                  sumBlockingProcess, computerProcess, userProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess,
                                  stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
-                                 lockOwnerIdProcess, lockOwnerNameProcess
+                                 lockOwnerIdProcess, lockOwnerNameProcess, fullQuerySQLProcess
     PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlockingProcess, computerProcess, userProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                                  stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
-                                 lockOwnerIdProcess, lockOwnerNameProcess
+                                 lockOwnerIdProcess, lockOwnerNameProcess, fullQuerySQLProcess
     PROPERTIES(blocking) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(blocking), killJavaProcess SHOWIF isActiveSQLProcess(blocking)                                   
     FILTERS idThreadProcess(blocked), sumBlockingProcess(blocked) > 0, sumBlockedProcess(blocking) > 0, isBlockingProcess(blocked, blocking) AND blocked != blocking
     FILTERGROUP nonBlocking FILTER 'Только не блокирующие' sumBlockedProcess(blocked) == 0 OR isDeadlockProcess(blocked) DEFAULT 
