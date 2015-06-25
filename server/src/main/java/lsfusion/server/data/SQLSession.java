@@ -54,6 +54,7 @@ import java.util.regex.Pattern;
 import static lsfusion.server.ServerLoggers.systemLogger;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> {
+    private PreparedStatement sqlStatement;
     private static final Logger logger = ServerLoggers.sqlLogger;
     private static final Logger handLogger = ServerLoggers.sqlHandLogger;
     private Integer idActiveThread;
@@ -76,7 +77,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             ExConnection connection = sqlSession.getDebugConnection();
             if(connection != null)
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), Arrays.<Object>asList(sqlSession.getActiveThread(),
-                        sqlSession.isInTransaction(), sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer()));
+                        sqlSession.isInTransaction(), sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
+                        sqlSession.getSqlStatement()));
         }
         return sessionMap;
     }
@@ -85,6 +87,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     @Override
     public boolean equals(Object obj) {
         return this == obj;
+    }
+
+    public String getSqlStatement() {
+        return sqlStatement == null ? null : sqlStatement.toString();
     }
 
     private static interface SQLRunnable {
@@ -1363,7 +1369,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             long started = System.currentTimeMillis();
 
-            command.execute(statement, handler, this);
+            try {
+                sqlStatement = statement;
+                command.execute(statement, handler, this);
+            } finally {
+                sqlStatement = null;
+            }
 
             runTime = System.currentTimeMillis() - started;
         } catch (Throwable t) { // по хорошему тоже надо через runSuppressed, но будут проблемы с final'ами
