@@ -30,11 +30,12 @@ public class DiscountCardDaemonTask extends AbstractDaemonTask implements Serial
     @Override
     public boolean dispatchKeyEvent(KeyEvent e) {
         if(e.getID() == KeyEvent.KEY_PRESSED) {
-            if(e.getKeyChar() == ';')
+            if(e.getKeyChar() == ';' || e.getKeyChar() == 'ж')
                 recording = true;
             else if(e.getKeyChar() == '\n') {
                 recording = false;
-                if(input.length() > 2 && input.charAt(input.length() - 2) == 65535 && input.charAt(input.length() - 1) == '?') {
+                if(input.length() > 2 && input.charAt(input.length() - 2) == 65535
+                        && ((input.charAt(input.length() - 1) == '?') || input.charAt(input.length() - 1) == ',')) {
                     ServerLoggers.systemLogger.info(input.substring(0, input.length() - 2));
                     eventBus.fireValueChanged(SCANNER_SID, input.substring(0, input.length() - 2));
                     input = "";
