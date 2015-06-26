@@ -211,7 +211,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             case "inTransactionSQLProcess":
                 boolean fusionInTransaction = (Boolean) sqlProcess.get(7);
                 if(baseInTransaction != null)
-                    ServerLoggers.assertLog(fusionInTransaction != baseInTransaction, "FUSION AND BASE INTRANSACTION DIFFERS");
+                    ServerLoggers.assertLog(baseInTransaction.equals(fusionInTransaction), "FUSION AND BASE INTRANSACTION DIFFERS");
                 Boolean inTransaction = baseInTransaction != null ? baseInTransaction : fusionInTransaction;
                 return !inTransaction ? NullValue.instance : new DataObject(true);
             case "lockOwnerIdProcess":
