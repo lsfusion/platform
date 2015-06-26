@@ -22,8 +22,7 @@ import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.base.shared.actions.NumberResult;
-import lsfusion.gwt.base.shared.actions.VoidResult;
+import lsfusion.gwt.base.shared.actions.*;
 import lsfusion.gwt.form.client.HotkeyManager;
 import lsfusion.gwt.form.client.LoadingBlocker;
 import lsfusion.gwt.form.client.dispatch.DeferredRunner;
@@ -907,8 +906,8 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         Window.open(reportUrl, "Report", "");
     }
 
-    public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, final ErrorHandlingCallback<ServerResponseResult> callback) {
-        syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers), new ServerResponseCallback() {
+    public void saveUserPreferences(GGridUserPreferences userPreferences, boolean forAllUsers, boolean completeOverride, final ErrorHandlingCallback<ServerResponseResult> callback) {
+        syncDispatch(new SaveUserPreferencesAction(userPreferences.convertPreferences(), forAllUsers, completeOverride), new ServerResponseCallback() {
             @Override
             public void success(ServerResponseResult response) {
                 for (GAction action : response.actions) {

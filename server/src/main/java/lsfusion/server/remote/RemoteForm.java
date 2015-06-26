@@ -663,7 +663,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     @Override
-    public ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, final GroupObjectUserPreferences preferences, final boolean forAllUsers) throws RemoteException {
+    public ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, final GroupObjectUserPreferences preferences, final boolean forAllUsers, final boolean completeOverride) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, new ERunnable() {
             @Override
             public void run() throws Exception {
@@ -672,7 +672,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     logger.trace("saveUserPreferences Action");
                 }
                 
-                form.saveUserPreferences(preferences, forAllUsers);
+                form.saveUserPreferences(preferences, forAllUsers, completeOverride);
             }
         });
     }

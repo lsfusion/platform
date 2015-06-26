@@ -227,9 +227,9 @@ public class RemoteFormProxy extends RemoteObjectProxy<RemoteFormInterface> impl
         logRemoteMethodEndVoidCall("saveGrouping");   
     }
 
-    public ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers) throws RemoteException {
+    public ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers, boolean completeOverride) throws RemoteException {
         logRemoteMethodStartCall("saveUserPreferences");
-        ServerResponse result = target.saveUserPreferences(requestIndex, lastReceivedRequestIndex, preferences, forAllUsers);
+        ServerResponse result = target.saveUserPreferences(requestIndex, lastReceivedRequestIndex, preferences, forAllUsers, completeOverride);
         logRemoteMethodEndCall("saveUserPreferences", result);
         return result;
     }

@@ -408,10 +408,10 @@ public abstract class UserPreferencesDialog extends JDialog {
 
     private void applyButtonPressed(boolean forAllUsers) throws IOException {
         Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orderDirections = initialTable.getOrderDirections();
-        Map<ClientPropertyDraw, Pair<Boolean, Integer>> sortDirections = new HashMap<ClientPropertyDraw, Pair<Boolean, Integer>>();
+        Map<ClientPropertyDraw, Pair<Boolean, Integer>> sortDirections = new HashMap<>();
         int j = 0;
         for (Map.Entry<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> entry : orderDirections.entrySet()) {
-            sortDirections.put(entry.getKey().first, new Pair<Boolean, Integer>(entry.getValue(), j));
+            sortDirections.put(entry.getKey().first, new Pair<>(entry.getValue(), j));
             j++;
         }
 
@@ -445,7 +445,14 @@ public abstract class UserPreferencesDialog extends JDialog {
     }
 
     private void resetButtonPressed(boolean forAllUsers) throws IOException {
-        initialTable.resetPreferences(forAllUsers, saveSuccessCallback, saveFailureCallback);
+        boolean completeReset = false;
+        if(forAllUsers) {
+            int result = JOptionPane.showConfirmDialog(this, getString("form.grid.preferences.complete.reset"), getString("form.grid.preferences.complete.reset.header"), JOptionPane.YES_NO_OPTION);
+            if(result == JOptionPane.YES_OPTION) {
+                completeReset = true;
+            }
+        }
+        initialTable.resetPreferences(forAllUsers, completeReset, saveSuccessCallback, saveFailureCallback);
     }
     
     private Runnable saveSuccessCallback = new Runnable() {

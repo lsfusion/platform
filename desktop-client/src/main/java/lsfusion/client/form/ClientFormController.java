@@ -441,13 +441,13 @@ public class ClientFormController implements AsyncListener {
                 : null;
     }
 
-    public void saveUserPreferences(final GridUserPreferences gridPreferences, final boolean forAllUsers, final Runnable successCallback, final Runnable failureCallback) throws RemoteException {
+    public void saveUserPreferences(final GridUserPreferences gridPreferences, final boolean forAllUsers, final boolean completeOverride, final Runnable successCallback, final Runnable failureCallback) throws RemoteException {
         commitOrCancelCurrentEditing();
 
         ServerResponse result = rmiQueue.syncRequest(new RmiCheckNullFormRequest<ServerResponse>("saveUserPreferences") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.saveUserPreferences(requestIndex, lastReceivedRequestIndex, gridPreferences.convertPreferences(), forAllUsers);
+                return remoteForm.saveUserPreferences(requestIndex, lastReceivedRequestIndex, gridPreferences.convertPreferences(), forAllUsers, completeOverride);
             }
         });
 

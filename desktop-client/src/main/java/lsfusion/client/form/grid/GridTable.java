@@ -1355,7 +1355,7 @@ public class GridTable extends ClientPropertyTable {
         }
     }
     
-    public void resetPreferences(final boolean forAllUsers, final Runnable onSuccess, final Runnable onFailure) throws RemoteException {
+    public void resetPreferences(final boolean forAllUsers, final boolean completeReset, final Runnable onSuccess, final Runnable onFailure) throws RemoteException {
         currentGridPreferences.resetPreferences();
         
         if (!properties.isEmpty()) {
@@ -1380,7 +1380,7 @@ public class GridTable extends ClientPropertyTable {
                 }
             };
             
-            form.saveUserPreferences(currentGridPreferences, forAllUsers, successCallback, failureCallback);
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, completeReset, successCallback, failureCallback);
         }
     }
                                                                                  
@@ -1412,7 +1412,7 @@ public class GridTable extends ClientPropertyTable {
                 }
             };
             
-            form.saveUserPreferences(currentGridPreferences, forAllUsers, successCallback, failureCallback);
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, false, successCallback, failureCallback);
         }
     }
     

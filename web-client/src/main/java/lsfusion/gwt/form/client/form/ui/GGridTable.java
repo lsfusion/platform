@@ -72,6 +72,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     private GGridUserPreferences generalGridPreferences;
     private GGridUserPreferences userGridPreferences;
     private GGridUserPreferences currentGridPreferences;
+    GFormController formController;
 
     private int nextColumnID = 0;
 
@@ -84,6 +85,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public GGridTable(GFormController iform, GGroupObjectController igroupController, GGridController gridController, GGridUserPreferences[] iuserPreferences) {
         super(iform, null);
 
+        this.formController = iform;
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;
         this.gridController = gridController;
@@ -921,21 +923,43 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
     public void resetPreferences(final boolean forAllUsers, final ErrorHandlingCallback<ServerResponseResult> callback) {
         currentGridPreferences.resetPreferences();
 
-        if (!properties.isEmpty()) {
-            form.saveUserPreferences(currentGridPreferences, forAllUsers, new ErrorHandlingCallback<ServerResponseResult>() {
+        if (forAllUsers) {
+            formController.blockingConfirm("Сбросить также индивидуальные настройки пользователей?", "Сброс настроек", false, 0, 0, new DialogBoxHelper.CloseCallback() {
                 @Override
-                public void failure(Throwable caught) {
-                    resetCurrentPreferences(false);
-                    callback.failure(caught);
-                }
+                public void closed(DialogBoxHelper.OptionType chosenOption) {
+                    form.saveUserPreferences(currentGridPreferences, true, chosenOption == DialogBoxHelper.OptionType.YES, new ErrorHandlingCallback<ServerResponseResult>() {
+                        @Override
+                        public void failure(Throwable caught) {
+                            resetCurrentPreferences(false);
+                            callback.failure(caught);
+                        }
 
-                @Override
-                public void success(ServerResponseResult result) {
-                    (forAllUsers ? generalGridPreferences : userGridPreferences).resetPreferences();
-                    resetCurrentPreferences(false);
-                    callback.success(result);
+                        @Override
+                        public void success(ServerResponseResult result) {
+                            generalGridPreferences.resetPreferences();
+                            resetCurrentPreferences(false);
+                            callback.success(result);
+                        }
+                    });
                 }
             });
+        } else {
+            if (!properties.isEmpty()) {
+                form.saveUserPreferences(currentGridPreferences, false, false, new ErrorHandlingCallback<ServerResponseResult>() {
+                    @Override
+                    public void failure(Throwable caught) {
+                        resetCurrentPreferences(false);
+                        callback.failure(caught);
+                    }
+
+                    @Override
+                    public void success(ServerResponseResult result) {
+                        userGridPreferences.resetPreferences();
+                        resetCurrentPreferences(false);
+                        callback.success(result);
+                    }
+                });
+            }
         }
     }
 
@@ -944,7 +968,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
 
         if (!getProperties().isEmpty()) {
 
-            form.saveUserPreferences(currentGridPreferences, forAllUsers, new ErrorHandlingCallback<ServerResponseResult>() {
+            form.saveUserPreferences(currentGridPreferences, forAllUsers, false, new ErrorHandlingCallback<ServerResponseResult>() {
                 @Override
                 public void success(ServerResponseResult result) {
                     if (forAllUsers) {
