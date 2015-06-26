@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.Property;
 
+// разбивает на группы и выполняет группами
 public abstract class GroupSplitTask<T> extends GroupProgramTask {
 
     protected abstract void runGroupTask(ImSet<T> objSet);
