@@ -872,11 +872,10 @@ META defineDocumentDetailDataSum(object)
 END
 
 META deriveDocumentDetailSumCustomPrefix(detail, prefix, currencyProp, quantityProp)
-    WHEN SESSION (CHANGED(quantityProp###detail(detail)) OR 
-                  CHANGED (prefix###price###detail(detail)) OR 
-                  CHANGED(currencyProp###detail(detail)))
-                  AND NOT CHANGED(prefix###sum###detail (detail)) DO
-        prefix###sum###detail (detail)  <- roundPriceCurrency(quantityProp###detail(detail) * prefix###price###detail(detail), currencyProp###detail(detail));
+    calc###prefix###sum###detail = ABSTRACT OVERRIDE FIRST NUMERIC[16,2] (###detail);
+    calc###prefix###sum###detail(detail) += NUMERIC[16,2](roundPriceCurrency(quantityProp###detail(detail) * prefix###price###detail(detail), currencyProp###detail(detail))); 
+    prefix###sum###detail (detail) <- calc###prefix###sum###detail(detail)
+                    WHEN DO CHANGED(quantityProp###detail(detail)) OR CHANGED (prefix###price###detail(detail)) OR CHANGED(currencyProp###detail(detail));
 END
 
 META deriveDocumentDetailSumPrefix(object, prefix, currencyProp, quantityProp)
