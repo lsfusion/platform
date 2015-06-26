@@ -84,7 +84,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         //step1: props, mRows (sql)
         ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess", "querySQLProcess", "addressUserSQLProcess", "dateTimeSQLProcess",
                 "isActiveSQLProcess", "inTransactionSQLProcess", "computerProcess", "userProcess", "lockOwnerIdProcess", "lockOwnerNameProcess",
-                "fullQuerySQLProcess"));
+                "fullQuerySQLProcess", "idSQLProcess"));
         MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRowsSQL = MapFact.mExclMap();
 
         for (final List<Object> sessionThread : sessionThreadMap.values()) {
@@ -220,6 +220,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             case "lockOwnerNameProcess":
                 String lockOwnerName = (String) sqlProcess.get(9);
                 return lockOwnerName == null ? NullValue.instance : new DataObject(lockOwnerName);
+            case "idSQLProcess":
+                Integer idSQLProcess = (Integer) sqlProcess.get(10);
+                return idSQLProcess == null ? NullValue.instance : new DataObject(idSQLProcess);
             default:
                 return NullValue.instance;
         }
@@ -308,7 +311,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
             if (!query.equals(originalQuery)) {
                 resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, fullQuery, userActiveTask, null,
-                        address, dateTime, null, null, null, null));
+                        address, dateTime, null, null, null, null, processId));
             }
         }
         return resultMap;
@@ -378,7 +381,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 String lockOwnerId = lockingProcess == null ? null : getSQLThreadId(sessionThreadMap.get(lockingProcess.get(0)), (Integer) lockingProcess.get(0));
                 String lockOwnerName = lockingProcess == null ? null : (String) lockingProcess.get(1);
                 resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.<Object>asList(query, fullQuery, userActiveTask, computerActiveTask, address, dateTime,
-                                state.equals("active"), state.equals("idle in transaction"), lockOwnerId, lockOwnerName));
+                                state.equals("active"), state.equals("idle in transaction"), lockOwnerId, lockOwnerName, processId));
             }
         }
         return resultMap;

@@ -26,15 +26,13 @@ public class CancelSQLProcessActionProperty extends ScriptingActionProperty {
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             DataObject currentObject = context.getDataKeyValue(integerInterface);
-            String idThreadProcess = (String) findProperty("idThreadProcess").read(context, currentObject);
-            Integer pid = idThreadProcess == null ? null : Integer.parseInt(idThreadProcess.replace("s", ""));
-            SQLSession cancelSession = SQLSession.getSQLSessionMap().get(pid);
+            Integer processId = (Integer) findProperty("idSQLProcess").read(context, currentObject);
+            SQLSession cancelSession = SQLSession.getSQLSessionMap().get(processId);
             if (cancelSession != null)
                 cancelSession.setForcedCancel();
-            context.getSession().sql.executeDDL(context.getDbManager().getAdapter().getCancelActiveTaskQuery(pid));
+            context.getSession().sql.executeDDL(context.getDbManager().getAdapter().getCancelActiveTaskQuery(processId));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-
     }
 }

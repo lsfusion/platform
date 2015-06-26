@@ -58,6 +58,7 @@ idThreadProcess 'ID потока процесса' = DATA LOCAL VARSTRING[10] (I
 computerProcess 'Компьютер' = DATA LOCAL VARSTRING[100] (INTEGER);
 userProcess 'Пользователь' = DATA LOCAL VARSTRING[100] (INTEGER);
 
+idSQLProcess 'ID процесса (SQL)' = DATA LOCAL INTEGER (INTEGER);
 querySQLProcess 'Запрос (SQL)' = DATA LOCAL TEXT (INTEGER);
 fullQuerySQLProcess 'Полный запрос (SQL)' = DATA LOCAL TEXT (INTEGER);
 addressUserSQLProcess 'Адрес пользователя (SQL)' = DATA LOCAL VARSTRING[100] (INTEGER);
@@ -115,20 +116,20 @@ sqlColorProcess(i) = CASE
 backgroundProcess(i) = IF isActiveSQLProcess(i) OR startsWith(idThreadProcess(i), 's') THEN sqlColorProcess(i) ELSE RGB(240, 255, 255);  
                    
 cancelProcess 'Снять процесс' (i) = ACTION {
-    IF isActiveSQLProcess(i) THEN cancelSQLProcess(i) ELSE cancelJavaProcess(i);
+    IF idSQLProcess(i) THEN cancelSQLProcess(i) ELSE cancelJavaProcess(i);
     updateProcessMonitorAction();
 }           
 killProcess 'Убить процесс' (i) = ACTION { 
     IF isActiveSQLProcess(i) THEN killSQLProcess(i) ELSE killJavaProcess(i);
     updateProcessMonitorAction();
 }
-showExtraButtons(i) = isActiveSQLProcess(i) AND statusJavaProcess(i);                             
+showExtraButtons(i) = idSQLProcess(i) AND NOT startsWith(idThreadProcess(i), 's');                             
 FORM processMonitor 'Монитор процессов'
     OBJECTS i = INTEGER
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, computerProcess, userProcess,
                            querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                            stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
-                           lockOwnerIdProcess, lockOwnerNameProcess, fullQuerySQLProcess
+                           lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     FILTERS idThreadProcess(i)
     FILTERGROUP active
@@ -141,7 +142,7 @@ FORM processMonitor 'Монитор процессов'
                             activeProcess, idThreadProcess, computerProcess, userProcess,
                             querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                             stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
-                            lockOwnerIdProcess, lockOwnerNameProcess, fullQuerySQLProcess
+                            lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
     FILTERS idThreadProcess(i2), (activeProcess(i2) AND sumBlockedProcess(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') 
     
@@ -150,11 +151,11 @@ FORM processMonitor 'Монитор процессов'
                                  sumBlockingProcess, computerProcess, userProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess,
                                  stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
-                                 lockOwnerIdProcess, lockOwnerNameProcess, fullQuerySQLProcess
+                                 lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlockingProcess, computerProcess, userProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                                  stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
-                                 lockOwnerIdProcess, lockOwnerNameProcess, fullQuerySQLProcess
+                                 lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(blocking) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(blocking), killJavaProcess SHOWIF isActiveSQLProcess(blocking)                                   
     FILTERS idThreadProcess(blocked), sumBlockingProcess(blocked) > 0, sumBlockedProcess(blocking) > 0, isBlockingProcess(blocked, blocking) AND blocked != blocking
     FILTERGROUP nonBlocking FILTER 'Только не блокирующие' sumBlockedProcess(blocked) == 0 OR isDeadlockProcess(blocked) DEFAULT 

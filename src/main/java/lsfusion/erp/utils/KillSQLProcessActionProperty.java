@@ -25,9 +25,8 @@ public class KillSQLProcessActionProperty extends ScriptingActionProperty {
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             DataObject currentObject = context.getDataKeyValue(integerInterface);
-            String idThreadProcess = (String) findProperty("idThreadProcess").read(context, currentObject);
-            Integer pid = idThreadProcess == null ? null : Integer.parseInt(idThreadProcess.replace("s", ""));
-            context.getDbManager().getAdapter().killProcess(pid);
+            Integer processId = (Integer) findProperty("idSQLProcess").read(context, currentObject);
+            context.getDbManager().getAdapter().killProcess(processId);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
