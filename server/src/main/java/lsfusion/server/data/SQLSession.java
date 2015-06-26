@@ -1107,8 +1107,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     rtime = getTime("Execution time: (((\\d)+)[.]((\\d)+))", row);
                     if(prevRow != null)
                         ptime = getTime("Planning time: (((\\d)+)[.]((\\d)+))", prevRow);
-                } else
-                    rtime = null;
+                }
                 double ttime = BaseUtils.nullAdd(rtime, ptime);
                 if(noAnalyze || thr==0 || ttime >= thr) {
                     systemLogger.info(statement.toString() + " volatile : " + isVolatileStats() + " disabled nested loop : " + isDisabledNestLoop + " actual time : " + actualTime);
