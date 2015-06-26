@@ -643,7 +643,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
     public final static boolean matGlobalQuery = true; // local expr usage
     public final static boolean matLocalQuery = false; // local usage разбить на совсем local + сохр. в change'и
     public final static boolean matGlobalQueryFromTable = false; // global query, но таблицу уже читалась readChangeTable
-    public final static boolean matExprLocalQuery = false; // local expr usage, но потом может использоваться для property.getExpr (но так как пока оптимизаций нет, особого смысла тоже нет)
+    public final static boolean matExprLocalQuery = true; // local expr usage, но потом может использоваться для property.getExpr и в сложных запросах
     public final static boolean changeTable = false; // changing table with specific values
     public final static boolean nonead = false; // all the rest
 

@@ -2,22 +2,30 @@ package lsfusion.server.data.where;
 
 import lsfusion.base.ArrayInstancer;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.OrderedMap;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
+import lsfusion.server.caches.AbstractInnerContext;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.OuterContext;
+import lsfusion.server.caches.ParamExpr;
 import lsfusion.server.caches.hash.HashContext;
+import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.CompileSource;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.KeyEquals;
 import lsfusion.server.data.query.stat.KeyStat;
+import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 

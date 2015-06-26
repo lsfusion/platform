@@ -1,6 +1,7 @@
 package lsfusion.server.caches;
 
 import lsfusion.base.Result;
+import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -10,6 +11,10 @@ import lsfusion.server.data.expr.StaticValueExpr;
 import lsfusion.server.data.expr.UnionExpr;
 import lsfusion.server.data.query.ExprEnumerator;
 import lsfusion.server.data.translator.MapTranslate;
+import lsfusion.server.data.where.Where;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 public abstract class AbstractOuterContext<T extends OuterContext<T>> extends AbstractKeysValuesContext<T> implements OuterContext<T> {
 
@@ -194,5 +199,91 @@ public abstract class AbstractOuterContext<T extends OuterContext<T>> extends Ab
 
     public ImSet<StaticValueExpr> getOuterStaticValues() {
         return getOuterStaticValues(getOuterDepends());
+    }
+
+
+
+    private static class ContextHash extends AbstractInnerContext<ContextHash> {
+
+        private final OuterContext<?> outerContext;
+
+        public ContextHash(OuterContext<?> outerContext) {
+            this.outerContext = outerContext;
+        }
+
+        @Override
+        protected ImSet<ParamExpr> getKeys() {
+            return outerContext.getOuterKeys();
+        }
+
+        @Override
+        protected ContextHash translate(MapTranslate translator) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ImSet<Value> getValues() {
+            return outerContext.getOuterValues();
+        }
+
+        @Override
+        protected int hash(HashContext hash) {
+            return outerContext.hashOuter(hash);
+        }
+
+        @Override
+        public boolean equalsInner(ContextHash object) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private static class SetContexts extends AbstractOuterContext<SetContexts> {
+
+        private final ImSet<OuterContext> contexts;
+
+        public SetContexts(ImSet<OuterContext> contexts) {
+            this.contexts = contexts;
+        }
+
+        protected ImSet<OuterContext> calculateOuterDepends() {
+            return contexts;
+        }
+
+        protected SetContexts translate(MapTranslate translator) {
+            throw new UnsupportedOperationException();
+        }
+
+        protected int hash(HashContext hash) {
+            return AbstractOuterContext.hashOuter(contexts, hash);
+        }
+
+        protected boolean calcTwins(TwinImmutableObject o) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private static void printHashes(String tab, OuterContext<?> context) {
+        TreeMap<Integer, OuterContext> orderedHashes = new TreeMap<>();
+        for(OuterContext where : context.getOuterDepends())
+            orderedHashes.put(new ContextHash(where).getInnerComponents(true).hash, where);
+        for(Map.Entry<Integer, OuterContext> entry : orderedHashes.entrySet()) {
+            OuterContext outerContext = entry.getValue();
+            System.out.println(tab + entry.getKey() + " " + outerContext.toString());
+            printHashes(tab + '\t', outerContext);
+        }
+    }
+
+    public static void printHashes(Object... objects) {
+        MSet<OuterContext> mContexts = SetFact.mSet();
+        for(Object object : objects) {
+            if(object instanceof ImCol)
+                mContexts.addAll(((ImCol<OuterContext>)object).toSet());
+            else
+            if (object instanceof ImList)
+                mContexts.addAll(((ImList<OuterContext>) object).toOrderSet().getSet());
+            else
+                mContexts.add((OuterContext)object);
+        }
+        printHashes("", new SetContexts(mContexts.immutable()));
     }
 }

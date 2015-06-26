@@ -19,8 +19,11 @@ public class ExprCaseList extends CaseList<Expr, Expr, ExprCase> {
 
     public int hashOuter(HashContext hashContext) {
         int hash = exclusive ? 1 : 0;
-        for(ExprCase exprCase : this)
-            hash = 31*hash + exprCase.hashOuter(hashContext);
+        for(ExprCase exprCase : this) {
+            if(!exclusive)
+                hash = 31 * hash;
+            hash = hash + exprCase.hashOuter(hashContext);
+        }
         return hash;
     }
 
