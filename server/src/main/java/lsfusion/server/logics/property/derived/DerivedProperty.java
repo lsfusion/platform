@@ -852,6 +852,7 @@ public class DerivedProperty {
             }
 
             ImSet<I> checkContext = whereInterfaces.filter(context);
+            // тут с assertion'ом на filterIncl есть нюанс, может получиться что контекст определяется сверху и он может проталкиваться, но на момент компиляции его нет (или может вообще не проталкиваться, тогда что делать непонятно)
             if(!where.mapIsFull(checkContext)) // может быть избыточно для 2-го случая сверху, но для where в принципе надо
                 where = (CalcPropertyMapImplement<W, I>) createAnd(whereInterfaces, where, IsClassProperty.getMapProperty(where.mapInterfaceClasses(ClassType.wherePolicy).filterIncl(checkContext)));
 
