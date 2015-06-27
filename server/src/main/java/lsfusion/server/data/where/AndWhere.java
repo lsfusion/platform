@@ -90,6 +90,10 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return wheres.length==0 || (where instanceof AndWhere && (BaseUtils.hashEquals(this, where) || (substractWheres(((AndWhere)where).wheres,wheres,instancer)!=null)));
     }
 
+    public boolean directMeansFromNot(AndObjectWhere[] notWheres, boolean[] used, int skip) {
+        return wheres.length == 0 || (notWheres.length != 1 && substractWheresNot(notWheres, wheres, used, skip)); // hashEquals не будем проверять так как это оптимистичная проверка
+    }
+
     protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(ImSet<K> keepStat, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         GroupJoinsWheres result = new GroupJoinsWheres(TRUE, type);
         for(int i=0;i<wheres.length;i++) {

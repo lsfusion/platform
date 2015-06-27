@@ -24,6 +24,17 @@ abstract public class DataWhere extends ObjectWhere {
         return false;
     }
 
+    public boolean directMeansFromNot(AndObjectWhere[] notWheres, boolean[] used, int skip) {
+        for(int i=0;i<notWheres.length;i++) {
+            OrObjectWhere orWhere = notWheres[i].not();
+            if (orWhere instanceof DataWhere && ((DataWhere) orWhere).follow(this)) {
+                OrWhere.markUsed(used, i, skip);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public NotWhere not = null;
     @ManualLazy
     public NotWhere not() {  // именно здесь из-за того что типы надо перегружать без generics

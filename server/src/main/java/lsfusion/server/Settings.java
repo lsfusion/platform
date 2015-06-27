@@ -1281,7 +1281,7 @@ public class Settings {
         this.disableSetDroppedOptimization = disableSetDroppedOptimization;
     }
 
-    private boolean disableGlobalEventOptimization = true;
+    private boolean disableGlobalEventOptimization = false;
 
     public boolean isDisableGlobalEventOptimization() {
         return disableGlobalEventOptimization;
@@ -1309,16 +1309,5 @@ public class Settings {
 
     public void setUseDeleteNoInline(boolean useDeleteNoInline) {
         this.useDeleteNoInline = useDeleteNoInline;
-    }
-
-    // временно
-    private boolean newForceChangeObject = true;
-
-    public boolean isNewForceChangeObject() {
-        return newForceChangeObject;
-    }
-
-    public void setNewForceChangeObject(boolean newForceChangeObject) {
-        this.newForceChangeObject = newForceChangeObject;
     }
 }

@@ -16,7 +16,6 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.where.extra.EqualsWhere;
 import lsfusion.server.data.expr.where.extra.GreaterWhere;
-import lsfusion.server.data.expr.where.extra.IsClassWhere;
 import lsfusion.server.data.query.JoinData;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.innerjoins.KeyEqual;
@@ -28,7 +27,6 @@ import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 import lsfusion.server.data.where.classes.MeanClassWhere;
 import lsfusion.server.data.where.classes.MeanClassWheres;
-import lsfusion.server.data.where.classes.PackClassWhere;
 
 
 public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhere<AndWhere> {
@@ -231,36 +229,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             return result;
     }
 
-    private static CheckWhere checkff(CheckWhere where, CheckWhere falseWhere) {
-
-        if(falseWhere.isTrue()) return FALSE;
-        if(falseWhere.isFalse()) return where;
-
-        // если Or берем not и проверяем
-        if(where instanceof OrObjectWhere) // если Or то проверим, если And нет смысла, все равно скобки потом отдельно будут раскрываться
-            if(falseWhere.directMeansFrom(((OrObjectWhere)where).not()))
-                return Where.TRUE;
-
-        AndObjectWhere[] wheres = where.getAnd();
-        AndObjectWhere[] rawWheres = new AndObjectWhere[wheres.length]; int fnum = 0;
-        for(AndObjectWhere and2 : wheres)
-            if(!falseWhere.directMeansFrom(and2))
-                rawWheres[fnum++] = and2;
-        AndObjectWhere[] followWheres = new AndObjectWhere[fnum]; System.arraycopy(rawWheres,0,followWheres,0,fnum);
-        return toWhere(followWheres, where);
-    }
-
-    public static CheckWhere prevOrCheck(CheckWhere where1,CheckWhere where2) {
-        CheckWhere followWhere1 = Settings.get().isCheckFollowsWhenObjects() ?where1:checkff(where1, where2);
-        CheckWhere followWhere2 = Settings.get().isCheckFollowsWhenObjects() ?where2:checkff(where2, followWhere1);
-
-        if(followWhere1.isFalse() || followWhere2.isTrue()) return followWhere2;
-        if(followWhere2.isFalse() || followWhere1.isTrue()) return followWhere1;
-
-        return toWhere(BaseUtils.add(followWhere1.getAnd(), followWhere2.getAnd(), instancer), true);
-    }
-
-/*    public static CheckWhere orCheck(CheckWhere where1,CheckWhere where2) {
+    /*    public static CheckWhere orCheck(CheckWhere where1,CheckWhere where2) {
         CheckWhere newCheck = newOrCheck(where1, where2);
         assert BaseUtils.hashEquals(newCheck, prevOrCheck(where1, where2));
         return newCheck;
@@ -321,6 +290,13 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     public boolean directMeansFrom(AndObjectWhere where) {
         for(AndObjectWhere meanWhere : wheres)
             if(meanWhere.directMeansFrom(where))
+                return true;
+        return false;
+    }
+
+    public boolean directMeansFromNot(AndObjectWhere[] notWheres, boolean[] used, int skip) {
+        for(AndObjectWhere meanWhere : wheres)
+            if(meanWhere.directMeansFromNot(notWheres, used, skip))
                 return true;
         return false;
     }
@@ -606,7 +582,11 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return null;
     }
 
-    private static boolean[] checkTrue(AndObjectWhere[] wheres, int numWheres, boolean check) {
+    public static void markUsed(boolean[] used, int index, int skip) {
+        used[index < skip ? index : index + 1] = true;
+    }
+
+    private static boolean[] checkTrue(AndObjectWhere[] wheres, int numWheres, boolean check, boolean useNewMech) {
         // ищем максимальную по высоте вершину and
         int maxWhere = -1;
         for(int i=0;i<numWheres;i++)
@@ -615,45 +595,47 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         if(maxWhere<0) // значит остались одни ObjectWhere
             return checkObjectTrue(wheres, numWheres);
 
-        boolean[] result = null;
+        boolean[] result = new boolean[numWheres];
 
         AndObjectWhere[] siblings = siblings(wheres, maxWhere, numWheres);
         Where siblingWhere = toWhere(siblings, check);
 
         OrObjectWhere[] maxWheres = ((AndWhere)wheres[maxWhere]).wheres.clone();
         for(int i=0;i<maxWheres.length;i++) {
-            for(int j=maxWheres.length-1;j>i;j--) // будем бежать с высот поменьше - своего рода пузырьком
-                if(maxWheres[j].getHeight()<maxWheres[j-1].getHeight()) {
+            for (int j = maxWheres.length - 1; j > i; j--) // будем бежать с высот поменьше - своего рода пузырьком
+                if (maxWheres[j].getHeight() < maxWheres[j - 1].getHeight()) {
                     OrObjectWhere t = maxWheres[j];
-                    maxWheres[j] = maxWheres[j-1];
-                    maxWheres[j-1] = t;
+                    maxWheres[j] = maxWheres[j - 1];
+                    maxWheres[j - 1] = t;
                 }
 
             OrObjectWhere bracketWhere = maxWheres[i];
             AndObjectWhere[] brackets = bracketWhere.getAnd();
 
             // COPY PASTE с модификациями для OrWhere.orCheck(w1, w2), OrWhere.checkTrue(w[], int, boolean) - для оптимизации как самые критичные места
-            int is=0;
-            while(is<siblings.length) {
-                if(siblings[is].directMeansFrom(bracketWhere.not()))
+            int is = 0;
+            while (is < siblings.length) {
+                if (siblings[is].directMeansFrom(bracketWhere.not()))
                     break;
                 is++;
             }
-            if(is<siblings.length) { // нашли
-                if(result==null)
-                    result = new boolean[numWheres];
-                result[is<maxWhere?is:is+1] = true;
+            if (is < siblings.length) { // нашли
+                markUsed(result, is, maxWhere);
                 continue;
             }
 
-            if(siblingWhere instanceof OrObjectWhere) // если Or то проверим, если And нет смысла, все равно скобки потом отдельно будут раскрываться
-                if(bracketWhere.directMeansFrom(((OrObjectWhere)siblingWhere).not())) {
-                    if(result==null)
-                        result = new boolean[numWheres];
-                    for(int j=0;j<numWheres;j++)
-                        result[j] = true;
-                    continue;
+            if (siblingWhere instanceof OrObjectWhere) { // если Or то проверим, если And нет смысла, все равно скобки потом отдельно будут раскрываться
+                if(useNewMech) {
+                    if(bracketWhere.directMeansFromNot(siblings, result, maxWhere))
+                        continue;
+                } else { // old branch
+                    if (bracketWhere.directMeansFrom(((OrObjectWhere) siblingWhere).not())) {
+                        for (int j = 0; j < numWheres; j++)
+                            result[j] = true;
+                        continue;
+                    }
                 }
+            }
 
             AndObjectWhere[] mergeBrackets = new AndObjectWhere[brackets.length+siblings.length]; int mnum = 0;
 
@@ -680,7 +662,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                     mergeBrackets[mnum++] = sibling;
             }
 
-            boolean[] used = checkTrue(mergeBrackets, mnum, true); // вызываем рекурсию
+            boolean[] used = checkTrue(mergeBrackets, mnum, true, useNewMech); // вызываем рекурсию
             if(used==null)
                 return null;
 
@@ -691,13 +673,13 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                     break;
                 }
 
-            if(result==null || !thisUsed) // если текущая скобка не использовалась, старые убираем
+            if(!thisUsed) // если текущая скобка не использовалась, старые убираем
                 result = new boolean[numWheres];
             int cs = 0;
             for(int j=cleanBrackets;j<mnum;j++) {
                 while((droppedSiblings!=null && droppedSiblings[cs])) cs++; // assert что cs меньше result.length
                 if(used[j])
-                    result[cs<maxWhere?cs:cs+1] = true;
+                    markUsed(result, cs, maxWhere);
                 cs++;
             }
             if(!thisUsed)
@@ -758,8 +740,8 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         if(wheres.length==0)
             return false;
 
-        boolean result = checkTrue(wheres, wheres.length, check)!=null;
-//        assert prevCheckTrue(wheres, wheres.length, check)==result;
+        boolean result = checkTrue(wheres, wheres.length, check, true)!=null;
+        assert (checkTrue(wheres, wheres.length, check, false)!=null)==result;
         return result;
     }
 

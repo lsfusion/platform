@@ -9,6 +9,7 @@ public interface CheckWhere<T extends TranslateContext<T>> extends TranslateCont
     
     boolean checkTrue();
     boolean directMeansFrom(AndObjectWhere where);
+    boolean directMeansFromNot(AndObjectWhere[] notWheres, boolean[] used, int skip);
 
     boolean means(CheckWhere where);
     

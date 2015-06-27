@@ -38,6 +38,17 @@ public class NotWhere extends ObjectWhere {
         return false;
     }
 
+    public boolean directMeansFromNot(AndObjectWhere[] notWheres, boolean[] used, int skip) {
+        for(int i=0;i<notWheres.length;i++) {
+            OrObjectWhere orWhere = notWheres[i].not();
+            if (orWhere instanceof NotWhere && where.follow(((NotWhere)orWhere).where)) {
+                OrWhere.markUsed(used, i, skip);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public DataWhere not() {
         return where;
     }

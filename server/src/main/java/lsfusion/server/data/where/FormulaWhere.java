@@ -111,6 +111,29 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return restWheres;
     }
 
+    protected static <WhereType extends Where> boolean substractWheresNot(WhereType[] notWheres, WhereType[] substract, boolean[] used, int skip) {
+        if(substract.length>notWheres.length) return false;
+
+        WhereType[] rawRestNotWheres = notWheres.clone();
+        for(WhereType andWhere : substract) {
+            boolean found = false;
+            for(int i=0;i<rawRestNotWheres.length;i++)
+                if(rawRestNotWheres[i]!=null && BaseUtils.hashEquals(andWhere,rawRestNotWheres[i].not())) {
+                    rawRestNotWheres[i] = null;
+                    found = true;
+                    break;
+                }
+            if(!found) return false;
+        }
+
+        // помечаем все использованные
+        for(int i=0;i<rawRestNotWheres.length;i++) {
+            if(rawRestNotWheres[i]==null)
+                OrWhere.markUsed(used, i, skip);
+        }
+        return true;
+    }
+
     public ClassExprWhere calculateClassWhere() {
         return groupMeanClassWheres(true).getClassWhere();
     }

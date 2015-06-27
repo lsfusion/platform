@@ -176,12 +176,6 @@ public class FormActionProperty extends SystemExplicitActionProperty {
             context.requestUserInteraction(
                     new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
         } else {
-            if(!Settings.get().isNewForceChangeObject()) {
-                for (int i = 0, size = mapObjects.size(); i < size; i++) {
-                    newFormInstance.forceChangeObject(newFormInstance.instanceFactory.getInstance(mapObjects.getKey(i)), context.getKeyValue(mapObjects.getValue(i)));
-                }
-            }
-
             final FormInstance thisFormInstance = context.getFormInstance();
 
             if (startAction != null) {
