@@ -561,14 +561,16 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     }
 
     public void change(SessionChanges session, ImMap<ObjectInstance, DataObject> value, FormInstance eventForm) throws SQLException, SQLHandledException {
-        eventForm.changeGroupObject(this, value);
-
         // проставим все объектам метки изменений
-        assert value.isEmpty() || value.keys().equals(GroupObjectInstance.getObjects(getUpTreeGroups()));
-        for (ObjectInstance object : GroupObjectInstance.getObjects(getUpTreeGroups()))
+        ImSet<ObjectInstance> upGroups = GroupObjectInstance.getObjects(getUpTreeGroups());
+        assert value.isEmpty() || value.keys().equals(upGroups);
+        for (ObjectInstance object : upGroups)
             object.changeValue(session, value.isEmpty()?NullValue.instance:value.get(object));
-        for(ObjectInstance object : GroupObjectInstance.getObjects(getDownTreeGroups()))
+        ImSet<ObjectInstance> downGroups = GroupObjectInstance.getObjects(getDownTreeGroups());
+        for(ObjectInstance object : downGroups)
             object.changeValue(session, NullValue.instance);
+
+        eventForm.changeGroupObject(upGroups.addExcl(downGroups));
     }
 
     public void update(SessionChanges session, MFormChanges changes, FormInstance eventForm, ImMap<ObjectInstance, DataObject> value) throws SQLException, SQLHandledException {
@@ -746,6 +748,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 orderSeeks = userSeeks;
                 updateKeys = true;
                 currentObject = MapFact.EMPTY();
+                userSeeks = null;
             } else if (updateKeys) {
                 if (entity.updateType != null && objectsUpdated) {
                     orderSeeks = entity.updateType == UpdateType.LAST ? SEEK_END : entity.updateType == UpdateType.FIRST ? SEEK_HOME : null;

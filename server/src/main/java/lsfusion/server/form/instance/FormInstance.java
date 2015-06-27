@@ -701,10 +701,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    public void changeGroupObject(GroupObjectInstance group, ImMap<ObjectInstance, DataObject> values) throws SQLException, SQLHandledException {
-        ImMap<ObjectInstance, DataObject> oldValues = group.getGroupObjectValue();
-        for (ObjectInstance objectInstance : oldValues.keyIt()) {
-            if (!BaseUtils.nullEquals(oldValues.get(objectInstance), values.get(objectInstance)) || (objectInstance.updated & UPDATED_OBJECT) != 0) { // последняя проверка хак, для forceChangeObject
+    public void changeGroupObject(ImSet<ObjectInstance> objects) throws SQLException, SQLHandledException {
+        for (ObjectInstance objectInstance : objects) {
+            if ((objectInstance.updated & UPDATED_OBJECT) != 0) {
                 fireObjectChanged(objectInstance);
             }
         }
@@ -1513,8 +1512,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         // сбрасываем все пометки
         for (GroupObjectInstance group : getGroups()) {
-            group.userSeeks = null;
-
             for (ObjectInstance object : group.objects)
                 object.updated = 0;
             group.updated = 0;
@@ -2040,7 +2037,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     // ---------------------------------------- Events ----------------------------------------
 
-    private void fireObjectChanged(ObjectInstance object) throws SQLException, SQLHandledException {
+    public void fireObjectChanged(ObjectInstance object) throws SQLException, SQLHandledException {
         fireEvent(object.entity);
     }
 

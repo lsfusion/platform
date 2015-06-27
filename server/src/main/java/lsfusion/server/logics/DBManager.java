@@ -403,12 +403,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         drop = true;
                     }
                 }
+                if(oldDBStructure.version <= 19) {
+                    sql.renameIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
+                }
                 if (drop) {
                     sql.dropIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
-                } else {
-                    if(oldDBStructure.version <= 19) {
-                        sql.renameIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
-                    }
                 }
             }
         }
