@@ -82,7 +82,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         this.paramInfo = paramInfo;
     }
 
-    // assert что возвращает только DataProperty и Set(IsClassProperty), Drop(IsClassProperty), IsClassProperty, для использования в лексикографике (calculateLinks)
+    // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
     public ImMap<CalcProperty, Boolean> getChangeExtProps() {
         ActionPropertyMapImplement<?, P> compile = callCompile(false);
         if(compile!=null)
