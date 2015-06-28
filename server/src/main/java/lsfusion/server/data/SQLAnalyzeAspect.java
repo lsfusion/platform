@@ -31,7 +31,7 @@ public class SQLAnalyzeAspect {
         long started = System.currentTimeMillis();
         Object result = thisJoinPoint.proceed();
 
-        if (explain && (started - System.currentTimeMillis()) > Settings.get().getExplainThreshold()) {
+        if (explain && ( System.currentTimeMillis()-started) > Settings.get().getExplainThreshold()) {
             thisJoinPoint.proceed(new Object[]{sql, new SQLAnalyze(command, noAnalyze), queryExecEnv, owner, paramObjects, new Result<Integer>()});
         }
 
