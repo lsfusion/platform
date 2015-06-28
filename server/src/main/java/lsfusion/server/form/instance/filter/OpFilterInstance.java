@@ -69,4 +69,9 @@ public abstract class OpFilterInstance extends FilterInstance {
     public <X extends PropertyInterface> Set<CalcPropertyValueImplement<?>> getResolveChangeProperties(CalcProperty<X> toChange) {
         return BaseUtils.mergeSet(op1.getResolveChangeProperties(toChange), op2.getResolveChangeProperties(toChange));
     }
+
+    protected void fillObjects(MSet<ObjectInstance> objects) {
+        op1.fillObjects(objects);
+        op2.fillObjects(objects);
+    }
 }

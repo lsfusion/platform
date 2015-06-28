@@ -31,7 +31,7 @@ public class KeyExpr extends ParamExpr {
         return objects.mapRevValues(genIndexKeys);
     }
 
-    final Object name;
+    private final Object name;
     @Override
     public String toString() {
         return name.toString();

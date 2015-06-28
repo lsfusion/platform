@@ -1,6 +1,9 @@
 package lsfusion.server.form.instance.filter;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.interop.FilterType;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -27,6 +30,14 @@ public abstract class FilterInstance implements Updated {
     public boolean junction; //true - conjunction, false - disjunction
 
     public FilterInstance() {
+    }
+
+    protected abstract void fillObjects(MSet<ObjectInstance> objects);
+
+    public ImSet<ObjectInstance> getObjects() {
+        MSet<ObjectInstance> objects = SetFact.mSet();
+        fillObjects(objects);
+        return objects.immutable();
     }
 
     public FilterInstance(DataInputStream inStream, FormInstance form) throws IOException {

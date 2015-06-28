@@ -66,7 +66,7 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         Expr expr = getExpr(classSource, modifier, changedWhere);
         if(reallyChanged!=null)
             if(!changedWhere.toWhere().isFalse())
-                reallyChanged.addChange(this);            
+                reallyChanged.addChange(this);
         return expr;
     }
 

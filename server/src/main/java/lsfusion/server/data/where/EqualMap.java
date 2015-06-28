@@ -32,16 +32,15 @@ public class EqualMap extends HMap<BaseExpr,Equal> {
             return true;
 
         // с этими проверками нужно быть аккуратнее, так как в MeanClassWhere используется просто для собирания "компонент"
-        if(equal1.value==null) {
-            equal1.value = equal2.value;
-        } else
-            if(equal2.value!=null && !equal1.value.equals(equal2.value)) // если равенство разных value, то false
+        for(int i=0;i<BaseExpr.STATICEQUALCLASSES;i++) {
+            BaseExpr static1 = equal1.staticExprs[i];
+            BaseExpr static2 = equal2.staticExprs[i];
+            if(static1==null) {
+                equal1.staticExprs[i] = static2;
+            } else
+            if(static2!=null && !static1.equals(static2)) // если равенство разных value, то false
                 return false;
-        if(equal1.staticValue==null) {
-            equal1.staticValue = equal2.staticValue;
-        } else
-        if(equal2.staticValue!=null && !equal1.staticValue.equals(equal2.staticValue)) // если равенство разных value, то false
-            return false;
+        }
 
         for(int i=0;i<equal2.size;i++) // "перекидываем" все компоненты в первую
             add(equal2.exprs[i],equal1);

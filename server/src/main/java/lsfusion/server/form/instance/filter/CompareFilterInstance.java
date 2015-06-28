@@ -123,4 +123,10 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
 
         return applyObject;
     }
+
+    @Override
+    protected void fillObjects(MSet<ObjectInstance> objects) {
+        super.fillObjects(objects);
+        objects.addAll(value.getObjectInstances().toSet());
+    }
 }

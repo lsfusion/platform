@@ -7,6 +7,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.type.Type;
@@ -47,6 +48,10 @@ public abstract class PropertyObjectInstance<P extends PropertyInterface, T exte
             public boolean contains(PropertyObjectInterfaceInstance element) {
                 return element instanceof ObjectInstance;
             }}));
+    }
+
+    public void fillObjects(MSet<ObjectInstance> objects) {
+        objects.addAll(getObjectInstances().toSet());
     }
 
     // в интерфейсе

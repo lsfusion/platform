@@ -362,10 +362,27 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 //        throw new RuntimeException("key not found");
     }
 
-    public Where getFilterWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+    public UpdateType getUpdateType() throws SQLException, SQLHandledException {
+        return entity.getUpdateType(this);
+    }
+
+    public interface FilterProcessor {
+        ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys);
+
+        ImSet<FilterInstance> getFilters();
+    }
+
+    public Where getFilterWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor filterProcessor) throws SQLException, SQLHandledException {
         Where where = Where.TRUE;
-        for(FilterInstance filt : filters)
+        for(FilterInstance filt : (filterProcessor != null ? filterProcessor.getFilters() : filters)) {
+            if(filterProcessor != null) {
+                ImMap<ObjectInstance, ? extends Expr> overridedKeys = filterProcessor.process(filt, mapKeys);
+                if(overridedKeys == null)
+                    continue;
+                mapKeys = overridedKeys;
+            }
             where = where.and(filt.getWhere(mapKeys, modifier, reallyChanged));
+        }
         return where;
     }
 
@@ -375,14 +392,17 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 return value.getGridClass();
             }});
     }
-    private Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
+    public Where getClassWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) {
         if(noClassFilter)
             return Where.TRUE;
         return IsClassProperty.getWhere(getGridClasses(objects), mapKeys, modifier);
     }
 
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-        return getFilterWhere(mapKeys, modifier, reallyChanged).and(getClassWhere(mapKeys, modifier));
+        return getWhere(mapKeys, modifier, reallyChanged, null);
+    }
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor processor) throws SQLException, SQLHandledException {
+        return getFilterWhere(mapKeys, modifier, reallyChanged, processor).and(getClassWhere(mapKeys, modifier));
     }
 
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier) throws SQLException, SQLHandledException {
@@ -466,7 +486,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
 
-        final ImSet<KeyExpr> usedContext = immutableCast(getFilterWhere(mapKeys, Property.defaultModifier, null).getOuterKeys());
+        final ImSet<KeyExpr> usedContext = immutableCast(getFilterWhere(mapKeys, Property.defaultModifier, null, null).getOuterKeys());
 
         return immutableCast(objects.filterFn(new SFunctionSet<ObjectInstance>() {
             public boolean contains(ObjectInstance object) { // если DataObject и нету ключей
@@ -580,8 +600,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
     public ImMap<GroupObjectProp, CalcPropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props;
 
-    private boolean pendingHidden;
-    
+    // вообще касается всего что идет после проверки на hidden, можно было бо обобщить, но пока нет смысла
+    private boolean pendingHiddenUpdateKeys;
+    private boolean pendingHiddenUpdateObjects;
+
     @Message("message.form.update.group.keys")
     @ThisMessage
     public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final Modifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
@@ -726,11 +748,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
         boolean updateKeys = updateFilters || updateOrders;
 
         if(hidden) {
-            pendingHidden |= updateKeys;
+            pendingHiddenUpdateKeys |= updateKeys;
+            pendingHiddenUpdateObjects |= objectsUpdated;
             return null;
         } else {
-            updateKeys |= pendingHidden;
-            pendingHidden = false;
+            updateKeys |= pendingHiddenUpdateKeys;
+            objectsUpdated |= pendingHiddenUpdateObjects;
+            pendingHiddenUpdateKeys = false;
+            pendingHiddenUpdateObjects = false;
         }
 
         ImMap<ObjectInstance, DataObject> currentObject = getGroupObjectValue();
@@ -750,8 +775,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 currentObject = MapFact.EMPTY();
                 userSeeks = null;
             } else if (updateKeys) {
-                if (entity.updateType != null && objectsUpdated) {
-                    orderSeeks = entity.updateType == UpdateType.LAST ? SEEK_END : entity.updateType == UpdateType.FIRST ? SEEK_HOME : null;
+                UpdateType updateType = getUpdateType();
+                if (updateType != null && objectsUpdated) {
+                    orderSeeks = updateType == UpdateType.LAST ? SEEK_END : updateType == UpdateType.FIRST ? SEEK_HOME : null;
                 } else {  // изменились фильтры, порядки, вид, ищем текущий объект
                     orderSeeks = new SeekObjects(false, currentObject);
                 }

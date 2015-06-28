@@ -38,4 +38,9 @@ public class InfiniteExpr extends StaticExpr<DataClass> {
     public boolean calcTwins(TwinImmutableObject o) {
         return objectClass.equals(((InfiniteExpr)o).objectClass);
     }
+
+    @Override
+    public int getStaticEqualClass() {
+        return 1000;
+    }
 }

@@ -170,4 +170,9 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
     public boolean compatibleEquals(BaseExpr expr) {
         return super.compatibleEquals(expr) || expr instanceof ValueExpr && objectClass instanceof DataClass && ((ValueExpr) expr).objectClass instanceof DataClass && ((DataClass) objectClass).compatibleEquals(object, (DataClass) ((ValueExpr) expr).objectClass, ((ValueExpr) expr).object);
     }
+
+    @Override
+    public int getStaticEqualClass() {
+        return 0;
+    }
 }

@@ -104,4 +104,9 @@ public class StaticValueExpr extends StaticExpr<StaticClass> implements ParseVal
                 objectClass instanceof DataClass && ((StaticValueExpr) expr).objectClass instanceof DataClass &&
                 ((DataClass) objectClass).compatibleEquals(object, (DataClass) ((StaticValueExpr) expr).objectClass, ((StaticValueExpr) expr).object);
     }
+
+    @Override
+    public int getStaticEqualClass() {
+        return 1;
+    }
 }

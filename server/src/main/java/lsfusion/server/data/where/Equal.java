@@ -8,19 +8,21 @@ import lsfusion.server.data.expr.ValueExpr;
 public class Equal {
     public final BaseExpr[] exprs;
     public int size;
-    public ValueExpr value;
-    public StaticExpr staticValue;
+    public final BaseExpr[] staticExprs = new BaseExpr[BaseExpr.STATICEQUALCLASSES];
     public boolean dropped = false;
 
     Equal(BaseExpr expr,int max) {
         exprs = new BaseExpr[max];
         exprs[0] = expr;
         size = 1;
-        if(expr instanceof StaticExpr) {
-            if(expr instanceof ValueExpr)
-                value = (ValueExpr) expr;
-            else
-                staticValue = (StaticExpr)expr;
+
+        int staticEqualClass = expr.getStaticEqualClass();
+        if(staticEqualClass >= 0) {
+            if(staticEqualClass >= BaseExpr.STATICEQUALCLASSES) {
+                for(int i=0;i<BaseExpr.STATICEQUALCLASSES;i++)
+                    staticExprs[i] = expr;
+            } else
+                staticExprs[staticEqualClass] = expr;
         }
     }
 

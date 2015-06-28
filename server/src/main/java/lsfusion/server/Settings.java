@@ -1310,4 +1310,24 @@ public class Settings {
     public void setUseDeleteNoInline(boolean useDeleteNoInline) {
         this.useDeleteNoInline = useDeleteNoInline;
     }
+
+    private boolean disableUpdateTypeHeur = false;
+
+    public boolean isDisableUpdateTypeHeur() {
+        return disableUpdateTypeHeur;
+    }
+
+    public void setDisableUpdateTypeHeur(boolean disableUpdateTypeHeur) {
+        this.disableUpdateTypeHeur = disableUpdateTypeHeur;
+    }
+
+    private int divStatUpdateTypeHeur = 100; // во сколько раз должна уменьшатся статистика фильтра, чтобы отключать поиск предыдущего объекта
+
+    public int getDivStatUpdateTypeHeur() {
+        return divStatUpdateTypeHeur;
+    }
+
+    public void setDivStatUpdateTypeHeur(int divStatUpdateTypeHeur) {
+        this.divStatUpdateTypeHeur = divStatUpdateTypeHeur;
+    }
 }

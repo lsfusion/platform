@@ -90,4 +90,8 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         
         return changeWhere;
     }
+
+    protected void fillObjects(MSet<ObjectInstance> objects) {
+        property.fillObjects(objects);
+    }
 }

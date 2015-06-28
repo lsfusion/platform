@@ -20,34 +20,14 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
 
-public class CurrentEnvironmentExpr extends NotNullExpr {
+public class CurrentEnvironmentExpr extends StaticNotNullExpr {
 
     private final String paramString;
-    private final AndClassSet paramClass;
 
     public CurrentEnvironmentExpr(String paramString, AndClassSet paramClass) {
+        super(paramClass);
         this.paramString = paramString;
-        this.paramClass = paramClass;
     }
-
-    protected CurrentEnvironmentExpr translate(MapTranslate translator) {
-        return this;
-    }
-
-    public void fillAndJoinWheres(MMap<JoinData, Where> joins, Where andWhere) {
-    }
-
-    public Type getType(KeyType keyType) {
-        return paramClass.getType();
-    }
-    public Stat getTypeStat(KeyStat keyStat, boolean forJoin) {
-        return paramClass.getTypeStat(forJoin);
-    }
-
-    public Expr translateQuery(QueryTranslator translator) {
-        return this;
-    }
-
     public boolean calcTwins(TwinImmutableObject obj) {
         return paramString.equals(((CurrentEnvironmentExpr) obj).paramString);
     }
@@ -58,23 +38,5 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
 
     public String getSource(CompileSource compile) {
         return paramString;
-    }
-
-    public class NotNull extends NotNullExpr.NotNull {
-
-        public ClassExprWhere calculateClassWhere() {
-            return new ClassExprWhere(CurrentEnvironmentExpr.this, paramClass);
-        }
-    }
-
-    public NotNull calculateNotNullWhere() {
-        return new NotNull();
-    }
-
-    public PropStat getStatValue(KeyStat keyStat) {
-        return PropStat.ONE;
-    }
-    public InnerBaseJoin<?> getBaseJoin() {
-        return ValueJoin.instance;
     }
 }

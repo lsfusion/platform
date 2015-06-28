@@ -16,7 +16,7 @@ import java.sql.SQLException;
 
 public class NotFilterInstance extends FilterInstance {
 
-    FilterInstance filter;
+    private final FilterInstance filter;
 
     public NotFilterInstance(FilterInstance filter) {
         this.filter = filter;
@@ -53,5 +53,9 @@ public class NotFilterInstance extends FilterInstance {
 
     public boolean isInInterface(GroupObjectInstance classGroup) {
         return filter.isInInterface(classGroup);
+    }
+
+    protected void fillObjects(MSet<ObjectInstance> objects) {
+        filter.fillObjects(objects);
     }
 }
