@@ -281,10 +281,12 @@ META defineAggregationCustom (prim1Property, prim2Property, prim3Property, prim4
 END
 
 META defineAggregationClass (prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty)
-    prim1Object###aggrObject = DATA prim1Class (aggrClass);
-    prim2Object###aggrObject = DATA prim2Class (aggrClass) INDEXED;
+    prim1Object###aggrObject = DATA prim1Class (aggrClass) INDEXED;
+    prim2Object###aggrObject = DATA prim2Class (aggrClass);
     prim3Object###aggrObject = DATA prim3Class (aggrClass);
+    INDEX prim2Object###aggrObject, prim3Object###aggrObject, prim4Object###aggrObject;
     prim4Object###aggrObject = DATA prim4Class (aggrClass);
+    INDEX prim4Object###aggrObject, prim2Object###aggrObject;
 
     @defineAggregationCustom(prim1Object###aggrObject, prim2Object###aggrObject, prim3Object###aggrObject, prim4Object###aggrObject, prim1Object, prim1Class, prim2Object, prim2Class, prim3Object, prim3Class, prim4Object, prim4Class, aggrObject, aggrClass, aggrProperty);
 END
