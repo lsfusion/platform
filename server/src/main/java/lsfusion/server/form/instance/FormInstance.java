@@ -1198,7 +1198,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         if (!succeeded)
             return false;
 
-        refreshData();
+        refreshData(); // нужно перечитать ключи в таблицах, и т.п.
         fireOnApply();
 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных

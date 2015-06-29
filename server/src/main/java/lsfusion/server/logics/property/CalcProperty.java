@@ -1677,4 +1677,11 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
         return string;
     }
+
+    public void printDepends(boolean events, String tab) {
+        System.out.println(tab + this);
+        for(CalcProperty prop : getDepends(events)) {
+            prop.printDepends(events, tab + '\t');
+        }
+    }
 }
