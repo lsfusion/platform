@@ -202,6 +202,7 @@ public class Main {
         String country = remoteLogics.getUserCountry();
         String language = remoteLogics.getUserLanguage();
         Locale.setDefault(new Locale(language, country));
+        ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
 
         dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
 

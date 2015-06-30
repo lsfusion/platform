@@ -5,7 +5,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 public class ClientResourceBundle {
-    private static ResourceBundle clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle");
+    public static ResourceBundle clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle");
 
     public static String getString(String key) {
         return clientResourceBundle.getString(key);
