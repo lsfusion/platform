@@ -65,6 +65,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     private String name;
     
     private String userTimeZone;
+    private String userCountry;
+    private String userLanguage;
     
     private String clientHideMenu;
 
@@ -106,6 +108,14 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     
     public void setUserTimeZone(String userTimeZone) {
         this.userTimeZone = userTimeZone;
+    }
+    
+    public void setUserCountry(String userCountry) {
+        this.userCountry = userCountry;
+    }
+    
+    public void setUserLanguage(String userLanguage) {
+        this.userLanguage = userLanguage;
     }
     
     public void setClientHideMenu(String clientHideMenu) {
@@ -218,6 +228,14 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     
     public String getUserTimeZone() throws RemoteException {
         return userTimeZone;
+    }
+
+    public String getUserCountry() throws RemoteException {
+        return userCountry;
+    }
+
+    public String getUserLanguage() throws RemoteException {
+        return userLanguage;
     }
 
     public int generateNewID() throws RemoteException {

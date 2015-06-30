@@ -636,6 +636,8 @@
         <property name="dbManager" ref="dbManager"/>
         <property name="clientVMOptions" ref="clientVMOptions"/>
         <property name="userTimeZone" value="${user.timeZone:}"/>
+        <property name="userCountry" value="${user.country:}"/>
+        <property name="userLanguage" value="${user.language:}"/>
         <property name="displayName" value="${logics.displayName:}"/>
         <property name="clientHideMenu" value="${client.hideMenu:}"/>
     </bean>

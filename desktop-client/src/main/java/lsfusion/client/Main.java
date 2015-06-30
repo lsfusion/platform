@@ -198,6 +198,10 @@ public class Main {
         if (timeZone != null) {
             TimeZone.setDefault(timeZone);
         }
+        
+        String country = remoteLogics.getUserCountry();
+        String language = remoteLogics.getUserLanguage();
+        Locale.setDefault(new Locale(language, country));
 
         dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
 

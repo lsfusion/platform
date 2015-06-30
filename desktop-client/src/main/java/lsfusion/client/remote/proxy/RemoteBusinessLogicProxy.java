@@ -43,6 +43,22 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
+    @Override
+    public String getUserCountry() throws RemoteException {
+        logRemoteMethodStartCall("getUserCountry");
+        String result = target.getUserCountry();
+        logRemoteMethodEndCall("getUserCountry", result);
+        return result;
+    }
+
+    @Override
+    public String getUserLanguage() throws RemoteException {
+        logRemoteMethodStartCall("getUserLanguage");
+        String result = target.getUserLanguage();
+        logRemoteMethodEndCall("getUserLanguage", result);
+        return result;
+    }
+
     public Integer getComputer(String hostname) throws RemoteException {
         logRemoteMethodStartCall("getComputer");
         Integer result = target.getComputer(hostname);
