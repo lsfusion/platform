@@ -20,6 +20,7 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.property.actions.SystemExplicitActionProperty;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.remote.RemoteForm;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
@@ -179,7 +180,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         }
     }
 
-    private void sendEmail(ExecutionContext context, String smtpHostAccount, String smtpPortAccount, String userName, String password, String encryptedConnectionType, String fromAddressAccount, String subject, Map<String, Message.RecipientType> recipientEmails, List<String> inlineForms, List<EmailSender.AttachmentProperties> attachments, Map<ByteArray, String> attachmentFiles) throws MessagingException, IOException {
+    private void sendEmail(ExecutionContext context, String smtpHostAccount, String smtpPortAccount, String userName, String password, String encryptedConnectionType, String fromAddressAccount, String subject, Map<String, Message.RecipientType> recipientEmails, List<String> inlineForms, List<EmailSender.AttachmentProperties> attachments, Map<ByteArray, String> attachmentFiles) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         if (smtpHostAccount == null || fromAddressAccount == null) {
             logError(context, getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent"));
             return;
@@ -200,7 +201,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 recipientEmails
         );
 
-        sender.sendMail(subject, inlineForms, attachments, attachmentFiles);
+        sender.sendMail(context, subject, inlineForms, attachments, attachmentFiles);
     }
 
     private Map<String, Message.RecipientType> getRecipientEmails(ExecutionContext context) throws SQLException, SQLHandledException {

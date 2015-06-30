@@ -83,6 +83,8 @@ openEMLFileEmail 'Открыть файл EML' (email) = ACTION OPENFILE emlFile
 
 receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
 
+emailSent 'Отправлено' = DATA LOCAL BOOLEAN ();
+
 FORM account 'E-mail аккаунт'
     OBJECTS a = Account FIXED PANEL
     PROPERTIES(a) nameAccount, passwordAccount, fromAddressAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount,

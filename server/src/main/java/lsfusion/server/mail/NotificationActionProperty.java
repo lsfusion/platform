@@ -133,7 +133,7 @@ public class NotificationActionProperty extends SystemExplicitActionProperty {
             } else {
                 EmailSender sender = new EmailSender(smtpHostAccount.trim(), BaseUtils.nullTrim(smtpPortAccount), encryptedConnectionType.trim(), emailFromNotification.trim(), BaseUtils.nullTrim(nameAccount), BaseUtils.nullTrim(password), recipientEmails);
                 try {
-                    sender.sendPlainMail(subjectNotification, currentText, attachmentForms, attachmentFiles);
+                    sender.sendPlainMail(context, subjectNotification, currentText, attachmentForms, attachmentFiles);
                 } catch (Exception e) {
                     String errorMessage = ServerResourceBundle.getString("mail.failed.to.send.mail") + " : " + e.toString();
                     logger.error(errorMessage);

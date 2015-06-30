@@ -6,6 +6,9 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.ServerResourceBundle;
+import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import org.apache.log4j.Logger;
 
 import javax.activation.DataHandler;
@@ -164,7 +167,7 @@ public class EmailSender {
         return result;
     }
 
-    public void sendMail(String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException {
+    public void sendMail(ExecutionContext context, String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         assert inlineFiles != null && attachments != null && files != null;
 
         setMessageHeading();
@@ -180,10 +183,10 @@ public class EmailSender {
         }
 
         message.setContent(mp);
-        sendMail(message, subject);
+        sendMail(context, message, subject);
     }
 
-    public void sendSimpleMail(String subject, List<AttachmentProperties> attachments) throws MessagingException, IOException {
+    public void sendSimpleMail(ExecutionContext context, String subject, List<AttachmentProperties> attachments) throws MessagingException, IOException {
         assert attachments != null;
 
         setMessageHeading();
@@ -205,14 +208,26 @@ public class EmailSender {
             messageInfo += " "+ServerResourceBundle.getString("mail.failed.to.get.list.of.recipients")+" " + me.toString();
         }
 
+        boolean send = false;
         try {
             sendMessage(message, smtpHost, smtpPort, userName, password);
+            send = true;
         } catch (MessagingException e) {
             throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo, e);
+        } finally {
+            try {
+                if (context != null) {
+                    LCP emailSent = context.getBL().emailLM.findProperty("emailSent");
+                    if(emailSent != null)
+                        emailSent.change(send ? true : null, context.getSession());
+                }
+            } catch (Exception e) {
+                logger.error("emailSent writing error", e);
+            }
         }
     }
 
-    public void sendPlainMail(String subject, String inlineForms, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException {
+    public void sendPlainMail(ExecutionContext context, String subject, String inlineForms, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         assert inlineForms != null && attachments != null && files != null;
 
         setMessageHeading();
@@ -228,10 +243,12 @@ public class EmailSender {
         }
 
         message.setContent(mp);
-        sendMail(message, subject);
+        sendMail(context, message, subject);
     }
 
-    private void sendMail(final SMTPMessage message, final String subject) {
+    private void sendMail(final ExecutionContext context, final SMTPMessage message, final String subject) throws ScriptingErrorLog.SemanticErrorException {
+        final LCP emailSent = context == null ? null : context.getBL().emailLM.findProperty("emailSent");
+
         new Thread() {
             public void run() {
 
@@ -249,25 +266,36 @@ public class EmailSender {
 
                 boolean send = false;
                 int count = 0;
-                while (!send) {
-                    send = true;
-                    count++;
-                    try {
-                        sendMessage(message, smtpHost, smtpPort, userName, password);
-                    } catch (MessagingException e) {
-                        if (count < 40) {
-                            logger.info(ServerResourceBundle.getString("mail.unsuccessful.attempt.to.send.mail") + " " + messageInfo);
+                try {
+                    while (!send) {
+                        send = true;
+                        count++;
+                        try {
+                            sendMessage(message, smtpHost, smtpPort, userName, password);
+                        } catch (MessagingException e) {
                             send = false;
-                            try {
-                                Thread.sleep(30000);
-                            } catch (InterruptedException e1) {
+                            if (count < 40) {
+                                logger.info(ServerResourceBundle.getString("mail.unsuccessful.attempt.to.send.mail") + " " + messageInfo);
+                                try {
+                                    Thread.sleep(30000);
+                                } catch (InterruptedException ignored) {
+                                }
+                            } else {
+                                logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail") + " " + messageInfo);
+                                throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo, e);
                             }
-                        } else {
-                            logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail") + " " + messageInfo);
-                            throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail")+" " + messageInfo, e);
                         }
                     }
+                } finally {
+                    try {
+                        if (emailSent != null) {
+                            emailSent.change(send ? true : null, context.getSession());
+                        }
+                    } catch (Exception e) {
+                        logger.error("emailSent writing error", e);
+                    }
                 }
+
                 logger.info(ServerResourceBundle.getString("mail.successful.mail.sending") + messageInfo);
             }
         }.start();
