@@ -740,8 +740,8 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         if(wheres.length==0)
             return false;
 
-        boolean result = checkTrue(wheres, wheres.length, check, false)!=null;
-        assert (checkTrue(wheres, wheres.length, check, true)!=null)==result;
+        boolean result = checkTrue(wheres, wheres.length, check, true)!=null;
+        assert (checkTrue(wheres, wheres.length, check, false)!=null)==result;
         return result;
     }
 

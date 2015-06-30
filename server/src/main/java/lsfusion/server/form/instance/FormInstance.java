@@ -1457,6 +1457,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private void updateData(Result<ChangedData> mChangedProps) throws SQLException, SQLHandledException {
+        mChangedProps.set(mChangedProps.result.merge(session.updateExternal(this)));
+
         if (dataChanged) {
             session.executeSessionEvents(this);
             

@@ -253,7 +253,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                     }
                 }
 
-                if (thisFormInstance != null) {
+                if (thisFormInstance != null && !Settings.get().getUseUserChangesSync()) {
                     //обновляем текущую форму, чтобы подхватить изменения из вызываемой формы
                     thisFormInstance.refreshData();
                 }

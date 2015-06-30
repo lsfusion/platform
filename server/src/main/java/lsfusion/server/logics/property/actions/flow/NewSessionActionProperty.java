@@ -3,7 +3,7 @@ package lsfusion.server.logics.property.actions.flow;
 import lsfusion.base.FunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.Settings;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.FormInstance;
@@ -87,7 +87,7 @@ public class NewSessionActionProperty extends AroundAspectActionProperty {
         }
 
         FormInstance<?> formInstance = context.getFormInstance();
-        if (formInstance != null) {
+        if (formInstance != null && !Settings.get().getUseUserChangesSync()) {
             formInstance.refreshData();
         }
     }

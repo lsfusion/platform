@@ -1330,4 +1330,14 @@ public class Settings {
     public void setDivStatUpdateTypeHeur(int divStatUpdateTypeHeur) {
         this.divStatUpdateTypeHeur = divStatUpdateTypeHeur;
     }
+
+    private boolean useUserChangesSync = false; // использовать для пользователя синхронизацию изменений
+
+    public boolean getUseUserChangesSync() {
+        return useUserChangesSync;
+    }
+
+    public void setUseUserChangesSync(boolean useUserChangesSync) {
+        this.useUserChangesSync = useUserChangesSync;
+    }
 }

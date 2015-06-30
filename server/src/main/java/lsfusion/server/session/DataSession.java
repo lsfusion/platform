@@ -36,10 +36,7 @@ import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.instance.ChangedData;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
-import lsfusion.server.form.navigator.ComputerController;
-import lsfusion.server.form.navigator.IsServerRestartingController;
-import lsfusion.server.form.navigator.TimeoutController;
-import lsfusion.server.form.navigator.UserController;
+import lsfusion.server.form.navigator.*;
 import lsfusion.server.logics.*;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
@@ -422,8 +419,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             properties = SetFact.EMPTY();
         }
 
-        public UpdateChanges(DataSession session) {
-            properties = session.getChangedProps();
+        public UpdateChanges(ImSet<CalcProperty> properties) {
+            this.properties = properties;
         }
 
         public void add(ImSet<? extends CalcProperty> set) {
@@ -454,6 +451,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     public final TimeoutController timeout;
     public final ComputerController computer;
     public final UserController user;
+    public final ChangesController changes;
 
     public DataObject applyObject = null;
     
@@ -479,7 +477,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return sessionEventOldDepends;
     }
 
-    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, TimeoutController timeout, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents, OperationOwner upOwner) throws SQLException {
+    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, TimeoutController timeout, ChangesController changes, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LCP currentSession, SQLSession idSession, ImOrderMap<ActionProperty, SessionEnvEvent> sessionEvents, OperationOwner upOwner) throws SQLException {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 
@@ -490,6 +488,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         this.user = user;
         this.computer = computer;
         this.timeout = timeout;
+        this.changes = changes;
 
         this.sessionEvents = sessionEvents;
 
@@ -503,7 +502,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public DataSession createSession() throws SQLException {
-        return new DataSession(sql, user, computer, timeout, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
+        return new DataSession(sql, user, computer, timeout, changes, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
     }
 
     // по хорошему надо было в класс оформить чтоб избежать ошибок, но абстракция получится слишком дырявой
@@ -524,9 +523,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // cancel
         //    по кому не было restart :  from -> в applied (помечая что был restart)
         
-        if(!cancel)
-            for(Pair<FormInstance, UpdateChanges> appliedChange : appliedChanges.entryIt())
-                appliedChange.second.add(new UpdateChanges(this));
+        if(!cancel) {
+            ImSet<CalcProperty> changedProps = getChangedProps();
+            changes.regChange(changedProps, this);
+            for (Pair<FormInstance, UpdateChanges> appliedChange : appliedChanges.entryIt())
+                appliedChange.second.add(new UpdateChanges(changedProps));
+        }
 
         assert appliedChanges.disjointKeys(cancel ? updateChanges : incrementChanges);
         appliedChanges.putAll(cancel?updateChanges:incrementChanges);
@@ -1227,6 +1229,12 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return baseClass.getObjectValue(sql, value, valueClass.getUpSet(), getOwner());
     }
 
+    // узнает список изменений произошедших без него у других сессий
+    public ChangedData updateExternal(FormInstance<?> form) throws SQLException {
+        assert this == form.session;
+        return new ChangedData(changes.update(this, form), false);
+    }
+
     // узнает список изменений произошедших без него
     public ChangedData update(FormInstance<?> form) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
@@ -1243,7 +1251,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             incrementChange = appliedChanges.remove(form);
             if(incrementChange==null) // совсем не было
                 incrementChange = new UpdateChanges();
-            UpdateChanges formChanges = new UpdateChanges(this);
+            UpdateChanges formChanges = new UpdateChanges(getChangedProps());
             // from = changes (сбрасываем пометку что не было restart'а)
             updateChanges.put(form, formChanges);
             // возвращаем applied + changes
@@ -1677,6 +1685,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private WeakIdentityHashMap<FormInstance, Object> activeForms = new WeakIdentityHashMap<FormInstance, Object>();
     public void registerForm(FormInstance form) throws SQLException, SQLHandledException {
         activeForms.put(form, true);
+        changes.registerForm(form); // пометка что есть форма
 
         dropFormCaches();
 
@@ -1686,6 +1695,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         for(SessionModifier modifier : form.modifiers.values())
             modifier.clean(sql, getOwner());
 
+        changes.unregisterForm(form);
         activeForms.remove(form);
         incrementChanges.remove(form);
         appliedChanges.remove(form);

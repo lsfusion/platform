@@ -8,11 +8,14 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ServerResponse;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.auth.User;
 import lsfusion.server.caches.IdentityLazy;
@@ -322,13 +325,37 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
+    private static class WeakChangesUserProvider implements ChangesController { // чтобы помочь сборщику мусора и устранить цикл
+        WeakReference<ChangesSync> weakThis;
+
+        private WeakChangesUserProvider(ChangesSync dbManager) {
+            this.weakThis = new WeakReference<>(dbManager);
+        }
+
+        public void regChange(ImSet<CalcProperty> changes, DataSession session) {
+            weakThis.get().regChange(changes, session);
+        }
+
+        public FunctionSet<CalcProperty> update(DataSession session, FormInstance form) {
+            return weakThis.get().update(session, form);
+        }
+
+        public void registerForm(FormInstance form) {
+            weakThis.get().registerForm(form);
+        }
+
+        public void unregisterForm(FormInstance form) {
+            weakThis.get().unregisterForm(form);
+        }
+    }
+
     private int transactionTimeout;
     public int getTransactionTimeout() {
         return transactionTimeout;
     }
     
     private DataSession createSession() throws SQLException {
-        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakTimeoutController(this), null);
+        DataSession session = dbManager.createSession(sql, new WeakUserController(this), new WeakComputerController(this), new WeakTimeoutController(this), new WeakChangesUserProvider(changesSync), null);
         sessions.add(session);
         return session;
     }
@@ -740,6 +767,109 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 //            form.disconnect();
 //        }
     }
+
+    // обмен изменениями между сессиями в рамках одного подключения
+    private static class LastChanges {
+        private long timeStamp;
+        private WeakReference<DataSession> wLastSession;
+        private long lastSessionTimeStamp; // assert < timeStamp
+
+        private void regChange(long newStamp, DataSession newSession) {
+            DataSession lastSession;
+            if(wLastSession == null || (lastSession = wLastSession.get()) == null || newSession != lastSession) { // другая сессия
+                wLastSession = new WeakReference<DataSession>(newSession);
+                lastSessionTimeStamp = timeStamp;
+            }
+            timeStamp = newStamp;
+
+            assert lastSessionTimeStamp < timeStamp;
+        }
+
+        public boolean isChanged(long prevStamp, DataSession session) {
+            DataSession lastSession = wLastSession.get();
+            if(lastSession != null && session == lastSession) { // эта сессия
+                return lastSessionTimeStamp > prevStamp;
+            }
+            return timeStamp > prevStamp;
+        }
+
+    }
+    // обмен изменениями между сессиями в рамках одного подключения
+    private static class ChangesSync implements ChangesController {
+
+        private final Map<CalcProperty, LastChanges> changes = MapFact.mAddRemoveMap();
+        private final WeakIdentityHashMap<FormInstance, Long> formStamps = new WeakIdentityHashMap<>();
+        private long minPrevUpdatedStamp = 0;
+        private long currentStamp = 0;
+
+        private void updateLastStamp(long prevStamp) {
+            assert !formStamps.isEmpty();
+            if(minPrevUpdatedStamp >= prevStamp) {
+                minPrevUpdatedStamp = currentStamp; // ищем новый stamp
+                for(Pair<FormInstance, Long> entry : formStamps.entryIt())
+                    if(entry.second < minPrevUpdatedStamp)
+                        minPrevUpdatedStamp = entry.second;
+
+                // удаляем все меньше minStamp
+                for(Iterator<Map.Entry<CalcProperty,LastChanges>> it = changes.entrySet().iterator();it.hasNext();) {
+                    Map.Entry<CalcProperty, LastChanges> entry = it.next();
+                    if(entry.getValue().timeStamp <= minPrevUpdatedStamp) // isChanged никак не будет
+                        it.remove();
+                }
+            }
+        }
+
+        public synchronized void regChange(ImSet<CalcProperty> updateChanges, DataSession session) {
+            if(!Settings.get().getUseUserChangesSync())
+                return;
+
+            currentStamp++;
+
+            for(CalcProperty change : updateChanges) {
+                LastChanges last = changes.get(change);
+                if(last == null) {
+                    last = new LastChanges();
+                    changes.put(change, last);
+                }
+                last.regChange(currentStamp, session);
+            }
+        }
+
+        public synchronized FunctionSet<CalcProperty> update(DataSession session, FormInstance form) {
+            if(!Settings.get().getUseUserChangesSync())
+                return SetFact.EMPTY();
+
+            assert session == form.session;
+
+            Long lPrevStamp = formStamps.get(form);
+            assert lPrevStamp != null;
+            if(lPrevStamp == null) // just in case
+                return SetFact.EMPTY();
+            long prevStamp = lPrevStamp;
+
+            if(prevStamp == currentStamp) // если не было никаких изменений
+                return SetFact.EMPTY();
+
+            MExclSet<CalcProperty> mProps = SetFact.mExclSet();
+            for(Map.Entry<CalcProperty, LastChanges> change : changes.entrySet()) {
+                if(change.getValue().isChanged(prevStamp, session))
+                    mProps.exclAdd(change.getKey());
+            }
+            formStamps.put(form, currentStamp);
+            updateLastStamp(prevStamp);
+            return mProps.immutable();
+        }
+
+        public synchronized void registerForm(FormInstance form) {
+            formStamps.put(form, currentStamp);
+        }
+
+        public synchronized void unregisterForm(FormInstance form) {
+            formStamps.remove(form);
+        }
+    }
+
+    private ChangesSync changesSync = new ChangesSync();
 
     @Override
     public String toString() {

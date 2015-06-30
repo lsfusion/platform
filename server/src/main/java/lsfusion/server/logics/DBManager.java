@@ -39,6 +39,7 @@ import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.navigator.*;
 import lsfusion.server.integration.*;
 import lsfusion.server.lifecycle.LifecycleAdapter;
@@ -292,14 +293,27 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         return 0;
                     }
                 },
-                upOwner
+                new ChangesController() {
+                    public void regChange(ImSet<CalcProperty> changes, DataSession session) {
+                    }
+
+                    public FunctionSet<CalcProperty> update(DataSession session, FormInstance form) {
+                        return SetFact.<CalcProperty>EMPTY();
+                    }
+
+                    public void registerForm(FormInstance form) {
+                    }
+
+                    public void unregisterForm(FormInstance form) {
+                    }
+                }, upOwner
         );
     }
 
-    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController, TimeoutController timeoutController, OperationOwner owner) throws SQLException {
+    public DataSession createSession(SQLSession sql, UserController userController, ComputerController computerController, TimeoutController timeoutController, ChangesController changesController, OperationOwner owner) throws SQLException {
         //todo: неплохо бы избавиться от зависимости на restartManager, а то она неестественна
         return new DataSession(sql, userController, computerController,
-                timeoutController, new IsServerRestartingController() {
+                timeoutController, changesController, new IsServerRestartingController() {
                                    public boolean isServerRestarting() {
                                        return restartManager.isPendingRestart();
                                    }
