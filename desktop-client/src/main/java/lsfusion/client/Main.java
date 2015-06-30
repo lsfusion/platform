@@ -141,8 +141,10 @@ public class Main {
 
                     String country = remoteLogics.getUserCountry();
                     String language = remoteLogics.getUserLanguage();
-                    Locale.setDefault(new Locale(language, country));
-                    ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
+                    if (country != null && language != null) {
+                        Locale.setDefault(new Locale(language, country));
+                        ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
+                    }
 
                     GUIPreferences prefs = remoteLogics.getGUIPreferences();
                     logicsName = prefs.logicsName;
