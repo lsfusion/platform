@@ -284,11 +284,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             GroupObjectInstance toDraw = property.toDraw;
             Boolean ascending = defaultOrders.getValue(i);
 
-            toDraw.changeOrder((CalcPropertyObjectInstance) property.propertyObject, wasOrder.contains(toDraw) ? ADD : REPLACE);
-            if (!ascending) {
-                toDraw.changeOrder((CalcPropertyObjectInstance) property.propertyObject, DIR);
+            if(toDraw != null) {
+                toDraw.changeOrder((CalcPropertyObjectInstance) property.propertyObject, wasOrder.contains(toDraw) ? ADD : REPLACE);
+                if (!ascending) {
+                    toDraw.changeOrder((CalcPropertyObjectInstance) property.propertyObject, DIR);
+                }
+                wasOrder.add(toDraw);
             }
-            wasOrder.add(toDraw);
         }
 
         applyFilters();
