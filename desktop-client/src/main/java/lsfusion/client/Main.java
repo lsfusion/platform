@@ -139,6 +139,11 @@ public class Main {
 
                     remoteLogics = loginAction.getRemoteLogics();
 
+                    String country = remoteLogics.getUserCountry();
+                    String language = remoteLogics.getUserLanguage();
+                    Locale.setDefault(new Locale(language, country));
+                    ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
+
                     GUIPreferences prefs = remoteLogics.getGUIPreferences();
                     logicsName = prefs.logicsName;
                     logicsDisplayName = prefs.logicsDisplayName;
@@ -199,11 +204,6 @@ public class Main {
             TimeZone.setDefault(timeZone);
         }
         
-        String country = remoteLogics.getUserCountry();
-        String language = remoteLogics.getUserLanguage();
-        Locale.setDefault(new Locale(language, country));
-        ClientResourceBundle.clientResourceBundle = ResourceBundle.getBundle("ClientResourceBundle"); // чтобы подставлялась нужная локаль
-
         dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
 
 //        timeFormat = new SimpleDateFormat("HH:mm:ss");
