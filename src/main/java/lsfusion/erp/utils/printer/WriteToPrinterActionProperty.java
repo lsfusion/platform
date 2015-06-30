@@ -1,5 +1,6 @@
 package lsfusion.erp.utils.printer;
 
+import com.google.common.base.Throwables;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -31,13 +32,22 @@ public class WriteToPrinterActionProperty extends ScriptingActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        String text = (String) context.getDataKeyValue(textInterface).object;
-        String charset = (String) context.getDataKeyValue(charsetInterface).object;
-        String printerName = (String) context.getDataKeyValue(printerNameInterface).object;
+        try {
+            String text = (String) context.getDataKeyValue(textInterface).object;
+            String charset = (String) context.getDataKeyValue(charsetInterface).object;
+            String printerName = (String) context.getDataKeyValue(printerNameInterface).object;
 
-        String result = (String) context.requestUserInteraction(new WriteToPrinterClientAction(text, charset, printerName));
-        if(result != null)
-            context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
+            String result = (String) context.requestUserInteraction(new WriteToPrinterClientAction(text, charset, printerName));
+            findProperty("printed").change(result == null ? true : null, context);
+            if (result != null)
+                context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
+        } catch (Exception e) {
+            try {
+                findProperty("printed").change(null, context);
+            } catch (ScriptingErrorLog.SemanticErrorException ignored) {
+            }
+            throw Throwables.propagate(e);
+        }
 
     }
 }

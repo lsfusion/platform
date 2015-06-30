@@ -4,5 +4,6 @@ REQUIRE System;
 
 //text, charset, printerName
 writeToPrinter 'Отправить на принтер' = ACTION CUSTOM 'lsfusion.erp.utils.printer.WriteToPrinterActionProperty' (TEXT, VARSTRING[255], VARISTRING[255]);
+printed 'Отправлено на принтер' = DATA LOCAL BOOLEAN ();
 
 getAvailablePrinters 'Список доступных принтеров' = ACTION CUSTOM 'lsfusion.erp.utils.printer.GetAvailablePrintersActionProperty' ();
