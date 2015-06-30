@@ -209,8 +209,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 Boolean isActive = (Boolean) sqlProcess.get(6);
                 return isActive == null || !isActive ? NullValue.instance : new DataObject(true);
             case "inTransactionSQLProcess":
-                boolean fusionInTransaction = (Boolean) sqlProcess.get(7);
-                if(baseInTransaction != null)
+                Boolean fusionInTransaction = (Boolean) sqlProcess.get(7);
+                if(baseInTransaction != null && fusionInTransaction != null && fusionInTransaction)
                     ServerLoggers.assertLog(baseInTransaction.equals(fusionInTransaction), "FUSION AND BASE INTRANSACTION DIFFERS");
                 Boolean inTransaction = baseInTransaction != null ? baseInTransaction : fusionInTransaction;
                 return !inTransaction ? NullValue.instance : new DataObject(true);
