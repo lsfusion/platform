@@ -109,7 +109,7 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
 
     private void cleanSessionForms() {
         GWT.log("cleanSessionForms", new Exception());
-        currentForms.clear();
+//        currentForms.clear();
     }
 
     public FormSessionObject getFormSessionObject(String formSessionID) {
