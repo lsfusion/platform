@@ -197,9 +197,9 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         MSet<Pair<String, Integer>> result = SetFact.mSet();
         if (debugInfo != null) {
             result.add(new Pair<String, Integer>(debugInfo.moduleName, debugInfo.line));
-            for (ActionProperty actionProperty : getDependActions()) {
-                result.addAll(actionProperty.getInnerDebugActions());
-            }
+        }
+        for (ActionProperty actionProperty : getDependActions()) {
+            result.addAll(actionProperty.getInnerDebugActions());
         }
         return result.immutable();
     }
