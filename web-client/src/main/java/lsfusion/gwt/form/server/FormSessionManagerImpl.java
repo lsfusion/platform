@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.server;
 
+import com.google.gwt.core.client.GWT;
 import lsfusion.client.logics.ClientForm;
 import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.serialization.ClientSerializationPool;
@@ -107,6 +108,7 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
     }
 
     private void cleanSessionForms() {
+        GWT.log("cleanSessionForms", new Exception());
         currentForms.clear();
     }
 
