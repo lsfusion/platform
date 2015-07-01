@@ -1,5 +1,6 @@
 package lsfusion.gwt.base.server.spring;
 
+import com.google.gwt.core.client.GWT;
 import lsfusion.base.Provider;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.RemoteLogicsLoaderInterface;
@@ -111,16 +112,17 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
     }
 
     public void invalidate() {
-        writeLogicsLock.lock();
-        try {
-            logics = null;
-
-            for (InvalidateListener invalidateListener : invlidateListeners) {
-                invalidateListener.onInvalidate();
-            }
-        } finally {
-            writeLogicsLock.unlock();
-        }
+          GWT.log("Invalidating everything...", new Exception());
+//        writeLogicsLock.lock();
+//        try {
+//            logics = null;
+//
+//            for (InvalidateListener invalidateListener : invlidateListeners) {
+//                invalidateListener.onInvalidate();
+//            }
+//        } finally {
+//            writeLogicsLock.unlock();
+//        }
     }
 
     @Override
