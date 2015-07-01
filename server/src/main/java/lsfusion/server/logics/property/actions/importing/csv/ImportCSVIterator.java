@@ -28,6 +28,9 @@ public class ImportCSVIterator extends ImportIterator {
     public List<String> nextRow() {
         if (scanner.hasNextLine()) {
             String line = scanner.nextLine();
+            //cut BOM
+            if(!line.isEmpty() && line.charAt(0) == '\uFEFF')
+                line = line.substring(1);
             String[] splittedLine = line.split(String.format("\\%s|;", separator));
             return Arrays.asList(splittedLine).subList(0, Math.min(splittedLine.length, propertiesCount));
         }
