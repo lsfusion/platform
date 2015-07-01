@@ -104,7 +104,7 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
 
     @Override
     public void onInvalidate() {
-        cleanSessionForms();
+//        cleanSessionForms();
     }
 
     private void cleanSessionForms() {

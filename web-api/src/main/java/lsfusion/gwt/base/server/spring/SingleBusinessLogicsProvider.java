@@ -113,16 +113,16 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
 
     public void invalidate() {
           GWT.log("Invalidating everything...", new Exception());
-//        writeLogicsLock.lock();
-//        try {
-//            logics = null;
-//
-//            for (InvalidateListener invalidateListener : invlidateListeners) {
-//                invalidateListener.onInvalidate();
-//            }
-//        } finally {
-//            writeLogicsLock.unlock();
-//        }
+        writeLogicsLock.lock();
+        try {
+            logics = null;
+
+            for (InvalidateListener invalidateListener : invlidateListeners) {
+                invalidateListener.onInvalidate();
+            }
+        } finally {
+            writeLogicsLock.unlock();
+        }
     }
 
     @Override
