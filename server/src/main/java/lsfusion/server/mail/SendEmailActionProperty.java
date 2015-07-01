@@ -214,7 +214,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
             String recipientEmailList = (String) recipient.read(context, context.getKeys());
             if (recipientEmailList != null) {
-                String[] emails = recipientEmailList.replace(',',':').split(";");
+                String[] emails = recipientEmailList.replace(',',';').split(";");
                 for (String email : emails) {
                     email = trimToNull(email);
                     if (email == null) {
