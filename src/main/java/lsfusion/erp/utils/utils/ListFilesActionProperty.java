@@ -13,11 +13,11 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.SocketException;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,13 +43,13 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
                     String type = m.group(1).toLowerCase();
                     String url = m.group(2);
 
-                    Map<String, Boolean> filesList = new HashMap<String, Boolean>();
+                    Map<String, Boolean> filesList = new HashMap<>();
                     if (type.equals("file")) {
                         filesList = getFilesList(url);
                     } else if (type.equals("ftp")) {
                         filesList = getFTPFilesList(path);
                     }
-                    if (filesList != null && !filesList.isEmpty()) {
+                    if (filesList != null/* && !filesList.isEmpty()*/) {
 
                         Integer i = 0;
                         for (Map.Entry<String, Boolean> file : filesList.entrySet()) {
@@ -74,7 +74,7 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
 
 
     private Map<String, Boolean> getFilesList(String url) throws IOException {
-        Map<String, Boolean> result = new HashMap<String, Boolean>();
+        Map<String, Boolean> result = new HashMap<>();
 
         File[] filesList = new File(url).listFiles();
         if(filesList != null) {
@@ -104,17 +104,13 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
                 ftpClient.login(username, password);
                 ftpClient.enterLocalPassiveMode();
 
-                Map<String, Boolean> result = new HashMap<String, Boolean>();
+                Map<String, Boolean> result = new HashMap<>();
                 FTPFile[] ftpFileList = ftpClient.listFiles(remotePath);
                 for (FTPFile file : ftpFileList) {
                     result.put(file.getName(), file.isDirectory());
                 }
                 return result;
 
-            } catch (FileNotFoundException e) {
-                throw Throwables.propagate(e);
-            } catch (SocketException e) {
-                throw Throwables.propagate(e);
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             } finally {
