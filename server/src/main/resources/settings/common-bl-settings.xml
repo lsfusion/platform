@@ -101,6 +101,7 @@
                 <entry key="applyAutoAttemptCountLimit" value="${settings.applyAutoAttemptCountLimit:}"/>
                 <entry key="useSafeDivision" value="${settings.useSafeDivision:}"/>
                 <entry key="useUserChangesSync" value="${settings.useUserChangesSync:}"/>
+                <entry key="averageIntervalStat" value="${settings.averageIntervalStat:}"/>
             </map>
         </property>
         </bean>
