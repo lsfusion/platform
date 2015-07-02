@@ -2,17 +2,12 @@ package lsfusion.server.data;
 
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.ParamMessage;
 import lsfusion.server.Settings;
 import lsfusion.server.data.query.DynamicExecEnvSnapshot;
-import lsfusion.server.data.query.DynamicExecuteEnvironment;
-import lsfusion.server.data.query.StaticExecuteEnvironment;
 import lsfusion.server.data.type.ParseInterface;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-
-import java.sql.SQLException;
 
 @Aspect
 public class SQLAnalyzeAspect {

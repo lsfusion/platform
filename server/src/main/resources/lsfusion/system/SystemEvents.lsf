@@ -17,6 +17,7 @@ messageException 'Сообщение исключения' = DATA VARSTRING[250]
 dateException 'Время возникновения' = DATA DATETIME (Exception);
 fromDateException 'Дата возникновения' (d)= DATE(dateException(d));
 erTraceException 'След исключения'= DATA TEXT (Exception) PREFCHARWIDTH 500;
+lsfStackTraceException 'LSF след исключения'= DATA TEXT (Exception) PREFCHARWIDTH 500;
 typeException 'Тип исключения' = DATA VARSTRING[250] (Exception);
 
 clientClientException 'Клиент' = DATA VARSTRING[100] (ClientException);
@@ -193,7 +194,7 @@ FORM  exceptions 'Журнал ошибок'
 
     OBJECTS e=Exception LAST
     PROPERTIES(e) FOREGROUND foregroundNonFatalException(e) BACKGROUND backgroundNonFatalException(e) READONLY messageException, clientClientException FORCE GRID, loginClientException FORCE GRID, typeException, dateException, reqIdHandledException, countNonFatalHandledException, abandonedNonFatalHandledException
-    PROPERTIES(e) READONLY erTraceException FORCE PANEL
+    PROPERTIES(e) READONLY FORCE PANEL erTraceException, lsfStackTraceException
 ;
 
 DESIGN exceptions {
@@ -202,10 +203,15 @@ DESIGN exceptions {
             fill = 1;
             MOVE e.box;
             NEW textContainer {
-                type = CONTAINERV;
+                type = CONTAINERH;
                 fill = 1;
 
                 MOVE PROPERTY(erTraceException(e)) {
+                    fill = 0.5;
+                    preferredSize = ( -1, 200);
+                    panelCaptionAbove = TRUE;
+                }
+                MOVE PROPERTY(lsfStackTraceException(e)) {
                     fill = 0.5;
                     preferredSize = ( -1, 200);
                     panelCaptionAbove = TRUE;

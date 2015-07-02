@@ -10,9 +10,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
-import lsfusion.server.Message;
 import lsfusion.server.Settings;
-import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.*;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -53,6 +51,8 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.table.TableFactory;
 import lsfusion.server.session.*;
+import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.ThisMessage;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -555,7 +555,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return new SinglePropertyTableUsage<T>(getOrderInterfaces(), interfaceTypeGetter, getType());
     }
 
-    @Message("message.increment.read.properties")
+    @StackMessage("message.increment.read.properties")
     @ThisMessage
     public SinglePropertyTableUsage<T> readChangeTable(SQLSession session, Modifier modifier, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         return readFixChangeTable(session, getIncrementChange(modifier), baseClass, env);
@@ -1125,7 +1125,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return result;
     }
 
-    @Message("message.core.property.data.changes")
+    @StackMessage("message.core.property.data.changes")
     @PackComplex
     @ThisMessage
     public DataChanges getDataChanges(PropertyChange<T> change, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -1461,7 +1461,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     }
 
     @PackComplex
-    @Message("message.core.property.get.expr")
+    @StackMessage("message.core.property.get.expr")
     @ThisMessage
     public IQuery<T, String> getQuery(CalcType calcType, PropertyChanges propChanges, PropertyQueryType queryType, ImMap<T, ? extends Expr> interfaceValues) {
         if(queryType==PropertyQueryType.FULLCHANGED) {
@@ -1509,7 +1509,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return queryJoin.getExpr("value");
     }
 
-    @Message("message.core.property.get.expr")
+    @StackMessage("message.core.property.get.expr")
     @PackComplex
     @ThisMessage
     public Expr getJoinExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
@@ -1663,7 +1663,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
     }
 
-    @Message("logics.recalculating.data.classes")
+    @StackMessage("logics.recalculating.data.classes")
     public void recalculateClasses(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
         assert isStored();
         

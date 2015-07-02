@@ -11,8 +11,6 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSVSMap;
-import lsfusion.server.Message;
-import lsfusion.server.ParamMessage;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.IntegerClass;
@@ -31,6 +29,8 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.stack.ParamMessage;
+import lsfusion.server.stack.StackMessage;
 import org.apache.commons.collections.Buffer;
 import org.apache.commons.collections.BufferUtils;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
@@ -1237,7 +1237,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         unlockRead();
     }
 
-    @Message("message.sql.execute")
+    @StackMessage("message.sql.execute")
     private int executeDML(@ParamMessage String command, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         lockRead(owner);
         ExConnection connection = getConnection();
@@ -1339,7 +1339,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
     }
 
-    @Message("message.sql.execute")
+    @StackMessage("message.sql.execute")
     public <H> void executeCommand(@ParamMessage final SQLCommand<H> command, final DynamicExecEnvSnapshot snapEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, H handler) throws SQLException, SQLHandledException {
         lockRead(owner);
 

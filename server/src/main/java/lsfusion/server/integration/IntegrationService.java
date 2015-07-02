@@ -8,7 +8,6 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
-import lsfusion.server.Message;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.data.OperationOwner;
@@ -26,6 +25,7 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.DataProperty;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.*;
+import lsfusion.server.stack.StackMessage;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -59,7 +59,7 @@ public class IntegrationService {
         synchronize(replaceNull, true);
     }
 
-    @Message("message.synchronize")
+    @StackMessage("message.synchronize")
     public void synchronize(boolean replaceNull, boolean replaceEqual) throws SQLException, SQLHandledException {
         SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<ImportField>(IntegerClass.instance, table.fields, ImportField.typeGetter);
         

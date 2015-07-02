@@ -11,8 +11,6 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.interop.Compare;
-import lsfusion.server.ParamMessage;
-import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
@@ -31,6 +29,8 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertySet;
 import lsfusion.server.session.UpdateCurrentClasses;
+import lsfusion.server.stack.ParamMessage;
+import lsfusion.server.stack.ThisMessage;
 
 import java.sql.SQLException;
 import java.util.Collections;

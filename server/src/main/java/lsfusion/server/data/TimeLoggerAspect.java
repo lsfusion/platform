@@ -3,19 +3,15 @@ package lsfusion.server.data;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
-import lsfusion.server.MessageAspect;
 import lsfusion.server.Settings;
+import lsfusion.server.stack.ExecutionStackAspect;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
-import static lsfusion.server.ServerLoggers.exInfoLogger;
-import static lsfusion.server.ServerLoggers.sqlLogger;
 import static lsfusion.server.ServerLoggers.systemLogger;
 
 @Aspect
@@ -44,7 +40,7 @@ public class TimeLoggerAspect {
                 if(runTime > Settings.get().getLogTimeThreshold() * 1000000) {
                     runningWarn += runTime;
 
-                    ImList<String> args = MessageAspect.getArgs(thisJoinPoint, method, thisJoinPoint.getArgs());
+                    ImList<String> args = ExecutionStackAspect.getArgs(thisJoinPoint, method, thisJoinPoint.getArgs());
                     systemLogger.info(String.format("LogTime (%1$d ms, tot : %3$d ms, warn : %4$d ms) %2$s : " + ListFact.toList(args.size(), new GetIndex<String>() {
                         public String getMapValue(int i) {
                             return ("%" + (5 + i) + "$s");

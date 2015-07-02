@@ -1,4 +1,4 @@
-package lsfusion.server;
+package lsfusion.server.stack;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

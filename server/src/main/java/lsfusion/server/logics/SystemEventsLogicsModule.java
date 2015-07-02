@@ -3,7 +3,10 @@ package lsfusion.server.logics;
 import com.google.common.base.Throwables;
 import lsfusion.base.DateConverter;
 import lsfusion.base.ExceptionUtils;
-import lsfusion.interop.exceptions.*;
+import lsfusion.interop.exceptions.FatalHandledRemoteException;
+import lsfusion.interop.exceptions.HandledRemoteException;
+import lsfusion.interop.exceptions.NonFatalHandledRemoteException;
+import lsfusion.interop.exceptions.RemoteServerException;
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.data.SQLHandledException;
@@ -12,6 +15,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
+import lsfusion.server.stack.ExecutionStackAspect;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
@@ -61,6 +65,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP messageException;
     public LCP dateException;
     public LCP erTraceException;
+    public LCP lsfTraceException;
     public LCP typeException;
     public LCP clientClientException;
     public LCP loginClientException;
@@ -137,6 +142,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         messageException = findProperty("messageException");
         dateException = findProperty("dateException");
         erTraceException = findProperty("erTraceException");
+        lsfTraceException = findProperty("lsfStackTraceException");
         typeException =  findProperty("typeException");
         clientClientException = findProperty("clientClientException");
         loginClientException = findProperty("loginClientException");
@@ -165,6 +171,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         String message = Throwables.getRootCause(t).getLocalizedMessage();
         String errorType = t.getClass().getName();
         String erTrace = ExceptionUtils.getStackTraceString(t);
+        String lsfStack = ExecutionStackAspect.getStackString(t);
 
         try (DataSession session = createSession()) {
             DataObject exceptionObject;
@@ -199,6 +206,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
             messageException.change(message, session, exceptionObject);
             typeException.change(errorType, session, exceptionObject);
             erTraceException.change(erTrace, session, exceptionObject);
+            lsfTraceException.change(lsfStack, session, exceptionObject);
             dateException.change(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
 
             session.apply(bl);

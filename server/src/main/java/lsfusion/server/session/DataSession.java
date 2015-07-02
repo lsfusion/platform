@@ -18,7 +18,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.interop.Compare;
 import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.server.*;
+import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.UpClassSet;
@@ -43,12 +44,14 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.stack.ParamMessage;
+import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.ThisMessage;
 
 import javax.swing.*;
 import java.sql.SQLException;
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.filterKeys;
 import static lsfusion.base.col.SetFact.fromJavaSet;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -1106,7 +1109,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             usedTable.drop(sql, OperationOwner.unknown);
     }
 
-    @Message("logics.checking.data.classes")
+    @StackMessage("logics.checking.data.classes")
     public static String checkClasses(@ParamMessage CalcProperty property, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
         assert property.isStored();
         
@@ -1157,7 +1160,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return new Query<KeyField, PropertyField>(mapKeys, where);
     }
 
-    @Message("logics.recalculating.data.classes")
+    @StackMessage("logics.recalculating.data.classes")
     public static void recalculateTableClasses(ImplementTable table, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
         Query<KeyField, PropertyField> query = getIncorrectQuery(table, baseClass);
 
@@ -1819,7 +1822,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    @Message("message.session.apply.write")
+    @StackMessage("message.session.apply.write")
     private <P extends PropertyInterface> void readStored(@ParamMessage CalcProperty<P> property, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
         assert isInTransaction();
         assert property.isStored();
@@ -2242,7 +2245,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    @Message("message.increment.read.properties")
+    @StackMessage("message.increment.read.properties")
     public SessionTableUsage<KeyField, CalcProperty> readSave(ImplementTable table, @ParamMessage ImSet<CalcProperty> properties) throws SQLException, SQLHandledException {
         assert isInTransaction();
 

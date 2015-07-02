@@ -1,6 +1,9 @@
 package lsfusion.server.form.instance;
 
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
+import lsfusion.base.Result;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -10,9 +13,7 @@ import lsfusion.interop.ClassViewType;
 import lsfusion.interop.Compare;
 import lsfusion.interop.Order;
 import lsfusion.interop.form.PropertyReadType;
-import lsfusion.server.Message;
 import lsfusion.server.Settings;
-import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ConcreteCustomClass;
@@ -45,6 +46,8 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.session.*;
+import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.ThisMessage;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -604,7 +607,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
     private boolean pendingHiddenUpdateKeys;
     private boolean pendingHiddenUpdateObjects;
 
-    @Message("message.form.update.group.keys")
+    @StackMessage("message.form.update.group.keys")
     @ThisMessage
     public ImMap<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, final Modifier modifier, IncrementChangeProps environmentIncrement, ExecutionEnvironment execEnv, BaseClass baseClass, boolean hidden, final boolean refresh, MFormChanges result, Result<ChangedData> changedProps, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         if (refresh || (updated & UPDATED_CLASSVIEW) != 0) {

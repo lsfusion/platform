@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.Message;
 import lsfusion.server.caches.AbstractInnerContext;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.*;
@@ -20,6 +19,7 @@ import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.stack.StackMessage;
 
 import java.sql.SQLException;
 
@@ -58,7 +58,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         return result.terminate();
     }
 
-    @Message("message.query.execute")
+    @StackMessage("message.query.execute")
     public void executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env, ResultHandler<K, V> result) throws SQLException, SQLHandledException {
         compile(orders, new CompileOptions(session.syntax, LimitOptions.get(selectTop))).execute(session, env, selectTop, result);
     }

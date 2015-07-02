@@ -17,9 +17,13 @@ import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.interop.action.EditNotPerformedClientAction;
 import lsfusion.interop.action.HideFormClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.interop.form.*;
+import lsfusion.interop.form.ColorPreferences;
+import lsfusion.interop.form.ColumnUserPreferences;
+import lsfusion.interop.form.FormUserPreferences;
+import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.layout.ContainerType;
-import lsfusion.server.*;
+import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
@@ -53,6 +57,9 @@ import lsfusion.server.logics.property.derived.MaxChangeProperty;
 import lsfusion.server.logics.property.derived.OnChangeProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.*;
+import lsfusion.server.stack.ParamMessage;
+import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.ThisMessage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -1425,7 +1432,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         queryPropertyObjectValues(propertySet, properties, keyGroupObjects, GET_PROPERTY_OBJECT_FROM_READER);
     }
 
-    @Message("message.form.update.props")
+    @StackMessage("message.form.update.props")
     private <T> void queryPropertyObjectValues(
             @ParamMessage ImOrderSet<T> keysSet,
             MExclMap<T, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> valuesMap,
@@ -1471,7 +1478,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     }
 
-    @Message("message.form.end.apply")
+    @StackMessage("message.form.end.apply")
     @LogTime
     @ThisMessage
     @AssertSynchronized
@@ -2203,6 +2210,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     @Override
     public String toString() {
-        return "FORM@"+System.identityHashCode(this);
+        return "FORM@"+System.identityHashCode(this) + " - " + entity.getSID();
     }
 }

@@ -11,7 +11,6 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.*;
 import lsfusion.base.col.lru.LRUWVWSMap;
-import lsfusion.server.Message;
 import lsfusion.server.caches.*;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.classes.BaseClass;
@@ -33,6 +32,7 @@ import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.stack.StackMessage;
 
 import java.sql.SQLException;
 
@@ -300,7 +300,7 @@ public class Query<K,V> extends IQuery<K,V> {
 
     @IdentityLazy
     @Pack
-    @Message("message.core.query.compile")
+    @StackMessage("message.core.query.compile")
     public CompiledQuery<K, V> compile(ImOrderMap<V, Boolean> orders, CompileOptions options) {
         return new CompiledQuery<K,V>(this, options.syntax, orders, options.limit, options.subcontext, options.recursive, options.noInline);
     }

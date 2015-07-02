@@ -4,8 +4,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
-import lsfusion.server.Message;
-import lsfusion.server.ThisMessage;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.data.SQLHandledException;
@@ -20,6 +18,8 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.CalcPropertyImplement;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.*;
+import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.ThisMessage;
 
 import java.sql.SQLException;
 
@@ -92,7 +92,7 @@ public class ImportKey<P extends PropertyInterface> implements ImportKeyInterfac
     public boolean skipKey;
 
     // не будет виден CGProp, который тут неявно assert'ися но это и не важно
-    @Message("message.synchronize.key")
+    @StackMessage("message.synchronize.key")
     @ThisMessage
     public SinglePropertyTableUsage<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable) throws SQLException, SQLHandledException {
 

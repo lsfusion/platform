@@ -51,7 +51,11 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
-import lsfusion.server.session.*;
+import lsfusion.server.session.DataSession;
+import lsfusion.server.session.SessionCreator;
+import lsfusion.server.session.SingleKeyTableUsage;
+import lsfusion.server.stack.ParamMessage;
+import lsfusion.server.stack.StackMessage;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.commons.codec.binary.Hex;
@@ -461,7 +465,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    @Message("logics.upload.db")
+    @StackMessage("logics.upload.db")
     private void uploadTableToDB(SQLSession sql, final @ParamMessage GlobalTable implementTable, @ParamMessage String progress, final SQLSession sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
         sqlTo.truncate(implementTable, owner);
 

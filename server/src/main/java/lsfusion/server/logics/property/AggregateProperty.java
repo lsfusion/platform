@@ -8,9 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndexValue;
 import lsfusion.interop.Compare;
-import lsfusion.server.Message;
 import lsfusion.server.Settings;
-import lsfusion.server.ThisMessage;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.BaseClass;
@@ -28,6 +26,8 @@ import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.ThisMessage;
 
 import java.sql.SQLException;
 
@@ -44,7 +44,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
     // проверяет агрегацию для отладки
     @ThisMessage
-    @Message("logics.info.checking.aggregated.property")
+    @StackMessage("logics.info.checking.aggregated.property")
     public String checkAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
         session.pushVolatileStats(OperationOwner.unknown);
         
@@ -145,7 +145,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
     public static AggregateProperty recalculate = null;
 
-    @Message("logics.info.recalculation.of.aggregated.property")
+    @StackMessage("logics.info.recalculation.of.aggregated.property")
     @ThisMessage
     public void recalculateAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
         boolean useRecalculate = Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr();

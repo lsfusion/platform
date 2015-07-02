@@ -4,8 +4,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
 import lsfusion.interop.Compare;
-import lsfusion.server.Message;
-import lsfusion.server.ThisMessage;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -15,6 +13,8 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.property.CalcPropertyImplement;
 import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.*;
+import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.ThisMessage;
 
 import java.sql.SQLException;
 
@@ -90,7 +90,7 @@ public class ImportProperty <P extends PropertyInterface> {
         return implement.property.toString();
     }
 
-    @Message("message.synchronize.property")
+    @StackMessage("message.synchronize.property")
     @ThisMessage
     public DataChanges synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable, ImMap<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, boolean replaceNull, boolean replaceEqual) throws SQLException, SQLHandledException {
         ImMap<ImportField,Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
