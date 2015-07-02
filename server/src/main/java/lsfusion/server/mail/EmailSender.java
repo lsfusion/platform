@@ -145,6 +145,7 @@ public class EmailSender {
         MimeBodyPart filePart = new MimeBodyPart();
         filePart.setDataHandler(new DataHandler(source));
         filePart.setFileName(attachmentName);
+        filePart.setHeader("Content-Transfer-Encoding", "base64");
         mp.addBodyPart(filePart);
     }
 
