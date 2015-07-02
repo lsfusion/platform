@@ -303,7 +303,7 @@ public class EmailSender {
                                 } catch (InterruptedException ignored) {
                                 }
                             } else {
-                                logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail") + " " + messageInfo);
+                                logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail") + " " + messageInfo, e);
                                 throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo, e);
                             }
                         }
