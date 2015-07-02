@@ -38,6 +38,7 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SingleKeyTableUsage;
+import lsfusion.server.stack.ExecutionStackAspect;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -78,7 +79,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         //step1: props, mRows (java)
         ImOrderSet<LCP> propsJava = getProps(findProperties("idThreadProcess", "stackTraceJavaProcess", "nameJavaProcess", "statusJavaProcess",
-                "lockNameJavaProcess", "lockOwnerIdProcess", "lockOwnerNameProcess", "computerProcess", "userProcess"));
+                "lockNameJavaProcess", "lockOwnerIdProcess", "lockOwnerNameProcess", "computerProcess", "userProcess", "lsfStackTraceProcess"));
         MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRowsJava = MapFact.mExclMap();
 
         //step1: props, mRows (sql)
@@ -178,6 +179,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             case "userProcess":
                 String user = (String) javaProcess.get(7);
                 return user == null ? NullValue.instance : new DataObject(user);
+            case "lsfStackTraceProcess":
+                String lsfStackTrace = (String) javaProcess.get(8);
+                return lsfStackTrace == null ? NullValue.instance : new DataObject(lsfStackTrace);
             default:
                 return NullValue.instance;
         }
@@ -472,8 +476,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
             String computer = logInfo == null ? null : logInfo.hostnameComputer;
             String user = logInfo == null ? null : logInfo.userName;
+            String lsfStack = thread != null ? ExecutionStackAspect.getStackString(thread) : null;
 
-            resultMap.put(String.valueOf(id), Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId, lockOwnerName, computer, user));
+            resultMap.put(String.valueOf(id), Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId, lockOwnerName, computer, user, lsfStack));
         }
         return resultMap;
     }

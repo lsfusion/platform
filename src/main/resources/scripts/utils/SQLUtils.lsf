@@ -66,6 +66,8 @@ dateTimeSQLProcess 'Время запуска (SQL)' = DATA LOCAL DATETIME (INTE
 isActiveSQLProcess 'Активный (SQL)' = DATA BOOLEAN (INTEGER);
 inTransactionSQLProcess 'В транзакции (SQL)' = DATA BOOLEAN (INTEGER);
 
+lsfStackTraceProcess 'LSF след потока' = DATA LOCAL TEXT (INTEGER);
+
 stackTraceJavaProcess 'След java-потока (Java)' = DATA LOCAL TEXT (INTEGER);
 hasStackTraceJavaProcess (i) = stackTraceJavaProcess(i) AND i IS INTEGER;
 nameJavaProcess 'Имя java-потока (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
@@ -128,7 +130,7 @@ FORM processMonitor 'Монитор процессов'
     OBJECTS i = INTEGER
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, computerProcess, userProcess,
                            querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
-                           stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
+                           lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                            lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     FILTERS idThreadProcess(i)
@@ -141,7 +143,7 @@ FORM processMonitor 'Монитор процессов'
     PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlockedProcess,
                             activeProcess, idThreadProcess, computerProcess, userProcess,
                             querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
-                            stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
+                            lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                             lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
     FILTERS idThreadProcess(i2), (activeProcess(i2) AND sumBlockedProcess(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') 
@@ -150,11 +152,11 @@ FORM processMonitor 'Монитор процессов'
     PROPERTIES(blocked) READONLY idThreadProcess, isDeadlockProcess, 
                                  sumBlockingProcess, computerProcess, userProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess,
-                                 stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
+                                 lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                                  lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlockingProcess, computerProcess, userProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
-                                 stackTraceJavaProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess,
+                                 lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                                  lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(blocking) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(blocking), killJavaProcess SHOWIF isActiveSQLProcess(blocking)                                   
     FILTERS idThreadProcess(blocked), sumBlockingProcess(blocked) > 0, sumBlockedProcess(blocking) > 0, isBlockingProcess(blocked, blocking) AND blocked != blocking
