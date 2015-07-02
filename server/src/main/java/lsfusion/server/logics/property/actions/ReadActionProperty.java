@@ -58,16 +58,18 @@ public class ReadActionProperty extends ScriptingActionProperty {
             movePath = (String) moveProp.object;
         }
         boolean move = movePath != null;
+        int errorCode = 0;
+        String type = null;
+        File file = null;
 
         try {
             if (sourcePath != null) {
                 Pattern p = Pattern.compile("(file|ftp|http|jdbc|mdb):(?:\\/\\/)?(.*)");
                 Matcher m = p.matcher(sourcePath);
                 if (m.matches()) {
-                    String type = m.group(1).toLowerCase();
+                    type = m.group(1).toLowerCase();
                     String url = m.group(2);
 
-                    File file = null;
                     String extension = null;
                     switch (type) {
                         case "file":
@@ -97,34 +99,45 @@ public class ReadActionProperty extends ScriptingActionProperty {
                     }
                     if (file != null && file.exists()) {
                         targetProp.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(file), extension.getBytes()), context);
-
-                        if(move) {
-                            if(type.equals("file")) {
-                                if(movePath.startsWith("file://"))
-                                    FileCopyUtils.copy(file, new File(movePath.replace("file://", "")));
-                                else
-                                    throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Unsupported movePath: " + movePath +
-                                    ", supports only file://filepath"));
-                            } else if (type.equals("ftp")) {
-                                WriteActionProperty.storeFileToFTP(movePath, file);
-                            }
-                        }
-
-                        if (!type.equals("file") || delete || move)
-                            file.delete();
-                        if(type.equals("ftp") && (delete || move)) {
-                            deleteFTPFile(sourcePath);
-                        }
-
                     } else {
-                        throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. File not found: " + sourcePath));
+                        errorCode = 3;
                     }
                 } else {
-                    throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Incorrect path: " + sourcePath));
+                    errorCode = 2;
                 }
             } else {
-                throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Path not specified."));
+                errorCode = 1;
             }
+
+            switch (errorCode) {
+                case 0:
+                    if(move) {
+                        if(type.equals("file")) {
+                            if(movePath.startsWith("file://"))
+                                FileCopyUtils.copy(file, new File(movePath.replace("file://", "")));
+                            else
+                                throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Unsupported movePath: " + movePath +
+                                        ", supports only file://filepath"));
+                        } else if (type.equals("ftp")) {
+                            WriteActionProperty.storeFileToFTP(movePath, file);
+                        }
+                    }
+                    if (!type.equals("file") || delete || move)
+                        if(!file.delete())
+                            file.deleteOnExit();
+                    if(type.equals("ftp") && (delete || move)) {
+                        deleteFTPFile(sourcePath);
+                    }
+                    break;
+                case 1:
+                    throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Path not specified."));
+                case 2:
+                    throw Throwables.propagate(new RuntimeException(String.format("ReadActionProperty Error. Incorrect path: %s, use syntax (file|ftp|http|jdbc|mdb)://path", sourcePath)));
+                case 3:
+                    throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. File not found: " + sourcePath));
+
+            }
+
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
