@@ -8,6 +8,8 @@ checkAggregationsAction 'Проверить агрегации' = ACTION CUSTOM 
 checkClassesAction 'Проверить классы' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesActionProperty' ();
 recalculateClassesAction 'Пересчитать классы' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesActionProperty' ();
 recalculateAction 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateActionProperty' ();
+recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateMultiThreadActionProperty' ();
+
 recalculateFollowsAction 'Пересчитать следствия и ограничения' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty' ();
 analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'lsfusion.server.logics.service.AnalyzeDBActionProperty' ();
 vacuumDBAction 'Упаковать БД' = ACTION CUSTOM 'lsfusion.server.logics.service.VacuumDBActionProperty' ();
@@ -206,7 +208,7 @@ FORM admin 'Администрирование'
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
                  restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, checkClassesAction, 
-                 recalculateClassesAction, recalculateAction, recalculateFollowsAction, packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
+                 recalculateClassesAction, recalculateAction, recalculateMultiThreadAction, recalculateFollowsAction, packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
                  vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, dropLRU, makeHeapDump, 
                  TILMode, hostnameServerComputer, reupdateMode, singleTransaction,
                  nameReflectionSetting, turnExplainAnalizeOnCurrentUser, clearApplicationLog,
@@ -251,6 +253,7 @@ DESIGN admin {
             caption = 'Исправление целостности базы данных';
             MOVE PROPERTY(recalculateClassesAction());
             MOVE PROPERTY(recalculateAction());
+            MOVE PROPERTY(recalculateMultiThreadAction());
             MOVE PROPERTY(recalculateFollowsAction());
         }
         NEW check {

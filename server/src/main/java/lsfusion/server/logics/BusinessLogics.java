@@ -1152,7 +1152,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return result;
     }
 
-    List<AggregateProperty> getAggregateStoredProperties() {
+    public List<AggregateProperty> getAggregateStoredProperties() {
         return getAggregateStoredProperties(true);
     }
 
