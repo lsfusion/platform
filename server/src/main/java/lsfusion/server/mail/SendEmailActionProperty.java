@@ -2,7 +2,9 @@ package lsfusion.server.mail;
 
 import jasperapi.ReportGenerator;
 import jasperapi.ReportHTMLExporter;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.form.ReportGenerationData;
@@ -39,10 +41,7 @@ import javax.mail.MessagingException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static javax.mail.Message.RecipientType.TO;
 import static lsfusion.base.BaseUtils.nullTrim;
@@ -72,6 +71,8 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private final List<FormStorageType> storageTypes = new ArrayList<FormStorageType>();
     private final List<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>> mapObjects = new ArrayList<Map<ObjectEntity, CalcPropertyInterfaceImplement<ClassPropertyInterface>>>();
     private final List<CalcPropertyInterfaceImplement> attachmentProps = new ArrayList<CalcPropertyInterfaceImplement>();
+    private final List<CalcPropertyInterfaceImplement> attachFileNames = new ArrayList<>();
+    private final List<CalcPropertyInterfaceImplement> attachFiles = new ArrayList<>();
 
     public SendEmailActionProperty(String caption, ValueClass[] classes) {
         super(caption, classes);
@@ -113,6 +114,11 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         mapObjects.add(objects);
         attachmentProps.add(attachmentNameProp);
     }
+    
+    public void addAttachmentFile(CalcPropertyInterfaceImplement fileName, CalcPropertyInterfaceImplement file) {
+        attachFileNames.add(fileName);
+        attachFiles.add(file);
+    }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         EmailLogicsModule emailLM = context.getBL().emailLM;
@@ -150,6 +156,8 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
 
             ObjectValue defaultAccount = emailLM.defaultInboxAccount.readClasses(context.getSession());
 
+            Map<ByteArray, Pair<String, String>> customAttachments = createCustomAttachments(context);
+
             if (!(defaultAccount instanceof NullValue)) {
                 String encryptedConnectionType = (String) emailLM.nameEncryptedConnectionTypeAccount.read(context, defaultAccount);
                 String smtpHostAccount = (String) emailLM.smtpHostAccount.read(context, defaultAccount);
@@ -168,7 +176,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                     return;
                 }
                 
-                sendEmail(context, smtpHostAccount, smtpPortAccount, nameAccount, passwordAccount, encryptedConnectionType, fromAddressAccount, subject, recipients, inlineForms, attachments, attachmentFiles);
+                sendEmail(context, smtpHostAccount, smtpPortAccount, nameAccount, passwordAccount, encryptedConnectionType, fromAddressAccount, subject, recipients, inlineForms, attachments, attachmentFiles, customAttachments);
             }
         } catch (Exception e) {
             String errorMessage = getString("mail.failed.to.send.mail") + " : " + e.toString();
@@ -180,7 +188,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
         }
     }
 
-    private void sendEmail(ExecutionContext context, String smtpHostAccount, String smtpPortAccount, String userName, String password, String encryptedConnectionType, String fromAddressAccount, String subject, Map<String, Message.RecipientType> recipientEmails, List<String> inlineForms, List<EmailSender.AttachmentProperties> attachments, Map<ByteArray, String> attachmentFiles) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
+    private void sendEmail(ExecutionContext context, String smtpHostAccount, String smtpPortAccount, String userName, String password, String encryptedConnectionType, String fromAddressAccount, String subject, Map<String, Message.RecipientType> recipientEmails, List<String> inlineForms, List<EmailSender.AttachmentProperties> attachments, Map<ByteArray, String> attachmentFiles, Map<ByteArray, Pair<String, String>> customAttachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         if (smtpHostAccount == null || fromAddressAccount == null) {
             logError(context, getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent"));
             return;
@@ -201,7 +209,7 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 recipientEmails
         );
 
-        sender.sendMail(context, subject, inlineForms, attachments, attachmentFiles);
+        sender.sendMail(context, subject, inlineForms, attachments, attachmentFiles, customAttachments);
     }
 
     private Map<String, Message.RecipientType> getRecipientEmails(ExecutionContext context) throws SQLException, SQLHandledException {
@@ -229,6 +237,25 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
             }
         }
         return recipientEmails;
+    }
+    
+    private Map<ByteArray, Pair<String, String>> createCustomAttachments(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        Map<ByteArray, Pair<String, String>> result = new LinkedHashMap<>();
+        for (int i = 0; i < attachFileNames.size(); i++) {
+            String name;
+            CalcPropertyInterfaceImplement attachFileNameProp = attachFileNames.get(i);
+            if (attachFileNameProp != null) {
+                 name = (String) attachFileNameProp.read(context, context.getKeys());
+            } else {
+                 name = "attachment" + i;
+            }
+            
+            byte[] file = (byte[]) attachFiles.get(i).read(context, context.getKeys());
+            String extension = BaseUtils.getExtension(file);
+            
+            result.put(new ByteArray(BaseUtils.getFile(file)), new Pair<>(name + "." + extension, extension));
+        }
+        return result;
     }
 
     private EmailSender.AttachmentProperties createAttachment(FormEntity form, AttachmentFormat attachmentFormat, CalcPropertyInterfaceImplement attachmentNameProp, ExecutionContext context, String filePath) throws SQLException, SQLHandledException {

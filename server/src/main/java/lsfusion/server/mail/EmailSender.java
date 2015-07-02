@@ -4,6 +4,7 @@ package lsfusion.server.mail;
 import com.sun.mail.smtp.SMTPMessage;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ByteArray;
+import lsfusion.base.Pair;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.linear.LCP;
@@ -129,6 +130,15 @@ public class EmailSender {
                 return "text/html; charset=utf-8";
         }
     }
+    
+    private String getMimeType(String extension) {
+        switch (extension) {
+            case "csv":
+                return "text/csv; charset=utf-8";
+            default:
+                return "text/html; charset=utf-8"; 
+        }
+    }
 
     public void attachFile(AttachmentProperties attachment) throws MessagingException, IOException {
         FileDataSource fds = new FileDataSource(attachment.fileName);
@@ -139,6 +149,11 @@ public class EmailSender {
     public void attachFile(byte[] buf, String attachmentName) throws MessagingException {
         ByteArrayDataSource dataSource = new ByteArrayDataSource(buf, getMimeType(AttachmentFormat.PDF));
         attachFile(dataSource, attachmentName);
+    }
+    
+    public void attachFile(byte[] buf, String name , String extension) throws MessagingException {
+        ByteArrayDataSource dataSource = new ByteArrayDataSource(buf, getMimeType(extension));
+        attachFile(dataSource, name);    
     }
 
     private void attachFile(DataSource source, String attachmentName) throws MessagingException {
@@ -168,7 +183,7 @@ public class EmailSender {
         return result;
     }
 
-    public void sendMail(ExecutionContext context, String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
+    public void sendMail(ExecutionContext context, String subject, List<String> inlineFiles, List<AttachmentProperties> attachments, Map<ByteArray, String> files, Map<ByteArray, Pair<String, String>> customAttachments) throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException {
         assert inlineFiles != null && attachments != null && files != null;
 
         setMessageHeading();
@@ -181,6 +196,9 @@ public class EmailSender {
         }
         for (Map.Entry<ByteArray, String> entry : files.entrySet()) {
             attachFile(entry.getKey().array, entry.getValue());
+        }
+        for (Map.Entry<ByteArray, Pair<String, String>> entry : customAttachments.entrySet()) {
+            attachFile(entry.getKey().array, entry.getValue().first, entry.getValue().second);
         }
 
         message.setContent(mp);

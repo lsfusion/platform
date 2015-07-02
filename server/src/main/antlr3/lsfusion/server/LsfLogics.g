@@ -2181,10 +2181,12 @@ emailActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic]
 	List<OrderedMap<String, LPWithParams>> mapObjects = new ArrayList<OrderedMap<String, LPWithParams>>();
 	List<LPWithParams> attachNames = new ArrayList<LPWithParams>();
 	List<AttachmentFormat> attachFormats = new ArrayList<AttachmentFormat>();
+	List<LPWithParams> attachFileNames = new ArrayList<LPWithParams>();
+	List<LPWithParams> attachFiles = new ArrayList<LPWithParams>();
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedEmailProp(fromProp, subjProp, recipTypes, recipProps, forms, formTypes, mapObjects, attachNames, attachFormats);
+		$property = self.addScriptedEmailProp(fromProp, subjProp, recipTypes, recipProps, forms, formTypes, mapObjects, attachNames, attachFormats, attachFileNames, attachFiles);
 	}
 }
 	:	'EMAIL'
@@ -2207,6 +2209,14 @@ emailActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic]
 				
 				form=compoundID { forms.add($form.sid); }
 				objects=emailActionFormObjects[context, dynamic] { mapObjects.add($objects.mapObjects); }
+			)
+		|	(	'ATTACH' 'FILE'
+				
+				attachFile=propertyExpression[context, dynamic] { attachFiles.add($attachFile.property); }
+				
+				{ LPWithParams attachFileName = null;}
+				('NAME' attachFileNameExpr=propertyExpression[context, dynamic] { attachFileName = $attachFileNameExpr.property; } )?
+				{ attachFileNames.add(attachFileName); }
 			)
 		)*
 	;
