@@ -13,5 +13,5 @@ phoneContact 'Телефон' = DATA VARSTRING[100] (Contact) MINCHARWIDTH 10;
 postAddressContact 'Почтовый адрес' = DATA VARSTRING[150] (Contact) MINCHARWIDTH 20;
 birthdayContact 'День рождения' = DATA DATE (Contact);
 
-emailContact 'E-mail'= DATA VARSTRING[200] (Contact);
+emailContact 'E-mail'= DATA VARSTRING[400] (Contact) PREFCHARWIDTH 40 MINCHARWIDTH 20;
 contactEmail (email) = GROUP MAX contact BY emailContact(contact);
