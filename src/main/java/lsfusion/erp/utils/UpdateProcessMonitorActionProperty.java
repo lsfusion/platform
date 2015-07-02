@@ -363,7 +363,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             Integer processId = (Integer) entry.get("pid");
             String address = trim((String) entry.get("client_addr"));
             Timestamp dateTime = (Timestamp) entry.get("query_start");
-            String state = trim((String) entry.get("state"));
+            String state = trim((String) entry.get("state"), "");
             if (!query.equals(originalQuery)) {
 
                 List<Object> sessionThread = sessionThreadMap.get(processId);
@@ -499,6 +499,10 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
     private String trim(String input) {
         return input == null ? null : input.trim();
+    }
+
+    protected String trim(String input, String defaultValue) {
+        return input == null ? defaultValue : input.trim();
     }
 
     protected String trim(String input, Integer length) {
