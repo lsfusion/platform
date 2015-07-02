@@ -143,7 +143,7 @@ public class Settings {
 
     private int limitIncrementCoeff = 1;
 
-    private int limitHintIncrementComplexity = 50;
+    private int limitHintIncrementComplexity = 75;
 
     private double limitComplexityGrowthCoeff = 1.5;
 
