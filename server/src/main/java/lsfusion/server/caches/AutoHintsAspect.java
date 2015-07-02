@@ -231,7 +231,7 @@ public class AutoHintsAspect {
             return result;
 
         if(calcType.isExpr() && catchHint != null && !propChanges.isEmpty() // проверка на пустоту для оптимизации при старте 
-                && catchHint.allowHintIncrement(property)) { // неправильно так как может быть не changed
+                && catchHint.allowHintIncrement(property) && !property.isNoHint()) { // неправильно так как может быть не changed
             Where changed = null;
             if(queryType.needChange())
                 changed = result.getExpr("changed").getWhere();

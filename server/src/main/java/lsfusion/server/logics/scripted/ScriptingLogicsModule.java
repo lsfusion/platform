@@ -712,7 +712,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return paramClasses;
     }
     
-    public void addSettingsToProperty(LP property, String name, String caption, List<TypedParameter> params, List<ResolveClassSet> signature, String groupName, boolean isPersistent, boolean isComplex, String tableName, BooleanDebug notNull, BooleanDebug notNullResolve, Event notNullEvent) throws ScriptingErrorLog.SemanticErrorException {
+    public void addSettingsToProperty(LP property, String name, String caption, List<TypedParameter> params, List<ResolveClassSet> signature, String groupName, boolean isPersistent, boolean isComplex, boolean noHint, String tableName, BooleanDebug notNull, BooleanDebug notNullResolve, Event notNullEvent) throws ScriptingErrorLog.SemanticErrorException {
         checkDuplicateProperty(name, signature);
        
         List<String> paramNames = getParamNamesFromTypedParams(params);
@@ -746,6 +746,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if(isComplex)
             ((LCP<?>)property).property.complex = true;
+
+        if(noHint)
+            ((LCP<?>)property).property.noHint = true;
 
         if (notNull != null) {
             setNotNull((LCP)property, notNull.debugInfo, notNullEvent, 

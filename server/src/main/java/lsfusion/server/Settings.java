@@ -143,7 +143,7 @@ public class Settings {
 
     private int limitIncrementCoeff = 1;
 
-    private int limitHintIncrementComplexity = 75;
+    private int limitHintIncrementComplexity = 50; // есть проблема когда идет G(очень большого числа данных) = значение, статистика нормальная, сложность большая, начинает hint'ить что мешает проталкиванию
 
     private double limitComplexityGrowthCoeff = 1.5;
 

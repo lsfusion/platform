@@ -1703,6 +1703,7 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 	String table = null;
 	boolean isPersistent = false;
 	boolean isComplex = false;
+	boolean noHint = false;
 	Boolean isLoggable = null;
 	BooleanDebug notNull = null;
 	BooleanDebug notNullResolve = null;
@@ -1710,13 +1711,14 @@ propertyOptions[LP property, String propertyName, String caption, List<TypedPara
 }
 @after {
 	if (inPropParseState() && property != null) { // not native
-		self.addSettingsToProperty(property, propertyName, caption, context, signature, groupName, isPersistent, isComplex, table, notNull, notNullResolve, notNullEvent);	
+		self.addSettingsToProperty(property, propertyName, caption, context, signature, groupName, isPersistent, isComplex, noHint, table, notNull, notNullResolve, notNullEvent);
 		self.makeLoggable(property, isLoggable);
 	}
 }
 	: 	(	'IN' name=compoundID { groupName = $name.sid; }
 		|	'PERSISTENT' { isPersistent = true; }
 		|	'COMPLEX' { isComplex = true; }
+		|	'NOHINT' { noHint = true; }
 		|	'TABLE' tbl = compoundID { table = $tbl.sid; }
 		|	shortcutSetting [property, caption != null ? caption : propertyName]
 		|	asEditActionSetting [property]

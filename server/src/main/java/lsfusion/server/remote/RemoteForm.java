@@ -436,16 +436,18 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             @Override
             public void run() throws Exception {
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
-                ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
+                if(propertyDraw != null) {
+                    ImMap<ObjectInstance, DataObject> keys = deserializePropertyKeys(propertyDraw, columnKeys);
 
-                Order order = Order.deserialize(modiType);
-                
-                if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("changePropertyOrder: [ID: %1$d]", propertyID));
-                    logger.trace(String.format("new order: %s", order.toString()));
+                    Order order = Order.deserialize(modiType);
+
+                    if (logger.isTraceEnabled()) {
+                        logger.trace(String.format("changePropertyOrder: [ID: %1$d]", propertyID));
+                        logger.trace(String.format("new order: %s", order.toString()));
+                    }
+
+                    propertyDraw.toDraw.changeOrder(propertyDraw.propertyObject.getDrawProperty().getRemappedPropertyObject(keys), Order.deserialize(modiType));
                 }
-                
-                propertyDraw.toDraw.changeOrder(propertyDraw.propertyObject.getDrawProperty().getRemappedPropertyObject(keys), Order.deserialize(modiType));
             }
         });
     }

@@ -675,6 +675,18 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return false;
     }
 
+    public boolean noHint = false;
+    @IdentityLazy
+    public boolean isNoHint() {
+        if(noHint)
+            return true;
+
+        for(CalcProperty property : getDepends())
+            if(property.isNoHint())
+                return true;
+        return false;
+    }
+
     private final AddValue<CalcProperty, Boolean> addSetOrDropped = new SymmAddValue<CalcProperty, Boolean>() {
         public Boolean addValue(CalcProperty key, Boolean prevValue, Boolean newValue) {
             if(prevValue.equals(newValue))
