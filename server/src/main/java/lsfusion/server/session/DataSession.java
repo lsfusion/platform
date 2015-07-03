@@ -1235,7 +1235,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     // узнает список изменений произошедших без него у других сессий
     public ChangedData updateExternal(FormInstance<?> form) throws SQLException {
         assert this == form.session;
-        return new ChangedData(changes.update(this, form), false);
+        return new ChangedData(changes.update(this, form));
     }
 
     // узнает список изменений произошедших без него
@@ -1262,7 +1262,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
         incrementChanges.put(form,new UpdateChanges());
 
-        return new ChangedData(CalcProperty.getDependsOnSet(incrementChange.properties), wasRestart);
+        return new ChangedData(incrementChange.properties, wasRestart);
     }
 
     public String applyMessage(BusinessLogics<?> BL) throws SQLException, SQLHandledException {

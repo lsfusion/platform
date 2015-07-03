@@ -679,7 +679,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
             environmentIncrement.add(filterProperty.property, new PropertyChange<ClassPropertyInterface>(filterProperty.mapping.join(mapKeys), ValueExpr.TRUE, getWhere(mapKeys, modifier, reallyChanged)));
 
-            changedProps.set(changedProps.result.merge(new ChangedData(CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty)filterProperty.property)), false)));
+            changedProps.set(changedProps.result.merge(new ChangedData(SetFact.singleton((CalcProperty)filterProperty.property), false)));
         }
 
         boolean updateOrders = false;
@@ -745,7 +745,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
             }
             environmentIncrement.add(orderProperty.property, change);
 
-            changedProps.set(changedProps.result.merge(new ChangedData(CalcProperty.getDependsOnSet(SetFact.singleton((CalcProperty) orderProperty.property)), false)));
+            changedProps.set(changedProps.result.merge(new ChangedData(SetFact.singleton((CalcProperty) orderProperty.property), false)));
         }
 
         boolean updateKeys = updateFilters || updateOrders;

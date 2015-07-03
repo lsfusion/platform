@@ -101,6 +101,9 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
     }
 
     public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) throws SQLException, SQLHandledException {
+        if(changedProps.externalProps.contains(property))
+            return true;
+
         if(!changedProps.props.contains(property))
             return false;
         

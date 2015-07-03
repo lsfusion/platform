@@ -10,7 +10,7 @@ public interface ChangesController {
 
     void regChange(ImSet<CalcProperty> changes, DataSession session);
 
-    FunctionSet<CalcProperty> update(DataSession session, FormInstance form);
+    ImSet<CalcProperty> update(DataSession session, FormInstance form);
 
     void registerForm(FormInstance form);
 

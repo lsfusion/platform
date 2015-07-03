@@ -336,7 +336,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             weakThis.get().regChange(changes, session);
         }
 
-        public FunctionSet<CalcProperty> update(DataSession session, FormInstance form) {
+        public ImSet<CalcProperty> update(DataSession session, FormInstance form) {
             return weakThis.get().update(session, form);
         }
 
@@ -835,7 +835,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             }
         }
 
-        public synchronized FunctionSet<CalcProperty> update(DataSession session, FormInstance form) {
+        public synchronized ImSet<CalcProperty> update(DataSession session, FormInstance form) {
             if(!Settings.get().getUseUserChangesSync())
                 return SetFact.EMPTY();
 

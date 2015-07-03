@@ -301,7 +301,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     public void regChange(ImSet<CalcProperty> changes, DataSession session) {
                     }
 
-                    public FunctionSet<CalcProperty> update(DataSession session, FormInstance form) {
+                    public ImSet<CalcProperty> update(DataSession session, FormInstance form) {
                         return SetFact.<CalcProperty>EMPTY();
                     }
 

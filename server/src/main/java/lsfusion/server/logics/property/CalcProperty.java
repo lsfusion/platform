@@ -64,6 +64,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
     private CalcPropertyDebugInfo debugInfo;
 
     public static FunctionSet<CalcProperty> getDependsOnSet(final FunctionSet<CalcProperty> check) {
+        if(check.isEmpty())
+            return check;
         return new FunctionSet<CalcProperty>() {
             public boolean contains(CalcProperty element) {
                 return depends(element, check);

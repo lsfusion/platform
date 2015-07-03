@@ -12,6 +12,7 @@ import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.session.SessionChanges;
 
 import java.lang.ref.WeakReference;
@@ -107,7 +108,9 @@ public class CustomObjectInstance extends ObjectInstance {
     }
 
     public boolean classChanged(ChangedData changedProps) {
-        return changedProps.props.contains(gridClass.getProperty());
+        IsClassProperty property = gridClass.getProperty();
+        return changedProps.externalProps.contains(property) || changedProps.props.contains(property);
+
     }
 
     public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {
