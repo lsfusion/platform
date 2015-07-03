@@ -954,7 +954,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if (property instanceof ActionProperty && !((ActionProperty) property).getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
                 ImMap<CalcProperty, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++) // вообще говоря DataProperty и IsClassProperty
-                    change.getKey(i).addActionChangeProp(new Pair<Property<?>, LinkType>(property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
+                    change.getKey(i).addActionChangeProp(new Pair<Property<?>, LinkType>((ActionProperty)property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
             }
         }
     }
