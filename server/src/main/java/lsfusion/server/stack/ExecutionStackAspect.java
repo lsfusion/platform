@@ -15,6 +15,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ConcurrentModificationException;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Stack;
@@ -121,27 +122,43 @@ public class ExecutionStackAspect {
     }
     
     public static String getStackString() {
-        return getStackString(Thread.currentThread());    
+        return getStackString(Thread.currentThread(), false); // не concurrent по определению
     }
     
-    public static String getStackString(Thread thread) {
+    public static String getStackString(Thread thread, boolean checkConcurrent) {
         String result = "";
         Stack<ExecutionStackItem> stack = getStack(thread);
         if (stack != null) {
-            ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.size());
-            while (itemListIterator.hasPrevious()) {
-                ExecutionStackItem item = itemListIterator.previous();
-                if (presentItem(item)) {
-                    if (!result.isEmpty()) {
-                        result += "\n";
+            if(checkConcurrent) {
+                while (true) {
+                    try {
+                        result = getStackString(stack);
+                        break;
+                    } catch (ConcurrentModificationException e) {
                     }
-                    result += item;
                 }
+            } else {
+                result = getStackString(stack);
             }
         }
         return BaseUtils.nullEmpty(result);    
     }
-    
+
+    private static String getStackString(Stack<ExecutionStackItem> stack) {
+        String result = "";
+        ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.size());
+        while (itemListIterator.hasPrevious()) {
+            ExecutionStackItem item = itemListIterator.previous();
+            if (presentItem(item)) {
+                if (!result.isEmpty()) {
+                    result += "\n";
+                }
+                result += item;
+            }
+        }
+        return result;
+    }
+
     private static boolean presentItem(ExecutionStackItem item) {
 //        return true;
         return !isLSFAction(item) || ((ExecuteActionStackItem) item).isInDelegate();

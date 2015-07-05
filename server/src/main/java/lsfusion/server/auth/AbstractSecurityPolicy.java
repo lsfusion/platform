@@ -1,5 +1,7 @@
 package lsfusion.server.auth;
 
+import lsfusion.server.ServerLoggers;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,10 +53,14 @@ public class AbstractSecurityPolicy<T> {
 
     public boolean checkPermission(T obj) {
 
-        if (permitted.contains(obj)) return true;
-        if (denied.contains(obj)) return false;
-        if (defaultPermission != null)
-            return defaultPermission;
-        else return true;
+        if (permitted.contains(obj))
+            return true;
+        if (denied.contains(obj)) {
+            ServerLoggers.securityLogger.info("Denied : " + obj);
+            return false;
+        }
+        if (defaultPermission != null && !defaultPermission)
+            ServerLoggers.securityLogger.info("No default permission : " + obj);
+        return true;
     }
 }
