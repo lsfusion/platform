@@ -476,7 +476,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
             String computer = logInfo == null ? null : logInfo.hostnameComputer;
             String user = logInfo == null ? null : logInfo.userName;
-            String lsfStack = thread != null ? ExecutionStackAspect.getStackString(thread) : null;
+            String lsfStack = thread != null ? ExecutionStackAspect.getStackString(thread, true) : null;
 
             resultMap.put(String.valueOf(id), Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId, lockOwnerName, computer, user, lsfStack));
         }
