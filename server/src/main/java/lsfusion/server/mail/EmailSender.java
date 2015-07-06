@@ -297,7 +297,7 @@ public class EmailSender {
                         } catch (MessagingException e) {
                             send = false;
                             if (count < 40) {
-                                logger.info(ServerResourceBundle.getString("mail.unsuccessful.attempt.to.send.mail") + " " + messageInfo);
+                                logger.info(ServerResourceBundle.getString("mail.unsuccessful.attempt.to.send.mail") + " " + e.getMessage() + " " + messageInfo);
                                 try {
                                     Thread.sleep(30000);
                                 } catch (InterruptedException ignored) {
