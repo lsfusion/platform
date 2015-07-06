@@ -59,8 +59,10 @@ public class AbstractSecurityPolicy<T> {
             ServerLoggers.securityLogger.info("Denied : " + obj);
             return false;
         }
-        if (defaultPermission != null && !defaultPermission)
+        if (defaultPermission != null && !defaultPermission) {
             ServerLoggers.securityLogger.info("No default permission : " + obj);
+            return false;
+        }
         return true;
     }
 }
