@@ -55,6 +55,7 @@ captionPropertyScheduledTaskDetail 'Свойство' (scheduledTaskDetail) = ca
 canonicalNamePropertyScheduledTaskDetail 'Код свойства' (scheduledTaskDetail) = canonicalNameProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
 classPropertyScheduledTaskDetail 'Класс свойства' (scheduledTaskDetail) = classProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
 returnPropertyScheduledTaskDetail 'Возвращаемый класс' (scheduledTaskDetail) = returnProperty(propertyScheduledTaskDetail(scheduledTaskDetail));
+timeoutScheduledTaskDetail 'Выполнять не дольше (секунд)' = DATA INTEGER (ScheduledTaskDetail);
 ignoreExceptionsScheduledTaskDetail 'Игнорировать ошибки' = DATA BOOLEAN (ScheduledTaskDetail);
 
 CLASS ScheduledTaskLog 'Лог планировщика';
@@ -88,7 +89,8 @@ WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t
  DO EXEC runSetupScheduler();
  
 WHEN ((CHANGED (activeScheduledTaskDetail(td)) OR CHANGED (orderScheduledTaskDetail(td)) OR CHANGED(scriptScheduledTaskDetail(td)) 
-    OR CHANGED (scheduledTaskScheduledTaskDetail(td)) OR CHANGED (propertyScheduledTaskDetail(td)) OR CHANGED (ignoreExceptionsScheduledTaskDetail(td)))
+    OR CHANGED (scheduledTaskScheduledTaskDetail(td)) OR CHANGED (propertyScheduledTaskDetail(td)) 
+    OR CHANGED (ignoreExceptionsScheduledTaskDetail(td)) OR CHANGED (timeoutScheduledTaskDetail(td)))
     AND activeScheduledTask(scheduledTaskScheduledTaskDetail(td)))
  DO EXEC runSetupScheduler();
   
@@ -104,7 +106,8 @@ FORM scheduledTask 'Планировщик'
          
     OBJECTS td=ScheduledTaskDetail
     PROPERTIES (td) activeScheduledTaskDetail, ignoreExceptionsScheduledTaskDetail, orderScheduledTaskDetail, captionPropertyScheduledTaskDetail, 
-    canonicalNamePropertyScheduledTaskDetail, classPropertyScheduledTaskDetail, returnPropertyScheduledTaskDetail, scriptScheduledTaskDetail FORCE PANEL
+                    canonicalNamePropertyScheduledTaskDetail, classPropertyScheduledTaskDetail, returnPropertyScheduledTaskDetail, 
+                    timeoutScheduledTaskDetail, scriptScheduledTaskDetail FORCE PANEL
     PROPERTIES (td) ADDOBJ, DELETESESSION
     
     OBJECTS tl=ScheduledTaskLog
