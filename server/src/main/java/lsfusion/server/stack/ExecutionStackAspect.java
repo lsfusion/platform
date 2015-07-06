@@ -1,6 +1,7 @@
 package lsfusion.server.stack;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ConcurrentWeakHashMap;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
@@ -23,8 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Aspect
 public class ExecutionStackAspect {
-    private static ConcurrentHashMap<Thread, Stack<ExecutionStackItem>> executionStack = new ConcurrentHashMap<>(); 
-    private static Map<Throwable, String> exceptionCauseMap = new ConcurrentHashMap<>(); 
+    private static ConcurrentWeakHashMap<Thread, Stack<ExecutionStackItem>> executionStack = new ConcurrentWeakHashMap<>();
+    private static ConcurrentWeakHashMap<Throwable, String> exceptionCauseMap = new ConcurrentWeakHashMap<>();
     
     @Around("execution(lsfusion.server.logics.property.actions.flow.FlowResult lsfusion.server.logics.property.ActionProperty.execute(lsfusion.server.logics.property.ExecutionContext)) && args(executionContext)")
     public Object execution(final ProceedingJoinPoint joinPoint, final ExecutionContext executionContext) throws Throwable {
