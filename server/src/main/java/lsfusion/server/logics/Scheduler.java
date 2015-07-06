@@ -394,7 +394,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                         BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) beforeStartLogSession, currentScheduledTaskLogStartObject);
                         BL.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", beforeStartLogSession, currentScheduledTaskLogStartObject);
                         BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), beforeStartLogSession, currentScheduledTaskLogStartObject);
-                        BL.schedulerLM.resultScheduledTaskLog.change("Запущено", beforeStartLogSession, currentScheduledTaskLogStartObject);
+                        BL.schedulerLM.resultScheduledTaskLog.change("Запущено" + (script == null ? "" : (" " + BaseUtils.truncate(script, 191))), beforeStartLogSession, currentScheduledTaskLogStartObject);
                         beforeStartLogSession.apply(BL);
 
                         try (DataSession mainSession = dbManager.createSession()) {
