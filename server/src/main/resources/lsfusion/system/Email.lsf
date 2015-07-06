@@ -61,6 +61,7 @@ nameReceiveAccountTypeAccount 'Тип учётной записи' (account) = s
 blindCarbonCopyAccount 'Копия (BCC)'= DATA VARSTRING[50](Account);
 deleteMessagesAccount 'Удалять сообщения с сервера' = DATA BOOLEAN(Account);
 disableAccount 'Отключить отсылку и получение почты' = DATA BOOLEAN(Account);
+enableAccount 'Включить отсылку и получение почты' (account) = NOT disableAccount(account) AND account IS Account;
 
 encryptedConnectionTypeAccount 'Тип шифрованного подключения' = DATA EncryptedConnectionTypeStatus(Account);
 nameEncryptedConnectionTypeAccount 'Тип шифрованного подключения' (account) = staticCaption(encryptedConnectionTypeAccount(account)) PREFCHARWIDTH 3;
@@ -81,7 +82,8 @@ messageEmail 'Сообщение' = DATA RICHTEXT (Email);
 emlFileEmail 'Файл EML' = DATA CUSTOMFILE (Email);
 openEMLFileEmail 'Открыть файл EML' (email) = ACTION OPENFILE emlFileEmail (email);
 
-receiveEmailAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
+receiveEmailAction 'Получить всю почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailActionProperty' ();
+receiveEmailAccountAction 'Получить почту' = ACTION CUSTOM 'lsfusion.server.mail.ReceiveEmailAccountActionProperty' (Account);
 
 emailSent 'Отправлено' = DATA LOCAL BOOLEAN ();
 
@@ -146,7 +148,7 @@ FORM mail 'Почта'
     PROPERTIES(e) subjectEmail, fromAddressEmail, toAddressEmail, dateTimeSentEmail, 
                    dateTimeReceivedEmail, openEMLFileEmail, messageEmail READONLY FORCE PANEL
     PROPERTIES(e) DELETE
-    PROPERTIES() FORCE PANEL receiveEmailAction TODRAW e 
+    PROPERTIES(a) FORCE PANEL receiveEmailAccountAction TODRAW e 
     FILTERS accountEmail(e)==a
                     
     OBJECTS ae=AttachmentEmail

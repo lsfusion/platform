@@ -1,11 +1,16 @@
 package lsfusion.server.mail;
 
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.EmailLogicsModule;
-import lsfusion.server.logics.NullValue;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -38,32 +43,43 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
 
         if(context.getDbManager().isServer()) {
 
-            try {
+            KeyExpr accountExpr = new KeyExpr("account");
+            ImRevMap<Object, KeyExpr> accountKeys = MapFact.singletonRev((Object) "account", accountExpr);
 
-                ObjectValue accountObject = findProperty("defaultInboxAccount").readClasses(context);
-                if (accountObject instanceof NullValue) {
-                    logError(context, getString("mail.default.email.not.specified"));
-                    return;
+            QueryBuilder<Object, Object> accountQuery = new QueryBuilder<>(accountKeys);
+            accountQuery.addProperty("receiveHostAccount", emailLM.receiveHostAccount.getExpr(accountExpr));
+            accountQuery.addProperty("receivePortAccount", emailLM.receivePortAccount.getExpr(accountExpr));
+            accountQuery.addProperty("nameAccount", emailLM.nameAccount.getExpr(accountExpr));
+            accountQuery.addProperty("passwordAccount", emailLM.passwordAccount.getExpr(accountExpr));
+            accountQuery.addProperty("nameReceiveAccountTypeAccount", emailLM.nameReceiveAccountTypeAccount.getExpr(accountExpr));
+            accountQuery.addProperty("deleteMessagesAccount", emailLM.deleteMessagesAccount.getExpr(accountExpr));
+            accountQuery.and(emailLM.enableAccount.getExpr(accountExpr).getWhere());
+
+            ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> accountResult = accountQuery.executeClasses(context);
+
+            if(accountResult.isEmpty())
+                logError(context, getString("mail.disabled"));
+
+            for (int i = 0, size = accountResult.size(); i < size; i++) {
+                String nameAccount = null;
+                try {
+                    DataObject accountObject = accountResult.getKey(i).get("account");
+                    ImMap<Object, ObjectValue> accountValues = accountResult.getValue(i);
+                    String receiveHostAccount = (String) accountValues.get("receiveHostAccount").getValue();
+                    Integer receivePortAccount = (Integer) accountValues.get("receivePortAccount").getValue();
+                    nameAccount = (String) accountValues.get("nameAccount").getValue();
+                    String passwordAccount = (String) accountValues.get("passwordAccount").getValue();
+                    String nameReceiveAccountTypeAccount = (String) accountValues.get("nameReceiveAccountTypeAccount").getValue();
+                    boolean isPop3Account = nameReceiveAccountTypeAccount == null || nullTrim(nameReceiveAccountTypeAccount).equals("POP3");
+                    boolean deleteMessagesAccount = accountValues.get("deleteMessagesAccount") != null;
+
+                    receiveEmail(context, accountObject, receiveHostAccount, receivePortAccount, nameAccount, passwordAccount,
+                            isPop3Account, deleteMessagesAccount);
+
+                } catch (Exception e) {
+                    logError(context, getString("mail.failed.to.receive.mail") + " " + nameAccount + " : " + e.toString());
+                    e.printStackTrace();
                 }
-                if (emailLM.disableAccount.read(context, accountObject) != null) {
-                    logError(context, getString("mail.disabled"));
-                    return;
-                }
-
-                String receiveHostAccount = (String) emailLM.receiveHostAccount.read(context, accountObject);
-                Integer receivePortAccount = (Integer) emailLM.receivePortAccount.read(context, accountObject);
-                String nameAccount = (String) emailLM.nameAccount.read(context, accountObject);
-                String passwordAccount = (String) emailLM.passwordAccount.read(context, accountObject);
-                String nameReceiveAccountTypeAccount = (String) emailLM.nameReceiveAccountTypeAccount.read(context, accountObject);
-                boolean isPop3Account = nameReceiveAccountTypeAccount == null || nullTrim(nameReceiveAccountTypeAccount).equals("POP3");
-                boolean deleteMessagesAccount = emailLM.deleteMessagesAccount.read(context, accountObject) != null;
-
-                receiveEmail(context, (DataObject) accountObject, receiveHostAccount, receivePortAccount, nameAccount, passwordAccount,
-                        isPop3Account, deleteMessagesAccount);
-
-            } catch (Exception e) {
-                logError(context, getString("mail.failed.to.receive.mail") + " : " + e.toString());
-                e.printStackTrace();
             }
         }
     }

@@ -47,6 +47,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LCP blindCarbonCopyAccount;
     public LCP fromAddressAccount;
     public LCP disableAccount;
+    public LCP enableAccount;
 
     public LAP emailUserPassUser;
 
@@ -93,6 +94,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         blindCarbonCopyAccount = findProperty("blindCarbonCopyAccount");
 
         disableAccount = findProperty("disableAccount");
+        enableAccount = findProperty("enableAccount");
 
         emailUserPassUser = findAction("emailUserPassUser");      
         
