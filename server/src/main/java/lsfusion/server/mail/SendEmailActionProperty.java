@@ -251,9 +251,10 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
             }
             
             byte[] file = (byte[]) attachFiles.get(i).read(context, context.getKeys());
-            String extension = BaseUtils.getExtension(file);
-            
-            result.put(new ByteArray(BaseUtils.getFile(file)), new Pair<>(name + "." + extension, extension));
+            if (file != null) {
+                String extension = BaseUtils.getExtension(file);
+                result.put(new ByteArray(BaseUtils.getFile(file)), new Pair<>(name + "." + extension, extension));
+            }
         }
         return result;
     }
