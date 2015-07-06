@@ -291,7 +291,7 @@
         <appender-ref ref="sqllog"/>
     </category>
 
-    <category name="SecurityLogger">
+    <category name="SecurityLogger" additivity="false">
         <priority value="INFO"/>
         <appender-ref ref="securitylog"/>
     </category>
