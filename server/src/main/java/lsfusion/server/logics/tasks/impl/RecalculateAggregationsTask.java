@@ -61,10 +61,14 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
     protected ImSet<AggregateProperty> getDepends(CalcProperty key) {
         ImSet<AggregateProperty> depends = SetFact.EMPTY();
         for (CalcProperty property : (Iterable<CalcProperty>) key.getDepends()) {
-            if (property instanceof AggregateProperty && property.isStored())
+            if (property instanceof AggregateProperty && property.isStored() && !depends.contains((AggregateProperty) property))
                 depends = depends.addExcl((AggregateProperty) property);
-            else
-                depends = depends.addExcl(getDepends(property));
+            else {
+                ImSet<AggregateProperty> children = getDepends(property);
+                for(AggregateProperty child : children)
+                    if(!depends.contains(child) && child != null)
+                        depends = depends.addExcl(child);
+            }
         }
         return depends;
     }

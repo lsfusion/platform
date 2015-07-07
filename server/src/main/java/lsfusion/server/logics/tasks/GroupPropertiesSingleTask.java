@@ -16,7 +16,7 @@ public abstract class GroupPropertiesSingleTask extends GroupSingleTask<Aggregat
 
     @Override
     protected String getElementCaption(AggregateProperty element) {
-        return null;
+        return element == null ? null : element.getSID();
     }
 
     @Override

@@ -42,7 +42,7 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
     @Override
     protected Pair<Iterable<SingleProgramTask>, Iterable<SingleProgramTask>> initTasks() {
         MRevMap<T, SingleProgramTask> mMapTasks = MapFact.mRevMap();
-        final BusinessLogics<?> BL = (BusinessLogics<?>) getBL();
+        //final BusinessLogics<?> BL = (BusinessLogics<?>) getBL();
         List<T> elements = getElements();
         final int elementCount = elements.size();
         final AtomicInteger elementOrder = new AtomicInteger(0);
@@ -107,8 +107,10 @@ public abstract class GroupSingleTask<T> extends GroupProgramTask {
             } else {
                 for (T reqModule : dependElements) {
                     SingleProgramTask depTask = mapTasks.get(reqModule);
-                    task.addDependency(depTask);
-                    mDepTasks.add(depTask);
+                    if (depTask != null) {
+                        task.addDependency(depTask);
+                        mDepTasks.add(depTask);
+                    }
                 }
             }
         }
