@@ -62,9 +62,9 @@ public class EmailReceiver {
 
     public void importEmails(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
-        List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
-        List<ImportField> fields = new ArrayList<ImportField>();
-        List<ImportKey<?>> keys = new ArrayList<ImportKey<?>>();
+        List<ImportProperty<?>> props = new ArrayList<>();
+        List<ImportField> fields = new ArrayList<>();
+        List<ImportKey<?>> keys = new ArrayList<>();
 
         ImportField idEmailField = new ImportField(LM.findProperty("idEmail"));
         ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
@@ -115,9 +115,9 @@ public class EmailReceiver {
 
     public void importAttachments(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
-        List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
-        List<ImportField> fields = new ArrayList<ImportField>();
-        List<ImportKey<?>> keys = new ArrayList<ImportKey<?>>();
+        List<ImportProperty<?>> props = new ArrayList<>();
+        List<ImportField> fields = new ArrayList<>();
+        List<ImportKey<?>> keys = new ArrayList<>();
 
         ImportField idEmailField = new ImportField(LM.findProperty("idEmail"));
         ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
@@ -156,8 +156,8 @@ public class EmailReceiver {
 
     public List<List<List<Object>>> downloadEmailList() throws MessagingException, SQLException, IOException, GeneralSecurityException {
 
-        List<List<Object>> dataEmails = new ArrayList<List<Object>>();
-        List<List<Object>> dataAttachments = new ArrayList<List<Object>>();
+        List<List<Object>> dataEmails = new ArrayList<>();
+        List<List<Object>> dataAttachments = new ArrayList<>();
         if(!isPOP3) { //imaps
             MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
             socketFactory.setTrustAllHosts(true);
@@ -177,21 +177,20 @@ public class EmailReceiver {
         Timestamp dateTimeReceivedEmail = new Timestamp(Calendar.getInstance().getTime().getTime());
 
         Message[] messages = emailFolder.getMessages();
-        for (int i = 0; i < messages.length; i++) {
-            Message message = messages[i];
+        for (Message message : messages) {
             if (deleteMessagesAccount)
                 message.setFlag(Flags.Flag.DELETED, true);
-            Timestamp dateTimeSentEmail = new Timestamp(message.getSentDate().getTime());
+            Timestamp dateTimeSentEmail = getSentDate(message);
             String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
-            String idEmail = String.valueOf(dateTimeSentEmail.getTime()) + fromAddressEmail;
+            String idEmail = (dateTimeSentEmail == null ? "" : dateTimeSentEmail.getTime()) + fromAddressEmail;
             String subjectEmail = message.getSubject();
             Object messageContent = getEmailContent(message);
-            MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) : 
-                                         messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, message.getFileName()) : 
-                                         messageContent instanceof String ? new MultipartBody((String) message.getContent(), null) : null;
-            if(messageEmail == null) {
-                messageEmail = new MultipartBody(String.valueOf(message.getContent()), null);
-                ServerLoggers.systemLogger.error("Warning: missing attachment '" + String.valueOf(message.getContent() + "' from email '" + subjectEmail + "'"));
+            MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) :
+                    messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, message.getFileName()) :
+                            messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
+            if (messageEmail == null) {
+                messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
+                ServerLoggers.systemLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
             }
             byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
             dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
@@ -215,15 +214,23 @@ public class EmailReceiver {
         Object content;
         try {
             content = email.getContent();
-        } catch (MessagingException e) {
+        } catch (MessagingException | IOException | NullPointerException e) {
             // did this due to a bug
-            if (email instanceof MimeMessage && "Unable to load BODYSTRUCTURE".equalsIgnoreCase(e.getMessage())) {
+            try {
                 content = new MimeMessage((MimeMessage) email).getContent();
-            } else {
-                throw e;
+            } catch (IOException e1) {
+                if("Unknown encoding: utf-8".equalsIgnoreCase(e1.getMessage()))
+                    content = null;
+                else
+                    throw e;
             }
         }
         return content;
+    }
+
+    private Timestamp getSentDate(Message message) throws MessagingException {
+        Date sentDate = message.getSentDate();
+        return sentDate == null ? null : new Timestamp(sentDate.getTime());
     }
 
     private byte[] getEMLByteArray (Message msg) throws IOException, MessagingException {
@@ -234,7 +241,7 @@ public class EmailReceiver {
 
     private MultipartBody getMultipartBody(String subjectEmail, Multipart mp) throws IOException, MessagingException {
         String body = "";
-        Map<String, byte[]> attachments = new HashMap<String, byte[]>();
+        Map<String, byte[]> attachments = new HashMap<>();
         for (int i = 0; i < mp.getCount(); i++) {
             BodyPart bp = mp.getBodyPart(i);
             String disp = bp.getDisposition();
@@ -259,7 +266,8 @@ public class EmailReceiver {
                 }
                 
                 attachments.put(fileName, BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(f), fileExtension.getBytes()));
-                f.delete();
+                if(!f.delete())
+                    f.deleteOnExit();
             } else {
                 Object content = bp.getContent();
                 body = content instanceof MimeMultipart ? getMultipartBody(subjectEmail, (Multipart) content).message : String.valueOf(content);
@@ -270,7 +278,7 @@ public class EmailReceiver {
 
     private MultipartBody getMultipartBody64(String subjectEmail, BASE64DecoderStream base64InputStream, String filename) throws IOException, MessagingException {
         byte[] byteArray = IOUtils.readBytesFromStream(base64InputStream);
-        Map<String, byte[]> attachments = new HashMap<String, byte[]>();
+        Map<String, byte[]> attachments = new HashMap<>();
         String[] fileNameAndExt = filename.split("\\.");
         String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1] : "";
         attachments.put(filename, BaseUtils.mergeFileAndExtension(byteArray, fileExtension.getBytes()));
