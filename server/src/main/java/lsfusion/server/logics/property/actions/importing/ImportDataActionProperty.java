@@ -27,7 +27,6 @@ import lsfusion.server.logics.property.actions.importing.jdbc.ImportJDBCDataActi
 import lsfusion.server.logics.property.actions.importing.mdb.ImportMDBDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xls.ImportXLSDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.xlsx.ImportXLSXDataActionProperty;
-import lsfusion.server.logics.property.actions.importing.xml.ImportXMLDataActionProperty;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.PropertyChange;
@@ -80,6 +79,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
         Object file = value.object;
         if (file instanceof byte[]) {
             try {
+                Integer prevImported = (Integer) findProperty("prevImported").read(context);
                 if (value.getType() instanceof DynamicFormatFileClass) {
                     file = BaseUtils.getFile((byte[]) file);
                 }
@@ -115,6 +115,17 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
                             return NullValue.instance;
                         }}));
                 }
+                findProperty("prevImported").change(i, context);
+                if(prevImported != null) {
+                    while (i < prevImported) {
+                        DataObject rowKey = new DataObject(i++, IntegerClass.instance);
+                        mRows.exclAdd(MapFact.singleton("key", rowKey), props.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
+                            public ObjectValue getMapValue(LCP prop) {
+                                return NullValue.instance;
+                            }
+                        }));
+                    }
+                }
                 OperationOwner owner = context.getSession().getOwner();
                 SQLSession sql = context.getSession().sql;
                 importTable.writeRows(sql, mRows.immutable(), owner);
@@ -140,7 +151,7 @@ public abstract class ImportDataActionProperty extends ScriptingActionProperty {
     }
 
     protected List<Integer> getSourceColumns(Map<String, Integer> mapping) {
-        List<Integer> columns = new ArrayList<Integer>();
+        List<Integer> columns = new ArrayList<>();
         int previousIndex = columnsNumberBase() - 1;
         for (String id : ids) {
 

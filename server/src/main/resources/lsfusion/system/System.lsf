@@ -114,6 +114,7 @@ formResult() = DATA LOCAL FormResult ();
 formPageCount() = DATA LOCAL INTEGER ();
 formExportFile() = DATA LOCAL CUSTOMFILE ();
 
+prevImported = DATA LOCAL INTEGER ();
 imported = DATA LOCAL BOOLEAN (INTEGER);
 
 META defineAnyValue(name, param) 
