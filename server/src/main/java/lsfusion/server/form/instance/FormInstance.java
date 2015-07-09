@@ -24,6 +24,7 @@ import lsfusion.interop.form.GroupObjectUserPreferences;
 import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
@@ -882,7 +883,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return;
         }
 
-        if (editAction != null && securityPolicy.property.change.checkPermission(editAction.property) && securityPolicy.property.change.checkPermission(property.getPropertyObjectInstance().property)) {
+        ChangePropertySecurityPolicy securityPolicy = this.securityPolicy.property.change;
+        if (editAction != null && securityPolicy.checkPermission(editAction.property) && (securityPolicy.checkPermission(property.getPropertyObjectInstance().property) || property.isSelector())) {
             if (editActionSID.equals(CHANGE) || editActionSID.equals(GROUP_CHANGE)) { //ask confirm logics...
                 PropertyDrawEntity propertyDraw = property.getEntity();
                 if (!pushConfirm && propertyDraw.askConfirm) {
