@@ -249,6 +249,15 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         RemoteLoggerAspect.pingInfoMap.put(computerId, pingInfoEntry);
     }
 
+    public Integer getClientMessage() {
+        return navigatorsManager.getClientMessage();
+    }
+
+    public void sendClientResponse(Integer clientResponse) {
+        if(clientResponse == 1)
+            navigatorsManager.denyRestart();
+    }
+
     @Override
     public List<String> authenticateUser(String userName, String password) throws RemoteException {
         DataSession session;

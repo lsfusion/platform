@@ -93,6 +93,16 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         target.sendPingInfo(computerId, pingInfoMap);
     }
 
+    @Override
+    public Integer getClientMessage() throws RemoteException {
+        return target.getClientMessage();
+    }
+
+    @Override
+    public void sendClientResponse(Integer clientResponse) throws RemoteException {
+        target.sendClientResponse(clientResponse);
+    }
+
     public void ping() throws RemoteException {
         target.ping();
     }

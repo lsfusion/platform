@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.Pair;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.interop.remote.CallbackMessage;
 import lsfusion.server.auth.User;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.data.SQLHandledException;
@@ -18,10 +19,7 @@ import org.springframework.util.Assert;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -276,6 +274,35 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
             for (RemoteNavigator remoteNavigator : navigators.values()) {
                 try {
                     remoteNavigator.notifyServerRestartCanceled();
+                } catch (RemoteException e) {
+                    logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+                }
+            }
+        }
+    }
+
+    public Integer getClientMessage() {
+        synchronized (navigators) {
+            for (RemoteNavigator remoteNavigator : navigators.values()) {
+                try {
+                    List<CallbackMessage> messages = remoteNavigator.getClientCallBack().pullMessages();
+                    if (messages != null)
+                        for (CallbackMessage message : messages)
+                            if (message == CallbackMessage.SERVER_RESTARTING)
+                                return 1;
+                } catch (RemoteException e) {
+                    logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+                }
+            }
+            return 0;
+        }
+    }
+
+    public void denyRestart() {
+        synchronized (navigators) {
+            for (RemoteNavigator remoteNavigator : navigators.values()) {
+                try {
+                    remoteNavigator.getClientCallBack().denyRestart();;
                 } catch (RemoteException e) {
                     logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
                 }

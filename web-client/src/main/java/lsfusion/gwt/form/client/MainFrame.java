@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.base.shared.actions.BooleanResult;
 import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.form.client.form.DefaultFormsController;
@@ -116,6 +117,33 @@ public class MainFrame implements EntryPoint {
                 initializeWindows(result.defaultFormsType, result.defaultForms);
             }
         });
+
+        Scheduler.get().scheduleFixedDelay(new Scheduler.RepeatingCommand() {
+            @Override
+            public boolean execute() {
+                dispatcher.execute(new ClientMessage(), new ErrorHandlingCallback<ClientMessageResult>() {
+                    @Override
+                    public void success(ClientMessageResult result) {
+                        super.success(result);
+                        if(result.clientMessage == 1) {
+                            DialogBoxHelper.showConfirmBox("Остановка сервера", "Сервер будет остановлен через 5 минут!\n" +
+                                    "Сохраните текущую работу и выйдите из приложения.\n" +
+                                    "Если вы выполняете работу, которая не может быть прервана, нажмите нет.",
+                                    false, new DialogBoxHelper.CloseCallback() {
+                                @Override
+                                public void closed(DialogBoxHelper.OptionType chosenOption) {
+                                    if (chosenOption == DialogBoxHelper.OptionType.NO) {
+                                        dispatcher.execute(new ClientResponse(1), null);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+                return true;
+            }
+        }, 10000);
+
     }
 
     private void hackForGwtDnd() {

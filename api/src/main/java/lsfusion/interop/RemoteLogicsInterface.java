@@ -59,4 +59,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     int generateNewID() throws RemoteException;
 
     void sendPingInfo(Integer computerId, Map<Long, List<Long>> pingInfoMap) throws RemoteException;
+
+    Integer getClientMessage() throws RemoteException;
+
+    void sendClientResponse(Integer clientResponse) throws RemoteException;
 }
