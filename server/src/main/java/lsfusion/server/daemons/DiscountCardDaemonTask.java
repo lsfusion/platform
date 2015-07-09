@@ -41,8 +41,8 @@ public class DiscountCardDaemonTask extends AbstractDaemonTask implements Serial
                     ServerLoggers.systemLogger.info(input.substring(0, input.length() - 2));
                     eventBus.fireValueChanged(SCANNER_SID, input.substring(0, input.length() - 2));
                     input = "";
+                    e.consume();
                 }
-                e.consume();
             } else if(recording) {
                 input += e.getKeyChar();
                 e.consume();
