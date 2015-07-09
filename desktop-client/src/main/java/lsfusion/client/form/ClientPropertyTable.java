@@ -243,7 +243,7 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
 
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         editPerformed = false;
-        boolean consumed = super.processKeyBinding(ks, e, condition, pressed);
+        boolean consumed = e.isConsumed() || super.processKeyBinding(ks, e, condition, pressed);
         return consumed || editPerformed;
     }
 
