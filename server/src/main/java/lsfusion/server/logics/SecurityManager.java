@@ -24,7 +24,14 @@ import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.linear.LP;
+import lsfusion.server.logics.property.ActionPropertyMapImplement;
+import lsfusion.server.logics.property.IsClassProperty;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.actions.FormActionProperty;
+import lsfusion.server.logics.property.actions.flow.JoinActionProperty;
+import lsfusion.server.logics.property.actions.flow.ListActionProperty;
+import lsfusion.server.logics.property.actions.flow.NewSessionActionProperty;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -107,13 +114,35 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             readOnlyPolicy.cls.edit.add.defaultPermission = false;
             readOnlyPolicy.cls.edit.change.defaultPermission = false;
             readOnlyPolicy.cls.edit.remove.defaultPermission = false;
+            readOnlyPolicy.property.change.permit(LM.getFormClose().property);
+            for (Property property : businessLogics.getProperties()) {
+                if (property instanceof FormActionProperty)
+                    checkProperty(property, property);
+                else if (property instanceof JoinActionProperty)
+                    checkProperty(property, ((JoinActionProperty) property).action.property);
+                else if (property instanceof ListActionProperty) {
+                    for (ActionPropertyMapImplement<?, PropertyInterface> action : ((ListActionProperty) property).getActions()) {
+                        checkProperty(property, action.property);
+                    }
+                } else if (property instanceof NewSessionActionProperty)
+                    readOnlyPolicy.property.view.deny(property);
+                else if (property instanceof IsClassProperty)
+                    readOnlyPolicy.property.change.permit(property);
+            }
 
             allowConfiguratorPolicy = addPolicy(getString("logics.policy.allow.configurator"), getString("logics.policy.logics.allow.configurator"));
             allowConfiguratorPolicy.configurator = true;
-        } catch (SQLException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw new RuntimeException("Error initializing Security Manager: ", e);
-        } catch (SQLHandledException e) {
-            throw new RuntimeException("Error initializing Security Manager: ", e);
+        }
+    }
+
+    private void checkProperty(Property parentProperty, Property property) {
+        if(property instanceof FormActionProperty && ((FormActionProperty)property).getPrintType() != null) {
+            readOnlyPolicy.property.change.permit(parentProperty);
+        } else {
+            readOnlyPolicy.property.change.deny(parentProperty);
+            readOnlyPolicy.property.view.deny(parentProperty);
         }
     }
 
@@ -122,9 +151,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         logger.info("Starting Security Manager.");
         try {
             businessLogics.initAuthentication(this);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error starting Security Manager: ", e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw new RuntimeException("Error starting Security Manager: ", e);
         }
     }
@@ -292,9 +319,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
     private List<Integer> readUserPoliciesIds(User user, DataSession session) {
         try {
-            ArrayList<Integer> result = new ArrayList<Integer>();
+            ArrayList<Integer> result = new ArrayList<>();
 
-            QueryBuilder<String, Object> q = new QueryBuilder<String, Object>(SetFact.toExclSet("userId", "policyId"));
+            QueryBuilder<String, Object> q = new QueryBuilder<>(SetFact.toExclSet("userId", "policyId"));
             Expr orderExpr = securityLM.orderUserPolicy.getExpr(session.getModifier(), q.getMapExprs().get("userId"), q.getMapExprs().get("policyId"));
 
             q.addProperty("pOrder", orderExpr);

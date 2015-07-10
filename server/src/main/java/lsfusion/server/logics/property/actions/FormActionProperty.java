@@ -68,6 +68,10 @@ public class FormActionProperty extends SystemExplicitActionProperty {
 
     private final PropertyDrawEntity initFilterProperty;
 
+    public FormPrintType getPrintType() {
+        return printType;
+    }
+
     private static ValueClass[] getValueClasses(ObjectEntity[] objects, CalcProperty contextProperty) {
         ValueClass[] valueClasses = new ValueClass[objects.length + (contextProperty == null ? 0 : contextProperty.interfaces.size())];
         for (int i = 0; i < objects.length; i++) {

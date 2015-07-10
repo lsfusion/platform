@@ -32,7 +32,7 @@ public class ListActionProperty extends ListCaseActionProperty {
         addWhereOperand(action, null, version);
     }
 
-    private ImList<ActionPropertyMapImplement<?, PropertyInterface>> getActions() {
+    public ImList<ActionPropertyMapImplement<?, PropertyInterface>> getActions() {
         return (ImList<ActionPropertyMapImplement<?, PropertyInterface>>)actions;
     }
 
