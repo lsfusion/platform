@@ -15,6 +15,7 @@ analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'lsfusion.server.logics.serv
 vacuumDBAction 'Упаковать БД' = ACTION CUSTOM 'lsfusion.server.logics.service.VacuumDBActionProperty' ();
 packAction 'Упаковать таблицы' = ACTION CUSTOM 'lsfusion.server.logics.service.PackActionProperty' ();
 serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBActionProperty' ();
+serviceDBMultiThreadAction 'Обслуживание БД (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' ();
 getVMInfo 'Данные виртуальной машины' = ACTION CUSTOM 'lsfusion.server.logics.service.GetVMInfoActionProperty' ();
 
 singleTransaction 'Перерасчет одной транзакцией' = DATA BOOLEAN ();
@@ -209,7 +210,7 @@ FORM admin 'Администрирование'
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
                  restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, checkClassesAction, 
                  recalculateClassesAction, recalculateAction, recalculateMultiThreadAction, recalculateFollowsAction, packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
-                 vacuumDBAction, serviceDBAction, runGarbageCollector, getVMInfo, dropLRU, makeHeapDump, 
+                 vacuumDBAction, serviceDBAction, serviceDBMultiThreadAction, runGarbageCollector, getVMInfo, dropLRU, makeHeapDump, 
                  TILMode, hostnameServerComputer, reupdateMode, singleTransaction,
                  nameReflectionSetting, turnExplainAnalizeOnCurrentUser, clearApplicationLog,
                  valueReflectionSetting SHOWIF nameReflectionSetting()
@@ -247,6 +248,7 @@ DESIGN admin {
             MOVE PROPERTY(restartServerAction());
             MOVE PROPERTY(cancelRestartServerAction());
             MOVE PROPERTY(serviceDBAction());
+            MOVE PROPERTY(serviceDBMultiThreadAction());
             MOVE PROPERTY(hostnameServerComputer());
         }
         NEW recalculate {
