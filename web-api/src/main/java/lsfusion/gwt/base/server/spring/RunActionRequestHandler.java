@@ -33,7 +33,7 @@ public class RunActionRequestHandler implements HttpRequestHandler {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Not enough rights to execute the action");
             }
         } catch(RemoteException e) {
-            blProvider.invalidate();
+//            blProvider.invalidate();
             throw new RuntimeException(e);
         }
         response.getWriter().print("Action executed successfully");

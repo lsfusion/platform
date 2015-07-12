@@ -139,7 +139,7 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
             }
             return dispatch.execute(action);
         } catch (RemoteDispatchException e) {
-            blProvider.invalidate();
+//            blProvider.invalidate();
 
             logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e.getRemote());
             throw new InvalidateException("Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.");

@@ -44,7 +44,7 @@ public class ReadFileRequestHandler implements HttpRequestHandler {
                 }
             }
         } catch(RemoteException e) {
-            blProvider.invalidate();
+//            blProvider.invalidate();
             throw new RuntimeException(e);
         }
     }

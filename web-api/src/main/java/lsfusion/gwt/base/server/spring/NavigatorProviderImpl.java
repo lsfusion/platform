@@ -80,9 +80,10 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
     }
 
     public void onInvalidate() {
-        synchronized (navigatorLock) {
-            navigator = null;
-        }
+        // пока не null'им навигатор, а то потом он собирается через unreferenced и убивает все свои формы
+//        synchronized (navigatorLock) {
+//            navigator = null;
+//        }
     }
 
     @Override

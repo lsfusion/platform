@@ -86,7 +86,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
                     physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, screenSize), false);
 
             if (!bl.checkFormExportPermission(canonicalName)) {
-                blProvider.invalidate();
+//                blProvider.invalidate();
                 throw new RuntimeException("Невозможно прочитать данные формы: нет прав.");
             }
 
@@ -94,7 +94,7 @@ public class ReadFormRequestHandler implements HttpRequestHandler {
             reportData = form.getReportData(-1, -1, null, false, null);
 
         } catch (RemoteException e) {
-            blProvider.invalidate();
+//            blProvider.invalidate();
             throw new RuntimeException("Не могу прочитать данные", e);
         }
 
