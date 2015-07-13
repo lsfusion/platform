@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static javax.mail.Message.RecipientType.TO;
 import static lsfusion.base.BaseUtils.nullTrim;
@@ -215,6 +216,8 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
     private Map<String, Message.RecipientType> getRecipientEmails(ExecutionContext context) throws SQLException, SQLHandledException {
         assert recipients.size() == recipientTypes.size();
 
+        Pattern p = Pattern.compile("^([A-Za-z0-9_-]+\\.)*[A-Za-z0-9_-]+@[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*\\.[A-Za-z]{2,6}$");
+
         Map<String, Message.RecipientType> recipientEmails = new HashMap<String, Message.RecipientType>();
         for (int i = 0; i < recipients.size(); ++i) {
             CalcPropertyInterfaceImplement<ClassPropertyInterface> recipient = recipients.get(i);
@@ -225,7 +228,9 @@ public class SendEmailActionProperty extends SystemExplicitActionProperty {
                 String[] emails = recipientEmailList.replace(',',';').replace(":", ";").split(";");
                 for (String email : emails) {
                     email = trimToNull(email);
-                    if (email == null) {
+                    if (email == null || !p.matcher(email).matches()) {
+                        if(email != null)
+                            context.requestUserInteraction(new MessageClientAction("Invalid email: " + email, "Invalid email"));
                         continue;
                     }
 
