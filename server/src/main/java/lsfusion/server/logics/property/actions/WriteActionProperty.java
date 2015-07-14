@@ -40,28 +40,34 @@ public class WriteActionProperty extends ScriptingActionProperty {
             fileBytes = BaseUtils.getFile(fileBytes);
         }
         try {
-            if (path != null && fileBytes != null) {
-                Pattern p = Pattern.compile("(file|ftp):\\/\\/(.*)");
-                Matcher m = p.matcher(path);
-                if (m.matches()) {
-                    String type = m.group(1).toLowerCase();
-                    String url = m.group(2);
-                    
-                    if (type.equals("file")) {
-                        File file = new File(url);
-                        if(!file.getParentFile().exists())
-                            throw Throwables.propagate(new RuntimeException(String.format("Path is incorrect or not found: %s", url)));
-                        else
+            if (path != null && !path.isEmpty()) {
+                if (fileBytes != null) {
+                    Pattern p = Pattern.compile("(file|ftp):\\/\\/(.*)");
+                    Matcher m = p.matcher(path);
+                    if (m.matches()) {
+                        String type = m.group(1).toLowerCase();
+                        String url = m.group(2);
+
+                        if (type.equals("file")) {
+                            File file = new File(url);
+                            if (!file.getParentFile().exists())
+                                throw Throwables.propagate(new RuntimeException(String.format("Path is incorrect or not found: %s", url)));
+                            else
+                                IOUtils.putFileBytes(file, fileBytes);
+                        } else if (type.equals("ftp")) {
+                            File file = File.createTempFile("downloaded", ".tmp");
                             IOUtils.putFileBytes(file, fileBytes);
-                    } else if (type.equals("ftp")) {
-                        File file = File.createTempFile("downloaded", ".tmp");
-                        IOUtils.putFileBytes(file, fileBytes);
-                        storeFileToFTP(path, file);
-                        file.delete();
+                            storeFileToFTP(path, file);
+                            file.delete();
+                        }
+                    } else {
+                        throw Throwables.propagate(new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp://username:password@host:port/path_to_file"));
                     }
                 } else {
-                    throw Throwables.propagate(new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp://username:password@host:port/path_to_file"));
+                    throw Throwables.propagate(new RuntimeException("File bytes not specified"));
                 }
+            } else {
+                throw Throwables.propagate(new RuntimeException("Path not specified"));
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
