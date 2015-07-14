@@ -206,21 +206,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) {
-        ArrayList<IDaemonTask> daemons = new ArrayList<IDaemonTask>();
+        ArrayList<IDaemonTask> daemons = new ArrayList<>();
 
         Integer scannerComPort;
         Boolean scannerSingleRead;
+        boolean useDiscountCardReader;
+
         try {
             try(DataSession session = getDbManager().createSession()) {
-                scannerComPort = (Integer) authenticationLM.scannerComPortComputer.read(session, new DataObject(compId, authenticationLM.computer));
-                scannerSingleRead = (Boolean) authenticationLM.scannerSingleReadComputer.read(session, new DataObject(compId, authenticationLM.computer));
+                DataObject computerObject = new DataObject(compId, authenticationLM.computer);
+                scannerComPort = (Integer) authenticationLM.scannerComPortComputer.read(session, computerObject);
+                scannerSingleRead = (Boolean) authenticationLM.scannerSingleReadComputer.read(session, computerObject);
+                useDiscountCardReader = authenticationLM.useDiscountCardReaderComputer.read(session, computerObject) != null;
             }
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
-        daemons.add(new DiscountCardDaemonTask());
+        if(useDiscountCardReader)
+            daemons.add(new DiscountCardDaemonTask());
         if (scannerComPort != null) {
             IDaemonTask task = new ScannerDaemonTask(scannerComPort, ((Boolean)true).equals(scannerSingleRead));
             daemons.add(task);
