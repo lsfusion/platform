@@ -81,6 +81,8 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
                     e.printStackTrace();
                 }
             }
+        } else {
+            logger.info("Email Server disabled, change serverComputer() to enable");
         }
     }
 

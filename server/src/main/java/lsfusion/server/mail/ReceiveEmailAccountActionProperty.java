@@ -65,6 +65,8 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
                 logError(context, getString("mail.failed.to.receive.mail") + " : " + e.toString());
                 e.printStackTrace();
             }
+        } else {
+            logger.info("Email Server disabled, change serverComputer() to enable");
         }
     }
 

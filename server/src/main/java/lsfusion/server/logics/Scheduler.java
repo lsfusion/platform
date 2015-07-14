@@ -95,6 +95,8 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             } catch (SQLException | ScriptingErrorLog.SemanticErrorException | SQLHandledException e) {
                 throw new RuntimeException("Error starting Scheduler: ", e);
             }
+        } else {
+            logger.info("Scheduler disabled, change serverComputer() to enable");
         }
     }
 
