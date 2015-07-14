@@ -427,31 +427,31 @@ public class ReportGenerator {
     }
 
     public static File exportToXls(ReportGenerationData generationData) throws ClassNotFoundException, IOException, JRException {
-        return exportToFile(generationData, new JRXlsExporter(), "xls");
+        return exportToFile(generationData, new JRXlsExporter(), "xls", true);
     }
     
     public static File exportToXlsx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, new JRXlsxExporter(), "xlsx");
+        return exportToFile(generationData, new JRXlsxExporter(), "xlsx", true);
     }
     
     public static File exportToPdf(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, new JRPdfExporter(), "pdf");
+        return exportToFile(generationData, new JRPdfExporter(), "pdf", false);
     }
 
     public static File exportToDoc(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, new JRDocxExporter(), "doc");
+        return exportToFile(generationData, new JRDocxExporter(), "doc", false);
     }
 
     public static File exportToDocx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, new JRDocxExporter(), "docx");
+        return exportToFile(generationData, new JRDocxExporter(), "docx", false);
     }
     
-    private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension) throws IOException, JRException, ClassNotFoundException {
+    private static File exportToFile(ReportGenerationData generationData, JRAbstractExporter exporter, String extension, boolean ignorePagination) throws IOException, JRException, ClassNotFoundException {
         File tempFile = File.createTempFile("lsf", "." + extension);
 
         ReportGenerator report = new ReportGenerator(generationData);
 
-        JasperPrint print = report.createReport(true, null);
+        JasperPrint print = report.createReport(ignorePagination, null);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
