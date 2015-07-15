@@ -2,6 +2,7 @@ package lsfusion.base;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -354,15 +355,23 @@ public class SystemUtils {
     }
 
     public static String getResourcePath(String resource, String path, Class<?> cls, boolean overwrite, boolean appendPath) throws IOException {
-
         File file = getUserFile(appendPath ? resolveName(cls, path + resource) : resource);
-        if (overwrite || !file.exists()) { // пока сделаем так, хотя это не очень правильно, так как желательно все-таки обновлять dll'ки
+        File newFile = getFile(file, resource, path, cls, overwrite);
+        if (overwrite || !file.exists() || file.length() != newFile.length())
+            FileCopyUtils.copy(newFile, file);
+        if(!newFile.delete())
+            newFile.deleteOnExit();
+        return file.getAbsolutePath();
+    }
 
-            InputStream in = cls.getResourceAsStream(path + resource);
-            if (in == null)
-                throw new FileNotFoundException("File " + file.getName() + " not found");
-            FileOutputStream out = new FileOutputStream(file);
-
+    private static File getFile(File oldFile, String resource, String path, Class<?> cls, boolean overwrite) throws IOException {
+        File newFile = File.createTempFile("temp", ".tmp");
+        InputStream in = cls.getResourceAsStream(path + resource);
+        if (in == null) {
+            if (overwrite || !oldFile.exists())
+                throw new FileNotFoundException("File " + oldFile.getName() + " not found");
+        } else {
+            FileOutputStream out = new FileOutputStream(newFile);
             byte[] b = new byte[4096];
             int read;
             while ((read = in.read(b)) != -1) {
@@ -371,7 +380,7 @@ public class SystemUtils {
             in.close();
             out.close();
         }
-        return file.getAbsolutePath();
+        return newFile;
     }
 
     public static String getLibraryPath(String libName, String path, Class<?> cls) throws IOException {
