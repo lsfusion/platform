@@ -7,6 +7,7 @@ import com.healthmarketscience.jackcess.Row;
 import com.healthmarketscience.jackcess.Table;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
+import lsfusion.server.classes.DynamicFormatFileClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
@@ -22,7 +23,10 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.util.FileCopyUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.sql.*;
 import java.util.*;
@@ -98,7 +102,11 @@ public class ReadActionProperty extends ScriptingActionProperty {
                             break;
                     }
                     if (file != null && file.exists()) {
-                        targetProp.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(file), extension.getBytes()), context);
+                        if (targetProp.property.getType() instanceof DynamicFormatFileClass) {
+                            targetProp.change(BaseUtils.mergeFileAndExtension(IOUtils.getFileBytes(file), extension.getBytes()), context);
+                        } else {
+                            targetProp.change(IOUtils.getFileBytes(file), context);
+                        }
                     } else {
                         errorCode = 3;
                     }

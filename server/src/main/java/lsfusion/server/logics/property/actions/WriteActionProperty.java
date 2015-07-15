@@ -4,9 +4,11 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.classes.DynamicFormatFileClass;
+import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -16,7 +18,10 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,12 +41,22 @@ public class WriteActionProperty extends ScriptingActionProperty {
 
         String path = (String) value.object;
         byte[] fileBytes = (byte[]) sourceProp.read(context);
-        if(sourceProp.property.getType() instanceof DynamicFormatFileClass) {
-            fileBytes = BaseUtils.getFile(fileBytes);
+        String extension = null;
+        Type sourcePropertyType = sourceProp.property.getType();
+        if (fileBytes != null) {
+            if (sourcePropertyType instanceof StaticFormatFileClass) {
+                extension = ((StaticFormatFileClass) sourcePropertyType).getOpenExtension(fileBytes);
+            } else if (sourcePropertyType instanceof DynamicFormatFileClass) {
+                extension = BaseUtils.getExtension(fileBytes);
+                fileBytes = BaseUtils.getFile(fileBytes);
+            }
         }
         try {
             if (path != null && !path.isEmpty()) {
                 if (fileBytes != null) {
+                    if (extension != null) {
+                        path += "." + extension;    
+                    }
                     Pattern p = Pattern.compile("(file|ftp):\\/\\/(.*)");
                     Matcher m = p.matcher(path);
                     if (m.matches()) {
