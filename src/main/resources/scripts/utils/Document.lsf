@@ -695,10 +695,10 @@ END
 
 // -- Quantity
 META defineDocumentDetailQuantityCustomPrefix (detail, prefix, caption)
-    prefix###quantity###detail 'Кол-во'###caption = DATA NUMERIC[14,3] (###detail);
+    prefix###quantity###detail 'Кол-во'###caption = DATA NUMERIC[16,5] (###detail);
 END
 META defineDocumentAbstractDetailQuantityCustomPrefix (detail, prefix, caption)
-    prefix###quantity###detail 'Кол-во'###caption = ABSTRACT NUMERIC[14,3] (###detail) PERSISTENT;
+    prefix###quantity###detail 'Кол-во'###caption = ABSTRACT NUMERIC[16,5] (###detail) PERSISTENT;
 END
 META defineDocumentInterfaceDetailQuantityCustomPrefix (detail, prefix, caption)
     @defineDocumentAbstractDetailQuantityCustomPrefix(detail, prefix, caption);
