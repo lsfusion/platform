@@ -77,6 +77,8 @@ TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NOT NULL DELETE;
 messageScheduledClientTaskLog 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
 
+isMessagesScheduledTaskLog 'Сообщения' (stl)= TRUE IF [=GROUP SUM 1 IF messageScheduledClientTaskLog(stcl) BY scheduledTaskLogScheduledClientTaskLog(stcl)](stl) AND NOT exceptionOccurredScheduledTaskLog(stl);
+
 runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty' ();
 
 scriptText 'Скрипт' () = DATA LOCAL TEXT ();
@@ -111,7 +113,10 @@ FORM scheduledTask 'Планировщик'
     PROPERTIES (td) ADDOBJ, DELETESESSION
     
     OBJECTS tl=ScheduledTaskLog
-    PROPERTIES (tl) READONLY propertyScheduledTaskLog, resultScheduledTaskLog, exceptionOccurredScheduledTaskLog, dateScheduledTaskLog
+    PROPERTIES (tl) READONLY propertyScheduledTaskLog, resultScheduledTaskLog, exceptionOccurredScheduledTaskLog, isMessagesScheduledTaskLog, dateScheduledTaskLog
+    
+    FILTERGROUP stlFilters 
+        FILTER 'Ошибка или сообщение' exceptionOccurredScheduledTaskLog(tl) OR isMessagesScheduledTaskLog(tl)
 
     OBJECTS ctl=ScheduledClientTaskLog
     PROPERTIES (ctl) READONLY messageScheduledClientTaskLog
