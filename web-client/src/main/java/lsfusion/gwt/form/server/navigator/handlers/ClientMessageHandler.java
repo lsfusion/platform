@@ -5,10 +5,12 @@ import lsfusion.gwt.form.server.FormDispatchServlet;
 import lsfusion.gwt.form.shared.actions.navigator.ClientMessage;
 import lsfusion.gwt.form.shared.actions.navigator.ClientMessageResult;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.remote.CallbackMessage;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
 
 import java.io.IOException;
+import java.util.List;
 
 public class ClientMessageHandler extends SimpleActionHandlerEx<ClientMessage, ClientMessageResult, RemoteLogicsInterface> {
     public ClientMessageHandler(FormDispatchServlet servlet) {
@@ -17,6 +19,7 @@ public class ClientMessageHandler extends SimpleActionHandlerEx<ClientMessage, C
 
     @Override
     public ClientMessageResult executeEx(ClientMessage action, ExecutionContext context) throws DispatchException, IOException {
-        return new ClientMessageResult(servlet.getLogics().getClientMessage());
+        List<CallbackMessage> messages = servlet.getNavigator().getClientCallBack().pullMessages();
+        return new ClientMessageResult(messages != null && messages.contains(CallbackMessage.SERVER_RESTARTING));
     }
 }

@@ -125,7 +125,7 @@ public class MainFrame implements EntryPoint {
                     @Override
                     public void success(ClientMessageResult result) {
                         super.success(result);
-                        if(result.clientMessage == 1) {
+                        if(result.restart) {
                             DialogBoxHelper.showConfirmBox("Остановка сервера", "Сервер будет остановлен через 5 минут!\n" +
                                     "Сохраните текущую работу и выйдите из приложения.\n" +
                                     "Если вы выполняете работу, которая не может быть прервана, нажмите нет.",

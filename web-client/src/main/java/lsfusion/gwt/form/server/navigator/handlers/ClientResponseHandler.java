@@ -17,7 +17,7 @@ public class ClientResponseHandler extends SimpleActionHandlerEx<ClientResponse,
 
     @Override
     public ClientResponseResult executeEx(ClientResponse action, ExecutionContext context) throws DispatchException, IOException {
-        servlet.getLogics().sendClientResponse(action.clientResponse);
+        servlet.getNavigator().getClientCallBack().denyRestart();
         return new ClientResponseResult();
     }
 }

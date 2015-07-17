@@ -14,7 +14,7 @@ import java.util.concurrent.*;
 public class RestartManager implements InitializingBean {
     private static final Logger logger = ServerLoggers.systemLogger;
 
-    private static final int restartDelayMinutes = 15;
+    private static final int restartDelayMinutes = 5;
 
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("restart-daemon"));
 

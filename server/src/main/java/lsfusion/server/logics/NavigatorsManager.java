@@ -280,34 +280,4 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
             }
         }
     }
-
-    public Integer getClientMessage() {
-//        synchronized (navigators) {
-//            for (RemoteNavigator remoteNavigator : navigators.values()) {
-//                try {
-//                    List<CallbackMessage> messages = remoteNavigator.getClientCallBack().pullMessages();
-//                    if (messages != null)
-//                        for (CallbackMessage message : messages)
-//                            if (message == CallbackMessage.SERVER_RESTARTING)
-//                                return 1;
-//                } catch (RemoteException e) {
-//                    logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
-//                }
-//            }
-//            return 0;
-//        }
-        return 0;
-    }
-
-    public void denyRestart() {
-        synchronized (navigators) {
-            for (RemoteNavigator remoteNavigator : navigators.values()) {
-                try {
-                    remoteNavigator.getClientCallBack().denyRestart();;
-                } catch (RemoteException e) {
-                    logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
-                }
-            }
-        }
-    }
 }
