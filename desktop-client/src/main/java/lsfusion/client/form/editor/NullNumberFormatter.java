@@ -32,7 +32,12 @@ public class NullNumberFormatter extends NumberFormatter {
         if (text != null) {
             text = text.replace("--", "-");
 
-            minusZeroText = text.equals("-") || text.equals("-0") || text.equals("-0" + decimalSeparator) ? text : null;
+            minusZeroText = text.equals("-") || 
+                    text.equals("-0") || 
+                    text.equals("-0" + decimalSeparator) || 
+                    text.equals("-0" + decimalSeparator + "0") ||
+                    text.equals("-0" + decimalSeparator + "00") ||
+                    text.equals("-0" + decimalSeparator + "000") ? text : null;
             if (minusZeroText != null) {
                 return zeroValue;
             }

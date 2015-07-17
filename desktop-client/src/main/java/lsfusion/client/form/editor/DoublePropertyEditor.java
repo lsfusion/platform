@@ -30,8 +30,11 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
                     result += separator;
                     lastTextEndsWithSeparator = false;
                 }
-                for (int i = 0; i < lastZero; i++)
-                    result += '0';
+                if (minusZeroText == null) {
+                    for (int i = 0; i < lastZero; i++) {
+                        result += '0';
+                    }
+                }
                 return result;
             }
 
@@ -66,8 +69,7 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
             if(!specialChars.contains(","))
                 specialChars +=",";
             field.set(formatter, specialChars);
-        } catch (NoSuchFieldException ignored) {
-        } catch (IllegalAccessException ignored) {
+        } catch (NoSuchFieldException | IllegalAccessException ignored) {
         }
 
         formatter.setValueClass(formatterValueClass);
