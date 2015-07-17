@@ -170,8 +170,8 @@ public class LoginDialog extends JDialog {
         serverDB.addPopupMenuListener(new PopupMenuListener() {
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent event) {
-                serverDB.removeAllItems();
-                propagateServerAgents();
+//                serverDB.removeAllItems();
+//                propagateServerAgents();
             }
 
             @Override
@@ -228,7 +228,7 @@ public class LoginDialog extends JDialog {
 
     private void initServerHostList(MutableComboBoxModel serverHostModel) {
         new ServerAgentsEnumerator(serverHostModel, waitMessage).execute();
-        propagateServerAgents();
+//        propagateServerAgents();
     }
 
     private LoginInfo result = null;
