@@ -52,6 +52,9 @@ lpad = FORMULA TEXT 'lpad($1,$2,$3)';
 rpad = FORMULA TEXT 'rpad($1,$2,$3)';
 
 repeat = FORMULA TEXT 'repeat($1,$2)';
+
+onlyDigits = FORMULA NULL INTEGER 'CASE WHEN trim($1) ~ \'^[0-9]*$\' THEN 1 ELSE NULL END';
+
 // --------------------------------------------- Работа с числами --------------------------------- //
 
 floor = FORMULA 'floor($1)';
