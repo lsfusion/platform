@@ -328,18 +328,20 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                                 worker.interrupt();
                                 logger.error("Timeout error while running scheduler task (in executeLAP()) " + lap.property.caption);
                                 try {
-                                    BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                                    BL.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                                    BL.schedulerLM.resultScheduledTaskLog.change("Timeout error", afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                                    BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                                    BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                                    DataSession timeoutLogSession = dbManager.createSession(getLogSql());
+                                    DataObject timeoutScheduledTaskLogFinishObject = timeoutLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
+                                    BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) timeoutLogSession, timeoutScheduledTaskLogFinishObject);
+                                    BL.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", timeoutLogSession, timeoutScheduledTaskLogFinishObject);
+                                    BL.schedulerLM.resultScheduledTaskLog.change("Timeout error", timeoutLogSession, timeoutScheduledTaskLogFinishObject);
+                                    BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, timeoutLogSession, timeoutScheduledTaskLogFinishObject);
+                                    BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), timeoutLogSession, timeoutScheduledTaskLogFinishObject);
 
-                                    DataObject scheduledClientTaskLogObject = afterFinishLogSession.addObject(BL.schedulerLM.scheduledClientTaskLog);
+                                    DataObject scheduledClientTaskLogObject = timeoutLogSession.addObject(BL.schedulerLM.scheduledClientTaskLog);
                                     BL.schedulerLM.scheduledTaskLogScheduledClientTaskLog
-                                            .change(currentScheduledTaskLogFinishObject, (ExecutionEnvironment) afterFinishLogSession, scheduledClientTaskLogObject);
-                                    BL.schedulerLM.messageScheduledClientTaskLog.change("Timeout error", afterFinishLogSession, scheduledClientTaskLogObject);
+                                            .change(timeoutScheduledTaskLogFinishObject, (ExecutionEnvironment) timeoutLogSession, scheduledClientTaskLogObject);
+                                    BL.schedulerLM.messageScheduledClientTaskLog.change("Timeout error", timeoutLogSession, scheduledClientTaskLogObject);
 
-                                    afterFinishLogSession.apply(BL);
+                                    timeoutLogSession.apply(BL);
                                 } catch (Exception ie) {
                                     logger.error("Error while reporting exception in scheduler task (in executeLAPThread) " + lap.property.caption + " : ", ie);
                                 }
