@@ -336,11 +336,6 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                                     BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, timeoutLogSession, timeoutScheduledTaskLogFinishObject);
                                     BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), timeoutLogSession, timeoutScheduledTaskLogFinishObject);
 
-                                    DataObject scheduledClientTaskLogObject = timeoutLogSession.addObject(BL.schedulerLM.scheduledClientTaskLog);
-                                    BL.schedulerLM.scheduledTaskLogScheduledClientTaskLog
-                                            .change(timeoutScheduledTaskLogFinishObject, (ExecutionEnvironment) timeoutLogSession, scheduledClientTaskLogObject);
-                                    BL.schedulerLM.messageScheduledClientTaskLog.change("Timeout error", timeoutLogSession, scheduledClientTaskLogObject);
-
                                     timeoutLogSession.apply(BL);
                                 } catch (Exception ie) {
                                     logger.error("Error while reporting exception in scheduler task (in executeLAPThread) " + lap.property.caption + " : ", ie);
