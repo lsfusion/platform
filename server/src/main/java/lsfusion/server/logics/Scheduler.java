@@ -327,8 +327,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                                     dbManager.getAdapter().killProcess(sqlProcess);
                                 worker.interrupt();
                                 logger.error("Timeout error while running scheduler task (in executeLAP()) " + lap.property.caption);
-                                try {
-                                    DataSession timeoutLogSession = dbManager.createSession(getLogSql());
+                                try (DataSession timeoutLogSession = dbManager.createSession(getLogSql())){
                                     DataObject timeoutScheduledTaskLogFinishObject = timeoutLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
                                     BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) timeoutLogSession, timeoutScheduledTaskLogFinishObject);
                                     BL.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", timeoutLogSession, timeoutScheduledTaskLogFinishObject);
@@ -525,25 +524,27 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                             return applyResult == null || ignoreExceptions;
                         }
                     } catch (Exception e) {
-                        logger.error("Error while running scheduler task (in executeLAP()) " + lap.property.caption + " : ", e);
+                        //not timeout exception
+                        if (e.getMessage() == null || !e.getMessage().contains("FATAL: terminating connection due to administrator command")) {
+                            logger.error("Error while running scheduler task (in executeLAP()) " + lap.property.caption + " : ", e);
 
-                        try {
-                            BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                            BL.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                            BL.schedulerLM.resultScheduledTaskLog.change(BaseUtils.truncate(String.valueOf(e), 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                            BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                            BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                            try {
+                                BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                                BL.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                                BL.schedulerLM.resultScheduledTaskLog.change(BaseUtils.truncate(String.valueOf(e), 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                                BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                                BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), afterFinishLogSession, currentScheduledTaskLogFinishObject);
 
-                            DataObject scheduledClientTaskLogObject = afterFinishLogSession.addObject(BL.schedulerLM.scheduledClientTaskLog);
-                            BL.schedulerLM.scheduledTaskLogScheduledClientTaskLog
-                                    .change(currentScheduledTaskLogFinishObject, (ExecutionEnvironment) afterFinishLogSession, scheduledClientTaskLogObject);
-                            BL.schedulerLM.messageScheduledClientTaskLog.change(ExceptionUtils.getStackTrace(e), afterFinishLogSession, scheduledClientTaskLogObject);
+                                DataObject scheduledClientTaskLogObject = afterFinishLogSession.addObject(BL.schedulerLM.scheduledClientTaskLog);
+                                BL.schedulerLM.scheduledTaskLogScheduledClientTaskLog
+                                        .change(currentScheduledTaskLogFinishObject, (ExecutionEnvironment) afterFinishLogSession, scheduledClientTaskLogObject);
+                                BL.schedulerLM.messageScheduledClientTaskLog.change(ExceptionUtils.getStackTrace(e), afterFinishLogSession, scheduledClientTaskLogObject);
 
-                            afterFinishLogSession.apply(BL);
-                        } catch (Exception ie) {
-                            logger.error("Error while reporting exception in scheduler task (in executeLAPThread) " + lap.property.caption + " : ", e);
+                                afterFinishLogSession.apply(BL);
+                            } catch (Exception ie) {
+                                logger.error("Error while reporting exception in scheduler task (in executeLAPThread) " + lap.property.caption + " : ", ie);
+                            }
                         }
-
                         return ignoreExceptions;
                     }
                 }
