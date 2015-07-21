@@ -5,9 +5,14 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.implementations.HMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.Compare;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.interop.action.ClientAction;
@@ -17,13 +22,20 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.WrapperContext;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.classes.IntegerClass;
+import lsfusion.server.classes.StringClass;
 import lsfusion.server.context.Context;
 import lsfusion.server.context.ContextAwareThread;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
+import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
+import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.data.type.Reader;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.linear.LAP;
@@ -41,6 +53,8 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.commons.lang.StringUtils.trimToNull;
 
 public class Scheduler extends LifecycleAdapter implements InitializingBean {
     private static final Logger logger = ServerLoggers.systemLogger;
@@ -305,11 +319,15 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                             worker.start();
                             worker.join(timeout == null ? 0 : timeout * 1000);
                             if(worker.isAlive()) {
+                                if(ThreadLocalContext.get() == null)
+                                    ThreadLocalContext.set(threadLocalContext);
+                                Map<Integer, Integer> sqlProcesses = dbManager.getAdapter().getSyntaxType() == SQLSyntaxType.POSTGRES ? getPostgresProcesses() : getMSSQLProcesses();
+                                Integer sqlProcess = sqlProcesses.get((int) worker.getId());
+                                if(sqlProcess != null)
+                                    dbManager.getAdapter().killProcess(sqlProcess);
                                 worker.interrupt();
                                 logger.error("Timeout error while running scheduler task (in executeLAP()) " + lap.property.caption);
                                 try {
-                                    if(ThreadLocalContext.get() == null)
-                                        ThreadLocalContext.set(threadLocalContext);
                                     BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
                                     BL.schedulerLM.propertyScheduledTaskLog.change(lap.property.caption + " (" + lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
                                     BL.schedulerLM.resultScheduledTaskLog.change("Timeout error", afterFinishLogSession, currentScheduledTaskLogFinishObject);
@@ -334,6 +352,98 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                 }
             } catch (Exception e) {
                 logger.error("Error while running scheduler task (in SchedulerTask.run()):", e);
+            }
+        }
+
+        private Map<Integer, Integer> getMSSQLProcesses() throws SQLException, SQLHandledException {
+            Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
+            String originalQuery = "Select A.session_id, text\n" +
+                    "from sys.dm_exec_sessions A\n" +
+                    "Left Join sys.dm_exec_requests B\n" +
+                    "On A.[session_id]=B.[session_id]\n" +
+                    "Left Join sys.dm_exec_connections C\n" +
+                    "On A.[session_id]=C.[session_id]\n" +
+                    "CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS sqltext";
+
+            MExclSet<String> keyNames = SetFact.mExclSet();
+            keyNames.exclAdd("numberrow");
+            keyNames.immutable();
+
+            MExclMap<String, Reader> keyReaders = MapFact.mExclMap();
+            keyReaders.exclAdd("numberrow", new CustomReader());
+            keyReaders.immutable();
+
+            MExclSet<String> propertyNames = SetFact.mExclSet();
+            propertyNames.exclAdd("text");
+            propertyNames.exclAdd("session_id");
+            propertyNames.immutable();
+
+            MExclMap<String, Reader> propertyReaders = MapFact.mExclMap();
+            propertyReaders.exclAdd("text", StringClass.get(1000));
+            propertyReaders.exclAdd("session_id", IntegerClass.instance);
+            propertyReaders.immutable();
+
+            try(DataSession session = dbManager.createSession()) {
+                ImOrderMap rs = session.sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap()
+                        , 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
+
+                Map<Integer, Integer> resultMap = new HashMap<>();
+                for (Object rsValue : rs.values()) {
+                    HMap entry = (HMap) rsValue;
+                    String query = trimToNull((String) entry.get("text"));
+                    Integer processId = (Integer) entry.get("session_id");
+
+                    if (!query.equals(originalQuery)) {
+                        List<Object> sessionThread = sessionThreadMap.get(processId);
+                        if (sessionThread != null && sessionThread.get(0) != null) {
+                            resultMap.put((Integer) sessionThread.get(0), processId);
+                        }
+                    }
+                }
+                return resultMap;
+            }
+        }
+
+        private Map<Integer, Integer> getPostgresProcesses() throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+
+            String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s'", BL.getDataBaseName());
+
+            MExclSet<String> keyNames = SetFact.mExclSet();
+            keyNames.exclAdd("numberrow");
+            keyNames.immutable();
+
+            MExclMap<String, Reader> keyReaders = MapFact.mExclMap();
+            keyReaders.exclAdd("numberrow", new CustomReader());
+            keyReaders.immutable();
+
+            MExclSet<String> propertyNames = SetFact.mExclSet();
+            propertyNames.exclAdd("query");
+            propertyNames.exclAdd("pid");
+            propertyNames.immutable();
+
+            MExclMap<String, Reader> propertyReaders = MapFact.mExclMap();
+            propertyReaders.exclAdd("query", StringClass.get(1000));
+            propertyReaders.exclAdd("pid", IntegerClass.instance);
+            propertyReaders.immutable();
+
+            try(DataSession session = dbManager.createSession()) {
+                ImOrderMap rs = session.sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
+                        0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
+
+                Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
+
+                Map<Integer, Integer> resultMap = new HashMap<>();
+                for (Object rsValue : rs.values()) {
+                    HMap entry = (HMap) rsValue;
+                    String query = trimToNull((String) entry.get("query"));
+                    Integer processId = (Integer) entry.get("pid");
+                    if (!query.equals(originalQuery)) {
+                        List<Object> sessionThread = sessionThreadMap.get(processId);
+                        if(sessionThread != null && sessionThread.get(0) != null)
+                            resultMap.put((Integer) sessionThread.get(0), processId);
+                    }
+                }
+                return resultMap;
             }
         }
 
