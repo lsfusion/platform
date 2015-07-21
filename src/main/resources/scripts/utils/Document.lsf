@@ -457,7 +457,7 @@ META defineDocumentDetailSortOrder (object, detailClass)
     sortOrder##detailClass 'Порядок сортировки' (d) = ABSTRACT VARSTRING[100] (detailClass);
     sortOrder##detailClass###object = GROUP SUM 1 IF sortOrder##detailClass(d) BY object##detailClass(d);
     
-    updateSortOrder###detailClass 'Сортировать для всех' = ACTION (detail) {
+    updateSortOrder###detailClass 'Сортировать' = ACTION (detail) {
         IF sortOrder##detailClass###object(object##detailClass(detail)) THEN {    
             LOCAL int = INTEGER();
             int() <- NULL;
