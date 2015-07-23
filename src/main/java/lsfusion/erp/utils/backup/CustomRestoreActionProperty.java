@@ -61,11 +61,10 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
         try {
             String fileBackup = (String) findProperty("fileBackup").read(context, backupObject);
             Map<String, CustomRestoreTable> tables = getTables(context);
-            if(new File(fileBackup).exists() && !tables.isEmpty()) {
+            if (new File(fileBackup).exists() && !tables.isEmpty()) {
                 dbName = context.getDbManager().customRestoreDB(fileBackup, tables.keySet());
                 importColumns(context, dbName, tables);
-            }
-            else {
+            } else {
                 context.requestUserInteraction(new MessageClientAction("Backup File not found or no selected tables", "Error"));
             }
         } catch (Exception e) {
@@ -74,7 +73,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
             try {
                 if (dbName != null)
                     context.getDbManager().dropDB(dbName);
-            } catch (IOException ignored){
+            } catch (IOException ignored) {
             }
         }
     }
@@ -103,8 +102,10 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
             QueryBuilder<Object, Object> tableColumnQuery = new QueryBuilder<>(tableColumnKeys);
             tableColumnQuery.addProperty("sidTableColumn", findProperty("sidTableColumn").getExpr(context.getModifier(), tableColumnExpr));
             tableColumnQuery.addProperty("canonicalNameTableColumn", findProperty("canonicalNameTableColumn").getExpr(context.getModifier(), tableColumnExpr));
+            tableColumnQuery.addProperty("replaceOnlyNullTableColumn", findProperty("replaceOnlyNullTableColumn").getExpr(context.getModifier(), tableColumnExpr));
             tableColumnQuery.and(findProperty("propertyTableColumn").getExpr(context.getModifier(), tableColumnExpr).getWhere());
             tableColumnQuery.and(findProperty("inCustomRestoreTableColumn").getExpr(context.getModifier(), tableColumnExpr).getWhere());
+            tableColumnQuery.and(findProperty("canonicalNameTableColumn").getExpr(context.getModifier(), tableColumnExpr).getWhere());
             tableColumnQuery.and(findProperty("tableTableColumn").getExpr(context.getModifier(), tableColumnExpr).compare(tableEntry.getValue().getExpr(), Compare.EQUALS));
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> tableColumnResult = tableColumnQuery.execute(context.getSession());
             for (ImMap<Object, Object> columnEntry : tableColumnResult.values()) {
@@ -113,6 +114,8 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                 CustomRestoreTable table = tables.get(tableEntry.getKey());
                 if (table == null)
                     table = new CustomRestoreTable();
+                if(columnEntry.get("replaceOnlyNullTableColumn") != null)
+                    table.replaceOnlyNullSet.add(canonicalNameTableColumn);
                 table.sqlProperties.add(sidTableColumn);
                 table.lcpProperties.add(canonicalNameTableColumn.split("\\[")[0]);
                 tables.put(tableEntry.getKey(), table);
@@ -165,7 +168,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                         ValueClass valueClass = context.getBL().findClass(table.classKeys.get(k).replace("_", "."));
                         DataObject keyObject = context.getSession().getDataObject(valueClass, keysEntry.get(k));
                         if (keyObject.objectClass instanceof UnknownClass) {
-                            try(DataSession session = context.getSession().createSession()) {
+                            try (DataSession session = context.getSession().createSession()) {
                                 //приходится пока через новую сессию, иначе свойства для новосозданного объекта не проставляются
                                 keyObject = session.addObject((ConcreteCustomClass) valueClass, keyObject);
                                 keyObject.object = keysEntry.get(k);
@@ -195,8 +198,8 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                 }
 
                 //step3: writeRows
-                String result = writeRows(context, props, mRows);
-                if(result != null)
+                String result = writeRows(context, props, mRows, table.replaceOnlyNullSet);
+                if (result != null)
                     context.requestUserInteraction(new MessageClientAction(result, "Error restoring table " + tableName));
 
                 /*try(DataSession session = context.createSession()) {
@@ -236,36 +239,40 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
     }
 
     private ImOrderSet<LP> getProps(LP[] properties) {
-        return SetFact.fromJavaOrderSet(new ArrayList<LP>(Arrays.asList(properties)));
+        return SetFact.fromJavaOrderSet(new ArrayList<>(Arrays.asList(properties)));
     }
 
-    private String writeRows(ExecutionContext context, ImOrderSet<LP> props, MExclMap<ImMap<String, DataObject>, ImMap<LP, ObjectValue>> mRows) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private String writeRows(ExecutionContext context, ImOrderSet<LP> props, MExclMap<ImMap<String, DataObject>, ImMap<LP, ObjectValue>> mRows, Set<String> replaceOnlyNullSet)
+            throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>(IntegerClass.instance, props, new Type.Getter<LP>() {
             @Override
             public Type getType(LP key) {
                 return key.property.getType();
             }
         });
-            DataSession session = context.getSession();
-            OperationOwner owner = session.getOwner();
-            SQLSession sql = session.sql;
-            importTable.writeRows(sql, mRows.immutable(), owner);
+        DataSession session = context.getSession();
+        OperationOwner owner = session.getOwner();
+        SQLSession sql = session.sql;
+        importTable.writeRows(sql, mRows.immutable(), owner);
 
-            ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
-            Join<LP> importJoin = importTable.join(mapKeys);
-            Where where = importJoin.getWhere();
-            try {
-                for (LP lcp : props) {
-                    ImMap<Object, Object> values = MapFact.EMPTY();
-                    for(int i = 0; i < mapKeys.values().size(); i++){
-                        values = values.addExcl(lcp.listInterfaces.get(i), mapKeys.values().get(i));
-                    }
-                    PropertyChange propChange = new PropertyChange(values.toRevMap(), importJoin.getExpr(lcp), where);
-                    context.getEnv().change((CalcProperty) lcp.property, propChange);
+        ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
+        Join<LP> importJoin = importTable.join(mapKeys);
+        try {
+            for (LP lcp : props) {
+                ImMap<Object, Object> values = MapFact.EMPTY();
+                for (int i = 0; i < mapKeys.values().size(); i++) {
+                    values = values.addExcl(lcp.listInterfaces.get(i), mapKeys.values().get(i));
                 }
-            } finally {
-                importTable.drop(sql, owner);
+                Where where = importJoin.getWhere();
+                if (replaceOnlyNullSet.contains(lcp.property.getSID())) {
+                    where = where.and(((CalcProperty)lcp.property).getExpr(values).getWhere().not());
+                }
+                PropertyChange propChange = new PropertyChange(values.toRevMap(), importJoin.getExpr(lcp), where);
+                context.getEnv().change((CalcProperty) lcp.property, propChange);
             }
-            return session.applyMessage(context);
+        } finally {
+            importTable.drop(sql, owner);
+        }
+        return session.applyMessage(context);
     }
 }

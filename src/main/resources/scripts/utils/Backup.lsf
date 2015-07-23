@@ -10,6 +10,7 @@ decimateBackups 'Проредить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.D
 customRestore 'Восстановить таблицы' = ACTION CUSTOM 'lsfusion.erp.utils.backup.CustomRestoreActionProperty' (Backup);
 inCustomRestoreTable 'вкл' = DATA BOOLEAN (Table);
 inCustomRestoreTableColumn 'вкл' = DATA BOOLEAN (TableColumn);
+replaceOnlyNullTableColumn 'Не замещать' = DATA BOOLEAN (TableColumn);
 
 CLASS Backup 'Резервная копия';
 TABLE backup(Backup);
@@ -81,7 +82,7 @@ FORM customRestore 'Восстановление данных'
     FILTERGROUP active FILTER 'Только включенные' inCustomRestoreTable(t) DEFAULT   
         
     OBJECTS tc=TableColumn
-    PROPERTIES(tc) inCustomRestoreTableColumn
+    PROPERTIES(tc) inCustomRestoreTableColumn, replaceOnlyNullTableColumn
     PROPERTIES(tc) READONLY sidTableColumn, captionTableColumn, canonicalNameTableColumn
     FILTERS tableTableColumn(tc) == t
 
