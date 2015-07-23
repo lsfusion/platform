@@ -1601,6 +1601,18 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return adapter.backupDB(context, dumpFileName, excludeTables);
     }
 
+    public String customRestoreDB(String fileBackup, Set<String> tables) throws IOException, InterruptedException {
+        return adapter.customRestoreDB(fileBackup, tables);
+    }
+
+    public void dropDB(String dbName) throws IOException {
+        adapter.dropDB(dbName);
+    }
+
+    public List<List<List<Object>>> readCustomRestoredColumns(String dbName, String table, List<String> keys, List<String> columns) throws SQLException {
+        return adapter.readCustomRestoredColumns(dbName, table, keys, columns);
+    }
+
     public void analyzeDB(SQLSession session) throws SQLException {
         session.executeDDL(adapter.getAnalyze());
     }

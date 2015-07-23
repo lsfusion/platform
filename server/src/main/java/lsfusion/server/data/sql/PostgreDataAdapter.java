@@ -28,10 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -299,6 +296,125 @@ public class PostgreDataAdapter extends DataAdapter {
         }
 
         return backupFilePath;
+    }
+
+    @Override
+    public String customRestoreDB(String fileBackup, Set<String> tables) throws IOException {
+
+        String tempDB = "db-temp" + Calendar.getInstance().getTime().getTime();
+        String host, port;
+        if (server.contains(":")) {
+            host = server.substring(0, server.lastIndexOf(':'));
+            port = server.substring(server.lastIndexOf(':') + 1);
+        } else {
+            host = server;
+            port = "5432";
+        }
+
+        if(createDB(host, port, tempDB)) {
+            CommandLine commandLine = null;
+            try {
+                commandLine = new CommandLine(new File(binPath, "pg_restore"));
+                commandLine.addArgument("--verbose");
+                commandLine.addArgument("--host");
+                commandLine.addArgument(host);
+                commandLine.addArgument("--port");
+                commandLine.addArgument(port);
+                commandLine.addArgument("--username");
+                commandLine.addArgument(userID);
+                for (String table : tables) {
+                    commandLine.addArgument("--table");
+                    commandLine.addArgument(table.toLowerCase());
+                }
+                commandLine.addArgument("--dbname");
+                commandLine.addArgument(tempDB);
+                commandLine.addArgument(fileBackup);
+                Executor executor = new DefaultExecutor();
+                executor.setExitValue(0);
+
+                executor.execute(commandLine);
+                return tempDB;
+            } catch (IOException e) {
+                logger.error("Error while dumping the database : " + commandLine);
+                return tempDB;
+            }
+        } else return null;
+    }
+
+    public boolean createDB(String host, String port, String dbName) throws IOException {
+        CommandLine commandLine = new CommandLine(new File(binPath, "createdb"));
+        commandLine.addArgument("--host");
+        commandLine.addArgument(host);
+        commandLine.addArgument("--port");
+        commandLine.addArgument(port);
+        commandLine.addArgument("--username");
+        commandLine.addArgument(userID);
+        commandLine.addArgument(dbName);
+        Executor executor = new DefaultExecutor();
+        //executor.setExitValue(0);
+        try {
+            executor.execute(commandLine);
+            return true;
+        } catch (IOException e) {
+            logger.error("Error while creating temp database : " + commandLine);
+            throw e;
+        }
+    }
+
+    public void dropDB(String dbName) throws IOException {
+        String host, port;
+        if (server.contains(":")) {
+            host = server.substring(0, server.lastIndexOf(':'));
+            port = server.substring(server.lastIndexOf(':') + 1);
+        } else {
+            host = server;
+            port = "5432";
+        }
+
+        CommandLine commandLine = new CommandLine(new File(binPath, "dropdb"));
+        commandLine.addArgument("--host");
+        commandLine.addArgument(host);
+        commandLine.addArgument("--port");
+        commandLine.addArgument(port);
+        commandLine.addArgument("--username");
+        commandLine.addArgument(userID);
+        commandLine.addArgument("--if-exists");
+        commandLine.addArgument(dbName);
+        Executor executor = new DefaultExecutor();
+        try {
+            executor.execute(commandLine);
+        } catch (IOException e) {
+            logger.error("Error while creating temp database : " + commandLine);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<List<List<Object>>> readCustomRestoredColumns(String dbName, String table, List<String> keys, List<String> columns) throws SQLException {
+        List<List<Object>> dataKeys = new ArrayList<>();
+        List<List<Object>> dataColumns = new ArrayList<>();
+        try(Connection connection = DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dbName + "?user=" + userID + "&password=" + password)) {
+            try (Statement statement = connection.createStatement()) {
+                String column = "";
+                for(String k : keys)
+                    column += k + ",";
+                for (String c : columns)
+                    column += c + ",";
+                column = column.isEmpty() ? "*" : column.substring(0, column.length() - 1);
+                ResultSet result = statement.executeQuery(String.format("SELECT %s FROM %s", column, table));
+                while (result.next()) {
+                    List<Object> rowKeys = new ArrayList<>();
+                    List<Object> rowColumns = new ArrayList<>();
+                    for (int i = 1; i <= keys.size(); i++)
+                        rowKeys.add(result.getObject(i));
+                    for (int i = keys.size() + 1; i <= keys.size() + columns.size(); i++)
+                        rowColumns.add(result.getObject(i));
+                    dataKeys.add(rowKeys);
+                    dataColumns.add(rowColumns);
+                }
+            }
+        }
+        return Arrays.asList(dataKeys, dataColumns);
     }
 
     @Override

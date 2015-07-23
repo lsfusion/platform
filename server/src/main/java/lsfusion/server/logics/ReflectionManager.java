@@ -547,6 +547,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportField tableKeySidField = new ImportField(reflectionLM.sidTableKey);
         ImportField tableKeyNameField = new ImportField(reflectionLM.nameTableKey);
         ImportField tableKeyClassField = new ImportField(reflectionLM.classTableKey);
+        ImportField tableKeyClassSIDField = new ImportField(reflectionLM.classSIDTableKey);
         ImportField tableColumnSidField = new ImportField(reflectionLM.sidTableColumn);
         ImportField tableColumnLongSIDField = new ImportField(reflectionLM.longSIDTableColumn); 
 
@@ -562,7 +563,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             data.add(Collections.singletonList(tableName));
             ImMap<KeyField, ValueClass> classes = dataTable.getClasses().getCommonParent(dataTable.getTableKeys());
             for (KeyField key : dataTable.keys) {
-                dataKeys.add(asList(tableName, key.getName(), tableName + "." + key.getName(), classes.get(key).getCaption()));
+                dataKeys.add(asList(tableName, key.getName(), tableName + "." + key.getName(), classes.get(key).getCaption(), classes.get(key).getSID()));
             }
             for (PropertyField property : dataTable.properties) {
                 dataProps.add(asList(tableName, property.getName(), tableName + "." + property.getName()));
@@ -576,6 +577,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         propertiesKeys.add(new ImportProperty(tableKeySidField, reflectionLM.sidTableKey.getMapping(tableKeyKey)));
         propertiesKeys.add(new ImportProperty(tableKeyNameField, reflectionLM.nameTableKey.getMapping(tableKeyKey)));
         propertiesKeys.add(new ImportProperty(tableKeyClassField, reflectionLM.classTableKey.getMapping(tableKeyKey)));
+        propertiesKeys.add(new ImportProperty(tableKeyClassSIDField, reflectionLM.classSIDTableKey.getMapping(tableKeyKey)));
         propertiesKeys.add(new ImportProperty(null, reflectionLM.tableTableKey.getMapping(tableKeyKey), reflectionLM.tableSID.getMapping(tableSidField)));
 
         List<ImportProperty<?>> propertiesColumns = new ArrayList<>();
@@ -593,7 +595,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         deleteColumns.add(new ImportDelete(tableColumnKey, LM.is(reflectionLM.tableColumn).getMapping(tableColumnKey), false));
 
         ImportTable table = new ImportTable(Collections.singletonList(tableSidField), data);
-        ImportTable tableKeys = new ImportTable(asList(tableSidField, tableKeyNameField, tableKeySidField, tableKeyClassField), dataKeys);
+        ImportTable tableKeys = new ImportTable(asList(tableSidField, tableKeyNameField, tableKeySidField, tableKeyClassField, tableKeyClassSIDField), dataKeys);
         ImportTable tableColumns = new ImportTable(asList(tableSidField, tableColumnSidField, tableColumnLongSIDField), dataProps);
 
         try {

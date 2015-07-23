@@ -134,6 +134,7 @@ TABLE tableKey (TableKey);
 sidTableKey 'Код ключа' = DATA VARSTRING[100] (TableKey);
 tableKeySID 'Ключ' (sID) = GROUP AGGR tableKey BY sidTableKey (tableKey) WHERE tableKey IS TableKey;
 classTableKey 'Класс ключа' = DATA VARSTRING[40] (TableKey);
+classSIDTableKey 'SID класса ключа' = DATA VARSTRING[100] (TableKey);
 nameTableKey 'Имя ключа' = DATA VARSTRING[20] (TableKey);
 quantityTableKey 'Количество разновидностей' = DATA INTEGER (TableKey);
 
@@ -167,6 +168,7 @@ checkAggregationTableColumn 'Проверить агрегации' = ACTION CUS
 dropDropColumn 'Окончательно удалить колонку' = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
 
 recalculateStats 'Пересчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateStatsActionProperty' ();
+//recalculateStatsMultiThread 'Пересчитать статистику (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateStatsMultiThreadActionProperty' ();
 
 recalculateColumnsAggregationsTable 'Пересчитать агрегации колонок' (table) = ACTION {
     FOR table == tableTableColumn(tableColumn) AND tableColumn IS TableColumn DO {
@@ -215,7 +217,7 @@ FORM physicalModel 'Таблицы'
     PROPERTIES(t) recalculateColumnsAggregationsTable, checkClassesTable, recalculateClassesTable
 
     OBJECTS tk=TableKey
-    PROPERTIES(tk) READONLY classTableKey, nameTableKey, quantityTableKey
+    PROPERTIES(tk) READONLY classTableKey, classSIDTableKey, nameTableKey, quantityTableKey
 
     OBJECTS tc=TableColumn
     PROPERTIES(tc) READONLY sidTableColumn, captionTableColumn, canonicalNameTableColumn, propertyTableColumn, quantityTableColumn, notNullQuantityTableColumn,
@@ -227,7 +229,7 @@ FORM physicalModel 'Таблицы'
     PROPERTIES(dc) READONLY sidTableDropColumn, sidDropColumn, timeDropColumn, revisionDropColumn
     PROPERTIES(dc) dropDropColumn
 
-    PROPERTIES() recalculateStats
+    PROPERTIES() recalculateStats//, recalculateStatsMultiThread
 
     FILTERS
         tableTableKey(tk)==t,
@@ -252,6 +254,7 @@ DESIGN physicalModel {
                     caption = 'Колонки';
                 }
                 MOVE PROPERTY(recalculateStats());
+                //MOVE PROPERTY(recalculateStatsMultiThread());
             }
 
             NEW dropColumnsContainer {

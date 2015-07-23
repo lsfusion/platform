@@ -1563,6 +1563,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return lp;
     }
 
+    public LP[] findProperties(String... names) {
+        LP[] result = new LP[names.length];
+        for (int i = 0; i < names.length; i++) {
+            result[i] = findProperty(names[i]);
+        }
+        return result;
+    }
+
     public LP findProperty(String canonicalName) {
         PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(this, canonicalName);
         try {

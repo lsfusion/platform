@@ -117,6 +117,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP sidTableKey;
     public LCP tableKeySID;
     public LCP classTableKey;
+    public LCP classSIDTableKey;
     public LCP nameTableKey;
     public LCP quantityTableKey;
     public LCP tableTableColumn;
@@ -299,6 +300,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         tableKeySID = findProperty("tableKeySID");
 
         classTableKey = findProperty("classTableKey");
+        classSIDTableKey = findProperty("classSIDTableKey");
         nameTableKey = findProperty("nameTableKey");
 
         quantityTableKey = findProperty("quantityTableKey");

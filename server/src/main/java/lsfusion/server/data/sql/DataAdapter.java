@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 public abstract class DataAdapter extends AbstractConnectionPool implements SQLSyntax, TypePool {
     protected final static Logger logger = Logger.getLogger(DataAdapter.class);
@@ -296,6 +297,17 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     }
     
     public String backupDB(ExecutionContext context, String dumpFileName, List<String> excludeTables) throws IOException, InterruptedException {
+        return null;
+    }
+
+    public String customRestoreDB(String fileBackup, Set<String> tables) throws IOException {
+        return null;
+    }
+
+    public void dropDB(String dbName) throws IOException {
+    }
+
+    public List<List<List<Object>>> readCustomRestoredColumns(String dbName, String table, List<String> keys, List<String> columns) throws SQLException {
         return null;
     }
 
