@@ -7,6 +7,10 @@ saveBackup 'Скачать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackup
 deleteBackup 'Удалить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' (Backup) CONFIRM;
 decimateBackups 'Проредить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
 
+customRestore 'Восстановить таблицы' = ACTION CUSTOM 'lsfusion.erp.utils.backup.CustomRestoreActionProperty' (Backup);
+inCustomRestoreTable 'вкл' = DATA BOOLEAN (Table);
+inCustomRestoreTableColumn 'вкл' = DATA BOOLEAN (TableColumn);
+
 CLASS Backup 'Резервная копия';
 TABLE backup(Backup);
 
@@ -64,9 +68,33 @@ DESIGN backup {
     MOVE functions.box;
 }
 
+FORM backups 'Резервные копии'
+    OBJECTS b=Backup
+    PROPERTIES(b) READONLY nameBackup, fileBackup, fileDeletedBackup
+    FILTERS NOT fileDeletedBackup(b)
+    DIALOG Backup OBJECT b
+;
+
+FORM customRestore 'Восстановление данных'
+    OBJECTS t = Table
+    PROPERTIES(t) inCustomRestoreTable, sidTable READONLY
+    FILTERGROUP active FILTER 'Только включенные' inCustomRestoreTable(t) DEFAULT   
+        
+    OBJECTS tc=TableColumn
+    PROPERTIES(tc) inCustomRestoreTableColumn
+    PROPERTIES(tc) READONLY sidTableColumn, captionTableColumn, canonicalNameTableColumn
+    FILTERS tableTableColumn(tc) == t
+
+    
+    OBJECTS b = Backup FIXED PANEL
+    PROPERTIES(b) nameBackup SELECTOR, customRestore
+    ORDER BY nameBackup(b) DESC
+;
+
 NAVIGATOR {
     configuration {
         ADD backup;
+        ADD customRestore;
     }
 }
 
