@@ -7,6 +7,7 @@ NAMESPACE Service;
 checkAggregationsAction 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsActionProperty' ();
 checkClassesAction 'Проверить классы' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesActionProperty' ();
 recalculateClassesAction 'Пересчитать классы' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesActionProperty' ();
+recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesMultiThreadActionProperty' ();
 recalculateAction 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateActionProperty' ();
 recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateMultiThreadActionProperty' ();
 
@@ -210,7 +211,8 @@ FORM admin 'Администрирование'
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
                  restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, checkClassesAction, 
-                 recalculateClassesAction, recalculateAction, recalculateMultiThreadAction, recalculateFollowsAction, recalculateFollowsMultiThreadAction, 
+                 recalculateClassesAction, recalculateClassesMultiThreadAction, recalculateAction, recalculateMultiThreadAction, 
+                 recalculateFollowsAction, recalculateFollowsMultiThreadAction, 
                  packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
                  vacuumDBAction, serviceDBAction, serviceDBMultiThreadAction, runGarbageCollector, getVMInfo, dropLRU, makeHeapDump, 
                  TILMode, hostnameServerComputer, reupdateMode, singleTransaction,
@@ -256,6 +258,7 @@ DESIGN admin {
         NEW recalculate {
             caption = 'Исправление целостности базы данных';
             MOVE PROPERTY(recalculateClassesAction());
+            MOVE PROPERTY(recalculateClassesMultiThreadAction());
             MOVE PROPERTY(recalculateAction());
             MOVE PROPERTY(recalculateMultiThreadAction());
             MOVE PROPERTY(recalculateFollowsAction());

@@ -48,7 +48,7 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
                         try {
                             if (ThreadLocalContext.get() == null)
                                 ThreadLocalContext.set(threadLocalContext);
-                            while (!Thread.currentThread().isInterrupted() && taskPool.hasTables()) {
+                            while (!Thread.currentThread().isInterrupted() && taskPool.hasProperties()) {
                                 Property property = taskPool.getProperty();
                                 if(property != null)
                                     recalculateFollows(context, property, !singleTransaction);
@@ -112,7 +112,7 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
             } else return null;
         }
 
-        synchronized boolean hasTables() {
+        synchronized boolean hasProperties() {
             return i < propertyList.size();
         }
     }

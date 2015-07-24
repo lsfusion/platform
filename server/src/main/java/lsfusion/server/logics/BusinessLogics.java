@@ -1514,7 +1514,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         final List<String> messageList = new ArrayList<>();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
-        for(final ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
+        for (final ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
             DBManager.run(session, isolatedTransactions, new DBManager.RunService() {
                 public void run(SQLSession sql) throws SQLException, SQLHandledException {
                     long start = System.currentTimeMillis();
@@ -1522,7 +1522,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     long time = System.currentTimeMillis() - start;
                     String message = String.format("Recalculate Table Classes: %s, %s", implementTable.toString(), time);
                     serviceLogger.info(message);
-                    if(time > maxRecalculateTime)
+                    if (time > maxRecalculateTime)
                         messageList.add(message);
                 }
             });
@@ -1536,9 +1536,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     long time = System.currentTimeMillis() - start;
                     String message = String.format("Recalculate Class: %s, %s", property.getSID(), time);
                     serviceLogger.info(message);
-                    if(time > maxRecalculateTime)
+                    if (time > maxRecalculateTime)
                         messageList.add(message);
-                }});
+                }
+            });
         return formatMessageList(messageList);
     }
 
