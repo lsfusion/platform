@@ -1408,7 +1408,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public String recalculateFollows(SessionCreator creator, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        final List<String> messageList = new ArrayList<String>();
+        final List<String> messageList = new ArrayList<>();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
         for (Property property : getPropertyList())
             if (property instanceof ActionProperty) {
@@ -1418,7 +1418,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     try {
                         DBManager.runData(creator, isolatedTransaction, new DBManager.RunServiceData() {
                             public void run(SessionCreator session) throws SQLException, SQLHandledException {
-                                ((DataSession)session).resolve(action);
+                                ((DataSession) session).resolve(action);
                             }
                         });
                     } catch (LogMessageLogicsException e) { // suppress'им так как понятная ошибка
@@ -1427,8 +1427,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     long time = System.currentTimeMillis() - start;
                     String message = String.format("Recalculate Follows: %s, %sms", property.getSID(), time);
                     serviceLogger.info(message);
-                    if(time > maxRecalculateTime)
-                        messageList.add(message);                    
+                    if (time > maxRecalculateTime)
+                        messageList.add(message);
                 }
             }
         return formatMessageList(messageList);
