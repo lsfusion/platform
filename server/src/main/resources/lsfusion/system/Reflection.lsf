@@ -168,7 +168,7 @@ checkAggregationTableColumn 'Проверить агрегации' = ACTION CUS
 dropDropColumn 'Окончательно удалить колонку' = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
 
 recalculateStats 'Пересчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateStatsActionProperty' ();
-//recalculateStatsMultiThread 'Пересчитать статистику (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateStatsMultiThreadActionProperty' ();
+recalculateStatsMultiThread 'Пересчитать статистику (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateStatsMultiThreadActionProperty' ();
 
 recalculateColumnsAggregationsTable 'Пересчитать агрегации колонок' (table) = ACTION {
     FOR table == tableTableColumn(tableColumn) AND tableColumn IS TableColumn DO {
@@ -229,7 +229,7 @@ FORM physicalModel 'Таблицы'
     PROPERTIES(dc) READONLY sidTableDropColumn, sidDropColumn, timeDropColumn, revisionDropColumn
     PROPERTIES(dc) dropDropColumn
 
-    PROPERTIES() recalculateStats//, recalculateStatsMultiThread
+    PROPERTIES() recalculateStats, recalculateStatsMultiThread
 
     FILTERS
         tableTableKey(tk)==t,
@@ -254,7 +254,7 @@ DESIGN physicalModel {
                     caption = 'Колонки';
                 }
                 MOVE PROPERTY(recalculateStats());
-                //MOVE PROPERTY(recalculateStatsMultiThread());
+                MOVE PROPERTY(recalculateStatsMultiThread());
             }
 
             NEW dropColumnsContainer {

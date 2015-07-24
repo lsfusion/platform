@@ -1383,10 +1383,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public void recalculateClassStat(DataSession session) throws SQLException, SQLHandledException {
-        for(ObjectValueClassSet tableClasses : LM.baseClass.getUpObjectClassFields().valueIt()) {
+        for (ObjectValueClassSet tableClasses : LM.baseClass.getUpObjectClassFields().valueIt()) {
             long start = System.currentTimeMillis();
             serviceLogger.info(String.format("Recalculate Stats: %s", String.valueOf(tableClasses)));
-            QueryBuilder<Integer, Integer> classes = new QueryBuilder<Integer, Integer>(SetFact.singleton(0));
+            QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
 
             KeyExpr countKeyExpr = new KeyExpr("count");
             Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(LM.baseClass)),
@@ -1397,10 +1397,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
             ImSet<ConcreteCustomClass> concreteChilds = tableClasses.getSetConcreteChildren();
-            for(int i=0,size=concreteChilds.size();i<size;i++) {
+            for (int i = 0, size = concreteChilds.size(); i < size; i++) {
                 ConcreteCustomClass customClass = concreteChilds.get(i);
                 ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, (Object) customClass.ID));
-                LM.statCustomObjectClass.change(classStat==null ? 1 : (Integer)classStat.singleValue(), session, customClass.getClassObject());
+                LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
             }
             long time = System.currentTimeMillis() - start;
             serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(tableClasses), time));
