@@ -63,7 +63,9 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
                                 bl.getComputer(SystemUtils.getLocalHostName()), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(),
                                 osVersion, processor, architecture, cores, physicalMemory, totalMemory, maximumMemory, freeMemory,
                                 javaVersion, null), true);
-//                        RemoteNavigatorInterface unsynced = bl.createNavigator(true, username, password, bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion + memory, javaVersion, true);
+//                        RemoteNavigatorInterface unsynced = bl.createNavigator(true, new NavigatorInfo(username, password, 
+//                                bl.getComputer(SystemUtils.getLocalHostName()), "127.0.0.1", osVersion, processor, architecture, 
+//                                cores, physicalMemory, totalMemory, maximumMemory, freeMemory, javaVersion, null), true);
                         if (unsynced == null) {
                             throw new IllegalStateException("Не могу создать навигатор.");
                         }
@@ -81,9 +83,13 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
 
     public void onInvalidate() {
         // пока не null'им навигатор, а то потом он собирается через unreferenced и убивает все свои формы
-//        synchronized (navigatorLock) {
-//            navigator = null;
-//        }
+//        invalidate();
+    }
+    
+    public void invalidate() {
+        synchronized (navigatorLock) {
+            navigator = null;
+        }
     }
 
     @Override

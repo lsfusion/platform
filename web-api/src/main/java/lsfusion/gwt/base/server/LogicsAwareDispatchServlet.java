@@ -2,6 +2,16 @@ package lsfusion.gwt.base.server;
 
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
+import lsfusion.gwt.base.server.dispatch.SecuredAction;
+import lsfusion.gwt.base.server.exceptions.RemoteDispatchException;
+import lsfusion.gwt.base.server.exceptions.RemoteFormDispatchException;
+import lsfusion.gwt.base.server.exceptions.RemoteNavigatorDispatchException;
+import lsfusion.gwt.base.server.spring.BusinessLogicsProvider;
+import lsfusion.gwt.base.server.spring.NavigatorProvider;
+import lsfusion.gwt.base.shared.InvalidateException;
+import lsfusion.gwt.base.shared.MessageException;
+import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.DefaultActionHandlerRegistry;
 import net.customware.gwt.dispatch.server.Dispatch;
 import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
@@ -15,14 +25,6 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
-import lsfusion.gwt.base.server.dispatch.SecuredAction;
-import lsfusion.gwt.base.server.exceptions.RemoteDispatchException;
-import lsfusion.gwt.base.server.spring.BusinessLogicsProvider;
-import lsfusion.gwt.base.server.spring.NavigatorProvider;
-import lsfusion.gwt.base.shared.InvalidateException;
-import lsfusion.gwt.base.shared.MessageException;
-import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.navigator.RemoteNavigatorInterface;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -139,10 +141,16 @@ public abstract class LogicsAwareDispatchServlet<T extends RemoteLogicsInterface
             }
             return dispatch.execute(action);
         } catch (RemoteDispatchException e) {
-//            blProvider.invalidate();
-
             logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e.getRemote());
-            throw new InvalidateException("Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.");
+            if (e instanceof RemoteFormDispatchException) {
+                throw new InvalidateException(action, "Внутренняя ошибка сервера. Форма будет закрыта.");
+            } else if (e instanceof RemoteNavigatorDispatchException) {
+                navigatorProvider.invalidate();
+                throw new InvalidateException(action, "Внутренняя ошибка сервера. Попробуйте повторить действие или войти заново.");
+            } else {
+                blProvider.invalidate();
+                throw new InvalidateException(action, "Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.");
+            }
         } catch (MessageException e) {
             logger.error("Ошибка в LogicsAwareDispatchServlet.execute: ", e);
             throw new MessageException("Внутренняя ошибка сервера: " + e.getMessage());

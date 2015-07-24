@@ -1,10 +1,9 @@
 package lsfusion.gwt.form.server.navigator.handlers;
 
-import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 import lsfusion.client.logics.DeSerializer;
 import lsfusion.client.navigator.ClientAbstractWindow;
 import lsfusion.client.navigator.ClientNavigatorWindow;
+import lsfusion.gwt.base.server.dispatch.NavigatorActionHandler;
 import lsfusion.gwt.base.server.dispatch.SimpleActionHandlerEx;
 import lsfusion.gwt.form.server.FormDispatchServlet;
 import lsfusion.gwt.form.server.convert.ClientNavigatorToGwtConverter;
@@ -14,12 +13,14 @@ import lsfusion.gwt.form.shared.view.GNavigatorElement;
 import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
 import lsfusion.gwt.form.shared.view.window.GNavigatorWindow;
 import lsfusion.interop.RemoteLogicsInterface;
+import net.customware.gwt.dispatch.server.ExecutionContext;
+import net.customware.gwt.dispatch.shared.DispatchException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GetNavigatorInfoHandler extends SimpleActionHandlerEx<GetNavigatorInfo, GetNavigatorInfoResult, RemoteLogicsInterface> {
+public class GetNavigatorInfoHandler extends SimpleActionHandlerEx<GetNavigatorInfo, GetNavigatorInfoResult, RemoteLogicsInterface> implements NavigatorActionHandler {
 
     public GetNavigatorInfoHandler(FormDispatchServlet servlet) {
         super(servlet);

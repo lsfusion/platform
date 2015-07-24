@@ -9,12 +9,12 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.EscapeUtils;
 
 public class DialogBoxHelper {
-    public static interface CloseCallback {
-        public void closed(OptionType chosenOption);
+    public interface CloseCallback {
+        void closed(OptionType chosenOption);
     }
 
-    public static enum OptionType {
-        YES, NO, CLOSE;
+    public enum OptionType {
+        YES, NO, CLOSE, LOGOUT;
 
         public String getCaption() {
             //todo: localize
@@ -22,6 +22,7 @@ public class DialogBoxHelper {
                 case YES: return "Yes";
                 case NO: return "No";
                 case CLOSE: return "Close";
+                case LOGOUT: return "Logout";
             }
             throw new IllegalStateException("Shouldn't happen");
         }
@@ -34,6 +35,7 @@ public class DialogBoxHelper {
                 case YES: return 0;
                 case NO: return 1;
                 case CLOSE: return 0;
+                case LOGOUT: return 1;
             }
             throw new IllegalStateException("Shouldn't happen");
         }
@@ -69,6 +71,10 @@ public class DialogBoxHelper {
             options = new OptionType[]{OptionType.YES, OptionType.NO, OptionType.CLOSE};
         MessageBox messageBox = new MessageBox(caption, escapedIf(message, escapeMessage), timeout, closeCallback, options[initialValue], options);
         messageBox.showCenter();
+    }
+    
+    public static void showLogoutMessageBox(String caption, String message, CloseCallback callback) {
+        new MessageBox(caption, message, 0, callback, OptionType.CLOSE, OptionType.CLOSE, OptionType.LOGOUT).showCenter();
     }
 
     private static final class MessageBox extends DialogBox {

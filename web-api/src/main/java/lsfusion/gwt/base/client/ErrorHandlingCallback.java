@@ -5,7 +5,9 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
+import lsfusion.gwt.base.shared.InvalidateException;
 import lsfusion.gwt.base.shared.MessageException;
+import lsfusion.gwt.base.shared.actions.NavigatorAction;
 
 import static lsfusion.gwt.base.client.GwtClientUtils.baseMessages;
 
@@ -25,13 +27,28 @@ public class ErrorHandlingCallback<T> extends AsyncCallbackEx<T> {
         showErrorMessage(caught);
     }
 
-    protected void showErrorMessage(Throwable caught) {
+    protected void showErrorMessage(final Throwable caught) {
         String message = getServerMessage(caught);
         if (message != null) {
             DialogBoxHelper.showMessageBox(true, "Error: ", message, null);
             return;
         } else if (caught instanceof RequestTimeoutException) {
             DialogBoxHelper.showMessageBox(true, "Error: ", baseMessages.actionTimeoutErrorMessage(), false, null);
+            return;
+        } else if (caught instanceof InvalidateException) {
+            DialogBoxHelper.CloseCallback closeCallback = new DialogBoxHelper.CloseCallback() {
+                @Override
+                public void closed(DialogBoxHelper.OptionType chosenOption) {
+                    switch (chosenOption) {
+                        case LOGOUT: GwtClientUtils.logout();
+                    }
+                }
+            };
+            if (((InvalidateException) caught).action instanceof NavigatorAction) {
+                DialogBoxHelper.showLogoutMessageBox("Error: ", caught.getMessage(), closeCallback);
+            } else {
+                DialogBoxHelper.showMessageBox(true, "Error: ",  caught.getMessage(), closeCallback);
+            }
             return;
         } else if (caught instanceof StatusCodeException) {
             StatusCodeException statusEx = (StatusCodeException) caught;

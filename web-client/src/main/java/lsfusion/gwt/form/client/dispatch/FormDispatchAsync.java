@@ -3,14 +3,15 @@ package lsfusion.gwt.form.client.dispatch;
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
-import net.customware.gwt.dispatch.shared.Action;
-import net.customware.gwt.dispatch.shared.Result;
 import lsfusion.gwt.base.client.AsyncCallbackEx;
+import lsfusion.gwt.base.shared.InvalidateException;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.actions.form.FormBoundAction;
 import lsfusion.gwt.form.shared.actions.form.FormRequestIndexCountingAction;
 import lsfusion.gwt.form.shared.view.GForm;
+import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
+import net.customware.gwt.dispatch.shared.Action;
+import net.customware.gwt.dispatch.shared.Result;
 
 import java.util.LinkedList;
 
@@ -82,7 +83,10 @@ public class FormDispatchAsync {
     }
 
     private void execNextAction() {
-        q.remove().procceed();
+        Throwable result = q.remove().procceed();
+        if (result != null && result instanceof InvalidateException) {
+            formController.hideForm();
+        }
     }
 
     public <A extends FormBoundAction<R>, R extends Result> void executePriorityAction(final A action, final AsyncCallback<R> callback) {

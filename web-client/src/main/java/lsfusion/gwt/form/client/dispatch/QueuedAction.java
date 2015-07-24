@@ -1,9 +1,9 @@
 package lsfusion.gwt.form.client.dispatch;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import lsfusion.gwt.form.shared.actions.form.FormRequestIndexCountingAction;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
-import lsfusion.gwt.form.shared.actions.form.FormRequestIndexCountingAction;
 
 public class QueuedAction<R extends Result> {
     public Action<R> action;
@@ -31,7 +31,7 @@ public class QueuedAction<R extends Result> {
         this.throwable = t;
     }
 
-    public void procceed() {
+    public Throwable procceed() {
         assert finished;
 
         if (succeded) {
@@ -39,6 +39,7 @@ public class QueuedAction<R extends Result> {
         } else {
             callback.onFailure(throwable);
         }
+        return throwable;
     }
 
     public int getRequestIndex() {

@@ -1,15 +1,16 @@
 package lsfusion.gwt.form.server.form.handlers;
 
-import net.customware.gwt.dispatch.server.ExecutionContext;
-import net.customware.gwt.dispatch.shared.DispatchException;
 import lsfusion.base.BaseUtils;
+import lsfusion.gwt.base.server.dispatch.NavigatorActionHandler;
 import lsfusion.gwt.form.server.FormDispatchServlet;
 import lsfusion.gwt.form.shared.actions.GetForm;
 import lsfusion.gwt.form.shared.actions.GetFormResult;
+import net.customware.gwt.dispatch.server.ExecutionContext;
+import net.customware.gwt.dispatch.shared.DispatchException;
 
 import java.io.IOException;
 
-public class GetFormHandler extends FormActionHandler<GetForm, GetFormResult> {
+public class GetFormHandler extends FormActionHandler<GetForm, GetFormResult> implements NavigatorActionHandler {
     public GetFormHandler(FormDispatchServlet servlet) {
         super(servlet);
     }
