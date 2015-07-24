@@ -91,7 +91,8 @@ sumPlusOneBlockingProcess 'Кол-во блокирующих процессов
 sumBlockingProcess 'Глубина блокировки' (process) = sumPlusOneBlockingProcess(process) - 1;
 
 activeSQLProcess (i) = querySQLProcess(i) AND isActiveSQLProcess(i);
-activeJavaProcess (i) = statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i)
+activeJavaBlockingProcess (i) = statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJavaProcess(i);
+activeJavaProcess (i) = activeJavaBlockingProcess(i)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.DualStackPlainSocketImpl') == 1)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'sun.awt.windows.WToolkit.eventLoop') == 1)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.SocketInputStream.socketRead0') == 1)
@@ -100,6 +101,7 @@ activeJavaProcess (i) = statusJavaProcess(i) == 'RUNNABLE' AND hasStackTraceJava
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.net.PlainSocketImpl') == 1)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.io.FileInputStream.readBytes') == 1)
                                    AND NOT (startsWith(stackTraceJavaProcess(i), 'java.lang.UNIXProcess.waitForProcessExit') == 1);
+activeBlockingProcess 'Активный' (i) = activeSQLProcess(i) OR activeJavaBlockingProcess(i);
 activeProcess 'Активный' (i) = activeSQLProcess(i) OR activeJavaProcess(i);
 
 blockedProcess 'Заблокированный' (i) = statusJavaProcess(i) == 'BLOCKED' OR lockOwnerIdProcess(i);             
@@ -146,7 +148,7 @@ FORM processMonitor 'Монитор процессов'
                             lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                             lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
-    FILTERS idThreadProcess(i2), (activeProcess(i2) AND sumBlockedProcess(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') 
+    FILTERS idThreadProcess(i2), (activeBlockingProcess(i2) AND sumBlockedProcess(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') 
     
     OBJECTS blocked = INTEGER, blocking = INTEGER
     PROPERTIES(blocked) READONLY idThreadProcess, isDeadlockProcess, 
