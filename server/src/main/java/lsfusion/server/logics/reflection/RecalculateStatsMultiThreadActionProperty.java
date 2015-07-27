@@ -56,13 +56,14 @@ public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionPr
                         try {
                             if (ThreadLocalContext.get() == null)
                                 ThreadLocalContext.set(threadLocalContext);
-                            DataSession session = context.createSession();
-                            while (!Thread.currentThread().isInterrupted() && taskPool.hasTables()) {
-                                ImplementTable table = taskPool.getTable();
-                                if (table != null)
-                                    recalculateStats(context, session, table);
+                            try (DataSession session = context.createSession()) {
+                                while (!Thread.currentThread().isInterrupted() && taskPool.hasTables()) {
+                                    ImplementTable table = taskPool.getTable();
+                                    if (table != null)
+                                        recalculateStats(context, session, table);
+                                }
+                                session.apply(context.getBL());
                             }
-                            session.apply(context.getBL());
                         } catch (SQLException | SQLHandledException e) {
                             serviceLogger.error("Recalculate stats error", e);
                         }
@@ -81,13 +82,14 @@ public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionPr
                         try {
                             if (ThreadLocalContext.get() == null)
                                 ThreadLocalContext.set(threadLocalContext);
-                            DataSession session = context.createSession();
-                            while (!Thread.currentThread().isInterrupted() && taskPool.hasTableClasses()) {
-                                ObjectValueClassSet tableClass = taskPool.getTableClass();
-                                if (tableClass != null)
-                                    recalculateClassStat(context, session, tableClass);
+                            try (DataSession session = context.createSession()) {
+                                while (!Thread.currentThread().isInterrupted() && taskPool.hasTableClasses()) {
+                                    ObjectValueClassSet tableClass = taskPool.getTableClass();
+                                    if (tableClass != null)
+                                        recalculateClassStat(context, session, tableClass);
+                                }
+                                session.apply(context.getBL());
                             }
-                            session.apply(context.getBL());
                         } catch (SQLException | SQLHandledException e) {
                             serviceLogger.error("Recalculate stats error", e);
                         }
