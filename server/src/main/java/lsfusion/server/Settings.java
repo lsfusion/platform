@@ -1241,6 +1241,26 @@ public class Settings {
         this.subQueriesSplit = subQueriesSplit;
     }
 
+    private int subQueriesRowsThreshold = 1000; // до какого числа рядов не обращать внимание на статистику
+
+    public int getSubQueriesRowsThreshold() {
+        return subQueriesRowsThreshold;
+    }
+
+    public void setSubQueriesRowsThreshold(int subQueriesRowsThreshold) {
+        this.subQueriesRowsThreshold = subQueriesRowsThreshold;
+    }
+
+    private int subQueriesRowCountCoeff = 1; // коэффициент, для оценки  - определяет баланс между размером таблицы, количеством подзапросов
+
+    public int getSubQueriesRowCountCoeff() {
+        return subQueriesRowCountCoeff;
+    }
+
+    public void setSubQueriesRowCountCoeff(int subQueriesRowCountCoeff) {
+        this.subQueriesRowCountCoeff = subQueriesRowCountCoeff;
+    }
+
     private int explainThreshold = 100;
 
     public int getExplainThreshold() {
@@ -1339,5 +1359,15 @@ public class Settings {
 
     public void setUseUserChangesSync(boolean useUserChangesSync) {
         this.useUserChangesSync = useUserChangesSync;
+    }
+
+    private boolean packStatBackwardCompatibility = false;
+
+    public boolean isPackStatBackwardCompatibility() {
+        return packStatBackwardCompatibility;
+    }
+
+    public void setPackStatBackwardCompatibility(boolean packStatBackwardCompatibility) {
+        this.packStatBackwardCompatibility = packStatBackwardCompatibility;
     }
 }

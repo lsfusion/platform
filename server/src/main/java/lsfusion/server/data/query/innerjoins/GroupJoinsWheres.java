@@ -124,8 +124,10 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
 
     public <K extends BaseExpr> GroupJoinsWheres pack(ImSet<K> keepStat, KeyStat keyStat, Type type, Where where, boolean intermediate, ImOrderSet<Expr> orderTop) {
         assert !intermediate || isExceededIntermediatePackThreshold();
-        if(intermediate && type.isStat()) // самый быстрый способ сохранить статистику, проверка на intermediate чтобы не было рекурсии
+
+        if(Settings.get().isPackStatBackwardCompatibility() && intermediate && type.isStat()) // !!! НЕПРАВИЛЬНАЯ ОПТИМИЗАЦИЯ, смотри коммент внизу, самый быстрый способ сохранить статистику, проверка на intermediate чтобы не было рекурсии
             return new GroupJoinsWheres(new StatKeysJoin<K>(getStatKeys(keepStat, keyStat)), where, type);
+
         GroupJoinsWheres result = pack(keepStat, keyStat, type.isStat() || intermediate); // savestat нужно для более правильной статистикой, для intermediate тоже важна статистика так как сверху могут добавиться еще and'ы, а значит некоторые node'ы уйти и статистика может потеряться
 //        GroupJoinsWheres result = packMeans(keepStat, keyStat, intermediate);
         if(result.size() == 1) { // оптимизация

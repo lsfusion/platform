@@ -1,6 +1,7 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -234,9 +235,11 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         private SQLQuery query;
         private Node parent;
 
-        public Node(SQLQuery query, Node parent) {
+        public Node(SQLQuery query, Node parent, SQLCommand command) {
             this.query = query;
             this.parent = parent;
+
+            size = command.getCost(MapFact.<SQLQuery, Stat>EMPTY()).rows.getWeight();
 
             if(parent != null) {
                 parent.children.add(this);
@@ -244,13 +247,14 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         }
 
         private int degree = 1;
+        private final int size;
         private Set<Node> children = new HashSet<Node>();
     }
 
     private static void recCreateNode(SQLCommand<?> command, Node parent, ImSet<SQLQuery> materializedQueries, Set<Node> nodes) {
         for(SQLQuery subQuery : command.subQueries.values()) {
             if(!materializedQueries.contains(subQuery)) {
-                Node subNode = new Node(subQuery, parent);
+                Node subNode = new Node(subQuery, parent, subQuery);
                 recCreateNode(subQuery, subNode, materializedQueries, nodes);
                 nodes.add(subNode);
                 if(parent != null)
@@ -272,16 +276,26 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
         Set<Node> nodes = new HashSet<>();
         ServerLoggers.assertLog(outerQueries.containsAll(step.getMaterializedQueries()), "SHOULD CONTAIN ALL"); // может включать еще "верхние"
-        recCreateNode(command, new Node(null, null), outerQueries, nodes); // не важно inner или нет
+        final Node topNode = new Node(null, null, command);
+        recCreateNode(command, topNode, outerQueries, nodes); // не важно inner или нет
         if(nodes.isEmpty()) {
             return new Step(true, step); // включение disableNestedLoop
         }
 
-        final int target = (int) Math.round(((double)nodes.size()) / Settings.get().getSubQueriesSplit());
+        int split = Settings.get().getSubQueriesSplit();
+        final int threshold = new Stat(Settings.get().getSubQueriesRowsThreshold()).getWeight();
+        final int coeff = Settings.get().getSubQueriesRowCountCoeff();
+
+        final int target = (int) Math.round(((double)nodes.size()) / split);
 
         Comparator<Node> comparator = new Comparator<Node>() {
             private int getPriority(Node o) {
-                return Math.abs(o.degree - target);
+                if(o == topNode) {
+                    if(o.degree > target) // если больше target по сути запретим выбирать
+                        return Integer.MAX_VALUE;
+                }
+
+                return BaseUtils.max(o.size, threshold) * coeff + Math.abs(o.degree - target);
             }
             public int compare(Node o1, Node o2) {
                 return Integer.compare(getPriority(o1), getPriority(o2));
