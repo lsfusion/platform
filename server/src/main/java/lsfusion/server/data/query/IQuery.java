@@ -90,7 +90,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     }
 
     public String readSelect(SQLSession session) throws SQLException, SQLHandledException {
-        return readSelect(session,  DataSession.emptyEnv(OperationOwner.debug));
+        return readSelect(session,  DataSession.emptyEnv(OperationOwner.unknown));
     }
     public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
         return compile(new CompileOptions(session.syntax)).readSelect(session, env);

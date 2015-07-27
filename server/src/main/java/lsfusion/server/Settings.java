@@ -1351,7 +1351,7 @@ public class Settings {
         this.divStatUpdateTypeHeur = divStatUpdateTypeHeur;
     }
 
-    private boolean useUserChangesSync = false; // использовать для пользователя синхронизацию изменений
+    private boolean useUserChangesSync = true; // использовать для пользователя синхронизацию изменений
 
     public boolean getUseUserChangesSync() {
         return useUserChangesSync;
