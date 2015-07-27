@@ -28,6 +28,8 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LCP singleTransaction;
 
     public LAP recalculateMultiThreadAction;
+    public LAP recalculateClassesMultiThreadAction;
+    public LAP recalculateFollowsMultiThreadAction;
 
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ServiceLogicsModule.class.getResourceAsStream("/lsfusion/system/Service.lsf"), "/lsfusion/system/Service.lsf", baseLM, BL);
@@ -49,5 +51,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         singleTransaction = findProperty("singleTransaction");
 
         recalculateMultiThreadAction = findAction("recalculateMultiThreadAction");
+        recalculateClassesMultiThreadAction = findAction("recalculateClassesMultiThreadAction");
+        recalculateFollowsMultiThreadAction = findAction("recalculateFollowsMultiThreadAction");
     }
 }

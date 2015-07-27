@@ -22,12 +22,6 @@ public class ServiceDBMultiThreadActionProperty extends ScriptingActionProperty 
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        run(context, new RunService() {
-            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                String result = context.getBL().recalculateClasses(session, isolatedTransaction);
-                if(result != null)
-                    context.delayUserInterfaction(new MessageClientAction(result, getString("logics.service.db")));
-            }});
 
         run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
@@ -36,22 +30,23 @@ public class ServiceDBMultiThreadActionProperty extends ScriptingActionProperty 
 
         run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getDbManager().packTables(session, context.getBL().LM.tableFactory.getImplementTables(), isolatedTransaction);
-            }});
+                context.getBL().serviceLM.recalculateClassesMultiThreadAction.execute(context);
+            }
+        });
 
-        SQLSession sqlSession = context.getSession().sql;
-        context.getDbManager().analyzeDB(sqlSession);
+        context.getDbManager().analyzeDB(context.getSession().sql);
 
-        runData(context, new RunServiceData() {
-            public void run(SessionCreator session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                String result = context.getBL().recalculateFollows(session, isolatedTransaction);
-                if(result != null)
-                    context.delayUserInterfaction(new MessageClientAction(result, getString("logics.service.db")));
-            }});
+        run(context, new RunService() {
+            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+                context.getBL().serviceLM.recalculateFollowsMultiThreadAction.execute(context);
+            }
+        });
 
-        DataSession dataSession = context.getSession();
-        context.getBL().recalculateStats(dataSession);
-        dataSession.apply(context);
+        run(context, new RunService() {
+            public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+                context.getBL().reflectionLM.recalculateStatsMultiThreadAction.execute(context);
+            }
+        });
 
         context.delayUserInterfaction(new MessageClientAction(getString("logics.service.db.completed"), getString("logics.service.db")));
     }
