@@ -56,7 +56,7 @@ public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionPr
                         try {
                             if (ThreadLocalContext.get() == null)
                                 ThreadLocalContext.set(threadLocalContext);
-                            try (DataSession session = context.createSession()) {
+                            try (DataSession session = context.getDbManager().createSession()) {
                                 while (!Thread.currentThread().isInterrupted() && taskPool.hasTables()) {
                                     ImplementTable table = taskPool.getTable();
                                     if (table != null)
@@ -82,7 +82,7 @@ public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionPr
                         try {
                             if (ThreadLocalContext.get() == null)
                                 ThreadLocalContext.set(threadLocalContext);
-                            try (DataSession session = context.createSession()) {
+                            try (DataSession session = context.getDbManager().createSession()) {
                                 while (!Thread.currentThread().isInterrupted() && taskPool.hasTableClasses()) {
                                     ObjectValueClassSet tableClass = taskPool.getTableClass();
                                     if (tableClass != null)

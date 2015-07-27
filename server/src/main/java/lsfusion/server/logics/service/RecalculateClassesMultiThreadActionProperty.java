@@ -54,7 +54,7 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
                         try {
                             if (ThreadLocalContext.get() == null)
                                 ThreadLocalContext.set(threadLocalContext);
-                            try(DataSession session = context.createSession()) {
+                            try (DataSession session = context.getDbManager().createSession()) {
                                 while (!Thread.currentThread().isInterrupted() && taskPool.hasTables()) {
                                     ImplementTable table = taskPool.getTable();
                                     if (table != null)
@@ -80,7 +80,7 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
                         try {
                             if (ThreadLocalContext.get() == null)
                                 ThreadLocalContext.set(threadLocalContext);
-                            try(DataSession session = context.createSession()) {
+                            try (DataSession session = context.getDbManager().createSession()) {
                                 while (!Thread.currentThread().isInterrupted() && taskPool.hasProperties()) {
                                     CalcProperty property = taskPool.getProperty();
                                     if (property != null)
@@ -106,7 +106,7 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
                         try {
                             if (ThreadLocalContext.get() == null)
                                 ThreadLocalContext.set(threadLocalContext);
-                            try(DataSession session = context.createSession()) {
+                            try (DataSession session = context.getDbManager().createSession()) {
                                 while (!Thread.currentThread().isInterrupted() && taskPool.hasPackTables()) {
                                     ImplementTable table = taskPool.getPackTable();
                                     if (table != null)
@@ -151,7 +151,8 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
                 property.recalculateClasses(sql, LM.baseLM.baseClass);
                 long time = System.currentTimeMillis() - start;
                 serviceLogger.info(String.format("Recalculate Class: %s, %s", property.getSID(), time));
-            }});
+            }
+        });
     }
 
     public void packTable(final ImplementTable table, DataSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
@@ -160,7 +161,8 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
             @Override
             public void run(SQLSession sql) throws SQLException, SQLHandledException {
                 sql.packTable(table, OperationOwner.unknown, TableOwner.global);
-            }});
+            }
+        });
         serviceLogger.info("Done");
     }
 
@@ -169,14 +171,14 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
     }
 
     private static void run(SQLSession session, boolean runInTransaction, RunService run, int attempts) throws SQLException, SQLHandledException {
-        if(runInTransaction) {
+        if (runInTransaction) {
             session.startTransaction(RECALC_TIL, OperationOwner.unknown);
             try {
                 run.run(session);
                 session.commitTransaction();
             } catch (Throwable t) {
                 session.rollbackTransaction();
-                if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
+                if (t instanceof SQLHandledException && ((SQLHandledException) t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
                     run(session, true, run, attempts + 1);
                     return;
                 }
@@ -200,6 +202,7 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
         int i, j, k;
         ImSet<ImplementTable> tables;
         ImOrderSet<CalcProperty> storedDataProperties;
+
         public TaskPool(ImSet<ImplementTable> tables, ImOrderSet<CalcProperty> storedDataProperties) {
             this.tables = tables;
             this.storedDataProperties = storedDataProperties;

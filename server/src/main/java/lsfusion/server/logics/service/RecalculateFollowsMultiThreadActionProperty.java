@@ -50,7 +50,7 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
                                 ThreadLocalContext.set(threadLocalContext);
                             while (!Thread.currentThread().isInterrupted() && taskPool.hasProperties()) {
                                 Property property = taskPool.getProperty();
-                                if(property != null)
+                                if (property != null)
                                     recalculateFollows(context, property, !singleTransaction);
                             }
                         } catch (SQLException | SQLHandledException e) {
@@ -70,14 +70,13 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
         }
     }
 
-
-    public void recalculateFollows(SessionCreator creator, Property property, boolean isolatedTransaction) throws SQLException, SQLHandledException {
+    public void recalculateFollows(ExecutionContext context, Property property, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         if (property instanceof ActionProperty) {
             final ActionProperty<?> action = (ActionProperty) property;
             if (action.hasResolve()) {
                 long start = System.currentTimeMillis();
                 try {
-                    DBManager.runData(creator, isolatedTransaction, new DBManager.RunServiceData() {
+                    context.getDbManager().runDataMultiThread(context, isolatedTransaction, new DBManager.RunServiceData() {
                         public void run(SessionCreator session) throws SQLException, SQLHandledException {
                             ((DataSession) session).resolve(action);
                         }
@@ -98,6 +97,7 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
     public class TaskPool {
         int i;
         ImOrderSet<Property> propertyList;
+
         public TaskPool(ImOrderSet<Property> propertyList) {
             this.propertyList = propertyList;
             i = 0;
