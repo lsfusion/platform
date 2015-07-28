@@ -1450,7 +1450,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for(ImplementTable implementTable : LM.tableFactory.getImplementTables()) {
             message += DataSession.checkTableClasses(implementTable, session, LM.baseClass);
         }
-        for (CalcProperty property : getStoredDataProperties(false)) // getStoredProperties()
+        for (CalcProperty property : getStoredDataProperties(false))
             message += DataSession.checkClasses(property, session, LM.baseClass);
         return message;
     }

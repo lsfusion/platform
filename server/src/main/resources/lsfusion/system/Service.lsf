@@ -6,12 +6,13 @@ NAMESPACE Service;
 
 checkAggregationsAction 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsActionProperty' ();
 checkClassesAction 'Проверить классы' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesActionProperty' ();
-
 recalculateClassesAction 'Пересчитать классы' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesActionProperty' ();
 recalculateAction 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateActionProperty' ();
 recalculateFollowsAction 'Пересчитать следствия и ограничения' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty' ();
 recalculateStatsAction 'Пересчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateStatsActionProperty' ();
 
+checkAggregationsCustomThreadAction 'Проверить агрегации (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsMultiThreadActionProperty' (INTEGER);
+checkClassesCustomThreadAction 'Проверить классы (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesMultiThreadActionProperty' (INTEGER);
 recalculateClassesCustomThreadAction 'Пересчитать классы (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesMultiThreadActionProperty' (INTEGER);
 recalculateCustomThreadAction 'Пересчитать агрегации (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateMultiThreadActionProperty' (INTEGER);
 recalculateFollowsCustomThreadAction 'Пересчитать следствия и ограничения (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsMultiThreadActionProperty' (INTEGER);
@@ -19,6 +20,8 @@ recalculateStatsCustomThreadAction 'Пересчитать статистику 
 
 threadCountMultiThread 'Количество потоков' = DATA LOCAL INTEGER (); 
 overThreadCountMultiThread () = OVERRIDE 0, threadCountMultiThread();
+checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно)' = ACTION checkAggregationsCustomThreadAction(overThreadCountMultiThread());
+checkClassesMultiThreadAction 'Проверить классы (многопоточно)' = ACTION checkClassesCustomThreadAction(overThreadCountMultiThread());
 recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно)' = ACTION recalculateClassesCustomThreadAction(overThreadCountMultiThread());
 recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно)' = ACTION recalculateCustomThreadAction(overThreadCountMultiThread());
 recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно)' = ACTION recalculateFollowsCustomThreadAction (overThreadCountMultiThread());
@@ -221,7 +224,8 @@ FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
-                 restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), checkAggregationsAction, checkClassesAction, 
+                 restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), 
+                 checkAggregationsAction, checkClassesAction, checkAggregationsMultiThreadAction, checkClassesMultiThreadAction,
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, recalculateStatsAction,
                  threadCountMultiThread, recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
                  recalculateStatsMultiThreadAction,
@@ -289,6 +293,8 @@ DESIGN admin {
             caption = 'Проверка целостности базы данных';
             MOVE PROPERTY(checkClassesAction());
             MOVE PROPERTY(checkAggregationsAction());
+            MOVE PROPERTY(checkClassesMultiThreadAction());
+            MOVE PROPERTY(checkAggregationsMultiThreadAction());
         }
         NEW upload {
             caption = 'Загрузить в другую базу';
