@@ -2,6 +2,7 @@ package lsfusion.server.logics.service;
 
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -11,24 +12,32 @@ import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.logics.tasks.impl.RecalculateAggregationsTask;
 
 import java.sql.SQLException;
+import java.util.Iterator;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RecalculateMultiThreadActionProperty extends ScriptingActionProperty {
-    public RecalculateMultiThreadActionProperty(ServiceLogicsModule LM) {
-        super(LM);
+    private ClassPropertyInterface threadCountInterface;
+
+    public RecalculateMultiThreadActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
+        super(LM,classes);
+
+        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        threadCountInterface = i.next();
+
     }
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
+            Integer threadCount = (Integer) context.getDataKeyValue(threadCountInterface).object;
             RecalculateAggregationsTask task = new RecalculateAggregationsTask();
             task.init(context.getBL());
-            TaskRunner.runTask(task, ServerLoggers.serviceLogger);
+            TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
 
             context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             ServerLoggers.serviceLogger.error("RecalculateAggregations error", e);
             context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.aggregations.error")));
         }

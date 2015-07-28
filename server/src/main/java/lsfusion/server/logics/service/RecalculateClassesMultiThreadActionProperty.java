@@ -5,6 +5,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.Context;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.OperationOwner;
@@ -13,12 +14,15 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.TableOwner;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.ServiceLogicsModule;
-import lsfusion.server.logics.property.*;
+import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.ClassPropertyInterface;
+import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -27,27 +31,34 @@ import static lsfusion.base.BaseUtils.serviceLogger;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RecalculateClassesMultiThreadActionProperty extends ScriptingActionProperty {
+    private ClassPropertyInterface threadCountInterface;
     public static int RECALC_TIL = -1;
 
-    public RecalculateClassesMultiThreadActionProperty(ServiceLogicsModule LM) {
-        super(LM);
+    public RecalculateClassesMultiThreadActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
+        super(LM,classes);
+
+        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        threadCountInterface = i.next();
+
     }
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        int threadsCount = BaseUtils.max(Runtime.getRuntime().availableProcessors() / 2, 1);
         ExecutorService executorService = null;
-
-        final boolean singleTransaction = singleTransaction(context);
-
         try {
+            Integer threadCount = (Integer) context.getDataKeyValue(threadCountInterface).object;
+            if(threadCount == null || threadCount == 0)
+                threadCount = BaseUtils.max(Runtime.getRuntime().availableProcessors() / 2, 1);
+
+            final boolean singleTransaction = singleTransaction(context);
+
             final TaskPool taskPool = new TaskPool(context.getBL().LM.tableFactory.getImplementTables(), context.getBL().getStoredDataProperties(true));
             final Context threadLocalContext = ThreadLocalContext.get();
 
             //Recalculate Table Classes
-            executorService = Executors.newFixedThreadPool(threadsCount);
-            for (int i = 0; i < threadsCount; i++) {
+            executorService = Executors.newFixedThreadPool(threadCount);
+            for (int i = 0; i < threadCount; i++) {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -72,8 +83,8 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
             executorService.awaitTermination(8, TimeUnit.HOURS);
 
             //Recalculate Property Classes
-            executorService = Executors.newFixedThreadPool(threadsCount);
-            for (int i = 0; i < threadsCount; i++) {
+            executorService = Executors.newFixedThreadPool(threadCount);
+            for (int i = 0; i < threadCount; i++) {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -98,8 +109,8 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
             executorService.awaitTermination(8, TimeUnit.HOURS);
 
             //Pack Tables
-            executorService = Executors.newFixedThreadPool(threadsCount);
-            for (int i = 0; i < threadsCount; i++) {
+            executorService = Executors.newFixedThreadPool(threadCount);
+            for (int i = 0; i < threadCount; i++) {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -124,8 +135,10 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
             executorService.awaitTermination(8, TimeUnit.HOURS);
 
             context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculating.data.classes")));
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             serviceLogger.error("Recalculate Classes error", e);
+            if(executorService != null)
+                executorService.shutdownNow();
         } finally {
             if (executorService != null && !executorService.isShutdown())
                 executorService.shutdown();

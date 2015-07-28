@@ -4,7 +4,6 @@ import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.IsServerRestartingFormulaProperty;
-import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.antlr.runtime.RecognitionException;
 
@@ -30,6 +29,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LAP recalculateMultiThreadAction;
     public LAP recalculateClassesMultiThreadAction;
     public LAP recalculateFollowsMultiThreadAction;
+    public LAP recalculateStatsMultiThreadAction;
 
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(ServiceLogicsModule.class.getResourceAsStream("/lsfusion/system/Service.lsf"), "/lsfusion/system/Service.lsf", baseLM, BL);
@@ -38,7 +38,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public void initProperties() throws RecognitionException {
-        isServerRestarting = addProperty(null, new LCP<PropertyInterface>(new IsServerRestartingFormulaProperty()));
+        isServerRestarting = addProperty(null, new LCP<>(new IsServerRestartingFormulaProperty()));
         makePropertyPublic(isServerRestarting, "isServerRestarting", new ArrayList<ResolveClassSet>());
         super.initProperties();
         // Управление сервером базы данных
@@ -53,5 +53,6 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         recalculateMultiThreadAction = findAction("recalculateMultiThreadAction");
         recalculateClassesMultiThreadAction = findAction("recalculateClassesMultiThreadAction");
         recalculateFollowsMultiThreadAction = findAction("recalculateFollowsMultiThreadAction");
+        recalculateStatsMultiThreadAction = findAction("recalculateStatsMultiThreadAction");
     }
 }

@@ -28,6 +28,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP orderScheduledTaskDetail;
     public LCP scriptScheduledTaskDetail;
     public LCP timeoutScheduledTaskDetail;
+    public LCP parameterScheduledTaskDetail;
     public LCP scheduledTaskScheduledTaskDetail;
 
     public LCP canonicalNamePropertyScheduledTaskDetail;
@@ -75,10 +76,11 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
         orderScheduledTaskDetail = findProperty("orderScheduledTaskDetail");
         scriptScheduledTaskDetail = findProperty("scriptScheduledTaskDetail");
         timeoutScheduledTaskDetail = findProperty("timeoutScheduledTaskDetail");
+        parameterScheduledTaskDetail = findProperty("parameterScheduledTaskDetail");
         scheduledTaskScheduledTaskDetail = findProperty("scheduledTaskScheduledTaskDetail");
 
         canonicalNamePropertyScheduledTaskDetail = findProperty("canonicalNamePropertyScheduledTaskDetail");
-        
+
         resultScheduledTaskLog = findProperty("resultScheduledTaskLog");
         exceptionOccurredScheduledTaskLog = findProperty("exceptionOccurredScheduledTaskLog");
         propertyScheduledTaskLog = findProperty("propertyScheduledTaskLog");

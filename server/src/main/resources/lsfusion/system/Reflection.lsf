@@ -167,9 +167,6 @@ recalculateAggregationWithDependentsTableColumn 'Пересчитать агре
 checkAggregationTableColumn 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
 dropDropColumn 'Окончательно удалить колонку' = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
 
-recalculateStats 'Пересчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateStatsActionProperty' ();
-recalculateStatsMultiThread 'Пересчитать статистику (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateStatsMultiThreadActionProperty' ();
-
 recalculateColumnsAggregationsTable 'Пересчитать агрегации колонок' (table) = ACTION {
     FOR table == tableTableColumn(tableColumn) AND tableColumn IS TableColumn DO {
         recalculateAggregationTableColumn(tableColumn);    
@@ -229,8 +226,6 @@ FORM physicalModel 'Таблицы'
     PROPERTIES(dc) READONLY sidTableDropColumn, sidDropColumn, timeDropColumn, revisionDropColumn
     PROPERTIES(dc) dropDropColumn
 
-    PROPERTIES() recalculateStats, recalculateStatsMultiThread
-
     FILTERS
         tableTableKey(tk)==t,
         tableTableColumn(tc)==t
@@ -253,8 +248,6 @@ DESIGN physicalModel {
                 MOVE tc.box {
                     caption = 'Колонки';
                 }
-                MOVE PROPERTY(recalculateStats());
-                MOVE PROPERTY(recalculateStatsMultiThread());
             }
 
             NEW dropColumnsContainer {

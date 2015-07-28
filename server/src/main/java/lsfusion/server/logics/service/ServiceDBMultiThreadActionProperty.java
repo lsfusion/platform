@@ -8,16 +8,16 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.SessionCreator;
 
 import java.sql.SQLException;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class ServiceDBMultiThreadActionProperty extends ScriptingActionProperty {
+    ServiceLogicsModule serviceLM;
     public ServiceDBMultiThreadActionProperty(ServiceLogicsModule LM) {
         super(LM);
+        this.serviceLM = LM;
     }
 
     @Override
@@ -25,12 +25,12 @@ public class ServiceDBMultiThreadActionProperty extends ScriptingActionProperty 
 
         run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getBL().serviceLM.recalculateMultiThreadAction.execute(context);
+                serviceLM.recalculateMultiThreadAction.execute(context);
             }});
 
         run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getBL().serviceLM.recalculateClassesMultiThreadAction.execute(context);
+                serviceLM.recalculateClassesMultiThreadAction.execute(context);
             }
         });
 
@@ -38,13 +38,13 @@ public class ServiceDBMultiThreadActionProperty extends ScriptingActionProperty 
 
         run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getBL().serviceLM.recalculateFollowsMultiThreadAction.execute(context);
+                serviceLM.recalculateFollowsMultiThreadAction.execute(context);
             }
         });
 
         run(context, new RunService() {
             public void run(SQLSession session, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-                context.getBL().reflectionLM.recalculateStatsMultiThreadAction.execute(context);
+                serviceLM.recalculateStatsMultiThreadAction.execute(context);
             }
         });
 
@@ -55,19 +55,6 @@ public class ServiceDBMultiThreadActionProperty extends ScriptingActionProperty 
     protected boolean isVolatile() {
         return true;
     }
-    
-    public static boolean singleTransaction(ExecutionContext context) throws SQLException, SQLHandledException {
-        return context.getBL().serviceLM.singleTransaction.read(context)!=null;
-    }
-
-    public static void runData(ExecutionContext<?> context, final RunServiceData run) throws SQLException, SQLHandledException {
-        final boolean singleTransaction = singleTransaction(context);
-        DBManager.runData(context, singleTransaction, new DBManager.RunServiceData() {
-            public void run(SessionCreator session) throws SQLException, SQLHandledException {
-                run.run(session, !singleTransaction);
-            }
-        });
-    }
 
     public static void run(ExecutionContext<?> context, final RunService run) throws SQLException, SQLHandledException {
         // транзакция в Service Action'ах не особо нужна, так как действия атомарные
@@ -77,5 +64,9 @@ public class ServiceDBMultiThreadActionProperty extends ScriptingActionProperty 
             public void run(SQLSession sql) throws SQLException, SQLHandledException {
                 run.run(sql, !singleTransaction);
             }});
+    }
+
+    public static boolean singleTransaction(ExecutionContext context) throws SQLException, SQLHandledException {
+        return context.getBL().serviceLM.singleTransaction.read(context)!=null;
     }
 }

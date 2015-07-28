@@ -140,8 +140,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP revisionDropColumn;
     public LAP dropDropColumn;
 
-    public LAP recalculateStatsMultiThreadAction;
-
     public final StringClass navigatorElementSIDClass = StringClass.get(50);
     public final StringClass navigatorElementCanonicalNameClass = StringClass.get(100);
     public final StringClass navigatorElementCaptionClass = StringClass.get(250);
@@ -333,8 +331,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
 
         dropDropColumn = findAction("dropDropColumn");
         //dropDropColumn.setEventAction(this, IncrementType.DROP, false, is(dropColumn), 1); // event, который при удалении колонки из системы удаляет ее из базы
-
-        recalculateStatsMultiThreadAction = findAction("recalculateStatsMultiThread");
     }
 }
 

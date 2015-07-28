@@ -20,11 +20,15 @@ public class TaskRunner {
     }
 
     public static void runTask(PublicTask task, Logger logger) throws InterruptedException {
-        Set<Task> initialTasks = new HashSet<Task>();
+        runTask(task, logger, null);
+    }
+
+    public static void runTask(PublicTask task, Logger logger, Integer threadCount) throws InterruptedException {
+        Set<Task> initialTasks = new HashSet<>();
         task.markInDependencies(initialTasks);
 
         //Runtime.getRuntime().availableProcessors() * 2
-        int nThreads = availableProcessors();
+        int nThreads = threadCount != null && threadCount != 0 ? threadCount : availableProcessors();
         TaskBlockingQueue taskQueue = new TaskBlockingQueue();
 //        BlockingQueue<Task.PriorityRunnable> taskQueue = new PriorityBlockingQueue<Task.PriorityRunnable>();
         ExecutorService executor = new ThreadPoolExecutor(nThreads, nThreads,
@@ -41,10 +45,15 @@ public class TaskRunner {
             initialTask.execute(executor, monitor, taskCount, logger, taskQueue, throwableConsumer);
         }
 
-        while (taskCount.get() > 0) {
-            synchronized (monitor) {
-                monitor.wait();
+        try {
+            while (taskCount.get() > 0) {
+                synchronized (monitor) {
+                    monitor.wait();
+                }
             }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            throw e;
         }
         executor.shutdown();
         

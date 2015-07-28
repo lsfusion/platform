@@ -1,4 +1,4 @@
-package lsfusion.server.logics.reflection;
+package lsfusion.server.logics.service;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.ObjectValueClassSet;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.Context;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
@@ -19,7 +20,7 @@ import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.logics.ReflectionLogicsModule;
+import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -27,6 +28,7 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -34,22 +36,30 @@ import java.util.concurrent.TimeUnit;
 import static lsfusion.base.BaseUtils.serviceLogger;
 
 public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionProperty {
-    public RecalculateStatsMultiThreadActionProperty(ReflectionLogicsModule LM) {
-        super(LM);
+    private ClassPropertyInterface threadCountInterface;
+
+    public RecalculateStatsMultiThreadActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
+        super(LM,classes);
+
+        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        threadCountInterface = i.next();
     }
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        int threadsCount = BaseUtils.max(Runtime.getRuntime().availableProcessors() / 2, 1);
         ExecutorService executorService = null;
         try {
+            Integer threadCount = (Integer) context.getDataKeyValue(threadCountInterface).object;
+            if (threadCount == null || threadCount == 0)
+                threadCount = BaseUtils.max(Runtime.getRuntime().availableProcessors() / 2, 1);
+
             final TaskPool taskPool = new TaskPool(context.getBL().LM.tableFactory.getImplementTables(), context.getBL().LM.baseClass.getUpObjectClassFields().values());
             final Context threadLocalContext = ThreadLocalContext.get();
 
             //Recalculate Tables
-            executorService = Executors.newFixedThreadPool(threadsCount);
-            for (int i = 0; i < threadsCount; i++) {
+            executorService = Executors.newFixedThreadPool(threadCount);
+            for (int i = 0; i < threadCount; i++) {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -74,8 +84,8 @@ public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionPr
             executorService.awaitTermination(12, TimeUnit.HOURS);
 
             //Recalculate Table Classes
-            executorService = Executors.newFixedThreadPool(threadsCount);
-            for (int i = 0; i < threadsCount; i++) {
+            executorService = Executors.newFixedThreadPool(threadCount);
+            for (int i = 0; i < threadCount; i++) {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -99,8 +109,10 @@ public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionPr
             executorService.shutdown();
             executorService.awaitTermination(12, TimeUnit.HOURS);
 
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             serviceLogger.error("Recalculate stats error", e);
+            if(executorService != null)
+                executorService.shutdownNow();
         } finally {
             if (executorService != null && !executorService.isShutdown())
                 executorService.shutdown();
