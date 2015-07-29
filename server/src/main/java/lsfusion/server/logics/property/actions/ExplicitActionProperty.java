@@ -14,6 +14,7 @@ import java.sql.SQLException;
 
 // с явным задание классов параметров (where определяется этими классами)
 public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPropertyInterface> {
+    public boolean allowNullValue;
 
     protected ExplicitActionProperty(ValueClass... classes) {
         this("sys", classes);
@@ -32,7 +33,7 @@ public abstract class ExplicitActionProperty extends BaseActionProperty<ClassPro
     public final FlowResult aspectExecute(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         ImMap<ClassPropertyInterface, ? extends ObjectValue> keys = context.getKeys();
         ImMap<ClassPropertyInterface,DataObject> dataKeys = DataObject.filterDataObjects(keys);
-        if(!allowNulls() && dataKeys.size() < keys.size())
+        if(!allowNullValue && !allowNulls() && dataKeys.size() < keys.size())
             proceedNullException();
         else
             if(IsClassProperty.fitInterfaceClasses(context.getSession().getCurrentClasses(dataKeys))) { // если подходит по классам выполнем

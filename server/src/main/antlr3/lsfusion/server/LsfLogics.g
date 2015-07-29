@@ -2107,13 +2107,16 @@ formActionObjectList[List<TypedParameter> context, boolean dynamic] returns [Lis
 	;
 	
 customActionPropertyDefinitionBody returns [LP property, List<ResolveClassSet> signature]
+@init {
+	boolean allowNullValue = false;
+}
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedCustomActionProp($classN.val, $classes.ids);	
+		$property = self.addScriptedCustomActionProp($classN.val, $classes.ids, allowNullValue);
 		$signature = Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null); 
 	}
 }
-	:	'CUSTOM' classN = stringLiteral ('(' classes = classIdList ')')?		
+	:	'CUSTOM' classN = stringLiteral ('(' classes = classIdList ')')? ('NULL' { allowNullValue = true; })?
 	;
 
 

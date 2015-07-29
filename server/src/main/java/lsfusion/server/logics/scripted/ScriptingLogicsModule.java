@@ -48,10 +48,7 @@ import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.Event;
-import lsfusion.server.logics.property.actions.BaseEvent;
-import lsfusion.server.logics.property.actions.ReadActionProperty;
-import lsfusion.server.logics.property.actions.SessionEnvEvent;
-import lsfusion.server.logics.property.actions.WriteActionProperty;
+import lsfusion.server.logics.property.actions.*;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.csv.ImportCSVDataActionProperty;
@@ -1122,17 +1119,21 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(res, property.usedParams);
     }
 
-    public LP addScriptedCustomActionProp(String javaClassName, List<String> classes) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedCustomActionProp(String javaClassName, List<String> classes, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         try {
             ValueClass[] classList = new ValueClass[classes.size()];
             for (int i = 0; i < classes.size(); i++) {
                 classList[i] = findClass(classes.get(i));
             }
+            ActionProperty instance;
             if (classes.isEmpty()) {
-                return baseLM.addAProp(null, (ActionProperty) Class.forName(javaClassName).getConstructor(this.getClass()).newInstance(this));
+                instance = (ActionProperty) Class.forName(javaClassName).getConstructor(this.getClass()).newInstance(this);
             } else {
-                return baseLM.addAProp(null, (ActionProperty) Class.forName(javaClassName).getConstructor(new Class[] {this.getClass(), ValueClass[].class}).newInstance(this, classList));
+                instance = (ActionProperty) Class.forName(javaClassName).getConstructor(new Class[] {this.getClass(), ValueClass[].class}).newInstance(this, classList);
             }
+            if(instance instanceof ExplicitActionProperty && allowNullValue)
+                ((ExplicitActionProperty) instance).allowNullValue = true;
+            return baseLM.addAProp(null, instance);
         } catch (ClassNotFoundException e) {
             errLog.emitClassNotFoundError(parser, javaClassName);
         } catch (Exception e) {

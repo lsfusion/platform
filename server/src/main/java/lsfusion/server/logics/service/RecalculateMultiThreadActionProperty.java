@@ -31,7 +31,7 @@ public class RecalculateMultiThreadActionProperty extends ScriptingActionPropert
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
         try {
-            Integer threadCount = (Integer) context.getDataKeyValue(threadCountInterface).object;
+            Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
             RecalculateAggregationsTask task = new RecalculateAggregationsTask();
             task.init(context.getBL());
             TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);

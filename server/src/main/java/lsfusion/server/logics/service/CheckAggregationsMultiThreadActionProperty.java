@@ -40,7 +40,7 @@ public class CheckAggregationsMultiThreadActionProperty extends ScriptingActionP
 
         ExecutorService executorService = null;
         try {
-            Integer threadCount = (Integer) context.getDataKeyValue(threadCountInterface).object;
+            Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
             if(threadCount == null || threadCount == 0)
                 threadCount = BaseUtils.max(Runtime.getRuntime().availableProcessors() / 2, 1);
 
