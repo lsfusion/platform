@@ -7,7 +7,6 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.session.DataSession;
@@ -33,7 +32,7 @@ public class RecalculateFollowsTask extends GroupPropertiesSingleTask{
     }
 
     @Override
-    protected void runTask(final Property property) throws RecognitionException {
+    protected void runTask(final Object property) throws RecognitionException {
         try {
             if (property instanceof ActionProperty) {
                 final ActionProperty<?> action = (ActionProperty) property;
@@ -49,7 +48,7 @@ public class RecalculateFollowsTask extends GroupPropertiesSingleTask{
                         serviceLogger.info(e.getMessage());
                     }
                     long time = System.currentTimeMillis() - start;
-                    serviceLogger.info(String.format("Recalculate Follows: %s, %sms", property.getSID(), time));
+                    serviceLogger.info(String.format("Recalculate Follows: %s, %sms", ((ActionProperty) property).getSID(), time));
                 }
             }
         } catch (SQLException | SQLHandledException e) {
@@ -63,12 +62,17 @@ public class RecalculateFollowsTask extends GroupPropertiesSingleTask{
     }
 
     @Override
-    protected String getErrorsDescription(Property element) {
+    protected String getElementCaption(Object element) {
+        return element instanceof ActionProperty ? ((ActionProperty) element).getSID() : null;
+    }
+
+    @Override
+    protected String getErrorsDescription(Object element) {
         return "";
     }
 
     @Override
-    protected ImSet<Property> getDependElements(Property key) {
+    protected ImSet<Object> getDependElements(Object key) {
         return SetFact.EMPTY();
     }
 }

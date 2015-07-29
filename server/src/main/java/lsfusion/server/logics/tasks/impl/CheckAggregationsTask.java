@@ -6,7 +6,6 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.logics.tasks.PublicTask;
 import org.antlr.runtime.RecognitionException;
@@ -26,15 +25,14 @@ public class CheckAggregationsTask extends GroupPropertiesSingleTask{
     }
 
     @Override
-    protected void runTask(final Property property) throws RecognitionException {
+    protected void runTask(final Object property) throws RecognitionException {
         try {
             if (property instanceof AggregateProperty) {
                 final SQLSession sqlSession = getBL().getDbManager().getThreadLocalSql();
                 long start = System.currentTimeMillis();
                 ((AggregateProperty) property).checkAggregation(sqlSession, getBL().LM.baseClass);
                 long time = System.currentTimeMillis() - start;
-                serviceLogger.info(String.format("Check Aggregations: %s, %sms", property.getSID(), time));
-
+                serviceLogger.info(String.format("Check Aggregations: %s, %sms", ((AggregateProperty) property).getSID(), time));
             }
         } catch (SQLException | SQLHandledException e) {
             e.printStackTrace();
@@ -47,12 +45,17 @@ public class CheckAggregationsTask extends GroupPropertiesSingleTask{
     }
 
     @Override
-    protected String getErrorsDescription(Property element) {
+    protected String getElementCaption(Object element) {
+        return element instanceof AggregateProperty ? ((AggregateProperty) element).getSID() : null;
+    }
+
+    @Override
+    protected String getErrorsDescription(Object element) {
         return "";
     }
 
     @Override
-    protected ImSet<Property> getDependElements(Property key) {
+    protected ImSet<Object> getDependElements(Object key) {
         return SetFact.EMPTY();
     }
 }

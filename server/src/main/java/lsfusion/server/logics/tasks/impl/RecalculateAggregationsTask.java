@@ -9,7 +9,6 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcProperty;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.logics.tasks.PublicTask;
 import org.antlr.runtime.RecognitionException;
@@ -27,17 +26,17 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
     }
 
     @Override
-    protected void runTask(final Property property) throws RecognitionException {
+    protected void runTask(final Object property) throws RecognitionException {
         try {
             if(property instanceof AggregateProperty) {
                 final SQLSession sqlSession = getBL().getDbManager().getThreadLocalSql();
                 DBManager.run(sqlSession, true, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         long start = System.currentTimeMillis();
-                        ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation started: %s", property.getSID()));
+                        ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation started: %s", ((AggregateProperty) property).getSID()));
                         ((AggregateProperty) property).recalculateAggregation(sqlSession, getBL().LM.baseClass);
                         long time = System.currentTimeMillis() - start;
-                        ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation: %s, %sms", property.getSID(), time));
+                        ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation: %s, %sms", ((AggregateProperty) property).getSID(), time));
                     }
                 });
             }
@@ -52,23 +51,28 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
     }
 
     @Override
-    protected String getErrorsDescription(Property element) {
+    protected String getElementCaption(Object element) {
+        return element instanceof AggregateProperty ? ((AggregateProperty) element).getSID() : null;
+    }
+
+    @Override
+    protected String getErrorsDescription(Object element) {
         return "";
     }
 
     @Override
-    protected ImSet<Property> getDependElements(Property key) {
-        return getDepends((AggregateProperty) key);
+    protected ImSet<Object> getDependElements(Object key) {
+        return getDepends((CalcProperty) key);
     }
 
-    protected ImSet<Property> getDepends(CalcProperty key) {
-        ImSet<Property> depends = SetFact.EMPTY();
+    protected ImSet<Object> getDepends(CalcProperty key) {
+        ImSet<Object> depends = SetFact.EMPTY();
         for (CalcProperty property : (Iterable<CalcProperty>) key.getDepends()) {
             if (property instanceof AggregateProperty && property.isStored() && !depends.contains(property))
                 depends = depends.addExcl(property);
             else {
-                ImSet<Property> children = getDepends(property);
-                for(Property child : children)
+                ImSet<Object> children = getDepends(property);
+                for(Object child : children)
                     if(!depends.contains(child) && child != null)
                         depends = depends.addExcl(child);
             }
