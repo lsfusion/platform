@@ -9,6 +9,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.logics.tasks.PublicTask;
 import org.antlr.runtime.RecognitionException;
@@ -26,18 +27,20 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
     }
 
     @Override
-    protected void runTask(final AggregateProperty property) throws RecognitionException {
+    protected void runTask(final Property property) throws RecognitionException {
         try {
-            final SQLSession sqlSession = getBL().getDbManager().getThreadLocalSql();
-            DBManager.run(sqlSession, true, new DBManager.RunService() {
-                public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                    long start = System.currentTimeMillis();
-                    ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation started: %s", property.getSID()));
-                    property.recalculateAggregation(sqlSession, getBL().LM.baseClass);
-                    long time = System.currentTimeMillis() - start;
-                    ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation: %s, %sms", property.getSID(), time));
-                }
-            });
+            if(property instanceof AggregateProperty) {
+                final SQLSession sqlSession = getBL().getDbManager().getThreadLocalSql();
+                DBManager.run(sqlSession, true, new DBManager.RunService() {
+                    public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                        long start = System.currentTimeMillis();
+                        ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation started: %s", property.getSID()));
+                        ((AggregateProperty) property).recalculateAggregation(sqlSession, getBL().LM.baseClass);
+                        long time = System.currentTimeMillis() - start;
+                        ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation: %s, %sms", property.getSID(), time));
+                    }
+                });
+            }
         } catch (SQLException | SQLHandledException e) {
             e.printStackTrace();
         }
@@ -49,23 +52,23 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
     }
 
     @Override
-    protected String getErrorsDescription(AggregateProperty element) {
+    protected String getErrorsDescription(Property element) {
         return "";
     }
 
     @Override
-    protected ImSet<AggregateProperty> getDependElements(AggregateProperty key) {
-        return getDepends(key);
+    protected ImSet<Property> getDependElements(Property key) {
+        return getDepends((AggregateProperty) key);
     }
 
-    protected ImSet<AggregateProperty> getDepends(CalcProperty key) {
-        ImSet<AggregateProperty> depends = SetFact.EMPTY();
+    protected ImSet<Property> getDepends(CalcProperty key) {
+        ImSet<Property> depends = SetFact.EMPTY();
         for (CalcProperty property : (Iterable<CalcProperty>) key.getDepends()) {
-            if (property instanceof AggregateProperty && property.isStored() && !depends.contains((AggregateProperty) property))
-                depends = depends.addExcl((AggregateProperty) property);
+            if (property instanceof AggregateProperty && property.isStored() && !depends.contains(property))
+                depends = depends.addExcl(property);
             else {
-                ImSet<AggregateProperty> children = getDepends(property);
-                for(AggregateProperty child : children)
+                ImSet<Property> children = getDepends(property);
+                for(Property child : children)
                     if(!depends.contains(child) && child != null)
                         depends = depends.addExcl(child);
             }

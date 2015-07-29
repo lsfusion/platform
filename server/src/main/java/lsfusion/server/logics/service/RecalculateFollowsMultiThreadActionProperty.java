@@ -1,30 +1,19 @@
 package lsfusion.server.logics.service;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.interop.exceptions.LogMessageLogicsException;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
-import lsfusion.server.context.Context;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.ServiceLogicsModule;
-import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.SessionCreator;
+import lsfusion.server.logics.tasks.TaskRunner;
+import lsfusion.server.logics.tasks.impl.RecalculateFollowsTask;
 
 import java.sql.SQLException;
 import java.util.Iterator;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import static lsfusion.base.BaseUtils.serviceLogger;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RecalculateFollowsMultiThreadActionProperty extends ScriptingActionProperty {
@@ -40,95 +29,15 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-
-        ExecutorService executorService = null;
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
-            if (threadCount == null || threadCount == 0)
-                threadCount = BaseUtils.max(Runtime.getRuntime().availableProcessors() / 2, 1);
-
-            executorService = Executors.newFixedThreadPool(threadCount);
-
-            final boolean singleTransaction = singleTransaction(context);
-
-            final TaskPool taskPool = new TaskPool(context.getBL().getPropertyList());
-            final Context threadLocalContext = ThreadLocalContext.get();
-            for (int i = 0; i < threadCount; i++) {
-                executorService.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (ThreadLocalContext.get() == null)
-                                ThreadLocalContext.set(threadLocalContext);
-                            while (!Thread.currentThread().isInterrupted() && taskPool.hasProperties()) {
-                                Property property = taskPool.getProperty();
-                                if (property != null)
-                                    recalculateFollows(context, property, !singleTransaction);
-                            }
-                        } catch (SQLException | SQLHandledException e) {
-                            serviceLogger.error("Recalculate Follows error", e);
-                        }
-                    }
-                });
-            }
-            executorService.shutdown();
-            executorService.awaitTermination(24, TimeUnit.HOURS);
+            RecalculateFollowsTask task = new RecalculateFollowsTask();
+            task.init(context);
+            TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
             context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.follows")));
         } catch (Exception e) {
-            serviceLogger.error("Recalculate Follows error", e);
-            if(executorService != null)
-                executorService.shutdownNow();
-        } finally {
-            if (executorService != null && !executorService.isShutdown())
-                executorService.shutdown();
+            ServerLoggers.serviceLogger.error("Recalculate Follows error", e);
+            context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.follows.error")));
         }
     }
-
-    public void recalculateFollows(ExecutionContext context, Property property, boolean isolatedTransaction) throws SQLException, SQLHandledException {
-        if (property instanceof ActionProperty) {
-            final ActionProperty<?> action = (ActionProperty) property;
-            if (action.hasResolve()) {
-                long start = System.currentTimeMillis();
-                try {
-                    context.getDbManager().runDataMultiThread(context, isolatedTransaction, new DBManager.RunServiceData() {
-                        public void run(SessionCreator session) throws SQLException, SQLHandledException {
-                            ((DataSession) session).resolve(action);
-                        }
-                    });
-                } catch (LogMessageLogicsException e) { // suppress'им так как понятная ошибка
-                    serviceLogger.info(e.getMessage());
-                }
-                long time = System.currentTimeMillis() - start;
-                serviceLogger.info(String.format("Recalculate Follows: %s, %sms", property.getSID(), time));
-            }
-        }
-    }
-
-    public static boolean singleTransaction(ExecutionContext context) throws SQLException, SQLHandledException {
-        return context.getBL().serviceLM.singleTransaction.read(context) != null;
-    }
-
-    public class TaskPool {
-        int i;
-        ImOrderSet<Property> propertyList;
-
-        public TaskPool(ImOrderSet<Property> propertyList) {
-            this.propertyList = propertyList;
-            i = 0;
-        }
-
-        //метод, выдающий задания подпотокам
-        synchronized Property getProperty() {
-            if (propertyList.size() > i) {
-                Property property = propertyList.get(i);
-                i++;
-                return property;
-            } else return null;
-        }
-
-        synchronized boolean hasProperties() {
-            return i < propertyList.size();
-        }
-    }
-
 }

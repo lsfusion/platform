@@ -1,8 +1,8 @@
 package lsfusion.server.logics.tasks;
 
-import lsfusion.server.logics.property.AggregateProperty;
+import lsfusion.server.logics.property.Property;
 
-public abstract class GroupPropertiesSingleTask extends GroupSingleTask<AggregateProperty> {
+public abstract class GroupPropertiesSingleTask extends GroupSingleTask<Property> {
 
     @Override
     protected boolean isGraph() {
@@ -10,12 +10,12 @@ public abstract class GroupPropertiesSingleTask extends GroupSingleTask<Aggregat
     }
 
     @Override
-    protected String getElementCaption(AggregateProperty element, int all, int current) {
+    protected String getElementCaption(Property element, int all, int current) {
         return null;
     }
 
     @Override
-    protected String getElementCaption(AggregateProperty element) {
+    protected String getElementCaption(Property element) {
         return element == null ? null : element.getSID();
     }
 
