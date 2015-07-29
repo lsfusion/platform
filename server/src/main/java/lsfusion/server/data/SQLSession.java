@@ -1876,7 +1876,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             Result<Throwable> firstException = new Result<Throwable>();
             firstException.set(t);
 
-            if(!isInTransaction())
+            if(!isInTransaction() && t instanceof SQLUniqueViolationException)
                 runSuppressed(new SQLRunnable() {
                     public void run() throws SQLException, SQLHandledException {
                         try {
