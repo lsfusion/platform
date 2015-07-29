@@ -19,7 +19,7 @@ import java.util.List;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
-public class RecalculateFollowsTask extends GroupPropertiesSingleTask{
+public class RecalculateFollowsTask extends GroupPropertiesSingleTask {
     ExecutionContext context;
     boolean singleTransaction;
 
