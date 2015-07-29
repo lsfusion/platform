@@ -100,6 +100,7 @@
                 <entry key="timeoutStart" value="${settings.timeoutStart:}"/>
                 <entry key="applyAutoAttemptCountLimit" value="${settings.applyAutoAttemptCountLimit:}"/>
                 <entry key="useSafeDivision" value="${settings.useSafeDivision:}"/>
+                <entry key="noTransSyncDB" value="${settings.noTransSyncDB:}"/>
                 <entry key="useUserChangesSync" value="${settings.useUserChangesSync:}"/>
                 <entry key="averageIntervalStat" value="${settings.averageIntervalStat:}"/>
             </map>

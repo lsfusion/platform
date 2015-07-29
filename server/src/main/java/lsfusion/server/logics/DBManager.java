@@ -558,9 +558,15 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
         Map<String, String> columnsToDrop = new HashMap<>();
 
+        boolean noTransSyncDB = Settings.get().isNoTransSyncDB();
+
         try {
             sql.pushNoHandled();
-            sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
+
+            if(noTransSyncDB)
+                sql.startFakeTransaction(OperationOwner.unknown);
+            else
+                sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
 
             // новое состояние базы
             ByteArrayOutputStream outDBStruct = new ByteArrayOutputStream();
@@ -802,11 +808,16 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             recalculateAggregations(sql, recalculateProperties, false); // перерасчитаем агрегации
             //        recalculateAggregations(sql, getAggregateStoredProperties());
 
-            sql.commitTransaction();
+            if(!noTransSyncDB)
+                sql.commitTransaction();
         } catch (Throwable e) {
-            sql.rollbackTransaction();
+            if(!noTransSyncDB)
+                sql.rollbackTransaction();
             throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
         } finally {
+            if(noTransSyncDB)
+                sql.endFakeTransaction(OperationOwner.unknown);
+
             sql.popNoHandled();
         }
 

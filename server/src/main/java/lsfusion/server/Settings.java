@@ -1370,4 +1370,14 @@ public class Settings {
     public void setPackStatBackwardCompatibility(boolean packStatBackwardCompatibility) {
         this.packStatBackwardCompatibility = packStatBackwardCompatibility;
     }
+
+    private boolean noTransSyncDB = false;
+
+    public boolean isNoTransSyncDB() {
+        return noTransSyncDB;
+    }
+
+    public void setNoTransSyncDB(boolean noTransSyncDB) {
+        this.noTransSyncDB = noTransSyncDB;
+    }
 }

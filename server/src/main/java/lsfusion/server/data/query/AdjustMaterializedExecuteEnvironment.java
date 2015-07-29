@@ -153,17 +153,11 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
             long adjtime = totalTime / 1000; // millis -> seconds
             if(adjtime > runBack.getTimeout() * coeff) { // если время выполнения превысило время материализации, пробуем с увеличенным timeout'ом
-//                System.out.println(System.identityHashCode(this) + " " + adjtime + " " + runBack.getTimeout() + " " + runBack.subQueries.toString(new GetValue<String, SQLQuery>() {
-//                    public String getMapValue(SQLQuery value) {
-//                        return String.valueOf(value.hashCode());
-//                    }}, ",") + " " + runBack.disableNestedLoop + " " + command);
                 runBack.setTimeout((int) adjtime);
                 mBackSteps.exclAdd(runBack);
                 runBack.recheck = true;
                 current = runBack;
             }
-//            else
-//                runBack.recheck = false; // касается в общем то только первой итерации, но больше не меньше
         }
 
         boolean failedBefore = outerEnv.getSnapshot() != null; // не очень красиво конечно

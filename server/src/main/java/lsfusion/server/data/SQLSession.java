@@ -300,6 +300,25 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             return 0;
     }
 
+    public void startFakeTransaction(OperationOwner owner) throws SQLException, SQLHandledException {
+        lockWrite(owner);
+
+        explicitNeedPrivate = true;
+
+        needPrivate();
+
+        privateConnection.sql.setReadOnly(false);
+    }
+
+    public void endFakeTransaction(OperationOwner owner) throws SQLException, SQLHandledException {
+        privateConnection.sql.setReadOnly(false);
+
+        tryCommon(owner);
+
+        explicitNeedPrivate = false;
+
+        unlockWrite();
+    }
 
     public void startTransaction(int isolationLevel, OperationOwner owner) throws SQLException, SQLHandledException {
         lockWrite(owner);
