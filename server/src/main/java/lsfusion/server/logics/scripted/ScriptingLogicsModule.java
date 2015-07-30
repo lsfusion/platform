@@ -961,32 +961,34 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private LCP getRelationProp(String op) {
-        if (op.equals("==")) {
-            return baseLM.equals2;
-        } else if (op.equals("!=")) {
-            return baseLM.diff2;
-        } else if (op.equals(">")) {
-            return baseLM.greater2;
-        } else if (op.equals("<")) {
-            return baseLM.less2;
-        } else if (op.equals(">=")) {
-            return baseLM.groeq2;
-        } else if (op.equals("<=")) {
-            return baseLM.lsoeq2;
+        switch (op) {
+            case "==":
+                return baseLM.equals2;
+            case "!=":
+                return baseLM.diff2;
+            case ">":
+                return baseLM.greater2;
+            case "<":
+                return baseLM.less2;
+            case ">=":
+                return baseLM.groeq2;
+            case "<=":
+                return baseLM.lsoeq2;
         }
         assert false;
         return null;
     }
 
     private LCP getArithProp(String op) {
-        if (op.equals("+")) {
-            return baseLM.sum;
-        } else if (op.equals("-")) {
-            return baseLM.subtract;
-        } else if (op.equals("*")) {
-            return baseLM.multiply;
-        } else if (op.equals("/")) {
-            return baseLM.divide;
+        switch (op) {
+            case "+":
+                return baseLM.sum;
+            case "-":
+                return baseLM.subtract;
+            case "*":
+                return baseLM.multiply;
+            case "/":
+                return baseLM.divide;
         }
         assert false;
         return null;
@@ -1121,18 +1123,19 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LP addScriptedCustomActionProp(String javaClassName, List<String> classes, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            ValueClass[] classList = new ValueClass[classes.size()];
-            for (int i = 0; i < classes.size(); i++) {
-                classList[i] = findClass(classes.get(i));
-            }
             ActionProperty instance;
-            if (classes.isEmpty()) {
+            if (classes == null || classes.isEmpty()) {
                 instance = (ActionProperty) Class.forName(javaClassName).getConstructor(this.getClass()).newInstance(this);
             } else {
+                ValueClass[] classList = new ValueClass[classes.size()];
+                for (int i = 0; i < classes.size(); i++) {
+                    classList[i] = findClass(classes.get(i));
+                }
                 instance = (ActionProperty) Class.forName(javaClassName).getConstructor(new Class[] {this.getClass(), ValueClass[].class}).newInstance(this, classList);
             }
-            if(instance instanceof ExplicitActionProperty && allowNullValue)
+            if (instance instanceof ExplicitActionProperty && allowNullValue) {
                 ((ExplicitActionProperty) instance).allowNullValue = true;
+            }
             return baseLM.addAProp(null, instance);
         } catch (ClassNotFoundException e) {
             errLog.emitClassNotFoundError(parser, javaClassName);
