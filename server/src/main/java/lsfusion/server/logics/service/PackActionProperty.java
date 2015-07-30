@@ -1,6 +1,5 @@
 package lsfusion.server.logics.service;
 
-import com.google.common.base.Throwables;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
@@ -9,7 +8,6 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -28,9 +26,6 @@ public class PackActionProperty extends ScriptingActionProperty {
             }
         });
         context.delayUserInterfaction(new MessageClientAction(getString("logics.tables.packing.completed"), getString("logics.tables.packing")));
-        
-        Throwables.propagate(new RemoteException("e"));
-//        throw new SQLException("e");
     }
 
     @Override
