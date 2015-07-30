@@ -4,6 +4,7 @@ REQUIRE System, Reflection, Time;
 
 NAMESPACE Service;
 
+serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBActionProperty' ();
 checkAggregationsAction 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsActionProperty' ();
 checkClassesAction 'Проверить классы' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesActionProperty' ();
 recalculateClassesAction 'Пересчитать классы' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesActionProperty' ();
@@ -11,6 +12,7 @@ recalculateAction 'Пересчитать агрегации' = ACTION CUSTOM 'l
 recalculateFollowsAction 'Пересчитать следствия и ограничения' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty' ();
 recalculateStatsAction 'Пересчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateStatsActionProperty' ();
 
+serviceDBCustomThreadAction 'Обслуживание БД (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' (INTEGER) NULL;
 checkAggregationsCustomThreadAction 'Проверить агрегации (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsMultiThreadActionProperty' (INTEGER) NULL;
 checkClassesCustomThreadAction 'Проверить классы (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesMultiThreadActionProperty' (INTEGER) NULL;
 recalculateClassesCustomThreadAction 'Пересчитать классы (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesMultiThreadActionProperty' (INTEGER) NULL;
@@ -19,6 +21,7 @@ recalculateFollowsCustomThreadAction 'Пересчитать следствия 
 recalculateStatsCustomThreadAction 'Пересчитать статистику (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateStatsMultiThreadActionProperty' (INTEGER) NULL;
 
 threadCountMultiThread 'Количество потоков' = DATA LOCAL INTEGER (); 
+serviceDBMultiThreadAction 'Обслуживание БД (многопоточно)' = ACTION serviceDBCustomThreadAction(threadCountMultiThread());
 checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно)' = ACTION checkAggregationsCustomThreadAction(threadCountMultiThread());
 checkClassesMultiThreadAction 'Проверить классы (многопоточно)' = ACTION checkClassesCustomThreadAction(threadCountMultiThread());
 recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно)' = ACTION recalculateClassesCustomThreadAction(threadCountMultiThread());
@@ -29,8 +32,6 @@ recalculateStatsMultiThreadAction 'Пересчитать статистику (
 analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'lsfusion.server.logics.service.AnalyzeDBActionProperty' ();
 vacuumDBAction 'Упаковать БД' = ACTION CUSTOM 'lsfusion.server.logics.service.VacuumDBActionProperty' ();
 packAction 'Упаковать таблицы' = ACTION CUSTOM 'lsfusion.server.logics.service.PackActionProperty' ();
-serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBActionProperty' ();
-serviceDBMultiThreadAction 'Обслуживание БД (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' ();
 getVMInfo 'Данные виртуальной машины' = ACTION CUSTOM 'lsfusion.server.logics.service.GetVMInfoActionProperty' ();
 
 singleTransaction 'Перерасчет одной транзакцией' = DATA BOOLEAN ();
@@ -266,34 +267,40 @@ DESIGN admin {
             
             MOVE PROPERTY(restartServerAction());
             MOVE PROPERTY(cancelRestartServerAction());
-            MOVE PROPERTY(serviceDBAction());
-            MOVE PROPERTY(serviceDBMultiThreadAction());
             MOVE PROPERTY(hostnameServerComputer());
         }
-        NEW recalculate {
-            caption = 'Исправление целостности базы данных';
+        NEW oneThread {
+            caption = 'Однопоточные действия';
+            MOVE PROPERTY(serviceDBAction());
             NEW recalculateOneThread {
-                caption = 'Однопоточно';
+                caption = 'Исправление целостности базы данных';
                 MOVE PROPERTY(recalculateClassesAction());
                 MOVE PROPERTY(recalculateAction());
                 MOVE PROPERTY(recalculateFollowsAction());
-                MOVE PROPERTY(recalculateStatsAction());   
+                MOVE PROPERTY(recalculateStatsAction());               
             }
-            NEW recalculateMultiThread {   
-                caption = 'Многопоточно';
-                MOVE PROPERTY(threadCountMultiThread());
+            NEW checkOneThread {
+                caption = 'Проверка целостности базы данных';
+                MOVE PROPERTY(checkClassesAction());
+                MOVE PROPERTY(checkAggregationsAction());
+            }            
+        }
+        NEW multiThread {
+            caption = 'Многопоточные действия';
+            MOVE PROPERTY(threadCountMultiThread());
+            MOVE PROPERTY(serviceDBMultiThreadAction());
+            NEW recalculateMultiThread {
+                caption = 'Исправление целостности базы данных';
                 MOVE PROPERTY(recalculateClassesMultiThreadAction());
                 MOVE PROPERTY(recalculateMultiThreadAction());
                 MOVE PROPERTY(recalculateFollowsMultiThreadAction());
-                MOVE PROPERTY(recalculateStatsMultiThreadAction());   
+                MOVE PROPERTY(recalculateStatsMultiThreadAction());                   
             }
-        }
-        NEW check {
-            caption = 'Проверка целостности базы данных';
-            MOVE PROPERTY(checkClassesAction());
-            MOVE PROPERTY(checkAggregationsAction());
-            MOVE PROPERTY(checkClassesMultiThreadAction());
-            MOVE PROPERTY(checkAggregationsMultiThreadAction());
+            NEW checkMultiThread {
+                caption = 'Проверка целостности базы данных';
+                MOVE PROPERTY(checkClassesMultiThreadAction());
+                MOVE PROPERTY(checkAggregationsMultiThreadAction());
+            }                  
         }
         NEW upload {
             caption = 'Загрузить в другую базу';
