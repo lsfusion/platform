@@ -1,5 +1,6 @@
 package lsfusion.server.data.query;
 
+import lsfusion.server.caches.IdentityQuickLazy;
 import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
@@ -402,6 +403,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         MList<String> mImplicitJoins = ListFact.mList();
         MOrderExclSet<JoinSelect> mOuterPendingJoins = SetFact.mOrderExclSet();
 
+        boolean whereCompiling;
+
         private abstract class JoinSelect<I extends InnerJoin> {
 
             final String alias; // final
@@ -485,6 +488,18 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             protected abstract Where getInnerWhere(); // assert что isInner
         }
 
+        private Stat baseStat;
+        @IdentityQuickLazy
+        private boolean isOptAntiJoin(InnerJoin innerJoin) {
+            assert !isInner(innerJoin);
+            if(baseStat == null)
+                baseStat = whereJoins.getStatKeys(keys, keyStat).rows;
+            // тут есть 2 стратегии : оптимистичная и пессимистичная
+            // оптимистичная - если статистика остальные предикатов <= статистики этого join'а, то расчитываем что СУБД так их и выполнит, а потом будет LEFT JOIN делать и тогда уменьшение статистики будет релевантным
+            return whereJoins.and(new WhereJoins(innerJoin)).getStatKeys(keys, keyStat).rows.less(baseStat);
+            // пессимистичная - дополнительно смотреть что если статистика join'а маленькая, потому как СУБД никто не мешает взять один из больших предикатов и нарушить верхнее предположение
+        }
+
         public void fillInnerJoins(Result<ExecCost> mBaseCost, MCol<String> whereSelect) { // заполним Inner Joins, чтобы keySelect'ы были
             stackUsedPendingKeys.push(SetFact.<KeyExpr>mSet()); stackTranslate.push(MapFact.<String, String>mRevMap()); stackUsedOuterPendingJoins.push(new Result<Boolean>());
 
@@ -524,8 +539,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             for(JoinSelect join : joins)
                 if(join instanceof QuerySelect)
                     ((QuerySelect)join).finalIm();
-            
+
+            whereCompiling = true;
             whereSelect.add(where.followFalse(getInnerWhere().not()).getSource(this));
+            whereCompiling = false;
 
             if(joins.isEmpty()) return "dumb";
 
@@ -1184,7 +1201,10 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
         }
 
-        private boolean isSingle(QueryJoin join) { // в общем то чтобы нормально использовался ANTI-JOIN в некоторых СУБД, (а он нужен в свою очередь чтобы A LEFT JOIN B WHERE B.e IS NULL)
+        // выделять отдельный Join, в общем то чтобы нормально использовался ANTI-JOIN в некоторых СУБД, (а он нужен в свою очередь чтобы A LEFT JOIN B WHERE B.e IS NULL)
+        // не используется, потому a) как пока нет механизма выявления что идет именно ANTI-JOIN, в момент getSource
+        // b) anti-join не сильно быстрее обычной стратегии с left join + filter
+        private boolean isSingle(QueryJoin join) {
             return Settings.get().isUseSingleJoins() && (join instanceof GroupJoin || join instanceof RecursiveJoin) && !isInner(join);
         }
 
@@ -1198,13 +1218,21 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
             return null;
         }
-        public String getNullSource(QueryExpr queryExpr, boolean notNull) {
-            String result = super.getNullSource(queryExpr, notNull);
-            if(isSingle(queryExpr.getInnerJoin())) {
-                QuerySelect singleSelect = getSingleSelect(queryExpr);
-                ImSet keys = singleSelect.group.keys();
-                if(!keys.isEmpty())
-                    return singleSelect.alias + "." + keys.get(0) + " IS" + (notNull?" NOT":"") + " NULL";
+        public String getNullSource(InnerExpr innerExpr, String defaultSource) {
+            InnerJoin<?, ?> innerJoin = innerExpr.getInnerJoin();
+            if (innerExpr instanceof QueryExpr) {
+                QueryExpr queryExpr = (QueryExpr) innerExpr;
+                if (isSingle((QueryJoin) innerJoin)) {
+                    QuerySelect singleSelect = getSingleSelect(queryExpr);
+                    ImSet keys = singleSelect.group.keys();
+                    if (!keys.isEmpty())
+                        return singleSelect.alias + "." + keys.get(0) + " IS NULL";
+                }
+            }
+            String result = super.getNullSource(innerExpr, defaultSource);
+            // решает частично ту же проблему что и верхняя проверка
+            if(syntax.hasNullWhereEstimateProblem() && whereCompiling && !Settings.get().isDisableAntiJoinOptimization() && !isInner(innerJoin) && isOptAntiJoin(innerJoin)) { // тут даже assert isInner возможно
+                result = "(" + result + " OR " + syntax.getAdjustSelectivityPredicate() + ")";
             }
             return result;
         }

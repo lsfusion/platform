@@ -222,16 +222,6 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
     }
     public abstract class NotNull extends InnerExpr.NotNull {
 
-        @Override
-        public String getSource(CompileSource compile) {
-            return compile.getNullSource(QueryExpr.this, true);
-        }
-
-        @Override
-        protected String getNotSource(CompileSource compile) {
-            return compile.getNullSource(QueryExpr.this, false);
-        }
-
         public ClassExprWhere calculateClassWhere() {
             Where fullWhere = getInner().getFullWhere(); // в принципе сейчас можно и без groupWhere, но пока оставим так
             if(fullWhere.isFalse()) return ClassExprWhere.FALSE; // нужен потому как вызывается до create

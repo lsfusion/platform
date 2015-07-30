@@ -228,4 +228,6 @@ public interface SQLSyntax {
     String getTypeChange(Type oldType, Type type, String name, MStaticExecuteEnvironment env);
 
     boolean hasNotNullIndexProblem(); // проблема если идет join по a.f=b и есть индекс по f но там много NULL, субд не догадывается использовать этот индекс для фильтрации NOT NULL
+
+    boolean hasNullWhereEstimateProblem(); // проблема при A LEFT JOIN B WHERE B.f IS NULL, где в A очень много записей в B очень мало, СУБД сначала join'ит их, а потом применяет selectivity f
 }

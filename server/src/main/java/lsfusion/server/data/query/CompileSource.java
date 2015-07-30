@@ -4,6 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.data.ParseValue;
 import lsfusion.server.data.Table;
+import lsfusion.server.data.expr.InnerExpr;
 import lsfusion.server.data.expr.IsClassExpr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.KeyType;
@@ -40,10 +41,11 @@ public abstract class CompileSource {
     public abstract String getSource(KeyExpr key);
     public abstract String getSource(Table.Join.Expr expr);
     public abstract String getSource(Table.Join.IsIn where);
-    public String getNullSource(QueryExpr queryExpr, boolean notNull) {
-        return getSource(queryExpr) + " IS" + (notNull?" NOT":"") + " NULL";
-    }
     public abstract String getSource(QueryExpr queryExpr);
+
+    public String getNullSource(InnerExpr innerExpr, String defaultSource) {
+        return defaultSource;
+    }
 
     public abstract String getSource(IsClassExpr classExpr);
     

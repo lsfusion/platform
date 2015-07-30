@@ -757,4 +757,9 @@ public class PostgreDataAdapter extends DataAdapter {
     public boolean hasNotNullIndexProblem() {
         return true;
     }
+
+    @Override
+    public boolean hasNullWhereEstimateProblem() {
+        return true;
+    }
 }

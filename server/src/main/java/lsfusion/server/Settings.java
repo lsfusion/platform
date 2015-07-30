@@ -1380,4 +1380,14 @@ public class Settings {
     public void setNoTransSyncDB(boolean noTransSyncDB) {
         this.noTransSyncDB = noTransSyncDB;
     }
+
+    private boolean disableAntiJoinOptimization = false;
+
+    public boolean isDisableAntiJoinOptimization() {
+        return disableAntiJoinOptimization;
+    }
+
+    public void setDisableAntiJoinOptimization(boolean disableAntiJoinOptimization) {
+        this.disableAntiJoinOptimization = disableAntiJoinOptimization;
+    }
 }
