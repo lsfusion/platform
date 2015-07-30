@@ -180,6 +180,16 @@ permitUserNavigatorElement 'Разрешить форму' = permitUserRoleNavig
 forbidUserRoleNavigatorElement 'Запретить форму' = DATA BOOLEAN (UserRole, NavigatorElement);
 forbidUserNavigatorElement 'Запретить форму' = forbidUserRoleNavigatorElement(mainRoleUser(user), navigatorElement);
 
+levelNavigatorElementNavigatorElement 'Уровень' (child, parent) = RECURSION 1l IF child IS NavigatorElement AND parent == child
+                                                              STEP 2l IF parent == parentNavigatorElement($parent) PERSISTENT;
+
+isParentNavigatorElementNavigatorElement 'Является потомком' (child, parent) = TRUE IF levelNavigatorElementNavigatorElement(child, parent);
+
+hasChildrenPermitUserRoleNavigatorElement = GROUP SUM 1 IF isParentNavigatorElementNavigatorElement(child, parent) AND permitUserRoleNavigatorElement(role, child) BY role, parent;  
+hasChildrenForbidUserRoleNavigatorElement = GROUP SUM 1 IF isParentNavigatorElementNavigatorElement(child, parent) AND forbidUserRoleNavigatorElement(role, child) BY role, parent;  
+backgroundPermitUserRoleNavigatorElement (role, element)= RGB(203,203,203) IF hasChildrenPermitUserRoleNavigatorElement(role, element) AND NOT permitUserRoleNavigatorElement(role, element);
+backgroundForbidUserRoleNavigatorElement (role, element) = RGB(203,203,203) IF hasChildrenForbidUserRoleNavigatorElement(role, element) AND NOT forbidUserRoleNavigatorElement(role, element);
+
 CLASS Policy 'Политика безопасности';
 TABLE policy (Policy);
 TABLE userRolePolicy (UserRole, Policy);
@@ -287,7 +297,7 @@ FORM securityPolicy 'Политика безопасности'
     TREE treeFormObject tf = NavigatorElement PARENT parentNavigatorElement
     PROPERTIES(tf) READONLY captionNavigatorElement, canonicalNameNavigatorElement
     PROPERTIES(tf) numberNavigatorElement
-    PROPERTIES(ur, tf) permitUserRoleNavigatorElement, forbidUserRoleNavigatorElement, defaultNumberUserRoleNavigatorElement
+    PROPERTIES(ur, tf) permitUserRoleNavigatorElement BACKGROUND backgroundPermitUserRoleNavigatorElement(ur, tf), forbidUserRoleNavigatorElement BACKGROUND backgroundForbidUserRoleNavigatorElement(ur, tf), defaultNumberUserRoleNavigatorElement
     ORDER BY numberNavigatorElement(tf)
 
     TREE treePropertyObject tprs = PropertyGroup PARENT parentPropertyGroup, prs = Property
