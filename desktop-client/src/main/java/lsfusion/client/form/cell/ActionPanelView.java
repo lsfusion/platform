@@ -225,4 +225,14 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
     public void updateEditValue(Object value) {
         // по идее не может быть
     }
+
+    @Override
+    protected void processKeyEvent(final KeyEvent e) {
+        SwingUtils.getAroundTooltipListener(this, e, new Runnable() {
+            @Override
+            public void run() {
+                ActionPanelView.super.processKeyEvent(e);
+            }
+        });
+    }
 }

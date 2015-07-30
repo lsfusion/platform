@@ -161,6 +161,16 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
         }
 
         @Override
+        protected void processKeyEvent(final KeyEvent e) {
+            SwingUtils.getAroundTooltipListener(this, e, new Runnable() {
+                @Override
+                public void run() {
+                    DatePropertyEditorComponent.super.processKeyEvent(e);    
+                }
+            });
+        }
+
+        @Override
         public String createMaskFromDatePattern(String datePattern) {
             String symbols = "GyMdkHmsSEDFwWhKzZ";
             String mask = "";

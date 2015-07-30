@@ -98,6 +98,16 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
         logicsSupplier.getForm().clearCurrentEditingTable(this);
     }
 
+    @Override
+    protected void processKeyEvent(final KeyEvent e) {
+        SwingUtils.getAroundTooltipListener(this, e, new Runnable() {
+            @Override
+            public void run() {
+                DataFilterValueViewTable.super.processKeyEvent(e);
+            }
+        });
+    }
+
     /**
      * see {@link javax.swing.JTable#columnMarginChanged(javax.swing.event.ChangeEvent)}
      */

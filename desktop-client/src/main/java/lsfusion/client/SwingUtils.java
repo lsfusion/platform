@@ -19,6 +19,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -521,5 +522,62 @@ public class SwingUtils {
 
         graphics.setColor(color);
         graphics.fillPolygon(polygon);
+    }
+
+    private static Class<?> tooltipListenerClass;
+    private static KeyStroke closeTooltipKeyStroke;
+    
+    private static boolean tryToInitTooltipStuff() {
+        if (tooltipListenerClass == null || closeTooltipKeyStroke == null) {
+            for (Class<?> declaredClass : ToolTipManager.class.getDeclaredClasses()) {
+                if (declaredClass.getCanonicalName().equals("javax.swing.ToolTipManager.AccessibilityKeyListener")) {
+                    tooltipListenerClass = declaredClass;
+                    break;
+                }
+            }
+
+            try {
+                Field hideTip = ToolTipManager.class.getDeclaredField("hideTip");
+                if (hideTip != null) {
+                    hideTip.setAccessible(true);
+                    closeTooltipKeyStroke = (KeyStroke) hideTip.get(ToolTipManager.sharedInstance());
+                }
+            } catch (NoSuchFieldException | IllegalAccessException ignored) {}    
+        }
+        return tooltipListenerClass != null && closeTooltipKeyStroke != null;
+    }
+    
+    /**
+     * Все компоненты, для которых показывается всплывающая подсказка, регистрируются в <code>ToolTipManager</code> 
+     * ({@link javax.swing.ToolTipManager#registerComponent(JComponent)}), который добавляет им свои <code>MouseMotionListener</code> 
+     * и <code>KeyListener</code>. <code>KeyListener</code> оповещается глобально каждым компонентом, у которого он есть, 
+     * при возникновении любого события клавиатуры в {@link Component#processKeyEvent(KeyEvent)}. 
+     * <p>
+     * На время обработки нажатия клавиши Escape отключаем этот listener для некоторых focusable компонентов формы. Делалось, 
+     * чтобы не нажимать Escape дважды для закрытия модальной формы, а также отмены редактирования дат и закрытия панели отбора
+     * при показанной подсказке. 
+     */
+    public static void getAroundTooltipListener(JComponent component, KeyEvent event, Runnable process) {
+        boolean init = tryToInitTooltipStuff();
+        
+        if (init && closeTooltipKeyStroke.equals(KeyStroke.getKeyStrokeForEvent(event))) {
+            KeyListener tooltipListener = null;
+
+            KeyListener[] keyListeners = component.getKeyListeners();
+            for (KeyListener keyListener : keyListeners) {
+                if (tooltipListenerClass.isAssignableFrom(keyListener.getClass())) {
+                    tooltipListener = keyListener;
+                    component.removeKeyListener(keyListener);
+                }
+            }
+
+            process.run();
+
+            if (tooltipListener != null) {
+                component.addKeyListener(tooltipListener);
+            }
+        } else {
+            process.run();
+        }
     }
 }

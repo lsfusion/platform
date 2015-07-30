@@ -248,6 +248,16 @@ public abstract class ClientPropertyTable extends JTable implements TableTransfe
     }
 
     @Override
+    protected void processKeyEvent(final KeyEvent e) {
+        SwingUtils.getAroundTooltipListener(this, e, new Runnable() {
+            @Override
+            public void run() {
+                ClientPropertyTable.super.processKeyEvent(e);
+            }
+        });
+    }
+
+    @Override
     public synchronized void addMouseListener(MouseListener listener) {
         //подменяем стандартный MouseListener
         if (listener != null && "javax.swing.plaf.basic.BasicTableUI$Handler".equals(listener.getClass().getName())) {
