@@ -3,7 +3,6 @@ package lsfusion.server.logics.tasks.impl;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.table.ImplementTable;
@@ -22,8 +21,10 @@ import static lsfusion.base.BaseUtils.serviceLogger;
 public class CheckClassesTask extends GroupPropertiesSingleTask{
     Boolean firstCheck = false;
     private final Object lock = new Object();
+    public List<String> messages = new ArrayList<>();
 
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
+        this.messages = new ArrayList<>();
         setBL(context.getBL());
         initTasks();
         setDependencies(new HashSet<PublicTask>());
@@ -31,21 +32,25 @@ public class CheckClassesTask extends GroupPropertiesSingleTask{
 
     @Override
     protected void runTask(final Object property) throws RecognitionException {
-        try {
-            final SQLSession sqlSession = getBL().getDbManager().getThreadLocalSql();
+        try (DataSession session = getBL().getDbManager().createSession()) {
             long start = System.currentTimeMillis();
             if(!firstCheck) {
                 synchronized(lock) {
-                    serviceLogger.info("Here we are");
                     firstCheck = true;
-                    DataSession.checkClasses(sqlSession, getBL().LM.baseClass);
+                    String result = DataSession.checkClasses(session.sql, session.env, getBL().LM.baseClass);
+                    if(result != null && !result.isEmpty())
+                        messages.add(result);
                 }
             } else if (property instanceof ImplementTable) {
-                DataSession.checkTableClasses((ImplementTable) property, sqlSession, getBL().LM.baseClass);
+                String result = DataSession.checkTableClasses((ImplementTable) property, session.sql, session.env, getBL().LM.baseClass);
+                if(result != null && !result.isEmpty())
+                    messages.add(result);
                 long time = System.currentTimeMillis() - start;
                 serviceLogger.info(String.format("Check Table Classes: %s, %sms", ((ImplementTable) property).getName(), time));
             } else if(property instanceof CalcProperty) {
-                DataSession.checkClasses((CalcProperty) property, sqlSession, getBL().LM.baseClass);
+                String result = DataSession.checkClasses((CalcProperty) property, session.sql, session.env, getBL().LM.baseClass);
+                if(result != null && !result.isEmpty())
+                    messages.add(result);
                 long time = System.currentTimeMillis() - start;
                 serviceLogger.info(String.format("Check Classes: %s, %sms", ((CalcProperty) property).getSID(), time));
             }

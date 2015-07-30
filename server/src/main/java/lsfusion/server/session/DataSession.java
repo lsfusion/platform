@@ -1049,15 +1049,19 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public static String checkClasses(final SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+        return checkClasses(sql, null, baseClass);
+    }
 
-        final Result<String> incorrect = new Result<String>();
+    public static String checkClasses(final SQLSession sql, final QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
+
+        final Result<String> incorrect = new Result<>();
         runExclusiveness(new RunExclusiveness() {
             public void run(Query<String, String> query) throws SQLException, SQLHandledException {
-                incorrect.set(query.readSelect(sql));
+                incorrect.set(env == null ? query.readSelect(sql) : query.readSelect(sql, env));
             }
         }, sql, baseClass);
 
-        if(!incorrect.result.isEmpty())
+        if (!incorrect.result.isEmpty())
             return "---- Checking Classes Exclusiveness -----" + '\n' + incorrect.result;
         return "";
     }
@@ -1109,15 +1113,19 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             usedTable.drop(sql, OperationOwner.unknown);
     }
 
-    @StackMessage("logics.checking.data.classes")
     public static String checkClasses(@ParamMessage CalcProperty property, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+        return checkClasses(property, sql, null, baseClass);
+    }
+
+    @StackMessage("logics.checking.data.classes")
+    public static String checkClasses(@ParamMessage CalcProperty property, SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         assert property.isStored();
         
         ImRevMap<ClassPropertyInterface, KeyExpr> mapKeys = property.getMapKeys();
         Where where = getIncorrectWhere(property, baseClass, mapKeys);
-        Query<ClassPropertyInterface, String> query = new Query<ClassPropertyInterface, String>(mapKeys, where);
+        Query<ClassPropertyInterface, String> query = new Query<>(mapKeys, where);
 
-        String incorrect = query.readSelect(sql);
+        String incorrect = env == null ? query.readSelect(sql) : query.readSelect(sql, env);
         if(!incorrect.isEmpty())
             return "---- Checking Classes for " + (property instanceof DataProperty ? "data" : "aggregate") + " property : " + property + "-----" + '\n' + incorrect;
         return "";
@@ -1146,9 +1154,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public static String checkTableClasses(@ParamMessage ImplementTable table, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+        return checkTableClasses(table, sql, null, baseClass);
+    }
+
+    public static String checkTableClasses(@ParamMessage ImplementTable table, SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         Query<KeyField, PropertyField> query = getIncorrectQuery(table, baseClass);
 
-        String incorrect = query.readSelect(sql);
+        String incorrect = env == null ? query.readSelect(sql) : query.readSelect(sql, env);
         if(!incorrect.isEmpty())
             return "---- Checking Classes for table : " + table + "-----" + '\n' + incorrect;
         return "";

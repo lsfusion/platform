@@ -34,7 +34,10 @@ public class CheckAggregationsMultiThreadActionProperty extends ScriptingActionP
             CheckAggregationsTask task = new CheckAggregationsTask();
             task.init(context);
             TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.checking.aggregations")));
+            String message = "";
+            for(String m : task.messages)
+                message += '\n' + m;
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed") + message, getString("logics.checking.aggregations")));
         } catch (Exception e) {
             ServerLoggers.serviceLogger.error("Check Aggregations error", e);
         }

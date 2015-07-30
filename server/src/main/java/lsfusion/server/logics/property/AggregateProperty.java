@@ -42,10 +42,14 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
         super(caption,interfaces);
     }
 
+    public String checkAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
+        return checkAggregation(session, null, baseClass);
+    }
+
     // проверяет агрегацию для отладки
     @ThisMessage
     @StackMessage("logics.info.checking.aggregated.property")
-    public String checkAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
+    public String checkAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         session.pushVolatileStats(OperationOwner.unknown);
         
         try {
@@ -56,9 +60,10 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
             String checkClasses = "";
             if(useRecalculate)
-                checkClasses = DataSession.checkClasses(this, session, baseClass);
+                checkClasses = env == null ? DataSession.checkClasses(this, session, baseClass) : DataSession.checkClasses(this, session, env, baseClass);
     
-            ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = getRecalculateQuery(true, baseClass, !useRecalculate).execute(session, OperationOwner.unknown);
+            ImOrderMap<ImMap<T, Object>, ImMap<String, Object>> checkResult = env == null ? getRecalculateQuery(true, baseClass, !useRecalculate).execute(session, OperationOwner.unknown)
+                    : getRecalculateQuery(true, baseClass, !useRecalculate).execute(session, env);
             if(checkResult.size() > 0 || !checkClasses.isEmpty()) {
                 message += "---- Checking Aggregations : " + this + "-----" + '\n';
                 message += checkClasses;
@@ -130,7 +135,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     private Query<T, String> getRecalculateQuery(boolean outDB, BaseClass baseClass, boolean checkInconsistence) {
         assert isStored();
         
-        QueryBuilder<T, String> query = new QueryBuilder<T, String>(this);
+        QueryBuilder<T, String> query = new QueryBuilder<>(this);
 
         Expr dbExpr = checkInconsistence ? getInconsistentExpr(query.getMapExprs(), baseClass) : getExpr(query.getMapExprs());
         Expr calculateExpr = calculateExpr(query.getMapExprs());
@@ -164,7 +169,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     @IdentityStartLazy
     private Pair<ImRevMap<T,NotNullKeyExpr>, Expr> calculateQueryExpr(CalcType calcType) {
         ImRevMap<T,NotNullKeyExpr> mapExprs = getMapNotNullKeys();
-        return new Pair<ImRevMap<T, NotNullKeyExpr>, Expr>(mapExprs, calculateExpr(mapExprs, calcType));
+        return new Pair<>(mapExprs, calculateExpr(mapExprs, calcType));
     }
     
     @IdentityStartLazy
