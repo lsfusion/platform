@@ -39,43 +39,43 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
 
     @Override
     protected void runTask(final Object element) throws RecognitionException {
-        try {
-            final SQLSession sqlSession = getBL().getDbManager().getThreadLocalSql();
+        try (DataSession session = getDbManager().createSession()) {
 
             if (!exclusiveness) {
                 synchronized (lock) {
                     exclusiveness = true;
-                    getBL().recalculateExclusiveness(sqlSession, !singleTransaction);
+                    getBL().recalculateExclusiveness(session.sql, !singleTransaction);
                 }
             } else if (element instanceof ImplementTable) {
-                DBManager.run(sqlSession, !singleTransaction, new DBManager.RunService() {
+                DBManager.run(session.sql, !singleTransaction, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         long start = System.currentTimeMillis();
-                        DataSession.recalculateTableClasses((ImplementTable) element, sql, getBL().LM.baseClass);
+                        DataSession.recalculateTableClasses((ImplementTable) element, sql, session.env, getBL().LM.baseClass);
                         long time = System.currentTimeMillis() - start;
                         serviceLogger.info(String.format("Recalculate Table Classes: %s, %s", String.valueOf(element), time));
                     }
                 });
 
                 serviceLogger.info(getString("logics.info.packing.table") + " (" + element + ")... ");
-                run(sqlSession, !singleTransaction, new RunService() {
+                run(session.sql, !singleTransaction, new RunService() {
                     @Override
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                        sql.packTable((ImplementTable) element, OperationOwner.unknown, TableOwner.global);
+                        sql.packTable((ImplementTable) element, session.env.getOpOwner(), TableOwner.global);
                     }
                 });
                 serviceLogger.info("Done");
 
             } else if (element instanceof CalcProperty) {
-                DBManager.run(sqlSession, !singleTransaction, new DBManager.RunService() {
+                DBManager.run(session.sql, !singleTransaction, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         long start = System.currentTimeMillis();
-                        ((CalcProperty) element).recalculateClasses(sql, getBL().LM.baseClass);
+                        ((CalcProperty) element).recalculateClasses(sql, session.env, getBL().LM.baseClass);
                         long time = System.currentTimeMillis() - start;
                         serviceLogger.info(String.format("Recalculate Class: %s, %s", ((CalcProperty) element).getSID(), time));
                     }
                 });
             }
+            session.apply(getBL());
         } catch (SQLException | SQLHandledException e) {
             e.printStackTrace();
         }

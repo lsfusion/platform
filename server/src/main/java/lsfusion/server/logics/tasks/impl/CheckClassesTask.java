@@ -32,7 +32,7 @@ public class CheckClassesTask extends GroupPropertiesSingleTask{
 
     @Override
     protected void runTask(final Object property) throws RecognitionException {
-        try (DataSession session = getBL().getDbManager().createSession()) {
+        try (DataSession session = getDbManager().createSession()) {
             long start = System.currentTimeMillis();
             if(!firstCheck) {
                 synchronized(lock) {

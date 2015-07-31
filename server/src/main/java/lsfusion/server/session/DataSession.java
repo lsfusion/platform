@@ -1172,11 +1172,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return new Query<KeyField, PropertyField>(mapKeys, where);
     }
 
-    @StackMessage("logics.recalculating.data.classes")
     public static void recalculateTableClasses(ImplementTable table, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+        recalculateTableClasses(table, sql, null, baseClass);
+    }
+
+    @StackMessage("logics.recalculating.data.classes")
+    public static void recalculateTableClasses(ImplementTable table, SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         Query<KeyField, PropertyField> query = getIncorrectQuery(table, baseClass);
 
-        sql.deleteRecords(new ModifyQuery(table, query, OperationOwner.unknown, TableOwner.global));
+        sql.deleteRecords(new ModifyQuery(table, query, env == null ? OperationOwner.unknown : env.getOpOwner(), TableOwner.global));
     }
 
     // для оптимизации

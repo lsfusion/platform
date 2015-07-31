@@ -29,17 +29,17 @@ public class CheckAggregationsTask extends GroupPropertiesSingleTask{
 
     @Override
     protected void runTask(final Object property) throws RecognitionException {
-        try (DataSession session = getBL().getDbManager().createSession()) {
-            if (property instanceof AggregateProperty) {
+        if (property instanceof AggregateProperty) {
+            try (DataSession session = getDbManager().createSession()) {
                 long start = System.currentTimeMillis();
                 String result = ((AggregateProperty) property).checkAggregation(session.sql, session.env, getBL().LM.baseClass);
-                if(result != null && !result.isEmpty())
+                if (result != null && !result.isEmpty())
                     messages.add(result);
                 long time = System.currentTimeMillis() - start;
                 serviceLogger.info(String.format("Check Aggregations: %s, %sms", ((AggregateProperty) property).getSID(), time));
+            } catch (SQLException | SQLHandledException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException | SQLHandledException e) {
-            e.printStackTrace();
         }
     }
 

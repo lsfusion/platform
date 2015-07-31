@@ -30,10 +30,8 @@ import java.util.List;
 import static lsfusion.base.BaseUtils.serviceLogger;
 
 public class RecalculateStatsTask extends GroupPropertiesSingleTask {
-    ExecutionContext context;
 
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
-        this.context = context;
         setBL(context.getBL());
         initTasks();
         setDependencies(new HashSet<PublicTask>());
@@ -41,7 +39,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask {
 
     @Override
     protected void runTask(final Object element) throws RecognitionException {
-        try (DataSession session = context.getDbManager().createSession()) {
+        try (DataSession session = getDbManager().createSession()) {
             if(element instanceof ImplementTable) {
                 long start = System.currentTimeMillis();
                 serviceLogger.info(String.format("Recalculate Stats %s", element));

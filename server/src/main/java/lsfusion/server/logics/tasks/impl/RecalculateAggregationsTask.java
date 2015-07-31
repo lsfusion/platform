@@ -11,6 +11,7 @@ import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.logics.tasks.PublicTask;
+import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
@@ -27,21 +28,21 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
 
     @Override
     protected void runTask(final Object property) throws RecognitionException {
-        try {
-            if(property instanceof AggregateProperty) {
-                final SQLSession sqlSession = getBL().getDbManager().getThreadLocalSql();
-                DBManager.run(sqlSession, true, new DBManager.RunService() {
+        if (property instanceof AggregateProperty) {
+            try (DataSession session = getDbManager().createSession()) {
+                DBManager.run(session.sql, true, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         long start = System.currentTimeMillis();
                         ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation started: %s", ((AggregateProperty) property).getSID()));
-                        ((AggregateProperty) property).recalculateAggregation(sqlSession, getBL().LM.baseClass);
+                        ((AggregateProperty) property).recalculateAggregation(session.sql, session.env, getBL().LM.baseClass);
                         long time = System.currentTimeMillis() - start;
                         ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation: %s, %sms", ((AggregateProperty) property).getSID(), time));
                     }
                 });
+                session.apply(getBL());
+            } catch (SQLException | SQLHandledException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException | SQLHandledException e) {
-            e.printStackTrace();
         }
     }
 

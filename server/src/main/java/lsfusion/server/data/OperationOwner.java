@@ -6,7 +6,7 @@ public abstract class OperationOwner {
     
     @AssertSynchronized
     public void checkThreadSafeAccess(OperationOwner writeOwner) { // для аннотации в метод вынесено
-        if(writeOwner != null && this != debug) // идет транзакция
+        if(writeOwner != null && this != debug && writeOwner != unknown) // идет транзакция
             ServerLoggers.assertLog(this == writeOwner, "OTHER DATASESSION IN THE MIDDLE OF TRANSACTION IN THIS THREAD " + this + " " + writeOwner);
     }    
     

@@ -150,17 +150,24 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
 
     public static AggregateProperty recalculate = null;
 
+    public void recalculateAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
+        recalculateAggregation(session, null, baseClass);
+    }
+
     @StackMessage("logics.info.recalculation.of.aggregated.property")
     @ThisMessage
-    public void recalculateAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
+    public void recalculateAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         boolean useRecalculate = Settings.get().isUseRecalculateClassesInsteadOfInconsisentExpr();
         if(useRecalculate)
-            recalculateClasses(session, baseClass);
+            recalculateClasses(session, env, baseClass);
 
         session.pushVolatileStats(OperationOwner.unknown);
         try {
-            session.modifyRecords(new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass, !useRecalculate).map(
-                    mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), OperationOwner.unknown, TableOwner.global));
+            session.modifyRecords(env == null ?
+                    new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass, !useRecalculate).map(
+                            mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), OperationOwner.unknown, TableOwner.global) :
+                    new ModifyQuery(mapTable.table, getRecalculateQuery(false, baseClass, !useRecalculate).map(
+                            mapTable.mapKeys.reverse(), MapFact.singletonRev(field, "calcvalue")), env, TableOwner.global));
         } finally {
             session.popVolatileStats(OperationOwner.unknown);
         }

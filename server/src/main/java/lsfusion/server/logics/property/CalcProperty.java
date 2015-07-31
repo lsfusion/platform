@@ -1668,14 +1668,18 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         }
     }
 
-    @StackMessage("logics.recalculating.data.classes")
     public void recalculateClasses(SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
+        recalculateClasses(sql, null, baseClass);
+    }
+
+    @StackMessage("logics.recalculating.data.classes")
+    public void recalculateClasses(SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
         assert isStored();
         
         ImRevMap<KeyField, KeyExpr> mapKeys = mapTable.table.getMapKeys();
         Where where = DataSession.getIncorrectWhere(this, baseClass, mapTable.mapKeys.join(mapKeys));
         Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(mapKeys, Expr.NULL, field, where);
-        sql.updateRecords(new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global));
+        sql.updateRecords(env == null ? new ModifyQuery(mapTable.table, query, OperationOwner.unknown, TableOwner.global) : new ModifyQuery(mapTable.table, query, env, TableOwner.global));
     }
 
     public void setDebugInfo(CalcPropertyDebugInfo debugInfo) {

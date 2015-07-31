@@ -39,7 +39,7 @@ public class RecalculateFollowsTask extends GroupPropertiesSingleTask {
                 if (action.hasResolve()) {
                     long start = System.currentTimeMillis();
                     try {
-                        getBL().getDbManager().runDataMultiThread(context, !singleTransaction, new DBManager.RunServiceData() {
+                        getDbManager().runDataMultiThread(context, !singleTransaction, new DBManager.RunServiceData() {
                             public void run(SessionCreator session) throws SQLException, SQLHandledException {
                                 ((DataSession) session).resolve(action);
                             }

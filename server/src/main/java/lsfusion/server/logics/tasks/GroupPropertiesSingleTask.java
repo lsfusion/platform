@@ -1,5 +1,7 @@
 package lsfusion.server.logics.tasks;
 
+import lsfusion.server.logics.DBManager;
+
 public abstract class GroupPropertiesSingleTask extends GroupSingleTask<Object> {
 
     @Override
@@ -15,5 +17,9 @@ public abstract class GroupPropertiesSingleTask extends GroupSingleTask<Object> 
     @Override
     public String getCaption() {
         return null;
+    }
+
+    public DBManager getDbManager() {
+        return getBL().getDbManager();
     }
 }
