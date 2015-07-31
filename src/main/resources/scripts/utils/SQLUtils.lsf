@@ -76,6 +76,8 @@ lockNameJavaProcess 'Блокировка (Java)' = DATA LOCAL VARSTRING[100] (I
 
 lockOwnerIdProcess 'ID блокирующего потока' = DATA LOCAL VARSTRING[10] (INTEGER);
 lockOwnerNameProcess 'Блокирующий поток' = DATA LOCAL VARSTRING[100] (INTEGER);
+isDisabledNestLoopProcess 'Disabled nested loop' = DATA LOCAL BOOLEAN (INTEGER);
+queryTimeoutProcess 'Query Timeout' = DATA LOCAL INTEGER (INTEGER);
    
 processIdThread (id) = GROUP AGGR process BY idThreadProcess(process) WHERE process IS INTEGER;
 threadOwnerProcess (i) = processIdThread(lockOwnerIdProcess(i));
@@ -133,7 +135,7 @@ FORM processMonitor 'Монитор процессов'
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, computerProcess, userProcess,
                            querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                            lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
-                           lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
+                           lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     FILTERS idThreadProcess(i)
     FILTERGROUP active
@@ -146,7 +148,7 @@ FORM processMonitor 'Монитор процессов'
                             activeProcess, idThreadProcess, computerProcess, userProcess,
                             querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                             lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
-                            lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
+                            lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
     FILTERS idThreadProcess(i2), (activeBlockingProcess(i2) AND sumBlockedProcess(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') 
     
@@ -155,11 +157,11 @@ FORM processMonitor 'Монитор процессов'
                                  sumBlockingProcess, computerProcess, userProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess,
                                  lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
-                                 lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
+                                 lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlockingProcess, computerProcess, userProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                                  lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
-                                 lockOwnerIdProcess, lockOwnerNameProcess, idSQLProcess, fullQuerySQLProcess
+                                 lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(blocking) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(blocking), killJavaProcess SHOWIF isActiveSQLProcess(blocking)                                   
     FILTERS idThreadProcess(blocked), sumBlockingProcess(blocked) > 0, sumBlockedProcess(blocking) > 0, isBlockingProcess(blocked, blocking) AND blocked != blocking
     FILTERGROUP nonBlocking FILTER 'Только не блокирующие' sumBlockedProcess(blocked) == 0 OR isDeadlockProcess(blocked) DEFAULT 

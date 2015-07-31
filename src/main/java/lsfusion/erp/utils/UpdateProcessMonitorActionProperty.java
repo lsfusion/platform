@@ -85,7 +85,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         //step1: props, mRows (sql)
         ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess", "querySQLProcess", "addressUserSQLProcess", "dateTimeSQLProcess",
                 "isActiveSQLProcess", "inTransactionSQLProcess", "computerProcess", "userProcess", "lockOwnerIdProcess", "lockOwnerNameProcess",
-                "fullQuerySQLProcess", "idSQLProcess"));
+                "fullQuerySQLProcess", "idSQLProcess", "isDisabledNestLoopProcess", "queryTimeoutProcess"));
         MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRowsSQL = MapFact.mExclMap();
 
         for (final List<Object> sessionThread : sessionThreadMap.values()) {
@@ -227,6 +227,12 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             case "idSQLProcess":
                 Integer idSQLProcess = (Integer) sqlProcess.get(10);
                 return idSQLProcess == null ? NullValue.instance : new DataObject(idSQLProcess);
+            case "isDisabledNestLoopProcess":
+                Boolean isDisabledNestLoop = (Boolean) sqlProcess.get(11);
+                return isDisabledNestLoop == null || !isDisabledNestLoop ? NullValue.instance : new DataObject(true);
+            case "queryTimeoutProcess":
+                Integer queryTimeoutProcess = (Integer) sqlProcess.get(12);
+                return queryTimeoutProcess == null ? NullValue.instance : new DataObject(queryTimeoutProcess);
             default:
                 return NullValue.instance;
         }
@@ -304,10 +310,16 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
             String query = trim((String) entry.get("text"));
             String fullQuery =  null;
+            boolean isDisabledNestLoop = false;
+            Integer queryTimeout = null;
             Integer processId = (Integer) entry.get("session_id");
             List<Object> sessionThread = sessionThreadMap.get(processId);
-            if(sessionThread != null && sessionThread.get(4) != null) {
-                fullQuery = (String) sessionThread.get(4);
+            if(sessionThread != null) {
+                if(sessionThread.get(4) != null) {
+                    fullQuery = (String) sessionThread.get(4);
+                }
+                isDisabledNestLoop = (boolean) sessionThread.get(5);
+                queryTimeout = (Integer) sessionThread.get(6);
             }
             String userActiveTask = trim((String) entry.get("host_name"));
             String address = trim((String) entry.get("client_net_address"));
@@ -315,7 +327,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
             if (!query.equals(originalQuery)) {
                 resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, fullQuery, userActiveTask, null,
-                        address, dateTime, null, null, null, null, processId));
+                        address, dateTime, null, null, null, null, processId, isDisabledNestLoop, queryTimeout));
             }
         }
         return resultMap;
@@ -364,6 +376,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
             String query = trim((String) entry.get("query"));
             String fullQuery = null;
+            boolean isDisabledNestLoop = false;
+            Integer queryTimeout = null;
             Integer processId = (Integer) entry.get("pid");
             String address = trim((String) entry.get("client_addr"));
             Timestamp dateTime = (Timestamp) entry.get("query_start");
@@ -380,12 +394,14 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                             context.getSession().getObjectValue(context.getBL().authenticationLM.computer, sessionThread.get(3)));
                     if(sessionThread.get(4) != null)
                         fullQuery = (String) sessionThread.get(4);
+                    isDisabledNestLoop = (boolean) sessionThread.get(5);
+                    queryTimeout = (Integer) sessionThread.get(6);
                 }
                 List<Object> lockingProcess = lockingMap.get(processId);
                 String lockOwnerId = lockingProcess == null ? null : getSQLThreadId(sessionThreadMap.get(lockingProcess.get(0)), (Integer) lockingProcess.get(0));
                 String lockOwnerName = lockingProcess == null ? null : (String) lockingProcess.get(1);
                 resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.<Object>asList(query, fullQuery, userActiveTask, computerActiveTask, address, dateTime,
-                                state.equals("active"), state.equals("idle in transaction"), lockOwnerId, lockOwnerName, processId));
+                                state.equals("active"), state.equals("idle in transaction"), lockOwnerId, lockOwnerName, processId, isDisabledNestLoop, queryTimeout));
             }
         }
         return resultMap;
@@ -478,7 +494,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             String user = logInfo == null ? null : logInfo.userName;
             String lsfStack = thread != null ? ExecutionStackAspect.getStackString(thread, true) : null;
 
-            resultMap.put(String.valueOf(id), Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId, lockOwnerName, computer, user, lsfStack));
+            resultMap.put(String.valueOf(id), Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId,
+                    lockOwnerName, computer, user, lsfStack));
         }
         return resultMap;
     }
