@@ -51,7 +51,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static lsfusion.server.ServerLoggers.sqlLogger;
+import static lsfusion.server.ServerLoggers.sqlHandLogger;
 import static lsfusion.server.ServerLoggers.systemLogger;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> {
@@ -195,7 +195,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         if(privateConnection ==null) {
             assert transactionTables.isEmpty();
             privateConnection = connectionPool.getPrivate(this);
-            sqlLogger.info("Obtaining backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
+            sqlHandLogger.info("Obtaining backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
 //            System.out.println(this + " : NULL -> " + privateConnection + " " + " " + sessionTablesMap.keySet() + ExceptionUtils.getStackTrace());
         }
     }
@@ -208,7 +208,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             ServerLoggers.assertLog(privateConnection != null, "BRACES NEEDPRIVATE - TRYCOMMON SHOULD MATCH");
             connectionPool.returnPrivate(this, privateConnection);
 //            System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() +  ExceptionUtils.getStackTrace());
-            sqlLogger.info("Returning backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
+            sqlHandLogger.info("Returning backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
             privateConnection = null;
         }
     }
@@ -1972,7 +1972,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     ServerLoggers.assertLog(sessionTablesMap.isEmpty(), "AT CLOSE USED TABLES SHOULD NOT EXIST " + this);
                     connectionPool.returnPrivate(this, privateConnection);
 //                    System.out.println(this + " " + privateConnection + " -> NULL " + " " + sessionTablesMap.keySet() + ExceptionUtils.getStackTrace());
-                    sqlLogger.info("Returning backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
+                    sqlHandLogger.info("Returning backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
                     privateConnection = null;
                 }
             }
