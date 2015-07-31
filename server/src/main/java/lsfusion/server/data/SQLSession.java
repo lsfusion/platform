@@ -79,7 +79,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             if(connection != null)
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), Arrays.<Object>asList(sqlSession.getActiveThread(),
                         sqlSession.isInTransaction(), sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
-                        sqlSession.getExecutingStatement()));
+                        sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout()));
         }
         return sessionMap;
     }
@@ -92,6 +92,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     public String getExecutingStatement() {
         return executingStatement == null ? null : executingStatement.toString();
+    }
+
+    public Integer getQueryTimeout() {
+        try {
+            return executingStatement == null ? null : executingStatement.getQueryTimeout();
+        } catch (SQLException e) {
+            return null;
+        }
     }
 
     private static interface SQLRunnable {
