@@ -32,6 +32,7 @@ import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.logics.property.SessionDataProperty;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
@@ -39,12 +40,16 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SingleKeyTableUsage;
 import lsfusion.server.stack.ExecutionStackAspect;
+import org.apache.commons.lang.ArrayUtils;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+
+import static org.apache.commons.lang.StringUtils.trimToEmpty;
+import static org.apache.commons.lang.StringUtils.trimToNull;
 
 public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty {
 
@@ -56,8 +61,11 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         try {
-            
-            updateProcessMonitor(context);
+            String processType = trimToEmpty((String) findProperty("nameProcessType").read(context));
+            DataSession session = context.getSession();
+            session.cancel(SetFact.singleton((SessionDataProperty) findProperty("processType").property));
+
+            updateProcessMonitor(context, processType);
 
         } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
@@ -65,16 +73,23 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
     }
 
-    protected void updateProcessMonitor(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
-
-        DataSession session = context.getSession();
-        session.cancel();
+    protected void updateProcessMonitor(ExecutionContext context, String processType) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
         SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
 
+        boolean active = processType.endsWith("activeAll");
+        boolean activeSQL = processType.endsWith("activeSQL");
+        boolean activeJava = processType.endsWith("activeJava");
+
         Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
-        final Map<String, List<Object>> javaProcesses = getActiveJavaThreads();
-        Map<String, List<Object>> sqlProcesses = syntaxType == SQLSyntaxType.POSTGRES ? getPostgresProcesses(context) : getMSSQLProcesses(context);
+        List<Long> idSet = new ArrayList<>();
+        idSet.addAll(Arrays.asList(ArrayUtils.toObject(ManagementFactory.getThreadMXBean().getAllThreadIds())));
+        Map<String, List<Object>> javaProcesses = new HashMap<>();
+        Map<String, List<Object>> sqlProcesses = syntaxType == SQLSyntaxType.POSTGRES ?
+                getPostgresProcesses(context, sessionThreadMap, javaProcesses, idSet, active || activeSQL, activeJava)
+                : getMSSQLProcesses(context, sessionThreadMap, javaProcesses, idSet, active || activeSQL, activeJava);
+        if(!activeSQL)
+            javaProcesses.putAll(getJavaProcesses(idSet, active || activeJava));
         int i = 0;
 
         //step1: props, mRows (java)
@@ -120,30 +135,36 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             }
         }
 
-        for(final Map.Entry<String, List<Object>> sqlProcess : sqlProcesses.entrySet()) {
-            if (sqlProcess.getValue() != null) {
-                //step2: exclAdd (sql2)
-                DataObject rowKey = new DataObject(i, IntegerClass.instance);
-                mRowsSQL.exclAdd(MapFact.singleton("key", rowKey), propsSQL.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
-                    public ObjectValue getMapValue(LCP prop) {
-                        return getSQLMapValue(prop, sqlProcess.getValue(), sqlProcess.getKey(), null);
-                    }
-                }));
-                i++;
+        if(!activeJava) {
+            for (final Map.Entry<String, List<Object>> sqlProcess : sqlProcesses.entrySet()) {
+                if (sqlProcess.getValue() != null) {
+                    //step2: exclAdd (sql2)
+                    DataObject rowKey = new DataObject(i, IntegerClass.instance);
+                    mRowsSQL.exclAdd(MapFact.singleton("key", rowKey), propsSQL.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
+                        public ObjectValue getMapValue(LCP prop) {
+                            return getSQLMapValue(prop, sqlProcess.getValue(), sqlProcess.getKey(), null);
+                        }
+                    }));
+                    i++;
+                }
             }
         }
 
-        for(final Map.Entry<String, List<Object>> javaProcess : javaProcesses.entrySet()) {
-            if(javaProcess.getValue() != null) {
-                //step2: exclAdd (java2)
-                DataObject rowKey = new DataObject(i, IntegerClass.instance);
-                mRowsJava.exclAdd(MapFact.singleton("key", rowKey), propsJava.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
-                    public ObjectValue getMapValue(LCP prop) {
-                        return getJavaMapValue(prop, javaProcess.getValue(), javaProcess.getKey());
-                    }}));
-                i++;
+        if(!activeSQL) {
+            for (final Map.Entry<String, List<Object>> javaProcess : javaProcesses.entrySet()) {
+                if (javaProcess.getValue() != null) {
+                    //step2: exclAdd (java2)
+                    DataObject rowKey = new DataObject(i, IntegerClass.instance);
+                    mRowsJava.exclAdd(MapFact.singleton("key", rowKey), propsJava.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
+                        public ObjectValue getMapValue(LCP prop) {
+                            return getJavaMapValue(prop, javaProcess.getValue(), javaProcess.getKey());
+                        }
+                    }));
+                    i++;
+                }
             }
         }
+
         //step3: writeRows (java)
         writeRows(context, propsJava, mRowsJava);
 
@@ -215,7 +236,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             case "inTransactionSQLProcess":
                 Boolean fusionInTransaction = (Boolean) sqlProcess.get(7);
                 if(baseInTransaction != null && fusionInTransaction != null && fusionInTransaction)
-                    ServerLoggers.assertLog(baseInTransaction.equals(fusionInTransaction), "FUSION AND BASE INTRANSACTION DIFFERS");
+                    ServerLoggers.assertLog(baseInTransaction.equals(true), "FUSION AND BASE INTRANSACTION DIFFERS");
                 Boolean inTransaction = baseInTransaction != null ? baseInTransaction : fusionInTransaction;
                 return !inTransaction ? NullValue.instance : new DataObject(true);
             case "lockOwnerIdProcess":
@@ -266,8 +287,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         return SetFact.fromJavaOrderSet(new ArrayList<LCP>(Arrays.asList(properties))).addOrderExcl(LM.baseLM.imported);
     }
 
-    private Map<String, List<Object>> getMSSQLProcesses(ExecutionContext context) throws SQLException, SQLHandledException {
-        Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
+    private Map<String, List<Object>> getMSSQLProcesses(ExecutionContext context, Map<Integer, List<Object>> sessionThreadMap,
+                                                        Map<String, List<Object>> javaProcesses, List<Long> idSet, boolean onlyActive, boolean onlyJava)
+            throws SQLException, SQLHandledException {
         String originalQuery = "Select A.session_id,B.start_time, A.[host_name], A.[login_name], C.client_net_address, text\n" +
                 "from sys.dm_exec_sessions A\n" +
                 "Left Join sys.dm_exec_requests B\n" +
@@ -308,32 +330,44 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
             HMap entry = (HMap) rsValue;
 
-            String query = trim((String) entry.get("text"));
-            String fullQuery =  null;
-            boolean isDisabledNestLoop = false;
-            Integer queryTimeout = null;
-            Integer processId = (Integer) entry.get("session_id");
-            List<Object> sessionThread = sessionThreadMap.get(processId);
-            if(sessionThread != null) {
-                if(sessionThread.get(4) != null) {
-                    fullQuery = (String) sessionThread.get(4);
+            String query = trimToEmpty((String) entry.get("text"));
+            if(!query.equals(originalQuery) && (!onlyActive || !query.isEmpty())) {
+                String fullQuery = null;
+                boolean isDisabledNestLoop = false;
+                Integer queryTimeout = null;
+                Integer processId = (Integer) entry.get("session_id");
+                List<Object> sessionThread = sessionThreadMap.get(processId);
+                if (sessionThread != null) {
+                    if (sessionThread.get(4) != null) {
+                        fullQuery = (String) sessionThread.get(4);
+                    }
+                    isDisabledNestLoop = (boolean) sessionThread.get(5);
+                    queryTimeout = (Integer) sessionThread.get(6);
                 }
-                isDisabledNestLoop = (boolean) sessionThread.get(5);
-                queryTimeout = (Integer) sessionThread.get(6);
-            }
-            String userActiveTask = trim((String) entry.get("host_name"));
-            String address = trim((String) entry.get("client_net_address"));
-            Timestamp dateTime = (Timestamp) entry.get("start_time");
+                String userActiveTask = trimToNull((String) entry.get("host_name"));
+                String address = trimToNull((String) entry.get("client_net_address"));
+                Timestamp dateTime = (Timestamp) entry.get("start_time");
 
-            if (!query.equals(originalQuery)) {
-                resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, fullQuery, userActiveTask, null,
-                        address, dateTime, null, null, null, null, processId, isDisabledNestLoop, queryTimeout));
+                Integer pid = sessionThread == null ? null : (Integer) sessionThread.get(0);
+                boolean skip = onlyJava;
+                if(pid != null && idSet.contains((long) pid)){
+                    skip = false;
+                    idSet.remove((long) pid);
+                    List<Object> threadInfo = getThreadInfo(pid, onlyActive, false);
+                    if(threadInfo != null)
+                        javaProcesses.put(String.valueOf(pid), threadInfo);
+                }
+                if (!skip)
+                    resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, fullQuery, userActiveTask, null,
+                            address, dateTime, null, null, null, null, processId, isDisabledNestLoop, queryTimeout));
             }
         }
         return resultMap;
     }
 
-    private Map<String, List<Object>> getPostgresProcesses(ExecutionContext context) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    private Map<String, List<Object>> getPostgresProcesses(ExecutionContext context, Map<Integer, List<Object>> sessionThreadMap,
+                                                           Map<String, List<Object>> javaProcesses, List<Long> idSet, boolean onlyActive, boolean onlyJava)
+            throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         Map<Integer, List<Object>> lockingMap = getPostgresLockMap(context);
 
         String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s'"/* + (onlyActive ? " AND state!='idle'" : "")*/, context.getBL().getDataBaseName());
@@ -367,22 +401,21 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
                 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
 
-        Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
-
         Map<String, List<Object>> resultMap = new HashMap<>();
         for (Object rsValue : rs.values()) {
 
             HMap entry = (HMap) rsValue;
 
-            String query = trim((String) entry.get("query"));
-            String fullQuery = null;
-            boolean isDisabledNestLoop = false;
-            Integer queryTimeout = null;
-            Integer processId = (Integer) entry.get("pid");
-            String address = trim((String) entry.get("client_addr"));
-            Timestamp dateTime = (Timestamp) entry.get("query_start");
-            String state = trim((String) entry.get("state"), "");
-            if (!query.equals(originalQuery)) {
+            String query = trimToEmpty((String) entry.get("query"));
+            String state = trimToEmpty((String) entry.get("state"));
+            boolean active = state.equals("active");
+            if (!query.equals(originalQuery) && (!onlyActive || (!query.isEmpty() && active))) {
+                String fullQuery = null;
+                boolean isDisabledNestLoop = false;
+                Integer queryTimeout = null;
+                Integer processId = (Integer) entry.get("pid");
+                String address = trimToNull((String) entry.get("client_addr"));
+                Timestamp dateTime = (Timestamp) entry.get("query_start");
 
                 List<Object> sessionThread = sessionThreadMap.get(processId);
                 String userActiveTask = null;
@@ -392,7 +425,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                             context.getSession().getObjectValue(context.getBL().authenticationLM.user, sessionThread.get(2)));
                     computerActiveTask = (String) findProperty("hostnameComputer").read(context.getSession(),
                             context.getSession().getObjectValue(context.getBL().authenticationLM.computer, sessionThread.get(3)));
-                    if(sessionThread.get(4) != null)
+                    if (sessionThread.get(4) != null)
                         fullQuery = (String) sessionThread.get(4);
                     isDisabledNestLoop = (boolean) sessionThread.get(5);
                     queryTimeout = (Integer) sessionThread.get(6);
@@ -400,8 +433,20 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 List<Object> lockingProcess = lockingMap.get(processId);
                 String lockOwnerId = lockingProcess == null ? null : getSQLThreadId(sessionThreadMap.get(lockingProcess.get(0)), (Integer) lockingProcess.get(0));
                 String lockOwnerName = lockingProcess == null ? null : (String) lockingProcess.get(1);
+
+                Integer pid = sessionThread == null ? null : (Integer) sessionThread.get(0);
+                boolean skip = onlyJava;
+                if(pid != null && idSet.contains((long) pid)){
+                    idSet.remove(new Long(pid));
+                    List<Object> threadInfo = getThreadInfo(pid, true, false);
+                    if(threadInfo != null) {
+                        javaProcesses.put(String.valueOf(pid), threadInfo);
+                        skip = false;
+                    }
+                }
+                if(!skip)
                 resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.<Object>asList(query, fullQuery, userActiveTask, computerActiveTask, address, dateTime,
-                                state.equals("active"), state.equals("idle in transaction"), lockOwnerId, lockOwnerName, processId, isDisabledNestLoop, queryTimeout));
+                        active, state.equals("idle in transaction"), lockOwnerId, lockOwnerName, processId, isDisabledNestLoop, queryTimeout));
             }
         }
         return resultMap;
@@ -475,29 +520,47 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         return sessionThread != null && sessionThread.get(0) != null ? String.valueOf(sessionThread.get(0)) : ("s" + processId);
     }
 
-    private Map<String, List<Object>> getActiveJavaThreads() {
-        ThreadInfo[] threadsInfo = ManagementFactory.getThreadMXBean().dumpAllThreads(true, false);
-
+    private Map<String, List<Object>> getJavaProcesses(List<Long> idSet, boolean onlyActive) {
         Map<String, List<Object>> resultMap = new HashMap<>();
-        for(ThreadInfo threadInfo : threadsInfo) {
-            int id = (int) threadInfo.getThreadId();
-            Thread thread = getThreadById(id);
-
-            String status = String.valueOf(threadInfo.getThreadState());
-            String stackTrace = stackTraceToString(threadInfo.getStackTrace());
-            String name = threadInfo.getThreadName();
-            String lockName = threadInfo.getLockName();
-            String lockOwnerId = String.valueOf(threadInfo.getLockOwnerId());
-            String lockOwnerName = threadInfo.getLockOwnerName();
-            LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
-            String computer = logInfo == null ? null : logInfo.hostnameComputer;
-            String user = logInfo == null ? null : logInfo.userName;
-            String lsfStack = thread != null ? ExecutionStackAspect.getStackString(thread, true) : null;
-
-            resultMap.put(String.valueOf(id), Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId,
-                    lockOwnerName, computer, user, lsfStack));
+        for(Long pid : idSet) {
+            List<Object> threadInfo = getThreadInfo(pid, onlyActive, true);
+            if(threadInfo != null) {
+                    resultMap.put(String.valueOf(pid), threadInfo);
+            }
         }
         return resultMap;
+    }
+
+    private List<Object> getThreadInfo(long id, boolean onlyActive, boolean checkStackTrace) {
+        ThreadInfo threadInfo = ManagementFactory.getThreadMXBean().getThreadInfo(id);
+        if(threadInfo == null) return null;
+
+        Thread thread = getThreadById((int) id);
+        String status = String.valueOf(threadInfo.getThreadState());
+        String stackTrace = getJavaStack(threadInfo.getStackTrace());
+        String name = threadInfo.getThreadName();
+        String lockName = threadInfo.getLockName();
+        String lockOwnerId = String.valueOf(threadInfo.getLockOwnerId());
+        String lockOwnerName = threadInfo.getLockOwnerName();
+        LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
+        String computer = logInfo == null ? null : logInfo.hostnameComputer;
+        String user = logInfo == null ? null : logInfo.userName;
+        String lsfStack = getLSFStack(thread);
+
+        return !onlyActive || isActiveJavaProcess(status, stackTrace, checkStackTrace) ? Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId,
+                lockOwnerName, computer, user, lsfStack) : null;
+    }
+
+    private boolean isActiveJavaProcess(String status, String stackTrace, boolean checkStackTrace) {
+        return status != null && status.equals("RUNNABLE") && !checkStackTrace || (stackTrace != null
+                && !stackTrace.startsWith("java.net.DualStackPlainSocketImpl")
+                && !stackTrace.startsWith("sun.awt.windows.WToolkit.eventLoop")
+                && !stackTrace.startsWith("java.net.SocketInputStream.socketRead0")
+                && !stackTrace.startsWith("sun.management.ThreadImpl.dumpThreads0")
+                && !stackTrace.startsWith("java.net.SocketOutputStream.socketWrite")
+                && !stackTrace.startsWith("java.net.PlainSocketImpl")
+                && !stackTrace.startsWith("java.io.FileInputStream.readBytes")
+                && !stackTrace.startsWith("java.lang.UNIXProcess.waitForProcessExit"));
     }
 
     private Thread getThreadById(int id) {
@@ -509,7 +572,15 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         return null;
     }
 
-    private String stackTraceToString(StackTraceElement[] stackTrace) {
+    private String getLSFStack(Thread thread) {
+        try {
+            return thread == null ? null : ExecutionStackAspect.getStackString(thread, true);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String getJavaStack(StackTraceElement[] stackTrace) {
         StringBuilder sb = new StringBuilder();
         for (StackTraceElement element : stackTrace) {
             sb.append(element.toString());
@@ -517,14 +588,6 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         }
         String result = sb.toString();
         return result.isEmpty() ? null : result;
-    }
-
-    private String trim(String input) {
-        return input == null ? null : input.trim();
-    }
-
-    protected String trim(String input, String defaultValue) {
-        return input == null ? defaultValue : input.trim();
     }
 
     protected String trim(String input, Integer length) {

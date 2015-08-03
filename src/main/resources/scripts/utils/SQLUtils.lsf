@@ -2,6 +2,13 @@ MODULE SQLUtils;
 
 REQUIRE System, Authentication, Utils, Time;
 
+CLASS ProcessType 'Фильтр процессов' {
+    all 'Все',
+    activeAll 'Все активные',
+    activeSQL 'Активные (SQL)',
+    activeJava 'Активные (Java)'
+}
+
 getActiveTasksAction 'Обновить список активных процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetActiveTasksActionProperty' () TOOLBAR;
 getAllTasksAction 'Обновить список всех процессов' = ACTION CUSTOM 'lsfusion.erp.utils.GetAllTasksActionProperty' () TOOLBAR;
 cancelActiveTaskAction 'Снять процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelActiveTaskActionProperty' (INTEGER);
@@ -50,10 +57,11 @@ killSQLProcess 'Убить SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.uti
 cancelJavaProcess 'Снять java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelJavaProcessActionProperty' (INTEGER);
 cancelSQLProcess 'Снять SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelSQLProcessActionProperty' (INTEGER);
 
-//test1Action 'test1' = ACTION CUSTOM 'lsfusion.erp.utils.Test1ActionActionProperty' () TOOLBAR;
-//test2Action 'test2' = ACTION CUSTOM 'lsfusion.erp.utils.Test2ActionActionProperty' () TOOLBAR;
-//test3Action 'test3' = ACTION CUSTOM 'lsfusion.erp.utils.Test3ActionActionProperty' () TOOLBAR;
-//test4Action 'test4' = ACTION CUSTOM 'lsfusion.erp.utils.Test4ActionActionProperty' () TOOLBAR;
+processType 'Фильтр процессов'= DATA LOCAL ProcessType();// ON CHANGE updateProcessMonitorAction();
+nameProcessType 'Фильтр процессов' () = staticName(processType()) PREFCHARWIDTH 15;
+captionProcessType 'Фильтр процессов' () = staticCaption(processType());
+WHEN SESSION CHANGED (processType()) DO EXEC updateProcessMonitorAction(); //выполняется 3 раза
+ 
 idThreadProcess 'ID потока процесса' = DATA LOCAL VARSTRING[10] (INTEGER);
 computerProcess 'Компьютер' = DATA LOCAL VARSTRING[100] (INTEGER);
 userProcess 'Пользователь' = DATA LOCAL VARSTRING[100] (INTEGER);
@@ -138,10 +146,10 @@ FORM processMonitor 'Монитор процессов'
                            lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     FILTERS idThreadProcess(i)
-    FILTERGROUP active
-        FILTER 'Все активные' activeProcess(i) DEFAULT
-        FILTER 'Активные (Java)' activeJavaProcess(i)
-        FILTER 'Активные (SQL)' activeSQLProcess(i)
+    //FILTERGROUP active
+    //    FILTER 'Все активные' activeProcess(i) DEFAULT
+    //    FILTER 'Активные (Java)' activeJavaProcess(i)
+    //    FILTER 'Активные (SQL)' activeSQLProcess(i)
     
     TREE blocking i2 = INTEGER PARENT threadOwnerProcess
     PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlockedProcess,
@@ -167,7 +175,7 @@ FORM processMonitor 'Монитор процессов'
     FILTERGROUP nonBlocking FILTER 'Только не блокирующие' sumBlockedProcess(blocked) == 0 OR isDeadlockProcess(blocked) DEFAULT 
     ORDER BY sumBlockingProcess(blocked) DESC, sumBlockingProcess(blocking) DESC
     
-    PROPERTIES() updateProcessMonitorAction//, test1Action, test2Action, test3Action, test4Action
+    PROPERTIES() captionProcessType, updateProcessMonitorAction
 ;
 
 DESIGN processMonitor {
@@ -199,13 +207,10 @@ DESIGN processMonitor {
             }
         }
     }    
+    MOVE PROPERTY(captionProcessType());
     MOVE PROPERTY(updateProcessMonitorAction()) {
         align = TRAILING;
     }
-    //MOVE PROPERTY(test1Action());
-    //MOVE PROPERTY(test2Action());
-    //MOVE PROPERTY(test3Action());
-    //MOVE PROPERTY(test4Action());
     MOVE functions.box;
 }
 
