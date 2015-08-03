@@ -146,10 +146,6 @@ FORM processMonitor 'Монитор процессов'
                            lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     FILTERS idThreadProcess(i)
-    //FILTERGROUP active
-    //    FILTER 'Все активные' activeProcess(i) DEFAULT
-    //    FILTER 'Активные (Java)' activeJavaProcess(i)
-    //    FILTER 'Активные (SQL)' activeSQLProcess(i)
     
     TREE blocking i2 = INTEGER PARENT threadOwnerProcess
     PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlockedProcess,
@@ -206,10 +202,12 @@ DESIGN processMonitor {
                 caption = 'Блокирующие процессы';
             }
         }
-    }    
-    MOVE PROPERTY(captionProcessType());
-    MOVE PROPERTY(updateProcessMonitorAction()) {
+    } 
+    NEW bottom {
+        type = CONTAINERH;
         align = TRAILING;
+        MOVE PROPERTY(captionProcessType());
+        MOVE PROPERTY(updateProcessMonitorAction());
     }
     MOVE functions.box;
 }

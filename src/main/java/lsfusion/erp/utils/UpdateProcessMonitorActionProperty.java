@@ -370,7 +370,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         Map<Integer, List<Object>> lockingMap = getPostgresLockMap(context);
 
-        String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s'"/* + (onlyActive ? " AND state!='idle'" : "")*/, context.getBL().getDataBaseName());
+        String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s'" + (onlyActive ? " AND state!='idle'" : ""), context.getBL().getDataBaseName());
 
         MExclSet<String> keyNames = SetFact.mExclSet();
         keyNames.exclAdd("numberrow");
