@@ -17,7 +17,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     protected LCP<?> namePolicy;
     protected LCP<?> policyName;
     public LCP descriptionPolicy;
-    public LCP orderUserRolePolicy;
     public LCP orderUserPolicy;
 
     public LCP permitViewProperty;
@@ -36,19 +35,16 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP forbidChangeUserProperty;
 
     public LCP notNullPermissionUserProperty;
-    public LCP defaultNumberUserRoleNavigatorElement;
     public LCP defaultNumberUserNavigatorElement;
     public LCP defaultFormsUser;
     public LCP permitNavigatorElement;
     public LCP forbidNavigatorElement;
     public LCP permitExportNavigatorElement;
 
-    public LCP forbidAllFormsUserRole;
     public LCP forbidAllFormsUser;
-    public LCP permitAllFormsUserRole;
     public LCP permitAllFormsUser;
-    public LCP permitUserNavigatorElement;
-    public LCP forbidUserNavigatorElement;
+    public LCP overPermitUserNavigatorElement;
+    public LCP overForbidUserNavigatorElement;
 
     public LCP transactTimeoutUser;
     
@@ -138,8 +134,8 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidAllFormsUser = findProperty("forbidAllFormsUser");
         
         // Разрешения для каждого элемента
-        permitUserNavigatorElement = findProperty("permitUserNavigatorElement");
-        forbidUserNavigatorElement = findProperty("forbidUserNavigatorElement");
+        overPermitUserNavigatorElement = findProperty("overPermitUserNavigatorElement");
+        overForbidUserNavigatorElement = findProperty("overForbidUserNavigatorElement");
 
         transactTimeoutUser = findProperty("transactTimeoutUser");
 

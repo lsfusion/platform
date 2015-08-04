@@ -401,7 +401,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     }
 
     private Map<String, Property> getCanonicalNamesMap() {
-        Map<String, Property> result = new HashMap<String, Property>();
+        Map<String, Property> result = new HashMap<>();
         for (LP<?, ?> lp : businessLogics.getNamedProperties()) {
             result.put(lp.property.getCanonicalName(), lp.property);
         }
@@ -411,7 +411,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     private void applyDefaultFormDefinedPolicy(User user, DataSession session) {
         SecurityPolicy policy = new SecurityPolicy(-1);
         try {
-            QueryBuilder<String, String> qf = new QueryBuilder<String, String>(SetFact.singleton("formId"));
+            QueryBuilder<String, String> qf = new QueryBuilder<>(SetFact.singleton("formId"));
             Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
             Expr permitFormExpr = securityLM.permitNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
             Expr forbidFormExpr = securityLM.forbidNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
@@ -433,7 +433,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 }
             }
 
-            QueryBuilder<String, String> qp = new QueryBuilder<String, String>(SetFact.singleton("propertyCN"));
+            QueryBuilder<String, String> qp = new QueryBuilder<>(SetFact.singleton("propertyCN"));
             Expr expr2 = reflectionLM.canonicalNameProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN"));
             qp.and(expr2.getWhere());
             qp.and(securityLM.notNullPermissionProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN")).getWhere());
@@ -470,7 +470,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         try {
             DataObject userObject = user.getDataObject(authenticationLM.customUser, session);
 
-            QueryBuilder<String, String> qu = new QueryBuilder<String, String>(SetFact.toExclSet("userId"));
+            QueryBuilder<String, String> qu = new QueryBuilder<>(SetFact.toExclSet("userId"));
             Expr userExpr = qu.getMapExprs().get("userId");
             qu.and(userExpr.compare(userObject, Compare.EQUALS));
             qu.addProperty("permitAllForms", securityLM.permitAllFormsUser.getExpr(session.getModifier(), userExpr));
@@ -499,10 +499,10 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             }
 
 
-            QueryBuilder<String, String> qf = new QueryBuilder<String, String>(SetFact.toExclSet("userId", "formId"));
+            QueryBuilder<String, String> qf = new QueryBuilder<>(SetFact.toExclSet("userId", "formId"));
             Expr nameExpr = reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("formId"));
-            Expr permitUserFormExpr = securityLM.permitUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId"));
-            Expr forbidUserFormExpr = securityLM.forbidUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId"));
+            Expr permitUserFormExpr = securityLM.overPermitUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId"));
+            Expr forbidUserFormExpr = securityLM.overForbidUserNavigatorElement.getExpr(session.getModifier(), qf.getMapExprs().get("userId"), qf.getMapExprs().get("formId"));
 
             qf.and(nameExpr.getWhere());
             qf.and(qf.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
@@ -521,7 +521,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                     policy.navigator.permit(element);
             }
 
-            QueryBuilder<String, String> qp = new QueryBuilder<String, String>(SetFact.toExclSet("userId", "propertyCN"));
+            QueryBuilder<String, String> qp = new QueryBuilder<>(SetFact.toExclSet("userId", "propertyCN"));
             Expr propExpr = reflectionLM.canonicalNameProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN"));
             qp.and(propExpr.getWhere());
             qp.and(qp.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
@@ -573,37 +573,42 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     }
 
     public List<String> getDefaultForms(DataObject user) {
-        try {
-            DataSession session = createSession();
+        try (DataSession session = createSession()) {
+            KeyExpr navigatorElementExpr = new KeyExpr("navigatorElement");
+            ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object) "navigatorElement", navigatorElementExpr);
+            QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+            query.addProperty("canonicalNameNavigatorElement", securityLM.findProperty("canonicalNameNavigatorElement").getExpr(navigatorElementExpr));
+            query.addProperty("overDefaultNumberUserNavigatorElement", securityLM.findProperty("overDefaultNumberUserNavigatorElement").getExpr(user.getExpr(), navigatorElementExpr));
+            query.and(securityLM.findProperty("overDefaultNumberUserNavigatorElement").getExpr(user.getExpr(), navigatorElementExpr).getWhere());
+            query.and(securityLM.findProperty("canonicalNameNavigatorElement").getExpr(navigatorElementExpr).getWhere());
 
-            QueryBuilder<String, String> q = new QueryBuilder<String, String>(SetFact.toExclSet("userId", "formId"));
-            Expr expr = securityLM.defaultNumberUserNavigatorElement.getExpr(session.getModifier(), q.getMapExprs().get("userId"), q.getMapExprs().get("formId"));
-            q.and(expr.getWhere());
-            q.and(q.getMapExprs().get("userId").compare(user, Compare.EQUALS));
-
-            q.addProperty("canonicalName", reflectionLM.canonicalNameNavigatorElement.getExpr(session.getModifier(), q.getMapExprs().get("formId")));
-            q.addProperty("number", securityLM.defaultNumberUserNavigatorElement.getExpr(session.getModifier(), q.getMapExprs().get("userId"), q.getMapExprs().get("formId")));
-
-
-            ImCol<ImMap<String, Object>> values = q.execute(session).values();
-            ArrayList<String> result = new ArrayList<String>();
-            Map<String, String> sortedValues = new TreeMap<String, String>();
-            for (ImMap<String, Object> valueMap : values) {
-                String canonicalName = (String) valueMap.get("canonicalName");
-                Integer number = (Integer) valueMap.get("number");
-                sortedValues.put(number.toString() + Character.MIN_VALUE, canonicalName);
+            Map<String, Integer> defaultFormsMap = new HashMap<>();
+            ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session);
+            for (ImMap<Object, Object> entry : result.values()) {
+                String canonicalName = (String) entry.get("canonicalNameNavigatorElement");
+                Integer number = (Integer) entry.get("overDefaultNumberUserNavigatorElement");
+                Integer oldNumber = defaultFormsMap.get(canonicalName);
+                Integer newNumber = oldNumber == null ? number : Math.min(oldNumber, number);
+                defaultFormsMap.put(canonicalName, newNumber);
             }
 
-            for (String canonicalName : sortedValues.values()) {
-                result.add(canonicalName);
+            LinkedList<Map.Entry<String, Integer>> defaultFormsList = new LinkedList<>(defaultFormsMap.entrySet());
+            Collections.sort(defaultFormsList, new Comparator<Map.Entry<String, Integer>>() {
+                @Override
+                public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                    return (Integer) (o1.getValue() == null ? o2 : o2.getValue() == null ? 0 : o1.getValue().compareTo(o2.getValue()));
+                }
+            });
+            List<String> defaultForms = new ArrayList<>();
+            for (Map.Entry<String, Integer> entry : defaultFormsList) {
+                defaultForms.add(entry.getKey());
             }
-
-            return result;
+            return defaultForms;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-    
+
     public Object getUserMainRole(DataObject user) throws SQLException, SQLHandledException {
         return securityLM.mainRoleCustomUser.read(createSession(), user);
     }
@@ -615,7 +620,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 Expr userExpr = keys.get("user");
                 Expr roleExpr = keys.get("role");
 
-                QueryBuilder<String, String> q = new QueryBuilder<String, String>(keys);
+                QueryBuilder<String, String> q = new QueryBuilder<>(keys);
                 q.and(securityLM.inMainRoleCustomUser.getExpr(session.getModifier(), userExpr, roleExpr).getWhere());
                 q.and(authenticationLM.loginCustomUser.getExpr(session.getModifier(), userExpr).compare(new DataObject(username), Compare.EQUALS));
 
@@ -623,7 +628,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
                 ImOrderMap<ImMap<String, Object>, ImMap<String, Object>> values = q.execute(session);
 
-                List<String> roles = new ArrayList<String>();
+                List<String> roles = new ArrayList<>();
                 for (ImMap<String, Object> value : values.valueIt()) {
                     Object rn = value.get("roleName");
                     if (rn instanceof String) {
@@ -669,9 +674,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                     }
                 }
             }
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
@@ -684,9 +687,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 SecurityPolicy policy = user.getSecurityPolicy();
                 permitView = policy.property.view.checkPermission(businessLogics.findProperty(propertySID).property);
             }
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         return permitView;
@@ -700,9 +701,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 SecurityPolicy policy = user.getSecurityPolicy();
                 permitChange = policy.property.change.checkPermission(businessLogics.findProperty(propertySID).property);
             }
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         return permitChange;
@@ -715,9 +714,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 DataSession session = createSession();
                 DataObject propertyObject = new DataObject(reflectionLM.propertyCanonicalName.read(session, new DataObject(propertySid)), reflectionLM.property);
                 return securityLM.permitViewProperty.read(session, propertyObject) != null;
-            } catch (SQLException e) {
-                throw Throwables.propagate(e);
-            } catch (SQLHandledException e) {
+            } catch (SQLException | SQLHandledException e) {
                 throw Throwables.propagate(e);
             }
         }
@@ -733,9 +730,7 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             }
             DataObject formObject = new DataObject(form, reflectionLM.navigatorElement);
             return securityLM.permitExportNavigatorElement.read(session, formObject) != null;
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }

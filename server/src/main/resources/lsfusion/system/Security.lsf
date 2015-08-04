@@ -28,6 +28,7 @@ EXTEND FORM customUsers
 mainRoleUser(u) <- defaultMainRole() WHEN SET(u IS CustomUser);
 
 inUserRole 'Вкл.' = DATA BOOLEAN (CustomUser, UserRole);
+overInUserRole 'Вкл.' (user, role) = mainRoleUser(user) == role OR inUserRole(user, role);
 
 inMainRoleCustomUser(customUser, userRole) = mainRoleCustomUser(customUser) == userRole OR inUserRole(customUser, userRole);
 
@@ -179,6 +180,13 @@ permitUserRoleNavigatorElement 'Разрешить форму' = DATA BOOLEAN (U
 permitUserNavigatorElement 'Разрешить форму' = permitUserRoleNavigatorElement(mainRoleUser(user), navigatorElement);
 forbidUserRoleNavigatorElement 'Запретить форму' = DATA BOOLEAN (UserRole, NavigatorElement);
 forbidUserNavigatorElement 'Запретить форму' = forbidUserRoleNavigatorElement(mainRoleUser(user), navigatorElement);
+
+overDefaultNumberUserNavigatorElement 'Номер по умолчанию' (user, navigatorElement) = 
+    GROUP MIN defaultNumberUserRoleNavigatorElement(userRole, navigatorElement) IF overInUserRole(user, userRole) AND permitUserRoleNavigatorElement(userRole, navigatorElement) BY user, navigatorElement;
+overPermitUserNavigatorElement 'Разрешить форму' (user, navigatorElement) = 
+    GROUP MAX permitUserRoleNavigatorElement(userRole, navigatorElement) IF overInUserRole(user, userRole) BY user, navigatorElement;;
+overForbidUserNavigatorElement 'Запретить форму' (user, navigatorElement) = 
+    GROUP MAX forbidUserRoleNavigatorElement(userRole, navigatorElement) IF overInUserRole(user, userRole) BY user, navigatorElement;;
 
 levelNavigatorElementNavigatorElement 'Уровень' (child, parent) = RECURSION 1l IF child IS NavigatorElement AND parent == child
                                                               STEP 2l IF parent == parentNavigatorElement($parent) PERSISTENT;
