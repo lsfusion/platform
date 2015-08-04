@@ -368,6 +368,10 @@ public abstract class SessionModifier implements Modifier {
         return result;
     }
 
+    public boolean checkPropertyChanges() {
+        return BaseUtils.hashEquals(getPropertyChanges(), calculatePropertyChanges());
+    }
+
     public void clean(SQLSession sql, OperationOwner opOwner) throws SQLException {
         increment.clear(sql, opOwner);
         preread.clear();

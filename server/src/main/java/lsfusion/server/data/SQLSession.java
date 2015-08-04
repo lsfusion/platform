@@ -1066,6 +1066,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         Boolean vs = userVolatileStats.get(user);
         return vs != null && vs;
     }
+
+    private static long safeValueOf(String s) {
+        long result = Long.MAX_VALUE;
+        try {
+            result = Long.valueOf(s);
+        } catch (NumberFormatException e) {
+        }
+        return result;
+    }
     
     // причины медленных запросов:
     // Postgres (но могут быть и другие)
@@ -1092,20 +1101,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 Pattern pt = Pattern.compile(" rows=((\\d)+) ");
                 Matcher matcher = pt.matcher(row);
                 long est=0;
-                int act=-1;
+                long act=-1;
                 int m=0;
                 while(matcher.find()) {
                     if(m==0)
-                        est = Long.valueOf(matcher.group(1));
+                        est = safeValueOf(matcher.group(1));
                     if(m==1) { // 2-е соответствие
-                        act = Integer.valueOf(matcher.group(1));
+                        act = safeValueOf(matcher.group(1));
                         break;
                     }
                     m++;
                 }
 
                 if(!noAnalyze && dml && (i==1 || i==2) && rows == null &&  act>=0) // второй ряд (первый почему то всегда 0) или 3-й (так как 2-й может быть Buffers:)
-                    rows = act;
+                    rows = (int)act;
                 i++;
 
                 Pattern tpt = Pattern.compile("actual time=(((\\d)+)[.]((\\d)+))[.][.](((\\d)+)[.]((\\d)+))");

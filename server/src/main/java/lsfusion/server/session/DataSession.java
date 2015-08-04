@@ -1388,7 +1388,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         assert isInTransaction();
 
         // assert что у change классы совпадают с property
-        assert property.isSingleApplyStored();
+        ServerLoggers.assertLog(property.isSingleApplyStored(), "NOT SINGLE APPLY STORED");
         assert fitClasses(property, change); // проверяет гипотезу
         assert fitKeyClasses(property, change); // дополнительная проверка, она должна обеспечиваться тем что в change не должно быть замен null на null
 
@@ -1838,14 +1838,36 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
+    private <P extends PropertyInterface> void logClassDataChanges(@ParamMessage CalcProperty<P> property, SinglePropertyTableUsage<P> changeTable) {
+        if(property instanceof ClassDataProperty && Settings.get().isEnableClassDataChangesLog()) {
+            ServerLoggers.exInfoLogger.info(property.toString() + " " + changeTable.getCount() + " " + (news != null ? news.getCount() : "-1"));
+        }
+    }
+
+    private void logNoClassDataChanges(CalcProperty property) {
+        if (property instanceof ClassDataProperty && Settings.get().isEnableClassDataChangesLog()) {
+            ClassDataProperty classData = (ClassDataProperty) property;
+            for (ConcreteCustomClass neededClass : classData.set.getSetConcreteChildren())
+                if (usedNewClasses.contains(neededClass) || usedOldClasses.contains(neededClass)
+                        || add.contains(neededClass) || remove.contains(neededClass) || singleAdd.containsKey(neededClass) || singleRemove.containsKey(neededClass)) {
+                    ServerLoggers.assertLog(false, "NOCLASSDATACHANGES : " + classData + " " + neededClass + " " + usedNewClasses.contains(neededClass) + " " + usedOldClasses.contains(neededClass) + add.contains(neededClass) + remove.contains(neededClass) + singleAdd.containsKey(neededClass) + singleRemove.containsKey(neededClass) + " " + getModifier().checkPropertyChanges() + " " + (news != null ? news.getCount() : "-1"));
+                }
+        }
+    }
+
     @StackMessage("message.session.apply.write")
     private <P extends PropertyInterface> void readStored(@ParamMessage CalcProperty<P> property, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
         assert isInTransaction();
         assert property.isStored();
         if(property.hasChanges(getModifier())) {
+            SinglePropertyTableUsage<P> changeTable = property.readChangeTable(sql, getModifier(), baseClass, env);
+
+            logClassDataChanges(property, changeTable);
+
             apply.add(property, splitApplySingleStored(property,
-                    property.readChangeTable(sql, getModifier(), baseClass, env), BL));
-        }
+                    changeTable, BL));
+        } else
+            logNoClassDataChanges(property);
     }
 
     protected SQLSession getSQL() {

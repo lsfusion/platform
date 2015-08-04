@@ -989,14 +989,18 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         eventActions.addAll(eventObject, Arrays.asList(actions), version);
     }
 
-    public ComponentView getDrawTabContainer(PropertyDrawEntity<?> property, boolean grid) {
+    public ComponentView getDrawContainer(PropertyDrawEntity<?> property, boolean grid) {
         FormView formView = getRichDesign();
         ComponentView drawComponent;
         if(grid) {
-            drawComponent = formView.get(property.getToDraw(this)).grid;
+            GroupObjectEntity toDraw = property.getToDraw(this);
+            if(toDraw.treeGroup == null)
+                drawComponent = formView.get(toDraw).grid;
+            else
+                drawComponent = formView.get(toDraw.treeGroup);
         } else
             drawComponent = formView.get(property);
-        return drawComponent.getTabContainer();
+        return drawComponent;
     }
 
     public void finalizeAroundInit() {
@@ -1100,15 +1104,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         ComponentUpSet result = new ComponentUpSet();
         for(PropertyDrawEntity property : getPropertyDrawsIt())
             if(!group.getObjects().disjoint(property.propertyObject.mapping.values().toSet())) { // для свойств "зависящих" от группы
-                ComponentView drawContainer = getDrawTabContainer(property, true);
-                if(drawContainer==null) // cheat \ оптимизация
-                    return null;
-                result = result.addItem(drawContainer);
-
-                drawContainer = getDrawTabContainer(property, false);
-                if(drawContainer==null) // cheat \ оптимизация
-                    return null;
-                result = result.addItem(drawContainer);
+                for(int t=0;t<2;t++) {
+                    ComponentView drawContainer = getDrawContainer(property, t == 0);
+                    ComponentView drawTabContainer = drawContainer.getTabContainer();
+                    if (drawTabContainer == null) // cheat \ оптимизация
+                        return null;
+                    result = result.addItem(drawTabContainer);
+                }
             }
         ImSet<FilterEntity> fixedFilters = getFixedFilters();
         MSet<GroupObjectEntity> mFixedGroupObjects = SetFact.mSetMax(fixedFilters.size());

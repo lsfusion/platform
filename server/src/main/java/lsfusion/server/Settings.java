@@ -1390,4 +1390,14 @@ public class Settings {
     public void setDisableAntiJoinOptimization(boolean disableAntiJoinOptimization) {
         this.disableAntiJoinOptimization = disableAntiJoinOptimization;
     }
+
+    private boolean enableClassDataChangesLog = true;
+
+    public boolean isEnableClassDataChangesLog() {
+        return enableClassDataChangesLog;
+    }
+
+    public void setEnableClassDataChangesLog(boolean enableClassDataChangesLog) {
+        this.enableClassDataChangesLog = enableClassDataChangesLog;
+    }
 }

@@ -1331,30 +1331,28 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     // проверки видимости (для оптимизации pageframe'ов)
     protected Set<PropertyReaderInstance> pendingHidden = SetFact.mAddRemoveSet();
 
-    private ComponentView getDrawTabContainer(PropertyDrawInstance<?> property, boolean grid) {
-        if (Settings.get().isDisableTabbedOptimization())
-            return null;
-        return entity.getDrawTabContainer(property.entity, grid);
+    private ComponentView getDrawContainer(PropertyDrawInstance<?> property, boolean grid) {
+        return entity.getDrawContainer(property.entity, grid);
     }
+
     private boolean isHidden(PropertyDrawInstance<?> property, boolean grid) {
-        ComponentView container = getDrawTabContainer(property, grid);
-        return container != null && isHidden(container); // первая проверка - cheat / оптимизация
+        ComponentView drawContainer = getDrawContainer(property, grid);
+        assert drawContainer != null; // так как если бы был null не попалы бы в newIsShown в readShowIfs
+        ComponentView drawTabContainer = drawContainer.getTabContainer();
+        return drawTabContainer != null && isTabHidden(drawTabContainer); // первая проверка - cheat / оптимизация
     }
 
     private boolean isHidden(GroupObjectInstance group) {
-        if (Settings.get().isDisableTabbedOptimization())
-            return false;
-
         FormEntity.ComponentUpSet containers = entity.getDrawTabContainers(group.entity);
         if (containers == null) // cheat / оптимизация, иначе пришлось бы в isHidden и еще в нескольких местах явную проверку на null
             return false;
         for (ComponentView component : containers.it())
-            if (!isHidden(component))
+            if (!isTabHidden(component))
                 return false;
         return true;
     }
 
-    private boolean isHidden(ComponentView component) {
+    private boolean isTabHidden(ComponentView component) {
         ContainerView parent = component.getContainer();
         assert parent.getType() == ContainerType.TABBED_PANE;
 
@@ -1366,7 +1364,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return true;
 
         ComponentView tabContainer = parent.getTabContainer();
-        return tabContainer != null && isHidden(tabContainer);
+        return tabContainer != null && isTabHidden(tabContainer);
     }
 
     protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<ContainerView, ComponentView>();
@@ -1572,8 +1570,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 newInInterface = false;
             }
 
-            if (newInInterface != null && !containerShowIfs.isEmpty() && !isPropertyShownInContainers(drawProperty, newInInterface)) {
-                newInInterface = null;
+            ComponentView drawContainer = null;
+
+            if(newInInterface != null) {
+                drawContainer = getDrawContainer(drawProperty, newInInterface);
+                if (!containerShowIfs.isEmpty() && !isContainerShown(drawContainer)) { // связан с assertion'ом в FormInstance.isHidden
+                    newInInterface = null;
+                }
             }
 
             rowGrids.put(drawProperty, propRowGrids);
@@ -1582,8 +1585,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             Boolean oldInInterface = isInInterface.put(drawProperty, newInInterface);
             if (newInInterface != null) { // если показывается
-                ComponentView tabContainer = getDrawTabContainer(drawProperty, newInInterface);
-                boolean hidden = tabContainer != null && isHidden(tabContainer);
+                ComponentView tabContainer = drawContainer.getTabContainer();
+                boolean hidden = tabContainer != null && isTabHidden(tabContainer);
                 boolean isDefinitelyShown = drawProperty.propertyShowIf == null;
                 if (!isDefinitelyShown) {
                     ShowIfReaderInstance showIfReader = drawProperty.showIfReader;
@@ -1681,29 +1684,19 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private boolean isPropertyShownInContainers(PropertyDrawInstance<?> property, boolean inInterface) {
-        ContainerView parent;
-        if (inInterface) {
-            GroupObjectEntity group = property.toDraw.entity;
-            if (group.treeGroup == null) {
-                parent = entity.getRichDesign().get(group).grid.getContainer();
-            } else {
-                parent = entity.getRichDesign().get(group.treeGroup).getContainer();
-            }
-        } else {
-            parent = entity.getRichDesign().get(property.entity).getContainer();
-        }
-        
+    private boolean isContainerShown(ComponentView drawContainer) {
+        ContainerView parent = drawContainer.getContainer();
+
         while (parent != null) {
             Boolean shown = isContainerShown.get(parent);
-            
+
             if (shown != null && !shown) {
                 return false;
             }
-            
+
             parent = parent.getContainer();
         }
-        
+
         return true;
     }
 
