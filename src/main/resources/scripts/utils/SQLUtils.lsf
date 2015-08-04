@@ -57,14 +57,26 @@ killSQLProcess 'Убить SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.uti
 cancelJavaProcess 'Снять java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelJavaProcessActionProperty' (INTEGER);
 cancelSQLProcess 'Снять SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelSQLProcessActionProperty' (INTEGER);
 
-processType 'Фильтр процессов'= DATA LOCAL ProcessType();// ON CHANGE updateProcessMonitorAction();
+processType 'Фильтр процессов'= DATA LOCAL ProcessType();
 nameProcessType 'Фильтр процессов' () = staticName(processType()) PREFCHARWIDTH 15;
 captionProcessType 'Фильтр процессов' () = staticCaption(processType());
-WHEN SESSION CHANGED (processType()) DO EXEC updateProcessMonitorAction(); //выполняется 3 раза
+WHEN SESSION CHANGED (processType()) DO EXEC updateProcessMonitorAction();
  
 idThreadProcess 'ID потока процесса' = DATA LOCAL VARSTRING[10] (INTEGER);
-computerProcess 'Компьютер' = DATA LOCAL VARSTRING[100] (INTEGER);
-userProcess 'Пользователь' = DATA LOCAL VARSTRING[100] (INTEGER);
+
+nameComputerJavaProcess 'Компьютер (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
+computerProcess 'Компьютер (SQL)' = DATA LOCAL INTEGER (INTEGER);
+objValueComputer (i) = INTEGER(i AS Computer);
+computerObject (value) = GROUP AGGR computer BY objValueComputer(computer);
+nameComputerSQLProcess 'Компьютер (SQL)' (process) = hostnameComputer(computerObject(computerProcess(process)));
+nameComputerProcess 'Компьютер' (process) = OVERRIDE nameComputerJavaProcess(process), nameComputerSQLProcess(process);
+  
+nameUserJavaProcess 'Пользователь (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
+userProcess 'Пользователь (SQL)' = DATA LOCAL INTEGER (INTEGER);
+objValueUser (i) = INTEGER(i AS User);
+userObject (value) = GROUP AGGR user BY objValueUser(user);
+nameUserSQLProcess 'Пользователь (SQL)' (process) = nameUser(userObject(userProcess(process)));
+nameUserProcess 'Пользователь' (process) = OVERRIDE nameUserJavaProcess(process), nameUserSQLProcess(process);
 
 idSQLProcess 'ID процесса (SQL)' = DATA LOCAL INTEGER (INTEGER);
 querySQLProcess 'Запрос (SQL)' = DATA LOCAL TEXT (INTEGER);
@@ -140,7 +152,7 @@ killProcess 'Убить процесс' (i) = ACTION {
 showExtraButtons(i) = idSQLProcess(i) AND NOT startsWith(idThreadProcess(i), 's');                             
 FORM processMonitor 'Монитор процессов'
     OBJECTS i = INTEGER
-    PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, computerProcess, userProcess,
+    PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, computerProcess, nameComputerProcess, userProcess, nameUserProcess,
                            querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                            lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                            lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
@@ -149,7 +161,7 @@ FORM processMonitor 'Монитор процессов'
     
     TREE blocking i2 = INTEGER PARENT threadOwnerProcess
     PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlockedProcess,
-                            activeProcess, idThreadProcess, computerProcess, userProcess,
+                            activeProcess, idThreadProcess, computerProcess, nameComputerProcess, userProcess, nameUserProcess,
                             querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                             lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                             lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
@@ -158,11 +170,11 @@ FORM processMonitor 'Монитор процессов'
     
     OBJECTS blocked = INTEGER, blocking = INTEGER
     PROPERTIES(blocked) READONLY idThreadProcess, isDeadlockProcess, 
-                                 sumBlockingProcess, computerProcess, userProcess,
+                                 sumBlockingProcess, computerProcess, nameComputerProcess, userProcess, nameUserProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess,
                                  lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                                  lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
-    PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlockingProcess, computerProcess, userProcess,
+    PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlockingProcess, computerProcess, nameComputerProcess, userProcess, nameUserProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                                  lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                                  lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess

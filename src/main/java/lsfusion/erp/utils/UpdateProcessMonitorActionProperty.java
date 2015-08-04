@@ -77,7 +77,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
 
-        boolean active = processType.endsWith("activeAll");
+        boolean active = processType.isEmpty() || processType.endsWith("activeAll");
         boolean activeSQL = processType.endsWith("activeSQL");
         boolean activeJava = processType.endsWith("activeJava");
 
@@ -94,7 +94,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         //step1: props, mRows (java)
         ImOrderSet<LCP> propsJava = getProps(findProperties("idThreadProcess", "stackTraceJavaProcess", "nameJavaProcess", "statusJavaProcess",
-                "lockNameJavaProcess", "lockOwnerIdProcess", "lockOwnerNameProcess", "computerProcess", "userProcess", "lsfStackTraceProcess"));
+                "lockNameJavaProcess", "lockOwnerIdProcess", "lockOwnerNameProcess", "nameComputerJavaProcess", "nameUserJavaProcess", "lsfStackTraceProcess"));
         MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRowsJava = MapFact.mExclMap();
 
         //step1: props, mRows (sql)
@@ -194,10 +194,10 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             case "lockOwnerNameProcess":
                 String lockOwnerName = (String) javaProcess.get(5);
                 return lockOwnerName == null ? NullValue.instance : new DataObject(lockOwnerName);
-            case "computerProcess":
+            case "nameComputerJavaProcess":
                 String computer = (String) javaProcess.get(6);
                 return computer == null ? NullValue.instance : new DataObject(computer);
-            case "userProcess":
+            case "nameUserJavaProcess":
                 String user = (String) javaProcess.get(7);
                 return user == null ? NullValue.instance : new DataObject(user);
             case "lsfStackTraceProcess":
@@ -410,26 +410,17 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             String state = trimToEmpty((String) entry.get("state"));
             boolean active = state.equals("active");
             if (!query.equals(originalQuery) && (!onlyActive || (!query.isEmpty() && active))) {
-                String fullQuery = null;
-                boolean isDisabledNestLoop = false;
-                Integer queryTimeout = null;
                 Integer processId = (Integer) entry.get("pid");
                 String address = trimToNull((String) entry.get("client_addr"));
                 Timestamp dateTime = (Timestamp) entry.get("query_start");
 
                 List<Object> sessionThread = sessionThreadMap.get(processId);
-                String userActiveTask = null;
-                String computerActiveTask = null;
-                if (sessionThread != null) {
-                    userActiveTask = (String) findProperty("nameUser").read(context.getSession(),
-                            context.getSession().getObjectValue(context.getBL().authenticationLM.user, sessionThread.get(2)));
-                    computerActiveTask = (String) findProperty("hostnameComputer").read(context.getSession(),
-                            context.getSession().getObjectValue(context.getBL().authenticationLM.computer, sessionThread.get(3)));
-                    if (sessionThread.get(4) != null)
-                        fullQuery = (String) sessionThread.get(4);
-                    isDisabledNestLoop = (boolean) sessionThread.get(5);
-                    queryTimeout = (Integer) sessionThread.get(6);
-                }
+                Integer userActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(2);
+                Integer computerActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(3);
+                String fullQuery = sessionThread == null || sessionThread.get(4) == null ? null : (String) sessionThread.get(4);
+                boolean isDisabledNestLoop = sessionThread != null && (boolean) sessionThread.get(5);
+                Integer queryTimeout = sessionThread == null ? null : (Integer) sessionThread.get(6);
+
                 List<Object> lockingProcess = lockingMap.get(processId);
                 String lockOwnerId = lockingProcess == null ? null : getSQLThreadId(sessionThreadMap.get(lockingProcess.get(0)), (Integer) lockingProcess.get(0));
                 String lockOwnerName = lockingProcess == null ? null : (String) lockingProcess.get(1);
