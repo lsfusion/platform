@@ -116,6 +116,7 @@ formExportFile() = DATA LOCAL CUSTOMFILE ();
 
 prevImported = DATA LOCAL INTEGER ();
 imported = DATA LOCAL BOOLEAN (INTEGER);
+importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);
 
 META defineAnyValue(name, param) 
     name##Object = DATA LOCAL Object (param);
