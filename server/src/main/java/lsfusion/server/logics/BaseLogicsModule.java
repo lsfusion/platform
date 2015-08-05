@@ -137,6 +137,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     public LCP formExportFile;
 
     public LCP imported;
+    public LCP importedString;
 
     public LCP defaultBackgroundColor;
     public LCP defaultOverrideBackgroundColor;
@@ -401,6 +402,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         formExportFile = findProperty("formExportFile");
 
         imported = findProperty("imported");
+        importedString = findProperty("importedString");
 
         sleep = findAction("sleep");
         applyOnlyWithoutRecalc = findAction("applyOnlyWithoutRecalc");
