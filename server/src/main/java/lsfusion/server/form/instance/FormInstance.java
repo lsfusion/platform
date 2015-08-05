@@ -1337,7 +1337,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     private boolean isHidden(PropertyDrawInstance<?> property, boolean grid) {
         ComponentView drawContainer = getDrawContainer(property, grid);
-        assert drawContainer != null; // так как если бы был null не попалы бы в newIsShown в readShowIfs
+        assert isContainerShown(drawContainer); // так как если бы был null не попалы бы в newIsShown в readShowIfs
         ComponentView drawTabContainer = drawContainer.getTabContainer();
         return drawTabContainer != null && isTabHidden(drawTabContainer); // первая проверка - cheat / оптимизация
     }
@@ -1574,7 +1574,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             if(newInInterface != null) {
                 drawContainer = getDrawContainer(drawProperty, newInInterface);
-                if (!containerShowIfs.isEmpty() && !isContainerShown(drawContainer)) { // связан с assertion'ом в FormInstance.isHidden
+                if (!containerShowIfs.isEmpty() && !isContainerShown(drawContainer)) { // hidden, но без учета tab, для него отдельная оптимизация,  связан с assertion'ом в FormInstance.isHidden
                     newInInterface = null;
                 }
             }
@@ -1585,7 +1585,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             Boolean oldInInterface = isInInterface.put(drawProperty, newInInterface);
             if (newInInterface != null) { // если показывается
-                ComponentView tabContainer = drawContainer.getTabContainer();
+                ComponentView tabContainer = drawContainer.getTabContainer(); // у tab container'а по сравнению с containerShowIfs есть разница, так как они оптимизированы на изменение видимости без перезапроса данных
                 boolean hidden = tabContainer != null && isTabHidden(tabContainer);
                 boolean isDefinitelyShown = drawProperty.propertyShowIf == null;
                 if (!isDefinitelyShown) {

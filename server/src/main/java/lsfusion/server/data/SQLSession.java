@@ -729,6 +729,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 //                    dropTemporaryTableFromDB(entry.getKey());
 //                fifo.add("RU " + getCurrentTimeStamp() + " " + force + " " + entry.getKey() + " " + privateConnection.temporary + " " + (tableOwner == null ? TableOwner.none : tableOwner) + " " + opOwner + " " + this + " " + ExceptionUtils.getStackTrace());
                 truncateSession(entry.getKey(), opOwner, (tableOwner == null ? TableOwner.none : tableOwner));
+                logger.info("REMOVE UNUSED TEMP TABLE : " + entry.getKey()); // потом надо будет больше инфы по owner'у добавить
                 iterator.remove();
             }
         }

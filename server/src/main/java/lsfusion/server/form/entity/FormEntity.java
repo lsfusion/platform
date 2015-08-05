@@ -1105,7 +1105,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         for(PropertyDrawEntity property : getPropertyDrawsIt())
             if(!group.getObjects().disjoint(property.propertyObject.mapping.values().toSet())) { // для свойств "зависящих" от группы
                 for(int t=0;t<2;t++) {
-                    ComponentView drawContainer = getDrawContainer(property, t == 0);
+                    ComponentView drawContainer = getDrawContainer(property, t == 0); // не hidden и первый showifOrTab
                     ComponentView drawTabContainer = drawContainer.getTabContainer();
                     if (drawTabContainer == null) // cheat \ оптимизация
                         return null;
