@@ -36,7 +36,6 @@ import lsfusion.server.logics.property.SessionDataProperty;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
-import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SingleKeyTableUsage;
 import lsfusion.server.stack.ExecutionStackAspect;
@@ -62,8 +61,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         try {
             String processType = trimToEmpty((String) findProperty("nameProcessType").read(context));
-            DataSession session = context.getSession();
-            session.cancel(SetFact.singleton((SessionDataProperty) findProperty("processType").property));
+            context.getSession().cancel(SetFact.singleton((SessionDataProperty) findProperty("processType").property));
 
             updateProcessMonitor(context, processType);
 
@@ -82,94 +80,43 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         boolean activeJava = processType.endsWith("activeJava");
 
         Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
-        List<Long> idSet = new ArrayList<>();
-        idSet.addAll(Arrays.asList(ArrayUtils.toObject(ManagementFactory.getThreadMXBean().getAllThreadIds())));
+        List<Long> idSet = new ArrayList(Arrays.asList(ArrayUtils.toObject(ManagementFactory.getThreadMXBean().getAllThreadIds())));
+
         Map<String, List<Object>> javaProcesses = new HashMap<>();
         Map<String, List<Object>> sqlProcesses = syntaxType == SQLSyntaxType.POSTGRES ?
                 getPostgresProcesses(context, sessionThreadMap, javaProcesses, idSet, active || activeSQL, activeJava)
                 : getMSSQLProcesses(context, sessionThreadMap, javaProcesses, idSet, active || activeSQL, activeJava);
         if(!activeSQL)
             javaProcesses.putAll(getJavaProcesses(idSet, active || activeJava));
-        int i = 0;
 
-        //step1: props, mRows (java)
         ImOrderSet<LCP> propsJava = getProps(findProperties("idThreadProcess", "stackTraceJavaProcess", "nameJavaProcess", "statusJavaProcess",
                 "lockNameJavaProcess", "lockOwnerIdProcess", "lockOwnerNameProcess", "nameComputerJavaProcess", "nameUserJavaProcess", "lsfStackTraceProcess"));
-        MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRowsJava = MapFact.mExclMap();
 
-        //step1: props, mRows (sql)
         ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess", "querySQLProcess", "addressUserSQLProcess", "dateTimeSQLProcess",
                 "isActiveSQLProcess", "inTransactionSQLProcess", "computerProcess", "userProcess", "lockOwnerIdProcess", "lockOwnerNameProcess",
                 "fullQuerySQLProcess", "idSQLProcess", "isDisabledNestLoopProcess", "queryTimeoutProcess"));
-        MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRowsSQL = MapFact.mExclMap();
 
-        for (final List<Object> sessionThread : sessionThreadMap.values()) {
-            Integer activeThread = (Integer) sessionThread.get(0);
-            final boolean isInTransaction = (boolean) sessionThread.get(1);
-            if(activeThread != null) {
-                final String idThread = String.valueOf(activeThread);
-                final List<Object> sqlProcess = sqlProcesses.get(idThread);
-                Boolean skip = sqlProcess != null && !(Boolean) sqlProcess.get(6);
-                if (sqlProcess != null) {
-                    //step2: exclAdd (sql1)
-                    mRowsSQL.exclAdd(MapFact.singleton("key", new DataObject(i, IntegerClass.instance)), propsSQL.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
-                        public ObjectValue getMapValue(LCP prop) {
-                            return getSQLMapValue(prop, sqlProcess, idThread, isInTransaction);
-                        }
-                    }));
-                }
-                sqlProcesses.remove(idThread);
+        int rowsJava = writeRows(context, propsJava, javaProcesses, true);
+        int rowsSQL = writeRows(context, propsSQL, sqlProcesses, false);
+        if (rowsJava == 0 && rowsSQL == 0)
+            findAction("formRefresh").execute(context);
 
+    }
 
-                final List<Object> javaProcess = javaProcesses.get(idThread);
-                if (javaProcess != null && !skip) {
-                    //step2: exclAdd (java1)
-                    mRowsJava.exclAdd(MapFact.singleton("key", new DataObject(i, IntegerClass.instance)), propsJava.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
-                        public ObjectValue getMapValue(LCP prop) {
-                            return getJavaMapValue(prop, javaProcess, idThread);
-                        }}));
-                }
-                javaProcesses.remove(idThread);
-
-                i++;
+    private GetValue<ObjectValue, LCP> getJavaMapValueGetter(final List<Object> javaProcessValue, final String idThread) {
+        return new GetValue<ObjectValue, LCP>() {
+            public ObjectValue getMapValue(LCP prop) {
+                return getJavaMapValue(prop, javaProcessValue, idThread);
             }
-        }
+        };
+    }
 
-        if(!activeJava) {
-            for (final Map.Entry<String, List<Object>> sqlProcess : sqlProcesses.entrySet()) {
-                if (sqlProcess.getValue() != null) {
-                    //step2: exclAdd (sql2)
-                    DataObject rowKey = new DataObject(i, IntegerClass.instance);
-                    mRowsSQL.exclAdd(MapFact.singleton("key", rowKey), propsSQL.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
-                        public ObjectValue getMapValue(LCP prop) {
-                            return getSQLMapValue(prop, sqlProcess.getValue(), sqlProcess.getKey(), null);
-                        }
-                    }));
-                    i++;
-                }
+    private GetValue<ObjectValue, LCP> getSQLMapValueGetter(final List<Object> sqlProcessValue, final String idThread) {
+        return new GetValue<ObjectValue, LCP>() {
+            public ObjectValue getMapValue(LCP prop) {
+                return getSQLMapValue(prop, sqlProcessValue, idThread);
             }
-        }
-
-        if(!activeSQL) {
-            for (final Map.Entry<String, List<Object>> javaProcess : javaProcesses.entrySet()) {
-                if (javaProcess.getValue() != null) {
-                    //step2: exclAdd (java2)
-                    DataObject rowKey = new DataObject(i, IntegerClass.instance);
-                    mRowsJava.exclAdd(MapFact.singleton("key", rowKey), propsJava.getSet().mapValues(new GetValue<ObjectValue, LCP>() {
-                        public ObjectValue getMapValue(LCP prop) {
-                            return getJavaMapValue(prop, javaProcess.getValue(), javaProcess.getKey());
-                        }
-                    }));
-                    i++;
-                }
-            }
-        }
-
-        //step3: writeRows (java)
-        writeRows(context, propsJava, mRowsJava);
-
-        //step3: writeRows (sql)
-        writeRows(context, propsSQL, mRowsSQL);
+        };
     }
 
     private ObjectValue getJavaMapValue(LCP prop, List<Object> javaProcess, String idThread) {
@@ -208,7 +155,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         }
     }
 
-    private ObjectValue getSQLMapValue(LCP prop, List<Object> sqlProcess, String idThread, Boolean baseInTransaction) {
+    private ObjectValue getSQLMapValue(LCP prop, List<Object> sqlProcess, String idThread/*, Boolean baseInTransaction*/) {
         switch (prop.property.getName()) {
             case "idThreadProcess":
                 return idThread == null ? NullValue.instance : new DataObject(idThread);
@@ -219,10 +166,10 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 String fullQuery = (String) sqlProcess.get(1);
                 return fullQuery == null ? NullValue.instance : new DataObject(fullQuery);
             case "userProcess":
-                String user = (String) sqlProcess.get(2);
+                Integer user = (Integer) sqlProcess.get(2);
                 return user == null ? NullValue.instance : new DataObject(user);
             case "computerProcess":
-                String computer = (String) sqlProcess.get(3);
+                Integer computer = (Integer) sqlProcess.get(3);
                 return computer == null ? NullValue.instance : new DataObject(computer);
             case "addressUserSQLProcess":
                 String address = (String) sqlProcess.get(4);
@@ -235,32 +182,43 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 return isActive == null || !isActive ? NullValue.instance : new DataObject(true);
             case "inTransactionSQLProcess":
                 Boolean fusionInTransaction = (Boolean) sqlProcess.get(7);
+                Boolean baseInTransaction = (Boolean) sqlProcess.get(8);
                 if(baseInTransaction != null && fusionInTransaction != null && fusionInTransaction)
                     ServerLoggers.assertLog(baseInTransaction.equals(true), "FUSION AND BASE INTRANSACTION DIFFERS");
                 Boolean inTransaction = baseInTransaction != null ? baseInTransaction : fusionInTransaction;
                 return !inTransaction ? NullValue.instance : new DataObject(true);
             case "lockOwnerIdProcess":
-                String lockOwnerId = (String) sqlProcess.get(8);
+                String lockOwnerId = (String) sqlProcess.get(9);
                 return lockOwnerId == null ? NullValue.instance : new DataObject(lockOwnerId);
             case "lockOwnerNameProcess":
-                String lockOwnerName = (String) sqlProcess.get(9);
+                String lockOwnerName = (String) sqlProcess.get(10);
                 return lockOwnerName == null ? NullValue.instance : new DataObject(lockOwnerName);
             case "idSQLProcess":
-                Integer idSQLProcess = (Integer) sqlProcess.get(10);
+                Integer idSQLProcess = (Integer) sqlProcess.get(11);
                 return idSQLProcess == null ? NullValue.instance : new DataObject(idSQLProcess);
             case "isDisabledNestLoopProcess":
-                Boolean isDisabledNestLoop = (Boolean) sqlProcess.get(11);
+                Boolean isDisabledNestLoop = (Boolean) sqlProcess.get(12);
                 return isDisabledNestLoop == null || !isDisabledNestLoop ? NullValue.instance : new DataObject(true);
             case "queryTimeoutProcess":
-                Integer queryTimeoutProcess = (Integer) sqlProcess.get(12);
+                Integer queryTimeoutProcess = (Integer) sqlProcess.get(13);
                 return queryTimeoutProcess == null ? NullValue.instance : new DataObject(queryTimeoutProcess);
             default:
                 return NullValue.instance;
         }
     }
 
-    private void writeRows(ExecutionContext context, ImOrderSet<LCP> props, MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows) throws SQLException, SQLHandledException {
-        SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>(IntegerClass.instance, props, new Type.Getter<LCP>() {
+    private int writeRows(ExecutionContext context, ImOrderSet<LCP> props, Map<String, List<Object>> processes, boolean java) throws SQLException, SQLHandledException {
+
+        MExclMap<ImMap<String, DataObject>, ImMap<LCP, ObjectValue>> mRows = MapFact.mExclMap();
+        for (final Map.Entry<String, List<Object>> process : processes.entrySet()) {
+            if (process.getValue() != null) {
+                DataObject rowKey = new DataObject(process.getKey());
+                mRows.exclAdd(MapFact.singleton("key", rowKey), props.getSet().
+                        mapValues(java ? getJavaMapValueGetter(process.getValue(), process.getKey()) : getSQLMapValueGetter(process.getValue(), process.getKey())));
+            }
+        }
+
+        SingleKeyTableUsage<LCP> importTable = new SingleKeyTableUsage<>(StringClass.get(10), props, new Type.Getter<LCP>() {
             @Override
             public Type getType(LCP key) {
                 return key.property.getType();
@@ -281,10 +239,11 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         } finally {
             importTable.drop(sql, owner);
         }
+        return mRows.size();
     }
 
     private ImOrderSet<LCP> getProps(LCP<?>[] properties) {
-        return SetFact.fromJavaOrderSet(new ArrayList<LCP>(Arrays.asList(properties))).addOrderExcl(LM.baseLM.imported);
+        return SetFact.fromJavaOrderSet(new ArrayList<LCP>(Arrays.asList(properties))).addOrderExcl(LM.baseLM.importedString);
     }
 
     private Map<String, List<Object>> getMSSQLProcesses(ExecutionContext context, Map<Integer, List<Object>> sessionThreadMap,
@@ -344,11 +303,12 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     isDisabledNestLoop = (boolean) sessionThread.get(5);
                     queryTimeout = (Integer) sessionThread.get(6);
                 }
-                String userActiveTask = trimToNull((String) entry.get("host_name"));
+                //String userActiveTask = trimToNull((String) entry.get("host_name"));
                 String address = trimToNull((String) entry.get("client_net_address"));
                 Timestamp dateTime = (Timestamp) entry.get("start_time");
 
                 Integer pid = sessionThread == null ? null : (Integer) sessionThread.get(0);
+                boolean baseInTransaction = sessionThread != null && (boolean) sessionThread.get(1);
                 boolean skip = onlyJava;
                 if(pid != null && idSet.contains((long) pid)){
                     skip = false;
@@ -358,8 +318,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                         javaProcesses.put(String.valueOf(pid), threadInfo);
                 }
                 if (!skip)
-                    resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, fullQuery, userActiveTask, null,
-                            address, dateTime, null, null, null, null, processId, isDisabledNestLoop, queryTimeout));
+                    resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, fullQuery, null/*userActiveTask*/, null,
+                            address, dateTime, null, null, baseInTransaction, null, null, processId, isDisabledNestLoop, queryTimeout));
             }
         }
         return resultMap;
@@ -415,6 +375,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 Timestamp dateTime = (Timestamp) entry.get("query_start");
 
                 List<Object> sessionThread = sessionThreadMap.get(processId);
+                Integer pid = sessionThread == null ? null : (Integer) sessionThread.get(0);
+                boolean baseInTransaction = sessionThread != null && (boolean) sessionThread.get(1);
                 Integer userActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(2);
                 Integer computerActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(3);
                 String fullQuery = sessionThread == null || sessionThread.get(4) == null ? null : (String) sessionThread.get(4);
@@ -425,7 +387,6 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 String lockOwnerId = lockingProcess == null ? null : getSQLThreadId(sessionThreadMap.get(lockingProcess.get(0)), (Integer) lockingProcess.get(0));
                 String lockOwnerName = lockingProcess == null ? null : (String) lockingProcess.get(1);
 
-                Integer pid = sessionThread == null ? null : (Integer) sessionThread.get(0);
                 boolean skip = onlyJava;
                 if(pid != null && idSet.contains((long) pid)){
                     idSet.remove(new Long(pid));
@@ -437,7 +398,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 }
                 if(!skip)
                 resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.<Object>asList(query, fullQuery, userActiveTask, computerActiveTask, address, dateTime,
-                        active, state.equals("idle in transaction"), lockOwnerId, lockOwnerName, processId, isDisabledNestLoop, queryTimeout));
+                        active, state.equals("idle in transaction"), baseInTransaction, lockOwnerId, lockOwnerName, processId, isDisabledNestLoop, queryTimeout));
             }
         }
         return resultMap;

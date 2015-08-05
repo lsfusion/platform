@@ -52,54 +52,54 @@ CLASS StateProcess 'Статус процесса' {
 }
 
 updateProcessMonitorAction 'Обновить монитор процессов' = ACTION CUSTOM 'lsfusion.erp.utils.UpdateProcessMonitorActionProperty' () TOOLBAR;
-killJavaProcess 'Убить java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillJavaProcessActionProperty' (INTEGER);
-killSQLProcess 'Убить SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillSQLProcessActionProperty' (INTEGER);
-cancelJavaProcess 'Снять java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelJavaProcessActionProperty' (INTEGER);
-cancelSQLProcess 'Снять SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelSQLProcessActionProperty' (INTEGER);
+killJavaProcess 'Убить java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillJavaProcessActionProperty' (VARSTRING[10]);
+killSQLProcess 'Убить SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillSQLProcessActionProperty' (VARSTRING[10]);
+cancelJavaProcess 'Снять java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelJavaProcessActionProperty' (VARSTRING[10]);
+cancelSQLProcess 'Снять SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelSQLProcessActionProperty' (VARSTRING[10]);
 
 processType 'Фильтр процессов'= DATA LOCAL ProcessType();
 nameProcessType 'Фильтр процессов' () = staticName(processType()) PREFCHARWIDTH 15;
 captionProcessType 'Фильтр процессов' () = staticCaption(processType());
 WHEN SESSION CHANGED (processType()) DO EXEC updateProcessMonitorAction();
  
-idThreadProcess 'ID потока процесса' = DATA LOCAL VARSTRING[10] (INTEGER);
+idThreadProcess 'ID потока процесса' = DATA LOCAL VARSTRING[10] (VARSTRING[10]);
 
-nameComputerJavaProcess 'Компьютер (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
-computerProcess 'Компьютер (SQL)' = DATA LOCAL INTEGER (INTEGER);
+nameComputerJavaProcess 'Компьютер (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+computerProcess 'Компьютер (SQL)' = DATA LOCAL INTEGER (VARSTRING[10]);
 objValueComputer (i) = INTEGER(i AS Computer);
 computerObject (value) = GROUP AGGR computer BY objValueComputer(computer);
 nameComputerSQLProcess 'Компьютер (SQL)' (process) = hostnameComputer(computerObject(computerProcess(process)));
 nameComputerProcess 'Компьютер' (process) = OVERRIDE nameComputerJavaProcess(process), nameComputerSQLProcess(process);
   
-nameUserJavaProcess 'Пользователь (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
-userProcess 'Пользователь (SQL)' = DATA LOCAL INTEGER (INTEGER);
+nameUserJavaProcess 'Пользователь (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+userProcess 'Пользователь (SQL)' = DATA LOCAL INTEGER (VARSTRING[10]);
 objValueUser (i) = INTEGER(i AS User);
 userObject (value) = GROUP AGGR user BY objValueUser(user);
 nameUserSQLProcess 'Пользователь (SQL)' (process) = nameUser(userObject(userProcess(process)));
 nameUserProcess 'Пользователь' (process) = OVERRIDE nameUserJavaProcess(process), nameUserSQLProcess(process);
 
-idSQLProcess 'ID процесса (SQL)' = DATA LOCAL INTEGER (INTEGER);
-querySQLProcess 'Запрос (SQL)' = DATA LOCAL TEXT (INTEGER);
-fullQuerySQLProcess 'Полный запрос (SQL)' = DATA LOCAL TEXT (INTEGER);
-addressUserSQLProcess 'Адрес пользователя (SQL)' = DATA LOCAL VARSTRING[100] (INTEGER);
-dateTimeSQLProcess 'Время запуска (SQL)' = DATA LOCAL DATETIME (INTEGER);
-isActiveSQLProcess 'Активный (SQL)' = DATA BOOLEAN (INTEGER);
-inTransactionSQLProcess 'В транзакции (SQL)' = DATA BOOLEAN (INTEGER);
+idSQLProcess 'ID процесса (SQL)' = DATA LOCAL INTEGER (VARSTRING[10]);
+querySQLProcess 'Запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
+fullQuerySQLProcess 'Полный запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
+addressUserSQLProcess 'Адрес пользователя (SQL)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+dateTimeSQLProcess 'Время запуска (SQL)' = DATA LOCAL DATETIME (VARSTRING[10]);
+isActiveSQLProcess 'Активный (SQL)' = DATA BOOLEAN (VARSTRING[10]);
+inTransactionSQLProcess 'В транзакции (SQL)' = DATA BOOLEAN (VARSTRING[10]);
 
-lsfStackTraceProcess 'LSF след потока' = DATA LOCAL TEXT (INTEGER);
+lsfStackTraceProcess 'LSF след потока' = DATA LOCAL TEXT (VARSTRING[10]);
 
-stackTraceJavaProcess 'След java-потока (Java)' = DATA LOCAL TEXT (INTEGER);
-hasStackTraceJavaProcess (i) = stackTraceJavaProcess(i) AND i IS INTEGER;
-nameJavaProcess 'Имя java-потока (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
-statusJavaProcess 'Статус (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
-lockNameJavaProcess 'Блокировка (Java)' = DATA LOCAL VARSTRING[100] (INTEGER);
+stackTraceJavaProcess 'След java-потока (Java)' = DATA LOCAL TEXT (VARSTRING[10]);
+hasStackTraceJavaProcess (i) = stackTraceJavaProcess(i) AND i IS VARSTRING[10];
+nameJavaProcess 'Имя java-потока (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+statusJavaProcess 'Статус (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+lockNameJavaProcess 'Блокировка (Java)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 
-lockOwnerIdProcess 'ID блокирующего потока' = DATA LOCAL VARSTRING[10] (INTEGER);
-lockOwnerNameProcess 'Блокирующий поток' = DATA LOCAL VARSTRING[100] (INTEGER);
-isDisabledNestLoopProcess 'Disabled nested loop' = DATA LOCAL BOOLEAN (INTEGER);
-queryTimeoutProcess 'Query Timeout' = DATA LOCAL INTEGER (INTEGER);
+lockOwnerIdProcess 'ID блокирующего потока' = DATA LOCAL VARSTRING[10] (VARSTRING[10]);
+lockOwnerNameProcess 'Блокирующий поток' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
+isDisabledNestLoopProcess 'Disabled nested loop' = DATA LOCAL BOOLEAN (VARSTRING[10]);
+queryTimeoutProcess 'Query Timeout' = DATA LOCAL INTEGER (VARSTRING[10]);
    
-processIdThread (id) = GROUP AGGR process BY idThreadProcess(process) WHERE process IS INTEGER;
+processIdThread (id) = GROUP AGGR process BY idThreadProcess(process) WHERE process IS VARSTRING[10];
 threadOwnerProcess (i) = processIdThread(lockOwnerIdProcess(i));
                                                                                                                                                                                                                                                           
 blockingProcess 'Уровень' (child, parent) = RECURSION 1l IF idThreadProcess(child) AND parent == child
@@ -108,7 +108,7 @@ isBlockingProcess 'Блокируется' (child, parent) = TRUE IF blockingPro
 sumPlusOneBlockedProcess  (process) = GROUP SUM 1 IF isBlockingProcess(child, parent) BY parent;
 sumBlockedProcess 'Кол-во заблокированных процессов' (process) = sumPlusOneBlockedProcess(process) - 1;
 deadlockProcess (process) = GROUP SUM 1 IF isBlockingProcess(parent, child) AND statusJavaProcess(child) != 'BLOCKED' BY parent;
-isDeadlockProcess 'Deadlock' (process) = NOT deadlockProcess(process) AND process IS INTEGER;
+isDeadlockProcess 'Deadlock' (process) = NOT deadlockProcess(process) AND process IS VARSTRING[10];
 sumPlusOneBlockingProcess 'Кол-во блокирующих процессов' (process) = GROUP SUM 1 IF isBlockingProcess(parent, child) BY parent;
 sumBlockingProcess 'Глубина блокировки' (process) = sumPlusOneBlockingProcess(process) - 1;
 
@@ -138,7 +138,7 @@ sqlColorProcess(i) = CASE
                                     WHEN deltaDateTimeProcess(i) > 40 THEN RGB(255, 255, 150)
                                     WHEN deltaDateTimeProcess(i) > 30 THEN RGB(255, 255, 180)
                                     WHEN deltaDateTimeProcess(i) > 20 THEN RGB(255, 255, 210)
-                                    WHEN i IS INTEGER THEN RGB(255, 255, 240);
+                                    WHEN i IS VARSTRING[10] THEN RGB(255, 255, 240);
 backgroundProcess(i) = IF isActiveSQLProcess(i) OR startsWith(idThreadProcess(i), 's') THEN sqlColorProcess(i) ELSE RGB(240, 255, 255);  
                    
 cancelProcess 'Снять процесс' (i) = ACTION {
@@ -151,30 +151,30 @@ killProcess 'Убить процесс' (i) = ACTION {
 }
 showExtraButtons(i) = idSQLProcess(i) AND NOT startsWith(idThreadProcess(i), 's');                             
 FORM processMonitor 'Монитор процессов'
-    OBJECTS i = INTEGER
-    PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, computerProcess, nameComputerProcess, userProcess, nameUserProcess,
+    OBJECTS i = VARSTRING[10]
+    PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, nameComputerProcess, nameUserProcess,
                            querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                            lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                            lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     FILTERS idThreadProcess(i)
     
-    TREE blocking i2 = INTEGER PARENT threadOwnerProcess
+    TREE blocking i2 = VARSTRING[10] PARENT threadOwnerProcess
     PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlockedProcess,
-                            activeProcess, idThreadProcess, computerProcess, nameComputerProcess, userProcess, nameUserProcess,
+                            activeProcess, idThreadProcess, nameComputerProcess, nameUserProcess,
                             querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                             lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                             lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
     FILTERS idThreadProcess(i2), (activeBlockingProcess(i2) AND sumBlockedProcess(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') 
     
-    OBJECTS blocked = INTEGER, blocking = INTEGER
+    OBJECTS blocked = VARSTRING[10], blocking = VARSTRING[10]
     PROPERTIES(blocked) READONLY idThreadProcess, isDeadlockProcess, 
-                                 sumBlockingProcess, computerProcess, nameComputerProcess, userProcess, nameUserProcess,
+                                 sumBlockingProcess, nameComputerProcess, nameUserProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess,
                                  lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                                  lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
-    PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlockingProcess, computerProcess, nameComputerProcess, userProcess, nameUserProcess,
+    PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlockingProcess, nameComputerProcess, nameUserProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
                                  lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
                                  lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
