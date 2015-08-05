@@ -118,6 +118,15 @@ WHEN CHANGED(remoteLoggerDebugEnabledUser(user)) DO {
     refreshRemoteLoggerDebugEnabledUser(user);
 }
 
+setExLogEnabledUser 'Включить вывод в лог сист. инфо (debug)' = ACTION CUSTOM 'lsfusion.server.logics.service.SetExLogUserActionProperty' (BOOLEAN, User);
+remoteExLogEnabledUser 'Выводить в лог сист. инфо (debug)' = DATA BOOLEAN (User);
+refreshExLogEnabledUser '' = ACTION (user) {
+    setExLogEnabledUser(remoteExLogEnabledUser(user), user);
+}
+WHEN CHANGED(remoteExLogEnabledUser(user)) DO {
+    refreshExLogEnabledUser(user);
+}
+
 CLASS TypeExecEnv {
     materialize 'Материализация подзапросов', 
     disablenestloop 'Отключение nested loop', 
@@ -187,6 +196,7 @@ onStarted() += ACTION {
         refreshLoggerDebugEnabledUser(u);
         refreshVolatileStatsEnabledUser(u);
         refreshRemoteLoggerDebugEnabledUser(u);
+        refreshExLogEnabledUser(u);
         refreshExecEnvUser(u);
     }
 } 
@@ -235,7 +245,7 @@ FORM admin 'Администрирование'
                  nameReflectionSetting, turnExplainAnalizeOnCurrentUser, clearApplicationLog,
                  valueReflectionSetting SHOWIF nameReflectionSetting()
     OBJECTS u=User
-    PROPERTIES(u) nameUser READONLY, explainAnalyzeModeUser, explainModeUser, loggerDebugEnabledUser, remoteLoggerDebugEnabledUser, nameExecEnvUser, volatileStatsEnabledUser;
+    PROPERTIES(u) nameUser READONLY, explainAnalyzeModeUser, explainModeUser, loggerDebugEnabledUser, remoteLoggerDebugEnabledUser, remoteExLogEnabledUser, nameExecEnvUser, volatileStatsEnabledUser;
 ;
 
 DESIGN admin {

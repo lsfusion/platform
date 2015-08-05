@@ -836,6 +836,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 if(change.isEmpty()) // оптимизация по аналогии с changeClass
                     return;
             }
+
+            String exLogChangeProperty = Settings.get().getExLogChangeProperty();
+            if(!exLogChangeProperty.isEmpty() && property.toString().contains(exLogChangeProperty))
+                logSessionEvents(property + " " + (changeTable != null ? changeTable.getCount() : change.toString()), "CHANGE PROPERTY : ");
     
             updateChanges = SetFact.singleton(property);
     
@@ -946,9 +950,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return inSessionEvent;
     }
 
+    public void logSessionEvents(Object object, String prefix) {
+        if(ServerLoggers.isUserExLog())
+            ServerLoggers.exInfoLogger.info(prefix + object);
+    }
+
     public <T extends PropertyInterface> void executeSessionEvents(FormInstance form) throws SQLException, SQLHandledException {
 //        ServerLoggers.assertLog(!isInTransaction(), "LOCAL EVENTS IN TRANSACTION"); // так как LogPropertyAction создает форму
         if(sessionEventChangedOld.getProperties().size() > 0) { // оптимизационная проверка
+
+            logSessionEvents(sessionEventChangedOld, "SESSION EVENT CHANGED OLD ");
 
             ExecutionEnvironment env = (form != null ? form : this);
 
@@ -977,7 +988,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(!sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
             return;
 
+        logSessionEvents(action, "START LOCAL EVENT : ");
+
         action.execute(env);
+
+        logSessionEvents(action, "END LOCAL EVENT : ");
     }
 
     @LogTime
@@ -1840,7 +1855,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private <P extends PropertyInterface> void logClassDataChanges(@ParamMessage CalcProperty<P> property, SinglePropertyTableUsage<P> changeTable) {
         if(property instanceof ClassDataProperty && Settings.get().isEnableClassDataChangesLog()) {
-            ServerLoggers.exInfoLogger.info(property.toString() + " " + changeTable.getCount() + " " + (news != null ? news.getCount() : "-1"));
+            ServerLoggers.exInfoLogger.info("CLASSDATACHANGES : " + property.toString() + " " + changeTable.getCount() + " " + (news != null ? news.getCount() : "-1"));
         }
     }
 

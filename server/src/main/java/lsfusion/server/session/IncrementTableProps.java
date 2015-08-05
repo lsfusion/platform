@@ -12,6 +12,11 @@ public class IncrementTableProps extends IncrementProps {
 
     public final TableProps tableProps = new TableProps();
 
+    @Override
+    public String toString() {
+        return tableProps.toString();
+    }
+
     public IncrementTableProps() {
     }
     

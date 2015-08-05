@@ -139,6 +139,8 @@ public abstract class AbstractContext implements Context {
 
     public abstract PropertyObjectInterfaceInstance getComputer();
 
+    public abstract Integer getCurrentUser();
+
     public abstract DataObject getConnection();
 
     public UpdateCurrentClasses getUpdateCurrentClasses(UpdateCurrentClasses outerUpdateCurrentClasses) {

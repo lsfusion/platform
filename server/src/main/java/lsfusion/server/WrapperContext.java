@@ -62,6 +62,10 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.getComputer();
     }
 
+    public Integer getCurrentUser() {
+        return wrappedContext.getCurrentUser();
+    }
+
     public DataObject getConnection() {
         return wrappedContext.getConnection();
     }

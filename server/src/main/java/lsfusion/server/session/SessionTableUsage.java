@@ -229,7 +229,7 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K>, TableOwner {
 
     @Override
     public String toString() {
-        return "SU@" + System.identityHashCode(this) + " " + table.toString();
+        return "SU@" + System.identityHashCode(this) + " " + table.toString() + " " + getCount();
     }
 
     public void updateCurrentClasses(DataSession session) throws SQLException, SQLHandledException {

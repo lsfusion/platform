@@ -57,6 +57,10 @@ public class RemoteNavigatorContext extends AbstractContext {
         return navigator.getComputer();
     }
 
+    public Integer getCurrentUser() {
+        return (Integer) navigator.getUser().object;
+    }
+
     public DataObject getConnection() {
         return navigator.getConnection();
     }

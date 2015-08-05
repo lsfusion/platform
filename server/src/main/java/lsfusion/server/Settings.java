@@ -1400,4 +1400,14 @@ public class Settings {
     public void setEnableClassDataChangesLog(boolean enableClassDataChangesLog) {
         this.enableClassDataChangesLog = enableClassDataChangesLog;
     }
+
+    private String exLogChangeProperty = "";
+
+    public String getExLogChangeProperty() {
+        return exLogChangeProperty;
+    }
+
+    public void setExLogChangeProperty(String exLogChangeProperty) {
+        this.exLogChangeProperty = exLogChangeProperty;
+    }
 }

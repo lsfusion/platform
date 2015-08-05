@@ -60,6 +60,7 @@ public interface Context {
     FocusListener getFocusListener();
     CustomClassListener getClassListener();
     PropertyObjectInterfaceInstance getComputer();
+    Integer getCurrentUser();
     DataObject getConnection();
     UpdateCurrentClasses getUpdateCurrentClasses(UpdateCurrentClasses outerUpdateCurrentClasses);
 

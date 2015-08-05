@@ -18,6 +18,10 @@ public class TableProps {
 
     private Map<CalcProperty, SinglePropertyTableUsage<PropertyInterface>> tables = MapFact.mAddRemoveMap(); // mutable с remove поведение
 
+    public String toString() {
+        return tables.toString();
+    }
+
     public ImSet<CalcProperty> getProperties() {
         return SetFact.fromJavaSet(tables.keySet());
     }

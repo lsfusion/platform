@@ -4,9 +4,13 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.logging.FlushableRollingFileAppender;
+import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import org.apache.log4j.Logger;
 
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -81,6 +85,20 @@ public class ServerLoggers {
 
     public static void exinfoLog(String message) {
         exInfoLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
+    }
+
+    private static Map<Integer, Boolean> userExLogs = new ConcurrentHashMap<>();
+
+    public static void setUserExLog(Integer user, Boolean enabled) {
+        userExLogs.put(user, enabled != null && enabled);
+    }
+
+    public static boolean getUserExLog(Integer user) {
+        return userExLogs.get(user) != null;
+    }
+
+    public static boolean isUserExLog() {
+        return getUserExLog(ThreadLocalContext.get().getCurrentUser());
     }
 
 }

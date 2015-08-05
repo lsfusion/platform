@@ -85,6 +85,10 @@ public class RemoteFormContext<T extends BusinessLogics<T>, F extends FormInstan
         return form.form.instanceFactory.computer;
     }
 
+    public Integer getCurrentUser() {
+        return form.getCurrentUser();
+    }
+
     public DataObject getConnection() {
         return form.form.instanceFactory.connection;
     }
