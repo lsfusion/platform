@@ -1853,9 +1853,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private <P extends PropertyInterface> void logClassDataChanges(@ParamMessage CalcProperty<P> property, SinglePropertyTableUsage<P> changeTable) {
+    private <P extends PropertyInterface> void logClassDataChanges(@ParamMessage CalcProperty<P> property, SinglePropertyTableUsage<P> changeTable) throws SQLException, SQLHandledException {
         if(property instanceof ClassDataProperty && Settings.get().isEnableClassDataChangesLog()) {
-            ServerLoggers.exInfoLogger.info("CLASSDATACHANGES : " + property.toString() + " " + changeTable.getCount() + " " + (news != null ? news.getCount() : "-1"));
+            String propertyName = property.toString();
+            ServerLoggers.exInfoLogger.info("CLASSDATACHANGES : " + propertyName + " " + changeTable + " " + (news != null ? news : "null"));
+            if(propertyName.contains("Sale.UserInvoiceDetail") && changeTable.getCount() < 40)
+                changeTable.table.outClasses(sql, ((ClassDataProperty) property).getObjectSet().getBaseClass(), new Processor<String>() {
+                    public void proceed(String value) {
+                        ServerLoggers.exInfoLogger.info(value);
+                    }
+                });
         }
     }
 
@@ -2319,6 +2326,17 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                             }
                         });
         changeTable.writeRows(sql, table.getReadSaveQuery(properties, modifier), baseClass, env, SessionTable.nonead);
+
+        if(Settings.get().isEnableClassDataChangesLog()) {
+            ImSet<CalcProperty> classProps = properties.filterFn(new SFunctionSet<CalcProperty>() {
+                public boolean contains(CalcProperty element) {
+                    return element instanceof ClassDataProperty;
+                }
+            });
+            if(!classProps.isEmpty())
+                ServerLoggers.exInfoLogger.info("READSAVECLASSDATACHANGES : " + classProps + " " + changeTable);
+        }
+
         return changeTable;
     }
 

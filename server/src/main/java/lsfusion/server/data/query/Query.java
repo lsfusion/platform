@@ -2,6 +2,7 @@ package lsfusion.server.data.query;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Processor;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -525,6 +526,14 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public void outClassesSelect(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
+        outClassesSelect(session, baseClass, new Processor<String>() {
+            public void proceed(String value) {
+                System.out.println(value);
+            }
+        });
+    }
+
+    public void outClassesSelect(SQLSession session, BaseClass baseClass, Processor<String> process) throws SQLException, SQLHandledException {
         // выведем на экран
         session.outStatement = true;
         ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> result;
@@ -537,12 +546,12 @@ public class Query<K,V> extends IQuery<K,V> {
         for(int i=0,size=result.size();i<size;i++) {
             ImMap<K, DataObject> rowKey = result.getKey(i);
             for(int j=0,sizeJ=rowKey.size();j<sizeJ;j++) {
-                System.out.println(rowKey.getKey(j)+"-"+rowKey.getValue(j));
+                process.proceed(rowKey.getKey(j) + "-" + rowKey.getValue(j));
             }
-            System.out.println("---- ");
+            process.proceed("---- ");
             ImMap<V, ObjectValue> rowValue = result.getValue(i);
             for(int j=0,sizeJ=rowValue.size();j<sizeJ;j++) {
-                System.out.println(rowValue.getKey(j)+"-"+rowValue.getValue(j));
+                process.proceed(rowValue.getKey(j) + "-" + rowValue.getValue(j));
             }
         }
     }

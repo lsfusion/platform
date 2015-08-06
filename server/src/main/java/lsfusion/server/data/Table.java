@@ -428,6 +428,9 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     public void outClasses(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
         getQuery().outClassesSelect(session, baseClass);
     }
+    public void outClasses(SQLSession session, BaseClass baseClass, Processor<String> processor) throws SQLException, SQLHandledException {
+        getQuery().outClassesSelect(session, baseClass, processor);
+    }
 
     public lsfusion.server.data.query.Join<PropertyField> join(ImMap<KeyField, ? extends Expr> joinImplement) {
         return new AddPullWheres<KeyField, lsfusion.server.data.query.Join<PropertyField>>() {

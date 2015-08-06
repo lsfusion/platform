@@ -2,6 +2,7 @@ package lsfusion.server.data;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Processor;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -54,6 +55,7 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
 
 
     public abstract void out(SQLSession session) throws SQLException, SQLHandledException;
+    public abstract void outClasses(SQLSession session, BaseClass baseClass, Processor<String> processor) throws SQLException, SQLHandledException;
 
     public abstract ClassWhere<KeyField> getClassWhere();
     public abstract ClassWhere<Field> getClassWhere(PropertyField property);

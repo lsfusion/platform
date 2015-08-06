@@ -1,9 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
-import lsfusion.base.Result;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -141,6 +138,10 @@ public class SessionRows extends SessionData<SessionRows> {
     @Override
     public void out(SQLSession session) throws SQLException {
         System.out.println("Rows :" + rows);
+    }
+
+    public void outClasses(SQLSession session, BaseClass baseClass, Processor<String> processor) throws SQLException, SQLHandledException {
+        processor.proceed("Rows :" + rows);
     }
 
     public boolean used(InnerContext query) {

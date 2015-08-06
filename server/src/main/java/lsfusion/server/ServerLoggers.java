@@ -94,7 +94,8 @@ public class ServerLoggers {
     }
 
     public static boolean getUserExLog(Integer user) {
-        return userExLogs.get(user) != null;
+        Boolean useLog = userExLogs.get(user);
+        return useLog != null && useLog;
     }
 
     public static boolean isUserExLog() {

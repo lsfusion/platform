@@ -1,9 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
-import lsfusion.base.Result;
-import lsfusion.base.TwinImmutableObject;
+import lsfusion.base.*;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -178,6 +175,13 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
         table.out(session);
     }
 
+    @Override
+    public void outClasses(SQLSession session, BaseClass baseClass, Processor<String> processor) throws SQLException, SQLHandledException {
+        processor.proceed("Key Values : " + keyValues);
+        processor.proceed("Prop Values : " + propertyValues);
+        table.outClasses(session, baseClass, processor);
+    }
+
     private ClassWhere<KeyField> getKeyValueClasses() {
         return new ClassWhere<KeyField>(DataObject.getMapDataClasses(keyValues));
     }
@@ -221,7 +225,7 @@ public class SessionDataTable extends SessionData<SessionDataTable> {
 
     @Override
     public String toString() {
-        return table + "{k:" + keyValues + ",v:" + propertyValues + "}";
+        return table + "{clkeys: " + table.classes + ", clprops" + table.propertyClasses + "} " + "{k:" + keyValues + ",v:" + propertyValues + "}";
     }
 
     public SessionDataTable checkClasses(SQLSession session, BaseClass baseClass, boolean updateClasses, OperationOwner owner) throws SQLException, SQLHandledException {
