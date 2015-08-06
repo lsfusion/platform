@@ -96,6 +96,8 @@ WHEN ((CHANGED (activeScheduledTaskDetail(td)) OR CHANGED (orderScheduledTaskDet
     OR CHANGED (ignoreExceptionsScheduledTaskDetail(td)) OR CHANGED (timeoutScheduledTaskDetail(td)) OR CHANGED (parameterScheduledTaskDetail(td)))
     AND activeScheduledTask(scheduledTaskScheduledTaskDetail(td)))
  DO EXEC runSetupScheduler();
+
+WHEN DROPPED (td IS ScheduledTaskDetail) IF PREV(activeScheduledTaskDetail(td)) DO EXEC runSetupScheduler();
   
 WHEN CHANGED(inDOWScheduledTask(dow, t)) DO EXEC runSetupScheduler();
   

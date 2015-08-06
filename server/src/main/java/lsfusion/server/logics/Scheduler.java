@@ -42,6 +42,7 @@ import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
+import lsfusion.server.session.Modifier;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -185,20 +186,21 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
     public void setupScheduledTasks(DataSession session) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
 
+        Modifier modifier = session.getModifier();
         KeyExpr scheduledTaskExpr = new KeyExpr("scheduledTask");
         ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTaskExpr);
 
         QueryBuilder<Object, Object> scheduledTaskQuery = new QueryBuilder<>(scheduledTaskKeys);
-        scheduledTaskQuery.addProperty("runAtStartScheduledTask", BL.schedulerLM.runAtStartScheduledTask.getExpr(scheduledTaskExpr));
-        scheduledTaskQuery.addProperty("startDateScheduledTask", BL.schedulerLM.startDateScheduledTask.getExpr(scheduledTaskExpr));
-        scheduledTaskQuery.addProperty("timeFromScheduledTask", BL.schedulerLM.timeFromScheduledTask.getExpr(scheduledTaskExpr));
-        scheduledTaskQuery.addProperty("timeToScheduledTask", BL.schedulerLM.timeToScheduledTask.getExpr(scheduledTaskExpr));
-        scheduledTaskQuery.addProperty("periodScheduledTask", BL.schedulerLM.periodScheduledTask.getExpr(scheduledTaskExpr));
-        scheduledTaskQuery.addProperty("daysOfWeekScheduledTask", BL.schedulerLM.daysOfWeekScheduledTask.getExpr(scheduledTaskExpr));
-        scheduledTaskQuery.addProperty("daysOfMonthScheduledTask", BL.schedulerLM.daysOfMonthScheduledTask.getExpr(scheduledTaskExpr));
-        scheduledTaskQuery.addProperty("schedulerStartTypeScheduledTask", BL.schedulerLM.schedulerStartTypeScheduledTask.getExpr(scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("runAtStartScheduledTask", BL.schedulerLM.runAtStartScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("startDateScheduledTask", BL.schedulerLM.startDateScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("timeFromScheduledTask", BL.schedulerLM.timeFromScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("timeToScheduledTask", BL.schedulerLM.timeToScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("periodScheduledTask", BL.schedulerLM.periodScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("daysOfWeekScheduledTask", BL.schedulerLM.daysOfWeekScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("daysOfMonthScheduledTask", BL.schedulerLM.daysOfMonthScheduledTask.getExpr(modifier, scheduledTaskExpr));
+        scheduledTaskQuery.addProperty("schedulerStartTypeScheduledTask", BL.schedulerLM.schedulerStartTypeScheduledTask.getExpr(modifier, scheduledTaskExpr));
 
-        scheduledTaskQuery.and(BL.schedulerLM.activeScheduledTask.getExpr(scheduledTaskExpr).getWhere());
+        scheduledTaskQuery.and(BL.schedulerLM.activeScheduledTask.getExpr(modifier, scheduledTaskExpr).getWhere());
 
         if (daemonTasksExecutor != null)
             daemonTasksExecutor.shutdown();
@@ -230,14 +232,14 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             ImRevMap<Object, KeyExpr> scheduledTaskDetailKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTaskDetail", scheduledTaskDetailExpr);
 
             QueryBuilder<Object, Object> scheduledTaskDetailQuery = new QueryBuilder<>(scheduledTaskDetailKeys);
-            scheduledTaskDetailQuery.addProperty("canonicalNamePropertyScheduledTaskDetail", BL.schedulerLM.canonicalNamePropertyScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
-            scheduledTaskDetailQuery.addProperty("ignoreExceptionsScheduledTaskDetail", BL.schedulerLM.ignoreExceptionsScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
-            scheduledTaskDetailQuery.addProperty("orderScheduledTaskDetail", BL.schedulerLM.orderScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
-            scheduledTaskDetailQuery.addProperty("scriptScheduledTaskDetail", BL.schedulerLM.scriptScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
-            scheduledTaskDetailQuery.addProperty("timeoutScheduledTaskDetail", BL.schedulerLM.timeoutScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
-            scheduledTaskDetailQuery.addProperty("parameterScheduledTaskDetail", BL.schedulerLM.parameterScheduledTaskDetail.getExpr(scheduledTaskDetailExpr));
-            scheduledTaskDetailQuery.and(BL.schedulerLM.activeScheduledTaskDetail.getExpr(scheduledTaskDetailExpr).getWhere());
-            scheduledTaskDetailQuery.and(BL.schedulerLM.scheduledTaskScheduledTaskDetail.getExpr(scheduledTaskDetailExpr).compare(currentScheduledTaskObject, Compare.EQUALS));
+            scheduledTaskDetailQuery.addProperty("canonicalNamePropertyScheduledTaskDetail", BL.schedulerLM.canonicalNamePropertyScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+            scheduledTaskDetailQuery.addProperty("ignoreExceptionsScheduledTaskDetail", BL.schedulerLM.ignoreExceptionsScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+            scheduledTaskDetailQuery.addProperty("orderScheduledTaskDetail", BL.schedulerLM.orderScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+            scheduledTaskDetailQuery.addProperty("scriptScheduledTaskDetail", BL.schedulerLM.scriptScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+            scheduledTaskDetailQuery.addProperty("timeoutScheduledTaskDetail", BL.schedulerLM.timeoutScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+            scheduledTaskDetailQuery.addProperty("parameterScheduledTaskDetail", BL.schedulerLM.parameterScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr));
+            scheduledTaskDetailQuery.and(BL.schedulerLM.activeScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr).getWhere());
+            scheduledTaskDetailQuery.and(BL.schedulerLM.scheduledTaskScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr).compare(currentScheduledTaskObject, Compare.EQUALS));
 
             TreeMap<Integer, ScheduledTaskDetail> propertySIDMap = new TreeMap<>();
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session);
