@@ -29,10 +29,10 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP forbidChangeAllPropertyRole;
     public LCP forbidViewAllPropertyUser;
     public LCP permitChangeAllPropertyUser;
-    public LCP permitViewUserProperty;
-    public LCP forbidViewUserProperty;
-    public LCP permitChangeUserProperty;
-    public LCP forbidChangeUserProperty;
+    public LCP overPermitViewUserProperty;
+    public LCP overForbidViewUserProperty;
+    public LCP overPermitChangeUserProperty;
+    public LCP overForbidChangeUserProperty;
 
     public LCP notNullPermissionUserProperty;
     public LCP defaultNumberUserNavigatorElement;
@@ -110,10 +110,10 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidChangeAllPropertyRole = findProperty("forbidChangeAllPropertyRole");
 
         // Разрешения для каждого свойства
-        permitViewUserProperty = findProperty("permitViewUserProperty");
-        forbidViewUserProperty = findProperty("forbidViewUserProperty");
-        permitChangeUserProperty = findProperty("permitChangeUserProperty");
-        forbidChangeUserProperty = findProperty("forbidChangeUserProperty");
+        overPermitViewUserProperty = findProperty("overPermitViewUserProperty");
+        overForbidViewUserProperty = findProperty("overForbidViewUserProperty");
+        overPermitChangeUserProperty = findProperty("overPermitChangeUserProperty");
+        overForbidChangeUserProperty = findProperty("overForbidChangeUserProperty");
 
         notNullPermissionUserProperty = findProperty("notNullPermissionUserProperty");
         // ---- Политики для логики представлений

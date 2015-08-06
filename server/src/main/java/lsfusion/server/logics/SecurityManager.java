@@ -528,23 +528,23 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             qp.and(securityLM.notNullPermissionUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")).getWhere());
 
             qp.addProperty("cn", propExpr);
-            qp.addProperty("permitView", securityLM.permitViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
-            qp.addProperty("forbidView", securityLM.forbidViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
-            qp.addProperty("permitChange", securityLM.permitChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
-            qp.addProperty("forbidChange", securityLM.forbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("permitView", securityLM.overPermitViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("forbidView", securityLM.overForbidViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("permitChange", securityLM.overPermitChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("forbidChange", securityLM.overForbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
 
             ImCol<ImMap<String, Object>> propValues = qp.execute(session).values();
             Map<String, Property> propertyCanonicalNames = getCanonicalNamesMap();
             for (ImMap<String, Object> valueMap : propValues) {
                 Property prop = propertyCanonicalNames.get(((String) valueMap.get("cn")).trim());
-                if (valueMap.get("forbidView") != null)
-                    policy.property.view.deny(prop);
-                else if (valueMap.get("permitView") != null)
+                if (valueMap.get("permitView") != null)
                     policy.property.view.permit(prop);
-                if (valueMap.get("forbidChange") != null)
-                    policy.property.change.deny(prop);
-                else if (valueMap.get("permitChange") != null)
+                else if (valueMap.get("forbidView") != null)
+                    policy.property.view.deny(prop);
+                if (valueMap.get("permitChange") != null)
                     policy.property.change.permit(prop);
+                else if (valueMap.get("forbidChange") != null)
+                    policy.property.change.deny(prop);
             }
 
             user.addSecurityPolicy(policy);
