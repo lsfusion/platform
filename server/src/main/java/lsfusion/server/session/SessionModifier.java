@@ -247,7 +247,7 @@ public abstract class SessionModifier implements Modifier {
     }
 
     public int getLimitHintIncrementComplexity() {
-        return Settings.get().getLimitHintIncrementComplexity();
+        return Settings.get().getLimitHintIncrementComplexityCoeff();
     }
 
     public double getLimitComplexityGrowthCoeff() {

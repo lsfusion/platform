@@ -221,14 +221,24 @@ makeHeapDump 'Сделать Heap Dump' = ACTION CUSTOM 'lsfusion.server.logics.
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
 
-nameReflectionSetting 'Имя настройки' = DATA LOCAL VARSTRING[100] ();
-valueReflectionSetting 'Значение настройки' = DATA LOCAL VARSTRING[100] ();
+CLASS ReflectionProperty 'Настройки';
+TABLE reflectionProperty (ReflectionProperty);
 
-readValueReflectionSetting = ACTION CUSTOM 'lsfusion.server.logics.service.ReadValueReflectionSettingActionProperty' ();
-saveValueReflectionSetting = ACTION CUSTOM 'lsfusion.server.logics.service.SaveValueReflectionSettingActionProperty' ();
+nameReflectionProperty 'Имя настройки' = DATA VARSTRING[100] (ReflectionProperty);
+reflectionPropertyName (name) = GROUP AGGR reflectionProperty BY nameReflectionProperty(reflectionProperty);
+baseValueReflectionProperty 'Сохранённое значение' = DATA VARSTRING[100] (ReflectionProperty);
+defaultValueReflectionProperty 'Значение по умолчанию' = DATA VARSTRING[100] (ReflectionProperty);
+valueReflectionProperty 'Значение' (reflectionProperty) = OVERRIDE defaultValueReflectionProperty(reflectionProperty), baseValueReflectionProperty(reflectionProperty);
 
-WHEN SESSION CHANGED(nameReflectionSetting()) DO readValueReflectionSetting(); 
-WHEN SESSION CHANGED(valueReflectionSetting()) DO saveValueReflectionSetting(); 
+readReflectionPropertiesAction 'Прочитать настройки свойств' = ACTION CUSTOM 'lsfusion.server.logics.service.reflection.ReadReflectionPropertiesActionProperty' ();
+onStarted() += ACTION readReflectionPropertiesAction();
+saveReflectionPropertyAction 'Сохранить настройку свойства' = ACTION CUSTOM 'lsfusion.server.logics.service.reflection.SaveReflectionPropertyActionProperty' (ReflectionProperty);
+WHEN CHANGED (baseValueReflectionProperty(r)) DO saveReflectionPropertyAction(r);
+
+FORM reflectionProperties 'Настройки свойств'
+    OBJECTS r = ReflectionProperty
+    PROPERTIES (r) nameReflectionProperty, valueReflectionProperty, defaultValueReflectionProperty, baseValueReflectionProperty
+;
 
 FORM admin 'Администрирование'
     PROPERTIES() currentDate, defaultBackgroundColor, defaultForegroundColor, 
@@ -242,8 +252,7 @@ FORM admin 'Администрирование'
                  packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
                  vacuumDBAction, serviceDBAction, serviceDBMultiThreadAction, runGarbageCollector, getVMInfo, dropLRU, makeHeapDump, 
                  TILMode, hostnameServerComputer, reupdateMode, singleTransaction,
-                 nameReflectionSetting, turnExplainAnalizeOnCurrentUser, clearApplicationLog,
-                 valueReflectionSetting SHOWIF nameReflectionSetting()
+                 turnExplainAnalizeOnCurrentUser, clearApplicationLog
     OBJECTS u=User
     PROPERTIES(u) nameUser READONLY, explainAnalyzeModeUser, explainModeUser, loggerDebugEnabledUser, remoteLoggerDebugEnabledUser, remoteExLogEnabledUser, nameExecEnvUser, volatileStatsEnabledUser;
 ;
@@ -343,11 +352,6 @@ DESIGN admin {
             MOVE PROPERTY(turnExplainAnalizeOnCurrentUser());
             MOVE PROPERTY(clearApplicationLog());
         }
-        NEW settings {
-            caption = 'Настройка свойств';
-            MOVE PROPERTY(nameReflectionSetting());
-            MOVE PROPERTY(valueReflectionSetting());
-        }        
     }
     MOVE u.box;
     MOVE functions.box;
@@ -356,6 +360,7 @@ DESIGN admin {
 NAVIGATOR { 
     configuration {
         ADD Service.admin;
+        ADD Service.reflectionProperties;
     }
 }
 

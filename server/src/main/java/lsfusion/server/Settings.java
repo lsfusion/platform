@@ -314,7 +314,7 @@ public class Settings {
         this.mapInnerMaxIterations = mapInnerMaxIterations;
     }
 
-    public boolean isEnabledApplySingleStored() {
+    public boolean isEnableApplySingleStored() {
         return enableApplySingleStored;
     }
 
@@ -370,13 +370,12 @@ public class Settings {
         this.editLogicalOnSingleClick = editLogicalOnSingleClick;
     }
 
-    public boolean getEditActionClassOnSingleClick() {
+    public boolean getEditActionOnSingleClick() {
         return editActionOnSingleClick;
     }
 
     public void setEditActionOnSingleClick(boolean editActionOnSingleClick) {
         this.editActionOnSingleClick = editActionOnSingleClick;
-
     }
 
     public boolean isCheckFollowsWhenObjects() {
@@ -605,11 +604,27 @@ public class Settings {
         this.limitWhereJoinPack = limitWhereJoinPack;
     }
 
+    public int getLimitIncrementCoeff() {
+        return limitIncrementCoeff;
+    }
+
+    public void setLimitIncrementCoeff(int limitIncrementCoeff) {
+        this.limitIncrementCoeff = limitIncrementCoeff;
+    }
+
     public int getLimitHintIncrementComplexity() {
-        return limitHintIncrementComplexity * limitIncrementCoeff;
+        return limitHintIncrementComplexity;
     }
 
     public void setLimitHintIncrementComplexity(int limitHintIncrementComplexity) {
+        this.limitHintIncrementComplexity = limitHintIncrementComplexity;
+    }
+
+    public int getLimitHintIncrementComplexityCoeff() {
+        return limitHintIncrementComplexity * limitIncrementCoeff;
+    }
+
+    public void setLimitHintIncrementComplexityCoeff(int limitHintIncrementComplexity) {
         this.limitHintIncrementComplexity = limitHintIncrementComplexity;
     }
 

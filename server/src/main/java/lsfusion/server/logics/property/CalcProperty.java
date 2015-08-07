@@ -150,7 +150,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     public boolean isEnabledSingleApply() {
         assert isStored();
-        return Settings.get().isEnabledApplySingleStored();
+        return Settings.get().isEnableApplySingleStored();
     }
     public boolean isSingleApplyStored() { // нужен для ClassDataProperty, для которого отдельный принцип обработки
         return isStored() && isEnabledSingleApply();

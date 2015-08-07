@@ -298,7 +298,7 @@ public class AutoHintsAspect {
         Expr result = (Expr) thisJoinPoint.proceed(new Object[]{property, joinExprs, calcType, propChanges, cascadeWhere});
 
         long complexity = max(result.getComplexity(false), (changedWhere != null ? cascadeWhere.toWhere().getComplexity(false) : 0));
-        if(complexity > Settings.get().getLimitHintIncrementComplexity() && property.hasChanges(propChanges))
+        if(complexity > Settings.get().getLimitHintIncrementComplexityCoeff() && property.hasChanges(propChanges))
             property.getQuery(calcType, propChanges, PropertyQueryType.FULLCHANGED, MapFact.EMPTY()); // по аналогии с верхним
         
         if(changedWhere!=null) changedWhere.add(cascadeWhere.toWhere());
