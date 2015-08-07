@@ -48,12 +48,12 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                 if (fileObject != null) {
 
                     DataObject excelObject = new DataObject(findProperty("fileTemplate").read(context, templateObject), ExcelClass.get(false, false));
-                    Map<String, String> templateEntriesMap = new HashMap<String, String>();
+                    Map<String, String> templateEntriesMap = new HashMap<>();
 
                     KeyExpr templateEntryExpr = new KeyExpr("TemplateEntry");
                     ImRevMap<Object, KeyExpr> templateEntryKeys = MapFact.singletonRev((Object) "TemplateEntry", templateEntryExpr);
 
-                    QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<Object, Object>(templateEntryKeys);
+                    QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<>(templateEntryKeys);
                     templateEntryQuery.addProperty("keyTemplateEntry", findProperty("keyTemplateEntry").getExpr(context.getModifier(), templateEntryExpr));
                     templateEntryQuery.addProperty("valueTemplateEntry", findProperty("valueTemplateEntry").getExpr(context.getModifier(), templateEntryExpr));
 
@@ -99,11 +99,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                 }
             }
 
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidFormatException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
+        } catch (ScriptingErrorLog.SemanticErrorException | InvalidFormatException | IOException e) {
             throw new RuntimeException(e);
         }
     }

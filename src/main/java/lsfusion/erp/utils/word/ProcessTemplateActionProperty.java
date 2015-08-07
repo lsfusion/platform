@@ -1,12 +1,11 @@
 package lsfusion.erp.utils.word;
 
+import com.google.common.base.Throwables;
 import lsfusion.server.data.SQLHandledException;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.*;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -53,12 +52,12 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                 if (fileObject != null) {
 
                     DataObject wordObject = new DataObject(fileObject, WordClass.get(false, false));
-                    Map<String, String> templateEntriesMap = new HashMap<String, String>();
+                    Map<String, String> templateEntriesMap = new HashMap<>();
 
                     KeyExpr templateEntryExpr = new KeyExpr("TemplateEntry");
                     ImRevMap<Object, KeyExpr> templateEntryKeys = MapFact.singletonRev((Object) "TemplateEntry", templateEntryExpr);
 
-                    QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<Object, Object>(templateEntryKeys);
+                    QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<>(templateEntryKeys);
                     templateEntryQuery.addProperty("keyTemplateEntry", findProperty("keyTemplateEntry").getExpr(context.getModifier(), templateEntryExpr));
                     templateEntryQuery.addProperty("valueTemplateEntry", findProperty("valueTemplateEntry").getExpr(context.getModifier(), templateEntryExpr));
 
@@ -75,7 +74,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                             templateEntriesMap.put(keyTemplateEntry.trim(), valueTemplateEntry.trim().replace('\n', '\r'));
                     }
 
-                    boolean isDocx = ((byte[]) fileObject).length<=2 ? false : ((byte[]) fileObject)[0] == 80 && ((byte[]) fileObject)[1] == 75;
+                    boolean isDocx = ((byte[]) fileObject).length > 2 && ((byte[]) fileObject)[0] == 80 && ((byte[]) fileObject)[1] == 75;
 
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -88,12 +87,30 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                                 List<XWPFRun> runs = p.getRuns();
                                 for (int i = runs.size() - 1; i >= 0; i--) {
                                     String text = runs.get(i).getText(0);
-                                    if (text != null)
+                                    if (text != null && text.contains(entry.getKey()))
                                         text = text.replace(entry.getKey(), entry.getValue());
                                     runs.get(i).setText(text, 0);
                                 }
                             }
+
+                            for (XWPFTable tbl : document.getTables()) {
+                                for (XWPFTableRow row : tbl.getRows()) {
+                                    for (XWPFTableCell cell : row.getTableCells()) {
+                                        for (XWPFParagraph p : cell.getParagraphs()) {
+                                            for (XWPFRun r : p.getRuns()) {
+                                                String text = r.getText(0);
+                                                if (text != null && text.contains(entry.getKey())) {
+                                                    text = text.replace(entry.getKey(), entry.getValue());
+                                                    r.setText(text, 0);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
+
+
 
                         document.write(outputStream);
 
@@ -111,12 +128,8 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                     findProperty("resultTemplate").change(outputStream.toByteArray(), context);
                 }
             }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RuntimeException(e);
+        } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
         }
     }
 }
