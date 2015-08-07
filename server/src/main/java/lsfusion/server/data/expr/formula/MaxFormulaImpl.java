@@ -46,6 +46,10 @@ public class MaxFormulaImpl extends AbstractFormulaImpl implements FormulaUnionI
         return result;
     }
 
+    public boolean supportSingleSimplify() {
+        return true;
+    }
+
     public boolean equals(Object o) {
         return this == o || o instanceof MaxFormulaImpl && isMin == ((MaxFormulaImpl) o).isMin && notObjectType == ((MaxFormulaImpl) o).notObjectType;
     }

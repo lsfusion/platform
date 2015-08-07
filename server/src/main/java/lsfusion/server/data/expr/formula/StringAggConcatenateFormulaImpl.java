@@ -39,4 +39,8 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
         return "(" + result + ")";
 //        return result;
     }
+
+    public boolean supportSingleSimplify() {
+        return true;
+    }
 }

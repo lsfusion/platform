@@ -149,7 +149,7 @@ public class Settings {
 
     private long limitHintIncrementStat = 200;
 
-    private int limitHintNoUpdateComplexity = 4000;
+    private int limitHintNoUpdateComplexity = 10000;
 
     private int limitWrapComplexity = 200;
 

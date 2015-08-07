@@ -30,6 +30,10 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         return false;
     }
 
+    public boolean supportSingleSimplify() {
+        return true;
+    }
+
     private final ImList<Type> types; // типы придется в явную хранить, так как выводить их из expr'ов не всегда получится (могут быть NULL'ы) и тогда непонятно к чему cast'ить
     private final ImList<Boolean> desc;
 

@@ -37,6 +37,9 @@ public class FormulaUnionExpr extends UnionExpr {
         if(formula.supportRemoveNull())
             exprs = exprs.filterList(notIsNull);
 
+        if(exprs.size() == 1 && formula.supportSingleSimplify())
+            return exprs.single();
+
         return create(new FormulaUnionExpr(formula, exprs));
     }
 
