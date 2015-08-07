@@ -237,7 +237,7 @@ WHEN CHANGED (baseValueReflectionProperty(r)) DO saveReflectionPropertyAction(r)
 
 FORM reflectionProperties 'Настройки свойств'
     OBJECTS r = ReflectionProperty
-    PROPERTIES (r) nameReflectionProperty, valueReflectionProperty, defaultValueReflectionProperty, baseValueReflectionProperty
+    PROPERTIES (r) nameReflectionProperty READONLY, valueReflectionProperty READONLY, defaultValueReflectionProperty READONLY, baseValueReflectionProperty
 ;
 
 FORM admin 'Администрирование'
