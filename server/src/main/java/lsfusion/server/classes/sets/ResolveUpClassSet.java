@@ -11,7 +11,6 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.ClassCanonicalNameUtils;
-import org.apache.poi.hssf.record.formula.functions.T;
 
 public class ResolveUpClassSet extends AUpClassSet<ResolveUpClassSet> implements ResolveClassSet {
     public ResolveUpClassSet(CustomClass[] customClasses) {
