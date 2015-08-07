@@ -5,8 +5,8 @@ REQUIRE System;
 CLASS ABSTRACT Contact 'Контакт';
 TABLE contact (Contact);
 
-firstNameContact 'Имя' = DATA VARSTRING[30] (Contact) MINCHARWIDTH 10 IN base;
-lastNameContact 'Фамилия' = DATA VARSTRING[30] (Contact) MINCHARWIDTH 10 IN base;
+firstNameContact 'Имя' = DATA VARISTRING[30] (Contact) MINCHARWIDTH 10 IN base;
+lastNameContact 'Фамилия' = DATA VARISTRING[30] (Contact) MINCHARWIDTH 10 IN base;
 nameContact 'Имя' (contact) = CONCAT ' ', firstNameContact(contact), lastNameContact(contact) IN recognize;
 
 phoneContact 'Телефон' = DATA VARSTRING[100] (Contact) MINCHARWIDTH 10;
