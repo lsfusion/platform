@@ -173,6 +173,7 @@ recalculateColumnsAggregationsTable 'Пересчитать агрегации �
     }
 }
 checkClassesTable 'Проверить классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableClassesActionProperty' (Table);
+checkClassesString(string) = ACTION checkClassesTable(tableSID(string));
 recalculateClassesTable 'Пересчитать классы таблицы' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableClassesActionProperty' (Table);
 
 CLASS DropColumn 'Удалённая колонка';

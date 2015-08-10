@@ -103,6 +103,7 @@
                 <entry key="noTransSyncDB" value="${settings.noTransSyncDB:}"/>
                 <entry key="useUserChangesSync" value="${settings.useUserChangesSync:}"/>
                 <entry key="averageIntervalStat" value="${settings.averageIntervalStat:}"/>
+                <entry key="saleInvoiceDetailLog" value="${settings.saleInvoiceDetailLog:}"/>
             </map>
         </property>
         </bean>

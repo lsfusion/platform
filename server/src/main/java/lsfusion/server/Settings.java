@@ -1425,4 +1425,14 @@ public class Settings {
     public void setExLogChangeProperty(String exLogChangeProperty) {
         this.exLogChangeProperty = exLogChangeProperty;
     }
+
+    private boolean saleInvoiceDetailLog = false;
+
+    public boolean isSaleInvoiceDetailLog() {
+        return saleInvoiceDetailLog;
+    }
+
+    public void setSaleInvoiceDetailLog(boolean saleInvoiceDetailLog) {
+        this.saleInvoiceDetailLog = saleInvoiceDetailLog;
+    }
 }

@@ -1857,12 +1857,19 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(property instanceof ClassDataProperty && Settings.get().isEnableClassDataChangesLog()) {
             String propertyName = property.toString();
             ServerLoggers.exInfoLogger.info("CLASSDATACHANGES : " + propertyName + " " + changeTable + " " + (news != null ? news : "null"));
-            if(propertyName.contains("Sale.UserInvoiceDetail") && changeTable.getCount() < 40)
-                changeTable.table.outClasses(sql, ((ClassDataProperty) property).getObjectSet().getBaseClass(), new Processor<String>() {
+            if(Settings.get().isSaleInvoiceDetailLog() && propertyName.contains("Sale.UserInvoiceDetail") && changeTable.getCount() < 40) {
+                BaseClass baseClass = ((ClassDataProperty) property).getObjectSet().getBaseClass();
+                Processor<String> logger = new Processor<String>() {
                     public void proceed(String value) {
                         ServerLoggers.exInfoLogger.info(value);
                     }
-                });
+                };
+                changeTable.table.outClasses(sql, baseClass, logger);
+                if(news != null && news.getCount() < 40) {
+                    logger.proceed(" --- ");
+                    news.table.outClasses(sql, baseClass, logger);
+                }
+            }
         }
     }
 
@@ -2333,8 +2340,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     return element instanceof ClassDataProperty;
                 }
             });
-            if(!classProps.isEmpty())
+            if(!classProps.isEmpty()) {
                 ServerLoggers.exInfoLogger.info("READSAVECLASSDATACHANGES : " + classProps + " " + changeTable);
+                if(Settings.get().isSaleInvoiceDetailLog() && classProps.toString().contains("Sale.UserInvoiceDetail") && changeTable.getCount() < 40)
+                    changeTable.table.outClasses(sql, ((ClassDataProperty) classProps.iterator().next()).getObjectSet().getBaseClass(), new Processor<String>() {
+                        public void proceed(String value) {
+                            ServerLoggers.exInfoLogger.info(value);
+                        }
+                    });
+            }
         }
 
         return changeTable;
