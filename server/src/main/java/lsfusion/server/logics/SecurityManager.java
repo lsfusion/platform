@@ -24,14 +24,12 @@ import lsfusion.server.form.navigator.NavigatorElement;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.property.ActionPropertyMapImplement;
-import lsfusion.server.logics.property.IsClassProperty;
-import lsfusion.server.logics.property.Property;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.FormActionProperty;
 import lsfusion.server.logics.property.actions.flow.JoinActionProperty;
 import lsfusion.server.logics.property.actions.flow.ListActionProperty;
 import lsfusion.server.logics.property.actions.flow.NewSessionActionProperty;
+import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.session.DataSession;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -128,6 +126,16 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                     readOnlyPolicy.property.view.deny(property);
                 else if (property instanceof IsClassProperty)
                     readOnlyPolicy.property.change.permit(property);
+                else if(property instanceof ObjectValueProperty) {
+                    readOnlyPolicy.property.change.permit((property));
+                    readOnlyPolicy.property.change.permit(property.getEditAction("change").property);
+                }
+                else if (property instanceof SessionDataProperty) {
+                    readOnlyPolicy.property.change.permit(property);
+                    readOnlyPolicy.property.change.permit(property.getEditAction("change").property);
+                }
+                else if(property instanceof CaseUnionProperty)
+                    checkCaseProperty(property);
             }
 
             allowConfiguratorPolicy = addPolicy(getString("logics.policy.allow.configurator"), getString("logics.policy.logics.allow.configurator"));
@@ -143,6 +151,20 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
         } else {
             readOnlyPolicy.property.change.deny(parentProperty);
             readOnlyPolicy.property.view.deny(parentProperty);
+        }
+    }
+
+    private void checkCaseProperty(Property property) {
+        if(property instanceof CaseUnionProperty) {
+            boolean permit = false;
+            for (CalcCase<UnionProperty.Interface> calcCase : ((CaseUnionProperty) property).getCases()) {
+                for (DataProperty change : calcCase.implement.mapChangeProps()) {
+                    if (change instanceof SessionDataProperty)
+                        permit = true;
+                }
+            }
+            if (permit)
+                readOnlyPolicy.property.change.permit(property);
         }
     }
 
