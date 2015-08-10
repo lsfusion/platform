@@ -160,6 +160,7 @@ public class ReadActionProperty extends ScriptingActionProperty {
             Integer port = (Integer) properties.get(3);
             String remoteFile = (String) properties.get(4);
             FTPClient ftpClient = new FTPClient();
+            ftpClient.setConnectTimeout(3600000); //1 hour = 3600 sec
             try {
 
                 ftpClient.connect(server, port);
