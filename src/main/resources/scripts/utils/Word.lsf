@@ -27,6 +27,7 @@ CLASS TemplateEntry 'Строка шаблона';
 TABLE templateEntry(TemplateEntry);
 
 templateTemplateEntry 'Шаблон' = DATA Template (TemplateEntry);
+isTableTemplateEntry 'Таблица' = DATA BOOLEAN(TemplateEntry);
 keyTemplateEntry 'Параметр' = DATA VARSTRING[100](TemplateEntry);
 valueTemplateEntry 'Значение' = DATA LOCAL TEXT (TemplateEntry);
 
@@ -39,7 +40,7 @@ FORM template 'Шаблон Word'
     PROPERTIES (t) loadFileTemplate, openFileTemplate
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) keyTemplateEntry, valueTemplateEntry, ADDOBJ, DELETESESSION
+    PROPERTIES (te) isTableTemplateEntry, keyTemplateEntry, valueTemplateEntry, ADDOBJ, DELETESESSION
     PROPERTIES (t) TODRAW te FORCE PANEL TOOLBAR openProcessTemplate
 
     FILTERS templateTemplateEntry (te) == t
@@ -76,7 +77,7 @@ FORM templates 'Шаблоны Word'
     PROPERTIES (t) ADDFORM, EDITFORM, DELETE
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) READONLY keyTemplateEntry, valueTemplateEntry
+    PROPERTIES (te) READONLY isTableTemplateEntry, keyTemplateEntry, valueTemplateEntry
     FILTERS templateTemplateEntry (te) == t
 ;
 
