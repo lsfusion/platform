@@ -61,6 +61,7 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
 
     public String getSource(ExprSource source) {
         assert source.getExprCount() == desc.size();
+        assert desc.size() > 1;
 
         if(desc.size() == 0)
             return SQLSyntax.NULL;

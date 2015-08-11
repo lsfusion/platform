@@ -105,7 +105,7 @@ public class FormulaUnionExpr extends UnionExpr {
     }
 
     @Override
-    public Where calculateNotNullWhere() {
-        return Where.TRUE;
+    protected boolean hasUnionNotNull() {
+        return false;
     }
 }

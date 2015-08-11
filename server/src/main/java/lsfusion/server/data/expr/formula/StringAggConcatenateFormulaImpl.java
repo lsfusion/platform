@@ -13,10 +13,15 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
         return true;
     }
 
+    public boolean supportSingleSimplify() {
+        return true;
+    }
+
     //считает, что последний expr - сепаратор
     @Override
     public String getSource(ExprSource source) {
         int exprCount = source.getExprCount();
+        assert exprCount > 1;
         if (exprCount == 0) {
             return "";
         }
@@ -38,9 +43,5 @@ public class StringAggConcatenateFormulaImpl extends StringConcatenateFormulaImp
         }
         return "(" + result + ")";
 //        return result;
-    }
-
-    public boolean supportSingleSimplify() {
-        return true;
     }
 }

@@ -23,9 +23,14 @@ public class MaxFormulaImpl extends AbstractFormulaImpl implements FormulaUnionI
         this.notObjectType = notObjectType;
     }
 
+    public boolean supportSingleSimplify() {
+        return true;
+    }
+
     @Override
     public String getSource(ExprSource source) {
         int exprCount = source.getExprCount();
+        assert exprCount > 1;
         if (exprCount == 0) {
             return "";
         }
@@ -44,10 +49,6 @@ public class MaxFormulaImpl extends AbstractFormulaImpl implements FormulaUnionI
             result = syntax.getMaxMin(!isMin, result , exprSource, type, env);
         }
         return result;
-    }
-
-    public boolean supportSingleSimplify() {
-        return true;
     }
 
     public boolean equals(Object o) {
