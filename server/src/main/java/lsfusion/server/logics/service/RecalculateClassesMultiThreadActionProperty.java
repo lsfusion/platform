@@ -15,7 +15,6 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
-import static org.apache.commons.lang.StringUtils.trimToNull;
 
 public class RecalculateClassesMultiThreadActionProperty extends ScriptingActionProperty {
     private ClassPropertyInterface threadCountInterface;
@@ -31,7 +30,7 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            String threadCount = trimToNull((String) context.getKeyValue(threadCountInterface).getValue());
+            Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
             RecalculateClassesTask task = new RecalculateClassesTask();
             task.init(context);
             TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);

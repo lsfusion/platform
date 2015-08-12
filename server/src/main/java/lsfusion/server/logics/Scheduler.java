@@ -251,7 +251,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     script = String.format("run() = ACTION {%s;\n};", script);
                 boolean ignoreExceptions = propertyValues.get("ignoreExceptionsScheduledTaskDetail") != null;
                 Integer timeout = (Integer) propertyValues.get("timeoutScheduledTaskDetail");
-                String parameter = (String) propertyValues.get("parameterScheduledTaskDetail");
+                Integer parameter = (Integer) propertyValues.get("parameterScheduledTaskDetail");
                 Integer orderProperty = (Integer) propertyValues.get("orderScheduledTaskDetail");
                 if (canonicalName != null || script != null) {
                     if (orderProperty == null) {
@@ -505,7 +505,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                             if (detail.script != null)
                                 BL.schedulerLM.scriptText.change(detail.script, mainSession);
                             if (detail.parameter != null)
-                                detail.lap.execute(mainSession, new DataObject(detail.parameter));
+                                detail.lap.execute(mainSession, new DataObject(detail.parameter));//detail.lap.getInterfaceClasses();
                             else if (detail.lap.listInterfaces.isEmpty())
                                 detail.lap.execute(mainSession);
                             else
@@ -585,9 +585,9 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         public String script;
         public boolean ignoreExceptions;
         public Integer timeout;
-        public String parameter;
+        public Integer parameter;
 
-        public ScheduledTaskDetail(LAP lap, String script, boolean ignoreExceptions, Integer timeout, String parameter) {
+        public ScheduledTaskDetail(LAP lap, String script, boolean ignoreExceptions, Integer timeout, Integer parameter) {
             this.lap = lap;
             this.script = script;
             this.ignoreExceptions = ignoreExceptions;
