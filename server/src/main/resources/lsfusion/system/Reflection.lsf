@@ -165,6 +165,7 @@ recalculateAggregationTableColumn 'Пересчитать агрегации' = 
 recalculateAggregationWithDependenciesTableColumn 'Пересчитать агрегации (+зависимости)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependenciesActionProperty' (TableColumn);
 recalculateAggregationWithDependentsTableColumn 'Пересчитать агрегации (+зависимые)' = ACTION CUSTOM 'lsfusion.server.logics.reflection.RecalculateTableColumnWithDependentsActionProperty' (TableColumn);
 checkAggregationTableColumn 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.reflection.CheckTableColumnActionProperty' (TableColumn);
+checkAggregationString(string) = ACTION checkAggregationTableColumn(tableColumnSID(string));
 dropDropColumn 'Окончательно удалить колонку' = ACTION CUSTOM 'lsfusion.server.logics.reflection.DropColumnActionProperty' (DropColumn);
 
 recalculateColumnsAggregationsTable 'Пересчитать агрегации колонок' (table) = ACTION {
