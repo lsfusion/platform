@@ -14,6 +14,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.table.ImplementTable;
@@ -96,5 +97,11 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask {
     @Override
     protected ImSet<Object> getDependElements(Object key) {
         return SetFact.EMPTY();
+    }
+
+    @Override
+    protected long getTaskComplexity(Object element) {
+        return (element instanceof ImplementTable ? ((ImplementTable) element).getStatKeys().rows.getWeight() : element instanceof ObjectValueClassSet ?
+                ((ObjectValueClassSet) element).getCount() : Stat.MIN.getWeight());
     }
 }

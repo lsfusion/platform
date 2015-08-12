@@ -7,6 +7,7 @@ import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.TableOwner;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -22,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
-import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RecalculateClassesTask extends GroupPropertiesSingleTask {
     public static int RECALC_TIL = -1;
@@ -49,29 +49,33 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
             } else if (element instanceof ImplementTable) {
                 DBManager.run(session.sql, !singleTransaction, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                        serviceLogger.info(String.format("Recalculate Table Classes: %s", element));
                         long start = System.currentTimeMillis();
                         DataSession.recalculateTableClasses((ImplementTable) element, sql, session.env, getBL().LM.baseClass);
                         long time = System.currentTimeMillis() - start;
-                        serviceLogger.info(String.format("Recalculate Table Classes: %s, %s", String.valueOf(element), time));
+                        serviceLogger.info(String.format("Recalculate Table Classes: %s, %sms", element, time));
                     }
                 });
 
-                serviceLogger.info(getString("logics.info.packing.table") + " (" + element + ")... ");
+                serviceLogger.info(String.format("Pack table %s", element));
+                long start = System.currentTimeMillis();
                 run(session.sql, !singleTransaction, new RunService() {
                     @Override
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         sql.packTable((ImplementTable) element, session.env.getOpOwner(), TableOwner.global);
                     }
                 });
-                serviceLogger.info("Done");
+                long time = System.currentTimeMillis() - start;
+                serviceLogger.info(String.format("Pack table: %s, %sms", element, time));
 
             } else if (element instanceof CalcProperty) {
                 DBManager.run(session.sql, !singleTransaction, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                        serviceLogger.info(String.format("Recalculate Class: %s", ((CalcProperty) element).getSID()));
                         long start = System.currentTimeMillis();
                         ((CalcProperty) element).recalculateClasses(sql, session.env, getBL().LM.baseClass);
                         long time = System.currentTimeMillis() - start;
-                        serviceLogger.info(String.format("Recalculate Class: %s, %s", ((CalcProperty) element).getSID(), time));
+                        serviceLogger.info(String.format("Recalculate Class: %s, %sms", ((CalcProperty) element).getSID(), time));
                     }
                 });
             }
@@ -131,5 +135,11 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
     @Override
     protected ImSet<Object> getDependElements(Object key) {
         return SetFact.EMPTY();
+    }
+
+    @Override
+    protected long getTaskComplexity(Object element) {
+        return (element instanceof ImplementTable ? ((ImplementTable) element).getStatKeys().rows : element instanceof CalcProperty ?
+                ((CalcProperty) element).mapTable.table.getStatProps().get(((CalcProperty) element).field).notNull :  Stat.MIN).getWeight();
     }
 }

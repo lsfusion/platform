@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.AggregateProperty;
@@ -79,5 +80,10 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
             }
         }
         return depends;
+    }
+
+    @Override
+    protected long getTaskComplexity(Object element) {
+        return (element instanceof AggregateProperty ? ((AggregateProperty) element).mapTable.table.getStatProps().get(((AggregateProperty) element).field).notNull :  Stat.MIN).getWeight();
     }
 }
