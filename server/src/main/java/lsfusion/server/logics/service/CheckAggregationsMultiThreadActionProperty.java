@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
+import static org.apache.commons.lang.StringUtils.trimToNull;
 
 public class CheckAggregationsMultiThreadActionProperty extends ScriptingActionProperty {
     private ClassPropertyInterface threadCountInterface;
@@ -30,7 +31,7 @@ public class CheckAggregationsMultiThreadActionProperty extends ScriptingActionP
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
+            String threadCount = trimToNull((String) context.getKeyValue(threadCountInterface).getValue());
             CheckAggregationsTask task = new CheckAggregationsTask();
             task.init(context);
             TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);

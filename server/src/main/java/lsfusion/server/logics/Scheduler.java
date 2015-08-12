@@ -251,7 +251,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     script = String.format("run() = ACTION {%s;\n};", script);
                 boolean ignoreExceptions = propertyValues.get("ignoreExceptionsScheduledTaskDetail") != null;
                 Integer timeout = (Integer) propertyValues.get("timeoutScheduledTaskDetail");
-                Integer parameter = (Integer) propertyValues.get("parameterScheduledTaskDetail");
+                String parameter = (String) propertyValues.get("parameterScheduledTaskDetail");
                 Integer orderProperty = (Integer) propertyValues.get("orderScheduledTaskDetail");
                 if (canonicalName != null || script != null) {
                     if (orderProperty == null) {
@@ -585,9 +585,9 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         public String script;
         public boolean ignoreExceptions;
         public Integer timeout;
-        public Integer parameter;
+        public String parameter;
 
-        public ScheduledTaskDetail(LAP lap, String script, boolean ignoreExceptions, Integer timeout, Integer parameter) {
+        public ScheduledTaskDetail(LAP lap, String script, boolean ignoreExceptions, Integer timeout, String parameter) {
             this.lap = lap;
             this.script = script;
             this.ignoreExceptions = ignoreExceptions;

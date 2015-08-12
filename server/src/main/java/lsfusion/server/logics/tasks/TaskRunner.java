@@ -23,12 +23,12 @@ public class TaskRunner {
         runTask(task, logger, null);
     }
 
-    public static void runTask(PublicTask task, Logger logger, Integer threadCount) throws InterruptedException {
+    public static void runTask(PublicTask task, Logger logger, String threadCount) throws InterruptedException {
         Set<Task> initialTasks = new HashSet<>();
         task.markInDependencies(initialTasks);
 
         //Runtime.getRuntime().availableProcessors() * 2
-        int nThreads = threadCount != null && threadCount != 0 ? threadCount : availableProcessors();
+        int nThreads = parseThreadCount(threadCount, availableProcessors());
         TaskBlockingQueue taskQueue = new TaskBlockingQueue();
 //        BlockingQueue<Task.PriorityRunnable> taskQueue = new PriorityBlockingQueue<Task.PriorityRunnable>();
         ExecutorService executor = new ThreadPoolExecutor(nThreads, nThreads,
@@ -65,6 +65,17 @@ public class TaskRunner {
                 throw new MultiCauseException(errors.toArray(new Throwable[errors.size()]));
             }
         }
+    }
+
+    private static int parseThreadCount(String value, int defaultValue) {
+        Integer result = null;
+        if(value != null) {
+            try {
+                result = Integer.parseInt(value);
+            } catch (Exception ignored) {
+            }
+        }
+        return result == null || result == 0 ? defaultValue : result;
     }
     
     public static class ThrowableConsumer {

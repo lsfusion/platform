@@ -12,15 +12,15 @@ recalculateAction 'Пересчитать агрегации' = ACTION CUSTOM 'l
 recalculateFollowsAction 'Пересчитать следствия и ограничения' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty' ();
 recalculateStatsAction 'Пересчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateStatsActionProperty' ();
 
-serviceDBCustomThreadAction 'Обслуживание БД (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' (INTEGER) NULL;
-checkAggregationsCustomThreadAction 'Проверить агрегации (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsMultiThreadActionProperty' (INTEGER) NULL;
-checkClassesCustomThreadAction 'Проверить классы (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesMultiThreadActionProperty' (INTEGER) NULL;
-recalculateClassesCustomThreadAction 'Пересчитать классы (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesMultiThreadActionProperty' (INTEGER) NULL;
-recalculateCustomThreadAction 'Пересчитать агрегации (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateMultiThreadActionProperty' (INTEGER) NULL;
-recalculateFollowsCustomThreadAction 'Пересчитать следствия и ограничения (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsMultiThreadActionProperty' (INTEGER) NULL;
-recalculateStatsCustomThreadAction 'Пересчитать статистику (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateStatsMultiThreadActionProperty' (INTEGER) NULL;
+serviceDBCustomThreadAction 'Обслуживание БД (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' (TEXT) NULL;
+checkAggregationsCustomThreadAction 'Проверить агрегации (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsMultiThreadActionProperty' (TEXT) NULL;
+checkClassesCustomThreadAction 'Проверить классы (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesMultiThreadActionProperty' (TEXT) NULL;
+recalculateClassesCustomThreadAction 'Пересчитать классы (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesMultiThreadActionProperty' (TEXT) NULL;
+recalculateCustomThreadAction 'Пересчитать агрегации (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateMultiThreadActionProperty' (TEXT) NULL;
+recalculateFollowsCustomThreadAction 'Пересчитать следствия и ограничения (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsMultiThreadActionProperty' (TEXT) NULL;
+recalculateStatsCustomThreadAction 'Пересчитать статистику (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateStatsMultiThreadActionProperty' (TEXT) NULL;
 
-threadCountMultiThread 'Количество потоков' = DATA LOCAL INTEGER (); 
+threadCountMultiThread 'Количество потоков' = DATA LOCAL VARSTRING[10] (); 
 serviceDBMultiThreadAction 'Обслуживание БД (многопоточно)' = ACTION serviceDBCustomThreadAction(threadCountMultiThread());
 checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно)' = ACTION checkAggregationsCustomThreadAction(threadCountMultiThread());
 checkClassesMultiThreadAction 'Проверить классы (многопоточно)' = ACTION checkClassesCustomThreadAction(threadCountMultiThread());
