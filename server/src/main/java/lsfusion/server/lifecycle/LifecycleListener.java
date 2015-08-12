@@ -14,6 +14,7 @@ public interface LifecycleListener {
     public static int BLLOADER_ORDER = SYSTEM_ORDER + 400;
 
     //более высокий order ради onStarted
+    public static int HIGH_DAEMON_ORDER = 8000;
     public static int REFLECTION_ORDER = 9000;
     public static int DAEMON_ORDER = 10000;
 
