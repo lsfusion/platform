@@ -48,7 +48,7 @@ public class LRUUtil {
         return tenuredGenPool;
     }
 
-    public static double memGCIn100Millis = 0.05; // сколько памяти может собрать сборщик мусора за 100 мс
+    public static double memGCIn100Millis = 0.2; // сколько памяти может собрать сборщик мусора за 100 мс
 
     private static ScheduledExecutorService scheduler;
     private static long lastCollected;

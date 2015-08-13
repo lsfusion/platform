@@ -56,11 +56,11 @@ public class AbstractSecurityPolicy<T> {
         if (permitted.contains(obj))
             return true;
         if (denied.contains(obj)) {
-            ServerLoggers.securityLogger.info("Denied : " + obj);
+//            ServerLoggers.securityLogger.info("Denied : " + obj);
             return false;
         }
         if (defaultPermission != null && !defaultPermission) {
-            ServerLoggers.securityLogger.info("No default permission : " + obj);
+//            ServerLoggers.securityLogger.info("No default permission : " + obj);
             return false;
         }
         return true;
