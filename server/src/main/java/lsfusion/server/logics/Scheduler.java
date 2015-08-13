@@ -7,10 +7,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.implementations.HMap;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.Compare;
@@ -24,6 +21,7 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.StringClass;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.Context;
 import lsfusion.server.context.ContextAwareThread;
 import lsfusion.server.context.ThreadLocalContext;
@@ -39,6 +37,7 @@ import lsfusion.server.data.type.Reader;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.linear.LAP;
+import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.ExecutionEnvironment;
@@ -247,11 +246,11 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             for (ImMap<Object, Object> propertyValues : propertyResult.valueIt()) {
                 String canonicalName = (String) propertyValues.get("canonicalNamePropertyScheduledTaskDetail");
                 String script = (String) propertyValues.get("scriptScheduledTaskDetail");
-                if(script != null)
+                if(script != null && !script.isEmpty())
                     script = String.format("run() = ACTION {%s;\n};", script);
                 boolean ignoreExceptions = propertyValues.get("ignoreExceptionsScheduledTaskDetail") != null;
                 Integer timeout = (Integer) propertyValues.get("timeoutScheduledTaskDetail");
-                Integer parameter = (Integer) propertyValues.get("parameterScheduledTaskDetail");
+                String parameter = (String) propertyValues.get("parameterScheduledTaskDetail");
                 Integer orderProperty = (Integer) propertyValues.get("orderScheduledTaskDetail");
                 if (canonicalName != null || script != null) {
                     if (orderProperty == null) {
@@ -504,12 +503,22 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                         try (DataSession mainSession = dbManager.createSession()) {
                             if (detail.script != null)
                                 BL.schedulerLM.scriptText.change(detail.script, mainSession);
-                            if (detail.parameter != null)
-                                detail.lap.execute(mainSession, new DataObject(detail.parameter));//detail.lap.getInterfaceClasses();
-                            else if (detail.lap.listInterfaces.isEmpty())
+                            ImOrderSet<ClassPropertyInterface> interfaces = detail.lap.listInterfaces;
+                            if (interfaces.isEmpty())
                                 detail.lap.execute(mainSession);
-                            else
-                                detail.lap.execute(mainSession, new DataObject((Integer) null)/*NullValue.instance*/);
+                            else if (detail.parameter == null)
+                                detail.lap.execute(mainSession, NullValue.instance);
+                            else {
+                                ValueClass valueClass = interfaces.get(0).interfaceClass;
+                                DataObject parsedParameter;
+                                try {
+                                    parsedParameter = valueClass == IntegerClass.instance ?
+                                            new DataObject(((IntegerClass) valueClass).parseString(detail.parameter)) : new DataObject(detail.parameter);
+                                } catch (Exception e) {
+                                    parsedParameter = null;
+                                }
+                                detail.lap.execute(mainSession, parsedParameter);
+                            }
                             String applyResult = mainSession.applyMessage(BL);
 
                             BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
@@ -585,9 +594,9 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         public String script;
         public boolean ignoreExceptions;
         public Integer timeout;
-        public Integer parameter;
+        public String parameter;
 
-        public ScheduledTaskDetail(LAP lap, String script, boolean ignoreExceptions, Integer timeout, Integer parameter) {
+        public ScheduledTaskDetail(LAP lap, String script, boolean ignoreExceptions, Integer timeout, String parameter) {
             this.lap = lap;
             this.script = script;
             this.ignoreExceptions = ignoreExceptions;
