@@ -18,7 +18,6 @@ import lsfusion.interop.ModalityType;
 import lsfusion.interop.PropertyEditType;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.IdentityLazy;
-import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.ThreadLocalContext;
@@ -1099,17 +1098,24 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             return add(set);            
         }
     }
-    @IdentityStrongLazy
-    public ComponentUpSet getDrawTabContainers(GroupObjectEntity group) {
+
+    public boolean isDesignHidden(ComponentView component) { // global
+        return component.isDesignHidden();
+    }
+
+    @IdentityLazy
+    public ComponentUpSet getDrawLocalHiddenContainers(GroupObjectEntity group) {
         ComponentUpSet result = new ComponentUpSet();
         for(PropertyDrawEntity property : getPropertyDrawsIt())
             if(!group.getObjects().disjoint(property.propertyObject.mapping.values().toSet())) { // для свойств "зависящих" от группы
                 for(int t=0;t<2;t++) {
                     ComponentView drawContainer = getDrawContainer(property, t == 0); // не hidden и первый showifOrTab
-                    ComponentView drawTabContainer = drawContainer.getTabContainer();
-                    if (drawTabContainer == null) // cheat \ оптимизация
-                        return null;
-                    result = result.addItem(drawTabContainer);
+                    if(!isDesignHidden(drawContainer)) {
+                        ComponentView drawTabContainer = drawContainer.getLocalHiddenContainer();
+                        if (drawTabContainer == null) // cheat \ оптимизация
+                            return null;
+                        result = result.addItem(drawTabContainer);
+                    }
                 }
             }
         ImSet<FilterEntity> fixedFilters = getFixedFilters();
@@ -1122,7 +1128,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             }
         }
         for(GroupObjectEntity fixedGroupObject : mFixedGroupObjects.immutable()) {
-            ComponentUpSet drawContainers = getDrawTabContainers(fixedGroupObject);
+            ComponentUpSet drawContainers = getDrawLocalHiddenContainers(fixedGroupObject);
             if(drawContainers==null)
                 return null;
                 

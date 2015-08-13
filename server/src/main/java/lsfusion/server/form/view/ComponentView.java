@@ -4,6 +4,7 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.ComponentDesign;
 import lsfusion.interop.form.layout.*;
 import lsfusion.server.caches.IdentityLazy;
+import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.logics.mutables.NFFact;
 import lsfusion.server.logics.mutables.interfaces.NFProperty;
 import lsfusion.server.logics.mutables.Version;
@@ -94,11 +95,36 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     @IdentityLazy
-    public ComponentView getTabContainer() {
+    public boolean isDesignHidden() {
         ContainerView parent = getContainer();
         if(parent == null)
+            return true;
+        if(parent.main)
+            return false;
+        return parent.isDesignHidden();
+
+    }
+    @IdentityLazy
+    public ComponentView getLocalHiddenContainer() { // show if or tabbed
+        ContainerView parent = getContainer();
+        assert parent != null; // эквивалентно !isDesignHidden();
+        if(parent.main)
             return null;
-        if(parent.getType() == ContainerType.TABBED_PANE)
+        if(parent.showIf != null)
+            return parent;
+        if(parent.isTabbedPane())
+            return this;
+        return parent.getLocalHiddenContainer();
+    }
+
+    @IdentityLazy
+    public ComponentView getTabContainer() {
+        ContainerView parent = getContainer();
+        // assert !isNotTabHidden - то есть design + showif не hidden
+        assert parent != null; // частный случай (!isDesignHidden) верхнего assertion'а
+        if(parent.main)
+            return null;
+        if(parent.isTabbedPane())
             return this;
         return parent.getTabContainer();
     }

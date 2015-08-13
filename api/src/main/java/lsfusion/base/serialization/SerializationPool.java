@@ -252,6 +252,14 @@ public abstract class SerializationPool<C> {
         return SerializationUtil.readString(inStream);
     }
 
+    public void writeBoolean(DataOutputStream outStream, boolean bool) throws IOException {
+        SerializationUtil.writeBoolean(outStream, bool);
+    }
+
+    public boolean readBoolean(DataInputStream inStream) throws IOException {
+        return SerializationUtil.readBoolean(inStream);
+    }
+
     public void writeInt(DataOutputStream outStream, Integer integer) throws IOException {
         SerializationUtil.writeInt(outStream, integer);
     }

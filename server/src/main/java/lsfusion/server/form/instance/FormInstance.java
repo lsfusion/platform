@@ -21,9 +21,7 @@ import lsfusion.interop.form.ColorPreferences;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
-import lsfusion.interop.form.layout.ContainerType;
 import lsfusion.server.ServerLoggers;
-import lsfusion.server.Settings;
 import lsfusion.server.auth.ChangePropertySecurityPolicy;
 import lsfusion.server.auth.SecurityPolicy;
 import lsfusion.server.caches.ManualLazy;
@@ -1335,26 +1333,62 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return entity.getDrawContainer(property.entity, grid);
     }
 
-    private boolean isHidden(PropertyDrawInstance<?> property, boolean grid) {
+    private boolean isTabHidden(PropertyDrawInstance<?> property, boolean grid) {
         ComponentView drawContainer = getDrawContainer(property, grid);
-        assert isContainerShown(drawContainer); // так как если бы был null не попалы бы в newIsShown в readShowIfs
+        assert !isNoTabHidden(drawContainer); // так как если бы был null не попалы бы в newIsShown в readShowIfs
         ComponentView drawTabContainer = drawContainer.getTabContainer();
         return drawTabContainer != null && isTabHidden(drawTabContainer); // первая проверка - cheat / оптимизация
     }
 
     private boolean isHidden(GroupObjectInstance group) {
-        FormEntity.ComponentUpSet containers = entity.getDrawTabContainers(group.entity);
+        FormEntity.ComponentUpSet containers = entity.getDrawLocalHiddenContainers(group.entity);
         if (containers == null) // cheat / оптимизация, иначе пришлось бы в isHidden и еще в нескольких местах явную проверку на null
             return false;
         for (ComponentView component : containers.it())
-            if (!isTabHidden(component))
+            if (!isLocalHidden(component))
                 return false;
         return true;
     }
 
-    private boolean isTabHidden(ComponentView component) {
+    private boolean isNoTabHidden(ComponentView component) { // design or showf
+        return isDesignHidden(component) || isShowIfHidden(component);
+    }
+
+    private boolean isLocalHidden(ComponentView component) { // showif or tab
+        assert !isDesignHidden(component);
+        assert (component instanceof ContainerView && ((ContainerView)component).showIf != null) || component.getContainer().isTabbedPane();
+        return isShowIfHidden(component) || isTabHidden(component);
+    }
+
+    private boolean isDesignHidden(ComponentView component) { // global
+        return entity.isDesignHidden(component);
+    }
+
+    private boolean isShowIfHidden(ComponentView component) { // local
+        assert !isDesignHidden(component);
+
+        if(containerShowIfs.isEmpty()) // оптимизация
+            return false;
+
         ContainerView parent = component.getContainer();
-        assert parent.getType() == ContainerType.TABBED_PANE;
+
+        while (parent != null) {
+            Boolean shown = isContainerShown.get(parent);
+
+            if (shown != null && !shown) {
+                return true;
+            }
+
+            parent = parent.getContainer();
+        }
+
+        return false;
+    }
+
+    private boolean isTabHidden(ComponentView component) { // sublocal
+        assert !isNoTabHidden(component);
+        ContainerView parent = component.getContainer();
+        assert parent.isTabbedPane(); // tabbed
 
         ComponentView visible = visibleTabs.get(parent);
         ImList<ComponentView> siblings = parent.getChildrenList();
@@ -1370,7 +1404,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     protected Map<ContainerView, ComponentView> visibleTabs = new HashMap<ContainerView, ComponentView>();
 
     public void setTabVisible(ContainerView view, ComponentView page) {
-        assert view.getType() == ContainerType.TABBED_PANE;
+        assert view.isTabbedPane();
         visibleTabs.put(view, page);
     }
 
@@ -1574,7 +1608,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
             if(newInInterface != null) {
                 drawContainer = getDrawContainer(drawProperty, newInInterface);
-                if (!containerShowIfs.isEmpty() && !isContainerShown(drawContainer)) { // hidden, но без учета tab, для него отдельная оптимизация,  связан с assertion'ом в FormInstance.isHidden
+                if (isNoTabHidden(drawContainer)) { // hidden, но без учета tab, для него отдельная оптимизация, чтобы не переобновляться при переключении "туда-назад",  связан с assertion'ом в FormInstance.isHidden
                     newInInterface = null;
                 }
             }
@@ -1684,22 +1718,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
     }
 
-    private boolean isContainerShown(ComponentView drawContainer) {
-        ContainerView parent = drawContainer.getContainer();
-
-        while (parent != null) {
-            Boolean shown = isContainerShown.get(parent);
-
-            if (shown != null && !shown) {
-                return false;
-            }
-
-            parent = parent.getContainer();
-        }
-
-        return true;
-    }
-
     private void fillChangedDrawProps(MFormChanges result, ChangedData changedProps) throws SQLException, SQLHandledException {
         //1е чтение - читаем showIfs
         HashMap<PropertyDrawInstance, Boolean> newIsShown = new HashMap<PropertyDrawInstance, Boolean>();
@@ -1722,7 +1740,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 ImSet<GroupObjectInstance> propRowGrids = rowGrids.get(drawProperty);
                 ImSet<GroupObjectInstance> propRowColumnGrids = rowColumnGrids.get(drawProperty);
 
-                boolean hidden = isHidden(drawProperty, newPropIsShown);
+                boolean hidden = isTabHidden(drawProperty, newPropIsShown);
 
                 // расширенный fillChangedReader, но есть часть специфики, поэтому дублируется
                 if (read || (!hidden && pendingHidden.contains(drawProperty)) || propertyUpdated(drawProperty.getDrawInstance(), propRowGrids, changedProps)) {

@@ -18,6 +18,14 @@ public class SerializationUtil {
                : null;
     }
 
+    public static void writeBoolean(DataOutputStream outStream, boolean bool) throws IOException {
+        outStream.writeBoolean(bool);
+    }
+
+    public static boolean readBoolean(DataInputStream inStream) throws IOException {
+        return inStream.readBoolean();
+    }
+
     public static void writeInt(DataOutputStream outStream, Integer integer) throws IOException {
         outStream.writeBoolean(integer != null);
         if (integer != null) {

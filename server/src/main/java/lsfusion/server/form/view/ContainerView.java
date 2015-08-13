@@ -36,7 +36,13 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
     }
 
     public ContainerView(int ID) {
+        this(ID, false);
+    }
+
+    public boolean main;
+    public ContainerView(int ID, boolean main) {
         super(ID);
+        this.main = main;
     }
 
     public void setCaption(String caption) {
@@ -47,6 +53,9 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         this.description = description;
     }
 
+    public boolean isTabbedPane() {
+        return getType() == ContainerType.TABBED_PANE;
+    }
     public ContainerType getType() {
         return type;
     }
@@ -165,6 +174,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         pool.writeString(outStream, caption);
         pool.writeString(outStream, description);
 
+//        pool.writeObject(outStream, main);
+
         pool.writeObject(outStream, type);
 
         pool.writeObject(outStream, childrenAlignment);
@@ -181,6 +192,8 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
         caption = pool.readString(inStream);
         description = pool.readString(inStream);
+
+//        main = pool.readBoolean(inStream); // пока не будем делать, так как надо клиента обновлять
 
         type = pool.readObject(inStream);
 
