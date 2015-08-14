@@ -4,6 +4,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.server.Settings;
+import lsfusion.server.stack.AspectStackItem;
 import lsfusion.server.stack.ExecutionStackAspect;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -40,7 +41,7 @@ public class TimeLoggerAspect {
                 if(runTime > Settings.get().getLogTimeThreshold() * 1000000) {
                     runningWarn += runTime;
 
-                    ImList<String> args = ExecutionStackAspect.getArgs(thisJoinPoint, method, thisJoinPoint.getArgs());
+                    ImList<String> args = AspectStackItem.getArgs(thisJoinPoint, method);
                     systemLogger.info(String.format("LogTime (%1$d ms, tot : %3$d ms, warn : %4$d ms) %2$s : " + ListFact.toList(args.size(), new GetIndex<String>() {
                         public String getMapValue(int i) {
                             return ("%" + (5 + i) + "$s");

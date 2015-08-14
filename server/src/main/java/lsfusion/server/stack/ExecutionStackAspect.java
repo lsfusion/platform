@@ -70,25 +70,7 @@ public class ExecutionStackAspect {
             }
         }
     }
-    
-    public static ImList<String> getArgs(ProceedingJoinPoint thisJoinPoint, Method method, Object[] args) {
-        MList<String> stringParams = ListFact.mList();
 
-        Annotation thisMessageAnnotation = method.getAnnotation(ThisMessage.class);
-        if (thisMessageAnnotation != null) {
-            stringParams.add(thisJoinPoint.getThis().toString());
-        }
-
-        Annotation[][] paramAnnotations = method.getParameterAnnotations();
-        for(int i=0;i<paramAnnotations.length;i++)
-            for(Annotation paramAnnotation : paramAnnotations[i])
-                if(paramAnnotation instanceof ParamMessage) {
-                    stringParams.add(args[i].toString());
-                    break;
-                }
-        return stringParams.immutableList();
-    }
-    
     public Stack<ExecutionStackItem> getOrInitStack() {
         Stack<ExecutionStackItem> stack = getStack(Thread.currentThread());
         if (stack == null) {

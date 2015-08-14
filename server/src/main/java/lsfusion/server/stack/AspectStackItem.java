@@ -26,9 +26,9 @@ public class AspectStackItem implements ExecutionStackItem {
             Annotation annotation = method.getAnnotation(StackMessage.class);
             String resultMessage = ServerResourceBundle.getString(((StackMessage) annotation).value());;
 
-            String paramsString = getArgs(thisJoinPoint, method);
-            if (!paramsString.isEmpty()) {
-                resultMessage += " : " + paramsString;
+            ImList<String> params = getArgs(thisJoinPoint, method);
+            if (!params.isEmpty()) {
+                resultMessage += " : " + params.toString(",");
             }
             message = resultMessage;
         }
@@ -36,7 +36,7 @@ public class AspectStackItem implements ExecutionStackItem {
 
     }
 
-    private static String getArgs(ProceedingJoinPoint thisJoinPoint, Method method) {
+    public static ImList<String> getArgs(ProceedingJoinPoint thisJoinPoint, Method method) {
         Object[] args = thisJoinPoint.getArgs();
         MList<String> mStringParams = ListFact.mList();
 
@@ -53,7 +53,6 @@ public class AspectStackItem implements ExecutionStackItem {
                     break;
                 }
 
-        ImList<String> stringParams = mStringParams.immutableList();
-        return stringParams.toString(",");
+        return mStringParams.immutableList();
     }
 }
