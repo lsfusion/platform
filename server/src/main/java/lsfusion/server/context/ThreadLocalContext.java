@@ -134,23 +134,17 @@ public class ThreadLocalContext {
         return get().requestUserInteraction(actions);
     }
 
-    public static void setActionMessage(String message) {
-        if (get() != null) {
-            get().setActionMessage(message);
-        }
-    }
-
     public static String getActionMessage() {
         return get() != null ? get().getActionMessage() : "";
     }
 
-    public static void pushActionMessage(String segment) {
+    public static void pushActionMessage(Object segment) {
         if (get() != null) {
             get().pushActionMessage(segment);
         }
     }
 
-    public static String popActionMessage() {
+    public static Object popActionMessage() {
         return get() != null ? get().popActionMessage() : "";
     }
 }

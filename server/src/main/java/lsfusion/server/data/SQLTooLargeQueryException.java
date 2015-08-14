@@ -23,4 +23,9 @@ public class SQLTooLargeQueryException extends SQLHandledException {
     public String toString() {
         return "TOO LARGE QUERY ROWS " + rowCount + ", LIMIT :" + limit + ", ROWSIZE :" + rowSize;
     }
+
+    @Override
+    public boolean willDefinitelyBeHandled() {
+        return false;
+    }
 }

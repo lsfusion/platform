@@ -1,6 +1,7 @@
 package lsfusion.server.caches;
 
 import lsfusion.base.*;
+import lsfusion.server.data.HandledException;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.*;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -374,11 +375,15 @@ public class AutoHintsAspect {
         public abstract void resolve(SessionModifier modifier) throws SQLException, SQLHandledException;
     }
 
-    public static class HintException extends RuntimeException {
+    public static class HintException extends RuntimeException implements HandledException {
         public final Hint hint;
 
         public HintException(Hint hint) {
             this.hint = hint;
+        }
+
+        public boolean willDefinitelyBeHandled() {
+            return true;
         }
     }
 }

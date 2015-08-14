@@ -29,4 +29,9 @@ public class SQLClosedException extends SQLHandledException {
     public String toString() {
         return "CONNECTION_CLOSED " + connection + " " + wrapped + " " + isPrivate;
     }
+
+    @Override
+    public boolean willDefinitelyBeHandled() {
+        return false;
+    }
 }

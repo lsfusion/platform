@@ -6,6 +6,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.HandledException;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -18,9 +19,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ConcurrentModificationException;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.Stack;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Aspect
 public class ExecutionStackAspect {
@@ -35,20 +34,11 @@ public class ExecutionStackAspect {
 
     @Around("execution(@lsfusion.server.stack.StackMessage * *.*(..))")
     public Object callTwinMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
-        Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
-        Object[] args = thisJoinPoint.getArgs();
-
-        ImList<String> stringParams = getArgs(thisJoinPoint, method, args);
-        Annotation annotation = method.getAnnotation(StackMessage.class);
-        if (annotation != null) {
-            String message = ServerResourceBundle.getString(((StackMessage) annotation).value());
-            MessageStackItem item = new MessageStackItem(message, stringParams);
-
-            return processStackItem(thisJoinPoint, item);
-        }
-        throw new RuntimeException("wrong aspect");
+        AspectStackItem item = new AspectStackItem(thisJoinPoint);
+        return processStackItem(thisJoinPoint, item);
     }
 
+    // тут важно что цикл жизни ровно в стеке, иначе утечку можем получить
     private Object processStackItem(ProceedingJoinPoint joinPoint, ExecutionStackItem item) throws Throwable {
         boolean pushedMessage = false;
         boolean pushedStack = false;
@@ -57,14 +47,14 @@ public class ExecutionStackAspect {
             stack.push(item);
             pushedStack = true;
             if (presentItem(item)) {
-                ThreadLocalContext.pushActionMessage(item.toString());
+                ThreadLocalContext.pushActionMessage(item);
                 pushedMessage = true;
             }
         }
         try {
             return joinPoint.proceed();
         } catch (Throwable e) {
-            if (!exceptionCauseMap.containsKey(e)) {
+            if (!(e instanceof HandledException && ((HandledException)e).willDefinitelyBeHandled()) && !exceptionCauseMap.containsKey(e)) {
                 String stackString = getStackString();
                 if (stackString != null) {
                     exceptionCauseMap.put(e, stackString);

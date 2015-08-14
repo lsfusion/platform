@@ -29,6 +29,11 @@ public class SQLUniqueViolationException extends SQLHandledException {
     }
 
     @Override
+    public boolean willDefinitelyBeHandled() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return "UNIQUE_VIOLATION" + (possibleRaceCondition ? " POS_RACE" : "") ;
     }

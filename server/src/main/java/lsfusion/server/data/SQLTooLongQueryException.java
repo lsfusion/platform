@@ -19,4 +19,9 @@ public class SQLTooLongQueryException extends SQLHandledException {
     public String toString() {
         return "TOO LONG QUERY ROWS " + select;
     }
+
+    @Override
+    public boolean willDefinitelyBeHandled() {
+        return false;
+    }
 }

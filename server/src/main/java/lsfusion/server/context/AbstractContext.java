@@ -160,33 +160,26 @@ public abstract class AbstractContext implements Context {
         throw new UnsupportedOperationException("createRemoteForm is not supported");
     }
 
-    public void setActionMessage(String message) {
-        actionMessageStack.set(message);
-    }
-
     public String getActionMessage() {
         return actionMessageStack.getMessage();
     }
 
-    public void pushActionMessage(String segment) {
+    // тут нужно быть аккуратно с утечками
+    public void pushActionMessage(Object segment) {
         actionMessageStack.push(segment);
     }
 
-    public String popActionMessage() {
+    public Object popActionMessage() {
         return actionMessageStack.popOrEmpty();
     }
 
-    private static class MessageStack extends Stack<String> {
-        public synchronized void set(String message) {
-            clear();
-            push(message);
-        }
+    private static class MessageStack extends Stack<Object> {
 
         public synchronized String getMessage() {
             return BaseUtils.toString(this, ". ");
         }
 
-        public synchronized String popOrEmpty() {
+        public synchronized Object popOrEmpty() {
             return isEmpty() ? "" : pop();
         }
     }

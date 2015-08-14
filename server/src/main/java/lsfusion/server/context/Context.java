@@ -49,10 +49,9 @@ public interface Context {
     boolean canBeProcessed();
     Object[] requestUserInteraction(ClientAction... actions);
 
-    void setActionMessage(String message);
     String getActionMessage();
-    void pushActionMessage(String segment);
-    String popActionMessage();
+    void pushActionMessage(Object segment);
+    Object popActionMessage();
     ScheduledExecutorService getExecutorService();
 
     // для создания форм

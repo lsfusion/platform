@@ -2,7 +2,7 @@ package lsfusion.server.data;
 
 import java.sql.SQLException;
 
-public abstract class SQLHandledException extends Exception{
+public abstract class SQLHandledException extends Exception implements HandledException{
     
     protected Boolean isInTransaction;
     
@@ -15,6 +15,11 @@ public abstract class SQLHandledException extends Exception{
     }
 
     public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) throws SQLException {
+        return true;
+    }
+
+    @Override
+    public boolean willDefinitelyBeHandled() {
         return true;
     }
 }
