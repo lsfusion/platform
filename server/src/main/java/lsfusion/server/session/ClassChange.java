@@ -28,6 +28,13 @@ public class ClassChange extends ImmutableObject {
     public final Where where;
     public final Expr expr;
 
+    @Override
+    public String toString() {
+        if(keyValue != null)
+            return "KV : " + keyValue + ", PV : " + propValue;
+        return "W : " + where + ", E : " + expr + ", K : " + key;
+    }
+
     public ClassChange(DataObject keyValue, ConcreteObjectClass cls) {
         this.keyValue = keyValue;
         this.propValue = cls.getClassObject();

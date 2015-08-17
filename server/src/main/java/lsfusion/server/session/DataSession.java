@@ -737,8 +737,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             updateChanges = getClassChanges(addClasses, removeClasses, changedOldClasses, changedNewClasses);
     
             updateSessionEvents(updateChanges);
-    
-            updateSourceChanges = aspectChangeClass(addClasses, removeClasses, changedOldClasses, changedNewClasses, change);
+
+            updateSourceChanges = aspectChangeClass(addClasses, removeClasses, changedOldClasses, changedNewClasses, change, changeTable);
         } finally {
             if(changeTable!=null)
                 changeTable.drop(sql, getOwner());
@@ -758,7 +758,26 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             aspectAfterChange();
         }
     }
-    
+
+    private void logClassChange(SingleKeyPropertyUsage changeTable, ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> changedOldClasses, ImSet<ConcreteObjectClass> changedNewClasses, ClassChange change) throws SQLException, SQLHandledException {
+        SFunctionSet<ConcreteObjectClass> fset = new SFunctionSet<ConcreteObjectClass>() {
+            public boolean contains(ConcreteObjectClass element) {
+                return element.toString().contains("Sale_UserInvoiceDetail");
+            }
+        };
+        if(Settings.get().isSaleInvoiceDetailLog() && (!changedNewClasses.filterFn(fset).isEmpty() || !changedOldClasses.filterFn(fset).isEmpty())) {
+            ServerLoggers.exInfoLogger.info("CLASSCHANGE : " + changedNewClasses + " " + changedOldClasses + " " + changeTable + " " + change);
+
+            if(changeTable != null && changeTable.getCount() < 40) {
+                changeTable.table.outClasses(sql, baseClass, new Processor<String>() {
+                    public void proceed(String value) {
+                        ServerLoggers.exInfoLogger.info(value);
+                    }
+                });
+            }
+        }
+    }
+
     public void dropChanges(DataProperty property) throws SQLException, SQLHandledException {
         if(!data.containsKey(property)) // оптимизация, см. использование
             return;
@@ -2003,7 +2022,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }});
     }
 
-    private FunctionSet<CalcProperty<ClassPropertyInterface>> aspectChangeClass(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses, ClassChange change) throws SQLException, SQLHandledException {
+    private FunctionSet<CalcProperty<ClassPropertyInterface>> aspectChangeClass(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> oldClasses, ImSet<ConcreteObjectClass> newClasses, ClassChange change, SingleKeyPropertyUsage upChangeTable) throws SQLException, SQLHandledException {
         checkTransaction(); // важно что, вначале
 
         if(news ==null)
@@ -2015,6 +2034,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 changeTable = change.materialize(sql, baseClass, env);
                 change = changeTable.getChange();
             }
+
+            logClassChange(changeTable == null ? upChangeTable : changeTable, addClasses, removeClasses, oldClasses, newClasses, change);
+
             ModifyResult tableChanged = change.modifyRows(news, sql, baseClass, Modify.MODIFY, env, getOwner(), SessionTable.matGlobalQuery);
             if(!tableChanged.dataChanged()) {
                 if(news.isEmpty())
