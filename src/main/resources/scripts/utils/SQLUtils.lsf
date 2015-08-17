@@ -52,10 +52,15 @@ CLASS StateProcess 'Статус процесса' {
 }
 
 updateProcessMonitorAction 'Обновить монитор процессов' = ACTION CUSTOM 'lsfusion.erp.utils.UpdateProcessMonitorActionProperty' () TOOLBAR;
+setThreadAllocatedMemoryEnabledAction = ACTION CUSTOM 'lsfusion.erp.utils.SetThreadAllocatedMemoryEnabledActionProperty' ();
 killJavaProcess 'Убить java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillJavaProcessActionProperty' (VARSTRING[10]);
 killSQLProcess 'Убить SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.KillSQLProcessActionProperty' (VARSTRING[10]);
 cancelJavaProcess 'Снять java-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelJavaProcessActionProperty' (VARSTRING[10]);
 cancelSQLProcess 'Снять SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelSQLProcessActionProperty' (VARSTRING[10]);
+
+readAllocatedBytes 'Показывать выделенную память' = DATA BOOLEAN ();
+WHEN SESSION CHANGED (readAllocatedBytes()) DO setThreadAllocatedMemoryEnabledAction();
+onStarted() += ACTION setThreadAllocatedMemoryEnabledAction();
 
 processType 'Фильтр процессов'= DATA LOCAL ProcessType();
 nameProcessType 'Фильтр процессов' () = staticName(processType()) PREFCHARWIDTH 15;
@@ -87,6 +92,7 @@ isActiveSQLProcess 'Активный (SQL)' = DATA BOOLEAN (VARSTRING[10]);
 inTransactionSQLProcess 'В транзакции (SQL)' = DATA BOOLEAN (VARSTRING[10]);
 
 lsfStackTraceProcess 'LSF след потока' = DATA LOCAL TEXT (VARSTRING[10]);
+threadAllocatedBytesProcess 'Выделенная память' = DATA LOCAL LONG (VARSTRING[10]);
 
 stackTraceJavaProcess 'След java-потока (Java)' = DATA LOCAL TEXT (VARSTRING[10]);
 hasStackTraceJavaProcess (i) = stackTraceJavaProcess(i) AND i IS VARSTRING[10];
@@ -149,13 +155,21 @@ killProcess 'Убить процесс' (i) = ACTION {
     IF isActiveSQLProcess(i) THEN killSQLProcess(i) ELSE killJavaProcess(i);
     updateProcessMonitorAction();
 }
-showExtraButtons(i) = idSQLProcess(i) AND NOT startsWith(idThreadProcess(i), 's');                             
+showExtraButtons(i) = idSQLProcess(i) AND NOT startsWith(idThreadProcess(i), 's');
+               
+//test1Action = ACTION CUSTOM 'lsfusion.erp.utils.TestActionProperty'();
+//test2Action = ACTION CUSTOM 'lsfusion.erp.utils.Test2ActionProperty'();
+//test3Action = ACTION CUSTOM 'lsfusion.erp.utils.Test3ActionProperty'();
+//test4Action = ACTION CUSTOM 'lsfusion.erp.utils.Test4ActionProperty'();
+               
 FORM processMonitor 'Монитор процессов'
+    //PROPERTIES() test1Action, test2Action, test3Action, test4Action
     OBJECTS i = VARSTRING[10]
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, nameComputerProcess, nameUserProcess,
                            querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
-                           lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
-                           lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
+                           lsfStackTraceProcess, threadAllocatedBytesProcess SHOWIF readAllocatedBytes(), nameJavaProcess, statusJavaProcess, 
+                           lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
+                           queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     FILTERS idThreadProcess(i)
     
@@ -163,27 +177,31 @@ FORM processMonitor 'Монитор процессов'
     PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlockedProcess,
                             activeProcess, idThreadProcess, nameComputerProcess, nameUserProcess,
                             querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
-                            lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
-                            lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
+                            lsfStackTraceProcess, threadAllocatedBytesProcess SHOWIF readAllocatedBytes(), nameJavaProcess, statusJavaProcess, 
+                            lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
+                            queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i2) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(i2), killJavaProcess SHOWIF isActiveSQLProcess(i2)  
-    FILTERS idThreadProcess(i2), (activeBlockingProcess(i2) AND sumBlockedProcess(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') 
+    FILTERS idThreadProcess(i2)
+    FILTERGROUP filter FILTER 'Фильтр' (activeBlockingProcess(i2) AND sumBlockedProcess(i2) > 0) OR (lockOwnerIdProcess(i2) AND lockOwnerIdProcess(i2) != '-1') DEFAULT   
     
     OBJECTS blocked = VARSTRING[10], blocking = VARSTRING[10]
     PROPERTIES(blocked) READONLY idThreadProcess, isDeadlockProcess, 
                                  sumBlockingProcess, nameComputerProcess, nameUserProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess,
-                                 lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
-                                 lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
+                                 lsfStackTraceProcess, threadAllocatedBytesProcess SHOWIF readAllocatedBytes(), nameJavaProcess, statusJavaProcess, 
+                                 lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
+                                 queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlockingProcess, nameComputerProcess, nameUserProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, addressUserSQLProcess,
-                                 lsfStackTraceProcess, nameJavaProcess, statusJavaProcess, lockNameJavaProcess, stackTraceJavaProcess,
-                                 lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
+                                 lsfStackTraceProcess, threadAllocatedBytesProcess SHOWIF readAllocatedBytes(), nameJavaProcess, statusJavaProcess,
+                                 lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
+                                 queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(blocking) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF isActiveSQLProcess(blocking), killJavaProcess SHOWIF isActiveSQLProcess(blocking)                                   
     FILTERS idThreadProcess(blocked), sumBlockingProcess(blocked) > 0, sumBlockedProcess(blocking) > 0, isBlockingProcess(blocked, blocking) AND blocked != blocking
     FILTERGROUP nonBlocking FILTER 'Только не блокирующие' sumBlockedProcess(blocked) == 0 OR isDeadlockProcess(blocked) DEFAULT 
     ORDER BY sumBlockingProcess(blocked) DESC, sumBlockingProcess(blocking) DESC
     
-    PROPERTIES() captionProcessType, updateProcessMonitorAction
+    PROPERTIES() readAllocatedBytes, captionProcessType, updateProcessMonitorAction
 ;
 
 DESIGN processMonitor {
@@ -218,6 +236,7 @@ DESIGN processMonitor {
     NEW bottom {
         type = CONTAINERH;
         align = TRAILING;
+        MOVE PROPERTY(readAllocatedBytes());
         MOVE PROPERTY(captionProcessType());
         MOVE PROPERTY(updateProcessMonitorAction());
     }

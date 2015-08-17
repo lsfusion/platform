@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.IntegerClass;
+import lsfusion.server.classes.LongClass;
 import lsfusion.server.classes.StringClass;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.OperationOwner;
@@ -36,6 +37,7 @@ import lsfusion.server.logics.property.SessionDataProperty;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SingleKeyTableUsage;
 import lsfusion.server.stack.ExecutionStackAspect;
@@ -43,6 +45,7 @@ import org.apache.commons.lang.ArrayUtils;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
@@ -60,10 +63,16 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         try {
+            boolean readAllocatedBytes = findProperty("readAllocatedBytes").read(context) != null;
             String processType = trimToEmpty((String) findProperty("nameProcessType").read(context));
             context.getSession().cancel(SetFact.singleton((SessionDataProperty) findProperty("processType").property));
 
-            updateProcessMonitor(context, processType);
+            updateProcessMonitor(context, processType, readAllocatedBytes);
+
+            try (DataSession session = context.createSession()) {
+                findProperty("readAllocatedBytes").change(readAllocatedBytes ? true : null, session);
+                session.apply(context.getBL());
+            }
 
         } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
@@ -71,12 +80,12 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
     }
 
-    protected void updateProcessMonitor(ExecutionContext context, String processType) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
+    protected void updateProcessMonitor(ExecutionContext context, String processType, boolean readAllocatedBytes) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 
         SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
 
-        boolean active = processType.isEmpty() || processType.endsWith("activeAll");
-        boolean activeSQL = processType.endsWith("activeSQL");
+        boolean active = processType.endsWith("activeAll");
+        boolean activeSQL = processType.isEmpty() || processType.endsWith("activeSQL");
         boolean activeJava = processType.endsWith("activeJava");
 
         Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
@@ -84,13 +93,14 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         Map<String, List<Object>> javaProcesses = new HashMap<>();
         Map<String, List<Object>> sqlProcesses = syntaxType == SQLSyntaxType.POSTGRES ?
-                getPostgresProcesses(context, sessionThreadMap, javaProcesses, idSet, active || activeSQL, activeJava)
-                : getMSSQLProcesses(context, sessionThreadMap, javaProcesses, idSet, active || activeSQL, activeJava);
+                getPostgresProcesses(context, sessionThreadMap, javaProcesses, idSet, active || activeSQL, activeJava, readAllocatedBytes)
+                : getMSSQLProcesses(context, sessionThreadMap, javaProcesses, idSet, active || activeSQL, activeJava, readAllocatedBytes);
         if(!activeSQL)
-            javaProcesses.putAll(getJavaProcesses(idSet, active || activeJava));
+            javaProcesses.putAll(getJavaProcesses(idSet, active || activeJava, readAllocatedBytes));
 
         ImOrderSet<LCP> propsJava = getProps(findProperties("idThreadProcess", "stackTraceJavaProcess", "nameJavaProcess", "statusJavaProcess",
-                "lockNameJavaProcess", "lockOwnerIdProcess", "lockOwnerNameProcess", "nameComputerJavaProcess", "nameUserJavaProcess", "lsfStackTraceProcess"));
+                "lockNameJavaProcess", "lockOwnerIdProcess", "lockOwnerNameProcess", "nameComputerJavaProcess", "nameUserJavaProcess", "lsfStackTraceProcess",
+                "threadAllocatedBytesProcess"));
 
         ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess", "querySQLProcess", "addressUserSQLProcess", "dateTimeSQLProcess",
                 "isActiveSQLProcess", "inTransactionSQLProcess", "computerProcess", "userProcess", "lockOwnerIdProcess", "lockOwnerNameProcess",
@@ -150,6 +160,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             case "lsfStackTraceProcess":
                 String lsfStackTrace = (String) javaProcess.get(8);
                 return lsfStackTrace == null ? NullValue.instance : new DataObject(lsfStackTrace);
+            case "threadAllocatedBytesProcess":
+                Long threadAllocatedBytes = (Long) javaProcess.get(9);
+                return threadAllocatedBytes == null ? NullValue.instance : new DataObject(threadAllocatedBytes, LongClass.instance);
             default:
                 return NullValue.instance;
         }
@@ -247,7 +260,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     }
 
     private Map<String, List<Object>> getMSSQLProcesses(ExecutionContext context, Map<Integer, List<Object>> sessionThreadMap,
-                                                        Map<String, List<Object>> javaProcesses, List<Long> idSet, boolean onlyActive, boolean onlyJava)
+                                                        Map<String, List<Object>> javaProcesses, List<Long> idSet, boolean onlyActive, boolean onlyJava, boolean readAllocatedBytes)
             throws SQLException, SQLHandledException {
         String originalQuery = "Select A.session_id,B.start_time, A.[host_name], A.[login_name], C.client_net_address, text\n" +
                 "from sys.dm_exec_sessions A\n" +
@@ -313,7 +326,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 if(pid != null && idSet.contains((long) pid)){
                     skip = false;
                     idSet.remove((long) pid);
-                    List<Object> threadInfo = getThreadInfo(pid, onlyActive, false);
+                    List<Object> threadInfo = getThreadInfo(pid, onlyActive, false, readAllocatedBytes);
                     if(threadInfo != null)
                         javaProcesses.put(String.valueOf(pid), threadInfo);
                 }
@@ -326,7 +339,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     }
 
     private Map<String, List<Object>> getPostgresProcesses(ExecutionContext context, Map<Integer, List<Object>> sessionThreadMap,
-                                                           Map<String, List<Object>> javaProcesses, List<Long> idSet, boolean onlyActive, boolean onlyJava)
+                                                           Map<String, List<Object>> javaProcesses, List<Long> idSet, boolean onlyActive, boolean onlyJava, boolean readAllocatedBytes)
             throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
         Map<Integer, List<Object>> lockingMap = getPostgresLockMap(context);
 
@@ -390,7 +403,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 boolean skip = onlyJava;
                 if(pid != null && idSet.contains((long) pid)){
                     idSet.remove(new Long(pid));
-                    List<Object> threadInfo = getThreadInfo(pid, true, false);
+                    List<Object> threadInfo = getThreadInfo(pid, true, false, readAllocatedBytes);
                     if(threadInfo != null) {
                         javaProcesses.put(String.valueOf(pid), threadInfo);
                         skip = false;
@@ -472,10 +485,10 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         return sessionThread != null && sessionThread.get(0) != null ? String.valueOf(sessionThread.get(0)) : ("s" + processId);
     }
 
-    private Map<String, List<Object>> getJavaProcesses(List<Long> idSet, boolean onlyActive) {
+    private Map<String, List<Object>> getJavaProcesses(List<Long> idSet, boolean onlyActive, boolean readAllocatedBytes) {
         Map<String, List<Object>> resultMap = new HashMap<>();
         for(Long pid : idSet) {
-            List<Object> threadInfo = getThreadInfo(pid, onlyActive, true);
+            List<Object> threadInfo = getThreadInfo(pid, onlyActive, true, readAllocatedBytes);
             if(threadInfo != null) {
                     resultMap.put(String.valueOf(pid), threadInfo);
             }
@@ -483,8 +496,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         return resultMap;
     }
 
-    private List<Object> getThreadInfo(long id, boolean onlyActive, boolean checkStackTrace) {
-        ThreadInfo threadInfo = ManagementFactory.getThreadMXBean().getThreadInfo(id);
+    private List<Object> getThreadInfo(long id, boolean onlyActive, boolean checkStackTrace, boolean readAllocatedBytes) {
+        ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
+        ThreadInfo threadInfo = tBean.getThreadInfo(id, Integer.MAX_VALUE);
         if(threadInfo == null) return null;
 
         Thread thread = getThreadById((int) id);
@@ -498,9 +512,10 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         String computer = logInfo == null ? null : logInfo.hostnameComputer;
         String user = logInfo == null ? null : logInfo.userName;
         String lsfStack = getLSFStack(thread);
+        Long allocatedBytes = getThreadAllocatedBytes(tBean, readAllocatedBytes, id);
 
         return !onlyActive || isActiveJavaProcess(status, stackTrace, checkStackTrace) ? Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId,
-                lockOwnerName, computer, user, lsfStack) : null;
+                lockOwnerName, computer, user, lsfStack, allocatedBytes) : null;
     }
 
     private boolean isActiveJavaProcess(String status, String stackTrace, boolean checkStackTrace) {
@@ -540,6 +555,14 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         }
         String result = sb.toString();
         return result.isEmpty() ? null : result;
+    }
+
+    private Long getThreadAllocatedBytes(ThreadMXBean tBean, boolean readAllocatedBytes, long id) {
+        Long allocatedBytes = null;
+        if (readAllocatedBytes && tBean instanceof com.sun.management.ThreadMXBean) {
+            allocatedBytes = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(id);
+        }
+        return allocatedBytes;
     }
 
     protected String trim(String input, Integer length) {
