@@ -14,22 +14,24 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
 public class CheckAggregationsTask extends GroupPropertiesSingleTask{
     public List<String> messages = new ArrayList<>();
+    private Set<AggregateProperty> notRecalculateSet;
 
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
         this.messages = new ArrayList<>();
+        notRecalculateSet = context.getBL().getNotRecalculateAggregateStoredProperties();
         setBL(context.getBL());
-        initTasks();
         setDependencies(new HashSet<PublicTask>());
     }
 
     @Override
     protected void runTask(final Object property) throws RecognitionException {
-        if (property instanceof AggregateProperty) {
+        if (property instanceof AggregateProperty && !notRecalculateSet.contains(property)) {
             try (DataSession session = getDbManager().createSession()) {
                 long start = System.currentTimeMillis();
                 String result = ((AggregateProperty) property).checkAggregation(session.sql, session.env, getBL().LM.baseClass);
@@ -45,7 +47,7 @@ public class CheckAggregationsTask extends GroupPropertiesSingleTask{
 
     @Override
     protected List getElements() {
-        return getBL().getAggregateStoredProperties();
+        return getBL().getAggregateStoredProperties(false);
     }
 
     @Override

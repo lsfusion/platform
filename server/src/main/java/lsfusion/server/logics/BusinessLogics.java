@@ -1159,13 +1159,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return getAggregateStoredProperties(true);
     }
 
-    List<AggregateProperty> getAggregateStoredProperties(boolean filterRecalculate) {
+    public List<AggregateProperty> getAggregateStoredProperties(boolean filterRecalculate) {
         List<AggregateProperty> result = new ArrayList<>();
         try (final DataSession dataSession = getDbManager().createSession()) {
             for (Property property : getStoredProperties())
                 if (property instanceof AggregateProperty) {
                     boolean recalculate = !filterRecalculate || reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) == null;
                     if(recalculate)
+                        result.add((AggregateProperty) property);
+                }
+        } catch (SQLException | SQLHandledException e) {
+            serviceLogger.info(e.getMessage());
+        }
+        return result;
+    }
+
+    public Set<AggregateProperty> getNotRecalculateAggregateStoredProperties() {
+        Set<AggregateProperty> result = new HashSet<>();
+        try (final DataSession dataSession = getDbManager().createSession()) {
+            for (Property property : getStoredProperties())
+                if (property instanceof AggregateProperty) {
+                    boolean notRecalculate = reflectionLM.notRecalculateTableColumn.read(dataSession, reflectionLM.tableColumnSID.readClasses(dataSession, new DataObject(property.getDBName()))) != null;
+                    if(notRecalculate)
                         result.add((AggregateProperty) property);
                 }
         } catch (SQLException | SQLHandledException e) {

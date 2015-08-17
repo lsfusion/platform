@@ -18,18 +18,21 @@ import org.antlr.runtime.RecognitionException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
 
+    private Set<AggregateProperty> notRecalculateSet;
+
     public void init(BusinessLogics BL) {
         setBL(BL);
-        initTasks();
+        notRecalculateSet = BL.getNotRecalculateAggregateStoredProperties();
         setDependencies(new HashSet<PublicTask>());
     }
 
     @Override
     protected void runTask(final Object property) throws RecognitionException {
-        if (property instanceof AggregateProperty) {
+        if (property instanceof AggregateProperty && !notRecalculateSet.contains(property)) {
             try (DataSession session = getDbManager().createSession()) {
                 DBManager.run(session.sql, true, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
@@ -49,7 +52,7 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
 
     @Override
     protected List getElements() {
-        return getBL().getAggregateStoredProperties();
+        return getBL().getAggregateStoredProperties(false);
     }
 
     @Override

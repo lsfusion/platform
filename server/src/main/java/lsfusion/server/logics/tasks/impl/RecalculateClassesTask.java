@@ -9,6 +9,7 @@ import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.TableOwner;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.DBManager;
+import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.table.ImplementTable;
@@ -21,6 +22,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
@@ -29,11 +31,12 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
     boolean singleTransaction;
     boolean exclusiveness = false;
     private final Object lock = new Object();
+    private Set<AggregateProperty> notRecalculateSet;
 
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
         this.singleTransaction = context.getBL().serviceLM.singleTransaction.read(context) != null;
+        notRecalculateSet = context.getBL().getNotRecalculateAggregateStoredProperties();
         setBL(context.getBL());
-        initTasks();
         setDependencies(new HashSet<PublicTask>());
     }
 
@@ -68,7 +71,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
                 long time = System.currentTimeMillis() - start;
                 serviceLogger.info(String.format("Pack table: %s, %sms", element, time));
 
-            } else if (element instanceof CalcProperty) {
+            } else if (element instanceof CalcProperty && !notRecalculateSet.contains(element)) {
                 DBManager.run(session.sql, !singleTransaction, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         serviceLogger.info(String.format("Recalculate Class: %s", ((CalcProperty) element).getSID()));

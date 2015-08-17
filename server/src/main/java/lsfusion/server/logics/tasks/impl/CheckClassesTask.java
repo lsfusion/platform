@@ -3,6 +3,7 @@ package lsfusion.server.logics.tasks.impl;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.table.ImplementTable;
@@ -15,6 +16,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
@@ -22,11 +24,12 @@ public class CheckClassesTask extends GroupPropertiesSingleTask{
     Boolean firstCheck = false;
     private final Object lock = new Object();
     public List<String> messages = new ArrayList<>();
+    private Set<AggregateProperty> notRecalculateSet;
 
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
-        this.messages = new ArrayList<>();
+        messages = new ArrayList<>();
+        notRecalculateSet = context.getBL().getNotRecalculateAggregateStoredProperties();
         setBL(context.getBL());
-        initTasks();
         setDependencies(new HashSet<PublicTask>());
     }
 
@@ -47,7 +50,7 @@ public class CheckClassesTask extends GroupPropertiesSingleTask{
                     messages.add(result);
                 long time = System.currentTimeMillis() - start;
                 serviceLogger.info(String.format("Check Table Classes: %s, %sms", ((ImplementTable) property).getName(), time));
-            } else if(property instanceof CalcProperty) {
+            } else if(property instanceof CalcProperty && !notRecalculateSet.contains(property)) {
                 String result = DataSession.checkClasses((CalcProperty) property, session.sql, session.env, getBL().LM.baseClass);
                 if(result != null && !result.isEmpty())
                     messages.add(result);

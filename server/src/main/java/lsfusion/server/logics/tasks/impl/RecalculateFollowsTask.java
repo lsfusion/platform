@@ -27,7 +27,6 @@ public class RecalculateFollowsTask extends GroupPropertiesSingleTask {
         this.context = context;
         this.singleTransaction = context.getBL().serviceLM.singleTransaction.read(context) != null;
         setBL(context.getBL());
-        initTasks();
         setDependencies(new HashSet<PublicTask>());
     }
 

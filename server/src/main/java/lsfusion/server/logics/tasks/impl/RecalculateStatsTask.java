@@ -34,7 +34,6 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask {
 
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
         setBL(context.getBL());
-        initTasks();
         setDependencies(new HashSet<PublicTask>());
     }
 
