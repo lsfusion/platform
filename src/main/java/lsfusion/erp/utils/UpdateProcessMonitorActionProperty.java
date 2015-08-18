@@ -41,7 +41,6 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.SingleKeyTableUsage;
 import lsfusion.server.stack.ExecutionStackAspect;
-import org.apache.commons.lang.ArrayUtils;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -89,7 +88,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         boolean activeJava = processType.endsWith("activeJava");
 
         Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
-        List<Long> idSet = new ArrayList(Arrays.asList(ArrayUtils.toObject(ManagementFactory.getThreadMXBean().getAllThreadIds())));
+        List<Long> idSet = new ArrayList<>();
 
         Map<String, List<Object>> javaProcesses = new HashMap<>();
         Map<String, List<Object>> sqlProcesses = syntaxType == SQLSyntaxType.POSTGRES ?
@@ -323,12 +322,13 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 Integer pid = sessionThread == null ? null : (Integer) sessionThread.get(0);
                 boolean baseInTransaction = sessionThread != null && (boolean) sessionThread.get(1);
                 boolean skip = onlyJava;
-                if(pid != null && idSet.contains((long) pid)){
-                    skip = false;
-                    idSet.remove((long) pid);
+                if(pid != null){
                     List<Object> threadInfo = getThreadInfo(pid, onlyActive, false, readAllocatedBytes);
-                    if(threadInfo != null)
+                    if(threadInfo != null) {
                         javaProcesses.put(String.valueOf(pid), threadInfo);
+                        idSet.add((long) pid);
+                        skip = false;
+                    }
                 }
                 if (!skip)
                     resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, fullQuery, null/*userActiveTask*/, null,
@@ -401,8 +401,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 String lockOwnerName = lockingProcess == null ? null : (String) lockingProcess.get(1);
 
                 boolean skip = onlyJava;
-                if(pid != null && idSet.contains((long) pid)){
-                    idSet.remove(new Long(pid));
+                if(pid != null){
+                    idSet.add((long) pid);
                     List<Object> threadInfo = getThreadInfo(pid, true, false, readAllocatedBytes);
                     if(threadInfo != null) {
                         javaProcesses.put(String.valueOf(pid), threadInfo);
@@ -487,9 +487,12 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
     private Map<String, List<Object>> getJavaProcesses(List<Long> idSet, boolean onlyActive, boolean readAllocatedBytes) {
         Map<String, List<Object>> resultMap = new HashMap<>();
-        for(Long pid : idSet) {
-            List<Object> threadInfo = getThreadInfo(pid, onlyActive, true, readAllocatedBytes);
-            if(threadInfo != null) {
+        ThreadInfo[] threadInfoList = ManagementFactory.getThreadMXBean().dumpAllThreads(true, false);
+        for (ThreadInfo thread : threadInfoList) {
+            long pid = thread.getThreadId();
+            if (!idSet.contains(pid)) {
+                List<Object> threadInfo = getThreadInfo(pid, onlyActive, true, readAllocatedBytes);
+                if (threadInfo != null)
                     resultMap.put(String.valueOf(pid), threadInfo);
             }
         }
@@ -519,7 +522,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     }
 
     private boolean isActiveJavaProcess(String status, String stackTrace, boolean checkStackTrace) {
-        return status != null && status.equals("RUNNABLE") && !checkStackTrace || (stackTrace != null
+        return status != null && status.equals("RUNNABLE") && (!checkStackTrace || (stackTrace != null
                 && !stackTrace.startsWith("java.net.DualStackPlainSocketImpl")
                 && !stackTrace.startsWith("sun.awt.windows.WToolkit.eventLoop")
                 && !stackTrace.startsWith("java.net.SocketInputStream.socketRead0")
@@ -527,7 +530,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 && !stackTrace.startsWith("java.net.SocketOutputStream.socketWrite")
                 && !stackTrace.startsWith("java.net.PlainSocketImpl")
                 && !stackTrace.startsWith("java.io.FileInputStream.readBytes")
-                && !stackTrace.startsWith("java.lang.UNIXProcess.waitForProcessExit"));
+                && !stackTrace.startsWith("java.lang.UNIXProcess.waitForProcessExit"))
+                && !stackTrace.contains("UpdateProcessMonitor"));
     }
 
     private Thread getThreadById(int id) {
