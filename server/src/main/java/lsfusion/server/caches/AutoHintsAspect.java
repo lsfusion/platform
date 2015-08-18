@@ -44,6 +44,26 @@ public class AutoHintsAspect {
     public static ThreadLocal<SessionModifier> catchAutoHint = new ThreadLocal<SessionModifier>();
     public static ThreadLocal<Boolean> catchNotFirst = new ThreadLocal<Boolean>();
 
+    public static ThreadLocal<Integer> catchDisabledRepeat = new ThreadLocal<>();
+    public static void pushDisabledRepeat() {
+        Integer prev = catchDisabledRepeat.get();
+        if(prev == null)
+            prev = 0;
+        catchDisabledRepeat.set(prev + 1);
+    }
+    private static boolean isDisabledRepeat() {
+        Integer disabled = catchDisabledRepeat.get();
+        return disabled != null && disabled > 0;
+    }
+    public static void popDisabledRepeat() {
+        int prev = catchDisabledRepeat.get();
+        assert prev > 0;
+        if(prev == 1)
+            catchDisabledRepeat.remove();
+        else
+            catchDisabledRepeat.set(prev - 1);
+    }
+
     // limitHints - тоже надо включать
     public static class AutoHintImplement<P extends PropertyInterface> extends AbstractInnerContext<AutoHintImplement<P>> {
         private final PropertyChanges usedChanges;
@@ -125,7 +145,7 @@ public class AutoHintsAspect {
 
             Result<Hint> resultHint = new Result<Hint>();
             Object result = proceedCached(thisJoinPoint, property, joinImplement, sessionModifier, resultHint);
-            if(result!=null)
+            if(result!=null || isDisabledRepeat())
                 return result;
 
             resultHint.result.resolve(sessionModifier);

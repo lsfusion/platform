@@ -16,7 +16,7 @@ public interface Updated {
     boolean classUpdated(ImSet<GroupObjectInstance> gridGroups);
     // изменилось что-то использующее в getExpr конкретные value (один из верхних объектов)
     boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups);
-    boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) throws SQLException, SQLHandledException;
+    boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden) throws SQLException, SQLHandledException;
     
     void fillProperties(MSet<CalcProperty> properties);
 

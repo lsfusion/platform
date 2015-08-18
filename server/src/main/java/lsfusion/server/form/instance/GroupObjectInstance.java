@@ -663,7 +663,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
 
         if (!updateFilters) // изменились данные по фильтрам
             for (FilterInstance filt : filters)
-                if (filt.dataUpdated(changedProps.result, reallyChanged, modifier)) {
+                if (filt.dataUpdated(changedProps.result, reallyChanged, modifier, hidden)) {
                     updateFilters = true;
                     break;
                 }
@@ -721,7 +721,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 }
         if (!updateOrders && (!updateFilters || orderProperty!=null)) // изменились данные по порядкам
             for (OrderInstance order : orders.keyIt())
-                if (order.dataUpdated(changedProps.result, reallyChanged, modifier)) {
+                if (order.dataUpdated(changedProps.result, reallyChanged, modifier, hidden)) {
                     updateOrders = true;
                     break;
                 }

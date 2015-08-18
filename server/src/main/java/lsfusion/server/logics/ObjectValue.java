@@ -77,7 +77,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractValu
     
     public boolean classUpdated(ImSet<GroupObjectInstance> gridGroups) {return false;}
     public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) {return false;}
-    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) {return false;}
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden) {return false;}
     public void fillProperties(MSet<CalcProperty> properties) {}
     public boolean isInInterface(GroupObjectInstance classGroup) {return true;}
 

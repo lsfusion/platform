@@ -1435,4 +1435,14 @@ public class Settings {
     public void setSaleInvoiceDetailLog(boolean saleInvoiceDetailLog) {
         this.saleInvoiceDetailLog = saleInvoiceDetailLog;
     }
+
+    private boolean disableHiddenHintReallyChanged = true;
+
+    public boolean isDisableHiddenHintReallyChanged() {
+        return disableHiddenHintReallyChanged;
+    }
+
+    public void setDisableHiddenHintReallyChanged(boolean disableHiddenHintReallyChanged) {
+        this.disableHiddenHintReallyChanged = disableHiddenHintReallyChanged;
+    }
 }

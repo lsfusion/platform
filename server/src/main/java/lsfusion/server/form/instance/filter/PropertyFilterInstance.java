@@ -45,8 +45,8 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         return property.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) throws SQLException, SQLHandledException {
-        return property.dataUpdated(changedProps, reallyChanged, modifier);
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden) throws SQLException, SQLHandledException {
+        return property.dataUpdated(changedProps, reallyChanged, modifier, hidden);
     }
 
     public void fillProperties(MSet<CalcProperty> properties) {

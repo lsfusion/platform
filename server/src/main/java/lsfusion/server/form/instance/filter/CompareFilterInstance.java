@@ -63,8 +63,8 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     @Override
-    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) throws SQLException, SQLHandledException {
-        return super.dataUpdated(changedProps, reallyChanged, modifier) || value.dataUpdated(changedProps, reallyChanged, modifier);
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden) throws SQLException, SQLHandledException {
+        return super.dataUpdated(changedProps, reallyChanged, modifier, hidden) || value.dataUpdated(changedProps, reallyChanged, modifier, hidden);
     }
 
     @Override

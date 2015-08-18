@@ -1422,8 +1422,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return updated.objectUpdated(groupObjects);
     }
 
-    private boolean propertyUpdated(CalcPropertyObjectInstance updated, ImSet<GroupObjectInstance> groupObjects, ChangedData changedProps) throws SQLException, SQLHandledException {
-        return dataUpdated(updated, changedProps)
+    private boolean propertyUpdated(CalcPropertyObjectInstance updated, ImSet<GroupObjectInstance> groupObjects, ChangedData changedProps, boolean hidden) throws SQLException, SQLHandledException {
+        return dataUpdated(updated, changedProps, hidden)
                 || groupUpdated(groupObjects, UPDATED_KEYS)
                 || objectUpdated(updated, groupObjects);
     }
@@ -1435,8 +1435,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return false;
     }
 
-    private boolean dataUpdated(Updated updated, ChangedData changedProps) throws SQLException, SQLHandledException {
-        return updated.dataUpdated(changedProps, this, getModifier());
+    private boolean dataUpdated(Updated updated, ChangedData changedProps, boolean hidden) throws SQLException, SQLHandledException {
+        return updated.dataUpdated(changedProps, this, getModifier(), hidden);
     }
 
     void applyFilters() {
@@ -1628,7 +1628,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                                    || !newInInterface.equals(oldInInterface) // если изменилось представление
                                    || (!hidden && pendingHidden.contains(showIfReader)) // если стал видим, но не читался
                                    || groupUpdated(drawProperty.getColumnGroupObjects(), UPDATED_CLASSVIEW) // изменились группы в колонки (так как отбираются только GRID)
-                                   || propertyUpdated(drawProperty.propertyShowIf, propRowColumnGrids, changedProps); //изменился propertyShowIf
+                                   || propertyUpdated(drawProperty.propertyShowIf, propRowColumnGrids, changedProps, hidden); //изменился propertyShowIf
                     if (read) {
                         mShowIfs.exclAdd(showIfReader, propRowColumnGrids);
                         if(hidden)
@@ -1700,7 +1700,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             for (int i = 0; i < containerShowIfCount; ++i) {
                 ContainerView container = containerShowIfs.getKey(i);
                 CalcPropertyObjectInstance<?> showIf = containerShowIfs.getValue(i);
-                if (propertyUpdated(showIf, groupObjectKeys, changedProps)) {
+                if (propertyUpdated(showIf, groupObjectKeys, changedProps, false)) {
                     changedContainersShowIfs.exclAdd(container);
                 }
             }
@@ -1743,7 +1743,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                 boolean hidden = isTabHidden(drawProperty, newPropIsShown);
 
                 // расширенный fillChangedReader, но есть часть специфики, поэтому дублируется
-                if (read || (!hidden && pendingHidden.contains(drawProperty)) || propertyUpdated(drawProperty.getDrawInstance(), propRowGrids, changedProps)) {
+                if (read || (!hidden && pendingHidden.contains(drawProperty)) || propertyUpdated(drawProperty.getDrawInstance(), propRowGrids, changedProps, hidden)) {
                     if (hidden) { // если спрятан
                         if (read) { // все равно надо отослать клиенту, так как влияет на наличие вкладки, но с "hidden" значениями
                             mReadProperties.exclAdd(drawProperty.hiddenReader, propRowGrids);
@@ -1785,14 +1785,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         for (GroupObjectInstance group : getGroups()) {
+            boolean groupHidden = isHidden(group);
             if (group.propertyBackground != null) {
                 ImSet<GroupObjectInstance> gridGroups = (group.curClassView == GRID ? SetFact.singleton(group) : SetFact.<GroupObjectInstance>EMPTY());
-                if (refresh || (group.updated & UPDATED_CLASSVIEW) != 0 || propertyUpdated(group.propertyBackground, gridGroups, changedProps))
+                if (refresh || (group.updated & UPDATED_CLASSVIEW) != 0 || propertyUpdated(group.propertyBackground, gridGroups, changedProps, groupHidden))
                     mReadProperties.exclAdd(group.rowBackgroundReader, gridGroups);
             }
             if (group.propertyForeground != null) {
                 ImSet<GroupObjectInstance> gridGroups = (group.curClassView == GRID ? SetFact.singleton(group) : SetFact.<GroupObjectInstance>EMPTY());
-                if (refresh || (group.updated & UPDATED_CLASSVIEW) != 0 || propertyUpdated(group.propertyForeground, gridGroups, changedProps))
+                if (refresh || (group.updated & UPDATED_CLASSVIEW) != 0 || propertyUpdated(group.propertyForeground, gridGroups, changedProps, groupHidden))
                     mReadProperties.exclAdd(group.rowForegroundReader, gridGroups);
             }
         }
@@ -1807,7 +1808,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
                                    ImSet<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean read,
                                    MOrderExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> readProperties,
                                    ChangedData changedProps) throws SQLException, SQLHandledException {
-        if (drawProperty != null && (read || (!hidden && pendingHidden.contains(propertyReader)) || propertyUpdated(drawProperty, columnGroupGrids, changedProps))) {
+        if (drawProperty != null && (read || (!hidden && pendingHidden.contains(propertyReader)) || propertyUpdated(drawProperty, columnGroupGrids, changedProps, hidden))) {
             if (hidden)
                 pendingHidden.add(propertyReader);
             else {

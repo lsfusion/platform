@@ -5,6 +5,8 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetExValue;
+import lsfusion.server.Settings;
+import lsfusion.server.caches.AutoHintsAspect;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -70,13 +72,24 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         return expr;
     }
 
-    public boolean isReallyChanged(Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+    public boolean isReallyChanged(boolean hidden, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
         if(reallyChanged.containsChange(this))
             return true;
+
+        boolean disableHint = hidden && Settings.get().isDisableHiddenHintReallyChanged();
             
         ImRevMap<ObjectInstance,KeyExpr> keys = KeyExpr.getMapKeys(getObjectInstances().toSet());
         WhereBuilder changedWhere = new WhereBuilder();
-        getExpr(keys, modifier, changedWhere);
+        if(disableHint) // обработка hint'ов может занять слишком долгое время и если спрятан, это может быть неоправдано
+            AutoHintsAspect.pushDisabledRepeat();
+        try {
+            Expr result = getExpr(keys, modifier, changedWhere);
+            if(result == null)
+                return true;
+        } finally {
+            if(disableHint)
+                AutoHintsAspect.popDisabledRepeat();
+        }
         return !changedWhere.toWhere().isFalse();
     } 
 
@@ -100,7 +113,7 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         properties.add(property);
     }
 
-    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) throws SQLException, SQLHandledException {
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden) throws SQLException, SQLHandledException {
         if(changedProps.externalProps.contains(property))
             return true;
 
@@ -110,6 +123,6 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         if(changedProps.wasRestart)
             return true;
         
-        return isReallyChanged(modifier, reallyChanged); // cache пока не используем так как за многим надо следить
+        return isReallyChanged(hidden, modifier, reallyChanged); // cache пока не используем так как за многим надо следить
     }
 }

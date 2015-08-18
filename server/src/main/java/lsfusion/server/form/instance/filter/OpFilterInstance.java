@@ -41,8 +41,8 @@ public abstract class OpFilterInstance extends FilterInstance {
         return op1.objectUpdated(gridGroups) || op2.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier) throws SQLException, SQLHandledException {
-        return op1.dataUpdated(changedProps, reallyChanged, modifier) || op2.dataUpdated(changedProps, reallyChanged, modifier);
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden) throws SQLException, SQLHandledException {
+        return op1.dataUpdated(changedProps, reallyChanged, modifier, hidden) || op2.dataUpdated(changedProps, reallyChanged, modifier, hidden);
     }
 
     public void fillProperties(MSet<CalcProperty> properties) {
