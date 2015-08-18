@@ -54,7 +54,7 @@ public class WriteActionProperty extends ScriptingActionProperty {
         try {
             if (path != null && !path.isEmpty()) {
                 if (fileBytes != null) {
-                    if (extension != null) {
+                    if (extension != null && !extension.isEmpty()) {
                         path += "." + extension;    
                     }
                     Pattern p = Pattern.compile("(file|ftp):\\/\\/(.*)");
@@ -73,7 +73,8 @@ public class WriteActionProperty extends ScriptingActionProperty {
                             File file = File.createTempFile("downloaded", ".tmp");
                             IOUtils.putFileBytes(file, fileBytes);
                             storeFileToFTP(path, file);
-                            file.delete();
+                            if(!file.delete())
+                                file.deleteOnExit();
                         }
                     } else {
                         throw Throwables.propagate(new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp://username:password@host:port/path_to_file"));

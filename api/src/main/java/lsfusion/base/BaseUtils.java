@@ -2111,6 +2111,13 @@ public class BaseUtils {
         return result;
     }
 
+    public static byte[] mergeFileWithoutExtension(byte[] file) {
+        byte[] result = new byte[1 + file.length];
+        result[0] = (byte) 0;
+        System.arraycopy(file, 0, result, 1, file.length);
+        return result;
+    }
+
     public static byte[] mergeFileAndExtension(byte[] file, byte[] ext) {
         byte[] extBytes = new byte[0];
         if (ext.length != 0) {
