@@ -13,6 +13,8 @@ import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
+import net.sf.jasperreports.engine.fill.JRSwapFileVirtualizer;
+import net.sf.jasperreports.engine.util.JRSwapFile;
 
 import javax.print.attribute.standard.MediaTray;
 import javax.print.attribute.standard.Sides;
@@ -56,7 +58,9 @@ public class ReportGenerator {
 
     public static final Map<String, Sides> SIDES_VALUES = new HashMap<String, Sides>();
     public static final Map<String, MediaTray> TRAY_VALUES = new HashMap<String, MediaTray>();
-
+    
+    public final JRSwapFileVirtualizer virtualizer;  
+    
     static {
         SIDES_VALUES.put("one-sided", Sides.ONE_SIDED);
         SIDES_VALUES.put("two-sided-long-edge", Sides.TWO_SIDED_LONG_EDGE);
@@ -85,6 +89,9 @@ public class ReportGenerator {
 
     public ReportGenerator(ReportGenerationData generationData) {
         this.generationData = generationData;
+        // Числовые значения 2048 и 1024 взяты из примеров, 40 было выбрано в результате тестирования
+        this.virtualizer = new JRSwapFileVirtualizer(40, new JRSwapFile(System.getProperty("java.io.tmpdir"), 2048, 1024));
+        JRVirtualizationHelper.setThreadVirtualizer(virtualizer);
     }
 
     public JasperPrint createReport(boolean ignorePagination, Map<ByteArray, String> files) throws ClassNotFoundException, IOException, JRException {
@@ -108,7 +115,7 @@ public class ReportGenerator {
 
         transformDesigns(ignorePagination);
 
-        Pair<Map<String, Object>, JRDataSource> compileParams = prepareReportSources();
+        Pair<Map<String, Object>, JRDataSource> compileParams = prepareReportSources(virtualizer);
 
         JasperReport report = JasperCompileManager.compileReport(designs.get(rootID));
         
@@ -119,10 +126,10 @@ public class ReportGenerator {
         return print;
     }
 
-    private Pair<Map<String, Object>, JRDataSource> prepareReportSources() throws JRException {
-        Map<String, Object> params = new HashMap<String, Object>();
+    private Pair<Map<String, Object>, JRDataSource> prepareReportSources(JRVirtualizer virtualizer) throws JRException {
+        Map<String, Object> params = new HashMap<>();
         for (String childID : hierarchy.get(rootID)) {
-            iterateChildSubreports(childID, params);
+            iterateChildSubreports(childID, params, virtualizer);
         }
 
         ReportRootDataSource rootSource = new ReportRootDataSource();
@@ -143,7 +150,7 @@ public class ReportGenerator {
         return propName;
     }
 
-    private ReportDependentDataSource iterateChildSubreports(String parentID, Map<String, Object> params) throws JRException {
+    private ReportDependentDataSource iterateChildSubreports(String parentID, Map<String, Object> params, JRVirtualizer virtualizer) throws JRException {
         Map<String, Object> localParams = new HashMap<String, Object>();
         List<ReportDependentDataSource> childSources = new ArrayList<ReportDependentDataSource>();
 
@@ -151,13 +158,15 @@ public class ReportGenerator {
         ReportDependentDataSource source = new ReportDependentDataSource(data.get(parentID), childSources, repeatCountPropName);
 
         for (String childID : hierarchy.get(parentID)) {
-            ReportDependentDataSource childSource = iterateChildSubreports(childID, localParams);
+            ReportDependentDataSource childSource = iterateChildSubreports(childID, localParams, virtualizer);
             childSources.add(childSource);
         }
 
         params.put(parentID + ReportConstants.reportSuffix, JasperCompileManager.compileReport(designs.get(parentID)));
         params.put(parentID + ReportConstants.sourceSuffix, source);
         params.put(parentID + ReportConstants.paramsSuffix, localParams);
+        params.put(JRParameter.REPORT_VIRTUALIZER, virtualizer);
+
         return source;
     }
 
@@ -468,6 +477,7 @@ public class ReportGenerator {
             FileInputStream fis = new FileInputStream(tempFile);
             byte[] array = new byte[(int) tempFile.length()];
             fis.read(array);
+            JRVirtualizationHelper.clearThreadVirtualizer();
             return array;
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при экспорте в Excel", e);
