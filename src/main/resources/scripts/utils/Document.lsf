@@ -541,8 +541,8 @@ META defineDocumentInterfaceHeaderNumber(objectClass)
 END
 
 META defineDocumentDetailNumber (object, detailClass)
-    number##detailClass 'Номер' (d) = number###object(object##detailClass(d));
-    series##detailClass 'Серия' (d) = series###object(object##detailClass(d));
+    number##detailClass 'Номер' (d) = number###object(object##detailClass(d)) IN recognize;
+    series##detailClass 'Серия' (d) = series###object(object##detailClass(d)) IN recognize;
     seriesNumber##detailClass 'Серия/номер' (d) = seriesNumber###object(object##detailClass(d));
 END
 
