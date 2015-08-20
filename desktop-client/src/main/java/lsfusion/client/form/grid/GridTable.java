@@ -93,6 +93,7 @@ public class GridTable extends ClientPropertyTable {
 
     private int viewMoveInterval = 0;
 
+    private boolean calledChangeGroupObject = false;
     protected int oldRowScrollTop;
     private int scrollToIndex = -1;
     private int selectIndex = -1;
@@ -432,6 +433,7 @@ public class GridTable extends ClientPropertyTable {
     private void changeCurrentObject(ClientGroupObjectValue selectedObject) {
         if (currentObject.equals(selectedObject)) {
             try {
+                calledChangeGroupObject = true;
                 form.changeGroupObject(groupObject, selectedObject);
             } catch (IOException ioe) {
                 throw new RuntimeException(getString("errors.error.changing.current.object"), ioe);
@@ -634,7 +636,8 @@ public class GridTable extends ClientPropertyTable {
             viewMoveInterval = newIndex - oldIndex;
         }
         scrollToIndex = newIndex;
-        selectIndex = newCurrentObject != null ? irowKeys.indexOf(newCurrentObject) : newIndex;
+        // игнорируем newCurrentObject при вызове changeCurrentObject() для избежания конфликтов (асинхронный запрос) 
+        selectIndex = !calledChangeGroupObject && newCurrentObject != null ? irowKeys.indexOf(newCurrentObject) : newIndex;
 
         rowKeys = irowKeys;
 
@@ -646,6 +649,8 @@ public class GridTable extends ClientPropertyTable {
             selectionController.resetSelection();
             updateSelectionInfo();
         }
+        
+        calledChangeGroupObject = false;
     }
 
     public void modifyGroupObject(ClientGroupObjectValue rowKey, boolean add) {
