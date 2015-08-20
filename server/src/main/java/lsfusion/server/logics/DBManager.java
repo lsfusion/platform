@@ -1078,6 +1078,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             } catch (Throwable t) {
                 session.rollbackTransaction();
                 if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
+                    serviceLogger.error("Run error: ", t);
                     run(session, runInTransaction, run, attempts + 1);
                     return;
                 }

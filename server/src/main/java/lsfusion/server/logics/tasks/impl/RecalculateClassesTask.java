@@ -47,7 +47,11 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
             if (!exclusiveness) {
                 synchronized (lock) {
                     exclusiveness = true;
+                    serviceLogger.info("Recalculate Exclusiveness");
+                    long start = System.currentTimeMillis();
                     getBL().recalculateExclusiveness(session.sql, !singleTransaction);
+                    long time = System.currentTimeMillis() - start;
+                    serviceLogger.info(String.format("Recalculate Exclusiveness, %sms", time));
                 }
             } else if (element instanceof ImplementTable) {
                 DBManager.run(session.sql, !singleTransaction, new DBManager.RunService() {
