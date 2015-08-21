@@ -2,6 +2,7 @@ package lsfusion.erp.utils.printer;
 
 import com.google.common.base.Throwables;
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -38,12 +39,13 @@ public class WriteToPrinterActionProperty extends ScriptingActionProperty {
             String printerName = (String) context.getDataKeyValue(printerNameInterface).object;
 
             String result = (String) context.requestUserInteraction(new WriteToPrinterClientAction(text, charset, printerName));
-            findProperty("printed").change(result == null ? true : null, context);
+            findProperty("printed").change(result == null ? true : (Object) null, context);
             if (result != null)
                 context.requestUserInteraction(new MessageClientAction(result, "Ошибка"));
         } catch (Exception e) {
+            ServerLoggers.systemLogger.error("WriteToPrinter error", e);
             try {
-                findProperty("printed").change(null, context);
+                findProperty("printed").change((Object) null, context);
             } catch (ScriptingErrorLog.SemanticErrorException ignored) {
             }
             throw Throwables.propagate(e);
