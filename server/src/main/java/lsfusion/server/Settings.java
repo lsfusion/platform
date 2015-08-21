@@ -222,6 +222,8 @@ public class Settings {
 
     private long maxRecalculateTime = 300000;//300000; //5 minutes
 
+    private boolean groupByTables = true; //для recalculate
+
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
     }
@@ -1444,5 +1446,13 @@ public class Settings {
 
     public void setDisableHiddenHintReallyChanged(boolean disableHiddenHintReallyChanged) {
         this.disableHiddenHintReallyChanged = disableHiddenHintReallyChanged;
+    }
+
+    public boolean isGroupByTables() {
+        return groupByTables;
+    }
+
+    public void setGroupByTables(boolean groupByTables) {
+        this.groupByTables = groupByTables;
     }
 }
