@@ -310,4 +310,12 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
             result += subQuery.getLength();
         return result;
     }
+
+    public static int countMatches(String command, String name, ImMap<String, SQLQuery> queries) {
+        int result = StringUtils.countMatches(command, name);
+        for(SQLQuery query : queries.valueIt()) {
+            result += countMatches(query.command, name, query.subQueries);
+        }
+        return result;
+    }
 }

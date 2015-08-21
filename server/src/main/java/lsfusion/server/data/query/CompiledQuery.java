@@ -976,10 +976,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 CompiledQuery<String, String> compiledQuery = new Query<String, String>(keys.addRevExcl(itKeys), props, where).compile(new CompileOptions(syntax, subcontext, recursive && !useRecursionFunction));
                 String fromSelect = compiledQuery.fillSelect(keySelect, propertySelect, whereSelect, innerSubQueries, params, env);
 
-                ImMap<String, SQLQuery> compiledSubQueries = innerSubQueries.result;
-                if(subQueries.result != null)
-                    compiledSubQueries = compiledSubQueries.addExcl(subQueries.result);
-                subQueries.set(compiledSubQueries);
+                subQueries.set(innerSubQueries.result);
                 ExecCost compiledBaseCost = compiledQuery.sql.baseCost;
                 if(baseCost.result != null)
                     compiledBaseCost = compiledBaseCost.or(baseCost.result);
@@ -1147,13 +1144,15 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 SubQueryContext pushContext = subcontext.pushRecursion();// чтобы имена не пересекались
                 
                 Result<ImOrderSet<String>> keyOrder = new Result<ImOrderSet<String>>(); Result<ImOrderSet<String>> propOrder = new Result<ImOrderSet<String>>();
-                Result<ImMap<String, SQLQuery>> subQueries = new Result<ImMap<String, SQLQuery>>();
+                Result<ImMap<String, SQLQuery>> initialSubQueries = new Result<>();
                 Result<ExecCost> baseCost = new Result<ExecCost>();
-                String initialSelect = getSelect(recKeys.result, initialExprs, columnTypes, initialWhere, keyOrder, propOrder, useRecursionFunction, false, innerParams, pushContext, baseCost, subQueries, mSubEnv);
+                String initialSelect = getSelect(recKeys.result, initialExprs, columnTypes, initialWhere, keyOrder, propOrder, useRecursionFunction, false, innerParams, pushContext, baseCost, initialSubQueries, mSubEnv);
                 if(!Settings.get().isDisableCompiledSubQueries())
                     pushContext = pushContext.pushSiblingSubQuery();
-                String stepSelect = getSelect(recKeys.result, stepExprs, columnTypes, stepWhere.and(recWhere), keyOrder, propOrder, useRecursionFunction, true, innerParams, pushContext, baseCost, subQueries, mSubEnv);
+                Result<ImMap<String, SQLQuery>> stepSubQueries = new Result<>();
+                String stepSelect = getSelect(recKeys.result, stepExprs, columnTypes, stepWhere.and(recWhere), keyOrder, propOrder, useRecursionFunction, true, innerParams, pushContext, baseCost, stepSubQueries, mSubEnv);
                 ImOrderSet<String> fieldOrder = keyOrder.result.addOrderExcl(propOrder.result);
+                ImMap<String, SQLQuery> subQueries = stepSubQueries.result.addExcl(initialSubQueries.result);
 
                 ImMap<String, String> keySelect = group.crossValuesRev(recKeys.result);
                 mSubEnv.addVolatileStats();
@@ -1164,14 +1163,14 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     select = getGroupSelect(syntax.getRecursion(types, recName, initialSelect, stepSelect, fieldDeclare, outerParams, mSubEnv),
                             keySelect, propertySelect, SetFact.<String>EMPTY(), havingSelect, SetFact.<String>EMPTY());
                 } else {
-                    if(StringUtils.countMatches(stepSelect, recName) > 1) // почти у всех SQL серверов ограничение что не больше 2-х раз CTE можно использовать
+                    if(SQLQuery.countMatches(stepSelect, recName, subQueries) > 1) // почти у всех SQL серверов ограничение что не больше 2-х раз CTE можно использовать
                         return null;
                     String recursiveWith = "WITH RECURSIVE " + recName + "(" + fieldOrder.toString(",") + ") AS ((" + initialSelect +
                             ") UNION " + (isLogical && cyclePossible?"":"ALL ") + "(" + stepSelect + ")) ";
                     select = recursiveWith + (isLogical ? syntax.getSelect(recName, SQLSession.stringExpr(keySelect, propertySelect), "", "", "", "", "")
                             : getGroupSelect(recName, keySelect, propertySelect, SetFact.<String>EMPTY(), havingSelect, SetFact.<String>EMPTY()));
                 }
-                return getSQLQuery("(" + select + ")", baseCost.result, subQueries.result, mSubEnv, baseInitialWhere, useRecursionFunction);
+                return getSQLQuery("(" + select + ")", baseCost.result, subQueries, mSubEnv, baseInitialWhere, useRecursionFunction);
             }
 
             private SQLQuery getCTESource(boolean wrapExpr) {
