@@ -668,7 +668,7 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     public boolean enabledCTE() {
-        return true;
+        return false;
     }
 
     @Override
