@@ -522,7 +522,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     }
 
     private boolean isActiveJavaProcess(String status, String stackTrace, boolean checkStackTrace) {
-        return status != null && status.equals("RUNNABLE") && (!checkStackTrace || (stackTrace != null
+        return status != null && (status.equals("RUNNABLE") || status.equals("BLOCKED")) && (!checkStackTrace || (stackTrace != null
                 && !stackTrace.startsWith("java.net.DualStackPlainSocketImpl")
                 && !stackTrace.startsWith("sun.awt.windows.WToolkit.eventLoop")
                 && !stackTrace.startsWith("java.net.SocketInputStream.socketRead0")
