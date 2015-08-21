@@ -53,6 +53,7 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
 
     public PreParsedStatement preparseStatement(final boolean parseParams, final ImMap<String, ParseInterface> paramObjects, final SQLSyntax syntax, final boolean isVolatileStats, final ImMap<SQLQuery, MaterializedQuery> materializedQueries, final boolean usedRecursion) {
         final StringBuilder envString = new StringBuilder();
+        final boolean recursionFunction = isRecursionFunction();
 
         ImMap<String, ParsedString> parsedSubQueries = subQueries.mapValues(new GetValue<ParsedString, SQLQuery>() {
             public ParsedString getMapValue(SQLQuery value) {
@@ -61,7 +62,7 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
                     return new ParsedString(matQuery.getParsedString(syntax, envString, usedRecursion));
 
                 ParsedParamString result = value.preparseStatement(parseParams, paramObjects, syntax, isVolatileStats, materializedQueries, usedRecursion).getString(syntax);
-                if(isRecursionFunction())
+                if (recursionFunction)
                     result = result.wrapSubQueryRecursion(syntax);
                 return result;
 
@@ -72,8 +73,12 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
         ImFilterValueMap<String, Type> mvNotSafeTypes = paramObjects.mapFilterValues();
         for(int i=0,size=paramObjects.size();i<size;i++) {
             ParseInterface parseInterface = paramObjects.getValue(i);
-            if(parseInterface.isSafeString() && !(parseParams && parseInterface instanceof TypeObject))
-                mvSafeStrings.mapValue(i, new ParsedString(parseInterface.getString(syntax, envString, usedRecursion)));
+            if(parseInterface.isSafeString() && !(parseParams && parseInterface instanceof TypeObject)) {
+                String string = parseInterface.getString(syntax, envString, usedRecursion);
+                if(recursionFunction)
+                    string = syntax.wrapSubQueryRecursion(string);
+                mvSafeStrings.mapValue(i, new ParsedString(string));
+            }
             if(!parseInterface.isSafeType())
                 mvNotSafeTypes.mapValue(i, parseInterface.getType());
         }
