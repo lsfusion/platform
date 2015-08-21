@@ -13,16 +13,14 @@ import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.table.ImplementTable;
+import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
@@ -32,6 +30,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
     boolean exclusiveness = false;
     private final Object lock = new Object();
     private Set<AggregateProperty> notRecalculateSet;
+    //Map<MapKeysTable, List<CalcProperty>> calcPropertiesMap;
 
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
         this.singleTransaction = context.getBL().serviceLM.singleTransaction.read(context) != null;
@@ -124,7 +123,24 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
     protected List getElements() {
         List elements = new ArrayList();
         elements.addAll(getBL().LM.tableFactory.getImplementTables().toJavaSet());
-        elements.addAll(getBL().getStoredDataProperties(true).toJavaList());
+
+        List<CalcProperty> storedDataPropertiesList = getBL().getStoredDataProperties(true).toJavaList();
+        /*calcPropertiesMap = new HashMap<>();
+        for (CalcProperty property : storedDataPropertiesList) {
+            List<CalcProperty> entry = calcPropertiesMap.get(property.mapTable);
+            if (entry == null)
+                entry = new ArrayList<>();
+            else {
+                int a = 5;
+                a++;
+            }
+            entry.add(property);
+            calcPropertiesMap.put(property.mapTable, entry);
+        }
+        for(Map.Entry<MapKeysTable, List<CalcProperty>> entry : calcPropertiesMap.entrySet()) {
+            java.util.Collections.sort(entry.getValue(), COMPARATOR);
+        }*/
+        elements.addAll(storedDataPropertiesList);
         return elements;
     }
 
@@ -141,12 +157,30 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
 
     @Override
     protected ImSet<Object> getDependElements(Object key) {
+        /*ImSet<Object> depends = SetFact.EMPTY();
+        if(key instanceof CalcProperty) {
+            List<CalcProperty> entry = calcPropertiesMap.get(((CalcProperty) key).mapTable);
+            if(entry != null) {
+                int index = entry.indexOf(key);
+                if(index > 0)
+                    depends.addExcl(entry.get(index - 1));
+            }
+        }
+        return depends;*/
         return SetFact.EMPTY();
     }
 
     @Override
     protected long getTaskComplexity(Object element) {
         return (element instanceof ImplementTable ? ((ImplementTable) element).getStatKeys().rows : element instanceof CalcProperty ?
-                ((CalcProperty) element).mapTable.table.getStatProps().get(((CalcProperty) element).field).notNull :  Stat.MIN).getWeight();
+                ((CalcProperty) element).mapTable.table.getStatProps().get(((CalcProperty) element).field).notNull :  Stat.MAX).getWeight();
     }
+
+    /*private static Comparator<CalcProperty> COMPARATOR = new Comparator<CalcProperty>() {
+        public int compare(CalcProperty c1, CalcProperty c2) {
+            int weight1 = (c1 != null ? c1.mapTable.table.getStatProps().get(c1.field).notNull :  Stat.MIN).getWeight();
+            int weight2 = (c2 != null ? c2.mapTable.table.getStatProps().get(c2.field).notNull :  Stat.MIN).getWeight();
+            return weight1 - weight2;
+        }
+    };*/
 }
