@@ -452,7 +452,7 @@ public class PostgreDataAdapter extends DataAdapter {
     
     @Override
     public String getAnalyze() {
-        return "VACUUM ANALYZE";
+        return "ANALYZE";
     }
 
     @Override
