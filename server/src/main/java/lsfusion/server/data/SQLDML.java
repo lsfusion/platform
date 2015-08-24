@@ -22,6 +22,16 @@ public class SQLDML extends SQLCommand<Result<Integer>> {
             String s = statement.toString();
             if(s.startsWith("UPDATE SaleLedger_saleLedger"))
                 ServerLoggers.exinfoLog("UPDATESALELEDGER : " + s + " " + result);
+            if(s.startsWith("DELETE FROM SaleLedger_saleLedger"))
+                ServerLoggers.exinfoLog("DELETESALELEDGER : " + s + " " + result);
+            if(s.startsWith("INSERT INTO SaleLedger_saleLedger"))
+                ServerLoggers.exinfoLog("INSERTINTOSALELEDGER : " + s + " " + result);
+            if(s.startsWith("UPDATE Sale_invoiceDetail"))
+                ServerLoggers.exinfoLog("UPDATESALEINVOICEDETAIL : " + s + " " + result);
+            if(s.startsWith("DELETE FROM Sale_invoiceDetail"))
+                ServerLoggers.exinfoLog("DELETESALEINVOICEDETAIL : " + s + " " + result);
+            if(s.startsWith("INSERT INTO Sale_invoiceDetail"))
+                ServerLoggers.exinfoLog("INSERTINTOSALEINVOICEDETAIL : " + s + " " + result);
         }
         handler.set(result);
     }
