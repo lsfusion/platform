@@ -8,8 +8,9 @@ deleteBackup 'Удалить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBa
 decimateBackups 'Проредить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
 
 customRestore 'Восстановить таблицы' = ACTION CUSTOM 'lsfusion.erp.utils.backup.CustomRestoreActionProperty' (Backup);
-inCustomRestoreTable 'вкл' = DATA BOOLEAN (Table);
-inCustomRestoreTableColumn 'вкл' = DATA BOOLEAN (TableColumn);
+inCustomRestoreTable 'Вкл' = DATA BOOLEAN (Table);
+restoreObjectsTable 'Восстанавливать удалённые объекты' = DATA BOOLEAN (Table);
+inCustomRestoreTableColumn 'Вкл' = DATA BOOLEAN (TableColumn);
 replaceOnlyNullTableColumn 'Не замещать' = DATA BOOLEAN (TableColumn);
 
 CLASS Backup 'Резервная копия';
@@ -78,7 +79,7 @@ FORM backups 'Резервные копии'
 
 FORM customRestore 'Восстановление данных'
     OBJECTS t = Table
-    PROPERTIES(t) inCustomRestoreTable, sidTable READONLY
+    PROPERTIES(t) inCustomRestoreTable, restoreObjectsTable, sidTable READONLY
     FILTERGROUP active FILTER 'Только включенные' inCustomRestoreTable(t) DEFAULT   
         
     OBJECTS tc=TableColumn

@@ -8,12 +8,14 @@ public class CustomRestoreTable {
     List<String> lcpProperties;
     List<String> keys;
     List<String> classKeys;
+    boolean restoreObjects;
 
-    public CustomRestoreTable() {
+    public CustomRestoreTable(boolean restoreObjects) {
         this.replaceOnlyNullSet = new HashSet<>();
         this.sqlProperties = new ArrayList<>();
         this.lcpProperties = new ArrayList<>();
         this.keys = new ArrayList<>();
         this.classKeys = new ArrayList<>();
+        this.restoreObjects = restoreObjects;
     }
 }
