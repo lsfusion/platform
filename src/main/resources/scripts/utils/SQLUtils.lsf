@@ -161,6 +161,10 @@ showExtraButtons(i) = idSQLProcess(i) AND NOT startsWith(idThreadProcess(i), 's'
 //test2Action = ACTION CUSTOM 'lsfusion.erp.utils.Test2ActionProperty'();
 //test3Action = ACTION CUSTOM 'lsfusion.erp.utils.Test3ActionProperty'();
 //test4Action = ACTION CUSTOM 'lsfusion.erp.utils.Test4ActionProperty'();
+              
+setDefaultProcessType = ACTION () {
+    processType() <- ProcessType.activeSQL;
+}               
                
 FORM processMonitor 'Монитор процессов'
     //PROPERTIES() test1Action, test2Action, test3Action, test4Action
@@ -172,6 +176,7 @@ FORM processMonitor 'Монитор процессов'
                            queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
     FILTERS idThreadProcess(i), statusJavaProcess(i) != 'BLOCKED'
+    EVENTS ON INIT setDefaultProcessType()
     
     TREE blocking i2 = VARSTRING[10] PARENT threadOwnerProcess
     PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlockedProcess,
