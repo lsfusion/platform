@@ -178,8 +178,7 @@ public class EmailReceiver {
 
         Message[] messages = emailFolder.getMessages();
         for (Message message : messages) {
-            if (deleteMessagesAccount)
-                message.setFlag(Flags.Flag.DELETED, true);
+            message.setFlag(Flags.Flag.DELETED, deleteMessagesAccount);
             Timestamp dateTimeSentEmail = getSentDate(message);
             String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
             String idEmail = (dateTimeSentEmail == null ? "" : dateTimeSentEmail.getTime()) + fromAddressEmail;
