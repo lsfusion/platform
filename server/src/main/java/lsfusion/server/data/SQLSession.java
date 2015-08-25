@@ -51,7 +51,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static lsfusion.server.ServerLoggers.sqlHandLogger;
 import static lsfusion.server.ServerLoggers.systemLogger;
 
 public class SQLSession extends MutableClosedObject<OperationOwner> {
@@ -1609,7 +1608,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         }
 
         try {
-            executeDML(new SQLDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", ExecCost.MIN, MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.EMPTY), owner, tableOwner, params.immutable(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0);
+            executeDML(new SQLDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")", ExecCost.MIN, MapFact.<String, SQLQuery>EMPTY(), StaticExecuteEnvironmentImpl.EMPTY, false), owner, tableOwner, params.immutable(), DynamicExecuteEnvironment.DEFAULT, null, PureTime.VOID, 0);
         } catch (SQLHandledException e) {
             throw new UnsupportedOperationException(); // по идее ни deadlock'а, ни update conflict'а, ни timeout'а
         }

@@ -110,7 +110,7 @@ public class ModifyQuery {
                 throw new RuntimeException();
         }
 
-        SQLDML dml = new SQLDML(update, changeCompile.sql.baseCost, changeCompile.sql.subQueries, changeCompile.sql.env);
+        SQLDML dml = new SQLDML(update, changeCompile.sql.baseCost, changeCompile.sql.subQueries, changeCompile.sql.env, changeCompile.sql.recursionFunction);
         return new SQLExecute(dml,changeCompile.getQueryParams(env), changeCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner);
     }
 
@@ -150,7 +150,7 @@ public class ModifyQuery {
                 throw new UnsupportedOperationException();
         }
 
-        SQLDML dml = new SQLDML(delete, deleteCompile.sql.baseCost, deleteCompile.sql.subQueries, deleteCompile.sql.env);
+        SQLDML dml = new SQLDML(delete, deleteCompile.sql.baseCost, deleteCompile.sql.subQueries, deleteCompile.sql.env, deleteCompile.sql.recursionFunction);
         return new SQLExecute(dml, deleteCompile.getQueryParams(env), deleteCompile.getQueryExecEnv(userProvider), env.getTransactTimeout(), env.getOpOwner(), owner);
     }
 

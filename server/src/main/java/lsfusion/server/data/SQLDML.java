@@ -12,8 +12,8 @@ import java.sql.SQLException;
 
 public class SQLDML extends SQLCommand<Result<Integer>> {
 
-    public SQLDML(String command, ExecCost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env) {
-        super(command, baseCost, subQueries, env);
+    public SQLDML(String command, ExecCost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, boolean recursionFunction) {
+        super(command, baseCost, subQueries, env, recursionFunction);
     }
 
     public void execute(PreparedStatement statement, Result<Integer> handler, SQLSession session) throws SQLException {

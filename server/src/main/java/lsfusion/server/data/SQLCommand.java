@@ -25,6 +25,8 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
     public final ImMap<String, SQLQuery> subQueries;
     protected final StaticExecuteEnvironment env;
 
+    protected final boolean recursionFunction; // subQueries все внутри '' идут
+
     @IdentityLazy
     public ExecCost getCost(ImMap<SQLQuery, Stat> materializedQueries) {
         ExecCost result = baseCost;
@@ -40,15 +42,16 @@ public abstract class SQLCommand<H> extends TwinImmutableObject<SQLCommand<H>> {
         return result;
     }
 
-    public SQLCommand(String command, ExecCost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env) {
+    public SQLCommand(String command, ExecCost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, boolean recursionFunction) {
         this.command = command;
         this.baseCost = baseCost;
         this.subQueries = subQueries;
         this.env = env;
+        this.recursionFunction = recursionFunction;
     }
 
     protected boolean isRecursionFunction() {
-        return false;
+        return recursionFunction;
     }
 
     public PreParsedStatement preparseStatement(final boolean parseParams, final ImMap<String, ParseInterface> paramObjects, final SQLSyntax syntax, final boolean isVolatileStats, final ImMap<SQLQuery, MaterializedQuery> materializedQueries, final boolean usedRecursion) {

@@ -27,11 +27,10 @@ import java.sql.SQLException;
 public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
     public SQLQuery(String command, ExecCost baseCost, ImMap<String, SQLQuery> subQueries, StaticExecuteEnvironment env, ImMap<String, ? extends Reader> keyReaders, ImMap<String, ? extends Reader> propertyReaders, boolean union, boolean recursionFunction) {
-        super(command, baseCost, subQueries, env);
+        super(command, baseCost, subQueries, env, recursionFunction);
         this.keyReaders = keyReaders;
         this.propertyReaders = propertyReaders;
         this.union = union;
-        this.recursionFunction = recursionFunction;
     }
 
     public static ImMap<String, SQLQuery> translate(ImMap<String, SQLQuery> subQueries, final GetValue<String, String> translator) {
@@ -49,7 +48,6 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     final public ImMap<String, ? extends Reader> keyReaders;
     final public ImMap<String, ? extends Reader> propertyReaders;
     final public boolean union;
-    final private boolean recursionFunction;
 
     @Override
     protected boolean isRecursionFunction() {
@@ -237,7 +235,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         MStaticExecuteEnvironment execEnv = StaticExecuteEnvironmentImpl.mEnv(this.env);
         return new SQLDML("INSERT INTO " + name + " (" + (insertString.length() == 0 ? "dumb" : insertString) + ") " +
                 getInsertSelect(orderPreserved, keySelectOrder, propertySelectOrder,
-                        propertyFieldOrder, syntax, execEnv), baseCost, subQueries, execEnv.finish());
+                        propertyFieldOrder, syntax, execEnv), baseCost, subQueries, execEnv.finish(), recursionFunction);
     }
 
     public String getInsertSelect(boolean orderPreserved, ImOrderSet<String> keyOrder, ImOrderSet<String> propertyOrder, ImOrderSet<PropertyField> fields, SQLSyntax syntax, MStaticExecuteEnvironment env) {

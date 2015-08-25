@@ -10,7 +10,7 @@ public class SQLAnalyze extends SQLCommand<Result<Integer>> {
 
     private final boolean dml;
     public SQLAnalyze(SQLCommand command, boolean noAnalyze) {
-        super("EXPLAIN (" + (noAnalyze ? "VERBOSE, COSTS" : "ANALYZE, VERBOSE, BUFFERS, COSTS") + ") " + command.command, command.baseCost, command.subQueries, command.env);
+        super("EXPLAIN (" + (noAnalyze ? "VERBOSE, COSTS" : "ANALYZE, VERBOSE, BUFFERS, COSTS") + ") " + command.command, command.baseCost, command.subQueries, command.env, command.recursionFunction);
         this.noAnalyze = noAnalyze;
         this.dml = command instanceof SQLDML; // в twins hashcode не включаем так как следует из самой команды
     }
