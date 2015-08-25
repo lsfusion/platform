@@ -272,6 +272,13 @@ public class GridTable extends ClientPropertyTable {
 
         getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
+                if (isEditing()) {
+                    TableCellEditor cellEditor = getCellEditor();
+                    if (cellEditor != null) {
+                        cellEditor.stopCellEditing();
+                    }
+                }
+                
                 changeCurrentObjectLater();
                 moveToFocusableCellIfNeeded();
             }

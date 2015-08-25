@@ -121,8 +121,8 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
     
     private boolean checkInputValidity(Element parent, String stringToAdd) {
         InputElement input = getInputElement(parent);
-        int cursorPosition = textBoxImpl.getCursorPos((com.google.gwt.user.client.Element) (Element) input);
-        int selectionLength = textBoxImpl.getSelectionLength((com.google.gwt.user.client.Element) (Element) input);
+        int cursorPosition = textBoxImpl.getCursorPos(input);
+        int selectionLength = textBoxImpl.getSelectionLength(input);
         String currentValue = input.getValue();
         String firstPart = currentValue.substring(0, cursorPosition);
         String secondPart = currentValue.substring(cursorPosition + selectionLength);
@@ -203,7 +203,7 @@ public abstract class TextBasedGridCellEditor extends AbstractGridCellEditor {
         cellParent.appendChild(input);
     }
 
-    private void validateAndCommit(Element parent, boolean cancelIfInvalid) {
+    public void validateAndCommit(Element parent, boolean cancelIfInvalid) {
         String value = getCurrentText(parent);
         try {
             editManager.commitEditing(tryParseInputText(value, true));

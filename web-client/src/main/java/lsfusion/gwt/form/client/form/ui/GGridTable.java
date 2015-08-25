@@ -26,6 +26,7 @@ import lsfusion.gwt.form.shared.view.changes.GGroupObjectValueBuilder;
 import lsfusion.gwt.form.shared.view.classes.GObjectType;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.GridEditableCell;
+import lsfusion.gwt.form.shared.view.grid.editor.TextBasedGridCellEditor;
 
 import java.util.*;
 
@@ -110,6 +111,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
             public void onKeyboardRowChanged(KeyboardRowChangedEvent event) {
                 final GridDataRecord selectedRecord = getKeyboardSelectedRowValue();
                 if (selectedRecord != null && !selectedRecord.getKey().equals(currentKey)) {
+                    if (cellEditor != null && cellEditor instanceof TextBasedGridCellEditor) {
+                        ((TextBasedGridCellEditor) cellEditor).validateAndCommit(editCellParent, true);                    
+                    }
+                    
                     setCurrentKey(selectedRecord.getKey());
 
                     form.changeGroupObjectLater(groupObject, selectedRecord.getKey());
