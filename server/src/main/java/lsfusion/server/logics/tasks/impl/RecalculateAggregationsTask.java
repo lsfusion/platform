@@ -87,6 +87,13 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
 
     @Override
     protected long getTaskComplexity(Object element) {
-        return (element instanceof AggregateProperty ? ((AggregateProperty) element).mapTable.table.getStatProps().get(((AggregateProperty) element).field).notNull :  Stat.MIN).getWeight();
+        Stat stat;
+        try {
+            stat = element instanceof AggregateProperty ?
+                    ((AggregateProperty) element).mapTable.table.getStatProps().get(((AggregateProperty) element).field).notNull : null;
+        } catch (Exception e) {
+            stat = null;
+        }
+        return stat == null ? Stat.MIN.getWeight() : stat.getWeight();
     }
 }

@@ -167,15 +167,30 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
 
     @Override
     protected long getTaskComplexity(Object element) {
-        return (element instanceof ImplementTable ? ((ImplementTable) element).getStatKeys().rows : element instanceof CalcProperty ?
-                ((CalcProperty) element).mapTable.table.getStatProps().get(((CalcProperty) element).field).notNull :  Stat.MAX).getWeight();
+        Stat stat;
+        try {
+            stat = element instanceof ImplementTable ? ((ImplementTable) element).getStatKeys().rows :
+                    element instanceof CalcProperty ? ((CalcProperty) element).mapTable.table.getStatProps().get(((CalcProperty) element).field).notNull :
+                            Stat.MAX;
+        } catch (Exception e) {
+            stat = null;
+        }
+        return stat == null ? Stat.MIN.getWeight() : stat.getWeight();
     }
 
     private static Comparator<CalcProperty> COMPARATOR = new Comparator<CalcProperty>() {
         public int compare(CalcProperty c1, CalcProperty c2) {
-            int weight1 = (c1 != null ? c1.mapTable.table.getStatProps().get(c1.field).notNull :  Stat.MIN).getWeight();
-            int weight2 = (c2 != null ? c2.mapTable.table.getStatProps().get(c2.field).notNull :  Stat.MIN).getWeight();
-            return weight1 - weight2;
+            return getNotNullWeight(c1) - getNotNullWeight(c2);
         }
     };
+
+    private static int getNotNullWeight(CalcProperty c) {
+        Stat stat;
+        try {
+            stat = c == null ? null : c.mapTable.table.getStatProps().get(c.field).notNull;
+        } catch (Exception e) {
+            stat = null;
+        }
+        return stat == null ? Stat.MIN.getWeight() : stat.getWeight();
+    }
 }

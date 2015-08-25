@@ -100,7 +100,12 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask {
 
     @Override
     protected long getTaskComplexity(Object element) {
-        return (element instanceof ImplementTable ? ((ImplementTable) element).getStatKeys().rows.getWeight() : element instanceof ObjectValueClassSet ?
-                ((ObjectValueClassSet) element).getCount() : Stat.MIN.getWeight());
+        if (element instanceof ImplementTable) {
+            Stat stat = ((ImplementTable) element).getStatKeys().rows;
+            return stat == null ? Stat.MIN.getWeight() : stat.getWeight();
+        } else if (element instanceof ObjectValueClassSet)
+            return ((ObjectValueClassSet) element).getCount();
+        else
+            return Stat.MIN.getWeight();
     }
 }

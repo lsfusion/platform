@@ -90,7 +90,13 @@ public class CheckClassesTask extends GroupPropertiesSingleTask{
 
     @Override
     protected long getTaskComplexity(Object element) {
-        return (element instanceof ImplementTable ? ((ImplementTable) element).getStatKeys().rows : element instanceof CalcProperty ?
-                ((CalcProperty) element).mapTable.table.getStatProps().get(((CalcProperty) element).field).notNull :  Stat.MAX).getWeight();
+        Stat stat;
+        try {
+            stat = element instanceof ImplementTable ? ((ImplementTable) element).getStatKeys().rows : element instanceof CalcProperty ?
+                    ((CalcProperty) element).mapTable.table.getStatProps().get(((CalcProperty) element).field).notNull : Stat.MAX;
+        } catch (Exception e) {
+            stat = null;
+        }
+        return stat == null ? Stat.MIN.getWeight() : stat.getWeight();
     }
 }
