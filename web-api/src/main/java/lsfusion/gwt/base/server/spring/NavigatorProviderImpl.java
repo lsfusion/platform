@@ -1,5 +1,6 @@
 package lsfusion.gwt.base.server.spring;
 
+import com.google.gwt.core.client.GWT;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.ReflectionUtils;
 import lsfusion.base.SystemUtils;
@@ -95,6 +96,9 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean,
     @Override
     public void destroy() throws Exception {
         blProvider.removeInvalidateListener(this);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        GWT.log("Destroying navigator for user " + (auth == null ? "UNKNOWN" : auth.getName()) + "...", new Exception());
 
         RemoteNavigatorInterface navigator = getNavigator();
         if (navigator != null) {
