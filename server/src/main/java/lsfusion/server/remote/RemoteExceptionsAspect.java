@@ -1,5 +1,6 @@
 package lsfusion.server.remote;
 
+import lsfusion.base.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -27,7 +28,7 @@ public class RemoteExceptionsAspect {
             return thisJoinPoint.proceed();
         } catch (ThreadDeath td) {
             logger.error("Thread '" + Thread.currentThread() + "' was forcefully stopped.");
-            throw new RemoteInternalException(1, "Thread was stopped");
+            throw new RemoteInternalException(1, "Thread was stopped", td);
         } catch (Throwable throwable) {
             if (!(throwable instanceof RemoteException) && !(throwable instanceof RemoteServerException)) {
                 throw createInternalServerException(throwable);
@@ -49,6 +50,6 @@ public class RemoteExceptionsAspect {
             logger.error("Error when logging exception: ", ex);
         }
 
-        return new RemoteInternalException(0, e.getLocalizedMessage());
+        return new RemoteInternalException(0, e.getLocalizedMessage(), e);
     }
 }
