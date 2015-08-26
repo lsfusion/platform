@@ -117,15 +117,17 @@ public class SpanningTreeWithBlackjack<T> {
             return visited.size() != graph.size();
         }
 
-        private boolean isAcyclicDfs(Integer node, List<List<Integer>> graph, Map<Integer, Integer> visitedColor) {
+        private boolean isAcyclicDfs(Integer node, Integer prev, List<List<Integer>> graph, Map<Integer, Integer> visitedColor) {
             visitedColor.put(node, 2);
             for (Integer next : graph.get(node)) {
-                if (visitedColor.get(next) != null && visitedColor.get(next) == 2) {
-                    return false;
-                }
-                if (visitedColor.get(next) == null) {
-                    if (!isAcyclicDfs(next, graph, visitedColor)) {
+                if (!next.equals(prev)) {
+                    if (visitedColor.get(next) != null && visitedColor.get(next) == 2) {
                         return false;
+                    }
+                    if (visitedColor.get(next) == null) {
+                        if (!isAcyclicDfs(next, node, graph, visitedColor)) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -140,7 +142,7 @@ public class SpanningTreeWithBlackjack<T> {
             boolean isAcyclic = true;
             for (int i = 0; i < graph.size(); ++i) {
                 if (visitedColor.get(i) == null) {
-                    isAcyclic &= isAcyclicDfs(i, graph, visitedColor);
+                    isAcyclic &= isAcyclicDfs(i, -1, graph, visitedColor);
                 }
             }
             return isAcyclic;
@@ -205,7 +207,7 @@ public class SpanningTreeWithBlackjack<T> {
             List<Edge> edgesToAdd = new ArrayList<>();
             Set<Edge> edgesWithoutToRemove = new HashSet<>(edges);
             
-            while (iterations > 0 && !searchCompleted && firstEdgeIndex < weights.size()) {
+            while (iterations > 0 && !searchCompleted && firstEdgeIndex < component.size()) {
                 int localIterations = iterations * ratio / 100;
                 if (localIterations == 0) break;
                 
