@@ -203,7 +203,7 @@ public class EmailReceiver {
             }
         }
 
-        emailFolder.close(true);
+        emailFolder.close(false);
         emailStore.close();
 
         return Arrays.asList(dataEmails, dataAttachments);
