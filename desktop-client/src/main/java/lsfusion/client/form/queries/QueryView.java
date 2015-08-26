@@ -1,5 +1,6 @@
 package lsfusion.client.form.queries;
 
+import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.GroupObjectLogicsSupplier;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
@@ -27,7 +28,7 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
     private final QueryController controller;
 
     // используется для того, чтобы удалять условия запросов
-    private final Map<ClientPropertyFilter, QueryConditionView> condViews = new LinkedHashMap<ClientPropertyFilter, QueryConditionView>();
+    private final Map<ClientPropertyFilter, QueryConditionView> condViews = new LinkedHashMap<>();
 
     QueryView(QueryController ilistener) {
         this.controller = ilistener;
@@ -45,7 +46,7 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
     }
 
     private void initButtons() {
-        applyButton = new ToolbarGridButton(getApplyIcon(), null);
+        applyButton = new ToolbarGridButton(getApplyIcon(), ClientResourceBundle.getString("form.queries.filter.apply"));
         applyButton.setVisible(false);
         applyButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -53,7 +54,7 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
             }
         });
 
-        addCondButton = new ToolbarGridButton(getAddConditionIcon(), null);
+        addCondButton = new ToolbarGridButton(getAddConditionIcon(), ClientResourceBundle.getString("form.queries.filter.add.condition") + " (alt + F2)");
         addCondButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 controller.addConditionPressed();

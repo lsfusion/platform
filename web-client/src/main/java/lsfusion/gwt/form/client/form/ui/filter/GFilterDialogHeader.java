@@ -8,12 +8,11 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import lsfusion.gwt.base.client.EscapeUtils;
-import lsfusion.gwt.form.shared.view.panel.ImageButton;
+import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
 
 public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox.Caption {
     private static final String COLLAPSE = "collapse.png";
 
-    private ImageButton collapseButton;
     private Label captionWidget;
     private HandlerManager handlerManager;
 
@@ -27,16 +26,19 @@ public abstract class GFilterDialogHeader extends FlowPanel implements DialogBox
         captionWidget.setStyleName("flowPanelChildLeftAlign");
         setText(caption);
 
-        collapseButton = new ImageButton(null, COLLAPSE);
-        collapseButton.addStyleName("toolbarButton");
+        GToolbarButton collapseButton = new GToolbarButton(COLLAPSE, "Свернуть окно отбора") {
+            @Override
+            public void addListener() {
+                addClickHandler(new ClickHandler() {
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        collapseButtonPressed();
+                    }
+                });
+            }
+        };
         collapseButton.addStyleName("filterDialogHeaderButton");
         collapseButton.addStyleName("flowPanelChildRightAlign");
-        collapseButton.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                collapseButtonPressed();
-            }
-        });
 
         add(captionWidget);
         add(collapseButton);

@@ -8,11 +8,11 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import lsfusion.gwt.base.client.GwtClientUtils;
 import lsfusion.gwt.base.client.ui.ResizableFocusPanel;
 import lsfusion.gwt.base.client.ui.ResizableVerticalPanel;
+import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.GPropertyFilter;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
-import lsfusion.gwt.form.shared.view.panel.ImageButton;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -24,11 +24,11 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
 
     private ResizableVerticalPanel filterContainer;
 
-    private ImageButton applyButton;
+    private GToolbarButton applyButton;
 
     private GFilterController controller;
 
-    private Map<GPropertyFilter, GFilterConditionView> conditionViews = new LinkedHashMap<GPropertyFilter, GFilterConditionView>();
+    private Map<GPropertyFilter, GFilterConditionView> conditionViews = new LinkedHashMap<>();
 
     public GFilterView(GFilterController iController) {
         controller = iController;
@@ -37,25 +37,31 @@ public class GFilterView extends ResizableFocusPanel implements GFilterCondition
         setWidget(filterContainer);
         addStyleName("noOutline");
 
-        applyButton = new ImageButton(null, APPLY);
-        applyButton.addStyleName("toolbarButton");
+        applyButton = new GToolbarButton(APPLY, "Применить отбор") {
+            @Override
+            public void addListener() {
+                addClickHandler(new ClickHandler() {
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        applyFilter();
+                    }
+                });    
+            }
+        };
         applyButton.addStyleName("flowPanelChildLeftAlign");
-        applyButton.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                applyFilter();
-            }
-        });
 
-        ImageButton addConditionButton = new ImageButton(null, ADD_CONDITION);
-        addConditionButton.addStyleName("toolbarButton");
-        addConditionButton.addStyleName("flowPanelChildRightAlign");
-        addConditionButton.addClickHandler(new ClickHandler() {
+        GToolbarButton addConditionButton = new GToolbarButton(ADD_CONDITION, "Добавить условие (alt + F2)") {
             @Override
-            public void onClick(ClickEvent event) {
-                controller.addPressed();
+            public void addListener() {
+                addClickHandler(new ClickHandler() {
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        controller.addPressed();
+                    }
+                });    
             }
-        });
+        };
+        addConditionButton.addStyleName("flowPanelChildRightAlign");
 
         FlowPanel controlPanel = new FlowPanel();
         controlPanel.add(applyButton);

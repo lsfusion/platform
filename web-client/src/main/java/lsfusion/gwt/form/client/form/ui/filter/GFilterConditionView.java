@@ -8,11 +8,11 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.CheckBox;
 import lsfusion.gwt.base.client.ui.ResizableHorizontalPanel;
+import lsfusion.gwt.form.client.form.ui.toolbar.GToolbarButton;
 import lsfusion.gwt.form.shared.view.GPropertyDraw;
 import lsfusion.gwt.form.shared.view.filter.*;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.logics.GGroupObjectLogicsSupplier;
-import lsfusion.gwt.form.shared.view.panel.ImageButton;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +32,6 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
     private GFilterConditionListBox filterValues;
     private GFilterValueView valueView;
     private GFilterConditionListBox junctionView;
-    private ImageButton deleteButton;
 
     public GPropertyFilter condition;
     private UIHandler handler;
@@ -93,7 +92,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         filterValues = new GFilterConditionListBox();
         filterValues.addStyleName("customFontPresenter");
 
-        valueViews = new HashMap<GFilterValue, GFilterValueView>();
+        valueViews = new HashMap<>();
 
         GDataFilterValue dataValue = new GDataFilterValue();
         GDataFilterValueView dataView = new GDataFilterValueView(this, dataValue, condition.property, logicsSupplier) {
@@ -136,14 +135,17 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         });
         add(junctionView);
 
-        deleteButton = new ImageButton(null, DELETE);
-        deleteButton.addStyleName("toolbarButton");
-        deleteButton.addClickHandler(new ClickHandler() {
+        GToolbarButton deleteButton = new GToolbarButton(DELETE, "Удалить условие") {
             @Override
-            public void onClick(ClickEvent event) {
-                handler.conditionRemoved(condition);
+            public void addListener() {
+                addClickHandler(new ClickHandler() {
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        handler.conditionRemoved(condition);
+                    }
+                });
             }
-        });
+        };
         add(deleteButton);
 
         filterChanged();

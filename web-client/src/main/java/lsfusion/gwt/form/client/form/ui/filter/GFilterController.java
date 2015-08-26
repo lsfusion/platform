@@ -17,13 +17,14 @@ import java.util.List;
 public abstract class GFilterController {
     private static final String ADD_FILTER = "filtadd.png";
     private static final String EXPAND = "expand.png";
+    private static final String FILTER_BUTTON_TOOLTIP_TEXT = "Отбор (F2)";
 
     private ImageButton toolbarButton;
     private GFilterView filterView;
     private DialogBox filterDialog;
     private GFilterDialogHeader filterDialogHeader;
 
-    private List<GPropertyFilter> conditions = new ArrayList<GPropertyFilter>();
+    private List<GPropertyFilter> conditions = new ArrayList<>();
 
     private State state = State.REMOVED;
     private State hiddenState;
@@ -48,6 +49,7 @@ public abstract class GFilterController {
                 });
             }
         };
+        toolbarButton.setTitle(FILTER_BUTTON_TOOLTIP_TEXT);
 
         filterView = new GFilterView(this);
 
@@ -120,12 +122,14 @@ public abstract class GFilterController {
         switch (newState) {
             case REMOVED:
                 toolbarButtonIconPath = ADD_FILTER;
+                toolbarButton.setTitle(FILTER_BUTTON_TOOLTIP_TEXT);
                 if (state != State.HIDDEN) {
                     toolbarButton.getElement().getStyle().setProperty("background", "");
                 }
                 break;
             case COLLAPSED:
                 toolbarButtonIconPath = EXPAND;
+                toolbarButton.setTitle("Развернуть окно отбора");
                 if (state != State.HIDDEN) {
                     toolbarButton.getElement().getStyle().setProperty("background", "#A2FFA2");
                 }

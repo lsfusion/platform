@@ -139,7 +139,7 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
 
         add(centerPanel, BorderLayout.CENTER);
 
-        delButton = new ToolbarGridButton(deleteIcon, "", new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
+        delButton = new ToolbarGridButton(deleteIcon, ClientResourceBundle.getString("form.queries.filter.remove.condition"), new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
         delButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 uiHandlers.conditionRemoved(filter);

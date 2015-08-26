@@ -1,5 +1,6 @@
 package lsfusion.client.form.queries;
 
+import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.GroupObjectLogicsSupplier;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
@@ -20,7 +21,7 @@ abstract class QueryController {
         HIDDEN, REMOVED, COLLAPSED, EXPANDED
     }
 
-    private final List<ClientPropertyFilter> conditions = new ArrayList<ClientPropertyFilter>();
+    private final List<ClientPropertyFilter> conditions = new ArrayList<>();
 
     private final QueryView view;
 
@@ -35,15 +36,33 @@ abstract class QueryController {
 
         view = createView();
 
-        toolbarButton = new ToolbarGridButton(view.getAddConditionIcon(), null);
+        toolbarButton = new ToolbarGridButton(view.getAddConditionIcon(), "") {
+            
+            @Override
+            public String getToolTipText() {
+                if (state != null) {
+                    switch (state) {
+                        case REMOVED:
+                            return ClientResourceBundle.getString("form.queries.filter") + " (F2)";
+                        case COLLAPSED:
+                            return ClientResourceBundle.getString("form.queries.filter.expand");
+                        case EXPANDED:
+                            return ClientResourceBundle.getString("form.queries.filter.collapse");
+                    }
+                }
+                return null;
+            }
+        };
         toolbarButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                if (state == State.COLLAPSED) {
-                    setState(State.EXPANDED);
-                } else if (state == State.EXPANDED) {
-                    setState(State.COLLAPSED);
-                } else if (state == State.REMOVED) {
-                    replaceConditionPressed();
+                switch (state) {
+                    case REMOVED: 
+                        replaceConditionPressed();
+                        break;
+                    case COLLAPSED: 
+                        setState(State.EXPANDED);
+                        break;
+                    case EXPANDED: setState(State.COLLAPSED);
                 }
             }
         });
