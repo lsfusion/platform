@@ -71,7 +71,7 @@ public class ReceiveEmailActionProperty extends ScriptingActionProperty {
                     String passwordAccount = (String) accountValues.get("passwordAccount").getValue();
                     String nameReceiveAccountTypeAccount = (String) accountValues.get("nameReceiveAccountTypeAccount").getValue();
                     boolean isPop3Account = nameReceiveAccountTypeAccount == null || nullTrim(nameReceiveAccountTypeAccount).equals("POP3");
-                    boolean deleteMessagesAccount = accountValues.get("deleteMessagesAccount") != null;
+                    boolean deleteMessagesAccount = accountValues.get("deleteMessagesAccount").getValue() != null;
 
                     receiveEmail(context, accountObject, receiveHostAccount, receivePortAccount, nameAccount, passwordAccount,
                             isPop3Account, deleteMessagesAccount);
