@@ -178,7 +178,7 @@ public class EmailReceiver {
 
         Message[] messages = emailFolder.getMessages();
         for (Message message : messages) {
-            message.setFlag(Flags.Flag.DELETED, deleteMessagesAccount);
+            message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
             Timestamp dateTimeSentEmail = getSentDate(message);
             String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
             String idEmail = (dateTimeSentEmail == null ? "" : dateTimeSentEmail.getTime()) + fromAddressEmail;
@@ -203,7 +203,7 @@ public class EmailReceiver {
             }
         }
 
-        emailFolder.close(false);
+        emailFolder.close(true);
         emailStore.close();
 
         return Arrays.asList(dataEmails, dataAttachments);
