@@ -88,8 +88,8 @@ querySQLProcess 'Запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
 fullQuerySQLProcess 'Полный запрос (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
 addressUserSQLProcess 'Адрес пользователя (SQL)' = DATA LOCAL VARSTRING[100] (VARSTRING[10]);
 dateTimeSQLProcess 'Время запуска (SQL)' = DATA LOCAL DATETIME (VARSTRING[10]);
-isActiveSQLProcess 'Активный (SQL)' = DATA BOOLEAN (VARSTRING[10]);
-inTransactionSQLProcess 'В транзакции (SQL)' = DATA BOOLEAN (VARSTRING[10]);
+isActiveSQLProcess 'Активный (SQL)' = DATA LOCAL BOOLEAN (VARSTRING[10]);
+inTransactionSQLProcess 'В транзакции (SQL)' = DATA LOCAL BOOLEAN (VARSTRING[10]);
 
 lsfStackTraceProcess 'LSF след потока' = DATA LOCAL TEXT (VARSTRING[10]);
 threadAllocatedBytesProcess 'Выделенная память' = DATA LOCAL LONG (VARSTRING[10]);
