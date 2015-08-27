@@ -105,6 +105,8 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
             try (DataSession session = dbManager.createSession()) {
                 setupScheduledTasks(session);
+                BL.schedulerLM.findProperty("isStartedScheduler").change(true, session);
+                session.apply(BL);
                 setupCurrentDateSynchronization();
             } catch (SQLException | ScriptingErrorLog.SemanticErrorException | SQLHandledException e) {
                 throw new RuntimeException("Error starting Scheduler: ", e);
@@ -202,7 +204,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         scheduledTaskQuery.and(BL.schedulerLM.activeScheduledTask.getExpr(modifier, scheduledTaskExpr).getWhere());
 
         if (daemonTasksExecutor != null)
-            daemonTasksExecutor.shutdown();
+            daemonTasksExecutor.shutdownNow();
 
         daemonTasksExecutor = Executors.newScheduledThreadPool(3, new DaemonThreadFactory("scheduler-daemon"));
 
@@ -284,6 +286,11 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                 }
             }
         }
+    }
+
+    public void stopScheduledTasks() {
+        if (daemonTasksExecutor != null)
+            daemonTasksExecutor.shutdownNow();
     }
 
     class SchedulerTask implements Runnable {

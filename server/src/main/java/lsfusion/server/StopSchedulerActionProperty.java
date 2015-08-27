@@ -1,5 +1,6 @@
 package lsfusion.server;
 
+import com.google.common.base.Throwables;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.Scheduler;
 import lsfusion.server.logics.SchedulerLogicsModule;
@@ -11,24 +12,21 @@ import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 
-public class SetupSchedulerActionProperty extends ScriptingActionProperty {
+public class StopSchedulerActionProperty extends ScriptingActionProperty {
 
-    public SetupSchedulerActionProperty(SchedulerLogicsModule LM) {
+    public StopSchedulerActionProperty(SchedulerLogicsModule LM) {
         super(LM);
 
     }
 
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
-        try {
-            scheduler.setupScheduledTasks(context.getSession());
-            try(DataSession session = context.createSession()) {
-                findProperty("isStartedScheduler").change(true, session);
-                session.apply(context.getBL());
-            }
+        context.getLogicsInstance().getCustomObject(Scheduler.class).stopScheduledTasks();
+        try(DataSession session = context.createSession()) {
+            findProperty("isStartedScheduler").change((Object) null, session);
+            session.apply(context.getBL());
         } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RuntimeException("Error starting Scheduler: ", e);
+            throw Throwables.propagate(e);
         }
     }
 }

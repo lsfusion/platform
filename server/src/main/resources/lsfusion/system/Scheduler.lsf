@@ -80,7 +80,10 @@ messageScheduledClientTaskLog 'Сообщение'= DATA TEXT (ScheduledClientTa
 
 isMessagesScheduledTaskLog 'Сообщения' (stl)= TRUE IF [=GROUP SUM 1 IF messageScheduledClientTaskLog(stcl) BY scheduledTaskLogScheduledClientTaskLog(stcl)](stl) AND NOT exceptionOccurredScheduledTaskLog(stl);
 
-runSetupScheduler 'Планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty' ();
+stopScheduler 'Остановить планировщик' = ACTION CUSTOM 'lsfusion.server.StopSchedulerActionProperty' ();
+runSetupScheduler 'Запустить планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty' ();
+isStartedScheduler 'Запущен'  = DATA BOOLEAN ();
+isStoppedScheduler 'Остановлен' () = NOT isStartedScheduler();
 
 scriptText 'Скрипт' () = DATA LOCAL TEXT ();
 evalScript 'Выполнить скрипт' () = ACTION EVAL scriptText();
@@ -128,6 +131,8 @@ FORM scheduledTask 'Планировщик'
     PROPERTIES (dow) numberDOW, staticCaption 
     PROPERTIES (dow, t) inDOWScheduledTask 
     
+    PROPERTIES () stopScheduler SHOWIF isStartedScheduler() TOOLBAR, runSetupScheduler SHOWIF isStoppedScheduler() TOOLBAR
+    
     ORDER BY numberDOW(dow)
     
     FILTERS scheduledTaskScheduledTaskDetail(td)==t,
@@ -168,6 +173,12 @@ DESIGN scheduledTask {
                 MOVE PROPERTY(daysOfMonthScheduledTask(t));
             }        
         }
+    }
+    NEW bottom {
+        type = CONTAINERH;
+        align = TRAILING;
+        MOVE PROPERTY(runSetupScheduler());
+        MOVE PROPERTY(stopScheduler());
     }
     MOVE functions.box;
 }
