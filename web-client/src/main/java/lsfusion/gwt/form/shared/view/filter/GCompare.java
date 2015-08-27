@@ -1,7 +1,7 @@
 package lsfusion.gwt.form.shared.view.filter;
 
 public enum GCompare {
-    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, LIKE, INARRAY;
+    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, CONTAINS, ENDS_WITH, LIKE, INARRAY;
 
     public static GCompare get(boolean min) {
         return min? GCompare.LESS: GCompare.GREATER;
@@ -25,10 +25,12 @@ public enum GCompare {
                 return 6;
             case CONTAINS:
                 return 7;
-            case LIKE:
+            case ENDS_WITH:
                 return 8;
-            case INARRAY:
+            case LIKE:
                 return 9;
+            case INARRAY:
+                return 10;
         }
         throw new RuntimeException("Serialize Compare");
     }
@@ -52,6 +54,8 @@ public enum GCompare {
                 return "Начинается с";
             case CONTAINS:
                 return "Содержит";
+            case ENDS_WITH:
+                return "Заканчивается на";
             case LIKE :
                 return "LIKE";
             case INARRAY :
