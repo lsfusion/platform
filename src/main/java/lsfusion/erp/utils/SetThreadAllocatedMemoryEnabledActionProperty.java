@@ -11,6 +11,8 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.sql.SQLException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class SetThreadAllocatedMemoryEnabledActionProperty extends ScriptingActionProperty {
 
@@ -19,23 +21,28 @@ public class SetThreadAllocatedMemoryEnabledActionProperty extends ScriptingActi
     }
 
     @Override
-    protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
-
+    protected void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
-            boolean readAllocatedBytes = findProperty("readAllocatedBytes").read(context) != null;
-            ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
-            setThreadAllocatedMemoryEnabled(tBean, readAllocatedBytes);
-
-        } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
+            final boolean readAllocatedBytes = findProperty("readAllocatedBytes").read(context) != null;
+            Timer timer = new Timer("ReadAllocatedBytes", true);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
+                    setThreadAllocatedMemoryEnabled(tBean, readAllocatedBytes);
+                }
+            }, 0, 1800000); //every 30 minutes
+        } catch (ScriptingErrorLog.SemanticErrorException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
-
     }
 
     private void setThreadAllocatedMemoryEnabled(ThreadMXBean tBean, boolean readAllocatedBytes) {
         if (tBean instanceof com.sun.management.ThreadMXBean) {
             com.sun.management.ThreadMXBean sunBean = (com.sun.management.ThreadMXBean) tBean;
             if (sunBean.isThreadAllocatedMemorySupported()) {
+                if (readAllocatedBytes && sunBean.isThreadAllocatedMemoryEnabled()) //reset value
+                    sunBean.setThreadAllocatedMemoryEnabled(false);
                 sunBean.setThreadAllocatedMemoryEnabled(readAllocatedBytes);
             }
         }
