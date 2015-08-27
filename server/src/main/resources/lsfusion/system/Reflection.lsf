@@ -19,6 +19,7 @@ CLASS NavigatorElement 'Элемент навигатора';
 CLASS NavigatorAction 'Действие' : NavigatorElement;
 CLASS Form 'Форма' : NavigatorElement;
 TABLE navigatorElement (NavigatorElement);
+TABLE navigatorElementNavigatorElement(NavigatorElement, NavigatorElement);
 
 captionNavigatorElement 'Название формы' = DATA VARSTRING[250] (NavigatorElement);
 sidNavigatorElement 'Код формы' = DATA VARSTRING[50] (NavigatorElement);
