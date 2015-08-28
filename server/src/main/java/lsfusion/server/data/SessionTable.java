@@ -365,7 +365,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                 return this;
             changed.set(true);
             return new SessionTable(name, keys, properties, classes, propertyClasses, count - proceeded).
-                    updateStatistics(session, count, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
+                    updateStatistics(session, count, 0, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
         }
         if (type == Modify.LEFT && session.isRecord(this, keyFields, opOwner))
             return this;
@@ -384,9 +384,10 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             session.insertRecord(this, keyFields, propFields, owner, opOwner);
 
         changed.set(true);
-        return new SessionTable(name, keys, properties, count + (update?0:1),
+        int proceeded = (update?0:1);
+        return new SessionTable(name, keys, properties, count + proceeded,
                         orFieldsClassWheres(classes, propertyClasses, keyFields, propFields)).
-                            updateStatistics(session, count, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
+                            updateStatistics(session, count, proceeded, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
     }
 
     public SessionTable modifyRows(SQLSession session, IQuery<KeyField, PropertyField> query, Modify type, QueryEnvironment env, TableOwner owner, Result<Boolean> changed, boolean updateClasses) throws SQLException, SQLHandledException {
@@ -422,7 +423,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
                     return this;
 
                 return new SessionTable(name, keys, properties, classes, propertyClasses, count - proceeded).
-                        updateStatistics(session, count, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
+                        updateStatistics(session, count, 0, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
             default:
                 throw new RuntimeException("should not be");
         }
@@ -432,7 +433,7 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         changed.set(true);
         return new SessionTable(name, keys, properties, count + inserted,
                         orFieldsClassWheres(classes, propertyClasses, SessionData.getQueryClasses(query))).
-                            updateStatistics(session, count, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
+                            updateStatistics(session, count, proceeded, owner, opOwner).checkClasses(session, null, updateClasses, opOwner);
     }
     public void updateAdded(SQLSession session, BaseClass baseClass, PropertyField field, Pair<Integer, Integer>[] shifts, OperationOwner owner, TableOwner tableOwner) throws SQLException, SQLHandledException {
         QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(this);
@@ -498,8 +499,8 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         return new SessionTable(name, keys, properties, updatedClasses, updatedPropertyClasses, count, distinctKeys, statProps).checkClasses(session.sql, null, nonead, session.getOwner());
     }
 
-    public SessionTable updateStatistics(final SQLSession session, int prevCount, final TableOwner owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
-        if(!SQLTemporaryPool.getDBStatistics(count).equals(SQLTemporaryPool.getDBStatistics(prevCount))) {
+    public SessionTable updateStatistics(final SQLSession session, int prevCount, int updated, final TableOwner owner, final OperationOwner opOwner) throws SQLException, SQLHandledException {
+        if(!SQLTemporaryPool.getDBStatistics(count).equals(SQLTemporaryPool.getDBStatistics(prevCount)) || (updated >= 1 && new Stat(Settings.get().getUpdateStatisticsLimit()).lessEquals(new Stat(updated)))) { // проблема в том, что может появиться много записей с field = n, а СУБД этого не будет знать и будет сильно ошибаться со статистикой
             return session.createTemporaryTable(keys, properties, count, distinctKeys, statProps, new FillTemporaryTable() {
                 public Integer fill(String name) throws SQLException, SQLHandledException {
                     QueryBuilder<KeyField, PropertyField> moveData = new QueryBuilder<KeyField, PropertyField>(SessionTable.this);

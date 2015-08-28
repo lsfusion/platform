@@ -1,5 +1,8 @@
 package lsfusion.utils;
 
+import lsfusion.utils.prim.Prim;
+import lsfusion.utils.prim.UndirectedGraph;
+
 import java.util.*;
 
 /**
@@ -112,9 +115,11 @@ public class SpanningTreeWithBlackjack<T> {
         // параметром идет список ребер, ребра направленные
         private boolean graphIsConnected(Collection<Edge> edges) {
             List<List<Integer>> graph = getSimpleGraph(edges);
+            if(graph.size() < component.size())
+                return false;
             Set<Integer> visited = new HashSet<>();
             dfs(0, graph, visited);
-            return visited.size() != graph.size();
+            return visited.size() == graph.size();
         }
 
         private boolean isAcyclicDfs(Integer node, Integer prev, List<List<Integer>> graph, Map<Integer, Integer> visitedColor) {
@@ -163,7 +168,7 @@ public class SpanningTreeWithBlackjack<T> {
             
             // Пробуем удалить ребро
             edgesWithoutToRemove.remove(curEdge);
-            if (!graphIsConnected(edgesWithoutToRemove)) {
+            if (graphIsConnected(edgesWithoutToRemove)) {
                 int oldRes = curResults.get(curEdge.to);
                 int w = curEdge.weight;
                 int newRes = Math.max(weights.get(curEdge.to), oldRes - w);
@@ -207,7 +212,7 @@ public class SpanningTreeWithBlackjack<T> {
             List<Edge> edgesToAdd = new ArrayList<>();
             Set<Edge> edgesWithoutToRemove = new HashSet<>(edges);
             
-            while (iterations > 0 && !searchCompleted && firstEdgeIndex < component.size()) {
+            while (iterations > 0 && !searchCompleted && firstEdgeIndex < edges.size()) {
                 int localIterations = iterations * ratio / 100;
                 if (localIterations == 0) break;
                 
@@ -272,5 +277,109 @@ public class SpanningTreeWithBlackjack<T> {
             }
         }
         return result;
+    }
+
+    public static void test1() {
+        SpanningTreeWithBlackjack<String> tree = new SpanningTreeWithBlackjack<>();
+        UndirectedGraph<String> prim = new UndirectedGraph<>();
+
+        addNode(tree, prim, "A", 0);
+        addNode(tree, prim, "B", 7);
+        addNode(tree, prim, "C", 0);
+        addNode(tree, prim, "D", 0);
+        addNode(tree, prim, "E", 6);
+        addNode(tree, prim, "F", 13);
+        addNode(tree, prim, "G", 13);
+        addNode(tree, prim, "H", 0);
+        addNode(tree, prim, "I", 0);
+
+        addEdge(tree, prim, "A", "B", 5);
+        addEdge(tree, prim, "C", "B", 7);
+        addEdge(tree, prim, "C", "F", 7);
+        addEdge(tree, prim, "D", "B", 6);
+        addEdge(tree, prim, "D", "E", 6);
+        addEdge(tree, prim, "I", "E", 6);
+        addEdge(tree, prim, "E", "F", 6);
+        addEdge(tree, prim, "F", "G", 13);
+        addEdge(tree, prim, "H", "G", 13);
+
+        System.out.println("prim : " + (-Prim.mst(prim).calculateTotalEdgeCost()));
+        System.out.println("tree : " + tree.calculate());
+    }
+
+    private static void addEdge(SpanningTreeWithBlackjack<String> tree, UndirectedGraph<String> prim, String a, String b, int weight) {
+        tree.addEdge(a, b, weight);
+        prim.addEdge(a, b, -weight);
+    }
+
+    private static void addNode(SpanningTreeWithBlackjack<String> tree, UndirectedGraph<String> prim, String a, int weight) {
+        tree.addNode(a, weight);
+        prim.addNode(a);
+    }
+
+    public static void test() {
+
+        int MAXNODES = 10;
+        int MAXCOST = 20;
+
+        for(int nodeCount = 1; nodeCount < MAXNODES; nodeCount++) {
+            for(int i = 1; i < nodeCount; i++) {
+                int edgeCount = i * nodeCount;
+
+                SpanningTreeWithBlackjack<Integer> tree = new SpanningTreeWithBlackjack<>();
+                UndirectedGraph<Integer> prim = new UndirectedGraph<>();
+
+                addNode(tree, prim, -1);
+
+                for(int j = 0; j < nodeCount; j++) {
+                    addNode(tree, prim, j);
+                    addEdge(tree, prim, -1, j, 0);
+                }
+
+                Set<Integer> edgesExist = new HashSet<>();
+                for (int j = 0; j < edgeCount; j++) {
+                    int maxEdge = nodeCount * nodeCount;
+                    int edgeI = random(maxEdge);
+                    while (!edgesExist.add(edgeI)) {
+                        edgeI++;
+                        if (edgeI >= maxEdge)
+                            edgeI = 0;
+                    }
+
+                    int edgeFrom = edgeI / nodeCount;
+                    int edgeTo = edgeI % nodeCount;
+
+                    if(!edgesExist.contains(edgeTo * nodeCount + edgeFrom)) {
+                        int cost = random(MAXCOST);
+                        addEdge(tree, prim, edgeFrom, edgeTo, cost);
+                    }
+                }
+
+                checkResult(tree, prim);
+            }
+        }
+    }
+
+    private static void checkResult(SpanningTreeWithBlackjack<Integer> tree, UndirectedGraph<Integer> prim) {
+        int primResult = -Prim.mst(prim).calculateTotalEdgeCost();
+        int treeResult = tree.calculate();
+        if(primResult != treeResult)
+            System.out.println("tree : , " + treeResult + " prim : " + primResult);
+        else
+            System.out.println("passed : " + primResult);
+    }
+
+    private static void addEdge(SpanningTreeWithBlackjack<Integer> tree, UndirectedGraph<Integer> prim, int edgeFrom, int edgeTo, int cost) {
+        tree.addEdge(edgeFrom, edgeTo, cost);
+        prim.addEdge(edgeFrom, edgeTo, - cost);
+    }
+
+    private static void addNode(SpanningTreeWithBlackjack<Integer> tree, UndirectedGraph<Integer> prim, int j) {
+        tree.addNode(j, 0);
+        prim.addNode(j);
+    }
+
+    private static int random(int count) {
+        return (int)(Math.random() * count);
     }
 }

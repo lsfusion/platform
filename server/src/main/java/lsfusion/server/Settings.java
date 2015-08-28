@@ -1455,4 +1455,14 @@ public class Settings {
     public void setGroupByTables(boolean groupByTables) {
         this.groupByTables = groupByTables;
     }
+
+    private int updateStatisticsLimit = 300; // при изменении какого количества записей будет принудительный ANALYZE таблицы делаться
+
+    public int getUpdateStatisticsLimit() {
+        return updateStatisticsLimit;
+    }
+
+    public void setUpdateStatisticsLimit(int updateStatisticsLimit) {
+        this.updateStatisticsLimit = updateStatisticsLimit;
+    }
 }

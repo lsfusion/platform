@@ -18,6 +18,7 @@ import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.utils.SpanningTreeWithBlackjack;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -466,6 +467,9 @@ public class Main {
     }
 
     public static void main(final String[] args) {
+
+        SpanningTreeWithBlackjack.test();
+        SpanningTreeWithBlackjack.test1();
         start(args, new ModuleFactory() {
             public MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException {
                 return new DockableMainFrame(remoteNavigator);

@@ -1541,7 +1541,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             lockConnection(opOwner);
 
             statement = connection.sql.prepareStatement(command);
-            
+
             for(int i=0,size=rows.size();i<size;i++) {
                 ParamNum paramNum = new ParamNum();
                 ImMap<KeyField, K> rowKey = rows.getKey(i);
