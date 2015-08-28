@@ -468,8 +468,8 @@ public class Main {
 
     public static void main(final String[] args) {
 
-        SpanningTreeWithBlackjack.test();
-        SpanningTreeWithBlackjack.test1();
+//        SpanningTreeWithBlackjack.test();
+//        SpanningTreeWithBlackjack.test1();
         start(args, new ModuleFactory() {
             public MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws IOException {
                 return new DockableMainFrame(remoteNavigator);
