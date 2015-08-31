@@ -2049,7 +2049,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     
             boolean sourceNotChanged = !tableChanged.sourceChanged();
             this.newClasses.clear();
-    
+
             // интересует изменения, только если не изменилась структура таблицы (в этом случае все равно все обновлять)
             ImSet<ConcreteObjectClass> changedUsedOld = addUsed(usedOldClasses, oldClasses, sourceNotChanged);
             ImSet<ConcreteObjectClass> changedUsedNew = addUsed(usedNewClasses, newClasses, sourceNotChanged);
