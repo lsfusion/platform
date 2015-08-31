@@ -9,27 +9,23 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
-import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
 public class CheckClassesTask extends GroupPropertiesSingleTask{
-    public List<String> messages = new ArrayList<>();
     private Set<AggregateProperty> notRecalculateSet;
 
+    @Override
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
-        messages = new ArrayList<>();
+        super.init(context);
         notRecalculateSet = context.getBL().getNotRecalculateAggregateStoredProperties();
-        setBL(context.getBL());
-        setDependencies(new HashSet<PublicTask>());
     }
 
     @Override
@@ -40,22 +36,28 @@ public class CheckClassesTask extends GroupPropertiesSingleTask{
                 serviceLogger.info("Check common classes");
                 String result = DataSession.checkClasses(session.sql, session.env, getBL().LM.baseClass);
                 if (result != null && !result.isEmpty())
-                    messages.add(result);
+                    addMessage(result);
                 long time = System.currentTimeMillis() - start;
+                if(time > maxRecalculateTime)
+                    addMessage("Check common classes", time);
                 serviceLogger.info(String.format("Check common classes: %sms", time));
             } else if (property instanceof ImplementTable) {
                 serviceLogger.info(String.format("Check Table Classes: %s", ((ImplementTable) property).getName()));
                 String result = DataSession.checkTableClasses((ImplementTable) property, session.sql, session.env, getBL().LM.baseClass);
                 if(result != null && !result.isEmpty())
-                    messages.add(result);
+                    addMessage(result);
                 long time = System.currentTimeMillis() - start;
+                if(time > maxRecalculateTime)
+                    addMessage(property, time);
                 serviceLogger.info(String.format("Check Table Classes: %s, %sms", ((ImplementTable) property).getName(), time));
             } else if(property instanceof CalcProperty && !notRecalculateSet.contains(property)) {
                 serviceLogger.info(String.format("Check Classes: %s", ((CalcProperty) property).getSID()));
                 String result = DataSession.checkClasses((CalcProperty) property, session.sql, session.env, getBL().LM.baseClass);
                 if(result != null && !result.isEmpty())
-                    messages.add(result);
+                    addMessage(result);
                 long time = System.currentTimeMillis() - start;
+                if(time > maxRecalculateTime)
+                    addMessage(property, time);
                 serviceLogger.info(String.format("Check Classes: %s, %sms", ((CalcProperty) property).getSID(), time));
             }
         } catch (SQLException | SQLHandledException e) {

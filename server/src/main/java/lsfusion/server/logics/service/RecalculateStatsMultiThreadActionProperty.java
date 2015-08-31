@@ -33,7 +33,7 @@ public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionPr
             RecalculateStatsTask task = new RecalculateStatsTask();
             task.init(context);
             TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.stats")), getString("logics.recalculation.stats")));
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.stats")) + task.getMessages(), getString("logics.recalculation.stats")));
         } catch (Exception e) {
             ServerLoggers.serviceLogger.error("Recalculate Stats error", e);
             context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.stats.error")));

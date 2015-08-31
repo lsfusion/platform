@@ -8,13 +8,11 @@ import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
-import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
@@ -24,10 +22,9 @@ public class RecalculateFollowsTask extends GroupPropertiesSingleTask {
     boolean singleTransaction;
 
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
+        super.init(context);
         this.context = context;
         this.singleTransaction = context.getBL().serviceLM.singleTransaction.read(context) != null;
-        setBL(context.getBL());
-        setDependencies(new HashSet<PublicTask>());
     }
 
     @Override
@@ -47,6 +44,8 @@ public class RecalculateFollowsTask extends GroupPropertiesSingleTask {
                         serviceLogger.info(e.getMessage());
                     }
                     long time = System.currentTimeMillis() - start;
+                    if(time > maxRecalculateTime)
+                        addMessage(property, time);
                     serviceLogger.info(String.format("Recalculate Follows: %s, %sms", ((ActionProperty) property).getSID(), time));
                 }
             }

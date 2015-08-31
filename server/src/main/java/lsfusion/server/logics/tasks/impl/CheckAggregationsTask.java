@@ -6,27 +6,21 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
-import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
 
 public class CheckAggregationsTask extends GroupPropertiesSingleTask{
-    public List<String> messages = new ArrayList<>();
     private Set<AggregateProperty> notRecalculateSet;
 
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
-        this.messages = new ArrayList<>();
+        super.init(context);
         notRecalculateSet = context.getBL().getNotRecalculateAggregateStoredProperties();
-        setBL(context.getBL());
-        setDependencies(new HashSet<PublicTask>());
     }
 
     @Override
@@ -36,8 +30,10 @@ public class CheckAggregationsTask extends GroupPropertiesSingleTask{
                 long start = System.currentTimeMillis();
                 String result = ((AggregateProperty) property).checkAggregation(session.sql, session.env, getBL().LM.baseClass);
                 if (result != null && !result.isEmpty())
-                    messages.add(result);
+                    addMessage(result);
                 long time = System.currentTimeMillis() - start;
+                if(time > maxRecalculateTime)
+                    addMessage(property, time);
                 serviceLogger.info(String.format("Check Aggregations: %s, %sms", ((AggregateProperty) property).getSID(), time));
             } catch (SQLException | SQLHandledException e) {
                 e.printStackTrace();

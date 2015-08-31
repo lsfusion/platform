@@ -34,7 +34,7 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
             RecalculateFollowsTask task = new RecalculateFollowsTask();
             task.init(context);
             TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.follows")), getString("logics.recalculation.follows")));
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.follows")) + task.getMessages(), getString("logics.recalculation.follows")));
         } catch (Exception e) {
             ServerLoggers.serviceLogger.error("Recalculate Follows error", e);
             context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.follows.error")));

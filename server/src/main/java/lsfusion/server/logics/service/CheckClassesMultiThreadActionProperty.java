@@ -34,10 +34,7 @@ public class CheckClassesMultiThreadActionProperty extends ScriptingActionProper
             CheckClassesTask task = new CheckClassesTask();
             task.init(context);
             TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
-            String message = "";
-            for(String m : task.messages)
-                message += '\n' + m;
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.data.classes")) + message, getString("logics.checking.data.classes"), true));
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.data.classes")) + task.getMessages(), getString("logics.checking.data.classes"), true));
         } catch (Exception e) {
             ServerLoggers.serviceLogger.error("Check Classes error", e);
         }

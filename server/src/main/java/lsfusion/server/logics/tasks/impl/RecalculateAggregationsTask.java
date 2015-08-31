@@ -6,28 +6,24 @@ import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.query.Stat;
-import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcProperty;
+import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
-import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
-
     private Set<AggregateProperty> notRecalculateSet;
 
-    public void init(BusinessLogics BL) {
-        setBL(BL);
-        notRecalculateSet = BL.getNotRecalculateAggregateStoredProperties();
-        setDependencies(new HashSet<PublicTask>());
+    public void init(ExecutionContext context) throws SQLException, SQLHandledException {
+        super.init(context);
+        notRecalculateSet = context.getBL().getNotRecalculateAggregateStoredProperties();
     }
 
     @Override
@@ -40,6 +36,8 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
                         ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation started: %s", ((AggregateProperty) property).getSID()));
                         ((AggregateProperty) property).recalculateAggregation(session.sql, session.env, getBL().LM.baseClass);
                         long time = System.currentTimeMillis() - start;
+                        if(time > maxRecalculateTime)
+                            addMessage(property, time);
                         ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation: %s, %sms", ((AggregateProperty) property).getSID(), time));
                     }
                 });

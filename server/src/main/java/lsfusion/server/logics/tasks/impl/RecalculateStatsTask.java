@@ -19,13 +19,11 @@ import lsfusion.server.data.query.QueryBuilder;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
-import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import static lsfusion.base.BaseUtils.serviceLogger;
@@ -33,8 +31,7 @@ import static lsfusion.base.BaseUtils.serviceLogger;
 public class RecalculateStatsTask extends GroupPropertiesSingleTask {
 
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
-        setBL(context.getBL());
-        setDependencies(new HashSet<PublicTask>());
+        super.init(context);
     }
 
     @Override
@@ -45,6 +42,8 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask {
                 serviceLogger.info(String.format("Recalculate Stats %s", element));
                 ((ImplementTable) element).calculateStat(getBL().reflectionLM, session);
                 long time = System.currentTimeMillis() - start;
+                if(time > maxRecalculateTime)
+                    addMessage(element, time);
                 serviceLogger.info(String.format("Recalculate Stats: %s, %sms", element, time));
             } else if(element instanceof ObjectValueClassSet) {
                 long start = System.currentTimeMillis();
@@ -66,6 +65,8 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask {
                     getBL().LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
                 }
                 long time = System.currentTimeMillis() - start;
+                if(time > maxRecalculateTime)
+                    addMessage(element, time);
                 serviceLogger.info(String.format("Recalculate Stats: %s, %sms", element, time));
             }
             session.apply(getBL());
