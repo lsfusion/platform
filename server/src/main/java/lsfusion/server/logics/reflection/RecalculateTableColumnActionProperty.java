@@ -40,6 +40,6 @@ public class RecalculateTableColumnActionProperty extends ScriptingActionPropert
                 context.getDbManager().recalculateAggregationTableColumn(session, propertyCanonicalName.trim(), isolatedTransaction);
             }});
 
-        context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.aggregations")), getString("logics.recalculation.aggregations")));
     }
 }

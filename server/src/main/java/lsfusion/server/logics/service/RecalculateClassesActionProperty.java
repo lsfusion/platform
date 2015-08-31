@@ -30,7 +30,7 @@ public class RecalculateClassesActionProperty extends ScriptingActionProperty {
                 context.getDbManager().packTables(session, BL.LM.tableFactory.getImplementTables(), isolatedTransaction);
             }});
 
-        context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculating.data.classes"), true));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculating.data.classes")), getString("logics.recalculating.data.classes"), true));
     }
 
     @Override

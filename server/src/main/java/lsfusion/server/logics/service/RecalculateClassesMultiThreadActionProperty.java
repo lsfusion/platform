@@ -34,7 +34,7 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
             RecalculateClassesTask task = new RecalculateClassesTask();
             task.init(context);
             TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculating.data.classes")));
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculating.data.classes")), getString("logics.recalculating.data.classes")));
         } catch (Exception e) {
             ServerLoggers.serviceLogger.error("Recalculate Classes error", e);
         }

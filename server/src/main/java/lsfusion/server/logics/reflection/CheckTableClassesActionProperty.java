@@ -42,6 +42,6 @@ public class CheckTableClassesActionProperty extends ScriptingActionProperty {
             }
         });
 
-        context.delayUserInterfaction(new MessageClientAction(getString("logics.check.was.completed") + '\n' + '\n' + message.result, getString("logics.checking.data.classes"), true));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.data.classes")) + '\n' + '\n' + message.result, getString("logics.checking.data.classes"), true));
     }
 }

@@ -26,7 +26,7 @@ public class RecalculateFollowsActionProperty extends ScriptingActionProperty {
             }
         });
 
-        context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.follows")));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.follows")), getString("logics.recalculation.follows")));
     }
 
     @Override

@@ -1,7 +1,6 @@
 package lsfusion.server.logics.service;
 
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.ServiceLogicsModule;
@@ -28,6 +27,6 @@ public class RecalculateActionProperty extends ScriptingActionProperty {
                     context.delayUserInterfaction(new MessageClientAction(result, getString("logics.recalculation.aggregations")));
             }});
 
-        context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.aggregations")), getString("logics.recalculation.aggregations")));
     }
 }

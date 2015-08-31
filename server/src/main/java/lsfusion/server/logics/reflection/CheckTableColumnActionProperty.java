@@ -43,6 +43,6 @@ public class CheckTableColumnActionProperty extends ScriptingActionProperty {
             }
         });
 
-        context.delayUserInterfaction(new MessageClientAction(getString("logics.check.was.completed") + '\n' + '\n' + message.result, getString("logics.checking.aggregations"), true));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.aggregations")) + '\n' + '\n' + message.result, getString("logics.checking.aggregations"), true));
     }
 }
