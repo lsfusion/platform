@@ -766,7 +766,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }
         };
         if(Settings.get().isSaleInvoiceDetailLog() && (!changedNewClasses.filterFn(fset).isEmpty() || !changedOldClasses.filterFn(fset).isEmpty())) {
-            ServerLoggers.exInfoLogger.info("CLASSCHANGE : " + changedNewClasses + " " + changedOldClasses + " " + changeTable + " " + change);
+            ServerLoggers.exInfoLogger.info("CLASSCHANGE : " + changedNewClasses + " " + changedOldClasses + " " + addClasses + " " + removeClasses + " " + changeTable + " " + change);
 
             if(changeTable != null && changeTable.getCount() < 40) {
                 changeTable.table.outClasses(sql, baseClass, new Processor<String>() {
