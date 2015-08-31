@@ -1865,6 +1865,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 if (remove.contains(value)) {
                     Join<String> newJoin = news.join(query.getMapExprs().get(table.mapFields.getKey(i)));
                     removeWhere = removeWhere.or(newJoin.getWhere().and(isValueClass(newJoin.getExpr("value"), (CustomClass) value, usedNewClasses).not()));
+                    if(Settings.get().isSaleInvoiceDetailLog() && table.toString().contains("saleLedger")) {
+                        ServerLoggers.exinfoLog("PACKREMOVECLASSES : " + removeWhere + " " +  usedNewClasses + " " + value + " " + news);
+                    }
                 }
             }
             query.and(table.join(query.getMapExprs()).getWhere().and(removeWhere));
