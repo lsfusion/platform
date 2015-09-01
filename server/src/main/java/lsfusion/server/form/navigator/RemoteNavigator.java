@@ -424,7 +424,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             }
         } catch (Exception e) {
             logger.error("Error updating user activity: ", e);
-            throw Throwables.propagate(e);
         }
     }
 
