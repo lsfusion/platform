@@ -2,21 +2,14 @@ package lsfusion.server.stack;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ConcurrentWeakHashMap;
-import lsfusion.base.col.ListFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
-import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.ActionProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.ConcurrentModificationException;
 import java.util.ListIterator;
 import java.util.Stack;
@@ -24,7 +17,7 @@ import java.util.Stack;
 @Aspect
 public class ExecutionStackAspect {
     private static ConcurrentWeakHashMap<Thread, Stack<ExecutionStackItem>> executionStack = new ConcurrentWeakHashMap<>();
-    private static ConcurrentWeakHashMap<Throwable, String> exceptionCauseMap = new ConcurrentWeakHashMap<>();
+    private static ThreadLocal<String> threadLocalExceptionStack = new ThreadLocal<>();
     
     @Around("execution(lsfusion.server.logics.property.actions.flow.FlowResult lsfusion.server.logics.property.ActionProperty.execute(lsfusion.server.logics.property.ExecutionContext)) && args(executionContext)")
     public Object execution(final ProceedingJoinPoint joinPoint, final ExecutionContext executionContext) throws Throwable {
@@ -54,10 +47,10 @@ public class ExecutionStackAspect {
         try {
             return joinPoint.proceed();
         } catch (Throwable e) {
-            if (!(e instanceof HandledException && ((HandledException)e).willDefinitelyBeHandled()) && !exceptionCauseMap.containsKey(e)) {
+            if (!(e instanceof HandledException && ((HandledException)e).willDefinitelyBeHandled()) && threadLocalExceptionStack.get() == null) {
                 String stackString = getStackString();
                 if (stackString != null) {
-                    exceptionCauseMap.put(e, stackString);
+                    threadLocalExceptionStack.set(stackString);
                 }
             }
             throw e;
@@ -88,9 +81,13 @@ public class ExecutionStackAspect {
         return executionStack.get(thread);
     }
 
-    public static String getStackString(Throwable t) {
-        String result = exceptionCauseMap.get(t);
-        exceptionCauseMap.remove(t);
+    public static void setStackString(String stackString) {
+        threadLocalExceptionStack.set(stackString);
+    }
+    
+    public static String getExceptionStackString() {
+        String result = threadLocalExceptionStack.get();
+        threadLocalExceptionStack.set(null);
         return result != null ? result : getStackString();
     }
     
@@ -107,7 +104,7 @@ public class ExecutionStackAspect {
                     try {
                         result = getStackString(stack);
                         break;
-                    } catch (ConcurrentModificationException e) {
+                    } catch (ConcurrentModificationException ignored) {
                     }
                 }
             } else {

@@ -171,7 +171,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         String message = Throwables.getRootCause(t).getLocalizedMessage();
         String errorType = t.getClass().getName();
         String erTrace = ExceptionUtils.getStackTraceString(t);
-        String lsfStack = ExecutionStackAspect.getStackString(t);
+        String lsfStack = ExecutionStackAspect.getExceptionStackString();
 
         try (DataSession session = createSession()) {
             DataObject exceptionObject;

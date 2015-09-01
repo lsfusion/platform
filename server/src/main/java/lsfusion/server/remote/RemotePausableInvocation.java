@@ -5,6 +5,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ServerResponse;
+import lsfusion.server.stack.ExecutionStackAspect;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -169,6 +170,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
 
     @Override
     protected ServerResponse handleThrows(Throwable t) throws RemoteException {
+        ExecutionStackAspect.setStackString(getLSFStack());
         throw ExceptionUtils.propagateRemoteException(t);
     }
 

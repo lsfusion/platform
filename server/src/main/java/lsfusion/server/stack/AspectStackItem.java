@@ -24,7 +24,7 @@ public class AspectStackItem implements ExecutionStackItem {
             Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
 
             Annotation annotation = method.getAnnotation(StackMessage.class);
-            String resultMessage = ServerResourceBundle.getString(((StackMessage) annotation).value());;
+            String resultMessage = ServerResourceBundle.getString(((StackMessage) annotation).value());
 
             ImList<String> params = getArgs(thisJoinPoint, method);
             if (!params.isEmpty()) {

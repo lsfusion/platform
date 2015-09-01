@@ -1,6 +1,7 @@
 package lsfusion.server.remote;
 
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.stack.ExecutionStackAspect;
 import org.apache.log4j.Logger;
 
 import java.util.concurrent.Callable;
@@ -16,6 +17,9 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
 
     private InvocationResult invocationResult;
     private Future<?> invocationFuture;
+    
+    // при переходе между потоками передаём также и LSF стек
+    private String lsfStackTrace;
 
     //т.к. это просто вспомогательный объект, то достаточно одного статического
     private final static Object syncObject = new Object();
@@ -46,7 +50,8 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
-
+                lsfStackTrace = null;
+                
                 logger.debug("Run invocation: " + sid);
 
                 try {
@@ -55,6 +60,7 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
                     logger.debug("Invocation " + sid + " finished");
                 } catch (Throwable t) {
                     invocationResult = new InvocationResult(t);
+                    lsfStackTrace = ExecutionStackAspect.getExceptionStackString();
                     logger.debug("Invocation " + sid + " thrown an exception: ", t);
                 }
 
@@ -96,6 +102,13 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
      * основной поток
      */
     protected abstract T handlePaused() throws E;
+    
+    protected String getLSFStack() {
+        if (invocationResult.getStatus() == InvocationResult.Status.EXCEPTION_THROWN) {
+            return lsfStackTrace;
+        }
+        return null;
+    }
 
     /**
      * Должно вызываться в основном потоке <br/>
