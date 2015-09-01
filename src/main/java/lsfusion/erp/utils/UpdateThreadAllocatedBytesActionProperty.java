@@ -1,7 +1,9 @@
 package lsfusion.erp.utils;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.Settings;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -14,9 +16,9 @@ import java.sql.SQLException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class SetThreadAllocatedMemoryEnabledActionProperty extends ScriptingActionProperty {
+public class UpdateThreadAllocatedBytesActionProperty extends ScriptingActionProperty {
 
-    public SetThreadAllocatedMemoryEnabledActionProperty(ScriptingLogicsModule LM) {
+    public UpdateThreadAllocatedBytesActionProperty(ScriptingLogicsModule LM) {
         super(LM);
     }
 
@@ -24,27 +26,24 @@ public class SetThreadAllocatedMemoryEnabledActionProperty extends ScriptingActi
     protected void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             final boolean readAllocatedBytes = findProperty("readAllocatedBytes").read(context) != null;
+            final long period = Settings.get().getThreadAllocatedMemoryPeriod();
             Timer timer = new Timer("ReadAllocatedBytes", true);
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
-                    setThreadAllocatedMemoryEnabled(tBean, readAllocatedBytes);
+                    updateThreadAllocatedBytesMap(tBean, readAllocatedBytes);
                 }
-            }, 0, 1800000); //every 30 minutes
+            }, 0, (period <= 0 ? 1800000 : period) / 2);
         } catch (ScriptingErrorLog.SemanticErrorException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    private void setThreadAllocatedMemoryEnabled(ThreadMXBean tBean, boolean readAllocatedBytes) {
+    private void updateThreadAllocatedBytesMap(ThreadMXBean tBean, boolean readAllocatedBytes) {
         if (tBean instanceof com.sun.management.ThreadMXBean) {
-            com.sun.management.ThreadMXBean sunBean = (com.sun.management.ThreadMXBean) tBean;
-            if (sunBean.isThreadAllocatedMemorySupported()) {
-                if (readAllocatedBytes && sunBean.isThreadAllocatedMemoryEnabled()) //reset value
-                    sunBean.setThreadAllocatedMemoryEnabled(false);
-                sunBean.setThreadAllocatedMemoryEnabled(readAllocatedBytes);
-            }
+            if (((com.sun.management.ThreadMXBean) tBean).isThreadAllocatedMemorySupported() && readAllocatedBytes)
+                    SQLSession.updateThreadAllocatedBytesMap();
         }
     }
 }

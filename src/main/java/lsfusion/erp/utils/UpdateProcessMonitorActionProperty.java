@@ -99,7 +99,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
         ImOrderSet<LCP> propsJava = getProps(findProperties("idThreadProcess", "stackTraceJavaProcess", "nameJavaProcess", "statusJavaProcess",
                 "lockNameJavaProcess", "lockOwnerIdProcess", "lockOwnerNameProcess", "nameComputerJavaProcess", "nameUserJavaProcess", "lsfStackTraceProcess",
-                "threadAllocatedBytesProcess"));
+                "threadAllocatedBytesProcess", "lastThreadAllocatedBytesProcess"));
 
         ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess", "querySQLProcess", "addressUserSQLProcess", "dateTimeSQLProcess",
                 "isActiveSQLProcess", "inTransactionSQLProcess", "computerProcess", "userProcess", "lockOwnerIdProcess", "lockOwnerNameProcess",
@@ -162,6 +162,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
             case "threadAllocatedBytesProcess":
                 Long threadAllocatedBytes = (Long) javaProcess.get(9);
                 return threadAllocatedBytes == null ? NullValue.instance : new DataObject(threadAllocatedBytes, LongClass.instance);
+            case "lastThreadAllocatedBytesProcess":
+                Long lastThreadAllocatedBytes = (Long) javaProcess.get(10);
+                return lastThreadAllocatedBytes == null ? NullValue.instance : new DataObject(lastThreadAllocatedBytes, LongClass.instance);
             default:
                 return NullValue.instance;
         }
@@ -516,9 +519,10 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         String user = logInfo == null ? null : logInfo.userName;
         String lsfStack = getLSFStack(thread);
         Long allocatedBytes = getThreadAllocatedBytes(tBean, readAllocatedBytes, id);
+        Long lastAllocatedBytes = SQLSession.getThreadAllocatedBytes(id);
 
         return !onlyActive || isActiveJavaProcess(status, stackTrace, checkStackTrace) ? Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId,
-                lockOwnerName, computer, user, lsfStack, allocatedBytes) : null;
+                lockOwnerName, computer, user, lsfStack, allocatedBytes, lastAllocatedBytes) : null;
     }
 
     private boolean isActiveJavaProcess(String status, String stackTrace, boolean checkStackTrace) {
