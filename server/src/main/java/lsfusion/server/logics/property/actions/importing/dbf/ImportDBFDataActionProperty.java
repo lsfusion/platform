@@ -31,7 +31,7 @@ public class ImportDBFDataActionProperty extends ImportDataActionProperty {
             Files.write(file, tmpFile);
             DBF dbf = new DBF(tmpFile.getAbsolutePath());
 
-            Map<String, Integer> fieldMapping = new HashMap<String, Integer>();
+            Map<String, Integer> fieldMapping = new HashMap<>();
             for (int i = 1; i <= dbf.getFieldCount(); i++) {
                 fieldMapping.put(dbf.getField(i).getName().toLowerCase(), i);
             }

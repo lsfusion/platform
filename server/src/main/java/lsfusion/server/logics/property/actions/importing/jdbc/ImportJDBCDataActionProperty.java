@@ -28,7 +28,7 @@ public class ImportJDBCDataActionProperty extends ImportDataActionProperty {
             CachedRowSetImpl rs = BaseUtils.deserializeResultSet(file);
             ResultSetMetaData rsmd = rs.getMetaData();
 
-            Map<String, Integer> fieldMapping = new HashMap<String, Integer>();
+            Map<String, Integer> fieldMapping = new HashMap<>();
             for (int i = 1; i <= rsmd.getColumnCount(); i++) {
                 fieldMapping.put(rsmd.getColumnName(i), i);
             }
@@ -36,11 +36,7 @@ public class ImportJDBCDataActionProperty extends ImportDataActionProperty {
             
             return new ImportJDBCIterator(rs, sourceColumns);
             
-        } catch (ClassNotFoundException e) {
-            throw Throwables.propagate(e);
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        } catch (IOException e) {
+        } catch (ClassNotFoundException | SQLException | IOException e) {
             throw Throwables.propagate(e);
         }
     }

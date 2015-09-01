@@ -24,9 +24,9 @@ public class ImportMDBDataActionProperty extends ImportDataActionProperty {
 
         try {
             List<Map<String, Object>> rows = (List<Map<String, Object>>) BaseUtils.deserializeCustomObject(file);
-            List<List<String>> rowsList = new ArrayList<List<String>>();
+            List<List<String>> rowsList = new ArrayList<>();
 
-            Map<String, Integer> fieldMapping = new HashMap<String, Integer>();
+            Map<String, Integer> fieldMapping = new HashMap<>();
             int i = 0;
             if(!rows.isEmpty()) {
                 for (Map.Entry<String, Object> entry : rows.get(0).entrySet()) {
@@ -36,7 +36,7 @@ public class ImportMDBDataActionProperty extends ImportDataActionProperty {
             }
 
             for (Map<String, Object> row : rows) {
-                List<String> entryList = new ArrayList<String>();
+                List<String> entryList = new ArrayList<>();
                 for (Object entry : row.values())
                     entryList.add(entry == null ? null : String.valueOf(entry));
                 rowsList.add(entryList);
@@ -46,9 +46,7 @@ public class ImportMDBDataActionProperty extends ImportDataActionProperty {
 
             return new ImportMDBIterator(rowsList, sourceColumns);
             
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw Throwables.propagate(e);
         }
     }

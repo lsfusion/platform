@@ -23,6 +23,6 @@ public class ImportCSVDataActionProperty extends ImportDataActionProperty {
 
     @Override
     public ImportIterator getIterator(byte[] file) {
-        return new ImportCSVIterator(file, charset, separator, noHeader, properties.size());
+        return new ImportCSVIterator(file, getSourceColumns(XLSColumnsMapping), charset, separator, noHeader);
     }
 }
