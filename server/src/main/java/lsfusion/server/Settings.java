@@ -224,6 +224,8 @@ public class Settings {
 
     private boolean groupByTables = true; //для recalculate
 
+    private long threadAllocatedMemoryPeriod = 300000; //every 5 minutes
+
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
     }
@@ -1454,6 +1456,14 @@ public class Settings {
 
     public void setGroupByTables(boolean groupByTables) {
         this.groupByTables = groupByTables;
+    }
+
+    public long getThreadAllocatedMemoryPeriod() {
+        return threadAllocatedMemoryPeriod;
+    }
+
+    public void setThreadAllocatedMemoryPeriod(long threadAllocatedMemoryPeriod) {
+        this.threadAllocatedMemoryPeriod = threadAllocatedMemoryPeriod;
     }
 
     private int updateStatisticsLimit = 300; // при изменении какого количества записей будет принудительный ANALYZE таблицы делаться
