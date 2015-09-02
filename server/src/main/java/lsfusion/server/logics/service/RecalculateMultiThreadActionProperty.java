@@ -29,14 +29,15 @@ public class RecalculateMultiThreadActionProperty extends ScriptingActionPropert
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-
+        TaskRunner taskRunner = new TaskRunner();
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
             RecalculateAggregationsTask task = new RecalculateAggregationsTask();
             task.init(context);
-            TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
+            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
             context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.aggregations")) + task.getMessages(), getString("logics.recalculation.aggregations")));
         } catch (Exception e) {
+            taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("RecalculateAggregations error", e);
             context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.aggregations.error")));
         }

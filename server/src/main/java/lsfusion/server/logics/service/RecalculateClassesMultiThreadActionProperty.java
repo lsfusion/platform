@@ -29,13 +29,15 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        TaskRunner taskRunner = new TaskRunner();
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
             RecalculateClassesTask task = new RecalculateClassesTask();
             task.init(context);
-            TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
+            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
             context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculating.data.classes")) + task.getMessages(), getString("logics.recalculating.data.classes")));
         } catch (Exception e) {
+            taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Recalculate Classes error", e);
         }
     }

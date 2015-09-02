@@ -318,12 +318,13 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         }
 
         public void run() {
+            ExecuteLAPThread worker = null;
             try {
                 if(isTimeToRun(timeFrom, timeTo, daysOfWeek, daysOfMonth)) {
                     for (ScheduledTaskDetail detail : lapMap.values()) {
                         if (detail != null) {
 
-                            ExecuteLAPThread worker = new ExecuteLAPThread(detail);
+                            worker = new ExecuteLAPThread(detail);
                             worker.start();
                             worker.join(detail.timeout == null ? 0 : detail.timeout * 1000);
                             if(worker.isAlive()) {
@@ -355,6 +356,8 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     }
                 }
             } catch (Exception e) {
+                if(worker != null)
+                    worker.interrupt();
                 logger.error("Error while running scheduler task (in SchedulerTask.run()):", e);
             }
         }

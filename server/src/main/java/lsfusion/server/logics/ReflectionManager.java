@@ -85,7 +85,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     @Override
     protected void onStarted(LifecycleEvent event) {
         try {
-            TaskRunner.runTask(initTask, systemLogger);
+            new TaskRunner().runTask(initTask, systemLogger);
         } catch (Exception e) {
             throw new RuntimeException("Error starting ReflectionManager: ", e);
         }

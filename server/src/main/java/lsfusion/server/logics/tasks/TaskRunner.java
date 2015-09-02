@@ -14,16 +14,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TaskRunner {
+    ExecutorService executor;
 
     public static int availableProcessors() {
         return BaseUtils.max(Runtime.getRuntime().availableProcessors() / 2, 1);
     }
 
-    public static void runTask(PublicTask task, Logger logger) throws InterruptedException {
+    public void runTask(PublicTask task, Logger logger) throws InterruptedException {
         runTask(task, logger, null);
     }
 
-    public static void runTask(PublicTask task, Logger logger, Integer threadCount) throws InterruptedException {
+    public void runTask(PublicTask task, Logger logger, Integer threadCount) throws InterruptedException {
         Set<Task> initialTasks = new HashSet<>();
         task.markInDependencies(initialTasks);
 
@@ -31,7 +32,7 @@ public class TaskRunner {
         int nThreads = threadCount != null && threadCount != 0 ? threadCount : availableProcessors();
         TaskBlockingQueue taskQueue = new TaskBlockingQueue();
 //        BlockingQueue<Task.PriorityRunnable> taskQueue = new PriorityBlockingQueue<Task.PriorityRunnable>();
-        ExecutorService executor = new ThreadPoolExecutor(nThreads, nThreads,
+        executor = new ThreadPoolExecutor(nThreads, nThreads,
                                                           0L, TimeUnit.MILLISECONDS,
                                                           taskQueue,
                                                           new ContextAwareDaemonThreadFactory(ThreadLocalContext.get(), "init-pool"));
@@ -65,6 +66,11 @@ public class TaskRunner {
                 throw new MultiCauseException(errors.toArray(new Throwable[errors.size()]));
             }
         }
+    }
+
+    public void shutdownNow() {
+        if(executor != null)
+            executor.shutdownNow();
     }
     
     public static class ThrowableConsumer {

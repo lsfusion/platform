@@ -29,13 +29,15 @@ public class CheckAggregationsMultiThreadActionProperty extends ScriptingActionP
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        TaskRunner taskRunner = new TaskRunner();
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
             CheckAggregationsTask task = new CheckAggregationsTask();
             task.init(context);
-            TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
+            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
             context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.aggregations")) + task.getMessages(), getString("logics.checking.aggregations")));
         } catch (Exception e) {
+            taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Check Aggregations error", e);
         }
     }

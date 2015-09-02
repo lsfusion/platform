@@ -29,13 +29,15 @@ public class CheckClassesMultiThreadActionProperty extends ScriptingActionProper
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        TaskRunner taskRunner = new TaskRunner();
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
             CheckClassesTask task = new CheckClassesTask();
             task.init(context);
-            TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
+            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
             context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.data.classes")) + task.getMessages(), getString("logics.checking.data.classes"), true));
         } catch (Exception e) {
+            taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Check Classes error", e);
         }
     }

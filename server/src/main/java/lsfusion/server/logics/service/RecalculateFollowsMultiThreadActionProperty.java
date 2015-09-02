@@ -29,13 +29,15 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
+        TaskRunner taskRunner = new TaskRunner();
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
             RecalculateFollowsTask task = new RecalculateFollowsTask();
             task.init(context);
-            TaskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
+            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
             context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.follows")) + task.getMessages(), getString("logics.recalculation.follows")));
         } catch (Exception e) {
+            taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Recalculate Follows error", e);
             context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.follows.error")));
         }
