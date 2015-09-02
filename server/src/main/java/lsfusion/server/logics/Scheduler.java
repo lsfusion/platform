@@ -24,6 +24,7 @@ import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.Context;
 import lsfusion.server.context.ContextAwareThread;
+import lsfusion.server.context.LogicsInstanceContext;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
@@ -304,6 +305,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         private Set<String> daysOfMonth;
         private DataObject currentScheduledTaskLogFinishObject;
         private DataSession afterFinishLogSession;
+        private boolean afterFinishErrorOccurred;
 
         public SchedulerTask(TreeMap<Integer, ScheduledTaskDetail> lapMap, DataObject scheduledTask, Time timeFrom, Time timeTo, Set<String> daysOfWeek, Set<String> daysOfMonth) {
             this.threadLocalContext = ThreadLocalContext.get();
@@ -499,6 +501,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                 try (DataSession beforeStartLogSession = dbManager.createSession()) {
                     DataObject currentScheduledTaskLogStartObject = beforeStartLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
                     afterFinishLogSession = dbManager.createSession(getLogSql());
+                    afterFinishErrorOccurred = false;
                     currentScheduledTaskLogFinishObject = afterFinishLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
                     try {
                         BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) beforeStartLogSession, currentScheduledTaskLogStartObject);
@@ -530,9 +533,12 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
                             BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
                             BL.schedulerLM.propertyScheduledTaskLog.change(detail.lap.property.caption + " (" + detail.lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                            BL.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? "Выполнено успешно" : BaseUtils.truncate(applyResult, 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                            BL.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? (afterFinishErrorOccurred ? "Выполнено с ошибками" : "Выполнено успешно") : BaseUtils.truncate(applyResult, 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
                             if (applyResult != null)
                                 BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, beforeStartLogSession, currentScheduledTaskLogStartObject);
+                            if (afterFinishErrorOccurred)
+                                BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                            afterFinishErrorOccurred = false;
                             BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), afterFinishLogSession, currentScheduledTaskLogFinishObject);
 
                             String finishResult = afterFinishLogSession.applyMessage(BL);
@@ -577,7 +583,8 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             public void delayUserInteraction(ClientAction action) {
                 String message = null;
                 if (action instanceof LogMessageClientAction) {
-                    message = ((LogMessageClientAction) action).message;
+                    LogMessageClientAction logAction = (LogMessageClientAction) action;
+                    message = logAction.message + "\n" + LogicsInstanceContext.errorDataToTextTable(logAction.titles, logAction.data);
                 } else if (action instanceof MessageClientAction) {
                     message = ((MessageClientAction) action).message;
                 }
@@ -591,7 +598,12 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                         throw Throwables.propagate(e);
                     }
                 }
-                super.delayUserInteraction(action);
+                try {
+                    super.delayUserInteraction(action);
+                } catch (Exception e) {
+                    logger.error("Error while executing delayUserInteraction in SchedulerContext", e);
+                    afterFinishErrorOccurred = true;
+                }
             }
         }
     }

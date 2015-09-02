@@ -126,7 +126,7 @@ public class LogicsInstanceContext extends AbstractContext {
         return false;
     }
 
-    private String errorDataToTextTable(List<String> titles, List<List<String>> data) {
+    public static String errorDataToTextTable(List<String> titles, List<List<String>> data) {
         if (titles.size() == 0) {
             return "";
         }
