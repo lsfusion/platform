@@ -36,10 +36,11 @@ public class RecalculateMultiThreadActionProperty extends ScriptingActionPropert
             task.init(context);
             taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
             context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.aggregations")) + task.getMessages(), getString("logics.recalculation.aggregations")));
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("RecalculateAggregations error", e);
             context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.aggregations.error")));
+            Thread.currentThread().interrupt();
         }
     }
 }
