@@ -44,6 +44,10 @@ public abstract class GroupPropertiesSingleTask extends GroupSingleTask<Object> 
         messages.add(String.format("Long task %s: %sms", property, time));
     }
 
+    public void addMessage(String prefix, Object property, Exception e) {
+        messages.add(String.format("\nException occurred:\n%s %s\n%s\n", prefix, property, e));
+    }
+
     public String getMessages() {
         String message = "";
         for(String m : messages)

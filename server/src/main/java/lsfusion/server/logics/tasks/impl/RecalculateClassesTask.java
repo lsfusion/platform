@@ -89,6 +89,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
             }
             session.apply(getBL());
         } catch (SQLException | SQLHandledException e) {
+            addMessage("Recalculate Class", element, e);
             e.printStackTrace();
         }
     }

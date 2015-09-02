@@ -71,6 +71,7 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask {
             }
             session.apply(getBL());
         } catch (SQLException | SQLHandledException e) {
+            addMessage("Recalculate Stats", element, e);
             e.printStackTrace();
         }
     }

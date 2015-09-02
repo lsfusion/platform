@@ -61,6 +61,7 @@ public class CheckClassesTask extends GroupPropertiesSingleTask{
                 serviceLogger.info(String.format("Check Classes: %s, %sms", ((CalcProperty) property).getSID(), time));
             }
         } catch (SQLException | SQLHandledException e) {
+            addMessage("Check Classes", property, e);
             e.printStackTrace();
         }
     }

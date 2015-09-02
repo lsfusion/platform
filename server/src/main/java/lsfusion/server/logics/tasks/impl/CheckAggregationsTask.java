@@ -36,6 +36,7 @@ public class CheckAggregationsTask extends GroupPropertiesSingleTask{
                     addMessage(property, time);
                 serviceLogger.info(String.format("Check Aggregations: %s, %sms", ((AggregateProperty) property).getSID(), time));
             } catch (SQLException | SQLHandledException e) {
+                addMessage("Check Aggregation", property, e);
                 e.printStackTrace();
             }
         }

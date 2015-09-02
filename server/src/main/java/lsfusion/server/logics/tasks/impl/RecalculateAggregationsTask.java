@@ -43,6 +43,7 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
                 });
                 session.apply(getBL());
             } catch (SQLException | SQLHandledException e) {
+                addMessage("Recalculate Aggregation", property, e);
                 e.printStackTrace();
             }
         }

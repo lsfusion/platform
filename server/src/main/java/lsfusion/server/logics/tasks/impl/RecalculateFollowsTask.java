@@ -50,6 +50,7 @@ public class RecalculateFollowsTask extends GroupPropertiesSingleTask {
                 }
             }
         } catch (SQLException | SQLHandledException e) {
+            addMessage("Recalculate Follows", property, e);
             e.printStackTrace();
         }
     }
