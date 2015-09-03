@@ -29,7 +29,7 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        TaskRunner taskRunner = new TaskRunner();
+        TaskRunner taskRunner = new TaskRunner(context.getBL());
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
             RecalculateClassesTask task = new RecalculateClassesTask();
@@ -40,6 +40,7 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Recalculate Classes error", e);
             Thread.currentThread().interrupt();
+            taskRunner.killSQLProcesses();
         }
     }
 }

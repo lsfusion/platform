@@ -28,7 +28,7 @@ public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionPr
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        TaskRunner taskRunner = new TaskRunner();
+        TaskRunner taskRunner = new TaskRunner(context.getBL());
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
             RecalculateStatsTask task = new RecalculateStatsTask();
@@ -40,6 +40,7 @@ public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionPr
             ServerLoggers.serviceLogger.error("Recalculate Stats error", e);
             context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.stats.error")));
             Thread.currentThread().interrupt();
+            taskRunner.killSQLProcesses();
         }
     }
 

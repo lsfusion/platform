@@ -29,7 +29,7 @@ public class CheckClassesMultiThreadActionProperty extends ScriptingActionProper
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        TaskRunner taskRunner = new TaskRunner();
+        TaskRunner taskRunner = new TaskRunner(context.getBL());
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
             CheckClassesTask task = new CheckClassesTask();
@@ -40,6 +40,7 @@ public class CheckClassesMultiThreadActionProperty extends ScriptingActionProper
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Check Classes error", e);
             Thread.currentThread().interrupt();
+            taskRunner.killSQLProcesses();
         }
     }
 }

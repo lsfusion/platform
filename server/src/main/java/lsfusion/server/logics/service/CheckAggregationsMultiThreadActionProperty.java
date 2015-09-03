@@ -29,7 +29,7 @@ public class CheckAggregationsMultiThreadActionProperty extends ScriptingActionP
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        TaskRunner taskRunner = new TaskRunner();
+        TaskRunner taskRunner = new TaskRunner(context.getBL());
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
             CheckAggregationsTask task = new CheckAggregationsTask();
@@ -40,6 +40,7 @@ public class CheckAggregationsMultiThreadActionProperty extends ScriptingActionP
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Check Aggregations error", e);
             Thread.currentThread().interrupt();
+            taskRunner.killSQLProcesses();
         }
     }
 }

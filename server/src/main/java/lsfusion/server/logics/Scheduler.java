@@ -330,10 +330,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                             if(worker.isAlive()) {
                                 if(ThreadLocalContext.get() == null)
                                     ThreadLocalContext.set(threadLocalContext);
-                                Map<Integer, Integer> sqlProcesses = dbManager.getAdapter().getSyntaxType() == SQLSyntaxType.POSTGRES ? getPostgresProcesses() : getMSSQLProcesses();
-                                Integer sqlProcess = sqlProcesses.get((int) worker.getId());
-                                if(sqlProcess != null)
-                                    dbManager.getAdapter().killProcess(sqlProcess);
+                                SQLUtils.killSQLProcess(BL, dbManager, worker.getId());
                                 worker.interrupt();
                                 logger.error("Timeout error while running scheduler task (in executeLAP()) " + detail.lap.property.caption);
                                 try (DataSession timeoutLogSession = dbManager.createSession(getLogSql())){
@@ -359,98 +356,6 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                 if(worker != null)
                     worker.interrupt();
                 logger.error("Error while running scheduler task (in SchedulerTask.run()):", e);
-            }
-        }
-
-        private Map<Integer, Integer> getMSSQLProcesses() throws SQLException, SQLHandledException {
-            Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
-            String originalQuery = "Select A.session_id, text\n" +
-                    "from sys.dm_exec_sessions A\n" +
-                    "Left Join sys.dm_exec_requests B\n" +
-                    "On A.[session_id]=B.[session_id]\n" +
-                    "Left Join sys.dm_exec_connections C\n" +
-                    "On A.[session_id]=C.[session_id]\n" +
-                    "CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS sqltext";
-
-            MExclSet<String> keyNames = SetFact.mExclSet();
-            keyNames.exclAdd("numberrow");
-            keyNames.immutable();
-
-            MExclMap<String, Reader> keyReaders = MapFact.mExclMap();
-            keyReaders.exclAdd("numberrow", new CustomReader());
-            keyReaders.immutable();
-
-            MExclSet<String> propertyNames = SetFact.mExclSet();
-            propertyNames.exclAdd("text");
-            propertyNames.exclAdd("session_id");
-            propertyNames.immutable();
-
-            MExclMap<String, Reader> propertyReaders = MapFact.mExclMap();
-            propertyReaders.exclAdd("text", StringClass.get(1000));
-            propertyReaders.exclAdd("session_id", IntegerClass.instance);
-            propertyReaders.immutable();
-
-            try(DataSession session = dbManager.createSession()) {
-                ImOrderMap rs = session.sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap()
-                        , 0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
-
-                Map<Integer, Integer> resultMap = new HashMap<>();
-                for (Object rsValue : rs.values()) {
-                    HMap entry = (HMap) rsValue;
-                    String query = trimToNull((String) entry.get("text"));
-                    Integer processId = (Integer) entry.get("session_id");
-
-                    if (!query.equals(originalQuery)) {
-                        List<Object> sessionThread = sessionThreadMap.get(processId);
-                        if (sessionThread != null && sessionThread.get(0) != null) {
-                            resultMap.put((Integer) sessionThread.get(0), processId);
-                        }
-                    }
-                }
-                return resultMap;
-            }
-        }
-
-        private Map<Integer, Integer> getPostgresProcesses() throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
-
-            String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s'", BL.getDataBaseName());
-
-            MExclSet<String> keyNames = SetFact.mExclSet();
-            keyNames.exclAdd("numberrow");
-            keyNames.immutable();
-
-            MExclMap<String, Reader> keyReaders = MapFact.mExclMap();
-            keyReaders.exclAdd("numberrow", new CustomReader());
-            keyReaders.immutable();
-
-            MExclSet<String> propertyNames = SetFact.mExclSet();
-            propertyNames.exclAdd("query");
-            propertyNames.exclAdd("pid");
-            propertyNames.immutable();
-
-            MExclMap<String, Reader> propertyReaders = MapFact.mExclMap();
-            propertyReaders.exclAdd("query", StringClass.get(1000));
-            propertyReaders.exclAdd("pid", IntegerClass.instance);
-            propertyReaders.immutable();
-
-            try(DataSession session = dbManager.createSession()) {
-                ImOrderMap rs = session.sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap(),
-                        0, ((ImSet) keyNames).toRevMap(), (ImMap) keyReaders, ((ImSet) propertyNames).toRevMap(), (ImMap) propertyReaders);
-
-                Map<Integer, List<Object>> sessionThreadMap = SQLSession.getSQLThreadMap();
-
-                Map<Integer, Integer> resultMap = new HashMap<>();
-                for (Object rsValue : rs.values()) {
-                    HMap entry = (HMap) rsValue;
-                    String query = trimToNull((String) entry.get("query"));
-                    Integer processId = (Integer) entry.get("pid");
-                    if (!query.equals(originalQuery)) {
-                        List<Object> sessionThread = sessionThreadMap.get(processId);
-                        if(sessionThread != null && sessionThread.get(0) != null)
-                            resultMap.put((Integer) sessionThread.get(0), processId);
-                    }
-                }
-                return resultMap;
             }
         }
 

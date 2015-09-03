@@ -3,18 +3,28 @@ package lsfusion.server.logics.tasks;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.MultiCauseException;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.SQLUtils;
 import org.apache.log4j.Logger;
 
+import java.lang.reflect.Field;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TaskRunner {
-    ExecutorService executor;
+    BusinessLogics BL;
+    ThreadPoolExecutor executor;
+
+    public TaskRunner(BusinessLogics BL) {
+        this.BL = BL;
+    }
 
     public static int availableProcessors() {
         return BaseUtils.max(Runtime.getRuntime().availableProcessors() / 2, 1);
@@ -71,6 +81,24 @@ public class TaskRunner {
     public void shutdownNow() {
         if(executor != null)
             executor.shutdownNow();
+    }
+
+    public void killSQLProcesses() throws SQLException, SQLHandledException {
+        try {
+            Field workerField = ThreadPoolExecutor.class.getDeclaredField("workers");
+            workerField.setAccessible(true);
+            Class workerClass = Class.forName("java.util.concurrent.ThreadPoolExecutor$Worker");
+
+            HashSet<Object> workers = (HashSet<Object>) workerField.get(executor);
+            Field threadField = workerClass.getDeclaredField("thread");
+            threadField.setAccessible(true);
+            for(Object worker : workers) {
+                Thread thread = (Thread) threadField.get(worker);
+                SQLUtils.killSQLProcess(BL, BL.getDbManager(), thread.getId());
+            }
+        } catch (IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
+            ServerLoggers.systemLogger.error("Failed to kill sql processes in TaskRunner", e);
+        }
     }
     
     public static class ThrowableConsumer {

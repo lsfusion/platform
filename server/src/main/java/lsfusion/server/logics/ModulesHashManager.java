@@ -47,7 +47,7 @@ public class ModulesHashManager extends LifecycleAdapter implements Initializing
     @Override
     protected void onStarted(LifecycleEvent event) {
         try {
-            new TaskRunner().runTask(initTask, systemLogger);
+            new TaskRunner(businessLogics).runTask(initTask, systemLogger);
         } catch (Exception e) {
             throw new RuntimeException("Error starting ReflectionManager: ", e);
         }
