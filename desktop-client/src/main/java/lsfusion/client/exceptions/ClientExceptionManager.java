@@ -31,7 +31,7 @@ public class ClientExceptionManager {
                     reportClientThrowable(e); // обычный throwable
                 }
                 if (remote instanceof RemoteServerException) {
-                    Log.error("Внутренняя ошибка сервера", e);
+                    Log.error("Внутренняя ошибка сервера, обратитесь к администратору", e);
                     reportServerRemoteThrowable((RemoteServerException) remote);
                 }
                 if(remote instanceof FatalHandledRemoteException) {

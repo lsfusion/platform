@@ -91,7 +91,7 @@ public final class Log {
     }
 
     public static void error(String message) {
-        error(message, null, null);
+        error(message, null, null, false);
     }
 
     public static void error(String message, Throwable t) {
@@ -99,22 +99,22 @@ public final class Log {
     }
 
     public static void error(String message, String trace) {
-        error(message, null, null, trace);
+        error(message, null, null, trace, false);
     }
 
-    public static void error(String message, List<String> titles, List<List<String>> data) {
-        error(message, titles, data, "");
+    public static void error(String message, List<String> titles, List<List<String>> data, boolean warning) {
+        error(message, titles, data, "", warning);
     }
 
     public static void error(String message, Throwable t, boolean forcedShowError) {
         error(message, null, null, ExceptionUtils.getStackTraceString(t), forcedShowError);
     }
 
-    private static void error(String message, List<String> titles, List<List<String>> data, String trace) {
-        error(message, titles, data, trace, false);
+    private static void error(String message, List<String> titles, List<List<String>> data, String trace, boolean warning) {
+        error(message, titles, data, trace, false, warning);
     }
 
-    private static void error(String message, List<String> titles, List<List<String>> data, String trace, boolean forcedShowError) {
+    private static void error(String message, List<String> titles, List<List<String>> data, String trace, boolean forcedShowError, boolean warning) {
         if (!forcedShowError && ConnectionLostManager.isConnectionLost()) {
             return;
         }
@@ -156,8 +156,7 @@ public final class Log {
         } else {
             opt = new String[]{"OK"};
         }
-
-        final JOptionPane optionPane = new JOptionPane(mainPanel, JOptionPane.ERROR_MESSAGE,
+        final JOptionPane optionPane = new JOptionPane(mainPanel, warning ? JOptionPane.WARNING_MESSAGE : JOptionPane.ERROR_MESSAGE,
                                      JOptionPane.YES_NO_OPTION,
                                      null,
                                      opt,
