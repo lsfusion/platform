@@ -177,7 +177,7 @@ FORM processMonitor 'Монитор процессов'
                            stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, 
                            idSQLProcess, fullQuerySQLProcess
     PROPERTIES(i) TOOLBAR cancelProcess, killProcess, cancelJavaProcess SHOWIF showExtraButtons(i), killJavaProcess SHOWIF showExtraButtons(i)                       
-    FILTERS idThreadProcess(i), statusJavaProcess(i) != 'BLOCKED'
+    FILTERS idThreadProcess(i), NOT statusJavaProcess(i) OR statusJavaProcess(i) != 'BLOCKED'
     EVENTS ON INIT setDefaultProcessType()
     
     TREE blocking i2 = VARSTRING[10] PARENT threadOwnerProcess
