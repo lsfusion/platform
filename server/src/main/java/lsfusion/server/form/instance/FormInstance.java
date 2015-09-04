@@ -984,7 +984,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         QueryBuilder<Object, String> query = new QueryBuilder<Object, String>(MapFact.<Object, KeyExpr>EMPTYREV());
         query.addProperty("sum", expr);
         ImOrderMap<ImMap<Object, Object>, ImMap<String, Object>> result = query.execute(this);
-        return result.getValue(0).get("sum");
+        Object sum = result.getValue(0).get("sum");
+        return sum == null ? 0 : sum;
     }
 
     private static String getSID(PropertyDrawInstance property, int index) {
