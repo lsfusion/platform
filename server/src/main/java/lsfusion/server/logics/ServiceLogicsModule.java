@@ -50,9 +50,9 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         serviceDBAction = findAction("serviceDBAction");
         singleTransaction = findProperty("singleTransaction");
 
-        recalculateMultiThreadAction = findAction("recalculateMultiThreadAction");
-        recalculateClassesMultiThreadAction = findAction("recalculateClassesMultiThreadAction");
-        recalculateFollowsMultiThreadAction = findAction("recalculateFollowsMultiThreadAction");
-        recalculateStatsMultiThreadAction = findAction("recalculateStatsMultiThreadAction");
+        recalculateMultiThreadAction = findAction("recalculateMultiThreadAction[]");
+        recalculateClassesMultiThreadAction = findAction("recalculateClassesMultiThreadAction[]");
+        recalculateFollowsMultiThreadAction = findAction("recalculateFollowsMultiThreadAction[]");
+        recalculateStatsMultiThreadAction = findAction("recalculateStatsMultiThreadAction[]");
     }
 }
