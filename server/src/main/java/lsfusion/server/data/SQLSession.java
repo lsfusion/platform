@@ -425,10 +425,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
                         int transTablesCount = privateConnection.temporary.getCounter() - transactionCounter;
                         ServerLoggers.assertLog(transactionTables.size() == transTablesCount, "CONSEQUENT TRANSACTION TABLES");
-                        for(int i=0;i<transTablesCount;i++) {
+                        for(String transactionTable : transactionTables) {
                             //                dropTemporaryTableFromDB(transactionTable);
 
-                            String transactionTable = privateConnection.temporary.getTableName(i+transactionCounter);
+//                            String transactionTable = privateConnection.temporary.getTableName(i+transactionCounter);
 
                             ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES");
 //                            returnUsed(transactionTable, sessionTablesMap);
