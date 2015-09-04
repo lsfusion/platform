@@ -1,5 +1,6 @@
 package lsfusion.server.stack;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.debug.ActionDelegationType;
@@ -24,9 +25,13 @@ public class ExecuteActionStackItem implements ExecutionStackItem {
     public void setPropertyName(String propertyName) {
         this.propertyName = propertyName;
     }
-    
+
+    public String getCaption() {
+        return BaseUtils.nullEmpty(property.caption);
+    }
+
     public String getCanonicalName() {
-        return property.getCanonicalName();
+        return BaseUtils.nullEmpty(property.getCanonicalName());
     }
     
     public DebugInfo getDebugInfo() {
@@ -44,7 +49,14 @@ public class ExecuteActionStackItem implements ExecutionStackItem {
     @Override
     public String toString() {
         String result = ServerResourceBundle.getString("message.execute.action");
-        result += " : " + property;
+        if(propertyName != null) {
+            result += " : " + propertyName;
+            if(property.getDebugInfo() != null) {
+                result += ":" + property.getDebugInfo();
+            }
+        } else {
+            result += " : " + property;
+        }
         if (executionContext.getEnv() instanceof FormInstance) {
             result += " : " + executionContext.getEnv();
         }

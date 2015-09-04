@@ -117,20 +117,46 @@ public class ExecutionStackAspect {
     private static String getStackString(Stack<ExecutionStackItem> stack) {
         String result = "";
         ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.size());
+        boolean lastActionFound = false;
         while (itemListIterator.hasPrevious()) {
             ExecutionStackItem item = itemListIterator.previous();
-            if (presentItem(item)) {
+            if (presentItem(item) || !lastActionFound) {
                 if (!result.isEmpty()) {
                     result += "\n";
                 }
-                result += item;
+
+                if (isLSFAction(item) && !lastActionFound) {
+                    lastActionFound = true;
+                    result += getLastActionString(stack, (ExecuteActionStackItem) item);
+                } else {
+                    result += item;    
+                }
             }
         }
         return result;
     }
+    
+    // для последнего action'а в стеке ищем вверх по стеку первый action с именем (до action'а с IN_DELEGATE)
+    private static String getLastActionString(Stack<ExecutionStackItem> stack, ExecuteActionStackItem lastAction) {
+        ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.indexOf(lastAction) + 1); 
+        while (itemListIterator.hasPrevious()) {
+            ExecutionStackItem item = itemListIterator.previous();
+            if (isLSFAction(item)) {
+                ExecuteActionStackItem actionItem = (ExecuteActionStackItem) item;
+                if (actionItem != lastAction && actionItem.isInDelegate()) {
+                    break;
+                }
+                
+                if (actionItem.getCanonicalName() != null) {
+                    lastAction.setPropertyName(actionItem.getCaption() + " - " + actionItem.getCanonicalName());
+                    break;
+                }
+            }
+        }
+        return lastAction.toString();
+    }
 
     private static boolean presentItem(ExecutionStackItem item) {
-//        return true;
         return !isLSFAction(item) || ((ExecuteActionStackItem) item).isInDelegate();
     }
     
