@@ -1,20 +1,16 @@
 package lsfusion.server.stack;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.ExecutionContext;
 
 public class ExecuteActionStackItem implements ExecutionStackItem {
-    private ExecutionContext executionContext;
     private final ActionProperty property;
     private String propertyName;
 
-    public ExecuteActionStackItem(ExecutionContext executionContext, ActionProperty property) {
-        this.executionContext = executionContext;
+    public ExecuteActionStackItem(ActionProperty property) {
         this.property = property;
     }
     
@@ -56,9 +52,6 @@ public class ExecuteActionStackItem implements ExecutionStackItem {
             }
         } else {
             result += " : " + property;
-        }
-        if (executionContext.getEnv() instanceof FormInstance) {
-            result += " : " + executionContext.getEnv();
         }
         return result;
     }

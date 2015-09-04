@@ -5,7 +5,6 @@ import lsfusion.base.ConcurrentWeakHashMap;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
 import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.ExecutionContext;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -19,9 +18,9 @@ public class ExecutionStackAspect {
     private static ConcurrentWeakHashMap<Thread, Stack<ExecutionStackItem>> executionStack = new ConcurrentWeakHashMap<>();
     private static ThreadLocal<String> threadLocalExceptionStack = new ThreadLocal<>();
     
-    @Around("execution(lsfusion.server.logics.property.actions.flow.FlowResult lsfusion.server.logics.property.ActionProperty.execute(lsfusion.server.logics.property.ExecutionContext)) && args(executionContext)")
-    public Object execution(final ProceedingJoinPoint joinPoint, final ExecutionContext executionContext) throws Throwable {
-        ExecuteActionStackItem item = new ExecuteActionStackItem(executionContext, (ActionProperty) joinPoint.getTarget());
+    @Around("execution(lsfusion.server.logics.property.actions.flow.FlowResult lsfusion.server.logics.property.ActionProperty.execute(lsfusion.server.logics.property.ExecutionContext))")
+    public Object execution(final ProceedingJoinPoint joinPoint) throws Throwable {
+        ExecuteActionStackItem item = new ExecuteActionStackItem((ActionProperty) joinPoint.getTarget());
         return processStackItem(joinPoint, item);
     }
 
@@ -29,6 +28,12 @@ public class ExecutionStackAspect {
     public Object callTwinMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         AspectStackItem item = new AspectStackItem(thisJoinPoint);
         return processStackItem(thisJoinPoint, item);
+    }
+
+    @Around("execution(public * lsfusion.interop.form.RemoteFormInterface.*(..))")
+    public Object execute(ProceedingJoinPoint joinPoint) throws Throwable {
+        RMICallStackItem item = new RMICallStackItem(joinPoint);
+        return processStackItem(joinPoint, item);
     }
 
     // тут важно что цикл жизни ровно в стеке, иначе утечку можем получить
@@ -81,8 +86,15 @@ public class ExecutionStackAspect {
         return executionStack.get(thread);
     }
 
-    public static void setStackString(String stackString) {
-        threadLocalExceptionStack.set(stackString);
+    public static void setStackString(String exceptionStackString) {
+        String stackString = getStackString();
+        if (stackString != null) { // RMI-часть стека тоже добавляем к стеку ошибки, получаемого из ContextAwareThread
+            if (exceptionStackString != null) {
+                exceptionStackString += "\n";
+            }
+            exceptionStackString += stackString;
+        }
+        threadLocalExceptionStack.set(exceptionStackString);
     }
     
     public static String getExceptionStackString() {
