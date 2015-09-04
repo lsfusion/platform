@@ -424,13 +424,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     if(transactionCounter!=null) {
                         // в зависимости от политики или локальный пул (для сессии) или глобальный пул
                         int transTablesCount = privateConnection.temporary.getCounter() - transactionCounter;
-                        ServerLoggers.assertLog(transactionTables.size() == transTablesCount, "CONSEQUENT TRANSACTION TABLES");
+                        if(transactionTables.size() != transTablesCount) {
+                            ServerLoggers.assertLog(false, "CONSEQUENT TRANSACTION TABLES : COUNT " + transTablesCount + " " + transactionCounter + " " + transactionTables);
+                        }
                         for(String transactionTable : transactionTables) {
                             //                dropTemporaryTableFromDB(transactionTable);
 
 //                            String transactionTable = privateConnection.temporary.getTableName(i+transactionCounter);
 
-                            ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES");
+//                            ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES : WHOLE");
 //                            returnUsed(transactionTable, sessionTablesMap);
                             WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
 //                            fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + SQLSession.this + " " + ExceptionUtils.getStackTrace());
