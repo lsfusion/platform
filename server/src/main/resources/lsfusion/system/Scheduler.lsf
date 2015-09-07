@@ -77,6 +77,7 @@ TABLE scheduledClientTaskLog (ScheduledClientTaskLog);
 
 scheduledTaskLogScheduledClientTaskLog 'Лог планировщика'= DATA ScheduledTaskLog (ScheduledClientTaskLog) NOT NULL DELETE;
 messageScheduledClientTaskLog 'Сообщение'= DATA TEXT (ScheduledClientTaskLog);
+dateScheduledClientTaskLog 'Время'= DATA DATETIME (ScheduledClientTaskLog);
 
 isMessagesScheduledTaskLog 'Сообщения' (stl)= TRUE IF [=GROUP SUM 1 IF messageScheduledClientTaskLog(stcl) BY scheduledTaskLogScheduledClientTaskLog(stcl)](stl) AND NOT exceptionOccurredScheduledTaskLog(stl);
 
@@ -125,7 +126,7 @@ FORM scheduledTask 'Планировщик'
         FILTER 'Ошибка или сообщение' exceptionOccurredScheduledTaskLog(tl) OR isMessagesScheduledTaskLog(tl)
 
     OBJECTS ctl=ScheduledClientTaskLog
-    PROPERTIES (ctl) READONLY messageScheduledClientTaskLog
+    PROPERTIES (ctl) READONLY messageScheduledClientTaskLog, dateScheduledClientTaskLog
     
     OBJECTS dow=DOW
     PROPERTIES (dow) numberDOW, staticCaption 

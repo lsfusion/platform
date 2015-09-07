@@ -1389,7 +1389,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();
-            serviceLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), String.valueOf(dataTable)));
+            serviceLogger.info(String.format("Recalculate Stats %s of %s: %sms", count, tables.size(), String.valueOf(dataTable)));
             dataTable.calculateStat(this.reflectionLM, session);
             long time = System.currentTimeMillis() - start;
             serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
@@ -1535,7 +1535,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     long start = System.currentTimeMillis();
                     DataSession.recalculateTableClasses(implementTable, sql, LM.baseClass);
                     long time = System.currentTimeMillis() - start;
-                    String message = String.format("Recalculate Table Classes: %s, %s", implementTable.toString(), time);
+                    String message = String.format("Recalculate Table Classes: %s, %sms", implementTable.toString(), time);
                     serviceLogger.info(message);
                     if (time > maxRecalculateTime)
                         messageList.add(message);
@@ -1549,7 +1549,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     long start = System.currentTimeMillis();
                     property.recalculateClasses(sql, LM.baseClass);
                     long time = System.currentTimeMillis() - start;
-                    String message = String.format("Recalculate Class: %s, %s", property.getSID(), time);
+                    String message = String.format("Recalculate Class: %s, %sms", property.getSID(), time);
                     serviceLogger.info(message);
                     if (time > maxRecalculateTime)
                         messageList.add(message);

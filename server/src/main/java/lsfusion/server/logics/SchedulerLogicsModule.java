@@ -40,6 +40,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LCP scheduledTaskScheduledTaskLog;
     public LCP scheduledTaskLogScheduledClientTaskLog;
     public LCP messageScheduledClientTaskLog;
+    public LCP dateScheduledClientTaskLog;
 
     public LCP scriptText;
     public LAP evalScript;
@@ -88,6 +89,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
         scheduledTaskScheduledTaskLog = findProperty("scheduledTaskScheduledTaskLog");
         scheduledTaskLogScheduledClientTaskLog = findProperty("scheduledTaskLogScheduledClientTaskLog");
         messageScheduledClientTaskLog = findProperty("messageScheduledClientTaskLog");
+        dateScheduledClientTaskLog = findProperty("dateScheduledClientTaskLog");
 
         scriptText = findProperty("scriptText");
         evalScript = findAction("evalScript");

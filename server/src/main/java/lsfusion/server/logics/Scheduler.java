@@ -465,16 +465,18 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                             logger.error("Error while running scheduler task (in executeLAP()) " + detail.lap.property.caption + " : ", e);
 
                             try {
+                                Timestamp time = new Timestamp(System.currentTimeMillis());
                                 BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
                                 BL.schedulerLM.propertyScheduledTaskLog.change(detail.lap.property.caption + " (" + detail.lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
                                 BL.schedulerLM.resultScheduledTaskLog.change(BaseUtils.truncate(String.valueOf(e), 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
                                 BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, afterFinishLogSession, currentScheduledTaskLogFinishObject);
-                                BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                                BL.schedulerLM.dateScheduledTaskLog.change(time, afterFinishLogSession, currentScheduledTaskLogFinishObject);
 
                                 DataObject scheduledClientTaskLogObject = afterFinishLogSession.addObject(BL.schedulerLM.scheduledClientTaskLog);
                                 BL.schedulerLM.scheduledTaskLogScheduledClientTaskLog
                                         .change(currentScheduledTaskLogFinishObject, (ExecutionEnvironment) afterFinishLogSession, scheduledClientTaskLogObject);
                                 BL.schedulerLM.messageScheduledClientTaskLog.change(ExceptionUtils.getStackTrace(e), afterFinishLogSession, scheduledClientTaskLogObject);
+                                BL.schedulerLM.dateScheduledClientTaskLog.change(time, afterFinishLogSession, scheduledClientTaskLogObject);
 
                                 afterFinishLogSession.apply(BL);
                             } catch (Exception ie) {
@@ -502,11 +504,13 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     message = ((MessageClientAction) action).message;
                 }
                 if (message != null) {
+                    ServerLoggers.serviceLogger.info(message);
                     try {
                         DataObject scheduledClientTaskLogObject = afterFinishLogSession.addObject(BL.schedulerLM.scheduledClientTaskLog);
                         BL.schedulerLM.scheduledTaskLogScheduledClientTaskLog
                                 .change(currentScheduledTaskLogFinishObject, (ExecutionEnvironment) afterFinishLogSession, scheduledClientTaskLogObject);
                         BL.schedulerLM.messageScheduledClientTaskLog.change(message, afterFinishLogSession, scheduledClientTaskLogObject);
+                        BL.schedulerLM.dateScheduledClientTaskLog.change(new Timestamp(System.currentTimeMillis()), afterFinishLogSession, scheduledClientTaskLogObject);
                     } catch (SQLException | SQLHandledException e) {
                         throw Throwables.propagate(e);
                     }
