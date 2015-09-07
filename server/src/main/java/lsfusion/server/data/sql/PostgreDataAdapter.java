@@ -677,7 +677,7 @@ public class PostgreDataAdapter extends DataAdapter {
             public boolean contains(FunctionType element) {
                 return element instanceof Type;
             }}).size();
-        
+
         typeEnv.addNeedRecursion(types);
         String recursionName = genRecursionName(BaseUtils.<ImList<Type>>immutableCast(types));
         return recursionName + "('" + recName +"'," +
