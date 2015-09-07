@@ -432,7 +432,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
 //                            String transactionTable = privateConnection.temporary.getTableName(i+transactionCounter);
 
-//                            ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES : WHOLE");
+//                            ServerLoggers.assertLog(transactionTables.contains(transactionTable), "CONSEQUENT TRANSACTION TABLES : HOLE");
 //                            returnUsed(transactionTable, sessionTablesMap);
                             WeakReference<TableOwner> tableOwner = sessionTablesMap.remove(transactionTable);
 //                            fifo.add("TRANSRET " + getCurrentTimeStamp() + " " + transactionTable + " " + privateConnection.temporary + " " + BaseUtils.nullToString(tableOwner) + " " + BaseUtils.nullToString(tableOwner == null ? null : tableOwner.get()) + " " + owner + " " + SQLSession.this + " " + ExceptionUtils.getStackTrace());
@@ -715,6 +715,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             // в зависимости от политики или локальный пул (для сессии) или глобальный пул
             try {
                 table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, isNew, owner, opOwner); //, sessionTablesStackGot
+
+                if(isNew.result && isInTransaction()) { // пометим как transaction
+                    if(transactionCounter==null)
+                        transactionCounter = privateConnection.temporary.getCounter() - 1;
+                    transactionTables.add(table);
+                }
             } finally {
                 temporaryTablesLock.unlock();
             }
@@ -725,12 +731,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 returnTemporaryTable(table, owner, opOwner, t instanceof SQLTimeoutException || fill.canBeNotEmptyIfFailed()); // вернем таблицу, если не смогли ее заполнить, truncate при timeoutе потому как в остальных случаях и так должна быть пустая (строго говоря с timeout'ом это тоже перестраховка)
                 try { ServerLoggers.assertLog(problemInTransaction != null || getSessionCount(table, opOwner) == 0, "TEMPORARY TABLE AFTER FILL NOT EMPTY"); } catch (Throwable i) { ServerLoggers.sqlSuppLog(i); }
                 throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
-            } finally {
-                if(isNew.result && isInTransaction()) { // пометим как transaction
-                    if(transactionCounter==null)
-                        transactionCounter = privateConnection.temporary.getCounter() - 1;                   
-                    transactionTables.add(table);
-                }
             }
         } finally {
             unlockRead();
