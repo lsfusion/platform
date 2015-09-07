@@ -414,7 +414,7 @@ META defineDocumentInterfaceHeaderClosed (objectClass)
     @defineDocumentAbstractHeaderClosed(objectClass);
     @defineDocumentHeaderClosed(User##objectClass);
     isClosed##objectClass(o) += isClosedUser##objectClass(o);
-    close##objectClass(o) += ACTION closeUser##objectClass(o);
+    close##objectClass(o) += ACTION isClosedUser##objectClass(o) <- TRUE;
 END
 
 META defineDocumentDetailClosed (object, detailClass)
