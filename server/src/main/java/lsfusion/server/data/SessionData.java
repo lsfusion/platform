@@ -12,6 +12,7 @@ import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractValuesContext;
 import lsfusion.server.caches.InnerContext;
 import lsfusion.server.classes.BaseClass;
+import lsfusion.server.classes.DataClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
@@ -151,8 +152,8 @@ public abstract class SessionData<T extends SessionData<T>> extends AbstractValu
                 keyValues.set(baseClass.getDataObjects(session, actualKeyValues.result, table.classes.getCommonClasses(actualKeyValues.result.keys()), opOwner).addExcl(keyValues.result));
                 final ImMap<PropertyField,ClassWhere<Field>> fPropertyClasses = table.propertyClasses;
                 propValues.set(baseClass.getObjectValues(session, actualPropValues.result, actualPropValues.result.mapKeyValues(new GetValue<AndClassSet, PropertyField>() {
-                    public AndClassSet getMapValue(PropertyField value) {
-                        return fPropertyClasses.get(value).getCommonClass(value);
+                    public AndClassSet getMapValue(PropertyField value) { // тут может быть что type - numeric, а commonClass скажем integer и нарушится assertion в DataObject + оптимизация (сверху по идее ту же проверку, но пока не сталкивались)
+                        return value.type instanceof DataClass ? (DataClass)value.type : fPropertyClasses.get(value).getCommonClass(value);
                     }}), opOwner).addExcl(propValues.result));
                 table = table.removeFields(session, actualKeyValues.result.keys(), actualPropValues.result.keys(), owner, opOwner).updateKeyPropStats(statKeys.result, statProps.result);
             }
