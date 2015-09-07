@@ -987,7 +987,7 @@ public class Settings {
         }
     }
     
-    private int queryLengthTimeout = 200; // после какой длины запроса использовать timeout'ы
+    private int queryLengthTimeout = 1000; // после какой длины запроса использовать timeout'ы, сильно маленький не должен быть так как простые UPDATE'ы с блокировками будут timeout'ся
 
     public int getQueryLengthTimeout() {
         return queryLengthTimeout;
