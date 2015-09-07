@@ -18,6 +18,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
+import static lsfusion.base.BaseUtils.serviceLogger;
+
 public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
     private Set<AggregateProperty> notRecalculateSet;
 
@@ -29,28 +31,33 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
     @Override
     protected void runTask(final Object property) throws RecognitionException {
         if (property instanceof AggregateProperty && !notRecalculateSet.contains(property)) {
+            String currentTask = String.format("Recalculate Aggregation: %s", property);
+            startedTask(currentTask);
             try (DataSession session = getDbManager().createSession()) {
+                long start = System.currentTimeMillis();
+                serviceLogger.info(String.format("Recalculate Aggregation started: %s", ((AggregateProperty) property).getSID()));
                 DBManager.run(session.sql, true, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                        long start = System.currentTimeMillis();
-                        ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation started: %s", ((AggregateProperty) property).getSID()));
                         ((AggregateProperty) property).recalculateAggregation(session.sql, session.env, getBL().LM.baseClass);
-                        long time = System.currentTimeMillis() - start;
-                        if(time > maxRecalculateTime)
-                            addMessage(property, time);
-                        ServerLoggers.serviceLogger.info(String.format("Recalculate Aggregation: %s, %sms", ((AggregateProperty) property).getSID(), time));
                     }
                 });
                 session.apply(getBL());
+                long time = System.currentTimeMillis() - start;
+                if (time > maxRecalculateTime)
+                    addMessage(property, time);
+                serviceLogger.info(String.format("Recalculate Aggregation: %s, %sms", ((AggregateProperty) property).getSID(), time));
             } catch (SQLException | SQLHandledException e) {
                 addMessage("Recalculate Aggregation", property, e);
-                e.printStackTrace();
+                serviceLogger.info(String.format("Recalculate Aggregation: %s", property), e);
+            } finally {
+                finishedTask(currentTask);
             }
         }
     }
 
     @Override
     protected List getElements() {
+        initContext();
         return getBL().getAggregateStoredProperties(false);
     }
 

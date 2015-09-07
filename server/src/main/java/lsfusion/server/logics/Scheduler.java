@@ -5,11 +5,10 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.DateConverter;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
-import lsfusion.base.col.implementations.HMap;
-import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.Compare;
 import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.interop.action.ClientAction;
@@ -20,21 +19,15 @@ import lsfusion.server.WrapperContext;
 import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.IntegerClass;
-import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.context.Context;
 import lsfusion.server.context.ContextAwareThread;
 import lsfusion.server.context.LogicsInstanceContext;
 import lsfusion.server.context.ThreadLocalContext;
-import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.data.query.StaticExecuteEnvironmentImpl;
-import lsfusion.server.data.type.ParseInterface;
-import lsfusion.server.data.type.Reader;
 import lsfusion.server.lifecycle.LifecycleAdapter;
 import lsfusion.server.lifecycle.LifecycleEvent;
 import lsfusion.server.logics.linear.LAP;
@@ -54,8 +47,6 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import static org.apache.commons.lang.StringUtils.trimToNull;
 
 public class Scheduler extends LifecycleAdapter implements InitializingBean {
     private static final Logger logger = ServerLoggers.systemLogger;
@@ -254,6 +245,11 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                 boolean ignoreExceptions = propertyValues.get("ignoreExceptionsScheduledTaskDetail") != null;
                 Integer timeout = (Integer) propertyValues.get("timeoutScheduledTaskDetail");
                 String parameter = (String) propertyValues.get("parameterScheduledTaskDetail");
+                List<String> params = new ArrayList<>();
+                if(parameter != null) {
+                    for(String param : parameter.split(";"))
+                        params.add(param);
+                }
                 Integer orderProperty = (Integer) propertyValues.get("orderScheduledTaskDetail");
                 if (canonicalName != null || script != null) {
                     if (orderProperty == null) {
@@ -262,7 +258,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     }
                     LAP lap = script == null ? (LAP) BL.findProperty(canonicalName.trim()) : BL.schedulerLM.evalScript;
                     if(lap != null)
-                        propertySIDMap.put(orderProperty, new ScheduledTaskDetail(lap, script, ignoreExceptions, timeout, parameter));
+                        propertySIDMap.put(orderProperty, new ScheduledTaskDetail(lap, script, ignoreExceptions, timeout, params));
                 }
             }
 
@@ -331,7 +327,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                                 if(ThreadLocalContext.get() == null)
                                     ThreadLocalContext.set(threadLocalContext);
                                 worker.interrupt();
-                                SQLUtils.killSQLProcess(BL, dbManager, worker.getId());
+                                SQLUtils.killSQLProcess(BL, worker.getId());
                                 logger.error("Timeout error while running scheduler task (in executeLAP()) " + detail.lap.property.caption);
                                 try (DataSession timeoutLogSession = dbManager.createSession(getLogSql())){
                                     DataObject timeoutScheduledTaskLogFinishObject = timeoutLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
@@ -356,7 +352,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                 if (worker != null) {
                     try {
                         worker.interrupt();
-                        SQLUtils.killSQLProcess(BL, dbManager, worker.getId());
+                        SQLUtils.killSQLProcess(BL, worker.getId());
                     } catch (SQLException | SQLHandledException ignored) {
                     }
                 }
@@ -429,18 +425,22 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                             ImOrderSet<ClassPropertyInterface> interfaces = detail.lap.listInterfaces;
                             if (interfaces.isEmpty())
                                 detail.lap.execute(mainSession);
-                            else if (detail.parameter == null)
+                            else if (detail.params.isEmpty())
                                 detail.lap.execute(mainSession, NullValue.instance);
                             else {
-                                ValueClass valueClass = interfaces.get(0).interfaceClass;
-                                DataObject parsedParameter;
-                                try {
-                                    parsedParameter = valueClass == IntegerClass.instance ?
-                                            new DataObject(((IntegerClass) valueClass).parseString(detail.parameter)) : new DataObject(detail.parameter);
-                                } catch (Exception e) {
-                                    parsedParameter = null;
+                                List<ObjectValue> parsedParameters = new ArrayList<>();
+                                for(int i = 0; i < interfaces.size(); i++) {
+                                    ValueClass valueClass = interfaces.get(i).interfaceClass;
+                                    ObjectValue parsedParameter;
+                                    try {
+                                        parsedParameter = detail.params.size() < i ? NullValue.instance : (valueClass == IntegerClass.instance ?
+                                                new DataObject(((IntegerClass) valueClass).parseString(detail.params.get(i))) : new DataObject(detail.params.get(i)));
+                                    } catch (Exception e) {
+                                        parsedParameter = null;
+                                    }
+                                    parsedParameters.add(parsedParameter);
                                 }
-                                detail.lap.execute(mainSession, parsedParameter);
+                                detail.lap.execute(mainSession, parsedParameters.toArray(new ObjectValue[parsedParameters.size()]));
                             }
                             String applyResult = mainSession.applyMessage(BL);
 
@@ -526,14 +526,14 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         public String script;
         public boolean ignoreExceptions;
         public Integer timeout;
-        public String parameter;
+        public List<String> params;
 
-        public ScheduledTaskDetail(LAP lap, String script, boolean ignoreExceptions, Integer timeout, String parameter) {
+        public ScheduledTaskDetail(LAP lap, String script, boolean ignoreExceptions, Integer timeout, List<String> params) {
             this.lap = lap;
             this.script = script;
             this.ignoreExceptions = ignoreExceptions;
             this.timeout = timeout;
-            this.parameter = parameter;
+            this.params = params;
         }
     }
 }

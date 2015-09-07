@@ -18,29 +18,34 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class CheckClassesMultiThreadActionProperty extends ScriptingActionProperty {
     private ClassPropertyInterface threadCountInterface;
+    private ClassPropertyInterface propertyTimeoutInterface;
 
     public CheckClassesMultiThreadActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM,classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         threadCountInterface = i.next();
+        propertyTimeoutInterface = i.next();
 
     }
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         TaskRunner taskRunner = new TaskRunner(context.getBL());
+        CheckClassesTask task = new CheckClassesTask();
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
-            CheckClassesTask task = new CheckClassesTask();
+            Integer propertyTimeout = (Integer) context.getKeyValue(propertyTimeoutInterface).getValue();
             task.init(context);
-            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.data.classes")) + task.getMessages(), getString("logics.checking.data.classes"), true));
+            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount, propertyTimeout);
         } catch (InterruptedException e) {
+            task.logTimeoutTasks();
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Check Classes error", e);
             Thread.currentThread().interrupt();
             taskRunner.killSQLProcesses();
+        } finally {
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.data.classes")) + task.getMessages(), getString("logics.checking.data.classes"), true));
         }
     }
 }

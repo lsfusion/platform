@@ -30,6 +30,8 @@ public class CheckClassesTask extends GroupPropertiesSingleTask{
 
     @Override
     protected void runTask(final Object property) throws RecognitionException {
+        String currentTask = String.format("Check Classes: %s", property);
+        startedTask(currentTask);
         try (DataSession session = getDbManager().createSession()) {
             long start = System.currentTimeMillis();
             if(property instanceof Integer) {
@@ -62,12 +64,15 @@ public class CheckClassesTask extends GroupPropertiesSingleTask{
             }
         } catch (SQLException | SQLHandledException e) {
             addMessage("Check Classes", property, e);
-            e.printStackTrace();
+            serviceLogger.info(currentTask, e);
+        } finally {
+            finishedTask(currentTask);
         }
     }
 
     @Override
     protected List getElements() {
+        initContext();
         List elements = new ArrayList();
         elements.add(1);
         elements.addAll(getBL().LM.tableFactory.getImplementTables().toJavaSet());

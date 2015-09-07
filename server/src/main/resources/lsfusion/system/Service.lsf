@@ -12,13 +12,21 @@ recalculateAction 'Пересчитать агрегации' = ACTION CUSTOM 'l
 recalculateFollowsAction 'Пересчитать следствия и ограничения' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty' ();
 recalculateStatsAction 'Пересчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateStatsActionProperty' ();
 
-serviceDBMultiThreadAction 'Обслуживание БД (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' (INTEGER) NULL;
-checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsMultiThreadActionProperty' (INTEGER) NULL;
-checkClassesMultiThreadAction 'Проверить классы (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesMultiThreadActionProperty' (INTEGER) NULL;
-recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesMultiThreadActionProperty' (INTEGER) NULL;
-recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateMultiThreadActionProperty' (INTEGER) NULL;
-recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsMultiThreadActionProperty' (INTEGER) NULL;
-recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateStatsMultiThreadActionProperty' (INTEGER) NULL;
+serviceDBMultiThreadAction 'Обслуживание БД (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+checkClassesMultiThreadAction 'Проверить классы (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+
+serviceDBMultiThreadAction 'Обслуживание БД (многопоточно, timeout)' (INTEGER propertyTimeout) = ACTION serviceDBMultiThreadAction (NULL, propertyTimeout);
+checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно, timeout)' (INTEGER propertyTimeout)= ACTION checkAggregationsMultiThreadAction (NULL, propertyTimeout);
+checkClassesMultiThreadAction 'Проверить классы (многопоточно, timeout)' (INTEGER propertyTimeout)= ACTION checkClassesMultiThreadAction (NULL, propertyTimeout);
+recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно, timeout)' (INTEGER propertyTimeout)= ACTION recalculateClassesMultiThreadAction (NULL, propertyTimeout);
+recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно, timeout)' (INTEGER propertyTimeout)= ACTION recalculateMultiThreadAction (NULL, propertyTimeout);
+recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно, timeout)' (propertyTimeout)= ACTION recalculateFollowsMultiThreadAction (NULL, propertyTimeout);
+recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно, timeout)' (INTEGER propertyTimeout)= ACTION recalculateStatsMultiThreadAction (NULL, propertyTimeout);
 
 threadCountMultiThread 'Количество потоков' = DATA LOCAL INTEGER (); 
 serviceDBMultiThreadAction 'Обслуживание БД (многопоточно)' = ACTION serviceDBMultiThreadAction(threadCountMultiThread());

@@ -36,18 +36,14 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask {
 
     @Override
     protected void runTask(final Object element) throws RecognitionException {
+        String currentTask = String.format("Recalculate Stats: %s", element);
+        startedTask(currentTask);
         try (DataSession session = getDbManager().createSession()) {
+            long start = System.currentTimeMillis();
+            serviceLogger.info(currentTask);
             if(element instanceof ImplementTable) {
-                long start = System.currentTimeMillis();
-                serviceLogger.info(String.format("Recalculate Stats %s", element));
                 ((ImplementTable) element).calculateStat(getBL().reflectionLM, session);
-                long time = System.currentTimeMillis() - start;
-                if(time > maxRecalculateTime)
-                    addMessage(element, time);
-                serviceLogger.info(String.format("Recalculate Stats: %s, %sms", element, time));
             } else if(element instanceof ObjectValueClassSet) {
-                long start = System.currentTimeMillis();
-                serviceLogger.info(String.format("Recalculate Stats: %s", element));
                 QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
 
                 KeyExpr countKeyExpr = new KeyExpr("count");
@@ -64,20 +60,23 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask {
                     ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, (Object) customClass.ID));
                     getBL().LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
                 }
-                long time = System.currentTimeMillis() - start;
-                if(time > maxRecalculateTime)
-                    addMessage(element, time);
-                serviceLogger.info(String.format("Recalculate Stats: %s, %sms", element, time));
             }
             session.apply(getBL());
+            long time = System.currentTimeMillis() - start;
+            if(time > maxRecalculateTime)
+                addMessage(element, time);
+            serviceLogger.info(String.format("%s, %sms", currentTask, time));
         } catch (SQLException | SQLHandledException e) {
-            addMessage("Recalculate Stats", element, e);
-            e.printStackTrace();
+            addMessage("Recalculate Stats:", element, e);
+            serviceLogger.info(currentTask, e);
+        } finally {
+            finishedTask(currentTask);
         }
     }
 
     @Override
     protected List getElements() {
+        initContext();
         List elements = new ArrayList();
         elements.addAll(getBL().LM.tableFactory.getImplementTables().toJavaSet());
         elements.addAll(getBL().LM.baseClass.getUpObjectClassFields().values().toJavaCol());

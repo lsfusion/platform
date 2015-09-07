@@ -15,7 +15,6 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
-import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
@@ -40,12 +39,15 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
 
     @Override
     protected void runTask(final Object element) throws RecognitionException {
+        String currentTask = String.format("Recalculate Class: %s", element);
+        startedTask(currentTask);
         try (DataSession session = getDbManager().createSession()) {
 
             if (element instanceof Integer) {
                 serviceLogger.info("Recalculate Exclusiveness");
                 long start = System.currentTimeMillis();
                 getBL().recalculateExclusiveness(session.sql, !singleTransaction);
+                session.apply(getBL());
                 long time = System.currentTimeMillis() - start;
                 if(time > maxRecalculateTime)
                     addMessage("Recalculate Exclusiveness", time);
@@ -57,7 +59,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
                         long start = System.currentTimeMillis();
                         DataSession.recalculateTableClasses((ImplementTable) element, sql, session.env, getBL().LM.baseClass);
                         long time = System.currentTimeMillis() - start;
-                        if(time > maxRecalculateTime)
+                        if (time > maxRecalculateTime)
                             addMessage(element, time);
                         serviceLogger.info(String.format("Recalculate Table Classes: %s, %sms", element, time));
                     }
@@ -71,6 +73,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
                         sql.packTable((ImplementTable) element, session.env.getOpOwner(), TableOwner.global);
                     }
                 });
+                session.apply(getBL());
                 long time = System.currentTimeMillis() - start;
                 serviceLogger.info(String.format("Pack table: %s, %sms", element, time));
 
@@ -80,6 +83,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
                         serviceLogger.info(String.format("Recalculate Class: %s", ((CalcProperty) element).getSID()));
                         long start = System.currentTimeMillis();
                         ((CalcProperty) element).recalculateClasses(sql, session.env, getBL().LM.baseClass);
+                        session.apply(getBL());
                         long time = System.currentTimeMillis() - start;
                         if(time > maxRecalculateTime)
                             addMessage(element, time);
@@ -87,10 +91,11 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
                     }
                 });
             }
-            session.apply(getBL());
         } catch (SQLException | SQLHandledException e) {
             addMessage("Recalculate Class", element, e);
-            e.printStackTrace();
+            serviceLogger.info(currentTask, e);
+        } finally {
+            finishedTask(currentTask);
         }
     }
 
@@ -124,6 +129,7 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
 
     @Override
     protected List getElements() {
+        initContext();
         List elements = new ArrayList();
         elements.add(1);
         elements.addAll(getBL().LM.tableFactory.getImplementTables().toJavaSet());

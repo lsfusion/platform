@@ -18,29 +18,33 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RecalculateClassesMultiThreadActionProperty extends ScriptingActionProperty {
     private ClassPropertyInterface threadCountInterface;
+    private ClassPropertyInterface propertyTimeoutInterface;
 
     public RecalculateClassesMultiThreadActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM,classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         threadCountInterface = i.next();
-
+        propertyTimeoutInterface = i.next();
     }
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         TaskRunner taskRunner = new TaskRunner(context.getBL());
+        RecalculateClassesTask task = new RecalculateClassesTask();
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
-            RecalculateClassesTask task = new RecalculateClassesTask();
+            Integer propertyTimeout = (Integer) context.getKeyValue(propertyTimeoutInterface).getValue();
             task.init(context);
-            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculating.data.classes")) + task.getMessages(), getString("logics.recalculating.data.classes")));
+            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount, propertyTimeout);
         } catch (InterruptedException e) {
+            task.logTimeoutTasks();
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Recalculate Classes error", e);
             Thread.currentThread().interrupt();
             taskRunner.killSQLProcesses();
+        } finally {
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculating.data.classes")) + task.getMessages(), getString("logics.recalculating.data.classes")));
         }
     }
 }

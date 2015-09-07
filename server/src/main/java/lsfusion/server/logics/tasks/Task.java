@@ -1,8 +1,12 @@
 package lsfusion.server.logics.tasks;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.SQLUtils;
 import org.apache.log4j.Logger;
 
+import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +65,8 @@ public abstract class Task {
     public abstract void run();
 
     // не так важно какой
-    public void dependProceeded(Executor executor, Object monitor, AtomicInteger taskCount, Logger logger, final Task taskProceeded, TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer) {
+    public void dependProceeded(BusinessLogics BL, Executor executor, Object monitor, AtomicInteger taskCount, Logger logger,
+                                final Task taskProceeded, TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer, Integer propertyTimeout) {
         int newDepends;
         synchronized (this) {
             newDepends = dependsToProceed - 1;
@@ -69,23 +74,22 @@ public abstract class Task {
         }
 //        System.out.println("DEPPROC " + newDepends + " " + getCaption() + " AFYER " + taskProceeded.getCaption());
         if (newDepends == 0) {
-            execute(executor, monitor, taskCount, logger, taskQueue, throwableConsumer);
+            execute(BL, executor, monitor, taskCount, logger, taskQueue, throwableConsumer, propertyTimeout);
         }
     }
 
-    public void execute(final Executor executor, final Object monitor, final AtomicInteger taskCount, final Logger logger, final TaskBlockingQueue taskQueue, final ThrowableConsumer throwableConsumer) {
+    public void execute(final BusinessLogics BL, final Executor executor, final Object monitor, final AtomicInteger taskCount, final Logger logger,
+                        final TaskBlockingQueue taskQueue, final ThrowableConsumer throwableConsumer, final Integer propertyTimeout) {
         logTaskCount(logger, taskCount.incrementAndGet());
         executor.execute(new PriorityRunnable() {
             public void run() {
                 try {
                     taskQueue.ensurePolled(this);
-
-                    proceed(executor, monitor, taskCount, logger, taskQueue, throwableConsumer);
-
-                    taskQueue.removePolled(this);
+                    proceed(BL, executor, monitor, taskCount, logger, taskQueue, throwableConsumer, propertyTimeout);
                 } catch (Throwable t) {
                     throwableConsumer.consume(t);
                 } finally {
+                    taskQueue.removePolled(this);
                     int taskInQueue = taskCount.decrementAndGet();
                     logTaskCount(logger, taskInQueue);
                     if (taskInQueue == 0) {
@@ -111,14 +115,25 @@ public abstract class Task {
         }
     }
 
-    public void proceed(Executor executor, Object monitor, AtomicInteger taskCount, Logger logger, TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer) {
+    public void proceed(BusinessLogics BL, Executor executor, Object monitor, AtomicInteger taskCount, Logger logger,
+                        TaskBlockingQueue taskQueue, ThrowableConsumer throwableConsumer, Integer propertyTimeout) throws InterruptedException, SQLException, SQLHandledException {
         if (isLoggable()) {
             logger.info(getCaption());
         }
-        run();
+        if(propertyTimeout == null) {
+            run();
+        } else {
+            TimeoutThread timeoutThread = new TimeoutThread(this);
+            timeoutThread.start();
+            timeoutThread.join(propertyTimeout);
+            if(timeoutThread.isAlive()) {
+                timeoutThread.interrupt();
+                SQLUtils.killSQLProcess(BL, timeoutThread.getId());
+            }
+        }
 
         for (Task from : dependsFrom.keySet()) {
-            from.dependProceeded(executor, monitor, taskCount, logger, this, taskQueue, throwableConsumer);
+            from.dependProceeded(BL, executor, monitor, taskCount, logger, this, taskQueue, throwableConsumer, propertyTimeout);
         }
     }
 
@@ -155,6 +170,19 @@ public abstract class Task {
 
         public long getBaseComplexity() {
             return Task.this.getBaseComplexity();
+        }
+    }
+
+    private class TimeoutThread extends Thread {
+        Task task;
+
+        public TimeoutThread(Task task) {
+            this.task = task;
+        }
+
+        @Override
+        public void run() {
+            task.run();
         }
     }
 }

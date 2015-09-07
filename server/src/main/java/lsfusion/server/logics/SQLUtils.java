@@ -28,11 +28,11 @@ import static org.apache.commons.lang.StringUtils.trimToNull;
 
 public class SQLUtils {
 
-    public static void killSQLProcess(BusinessLogics BL, DBManager dbManager, long id) throws SQLException, SQLHandledException {
-        Map<Integer, Integer> sqlProcesses = dbManager.getAdapter().getSyntaxType() == SQLSyntaxType.POSTGRES ? getPostgresProcesses(BL, dbManager) : getMSSQLProcesses(dbManager);
+    public static void killSQLProcess(BusinessLogics BL, long id) throws SQLException, SQLHandledException {
+        Map<Integer, Integer> sqlProcesses = BL.getDbManager().getAdapter().getSyntaxType() == SQLSyntaxType.POSTGRES ? getPostgresProcesses(BL, BL.getDbManager()) : getMSSQLProcesses(BL.getDbManager());
         Integer sqlProcess = sqlProcesses.get((int) id);
         if(sqlProcess != null)
-            dbManager.getAdapter().killProcess(sqlProcess);
+            BL.getDbManager().getAdapter().killProcess(sqlProcess);
     }
 
     private static Map<Integer, Integer> getMSSQLProcesses(DBManager dbManager) throws SQLException, SQLHandledException {

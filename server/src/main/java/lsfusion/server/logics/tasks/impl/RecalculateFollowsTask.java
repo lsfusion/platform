@@ -29,6 +29,8 @@ public class RecalculateFollowsTask extends GroupPropertiesSingleTask {
 
     @Override
     protected void runTask(final Object property) throws RecognitionException {
+        String currentTask = String.format("Recalculate Follows: %s", property);
+        startedTask(currentTask);
         try {
             if (property instanceof ActionProperty) {
                 final ActionProperty<?> action = (ActionProperty) property;
@@ -51,12 +53,15 @@ public class RecalculateFollowsTask extends GroupPropertiesSingleTask {
             }
         } catch (SQLException | SQLHandledException e) {
             addMessage("Recalculate Follows", property, e);
-            e.printStackTrace();
+            serviceLogger.info(currentTask, e);
+        } finally {
+            finishedTask(currentTask);
         }
     }
 
     @Override
     protected List getElements() {
+        initContext();
         return getBL().getPropertyList().toJavaList();
     }
 

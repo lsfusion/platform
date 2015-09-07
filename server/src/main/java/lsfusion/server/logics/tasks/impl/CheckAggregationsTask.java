@@ -26,6 +26,8 @@ public class CheckAggregationsTask extends GroupPropertiesSingleTask{
     @Override
     protected void runTask(final Object property) throws RecognitionException {
         if (property instanceof AggregateProperty && !notRecalculateSet.contains(property)) {
+            String currentTask = String.format("Check Aggregations: %s", property);
+            startedTask(currentTask);
             try (DataSession session = getDbManager().createSession()) {
                 long start = System.currentTimeMillis();
                 String result = ((AggregateProperty) property).checkAggregation(session.sql, session.env, getBL().LM.baseClass);
@@ -37,13 +39,17 @@ public class CheckAggregationsTask extends GroupPropertiesSingleTask{
                 serviceLogger.info(String.format("Check Aggregations: %s, %sms", ((AggregateProperty) property).getSID(), time));
             } catch (SQLException | SQLHandledException e) {
                 addMessage("Check Aggregation", property, e);
-                e.printStackTrace();
+                serviceLogger.info(currentTask, e);
+            }
+            finally {
+                finishedTask(currentTask);
             }
         }
     }
 
     @Override
     protected List getElements() {
+        initContext();
         return getBL().getAggregateStoredProperties(false);
     }
 

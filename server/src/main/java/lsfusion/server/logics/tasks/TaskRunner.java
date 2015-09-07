@@ -31,10 +31,10 @@ public class TaskRunner {
     }
 
     public void runTask(PublicTask task, Logger logger) throws InterruptedException {
-        runTask(task, logger, null);
+        runTask(task, logger, null, null);
     }
 
-    public void runTask(PublicTask task, Logger logger, Integer threadCount) throws InterruptedException {
+    public void runTask(PublicTask task, Logger logger, Integer threadCount, Integer propertyTimeout) throws InterruptedException {
         Set<Task> initialTasks = new HashSet<>();
         task.markInDependencies(initialTasks);
 
@@ -45,7 +45,7 @@ public class TaskRunner {
         executor = new ThreadPoolExecutor(nThreads, nThreads,
                                                           0L, TimeUnit.MILLISECONDS,
                                                           taskQueue,
-                                                          new ContextAwareDaemonThreadFactory(ThreadLocalContext.get(), "init-pool"));
+                                                          new ContextAwareDaemonThreadFactory(ThreadLocalContext.get(), "taskRunner-pool"));
 //        ExecutorService executor = Executors.newSingleThreadExecutor(new ContextAwareDaemonThreadFactory(ThreadLocalContext.get(), "task-daemon"));
         AtomicInteger taskCount = new AtomicInteger(0);
         final Object monitor = new Object();
@@ -53,7 +53,7 @@ public class TaskRunner {
         final ThrowableConsumer throwableConsumer = new ThrowableConsumer();
         
         for (Task initialTask : initialTasks) {
-            initialTask.execute(executor, monitor, taskCount, logger, taskQueue, throwableConsumer);
+            initialTask.execute(BL, executor, monitor, taskCount, logger, taskQueue, throwableConsumer, propertyTimeout);
         }
 
         try {
@@ -94,9 +94,9 @@ public class TaskRunner {
             threadField.setAccessible(true);
             for(Object worker : workers) {
                 Thread thread = (Thread) threadField.get(worker);
-                SQLUtils.killSQLProcess(BL, BL.getDbManager(), thread.getId());
+                SQLUtils.killSQLProcess(BL, thread.getId());
             }
-        } catch (IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
+        } catch (Exception e) {
             ServerLoggers.systemLogger.error("Failed to kill sql processes in TaskRunner", e);
         }
     }

@@ -18,29 +18,34 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionProperty {
     private ClassPropertyInterface threadCountInterface;
+    private ClassPropertyInterface propertyTimeoutInterface;
 
     public RecalculateStatsMultiThreadActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM,classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         threadCountInterface = i.next();
+        propertyTimeoutInterface = i.next();
     }
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         TaskRunner taskRunner = new TaskRunner(context.getBL());
+        RecalculateStatsTask task = new RecalculateStatsTask();
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
-            RecalculateStatsTask task = new RecalculateStatsTask();
+            Integer propertyTimeout = (Integer) context.getKeyValue(propertyTimeoutInterface).getValue();
             task.init(context);
-            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.stats")) + task.getMessages(), getString("logics.recalculation.stats")));
+            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount, propertyTimeout);
         } catch (InterruptedException e) {
+            task.logTimeoutTasks();
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Recalculate Stats error", e);
             context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.stats.error")));
             Thread.currentThread().interrupt();
             taskRunner.killSQLProcesses();
+        } finally {
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.stats")) + task.getMessages(), getString("logics.recalculation.stats")));
         }
     }
 

@@ -18,30 +18,35 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 
 public class RecalculateFollowsMultiThreadActionProperty extends ScriptingActionProperty {
     private ClassPropertyInterface threadCountInterface;
+    private ClassPropertyInterface propertyTimeoutInterface;
 
     public RecalculateFollowsMultiThreadActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM,classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         threadCountInterface = i.next();
+        propertyTimeoutInterface = i.next();
 
     }
 
     @Override
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         TaskRunner taskRunner = new TaskRunner(context.getBL());
+        RecalculateFollowsTask task = new RecalculateFollowsTask();
         try {
             Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
-            RecalculateFollowsTask task = new RecalculateFollowsTask();
+            Integer propertyTimeout = (Integer) context.getKeyValue(propertyTimeoutInterface).getValue();
             task.init(context);
-            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount);
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.follows")) + task.getMessages(), getString("logics.recalculation.follows")));
+            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount, propertyTimeout);
         } catch (InterruptedException e) {
+            task.logTimeoutTasks();
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Recalculate Follows error", e);
             context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.follows.error")));
             Thread.currentThread().interrupt();
             taskRunner.killSQLProcesses();
+        } finally {
+            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.follows")) + task.getMessages(), getString("logics.recalculation.follows")));
         }
     }
 }
