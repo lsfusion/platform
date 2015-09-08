@@ -748,11 +748,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
 
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
-            dataTable.updateStat(tableStats, keyStats, propStats, statDefault);
+            dataTable.updateStat(tableStats, keyStats, propStats, statDefault, null);
         }
     }
 
-    private <T> ImMap<String, T> readStatsFromDB(SQLSession sql, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException, SQLHandledException {
+    public <T> ImMap<String, T> readStatsFromDB(SQLSession sql, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException, SQLHandledException {
         QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.toSet("key"));
         Expr sidToObject = sIDProp.getExpr(query.getMapExprs().singleValue());
         query.and(sidToObject.getWhere());

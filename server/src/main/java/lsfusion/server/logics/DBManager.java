@@ -524,7 +524,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     public boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 //        checkLP(businessLogics.getNamedProperties());
 //        check(businessLogics.getOrderProperties());
-        
+
         SQLSession sql = getThreadLocalSql();
 
         // инициализируем таблицы
@@ -810,6 +810,35 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             if(!noTransSyncDB)
                 sql.commitTransaction();
+
+            Map<ImplementTable, List<CalcProperty>> calcPropertiesMap; // статистика для новых свойств
+            if (Settings.get().isGroupByTables()) {
+                calcPropertiesMap = new HashMap<>();
+                for (CalcProperty property : recalculateProperties) {
+                    List<CalcProperty> entry = calcPropertiesMap.get(property.mapTable.table);
+                    if (entry == null)
+                        entry = new ArrayList<>();
+                    entry.add(property);
+                    calcPropertiesMap.put(property.mapTable.table, entry);
+                }
+
+                ImMap<String, Integer> tableStats = businessLogics.readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null);
+                ImMap<String, Integer> keyStats = businessLogics.readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.quantityTableKey, null);
+                ImMap<String, Pair<Integer, Integer>> propStats = businessLogics.readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.quantityTableColumn, reflectionLM.notNullQuantityTableColumn);
+                for(Map.Entry<ImplementTable, List<CalcProperty>> entry : calcPropertiesMap.entrySet()) {
+                    ImplementTable table = entry.getKey();
+                    List<CalcProperty> properties = entry.getValue();
+                    ImSet<PropertyField> fields = SetFact.EMPTY();
+                    for(CalcProperty property : properties)
+                        fields = fields.addExcl(property.field);
+                    try (DataSession session = createSession()) {
+                        table.calculateStat(reflectionLM, session, fields);
+                        session.apply(businessLogics);
+                    }
+                    table.updateStat(tableStats, keyStats, propStats, false, fields);
+                }
+            }
+
         } catch (Throwable e) {
             if(!noTransSyncDB)
                 sql.rollbackTransaction();
