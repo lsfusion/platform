@@ -431,21 +431,14 @@ public class ImplementTable extends GlobalTable { // последний инте
 
             MExclMap<Object, Object> mResult = MapFact.mExclMap();
             Where inWhere = join.getWhere();
-            for(KeyField key : keys) {
-                ImMap<Object, Expr> map = MapFact.<Object, Expr>singleton(0, mapKeys.get(key));
-                mResult.exclAdd(key, readCount(session, GroupExpr.create(map, inWhere, map).getWhere()));
-            }
-
-            Map<PropertyField, DataObject> propertyObjectMap = new HashMap<>();
-            ImSet<PropertyField> propertyFieldSet = SetFact.EMPTY();
-            if(props == null)
-                propertyFieldSet = propertyFieldSet.addExcl(properties);
-            else {
-                for (PropertyField property : properties) {
-                    if (props.contains(property))
-                        propertyFieldSet = propertyFieldSet.addExcl(property);
+            if(props == null) {
+                for (KeyField key : keys) {
+                    ImMap<Object, Expr> map = MapFact.<Object, Expr>singleton(0, mapKeys.get(key));
+                    mResult.exclAdd(key, readCount(session, GroupExpr.create(map, inWhere, map).getWhere()));
                 }
             }
+
+            ImSet<PropertyField> propertyFieldSet = props == null ? properties : props;
 
             for(PropertyField prop : propertyFieldSet)
                 if (props != null ? props.contains(prop) : !(prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat()))
@@ -458,10 +451,12 @@ public class ImplementTable extends GlobalTable { // последний инте
             if(tableObject != null)
                 reflectionLM.rowsTable.change(BaseUtils.nvl(result.get(0), 0), session, (DataObject) tableObject);
 
-            for (KeyField key : keys) {
-                DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(getName() + "." + key.getName()));
-                if(keyObject != null)
-                    reflectionLM.quantityTableKey.change(BaseUtils.nvl(result.get(key), 0), session, keyObject);
+            if(props == null) {
+                for (KeyField key : keys) {
+                    DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(getName() + "." + key.getName()));
+                    if (keyObject != null)
+                        reflectionLM.quantityTableKey.change(BaseUtils.nvl(result.get(key), 0), session, keyObject);
+                }
             }
 
             for (PropertyField property : propertyFieldSet) {
@@ -470,7 +465,6 @@ public class ImplementTable extends GlobalTable { // последний инте
                     propertyObject = session.addObject(reflectionLM.tableColumn);
                     reflectionLM.sidTableColumn.change(property.getName(), session, propertyObject);
                     reflectionLM.tableTableColumn.change(tableObject.object, session, propertyObject);
-                    propertyObjectMap.put(property, propertyObject);
                 }
                 if(propertyObject != null)
                     reflectionLM.quantityTableColumn.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
@@ -483,8 +477,6 @@ public class ImplementTable extends GlobalTable { // последний инте
             ImMap<Object, Object> notNulls = mNotNulls.immutable();
             for (PropertyField property : propertyFieldSet) {
                 DataObject propertyObject = safeReadClasses(session, reflectionLM.tableColumnLongSID, new DataObject(getName() + "." + property.getName()));
-                if(propertyObject == null && props != null)
-                    propertyObject = propertyObjectMap.get(property);
                 if(propertyObject != null)
                     reflectionLM.notNullQuantityTableColumn.change(BaseUtils.nvl(notNulls.get(property), 0), session, propertyObject);
             }
@@ -499,30 +491,24 @@ public class ImplementTable extends GlobalTable { // последний инте
         else
             rowStat = new Stat(BaseUtils.nvl(tableStats.get(name), 0));
 
-        ImSet<KeyField> tableKeys = getTableKeys();
-        ImValueMap<KeyField, Stat> mvDistinctKeys = tableKeys.mapItValues(); // exception есть
-        for(int i=0,size=tableKeys.size();i<size;i++) {
-            String keySID = getName() + "." + tableKeys.get(i).getName();
-            Stat keyStat;
-            if (!keyStats.containsKey(keySID))
-                keyStat = Stat.DEFAULT;
-            else {
-                Integer keyCount = keyStats.get(keySID);
-                keyStat = keyCount != null ? new Stat(keyCount) : rowStat;
+        if(props == null) {
+            ImSet<KeyField> tableKeys = getTableKeys();
+            ImValueMap<KeyField, Stat> mvDistinctKeys = tableKeys.mapItValues(); // exception есть
+            for (int i = 0, size = tableKeys.size(); i < size; i++) {
+                String keySID = getName() + "." + tableKeys.get(i).getName();
+                Stat keyStat;
+                if (!keyStats.containsKey(keySID))
+                    keyStat = Stat.DEFAULT;
+                else {
+                    Integer keyCount = keyStats.get(keySID);
+                    keyStat = keyCount != null ? new Stat(keyCount) : rowStat;
+                }
+                mvDistinctKeys.mapValue(i, keyStat.min(rowStat));
             }
-            mvDistinctKeys.mapValue(i, keyStat.min(rowStat));
+            statKeys = StatKeys.createForTable(rowStat, new DistinctKeys<>(mvDistinctKeys.immutableValue()));
         }
-        statKeys = StatKeys.createForTable(rowStat, new DistinctKeys<KeyField>(mvDistinctKeys.immutableValue()));
 
-        ImSet<PropertyField> propertyFieldSet = SetFact.EMPTY();
-        if(props == null)
-            propertyFieldSet = propertyFieldSet.addExcl(properties);
-        else {
-            for (PropertyField property : properties) {
-                if (props.contains(property))
-                    propertyFieldSet = propertyFieldSet.addExcl(property);
-            }
-        }
+        ImSet<PropertyField> propertyFieldSet = props == null ? properties : props;
 
         ImValueMap<PropertyField, PropStat> mvUpdateStatProps = propertyFieldSet.mapItValues();
         for(int i=0,size=propertyFieldSet.size();i<size;i++) {
@@ -555,7 +541,11 @@ public class ImplementTable extends GlobalTable { // последний инте
             }
             mvUpdateStatProps.mapValue(i, propStat);
         }
-        statProps = mvUpdateStatProps.immutableValue();
+        if(statProps == null)
+            statProps = mvUpdateStatProps.immutableValue();
+        else {
+            statProps = MapFact.replaceValues(statProps, mvUpdateStatProps.immutableValue());
+        }
 
 //        assert statDefault || correctStatProps();
     }

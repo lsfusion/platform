@@ -40,6 +40,6 @@ public class RecalculateTableClassesActionProperty extends ScriptingActionProper
             }
         });
 
-        context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.aggregations")), getString("logics.recalculation.aggregations")));
+        context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculating.data.classes")), getString("logics.recalculating.data.classes")));
     }
 }

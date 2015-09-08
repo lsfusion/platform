@@ -123,6 +123,17 @@ public class MapFact {
         return ((ImMap<K, V>)map1).mapRevValues(new GetKeyValue<V, K, V>() {
             public V getMapValue(K key, V value) {
                 V value2 = map2.get(key);
+                if (value2 != null)
+                    return value2;
+                return value;
+            }
+        });
+    }
+
+    public static <B, K extends B, V> ImMap<K, V> replaceValues(ImMap<K, ? extends V> map1, final ImMap<B, ? extends V> map2) {
+        return ((ImMap<K, V>)map1).mapValues(new GetKeyValue<V, K, V>() {
+            public V getMapValue(K key, V value) {
+                V value2 = map2.get(key);
                 if(value2 != null)
                     return value2;
                 return value;
