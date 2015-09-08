@@ -1,5 +1,6 @@
 package lsfusion.utils;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.utils.prim.Prim;
 import lsfusion.utils.prim.UndirectedGraph;
 
@@ -33,13 +34,23 @@ public class SpanningTreeWithBlackjack<T> {
         weights.add(weight);
         graph.add(new ArrayList<Edge>());
     }
-    
+
+    void addEdgeFrom(int index, Edge addEdge) {
+        List<Edge> edges = graph.get(index);
+        for(Edge edge : edges)
+            if(BaseUtils.hashEquals(edge.from, addEdge.from) && BaseUtils.hashEquals(edge.to, addEdge.to)) {
+                assert edge.direct == addEdge.direct;
+                edge.weight = BaseUtils.max(edge.weight, addEdge.weight);
+                return;
+            }
+        edges.add(addEdge);
+    }
     public void addEdge(T nodeFrom, T nodeTo, int weight) {
         assert index.containsKey(nodeFrom) && index.containsKey(nodeTo); 
         int nodeFromIndex = index.get(nodeFrom);
         int nodeToIndex = index.get(nodeTo);
-        graph.get(nodeFromIndex).add(new Edge(nodeFromIndex, nodeToIndex, weight, true));
-        graph.get(nodeToIndex).add(new Edge(nodeToIndex, nodeFromIndex, weight, false));
+        addEdgeFrom(nodeFromIndex, new Edge(nodeFromIndex, nodeToIndex, weight, true));
+        addEdgeFrom(nodeToIndex, new Edge(nodeToIndex, nodeFromIndex, weight, false));
         edges++;
     }
         
@@ -258,7 +269,7 @@ public class SpanningTreeWithBlackjack<T> {
             }
         });
         
-        BestTreeFinder finder = new BestTreeFinder(component, componentEdges, (componentEdges.size() - component.size()) * 2);
+        BestTreeFinder finder = new BestTreeFinder(component, componentEdges, (BaseUtils.max(componentEdges.size() - component.size() + 1, 1)) * 100);
         return finder.find();
     }
     
