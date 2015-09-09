@@ -858,7 +858,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             String exLogChangeProperty = Settings.get().getExLogChangeProperty();
             if(!exLogChangeProperty.isEmpty() && property.toString().contains(exLogChangeProperty)) {
-                logSessionEvents(property + " " + change.toString() + " " + (changeTable != null ? changeTable.getCount() : ""), "CHANGE PROPERTY : ");
+                logSessionEvents(property + " " + change.toString() + " " + changeTable, "CHANGE PROPERTY : ");
                 if (changeTable != null && ServerLoggers.isUserExLog() && changeTable.getCount() < 20) {
                     changeTable.table.outClasses(sql, baseClass, new Processor<String>() {
                         public void proceed(String value) {
