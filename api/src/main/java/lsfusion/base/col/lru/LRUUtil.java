@@ -17,7 +17,7 @@ public class LRUUtil {
     private final static Object lockCleanLRU = new Object();
     
     public static double multiplier = 1.0;
-    public static double MAX_MULTIPLIER = 100.0; // чтобы не рос до бесконечности, из - за того что некоторые кэши имеют максимальные пределы
+    public static double MAX_MULTIPLIER = 50.0; // чтобы не рос до бесконечности, из - за того что некоторые кэши имеют максимальные пределы
 
     public static int hash(int h) {
         // Spread bits to regularize both segment and index locations,
@@ -48,7 +48,7 @@ public class LRUUtil {
         return tenuredGenPool;
     }
 
-    public static double memGCIn100Millis = 0.02; // сколько памяти может собрать сборщик мусора за 100 мс
+    public static double memGCIn100Millis = 0.1; // сколько памяти может собрать сборщик мусора за 100 мс
 
     private static ScheduledExecutorService scheduler;
     private static long lastCollected;

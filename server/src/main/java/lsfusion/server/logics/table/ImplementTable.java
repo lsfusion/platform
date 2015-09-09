@@ -414,7 +414,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         ObjectValue value = lcp.readClasses(session, objects);
         if(value instanceof DataObject)
             return (DataObject) value;
-        ServerLoggers.assertLog(false, "SHOULD BE SYNCHRONIZED : " + lcp + ", keys : " + Arrays.toString(objects));
+//        ServerLoggers.assertLog(false, "SHOULD BE SYNCHRONIZED : " + lcp + ", keys : " + Arrays.toString(objects));
         return null;
     }
 
@@ -541,10 +541,12 @@ public class ImplementTable extends GlobalTable { // последний инте
             }
             mvUpdateStatProps.mapValue(i, propStat);
         }
-        if(statProps == null)
-            statProps = mvUpdateStatProps.immutableValue();
+        ImMap<PropertyField, PropStat> updateStatProps = mvUpdateStatProps.immutableValue();
+        if(props == null)
+            statProps = updateStatProps;
         else {
-            statProps = MapFact.replaceValues(statProps, mvUpdateStatProps.immutableValue());
+            assert statProps.keys().containsAll(updateStatProps.keys());
+            statProps = MapFact.replaceValues(statProps, updateStatProps);
         }
 
 //        assert statDefault || correctStatProps();
