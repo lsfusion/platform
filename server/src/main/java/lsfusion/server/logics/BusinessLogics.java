@@ -727,13 +727,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public void updateStats(SQLSession sql) throws SQLException, SQLHandledException {
-        updateStats(sql, true); // чтобы сами таблицы статистики получили статистику
-        if (!SystemProperties.doNotCalculateStats)
-            updateStats(sql, false);
+    public ImMap<String, Integer> updateStats(SQLSession sql) throws SQLException, SQLHandledException {
+        ImMap<String, Integer> result = updateStats(sql, true); // чтобы сами таблицы статистики получили статистику
+        return SystemProperties.doNotCalculateStats ? result : updateStats(sql, false);
     }
 
-    public void updateStats(SQLSession sql, boolean statDefault) throws SQLException, SQLHandledException {
+    public ImMap<String, Integer> updateStats(SQLSession sql, boolean statDefault) throws SQLException, SQLHandledException {
         ImMap<String, Integer> tableStats;
         ImMap<String, Integer> keyStats;
         ImMap<String, Pair<Integer, Integer>> propStats;
@@ -750,6 +749,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
             dataTable.updateStat(tableStats, keyStats, propStats, statDefault, null);
         }
+        return tableStats;
     }
 
     public <T> ImMap<String, T> readStatsFromDB(SQLSession sql, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException, SQLHandledException {

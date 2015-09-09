@@ -422,7 +422,8 @@ public class ImplementTable extends GlobalTable { // последний инте
         calculateStat(reflectionLM, session, null);
     }
 
-    public void calculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImSet<PropertyField> props) throws SQLException, SQLHandledException {
+    public ImMap<String, Pair<Integer, Integer>> calculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImSet<PropertyField> props) throws SQLException, SQLHandledException {
+        ImMap<String, Pair<Integer, Integer>> propStats = MapFact.EMPTY();
         if (!SystemProperties.doNotCalculateStats) {
             ValueExpr one = new ValueExpr(1, IntegerClass.instance);
 
@@ -477,10 +478,15 @@ public class ImplementTable extends GlobalTable { // последний инте
             ImMap<Object, Object> notNulls = mNotNulls.immutable();
             for (PropertyField property : propertyFieldSet) {
                 DataObject propertyObject = safeReadClasses(session, reflectionLM.tableColumnLongSID, new DataObject(getName() + "." + property.getName()));
-                if(propertyObject != null)
-                    reflectionLM.notNullQuantityTableColumn.change(BaseUtils.nvl(notNulls.get(property), 0), session, propertyObject);
+                if(propertyObject != null) {
+                    Object notNull = BaseUtils.nvl(notNulls.get(property), 0);
+                    Object quantity = BaseUtils.nvl(result.get(property), 0);
+                    reflectionLM.notNullQuantityTableColumn.change(notNull, session, propertyObject);
+                    propStats = propStats.addExcl(getName() + "." + property.getName(), Pair.create((Integer) notNull, (Integer) quantity));
+                }
             }
         }
+        return propStats;
     }
 
     public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats,
