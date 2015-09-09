@@ -86,24 +86,26 @@ runSetupScheduler 'Запустить планировщик' = ACTION CUSTOM 'l
 isStartedScheduler 'Запущен'  = DATA BOOLEAN ();
 isStoppedScheduler 'Остановлен' () = NOT isStartedScheduler();
 
+onStarted() += ACTION runSetupScheduler();
+
 scriptText 'Скрипт' () = DATA LOCAL TEXT ();
 evalScript 'Выполнить скрипт' () = ACTION EVAL scriptText();
 
 WHEN ((CHANGED (runAtStartScheduledTask(t)) OR CHANGED (startDateScheduledTask(t)) OR CHANGED (timeFromScheduledTask(t)) 
     OR CHANGED (timeToScheduledTask(t)) OR CHANGED (periodScheduledTask(t)) OR CHANGED (daysOfMonthScheduledTask(t))
     OR CHANGED (schedulerStartTypeScheduledTask(t)) OR CHANGED (schedulerStartTypeScheduledTask(t))) AND activeScheduledTask(t)
-    OR CHANGED (activeScheduledTask(t)))
+    OR CHANGED (activeScheduledTask(t))) AND isStartedScheduler()
  DO EXEC runSetupScheduler();
  
 WHEN ((CHANGED (activeScheduledTaskDetail(td)) OR CHANGED (orderScheduledTaskDetail(td)) OR CHANGED(scriptScheduledTaskDetail(td)) 
     OR CHANGED (scheduledTaskScheduledTaskDetail(td)) OR CHANGED (propertyScheduledTaskDetail(td)) 
     OR CHANGED (ignoreExceptionsScheduledTaskDetail(td)) OR CHANGED (timeoutScheduledTaskDetail(td)) OR CHANGED (parameterScheduledTaskDetail(td)))
-    AND activeScheduledTask(scheduledTaskScheduledTaskDetail(td)))
+    AND activeScheduledTask(scheduledTaskScheduledTaskDetail(td)) AND isStartedScheduler())
  DO EXEC runSetupScheduler();
 
-WHEN DROPPED (td IS ScheduledTaskDetail) IF PREV(activeScheduledTaskDetail(td)) DO EXEC runSetupScheduler();
+WHEN DROPPED (td IS ScheduledTaskDetail) IF PREV(activeScheduledTaskDetail(td)) AND isStartedScheduler() DO EXEC runSetupScheduler();
   
-WHEN CHANGED(inDOWScheduledTask(dow, t)) DO EXEC runSetupScheduler();
+WHEN CHANGED(inDOWScheduledTask(dow, t)) AND isStartedScheduler() DO EXEC runSetupScheduler();
   
            
 FORM scheduledTask 'Планировщик'

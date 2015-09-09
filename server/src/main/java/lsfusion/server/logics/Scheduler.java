@@ -92,20 +92,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
     @Override
     protected void onStarted(LifecycleEvent event) {
-        if(dbManager.isServer()) {
-            logger.info("Starting Scheduler.");
-
-            try (DataSession session = dbManager.createSession()) {
-                setupScheduledTasks(session);
-                BL.schedulerLM.findProperty("isStartedScheduler").change(true, session);
-                session.apply(BL);
-                setupCurrentDateSynchronization();
-            } catch (SQLException | ScriptingErrorLog.SemanticErrorException | SQLHandledException e) {
-                throw new RuntimeException("Error starting Scheduler: ", e);
-            }
-        } else {
-            logger.info("Scheduler disabled, change serverComputer() to enable");
-        }
+        setupCurrentDateSynchronization();
     }
 
     private void setupCurrentDateSynchronization() {
