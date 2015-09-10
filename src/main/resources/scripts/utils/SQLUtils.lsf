@@ -137,18 +137,33 @@ activeProcess 'Активный' (i) = activeSQLProcess(i) OR activeJavaProcess(
 
 blockedProcess 'Заблокированный' (i) = statusJavaProcess(i) == 'BLOCKED' OR lockOwnerIdProcess(i);             
 
+intToColor = FORMULA '(256*256*($1)+256*($2)+($3))::integer';
+
 deltaDateTimeProcess(i) = subtractSeconds(dateTimeSQLProcess(i), currentDateTime());
-deltaTransactionProcess(i) = subtractSeconds(dateTimeSQLProcess(i), startTransactionSQLProcess(i));
-sqlColorProcess(i) = CASE
-                                    WHEN deltaDateTimeProcess(i) > 90 THEN IF deltaTransactionProcess(i) > 5 THEN RGB(255, 105, 0) ELSE RGB(255, 160, 0)
-                                    WHEN deltaDateTimeProcess(i) > 80 THEN IF deltaTransactionProcess(i) > 5 THEN RGB(255, 125, 0) ELSE RGB(255, 255, 30)
-                                    WHEN deltaDateTimeProcess(i) > 70 THEN IF deltaTransactionProcess(i) > 5 THEN RGB(255, 145, 0) ELSE RGB(255, 255, 60)
-                                    WHEN deltaDateTimeProcess(i) > 60 THEN IF deltaTransactionProcess(i) > 5 THEN RGB(255, 165, 0) ELSE RGB(255, 255, 90)
-                                    WHEN deltaDateTimeProcess(i) > 50 THEN IF deltaTransactionProcess(i) > 5 THEN RGB(255, 185, 0) ELSE RGB(255, 255, 120)
-                                    WHEN deltaDateTimeProcess(i) > 40 THEN IF deltaTransactionProcess(i) > 5 THEN RGB(255, 205, 0) ELSE RGB(255, 255, 150)
-                                    WHEN deltaDateTimeProcess(i) > 30 THEN IF deltaTransactionProcess(i) > 5 THEN RGB(255, 225, 0) ELSE RGB(255, 255, 180)
-                                    WHEN deltaDateTimeProcess(i) > 20 THEN IF deltaTransactionProcess(i) > 5 THEN RGB(255, 245, 0) ELSE RGB(255, 255, 210)
-                                    WHEN i IS VARSTRING[10] THEN RGB(255, 255, 240);
+deltaTransactionProcess(i) = subtractSeconds(startTransactionSQLProcess(i), currentDateTime());
+
+red(i) = 255 IF i IS VARSTRING[10];
+green(i) = CASE
+                        WHEN deltaTransactionProcess(i) > 90 THEN 105
+                        WHEN deltaTransactionProcess(i) > 80 THEN 125
+                        WHEN deltaTransactionProcess(i) > 70 THEN 145
+                        WHEN deltaTransactionProcess(i) > 60 THEN 165
+                        WHEN deltaTransactionProcess(i) > 50 THEN 185
+                        WHEN deltaTransactionProcess(i) > 40 THEN 205
+                        WHEN deltaTransactionProcess(i) > 30 THEN 225
+                        WHEN deltaTransactionProcess(i) > 20 THEN 245
+                        WHEN i IS VARSTRING[10] THEN 255;
+blue(i) = CASE
+                        WHEN deltaDateTimeProcess(i) > 90 THEN 0
+                        WHEN deltaDateTimeProcess(i) > 80 THEN 30
+                        WHEN deltaDateTimeProcess(i) > 70 THEN 60
+                        WHEN deltaDateTimeProcess(i) > 60 THEN 90
+                        WHEN deltaDateTimeProcess(i) > 50 THEN 120
+                        WHEN deltaDateTimeProcess(i) > 40 THEN 150
+                        WHEN deltaDateTimeProcess(i) > 30 THEN 180
+                        WHEN deltaDateTimeProcess(i) > 20 THEN 210
+                        WHEN i IS VARSTRING[10] THEN 240;
+sqlColorProcess(i) = COLOR(intToColor(red(i), green(i), blue(i)));
 backgroundProcess(i) = IF isActiveSQLProcess(i) OR startsWith(idThreadProcess(i), 's') THEN sqlColorProcess(i) ELSE RGB(240, 255, 255);  
                    
 cancelProcess 'Снять процесс' (i) = ACTION {
