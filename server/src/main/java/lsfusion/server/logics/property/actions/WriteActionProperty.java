@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.actions;
 
 import com.google.common.base.Throwables;
+import com.jcraft.jsch.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.classes.DynamicFormatFileClass;
@@ -18,10 +19,7 @@ import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,7 +55,7 @@ public class WriteActionProperty extends ScriptingActionProperty {
                     if (extension != null && !extension.isEmpty()) {
                         path += "." + extension;    
                     }
-                    Pattern p = Pattern.compile("(file|ftp):\\/\\/(.*)");
+                    Pattern p = Pattern.compile("(file|ftp|sftp):\\/\\/(.*)");
                     Matcher m = p.matcher(path);
                     if (m.matches()) {
                         String type = m.group(1).toLowerCase();
@@ -75,9 +73,15 @@ public class WriteActionProperty extends ScriptingActionProperty {
                             storeFileToFTP(path, file);
                             if(!file.delete())
                                 file.deleteOnExit();
+                        } else if(type.equals("sftp")) {
+                            File file = File.createTempFile("downloaded", ".tmp");
+                            IOUtils.putFileBytes(file, fileBytes);
+                            storeFileToSFTP(path, file);
+                            if(!file.delete())
+                                file.deleteOnExit();
                         }
                     } else {
-                        throw Throwables.propagate(new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp://username:password@host:port/path_to_file"));
+                        throw Throwables.propagate(new RuntimeException("Incorrect path. Please use format: file://path_to_file or ftp|sftp://username:password@host:port/path_to_file"));
                     }
                 } else {
                     throw Throwables.propagate(new RuntimeException("File bytes not specified"));
@@ -128,6 +132,48 @@ public class WriteActionProperty extends ScriptingActionProperty {
             }
         } else {
             throw Throwables.propagate(new RuntimeException("Incorrect ftp url. Please use format: ftp://username:password@host:port/path_to_file"));
+        }
+    }
+
+    public static void storeFileToSFTP(String path, File file) throws JSchException, SftpException, FileNotFoundException {
+        /*sftp://username:password@host:port/path_to_file*/
+        Pattern connectionStringPattern = Pattern.compile("sftp:\\/\\/(.*):(.*)@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
+        Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
+        if (connectionStringMatcher.matches()) {
+            String username = connectionStringMatcher.group(1); //username
+            String password = connectionStringMatcher.group(2); //password
+            String server = connectionStringMatcher.group(3); //host:IP
+            boolean noPort = connectionStringMatcher.group(4) == null;
+            Integer port = noPort ? 22 : Integer.parseInt(connectionStringMatcher.group(4));
+            String filePath = connectionStringMatcher.group(5);
+            File remoteFile = new File((!filePath.startsWith("/") ? "/" : "") + filePath);
+
+            Session session = null;
+            Channel channel = null;
+            ChannelSftp channelSftp = null;
+            try {
+                JSch jsch = new JSch();
+                session = jsch.getSession(username, server, port);
+                session.setPassword(password);
+                java.util.Properties config = new java.util.Properties();
+                config.put("StrictHostKeyChecking", "no");
+                session.setConfig(config);
+                session.connect();
+                channel = session.openChannel("sftp");
+                channel.connect();
+                channelSftp = (ChannelSftp) channel;
+                channelSftp.cd(remoteFile.getParent().replace("\\", "/"));
+                channelSftp.put(new FileInputStream(file), remoteFile.getName());
+            } finally {
+                if(channelSftp != null)
+                    channelSftp.exit();
+                if(channel != null)
+                    channel.disconnect();
+                if(session != null)
+                    session.disconnect();
+            }
+        } else {
+            throw Throwables.propagate(new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password@host:port/path_to_file"));
         }
     }
 }

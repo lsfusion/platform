@@ -5,6 +5,7 @@ import com.healthmarketscience.jackcess.Database;
 import com.healthmarketscience.jackcess.DatabaseBuilder;
 import com.healthmarketscience.jackcess.Row;
 import com.healthmarketscience.jackcess.Table;
+import com.jcraft.jsch.*;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.IOUtils;
 import lsfusion.server.classes.DynamicFormatFileClass;
@@ -23,10 +24,7 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.util.FileCopyUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URL;
 import java.sql.*;
 import java.util.*;
@@ -68,7 +66,7 @@ public class ReadActionProperty extends ScriptingActionProperty {
 
         try {
             if (sourcePath != null) {
-                Pattern p = Pattern.compile("(file|ftp|http|jdbc|mdb):(?:\\/\\/)?(.*)");
+                Pattern p = Pattern.compile("(file|ftp||sftp|http|jdbc|mdb):(?:\\/\\/)?(.*)");
                 Matcher m = p.matcher(sourcePath);
                 if (m.matches()) {
                     type = m.group(1).toLowerCase();
@@ -88,6 +86,11 @@ public class ReadActionProperty extends ScriptingActionProperty {
                         case "ftp":
                             file = File.createTempFile("downloaded", "tmp");
                             copyFTPToFile(sourcePath, file);
+                            extension = BaseUtils.getFileExtension(new File(url));
+                            break;
+                        case "sftp":
+                            file = File.createTempFile("downloaded", "tmp");
+                            copySFTPToFile(sourcePath, file);
                             extension = BaseUtils.getFileExtension(new File(url));
                             break;
                         case "jdbc":
@@ -120,21 +123,31 @@ public class ReadActionProperty extends ScriptingActionProperty {
             switch (errorCode) {
                 case 0:
                     if(move) {
-                        if(type.equals("file")) {
-                            if(movePath.startsWith("file://"))
-                                FileCopyUtils.copy(file, new File(movePath.replace("file://", "")));
-                            else
-                                throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Unsupported movePath: " + movePath +
-                                        ", supports only file://filepath"));
-                        } else if (type.equals("ftp")) {
-                            WriteActionProperty.storeFileToFTP(movePath, file);
+                        switch (type) {
+                            case "file":
+                                if (movePath.startsWith("file://"))
+                                    FileCopyUtils.copy(file, new File(movePath.replace("file://", "")));
+                                else
+                                    throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. Unsupported movePath: " + movePath +
+                                            ", supports only file://filepath"));
+                                break;
+                            case "ftp":
+                                WriteActionProperty.storeFileToFTP(movePath, file);
+                                break;
+                            case "sftp":
+                                WriteActionProperty.storeFileToSFTP(movePath, file);
+                                break;
                         }
                     }
                     if (!type.equals("file") || delete || move)
                         if(!file.delete())
                             file.deleteOnExit();
-                    if(type.equals("ftp") && (delete || move)) {
-                        deleteFTPFile(sourcePath);
+                    if(delete || move) {
+                        if (type.equals("ftp")) {
+                            deleteFTPFile(sourcePath);
+                        } else if (type.equals("sftp")) {
+                            deleteSFTPFile(sourcePath);
+                        }
                     }
                     break;
                 case 1:
@@ -152,7 +165,7 @@ public class ReadActionProperty extends ScriptingActionProperty {
     }
 
     private void copyFTPToFile(String path, File file) throws IOException {
-        List<Object> properties = parseFTPPath(path);
+        List<Object> properties = parseFTPPath(path, 21);
         if (properties != null) {
             String username = (String) properties.get(0);
             String password = (String) properties.get(1);
@@ -187,8 +200,46 @@ public class ReadActionProperty extends ScriptingActionProperty {
         }
     }
 
+    private void copySFTPToFile(String path, File file) throws IOException, JSchException, SftpException {
+        List<Object> properties = parseFTPPath(path, 22);
+        if (properties != null) {
+            String username = (String) properties.get(0);
+            String password = (String) properties.get(1);
+            String server = (String) properties.get(2);
+            Integer port = (Integer) properties.get(3);
+            String remoteFile = (String) properties.get(4);
+            remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
+
+            Session session = null;
+            Channel channel = null;
+            ChannelSftp channelSftp = null;
+            try {
+                JSch jsch = new JSch();
+                session = jsch.getSession(username, server, port);
+                session.setPassword(password);
+                java.util.Properties config = new java.util.Properties();
+                config.put("StrictHostKeyChecking", "no");
+                session.setConfig(config);
+                session.connect();
+                channel = session.openChannel("sftp");
+                channel.connect();
+                channelSftp = (ChannelSftp) channel;
+                channelSftp.get(remoteFile, file.getAbsolutePath());
+            } finally {
+                if(channelSftp != null)
+                    channelSftp.exit();
+                if(channel != null)
+                    channel.disconnect();
+                if(session != null)
+                    session.disconnect();
+            }
+        } else {
+            throw Throwables.propagate(new RuntimeException("Incorrect sftp url. Please use format: sftp://username:password@host:port/path_to_file"));
+        }
+    }
+
     private void deleteFTPFile(String path) throws IOException {
-        List<Object> properties = parseFTPPath(path);
+        List<Object> properties = parseFTPPath(path, 21);
         if (properties != null) {
             String username = (String) properties.get(0);
             String password = (String) properties.get(1);
@@ -218,16 +269,52 @@ public class ReadActionProperty extends ScriptingActionProperty {
         }
     }
 
-    private List<Object> parseFTPPath(String path) {
-        /*ftp://username:password@host:port/path_to_file*/
-        Pattern connectionStringPattern = Pattern.compile("ftp:\\/\\/(.*):(.*)@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
+    private void deleteSFTPFile(String path) throws IOException, JSchException, SftpException {
+        List<Object> properties = parseFTPPath(path, 22);
+        if (properties != null) {
+            String username = (String) properties.get(0);
+            String password = (String) properties.get(1);
+            String server = (String) properties.get(2);
+            Integer port = (Integer) properties.get(3);
+            String remoteFile = (String) properties.get(4);
+            remoteFile = (!remoteFile.startsWith("/") ? "/" : "") + remoteFile;
+
+            Session session = null;
+            Channel channel = null;
+            ChannelSftp channelSftp = null;
+            try {
+                JSch jsch = new JSch();
+                session = jsch.getSession(username, server, port);
+                session.setPassword(password);
+                java.util.Properties config = new java.util.Properties();
+                config.put("StrictHostKeyChecking", "no");
+                session.setConfig(config);
+                session.connect();
+                channel = session.openChannel("sftp");
+                channel.connect();
+                channelSftp = (ChannelSftp) channel;
+                channelSftp.rm(remoteFile);
+            } finally {
+                if(channelSftp != null)
+                    channelSftp.exit();
+                if(channel != null)
+                    channel.disconnect();
+                if(session != null)
+                    session.disconnect();
+            }
+        }
+    }
+
+    private List<Object> parseFTPPath(String path, Integer defaultPort) {
+        /*sftp|ftp://username:password@host:port/path_to_file*/
+        Pattern connectionStringPattern = Pattern.compile("s?ftp:\\/\\/(.*):(.*)@([^\\/:]*)(?::([^\\/]*))?(?:\\/(.*))?");
         Matcher connectionStringMatcher = connectionStringPattern.matcher(path);
         if (connectionStringMatcher.matches()) {
             String username = connectionStringMatcher.group(1); //lstradeby
             String password = connectionStringMatcher.group(2); //12345
             String server = connectionStringMatcher.group(3); //ftp.harmony.neolocation.net
             boolean noPort = connectionStringMatcher.groupCount() == 4;
-            Integer port = noPort ? 21 : Integer.parseInt(connectionStringMatcher.group(4)); //21
+            Integer port = noPort || connectionStringMatcher.group(4) == null ? defaultPort : Integer.parseInt(connectionStringMatcher.group(4)); //21
             String remoteFile = connectionStringMatcher.group(noPort ? 4 : 5);
             return Arrays.asList((Object) username, password, server, port, remoteFile);
         } else return null;

@@ -26,6 +26,9 @@
         <commons.exec.version>1.1</commons.exec.version>
         <google.guava.version>13.0.1</google.guava.version>
         <jdom.version>1.1</jdom.version>
+        <commons-net.version>3.3</commons-net.version>
+        <com.jcraft.version>0.1.53</com.jcraft.version>
+        <com.healthmarketscience.version>2.0.4</com.healthmarketscience.version>
         <netty.version>3.2.1.Final</netty.version>
         <postgresql.version>9.4-1200-jdbc4-patched-2</postgresql.version>
         <jasper.version>5.6.1</jasper.version>
@@ -639,6 +642,21 @@
                 <groupId>org.jdom</groupId>
                 <artifactId>jdom</artifactId>
                 <version>${jdom.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>${commons-net.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jsch</artifactId>
+                <version>${com.jcraft.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.healthmarketscience</groupId>
+                <artifactId>jackcess</artifactId>
+                <version>${com.healthmarketscience.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.netty</groupId>
