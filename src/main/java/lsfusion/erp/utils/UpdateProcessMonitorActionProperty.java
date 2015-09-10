@@ -102,8 +102,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 "threadAllocatedBytesProcess", "lastThreadAllocatedBytesProcess"));
 
         ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess", "querySQLProcess", "addressUserSQLProcess", "dateTimeSQLProcess",
-                "isActiveSQLProcess", "inTransactionSQLProcess", "computerProcess", "userProcess", "lockOwnerIdProcess", "lockOwnerNameProcess",
-                "fullQuerySQLProcess", "idSQLProcess", "isDisabledNestLoopProcess", "queryTimeoutProcess"));
+                "isActiveSQLProcess", "inTransactionSQLProcess", "startTransactionSQLProcess", "attemptCountSQLProcess", "computerProcess", "userProcess",
+                "lockOwnerIdProcess", "lockOwnerNameProcess", "fullQuerySQLProcess", "idSQLProcess", "isDisabledNestLoopProcess", "queryTimeoutProcess"));
 
         int rowsJava = writeRows(context, propsJava, javaProcesses, true);
         int rowsSQL = writeRows(context, propsSQL, sqlProcesses, false);
@@ -202,20 +202,26 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     ServerLoggers.assertLog(baseInTransaction.equals(true), "FUSION AND BASE INTRANSACTION DIFFERS");
                 Boolean inTransaction = baseInTransaction != null ? baseInTransaction : fusionInTransaction;
                 return !inTransaction ? NullValue.instance : new DataObject(true);
+            case "startTransactionSQLProcess":
+                Long startTransaction = (Long) sqlProcess.get(9);
+                return startTransaction == null ? NullValue.instance : new DataObject(new Timestamp(startTransaction), DateTimeClass.instance);
+            case "attemptCountSQLProcess":
+                Integer attemptCount = (Integer) sqlProcess.get(10);
+                return attemptCount == null ? NullValue.instance : new DataObject(attemptCount);
             case "lockOwnerIdProcess":
-                String lockOwnerId = (String) sqlProcess.get(9);
+                String lockOwnerId = (String) sqlProcess.get(11);
                 return lockOwnerId == null ? NullValue.instance : new DataObject(lockOwnerId);
             case "lockOwnerNameProcess":
-                String lockOwnerName = (String) sqlProcess.get(10);
+                String lockOwnerName = (String) sqlProcess.get(12);
                 return lockOwnerName == null ? NullValue.instance : new DataObject(lockOwnerName);
             case "idSQLProcess":
-                Integer idSQLProcess = (Integer) sqlProcess.get(11);
+                Integer idSQLProcess = (Integer) sqlProcess.get(13);
                 return idSQLProcess == null ? NullValue.instance : new DataObject(idSQLProcess);
             case "isDisabledNestLoopProcess":
-                Boolean isDisabledNestLoop = (Boolean) sqlProcess.get(12);
+                Boolean isDisabledNestLoop = (Boolean) sqlProcess.get(14);
                 return isDisabledNestLoop == null || !isDisabledNestLoop ? NullValue.instance : new DataObject(true);
             case "queryTimeoutProcess":
-                Integer queryTimeoutProcess = (Integer) sqlProcess.get(13);
+                Integer queryTimeoutProcess = (Integer) sqlProcess.get(15);
                 return queryTimeoutProcess == null ? NullValue.instance : new DataObject(queryTimeoutProcess);
             default:
                 return NullValue.instance;
@@ -312,11 +318,11 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 Integer processId = (Integer) entry.get("session_id");
                 List<Object> sessionThread = sessionThreadMap.get(processId);
                 if (sessionThread != null) {
-                    if (sessionThread.get(4) != null) {
-                        fullQuery = (String) sessionThread.get(4);
+                    if (sessionThread.get(6) != null) {
+                        fullQuery = (String) sessionThread.get(6);
                     }
-                    isDisabledNestLoop = (boolean) sessionThread.get(5);
-                    queryTimeout = (Integer) sessionThread.get(6);
+                    isDisabledNestLoop = (boolean) sessionThread.get(7);
+                    queryTimeout = (Integer) sessionThread.get(8);
                 }
                 //String userActiveTask = trimToNull((String) entry.get("host_name"));
                 String address = trimToNull((String) entry.get("client_net_address"));
@@ -324,6 +330,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
                 Integer pid = sessionThread == null ? null : (Integer) sessionThread.get(0);
                 boolean baseInTransaction = sessionThread != null && (boolean) sessionThread.get(1);
+                Long startTransaction = sessionThread == null ? null : (Long) sessionThread.get(2);
+                Integer attemptCount = sessionThread == null ? null : (Integer) sessionThread.get(3);
                 boolean skip = onlyJava;
                 if(pid != null){
                     List<Object> threadInfo = getThreadInfo(pid, onlyActive, false, readAllocatedBytes);
@@ -335,7 +343,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 }
                 if (!skip)
                     resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, fullQuery, null/*userActiveTask*/, null,
-                            address, dateTime, null, null, baseInTransaction, null, null, processId, isDisabledNestLoop, queryTimeout));
+                            address, dateTime, null, null, baseInTransaction, startTransaction, attemptCount, null, null, processId, isDisabledNestLoop,
+                            queryTimeout));
             }
         }
         return resultMap;
@@ -393,11 +402,13 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 List<Object> sessionThread = sessionThreadMap.get(processId);
                 Integer pid = sessionThread == null ? null : (Integer) sessionThread.get(0);
                 boolean baseInTransaction = sessionThread != null && (boolean) sessionThread.get(1);
-                Integer userActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(2);
-                Integer computerActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(3);
-                String fullQuery = sessionThread == null || sessionThread.get(4) == null ? null : (String) sessionThread.get(4);
-                boolean isDisabledNestLoop = sessionThread != null && (boolean) sessionThread.get(5);
-                Integer queryTimeout = sessionThread == null ? null : (Integer) sessionThread.get(6);
+                Long startTransaction = sessionThread == null ? null : (Long) sessionThread.get(2);
+                Integer attemptCount = sessionThread == null ? null : (Integer) sessionThread.get(3);
+                Integer userActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(4);
+                Integer computerActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(5);
+                String fullQuery = sessionThread == null || sessionThread.get(6) == null ? null : (String) sessionThread.get(6);
+                boolean isDisabledNestLoop = sessionThread != null && (boolean) sessionThread.get(7);
+                Integer queryTimeout = sessionThread == null ? null : (Integer) sessionThread.get(8);
 
                 List<Object> lockingProcess = lockingMap.get(processId);
                 String lockOwnerId = lockingProcess == null ? null : getSQLThreadId(sessionThreadMap.get(lockingProcess.get(0)), (Integer) lockingProcess.get(0));
@@ -414,7 +425,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 }
                 if(!skip)
                 resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.<Object>asList(query, fullQuery, userActiveTask, computerActiveTask, address, dateTime,
-                        active, state.equals("idle in transaction"), baseInTransaction, lockOwnerId, lockOwnerName, processId, isDisabledNestLoop, queryTimeout));
+                        active, state.equals("idle in transaction"), baseInTransaction, startTransaction, attemptCount, lockOwnerId, lockOwnerName, processId,
+                        isDisabledNestLoop, queryTimeout));
             }
         }
         return resultMap;
