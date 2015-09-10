@@ -152,7 +152,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, action.firstChanges, new MainFrame.FormCloseListener() {
                 @Override
                 public void formClosed() {
-                    afterModalActionInSameEDT(false);
+                    afterModalActionInSameEDT(true);
                     continueDispatching();
                 }
             });
