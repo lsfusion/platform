@@ -138,15 +138,16 @@ activeProcess 'Активный' (i) = activeSQLProcess(i) OR activeJavaProcess(
 blockedProcess 'Заблокированный' (i) = statusJavaProcess(i) == 'BLOCKED' OR lockOwnerIdProcess(i);             
 
 deltaDateTimeProcess(i) = subtractSeconds(dateTimeSQLProcess(i), currentDateTime());
+deltaTransactionProcess(i) = subtractSeconds(dateTimeSQLProcess(i), startTransactionSQLProcess(i));
 sqlColorProcess(i) = CASE
-                                    WHEN deltaDateTimeProcess(i) > 90 THEN RGB(255, 160, 0)
-                                    WHEN deltaDateTimeProcess(i) > 80 THEN RGB(255, 255, 30)
-                                    WHEN deltaDateTimeProcess(i) > 70 THEN RGB(255, 255, 60)
-                                    WHEN deltaDateTimeProcess(i) > 60 THEN RGB(255, 255, 90)
-                                    WHEN deltaDateTimeProcess(i) > 50 THEN RGB(255, 255, 120)
-                                    WHEN deltaDateTimeProcess(i) > 40 THEN RGB(255, 255, 150)
-                                    WHEN deltaDateTimeProcess(i) > 30 THEN RGB(255, 255, 180)
-                                    WHEN deltaDateTimeProcess(i) > 20 THEN RGB(255, 255, 210)
+                                    WHEN deltaDateTimeProcess(i) > 90 THEN IF deltaTransactionProcess(i) > 0 THEN RGB(255, 105, 0) ELSE RGB(255, 160, 0)
+                                    WHEN deltaDateTimeProcess(i) > 80 THEN IF deltaTransactionProcess(i) > 0 THEN RGB(255, 125, 0) ELSE RGB(255, 255, 30)
+                                    WHEN deltaDateTimeProcess(i) > 70 THEN IF deltaTransactionProcess(i) > 0 THEN RGB(255, 145, 0) ELSE RGB(255, 255, 60)
+                                    WHEN deltaDateTimeProcess(i) > 60 THEN IF deltaTransactionProcess(i) > 0 THEN RGB(255, 165, 0) ELSE RGB(255, 255, 90)
+                                    WHEN deltaDateTimeProcess(i) > 50 THEN IF deltaTransactionProcess(i) > 0 THEN RGB(255, 185, 0) ELSE RGB(255, 255, 120)
+                                    WHEN deltaDateTimeProcess(i) > 40 THEN IF deltaTransactionProcess(i) > 0 THEN RGB(255, 205, 0) ELSE RGB(255, 255, 150)
+                                    WHEN deltaDateTimeProcess(i) > 30 THEN IF deltaTransactionProcess(i) > 0 THEN RGB(255, 225, 0) ELSE RGB(255, 255, 180)
+                                    WHEN deltaDateTimeProcess(i) > 20 THEN IF deltaTransactionProcess(i) > 0 THEN RGB(255, 245, 0) ELSE RGB(255, 255, 210)
                                     WHEN i IS VARSTRING[10] THEN RGB(255, 255, 240);
 backgroundProcess(i) = IF isActiveSQLProcess(i) OR startsWith(idThreadProcess(i), 's') THEN sqlColorProcess(i) ELSE RGB(240, 255, 255);  
                    
