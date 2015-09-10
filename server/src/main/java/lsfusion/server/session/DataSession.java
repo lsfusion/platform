@@ -234,8 +234,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private Transaction applyTransaction; // restore point
     private boolean isInTransaction;
 
-    private void startTransaction(UpdateCurrentClasses update, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
-        sql.startTransaction(DBManager.getCurrentTIL(), getOwner());
+    private void startTransaction(UpdateCurrentClasses update, BusinessLogics<?> BL, Integer attemptCount) throws SQLException, SQLHandledException {
+        sql.startTransaction(DBManager.getCurrentTIL(), getOwner(), attemptCount);
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)
             onlyDataModifier = new OverrideSessionModifier(new IncrementChangeProps(BL.getDataChangeEvents()), applyModifier);
@@ -1700,7 +1700,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                                   int attemptCount, int autoAttemptCount,
                                   ImOrderSet<ActionPropertyValueImplement> applyActions, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
 //        assert !isInTransaction();
-        startTransaction(update, BL);
+        startTransaction(update, BL, attemptCount);
 
         try {
             return recursiveApply(applyActions, BL, update, keepProps);

@@ -4,6 +4,7 @@ import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
@@ -33,10 +34,11 @@ public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionPr
         TaskRunner taskRunner = new TaskRunner(context.getBL());
         RecalculateStatsTask task = new RecalculateStatsTask();
         try {
-            Integer threadCount = (Integer) context.getKeyValue(threadCountInterface).getValue();
-            Integer propertyTimeout = (Integer) context.getKeyValue(propertyTimeoutInterface).getValue();
+            ObjectValue threadCount = context.getKeyValue(threadCountInterface);
+            ObjectValue propertyTimeout = context.getKeyValue(propertyTimeoutInterface);
             task.init(context);
-            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount, propertyTimeout);
+            taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount == null ? null : (Integer) threadCount.getValue(),
+                    propertyTimeout == null ? null : (Integer) propertyTimeout.getValue());
         } catch (InterruptedException e) {
             task.logTimeoutTasks();
             taskRunner.shutdownNow();

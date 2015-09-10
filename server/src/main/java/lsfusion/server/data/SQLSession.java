@@ -66,6 +66,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static ConcurrentWeakHashMap<Long, Long> threadAllocatedBytesBMap = new ConcurrentWeakHashMap<>();
     private static ConcurrentWeakHashMap<Long, Long> threadAllocatedBytesPMap = new ConcurrentWeakHashMap<>();
 
+    private Long startTransaction;
+    private Integer attemptCount;
+
     public static Map<Integer, SQLSession> getSQLSessionMap() {
         Map<Integer, SQLSession> sessionMap = new HashMap<>();
         for(SQLSession sqlSession : sqlSessionMap.keySet()) {
@@ -82,8 +85,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             ExConnection connection = sqlSession.getDebugConnection();
             if(connection != null)
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), Arrays.<Object>asList(sqlSession.getActiveThread(),
-                        sqlSession.isInTransaction(), sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
-                        sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout()));
+                        sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.attemptCount, sqlSession.userProvider.getCurrentUser(),
+                        sqlSession.userProvider.getCurrentComputer(), sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop,
+                        sqlSession.getQueryTimeout()));
         }
         return sessionMap;
     }
@@ -358,8 +362,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void startTransaction(int isolationLevel, OperationOwner owner) throws SQLException, SQLHandledException {
+        startTransaction(isolationLevel, owner, null);
+    }
+
+    public void startTransaction(int isolationLevel, OperationOwner owner, Integer attemptCount) throws SQLException, SQLHandledException {
         lockWrite(owner);
-        
+        startTransaction = System.currentTimeMillis();
+        this.attemptCount = attemptCount;
         assert isInTransaction() || transactionTables.isEmpty();
         try {
             if(Settings.get().isApplyVolatileStats())
@@ -407,6 +416,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 tryCommon(owner);
             }}, firstException);
 
+        startTransaction = null;
+        attemptCount = null;
         unlockWrite();
 
         finishExceptions(firstException);
