@@ -42,13 +42,13 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     }
 
     @Override
-    protected void beforeModalActionInSameEDT() {
-        getFormController().block();
+    protected void beforeModalActionInSameEDT(boolean blockView) {
+        getFormController().block(blockView);
     }
 
     @Override
-    protected void afterModalActionInSameEDT() {
-        getFormController().unblock();
+    protected void afterModalActionInSameEDT(boolean unblockView) {
+        getFormController().unblock(unblockView);
     }
 
     public void execute(RunPrintReportClientAction action) {

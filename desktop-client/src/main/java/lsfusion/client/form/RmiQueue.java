@@ -1,14 +1,17 @@
 package lsfusion.client.form;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.*;
+import lsfusion.base.ERunnable;
+import lsfusion.base.ExceptionUtils;
+import lsfusion.base.Provider;
+import lsfusion.base.SystemUtils;
 import lsfusion.client.ClientLoggers;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.interop.DaemonThreadFactory;
-import lsfusion.interop.exceptions.RemoteAbandonedException;
 import lsfusion.interop.exceptions.FatalHandledRemoteException;
+import lsfusion.interop.exceptions.RemoteAbandonedException;
 import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
@@ -144,7 +147,7 @@ public class RmiQueue {
         SwingUtils.assertDispatchThread();
 
         if (!direct && syncsDepth != 0) {
-            IllegalStateException ex = new IllegalStateException("Nested sync request shouldn't occure.");
+            IllegalStateException ex = new IllegalStateException("Nested sync request shouldn't occur.");
             logger.error("Nested sync request: ", ex);
             throw ex;
         }

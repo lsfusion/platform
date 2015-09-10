@@ -1421,12 +1421,24 @@ public class ClientFormController implements AsyncListener {
         return !isModal && !rmiQueue.isSyncStarted();
     }
 
-    public void block() {
+    public void block(boolean blockView) {
         blocked = true;
+        if (blockView) {
+            blockView();
+        }
     }
 
-    public void unblock() {
+    public void unblock(boolean viewBlocked) {
         blocked = false;
+        if (viewBlocked) {
+            unblockView();
+        }
+    }
+    
+    public void blockView() {
+    }
+    
+    public void unblockView() {
     }
 
     public void setSelected(boolean newSelected) {

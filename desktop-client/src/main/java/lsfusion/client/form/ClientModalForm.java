@@ -5,7 +5,9 @@ import lsfusion.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.rmi.RemoteException;
 import java.util.EventObject;
 
@@ -63,7 +65,7 @@ public class ClientModalForm extends JDialog {
         });
     }
 
-    public final void hideDialog() {
+    public void hideDialog() {
         dispose();
         if (form != null) {
             form.closed();

@@ -33,14 +33,12 @@ public class ClientFormDockable extends ClientDockable {
             }
 
             @Override
-            public void block() {
-                super.block();
+            public void blockView() {
                 ClientFormDockable.this.blockView();
             }
 
             @Override
-            public void unblock() {
-                super.unblock();
+            public void unblockView() {
                 ClientFormDockable.this.unblockView();
             }
         };

@@ -148,26 +148,33 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         ModalityType modality = action.modalityType;
         if (modality == ModalityType.DOCKED_MODAL) {
             pauseDispatching();
-            beforeModalActionInSameEDT();
+            beforeModalActionInSameEDT(true);
             Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, action.firstChanges, new MainFrame.FormCloseListener() {
                 @Override
                 public void formClosed() {
-                    afterModalActionInSameEDT();
+                    afterModalActionInSameEDT(false);
                     continueDispatching();
                 }
             });
         } else if (modality.isModal()) {
+            beforeModalActionInSameEDT(false);
             Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-            new ClientModalForm(action.canonicalName, action.formSID, owner, remoteForm, action.firstChanges, modality.isDialog(), editEvent).showDialog(modality.isFullScreen());
+            new ClientModalForm(action.canonicalName, action.formSID, owner, remoteForm, action.firstChanges, modality.isDialog(), editEvent) {
+                @Override
+                public void hideDialog() {
+                    super.hideDialog();
+                    afterModalActionInSameEDT(false);
+                }
+            }.showDialog(modality.isFullScreen());
         } else {
             Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, action.firstChanges, null);
         }
     }
 
-    protected void beforeModalActionInSameEDT() {
+    protected void beforeModalActionInSameEDT(boolean blockView) {
     }
 
-    protected void afterModalActionInSameEDT() {
+    protected void afterModalActionInSameEDT(boolean unblockView) {
     }
 
     public Integer execute(ReportClientAction action) {
@@ -325,7 +332,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(MessageClientAction action) {
-        beforeModalActionInSameEDT();
+        beforeModalActionInSameEDT(false);
         try {
             if (!action.extended) {
                 JOptionPane.showMessageDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.INFORMATION_MESSAGE);
@@ -333,13 +340,18 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 new ExtendedMessageDialog(getDialogParentContainer(), action.caption, action.message).setVisible(true);
             }
         } finally {
-            afterModalActionInSameEDT();
+            afterModalActionInSameEDT(false);
         }
     }
 
     public int execute(ConfirmClientAction action) {
-        return SwingUtils.showConfirmDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.QUESTION_MESSAGE, 
-                action.cancel, action.timeout, action.initialValue);
+        beforeModalActionInSameEDT(false);
+        try {
+            return SwingUtils.showConfirmDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.QUESTION_MESSAGE,
+                    action.cancel, action.timeout, action.initialValue);
+        } finally {
+            afterModalActionInSameEDT(false);
+        }
     }
 
     public class ExtendedMessageDialog extends JDialog {
