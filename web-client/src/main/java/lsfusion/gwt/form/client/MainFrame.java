@@ -51,6 +51,8 @@ public class MainFrame implements EntryPoint {
 
     public GNavigatorActionDispatcher actionDispatcher = new GNavigatorActionDispatcher();
 
+    private Boolean shouldRepeatPingRequest = true;
+    
     public void onModuleLoad() {
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
@@ -124,6 +126,7 @@ public class MainFrame implements EntryPoint {
                 dispatcher.execute(new ClientMessage(), new ErrorHandlingCallback<ClientMessageResult>() {
                     @Override
                     public void success(ClientMessageResult result) {
+                        setShouldRepeatPingRequest(true);
                         super.success(result);
                         if(result.restart) {
                             DialogBoxHelper.showConfirmBox("Остановка сервера", "Сервер будет остановлен через 5 минут!\n" +
@@ -139,11 +142,24 @@ public class MainFrame implements EntryPoint {
                             });
                         }
                     }
+
+                    @Override
+                    public void failure(Throwable caught) {
+                        setShouldRepeatPingRequest(false);
+                        super.failure(caught);
+                    }
                 });
-                return true;
+                return isShouldRepeatPingRequest();
             }
         }, 10000);
-
+    }
+    
+    private void setShouldRepeatPingRequest(boolean shouldRepeatPingRequest) {
+        this.shouldRepeatPingRequest = shouldRepeatPingRequest;
+    }
+    
+    private boolean isShouldRepeatPingRequest() {
+        return shouldRepeatPingRequest;
     }
 
     private void hackForGwtDnd() {
