@@ -6,6 +6,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServiceLogicsModule;
+import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -45,8 +46,8 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Recalculate Follows error", e);
             context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.follows.error")));
-            Thread.currentThread().interrupt();
-            taskRunner.killSQLProcesses();
+            ThreadUtils.interruptThread(context, Thread.currentThread());
+            taskRunner.interruptThreadPoolProcesses(context);
         } finally {
             context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.follows")) + task.getMessages(), getString("logics.recalculation.follows")));
         }

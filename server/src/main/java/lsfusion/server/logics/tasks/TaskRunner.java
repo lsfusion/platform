@@ -8,7 +8,8 @@ import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.SQLUtils;
+import lsfusion.server.logics.ThreadUtils;
+import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.log4j.Logger;
 
 import java.lang.reflect.Field;
@@ -83,7 +84,7 @@ public class TaskRunner {
             executor.shutdownNow();
     }
 
-    public void killSQLProcesses() throws SQLException, SQLHandledException {
+    public void interruptThreadPoolProcesses(ExecutionContext context) throws SQLException, SQLHandledException {
         try {
             Field workerField = ThreadPoolExecutor.class.getDeclaredField("workers");
             workerField.setAccessible(true);
@@ -93,8 +94,7 @@ public class TaskRunner {
             Field threadField = workerClass.getDeclaredField("thread");
             threadField.setAccessible(true);
             for(Object worker : workers) {
-                Thread thread = (Thread) threadField.get(worker);
-                SQLUtils.killSQLProcess(BL, thread.getId());
+                ThreadUtils.interruptThread(context, (Thread) threadField.get(worker));
             }
         } catch (Exception e) {
             ServerLoggers.systemLogger.error("Failed to kill sql processes in TaskRunner", e);

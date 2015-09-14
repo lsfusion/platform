@@ -27,8 +27,9 @@ import lsfusion.server.data.type.*;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.*;
+import lsfusion.server.logics.property.ExecutionContext;
+import lsfusion.server.session.DataSession;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
 import org.apache.commons.collections.Buffer;
@@ -68,6 +69,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private Long startTransaction;
     private Integer attemptCount;
+
+    public static SQLSession getSQLSession(Integer sqlProcessId) {
+        if(sqlProcessId != null) {
+            for (SQLSession sqlSession : sqlSessionMap.keySet()) {
+                ExConnection connection = sqlSession.getDebugConnection();
+                if (connection != null && ((PGConnection) connection.sql).getBackendPID() == sqlProcessId)
+                    return sqlSession;
+            }
+        }
+        return null;
+    }
 
     public static Map<Integer, SQLSession> getSQLSessionMap() {
         Map<Integer, SQLSession> sessionMap = new HashMap<>();
@@ -122,6 +134,21 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     public String getExecutingStatement() {
         return executingStatement == null ? null : executingStatement.toString();
+    }
+
+
+    public static void cancelExecutingStatement(ExecutionContext context, long processId) throws SQLException, SQLHandledException {
+        cancelExecutingStatement(context.getBL(), context.getDbManager(), context.getSession().sql, processId);
+    }
+
+    public static void cancelExecutingStatement(BusinessLogics BL, DBManager dbManager, SQLSession session, long processId) throws SQLException, SQLHandledException {
+        if(BL != null && dbManager != null && session != null) {
+            Integer sqlProcessId = SQLUtils.getSQLProcess(BL, (int) processId);
+            SQLSession cancelSession = SQLSession.getSQLSession(sqlProcessId);
+            if (cancelSession != null)
+                cancelSession.setForcedCancel();
+            session.executeDDL(dbManager.getAdapter().getCancelActiveTaskQuery(sqlProcessId));
+        }
     }
 
     public Integer getQueryTimeout() {

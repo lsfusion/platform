@@ -6,6 +6,7 @@ import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.ServiceLogicsModule;
+import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -44,8 +45,8 @@ public class CheckAggregationsMultiThreadActionProperty extends ScriptingActionP
             task.logTimeoutTasks();
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Check Aggregations error", e);
-            Thread.currentThread().interrupt();
-            taskRunner.killSQLProcesses();
+            ThreadUtils.interruptThread(context, Thread.currentThread());
+            taskRunner.interruptThreadPoolProcesses(context);
         } finally {
             context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.aggregations")) + task.getMessages(), getString("logics.checking.aggregations")));
         }
