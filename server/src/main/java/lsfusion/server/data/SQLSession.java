@@ -65,7 +65,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = new ConcurrentWeakHashMap<>();
     private static ConcurrentWeakHashMap<Long, Long> threadAllocatedBytesAMap = new ConcurrentWeakHashMap<>();
     private static ConcurrentWeakHashMap<Long, Long> threadAllocatedBytesBMap = new ConcurrentWeakHashMap<>();
-    private static ConcurrentWeakHashMap<Long, Long> threadAllocatedBytesPMap = new ConcurrentWeakHashMap<>();
 
     private Long startTransaction;
     private Integer attemptCount;
@@ -116,24 +115,18 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return sessionMap;
     }
 
-    public static Long getThreadAllocatedBytes(Long id) {
-        Long a = threadAllocatedBytesAMap.get(id);
-        Long b = threadAllocatedBytesBMap.get(id);
-        return (a == null ? 0 : a) + (b == null ? 0 : b);
+    public static Long getThreadAllocatedBytes(Long currentAllocatedBytes, Long id) {
+            Long a = threadAllocatedBytesAMap.get(id);
+            return (currentAllocatedBytes == null ? 0 : currentAllocatedBytes) - (a == null ? 0 : a);
     }
 
     public static void updateThreadAllocatedBytesMap() {
         threadAllocatedBytesAMap = new ConcurrentWeakHashMap<>(threadAllocatedBytesBMap);
         threadAllocatedBytesBMap.clear();
-        ConcurrentWeakHashMap<Long, Long> previousThreadAllocatedBytesMap = new ConcurrentWeakHashMap<>(threadAllocatedBytesPMap);
-        threadAllocatedBytesPMap.clear();
         ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
         if (tBean instanceof com.sun.management.ThreadMXBean) {
             for (long id : tBean.getAllThreadIds()) {
-                Long previousAllocatedBytes = previousThreadAllocatedBytesMap.get(id);
-                Long currentAllocatedBytes = ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(id);
-                threadAllocatedBytesPMap.put(id, currentAllocatedBytes);
-                threadAllocatedBytesBMap.put(id, currentAllocatedBytes - (previousAllocatedBytes == null ? 0 : previousAllocatedBytes));
+                threadAllocatedBytesBMap.put(id, ((com.sun.management.ThreadMXBean) tBean).getThreadAllocatedBytes(id));
             }
         }
     }
