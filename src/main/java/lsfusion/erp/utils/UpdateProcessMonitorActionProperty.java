@@ -531,7 +531,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         String user = logInfo == null ? null : logInfo.userName;
         String lsfStack = getLSFStack(thread);
         Long allocatedBytes = getThreadAllocatedBytes(tBean, readAllocatedBytes, id);
-        Long lastAllocatedBytes = SQLSession.getThreadAllocatedBytes(id);
+        Long lastAllocatedBytes = SQLSession.getThreadAllocatedBytes(allocatedBytes, id);
 
         return !onlyActive || isActiveJavaProcess(status, stackTrace, checkStackTrace) ? Arrays.asList((Object) stackTrace, name, status, lockName, lockOwnerId,
                 lockOwnerName, computer, user, lsfStack, allocatedBytes, lastAllocatedBytes) : null;
