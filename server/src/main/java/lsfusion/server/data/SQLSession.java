@@ -81,6 +81,18 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return null;
     }
 
+    public static Integer getSQLProcessId(long processId) {
+        for(SQLSession sqlSession : sqlSessionMap.keySet()) {
+            ExConnection connection = sqlSession.getDebugConnection();
+            if(connection != null) {
+                Integer activeThread = sqlSession.getActiveThread();
+                if(activeThread != null && activeThread.equals((int) processId))
+                    return ((PGConnection) connection.sql).getBackendPID();
+            }
+        }
+        return null;
+    }
+
     public static Map<Integer, SQLSession> getSQLSessionMap() {
         Map<Integer, SQLSession> sessionMap = new HashMap<>();
         for(SQLSession sqlSession : sqlSessionMap.keySet()) {
@@ -136,13 +148,15 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return executingStatement == null ? null : executingStatement.toString();
     }
 
-    public static void cancelExecutingStatement(DBManager dbManager, SQLSession session, long processId) throws SQLException, SQLHandledException {
-        if(dbManager != null && session != null) {
-            Integer sqlProcessId = SQLUtils.getSQLProcess(dbManager, (int) processId);
-            SQLSession cancelSession = SQLSession.getSQLSession(sqlProcessId);
-            if (cancelSession != null)
-                cancelSession.setForcedCancel();
-            session.executeDDL(dbManager.getAdapter().getCancelActiveTaskQuery(sqlProcessId));
+    public static void cancelExecutingStatement(SQLSession sqlSession, long processId) throws SQLException, SQLHandledException {
+        if(sqlSession != null) {
+            Integer sqlProcessId = SQLSession.getSQLProcessId(processId);
+            if(sqlProcessId != null) {
+                SQLSession cancelSession = SQLSession.getSQLSession(sqlProcessId);
+                if (cancelSession != null)
+                    cancelSession.setForcedCancel();
+                sqlSession.executeDDL(((DataAdapter) sqlSession.syntax).getCancelActiveTaskQuery(sqlProcessId));
+            }
         }
     }
 

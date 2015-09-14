@@ -5,8 +5,11 @@ import lsfusion.interop.remote.PendingRemoteObject;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.Context;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.logics.ThreadUtils;
 
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,12 +54,16 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
     @Override
     public void unexportAndClean() {
-        synchronized (threads) {
-            for (Thread thread : threads) {
-                ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace(thread.getStackTrace()));
-                thread.stop();
+        try {
+            synchronized (threads) {
+                for (Thread thread : threads) {
+                    ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace(thread.getStackTrace()));
+                    ThreadUtils.interruptThread(context.getLogicsInstance().getDbManager().getStopSql(), thread);
+                }
             }
+            super.unexportAndClean();
+        } catch (SQLException | SQLHandledException e) {
+            throw new RuntimeException(e);
         }
-        super.unexportAndClean();
     }
 }

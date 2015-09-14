@@ -94,7 +94,7 @@ public class TaskRunner {
             Field threadField = workerClass.getDeclaredField("thread");
             threadField.setAccessible(true);
             for(Object worker : workers) {
-                ThreadUtils.interruptThread(context, (Thread) threadField.get(worker));
+                ThreadUtils.interruptThread(context.getDbManager().getStopSql(), (Thread) threadField.get(worker));
             }
         } catch (Exception e) {
             ServerLoggers.systemLogger.error("Failed to kill sql processes in TaskRunner", e);

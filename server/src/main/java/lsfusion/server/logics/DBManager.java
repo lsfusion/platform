@@ -201,6 +201,15 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             throw new RuntimeException(e);
         }
     }
+
+    @IdentityStrongLazy
+    public SQLSession getStopSql() throws SQLException {
+        try {
+            return createSQL();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
     
     public int getSystemUserObject() {
         return systemUserObject;

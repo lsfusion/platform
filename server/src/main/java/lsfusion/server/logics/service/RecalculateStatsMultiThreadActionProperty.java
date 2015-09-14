@@ -45,7 +45,7 @@ public class RecalculateStatsMultiThreadActionProperty extends ScriptingActionPr
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Recalculate Stats error", e);
             context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.stats.error")));
-            ThreadUtils.interruptThread(context, Thread.currentThread());
+            ThreadUtils.interruptThread(context.getDbManager().getStopSql(), Thread.currentThread());
             taskRunner.interruptThreadPoolProcesses(context);
         } finally {
             context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.stats")) + task.getMessages(), getString("logics.recalculation.stats")));
