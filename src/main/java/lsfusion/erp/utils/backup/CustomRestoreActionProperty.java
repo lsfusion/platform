@@ -39,6 +39,7 @@ import lsfusion.server.session.SessionTableUsage;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -198,7 +199,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
                                     return getBooleanObject(object);
                                 } else
                                     return object instanceof String ? new DataObject(((String) object).trim()) : object instanceof Integer ? new DataObject((Integer) object)
-                                             : new DataObject(String.valueOf(object));
+                                            : object instanceof BigDecimal ? new DataObject(object, (NumericClass) classValue) : new DataObject(String.valueOf(object));
                             } catch (SQLException | SQLHandledException e) {
                                 return null;
                             }

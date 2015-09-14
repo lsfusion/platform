@@ -80,7 +80,7 @@ FORM backups 'Резервные копии'
 FORM customRestore 'Восстановление данных'
     OBJECTS t = Table
     PROPERTIES(t) inCustomRestoreTable, restoreObjectsTable, sidTable READONLY
-    FILTERGROUP active FILTER 'Только включенные' inCustomRestoreTable(t) DEFAULT   
+    FILTERGROUP active FILTER 'Только включенные' inCustomRestoreTable(t) 
         
     OBJECTS tc=TableColumn
     PROPERTIES(tc) inCustomRestoreTableColumn, replaceOnlyNullTableColumn
