@@ -9,9 +9,13 @@ import java.sql.SQLException;
 public class ThreadUtils {
 
     public static void interruptThread(ExecutionContext context, Thread thread) throws SQLException, SQLHandledException {
+        interruptThread(context.getDbManager(), context.getSession().sql, thread);
+    }
+
+    public static void interruptThread(DBManager dbManager, SQLSession sql, Thread thread) throws SQLException, SQLHandledException {
         if(thread != null) {
             thread.interrupt();
-            SQLSession.cancelExecutingStatement(context, thread.getId());
+            SQLSession.cancelExecutingStatement(dbManager, sql, thread.getId());
         }
     }
 }

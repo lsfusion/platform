@@ -3,7 +3,7 @@ package lsfusion.server.logics.tasks;
 import lsfusion.base.BaseUtils;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.SQLUtils;
+import lsfusion.server.logics.ThreadUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
@@ -127,8 +127,7 @@ public abstract class Task {
             timeoutThread.start();
             timeoutThread.join(propertyTimeout);
             if(timeoutThread.isAlive()) {
-                timeoutThread.interrupt();
-                SQLUtils.killSQLProcess(BL, timeoutThread.getId());
+                ThreadUtils.interruptThread(BL.getDbManager(), BL.getDbManager().getThreadLocalSql(), timeoutThread);
             }
         }
 

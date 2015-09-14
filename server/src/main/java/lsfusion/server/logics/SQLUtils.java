@@ -28,8 +28,8 @@ import static org.apache.commons.lang.StringUtils.trimToNull;
 
 public class SQLUtils {
 
-    public static Integer getSQLProcess(BusinessLogics BL, long id) throws SQLException, SQLHandledException {
-        Map<Integer, Integer> sqlProcesses = BL.getDbManager().getAdapter().getSyntaxType() == SQLSyntaxType.POSTGRES ? getPostgresProcesses(BL, BL.getDbManager()) : getMSSQLProcesses(BL.getDbManager());
+    public static Integer getSQLProcess(DBManager dbManager, long id) throws SQLException, SQLHandledException {
+        Map<Integer, Integer> sqlProcesses = dbManager.getAdapter().getSyntaxType() == SQLSyntaxType.POSTGRES ? getPostgresProcesses(dbManager) : getMSSQLProcesses(dbManager);
         return sqlProcesses.get((int) id);
     }
 
@@ -82,9 +82,9 @@ public class SQLUtils {
         }
     }
 
-    private static Map<Integer, Integer> getPostgresProcesses(BusinessLogics BL, DBManager dbManager) throws SQLException, SQLHandledException {
+    private static Map<Integer, Integer> getPostgresProcesses(DBManager dbManager) throws SQLException, SQLHandledException {
 
-        String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s'", BL.getDataBaseName());
+        String originalQuery = String.format("SELECT * FROM pg_stat_activity WHERE datname='%s'", dbManager.getDataBaseName());
 
         MExclSet<String> keyNames = SetFact.mExclSet();
         keyNames.exclAdd("numberrow");

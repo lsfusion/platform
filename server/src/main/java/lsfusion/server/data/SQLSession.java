@@ -136,14 +136,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return executingStatement == null ? null : executingStatement.toString();
     }
 
-
-    public static void cancelExecutingStatement(ExecutionContext context, long processId) throws SQLException, SQLHandledException {
-        cancelExecutingStatement(context.getBL(), context.getDbManager(), context.getSession().sql, processId);
-    }
-
-    public static void cancelExecutingStatement(BusinessLogics BL, DBManager dbManager, SQLSession session, long processId) throws SQLException, SQLHandledException {
-        if(BL != null && dbManager != null && session != null) {
-            Integer sqlProcessId = SQLUtils.getSQLProcess(BL, (int) processId);
+    public static void cancelExecutingStatement(DBManager dbManager, SQLSession session, long processId) throws SQLException, SQLHandledException {
+        if(dbManager != null && session != null) {
+            Integer sqlProcessId = SQLUtils.getSQLProcess(dbManager, (int) processId);
             SQLSession cancelSession = SQLSession.getSQLSession(sqlProcessId);
             if (cancelSession != null)
                 cancelSession.setForcedCancel();

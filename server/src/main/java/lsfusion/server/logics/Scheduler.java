@@ -313,8 +313,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                             if(worker.isAlive()) {
                                 if(ThreadLocalContext.get() == null)
                                     ThreadLocalContext.set(threadLocalContext);
-                                worker.interrupt();
-                                SQLUtils.killSQLProcess(BL, worker.getId());
+                                ThreadUtils.interruptThread(dbManager, afterFinishLogSession.sql, worker);
                                 logger.error("Timeout error while running scheduler task (in executeLAP()) " + detail.lap.property.caption);
                                 try (DataSession timeoutLogSession = dbManager.createSession(getLogSql())){
                                     DataObject timeoutScheduledTaskLogFinishObject = timeoutLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
@@ -338,8 +337,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             } catch (Exception e) {
                 if (worker != null) {
                     try {
-                        worker.interrupt();
-                        SQLUtils.killSQLProcess(BL, worker.getId());
+                        ThreadUtils.interruptThread(dbManager, afterFinishLogSession.sql, worker);
                     } catch (SQLException | SQLHandledException ignored) {
                     }
                 }
