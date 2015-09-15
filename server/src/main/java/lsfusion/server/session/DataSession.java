@@ -234,7 +234,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private Transaction applyTransaction; // restore point
     private boolean isInTransaction;
 
-    private void startTransaction(UpdateCurrentClasses update, BusinessLogics<?> BL, Integer attemptCount) throws SQLException, SQLHandledException {
+    private void startTransaction(UpdateCurrentClasses update, BusinessLogics<?> BL, int attemptCount) throws SQLException, SQLHandledException {
         sql.startTransaction(DBManager.getCurrentTIL(), getOwner(), attemptCount);
         isInTransaction = true;
         if(applyFilter == ApplyFilter.ONLY_DATA)

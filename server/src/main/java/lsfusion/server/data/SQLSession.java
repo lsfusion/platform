@@ -67,7 +67,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static ConcurrentWeakHashMap<Long, Long> threadAllocatedBytesBMap = new ConcurrentWeakHashMap<>();
 
     private Long startTransaction;
-    private Integer attemptCount;
+    private int attemptCount;
 
     public static SQLSession getSQLSession(Integer sqlProcessId) {
         if(sqlProcessId != null) {
@@ -391,10 +391,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void startTransaction(int isolationLevel, OperationOwner owner) throws SQLException, SQLHandledException {
-        startTransaction(isolationLevel, owner, null);
+        startTransaction(isolationLevel, owner, 0);
     }
 
-    public void startTransaction(int isolationLevel, OperationOwner owner, Integer attemptCount) throws SQLException, SQLHandledException {
+    public void startTransaction(int isolationLevel, OperationOwner owner, int attemptCount) throws SQLException, SQLHandledException {
         lockWrite(owner);
         startTransaction = System.currentTimeMillis();
         this.attemptCount = attemptCount;
@@ -446,7 +446,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             }}, firstException);
 
         startTransaction = null;
-        attemptCount = null;
+        attemptCount = 0;
         unlockWrite();
 
         finishExceptions(firstException);
@@ -1441,7 +1441,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             }
 
             // повторяем
-            executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, snapEnv, pureTime);
+            try {
+                attemptCount++;
+                executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, snapEnv, pureTime);
+            } finally {
+                attemptCount--;
+            }
         } finally {
             snapEnv.afterOuter(this, owner);
         }
