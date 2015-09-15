@@ -294,6 +294,7 @@ public class EmailSender {
                         count++;
                         try {
                             sendMessage(message, smtpHost, smtpPort, userName, password);
+                            logger.info(ServerResourceBundle.getString("mail.successful.mail.sending") + messageInfo);
                         } catch (MessagingException e) {
                             send = false;
                             if (count < 40) {
@@ -319,8 +320,6 @@ public class EmailSender {
                         logger.error("emailSent writing error", e);
                     }
                 }
-
-                logger.info(ServerResourceBundle.getString("mail.successful.mail.sending") + messageInfo);
             }
         }.start();
     }
