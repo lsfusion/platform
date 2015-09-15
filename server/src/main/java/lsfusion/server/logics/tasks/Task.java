@@ -127,7 +127,7 @@ public abstract class Task {
             timeoutThread.start();
             timeoutThread.join(propertyTimeout);
             if(timeoutThread.isAlive()) {
-                ThreadUtils.interruptThread(BL.getDbManager().getStopSql(), timeoutThread);
+                ThreadUtils.interruptThread(BL.getDbManager(), timeoutThread);
             }
         }
 

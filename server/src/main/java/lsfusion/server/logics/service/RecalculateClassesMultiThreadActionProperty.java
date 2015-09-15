@@ -44,7 +44,7 @@ public class RecalculateClassesMultiThreadActionProperty extends ScriptingAction
             task.logTimeoutTasks();
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Recalculate Classes error", e);
-            ThreadUtils.interruptThread(context.getDbManager().getStopSql(), Thread.currentThread());
+            ThreadUtils.interruptThread(context, Thread.currentThread());
             taskRunner.interruptThreadPoolProcesses(context);
         } finally {
             context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculating.data.classes")) + task.getMessages(), getString("logics.recalculating.data.classes")));

@@ -54,16 +54,15 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
     @Override
     public void unexportAndClean() {
-        try {
             synchronized (threads) {
                 for (Thread thread : threads) {
                     ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace(thread.getStackTrace()));
-                    ThreadUtils.interruptThread(context.getLogicsInstance().getDbManager().getStopSql(), thread);
+                    try {
+                    ThreadUtils.interruptThread(context, thread);
+                    } catch (SQLException | SQLHandledException ignored) {
+                    }
                 }
             }
             super.unexportAndClean();
-        } catch (SQLException | SQLHandledException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

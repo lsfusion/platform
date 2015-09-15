@@ -46,7 +46,7 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Recalculate Follows error", e);
             context.delayUserInterfaction(new MessageClientAction(e.getMessage(), getString("logics.recalculation.follows.error")));
-            ThreadUtils.interruptThread(context.getDbManager().getStopSql(), Thread.currentThread());
+            ThreadUtils.interruptThread(context, Thread.currentThread());
             taskRunner.interruptThreadPoolProcesses(context);
         } finally {
             context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.follows")) + task.getMessages(), getString("logics.recalculation.follows")));
