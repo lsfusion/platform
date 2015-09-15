@@ -206,8 +206,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 Long startTransaction = (Long) sqlProcess.get(9);
                 return startTransaction == null ? NullValue.instance : new DataObject(new Timestamp(startTransaction), DateTimeClass.instance);
             case "attemptCountSQLProcess":
-                Integer attemptCount = (Integer) sqlProcess.get(10);
-                return attemptCount == null ? NullValue.instance : new DataObject(attemptCount);
+                return new DataObject((int) sqlProcess.get(10));
             case "lockOwnerIdProcess":
                 String lockOwnerId = (String) sqlProcess.get(11);
                 return lockOwnerId == null ? NullValue.instance : new DataObject(lockOwnerId);
@@ -331,7 +330,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 Integer pid = sessionThread == null ? null : (Integer) sessionThread.get(0);
                 boolean baseInTransaction = sessionThread != null && (boolean) sessionThread.get(1);
                 Long startTransaction = sessionThread == null ? null : (Long) sessionThread.get(2);
-                Integer attemptCount = sessionThread == null ? null : (Integer) sessionThread.get(3);
+                int attemptCount = sessionThread == null ? 0 : (Integer) sessionThread.get(3);
                 boolean skip = onlyJava;
                 if(pid != null){
                     List<Object> threadInfo = getThreadInfo(pid, onlyActive, false, readAllocatedBytes);
@@ -342,7 +341,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     }
                 }
                 if (!skip)
-                    resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, fullQuery, null/*userActiveTask*/, null,
+                    resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList((Object) query, fullQuery, null, null,
                             address, dateTime, null, null, baseInTransaction, startTransaction, attemptCount, null, null, processId, isDisabledNestLoop,
                             queryTimeout));
             }
@@ -403,7 +402,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 Integer pid = sessionThread == null ? null : (Integer) sessionThread.get(0);
                 boolean baseInTransaction = sessionThread != null && (boolean) sessionThread.get(1);
                 Long startTransaction = sessionThread == null ? null : (Long) sessionThread.get(2);
-                Integer attemptCount = sessionThread == null ? null : (Integer) sessionThread.get(3);
+                int attemptCount = sessionThread == null ? 0 : (Integer) sessionThread.get(3);
                 Integer userActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(4);
                 Integer computerActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(5);
                 String fullQuery = sessionThread == null || sessionThread.get(6) == null ? null : (String) sessionThread.get(6);
