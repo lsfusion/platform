@@ -979,8 +979,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public void logSessionEvents(Object object, String prefix) {
-        if(ServerLoggers.isUserExLog())
+        if(ServerLoggers.isUserExLog()) {
+            if(object instanceof ActionProperty)
+                object = object.toString() + " DEP : " + ((ActionProperty) object).getUsedProps() + " " + " CHANGE : " + ((ActionProperty) object).getChangeProps();
             ServerLoggers.exInfoLogger.info(prefix + object);
+        }
     }
 
     public <T extends PropertyInterface> void executeSessionEvents(FormInstance form) throws SQLException, SQLHandledException {
