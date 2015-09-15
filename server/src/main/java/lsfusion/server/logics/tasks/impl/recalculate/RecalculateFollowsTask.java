@@ -1,4 +1,4 @@
-package lsfusion.server.logics.tasks.impl;
+package lsfusion.server.logics.tasks.impl.recalculate;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -19,12 +19,10 @@ import static lsfusion.base.BaseUtils.serviceLogger;
 
 public class RecalculateFollowsTask extends GroupPropertiesSingleTask {
     ExecutionContext context;
-    boolean singleTransaction;
 
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
         super.init(context);
         this.context = context;
-        this.singleTransaction = context.getBL().serviceLM.singleTransaction.read(context) != null;
     }
 
     @Override
@@ -37,11 +35,10 @@ public class RecalculateFollowsTask extends GroupPropertiesSingleTask {
                 if (action.hasResolve()) {
                     long start = System.currentTimeMillis();
                     try {
-                        getDbManager().runDataMultiThread(context, !singleTransaction, new DBManager.RunServiceData() {
-                            public void run(SessionCreator session) throws SQLException, SQLHandledException {
-                                ((DataSession) session).resolve(action);
-                            }
-                        });
+                        try (DataSession session = getDbManager().createSession()) {
+                            session.resolve(action);
+                            session.apply(context);
+                        }
                     } catch (LogMessageLogicsException e) { // suppress'им так как понятная ошибка
                         serviceLogger.info(e.getMessage());
                     }

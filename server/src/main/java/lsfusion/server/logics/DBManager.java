@@ -1088,16 +1088,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             run.run(creator);
     }
 
-    public void runDataMultiThread(SessionCreator creator, boolean runInTransaction, RunServiceData run) throws SQLException, SQLHandledException {
-        if(runInTransaction) {
-            try(DataSession session = createSession()) {
-                run.run(session);
-                session.apply((ExecutionContext) creator);
-            }
-        } else
-            run.run(creator);
-    }
-
     public interface RunService {
         void run(SQLSession sql) throws SQLException, SQLHandledException;
     }

@@ -11,7 +11,7 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.tasks.TaskRunner;
-import lsfusion.server.logics.tasks.impl.RecalculateAggregationsTask;
+import lsfusion.server.logics.tasks.impl.recalculate.RecalculateAggregationsTask;
 
 import java.sql.SQLException;
 import java.util.Iterator;

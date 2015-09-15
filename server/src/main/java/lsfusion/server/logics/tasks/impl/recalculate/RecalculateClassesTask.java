@@ -1,4 +1,4 @@
-package lsfusion.server.logics.tasks.impl;
+package lsfusion.server.logics.tasks.impl.recalculate;
 
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.SetFact;
@@ -25,14 +25,12 @@ import static lsfusion.base.BaseUtils.serviceLogger;
 
 public class RecalculateClassesTask extends GroupPropertiesSingleTask {
     public static int RECALC_TIL = -1;
-    boolean singleTransaction;
     private Set<AggregateProperty> notRecalculateSet;
     Map<ImplementTable, List<CalcProperty>> calcPropertiesMap;
     private boolean groupByTables;
 
     public void init(ExecutionContext context) throws SQLException, SQLHandledException {
         super.init(context);
-        this.singleTransaction = context.getBL().serviceLM.singleTransaction.read(context) != null;
         notRecalculateSet = context.getBL().getNotRecalculateAggregateStoredProperties();
         groupByTables = Settings.get().isGroupByTables();
     }
@@ -46,14 +44,14 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
             if (element instanceof Integer) {
                 serviceLogger.info("Recalculate Exclusiveness");
                 long start = System.currentTimeMillis();
-                getBL().recalculateExclusiveness(session.sql, !singleTransaction);
-                session.apply(getBL());
+                getBL().recalculateExclusiveness(session.sql, true);
+                //session.apply(getBL());
                 long time = System.currentTimeMillis() - start;
                 if(time > maxRecalculateTime)
                     addMessage("Recalculate Exclusiveness", time);
                 serviceLogger.info(String.format("Recalculate Exclusiveness, %sms", time));
             } else if (element instanceof ImplementTable) {
-                DBManager.run(session.sql, !singleTransaction, new DBManager.RunService() {
+                DBManager.run(session.sql, true, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         serviceLogger.info(String.format("Recalculate Table Classes: %s", element));
                         long start = System.currentTimeMillis();
@@ -67,23 +65,23 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
 
                 serviceLogger.info(String.format("Pack table %s", element));
                 long start = System.currentTimeMillis();
-                run(session.sql, !singleTransaction, new RunService() {
+                run(session.sql, new RunService() {
                     @Override
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         sql.packTable((ImplementTable) element, session.env.getOpOwner(), TableOwner.global);
                     }
                 });
-                session.apply(getBL());
+                //session.apply(getBL());
                 long time = System.currentTimeMillis() - start;
                 serviceLogger.info(String.format("Pack table: %s, %sms", element, time));
 
             } else if (element instanceof CalcProperty && !notRecalculateSet.contains(element)) {
-                DBManager.run(session.sql, !singleTransaction, new DBManager.RunService() {
+                DBManager.run(session.sql, true, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         serviceLogger.info(String.format("Recalculate Class: %s", ((CalcProperty) element).getSID()));
                         long start = System.currentTimeMillis();
                         ((CalcProperty) element).recalculateClasses(sql, session.env, getBL().LM.baseClass);
-                        session.apply(getBL());
+                        //session.apply(getBL());
                         long time = System.currentTimeMillis() - start;
                         if(time > maxRecalculateTime)
                             addMessage(element, time);
@@ -103,28 +101,23 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
         void run(SQLSession sql) throws SQLException, SQLHandledException;
     }
 
-    public static void run(SQLSession session, boolean runInTransaction, RunService run) throws SQLException, SQLHandledException {
-        run(session, runInTransaction, run, 0);
+    public static void run(SQLSession session, RunService run) throws SQLException, SQLHandledException {
+        run(session, run, 0);
     }
 
-    private static void run(SQLSession session, boolean runInTransaction, RunService run, int attempts) throws SQLException, SQLHandledException {
-        if (runInTransaction) {
-            session.startTransaction(RECALC_TIL, OperationOwner.unknown);
-            try {
-                run.run(session);
-                session.commitTransaction();
-            } catch (Throwable t) {
-                session.rollbackTransaction();
-                if (t instanceof SQLHandledException && ((SQLHandledException) t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
-                    run(session, true, run, attempts + 1);
-                    return;
-                }
-
-                throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
-            }
-
-        } else
+    private static void run(SQLSession session, RunService run, int attempts) throws SQLException, SQLHandledException {
+        session.startTransaction(RECALC_TIL, OperationOwner.unknown);
+        try {
             run.run(session);
+            session.commitTransaction();
+        } catch (Throwable t) {
+            session.rollbackTransaction();
+            if (t instanceof SQLHandledException && ((SQLHandledException) t).repeatApply(session, OperationOwner.unknown, attempts)) { // update conflict или deadlock или timeout - пробуем еще раз
+                run(session, run, attempts + 1);
+                return;
+            }
+            throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
+        }
     }
 
     @Override

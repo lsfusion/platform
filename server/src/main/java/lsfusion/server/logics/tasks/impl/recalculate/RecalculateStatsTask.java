@@ -1,4 +1,4 @@
-package lsfusion.server.logics.tasks.impl;
+package lsfusion.server.logics.tasks.impl.recalculate;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;

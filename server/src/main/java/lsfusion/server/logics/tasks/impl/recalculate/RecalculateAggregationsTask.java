@@ -1,4 +1,4 @@
-package lsfusion.server.logics.tasks.impl;
+package lsfusion.server.logics.tasks.impl.recalculate;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -41,7 +41,7 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
                         ((AggregateProperty) property).recalculateAggregation(session.sql, session.env, getBL().LM.baseClass);
                     }
                 });
-                session.apply(getBL());
+                //session.apply(getBL());
                 long time = System.currentTimeMillis() - start;
                 if (time > maxRecalculateTime)
                     addMessage(property, time);
