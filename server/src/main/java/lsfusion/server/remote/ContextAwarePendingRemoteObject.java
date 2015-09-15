@@ -60,6 +60,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
                     try {
                     ThreadUtils.interruptThread(context, thread);
                     } catch (SQLException | SQLHandledException ignored) {
+                        ServerLoggers.sqlSuppLog(ignored);
                     }
                 }
             }
