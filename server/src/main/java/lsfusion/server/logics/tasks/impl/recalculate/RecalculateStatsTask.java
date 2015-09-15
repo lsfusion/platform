@@ -9,6 +9,7 @@ import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.IntegerClass;
 import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -16,6 +17,7 @@ import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
@@ -41,27 +43,32 @@ public class RecalculateStatsTask extends GroupPropertiesSingleTask {
         try (DataSession session = getDbManager().createSession()) {
             long start = System.currentTimeMillis();
             serviceLogger.info(currentTask);
-            if(element instanceof ImplementTable) {
-                ((ImplementTable) element).calculateStat(getBL().reflectionLM, session);
-            } else if(element instanceof ObjectValueClassSet) {
-                QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
+            DBManager.run(session.sql, true, new DBManager.RunService() {
+                @Override
+                public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                    if(element instanceof ImplementTable) {
+                        ((ImplementTable) element).calculateStat(getBL().reflectionLM, session);
+                    } else if(element instanceof ObjectValueClassSet) {
+                        QueryBuilder<Integer, Integer> classes = new QueryBuilder<>(SetFact.singleton(0));
 
-                KeyExpr countKeyExpr = new KeyExpr("count");
-                Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(getBL().LM.baseClass)),
-                        new ValueExpr(1, IntegerClass.instance), countKeyExpr.isClass((ObjectValueClassSet) element), GroupType.SUM, classes.getMapExprs());
+                        KeyExpr countKeyExpr = new KeyExpr("count");
+                        Expr countExpr = GroupExpr.create(MapFact.singleton(0, countKeyExpr.classExpr(getBL().LM.baseClass)),
+                                new ValueExpr(1, IntegerClass.instance), countKeyExpr.isClass((ObjectValueClassSet) element), GroupType.SUM, classes.getMapExprs());
 
-                classes.addProperty(0, countExpr);
-                classes.and(countExpr.getWhere());
+                        classes.addProperty(0, countExpr);
+                        classes.and(countExpr.getWhere());
 
-                ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
-                ImSet<ConcreteCustomClass> concreteChilds = ((ObjectValueClassSet) element).getSetConcreteChildren();
-                for (int i = 0, size = concreteChilds.size(); i < size; i++) {
-                    ConcreteCustomClass customClass = concreteChilds.get(i);
-                    ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, (Object) customClass.ID));
-                    getBL().LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
+                        ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> classStats = classes.execute(session);
+                        ImSet<ConcreteCustomClass> concreteChilds = ((ObjectValueClassSet) element).getSetConcreteChildren();
+                        for (int i = 0, size = concreteChilds.size(); i < size; i++) {
+                            ConcreteCustomClass customClass = concreteChilds.get(i);
+                            ImMap<Integer, Object> classStat = classStats.get(MapFact.singleton(0, (Object) customClass.ID));
+                            getBL().LM.statCustomObjectClass.change(classStat == null ? 1 : (Integer) classStat.singleValue(), session, customClass.getClassObject());
+                        }
+                    }
+                    session.apply(getBL());
                 }
-            }
-            session.apply(getBL());
+            });
             long time = System.currentTimeMillis() - start;
             if(time > maxRecalculateTime)
                 addMessage(element, time);
