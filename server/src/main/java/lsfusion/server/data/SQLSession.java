@@ -68,7 +68,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private Long startTransaction;
     private int attemptCount;
-    private Long repeatDate;
 
     public static SQLSession getSQLSession(Integer sqlProcessId) {
         if(sqlProcessId != null) {
@@ -109,7 +108,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             ExConnection connection = sqlSession.getDebugConnection();
             if(connection != null)
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), Arrays.<Object>asList(sqlSession.getActiveThread(),
-                        sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.attemptCount, sqlSession.repeatDate,
+                        sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.attemptCount,
                         sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
                         sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout()));
         }
@@ -1445,11 +1444,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             try {
                 attemptCount++;
                 if(setRepeatDate)
-                    repeatDate = Calendar.getInstance().getTime().getTime();
+                    startTransaction = Calendar.getInstance().getTime().getTime();
                 executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, snapEnv, pureTime, false);
             } finally {
                 if(setRepeatDate)
-                    repeatDate = null;
+                    startTransaction = null;
                 attemptCount--;
             }
         } finally {
