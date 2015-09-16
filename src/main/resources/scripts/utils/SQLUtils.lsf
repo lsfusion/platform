@@ -92,7 +92,6 @@ isActiveSQLProcess 'Активный (SQL)' = DATA LOCAL BOOLEAN (VARSTRING[10])
 inTransactionSQLProcess 'В транзакции (SQL)' = DATA LOCAL BOOLEAN (VARSTRING[10]);
 startTransactionSQLProcess 'Время начала транзакции (SQL)' = DATA LOCAL DATETIME (VARSTRING[10]);
 attemptCountSQLProcess 'Номер попытки (SQL)' = DATA LOCAL INTEGER (VARSTRING[10]);
-repeatDateSQLProcess 'Время повтора (SQL)' = DATA LOCAL DATETIME (VARSTRING[10]);
 
 lsfStackTraceProcess 'LSF след потока' = DATA LOCAL TEXT (VARSTRING[10]);
 lastThreadAllocatedBytesProcess 'Память за последний интервал' = DATA LOCAL LONG (VARSTRING[10]);
@@ -191,7 +190,7 @@ FORM processMonitor 'Монитор процессов'
     OBJECTS i = VARSTRING[10]
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, nameComputerProcess, nameUserProcess,
                            querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
-                           startTransactionSQLProcess, attemptCountSQLProcess, repeatDateSQLProcess,
+                           startTransactionSQLProcess, attemptCountSQLProcess,
                            addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess SHOWIF readAllocatedBytes(), 
                            lastThreadAllocatedBytesProcess SHOWIF readAllocatedBytes(), nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
                            stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, 
@@ -204,7 +203,7 @@ FORM processMonitor 'Монитор процессов'
     PROPERTIES(i2) READONLY BACKGROUND backgroundProcess(i2) sumBlockedProcess,
                             activeProcess, idThreadProcess, nameComputerProcess, nameUserProcess,
                             querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
-                            startTransactionSQLProcess, attemptCountSQLProcess, repeatDateSQLProcess,
+                            startTransactionSQLProcess, attemptCountSQLProcess,
                             addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess SHOWIF readAllocatedBytes(), 
                             lastThreadAllocatedBytesProcess SHOWIF readAllocatedBytes(), nameJavaProcess, statusJavaProcess, lockNameJavaProcess, 
                             stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, queryTimeoutProcess, 
@@ -217,14 +216,14 @@ FORM processMonitor 'Монитор процессов'
     PROPERTIES(blocked) READONLY idThreadProcess, isDeadlockProcess, 
                                  sumBlockingProcess, nameComputerProcess, nameUserProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
-                                 startTransactionSQLProcess, attemptCountSQLProcess, repeatDateSQLProcess,
+                                 startTransactionSQLProcess, attemptCountSQLProcess,
                                   lsfStackTraceProcess, threadAllocatedBytesProcess SHOWIF readAllocatedBytes(), 
                                  lastThreadAllocatedBytesProcess SHOWIF readAllocatedBytes(), nameJavaProcess, statusJavaProcess, 
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
                                  queryTimeoutProcess, idSQLProcess, fullQuerySQLProcess
     PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlockingProcess, nameComputerProcess, nameUserProcess,
                                  querySQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
-                                 startTransactionSQLProcess, attemptCountSQLProcess, repeatDateSQLProcess,
+                                 startTransactionSQLProcess, attemptCountSQLProcess,
                                  addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess SHOWIF readAllocatedBytes(), 
                                  lastThreadAllocatedBytesProcess SHOWIF readAllocatedBytes(), nameJavaProcess, statusJavaProcess,
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
