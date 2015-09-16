@@ -68,6 +68,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private Long startTransaction;
     private int attemptCount;
+    private Long repeatDate;
 
     public static SQLSession getSQLSession(Integer sqlProcessId) {
         if(sqlProcessId != null) {
@@ -108,9 +109,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             ExConnection connection = sqlSession.getDebugConnection();
             if(connection != null)
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), Arrays.<Object>asList(sqlSession.getActiveThread(),
-                        sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.attemptCount, sqlSession.userProvider.getCurrentUser(),
-                        sqlSession.userProvider.getCurrentComputer(), sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop,
-                        sqlSession.getQueryTimeout()));
+                        sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.attemptCount, sqlSession.repeatDate,
+                        sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
+                        sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout()));
         }
         return sessionMap;
     }
@@ -1399,17 +1400,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public <OE, S extends DynamicExecEnvSnapshot> void executeSelect(SQLQuery query, DynamicExecuteEnvironment queryExecEnv, OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, ResultHandler<String, String> handler) throws SQLException, SQLHandledException {
-        executeCommand(query.fixConcSelect(syntax), queryExecEnv, owner, paramObjects, transactTimeout, handler, DynamicExecuteEnvironment.<OE, S>create(null), PureTime.VOID);
+        executeCommand(query.fixConcSelect(syntax), queryExecEnv, owner, paramObjects, transactTimeout, handler, DynamicExecuteEnvironment.<OE, S>create(null), PureTime.VOID, true);
     }
 
     public <OE, S extends DynamicExecEnvSnapshot<OE, S>> int executeDML(@ParamMessage SQLDML command, OperationOwner owner, TableOwner tableOwner, ImMap<String, ParseInterface> paramObjects, DynamicExecuteEnvironment<OE, S> queryExecEnv, OE outerEnv, PureTimeInterface pureTime, int transactTimeout) throws SQLException, SQLHandledException { // public для аспекта
         Result<Integer> handler = new Result<Integer>(0);
-        executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, DynamicExecuteEnvironment.<OE,S>create(outerEnv), pureTime);
+        executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, DynamicExecuteEnvironment.<OE,S>create(outerEnv), pureTime, true);
         return handler.result;
     }
 
     // можно было бы сделать аспектом, но во-первых вся логика before / after аспектная и реализована в явную, плюс непонятно как соотносить snapshot с mutable объектом (env)
-    public <H, OE, S extends DynamicExecEnvSnapshot<OE, S>> void executeCommand(@ParamMessage final SQLCommand<H> command, final DynamicExecuteEnvironment<OE, S> queryExecEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, H handler, DynamicExecEnvOuter<OE, S> outerEnv, PureTimeInterface pureTime) throws SQLException, SQLHandledException {
+    public <H, OE, S extends DynamicExecEnvSnapshot<OE, S>> void executeCommand(@ParamMessage final SQLCommand<H> command, final DynamicExecuteEnvironment<OE, S> queryExecEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, int transactTimeout, H handler, DynamicExecEnvOuter<OE, S> outerEnv, PureTimeInterface pureTime, boolean setRepeatDate) throws SQLException, SQLHandledException {
         if(command.command.length() > Settings.get().getQueryLengthLimit())
             throw new SQLTooLongQueryException(command.command);
 
@@ -1443,8 +1444,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             // повторяем
             try {
                 attemptCount++;
-                executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, snapEnv, pureTime);
+                if(setRepeatDate)
+                    repeatDate = Calendar.getInstance().getTime().getTime();
+                executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, snapEnv, pureTime, false);
             } finally {
+                if(setRepeatDate)
+                    repeatDate = null;
                 attemptCount--;
             }
         } finally {
