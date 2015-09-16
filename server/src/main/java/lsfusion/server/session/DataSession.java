@@ -1055,6 +1055,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         action.execute(env);
     }
 
+    @StackMessage("message.query.execute")
     private boolean executeGlobalEvent(BusinessLogics BL, @ParamMessage Object property, @ParamMessage String progress) throws SQLException, SQLHandledException {
         if(property instanceof ActionProperty || property instanceof ActionPropertyValueImplement) {
             startPendingSingles(property instanceof ActionPropertyValueImplement ? ((ActionPropertyValueImplement) property).property : (ActionProperty) property);
@@ -1798,9 +1799,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private boolean recursiveApply(ImOrderSet<ActionPropertyValueImplement> actions, BusinessLogics BL, UpdateCurrentClasses update, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
         // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
         ImOrderSet<Object> execActions = SetFact.addOrderExcl(actions, BL.getAppliedProperties(this));
-        for (int i=0,size=execActions.size();i<size;i++) {
-            if (!executeGlobalEvent(BL, execActions.get(i), i + " of " + size))
-                return false;
+        for (int i = 0, size = execActions.size(); i < size; i++) {
+            try {
+                sql.statusMessage = new StatusMessage("event", execActions.get(i), i, size);
+                if (!executeGlobalEvent(BL, execActions.get(i), i + " of " + size))
+                    return false;
+            } finally {
+                sql.statusMessage = null;
+            }
         }
 
         if (applyFilter == ApplyFilter.ONLYCHECK) {
@@ -1820,13 +1826,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             packRemoveClasses(BL); // нужно делать до, так как классы должны быть актуальными, иначе спакует свои же изменения
             ImMap<ImplementTable, ImSet<CalcProperty>> groupTables = groupPropertiesByTables();
             OperationOwner owner = getOwner();
-            for (int i=0,size=groupTables.size();i<size;i++) {
-                ImplementTable table = groupTables.getKey(i);
-                SessionTableUsage<KeyField, CalcProperty> saveTable = readSave(table, groupTables.getValue(i));
+            for (int i = 0, size = groupTables.size(); i < size; i++) {
                 try {
-                    savePropertyChanges(table, saveTable);
+                    sql.statusMessage = new StatusMessage("save", groupTables.getKey(i), i, size);
+                    ImplementTable table = groupTables.getKey(i);
+                    SessionTableUsage<KeyField, CalcProperty> saveTable = readSave(table, groupTables.getValue(i));
+                    try {
+                        savePropertyChanges(table, saveTable);
+                    } finally {
+                        saveTable.drop(sql, owner);
+                    }
                 } finally {
-                    saveTable.drop(sql, owner);
+                    sql.statusMessage = null;
                 }
             }
     
@@ -1872,14 +1883,19 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         for(ImplementTable table : BL.LM.tableFactory.getImplementTables(fromJavaSet(remove))) {
             QueryBuilder<KeyField, PropertyField> query = new QueryBuilder<KeyField, PropertyField>(table);
             Where removeWhere = Where.FALSE;
-            for (int i=0,size=table.mapFields.size();i<size;i++) {
-                ValueClass value = table.mapFields.getValue(i);
-                if (remove.contains(value)) {
-                    Join<String> newJoin = news.join(query.getMapExprs().get(table.mapFields.getKey(i)));
-                    removeWhere = removeWhere.or(newJoin.getWhere().and(isValueClass(newJoin.getExpr("value"), (CustomClass) value, usedNewClasses).not()));
-                    if(Settings.get().isSaleInvoiceDetailLog() && table.toString().contains("saleLedger")) {
-                        ServerLoggers.exinfoLog("PACKREMOVECLASSES : " + removeWhere + " " +  usedNewClasses + " " + value + " " + news);
+            for (int i = 0, size = table.mapFields.size(); i < size; i++) {
+                try {
+                    sql.statusMessage = new StatusMessage("delete", table.mapFields.getKey(i), i, size);
+                    ValueClass value = table.mapFields.getValue(i);
+                    if (remove.contains(value)) {
+                        Join<String> newJoin = news.join(query.getMapExprs().get(table.mapFields.getKey(i)));
+                        removeWhere = removeWhere.or(newJoin.getWhere().and(isValueClass(newJoin.getExpr("value"), (CustomClass) value, usedNewClasses).not()));
+                        if (Settings.get().isSaleInvoiceDetailLog() && table.toString().contains("saleLedger")) {
+                            ServerLoggers.exinfoLog("PACKREMOVECLASSES : " + removeWhere + " " + usedNewClasses + " " + value + " " + news);
+                        }
                     }
+                } finally {
+                    sql.statusMessage = null;
                 }
             }
             query.and(table.join(query.getMapExprs()).getWhere().and(removeWhere));

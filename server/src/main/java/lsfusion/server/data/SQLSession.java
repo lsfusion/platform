@@ -68,6 +68,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     private Long startTransaction;
     private int attemptCount;
+    public StatusMessage statusMessage;
 
     public static SQLSession getSQLSession(Integer sqlProcessId) {
         if(sqlProcessId != null) {
@@ -108,7 +109,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             ExConnection connection = sqlSession.getDebugConnection();
             if(connection != null)
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), Arrays.<Object>asList(sqlSession.getActiveThread(),
-                        sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.attemptCount,
+                        sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.attemptCount, sqlSession.statusMessage,
                         sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
                         sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout()));
         }
