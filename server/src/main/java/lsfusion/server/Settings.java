@@ -80,7 +80,7 @@ public class Settings {
 
     private int freeConnections = 5;
 
-    private boolean commonUnique = true;
+    private boolean commonUnique = true; // потому как в таком случае все common connection'ы начинают блокировать друг друга, поэтому схема с private pool'ом правильней
 
     private boolean disablePoolConnections = false;
 

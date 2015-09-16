@@ -674,15 +674,19 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 if (!keep) {
                     if (oldProperty.isDataProperty && !moved) {
                         String newName = "_DELETED_" + oldProperty.getDBName();
-                        Connection connection = sql.getConnection().sql;
-                        Savepoint savepoint = connection.setSavepoint();
+                        ExConnection exConnection = sql.getConnection();
+                        Connection connection = exConnection.sql;
+                        Savepoint savepoint = null;
                         try {
                             savepoint = connection.setSavepoint();
                             sql.renameColumn(oldProperty.getTableName(syntax), oldProperty.getDBName(), newName);
                             columnsToDrop.put(newName, oldProperty.tableName);
                         } catch (PSQLException e) { // колонка с новым именем уже существует
-                            connection.rollback(savepoint);
+                            if(savepoint != null)
+                                connection.rollback(savepoint);
                             mDropColumns.exclAdd(new Pair<>(oldTable.getName(syntax), oldProperty.getDBName()));
+                        } finally {
+                            sql.returnConnection(exConnection);
                         }
                     } else
                         mDropColumns.exclAdd(new Pair<>(oldTable.getName(syntax), oldProperty.getDBName()));

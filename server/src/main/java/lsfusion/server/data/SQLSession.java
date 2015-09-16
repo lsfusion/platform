@@ -207,25 +207,36 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     public ExConnection getConnection() throws SQLException {
         temporaryTablesLock.lock();
-        ExConnection resultConnection;
+        ExConnection resultConnection = null;
+        boolean useCommon = false;
         if (privateConnection != null) {
             resultConnection = privateConnection;
             temporaryTablesLock.unlock();
-        } else {
-            resultConnection = connectionPool.getCommon(this);
-        }
+        } else
+            useCommon = true;
 
-        resultConnection.checkClosed();
-        resultConnection.updateLogLevel(syntax);
+        try {
+            if (useCommon)
+                resultConnection = connectionPool.getCommon(this);
+            resultConnection.checkClosed();
+            resultConnection.updateLogLevel(syntax);
+        } catch (Throwable t) {
+            if(useCommon)
+                temporaryTablesLock.unlock();
+            throw Throwables.propagate(t);
+        }
         return resultConnection;
     }
 
-    private void returnConnection(ExConnection connection) throws SQLException {
+    public void returnConnection(ExConnection connection) throws SQLException {
         if(privateConnection !=null)
             assert privateConnection == connection;
         else {
-            connectionPool.returnCommon(this, connection);
-            temporaryTablesLock.unlock();
+            try {
+                connectionPool.returnCommon(this, connection);
+            } finally {
+                temporaryTablesLock.unlock();
+            }
         }
     }
 
@@ -296,9 +307,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public void lockTryCommon(OperationOwner owner) throws SQLException {
         explicitNeedPrivate = false;
 
-        tryCommon(owner);
-        
-        temporaryTablesLock.unlock();
+        try {
+            tryCommon(owner);
+        } finally {
+            temporaryTablesLock.unlock();
+        }
     }
 
     private int inTransaction = 0; // счетчик для по сути распределенных транзакций
@@ -743,17 +756,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     
     public String getTemporaryTable(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, FillTemporaryTable fill, Integer count, Result<Integer> actual, TableOwner owner, OperationOwner opOwner) throws SQLException, SQLHandledException {
         lockRead(opOwner);
-        temporaryTablesLock.lock();
-
-        needPrivate();
-
         String table;
         try {
-            removeUnusedTemporaryTables(false, opOwner);
-
+            temporaryTablesLock.lock();
             Result<Boolean> isNew = new Result<Boolean>();
-            // в зависимости от политики или локальный пул (для сессии) или глобальный пул
+
             try {
+                needPrivate();
+
+                removeUnusedTemporaryTables(false, opOwner);
+
+                // в зависимости от политики или локальный пул (для сессии) или глобальный пул
                 table = privateConnection.temporary.getTable(this, keys, properties, count, sessionTablesMap, isNew, owner, opOwner); //, sessionTablesStackGot
 
                 if(isNew.result && isInTransaction()) { // пометим как transaction
@@ -863,21 +876,23 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     
     public void rollReturnTemporaryTable(SessionTable table, TableOwner owner, OperationOwner opOwner) throws SQLException {
         lockRead(opOwner);
-        temporaryTablesLock.lock();
-
-        needPrivate();
-
         try {
-            // assertion построен на том что между началом транзакции ее rollback'ом, все созданные таблицы в явную drop'ся, соответственно может нарушится если скажем открыта форма и не close'ута, или просто new IntegrationService идет
-            // в принципе он не настолько нужен, но для порядка пусть будет
-            // придется убрать так как чистых использований уже достаточно много, например ClassChange.materialize, DataSession.addObjects, правда что сейчас с assertion'ами делать неясно
-            assert !sessionTablesMap.containsKey(table.getName()); // вернул назад
-            WeakReference<TableOwner> value = new WeakReference<TableOwner>(owner);
-//            fifo.add("RGET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + value + " " + owner + " " + opOwner  + " " + this + " " + ExceptionUtils.getStackTrace());
-            sessionTablesMap.put(table.getName(), value);
+            temporaryTablesLock.lock();
+            try {
+                needPrivate();
 
+                // assertion построен на том что между началом транзакции ее rollback'ом, все созданные таблицы в явную drop'ся, соответственно может нарушится если скажем открыта форма и не close'ута, или просто new IntegrationService идет
+                // в принципе он не настолько нужен, но для порядка пусть будет
+                // придется убрать так как чистых использований уже достаточно много, например ClassChange.materialize, DataSession.addObjects, правда что сейчас с assertion'ами делать неясно
+                assert !sessionTablesMap.containsKey(table.getName()); // вернул назад
+                WeakReference<TableOwner> value = new WeakReference<TableOwner>(owner);
+                //            fifo.add("RGET " + getCurrentTimeStamp() + " " + table + " " + privateConnection.temporary + " " + value + " " + owner + " " + opOwner  + " " + this + " " + ExceptionUtils.getStackTrace());
+                sessionTablesMap.put(table.getName(), value);
+
+            } finally {
+                temporaryTablesLock.unlock();
+            }
         } finally {
-            temporaryTablesLock.unlock();
             unlockRead();
         }
     }
@@ -944,28 +959,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             throw e;
         } finally {
             statement.close();
-        }
-    }
-
-    private void envNeedPrivate(OperationOwner owner) throws SQLException {
-        lockRead(owner);
-        temporaryTablesLock.lock();
-        try {
-            needPrivate();
-        } finally {
-            temporaryTablesLock.unlock();
-            unlockRead();
-        }
-    }
-
-    private void envTryCommon(OperationOwner opOwner) throws SQLException {
-        lockRead(opOwner);
-        temporaryTablesLock.lock();
-        try {
-            tryCommon(opOwner);
-        } finally {
-            temporaryTablesLock.unlock();
-            unlockRead();
         }
     }
 
@@ -1063,12 +1056,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private void executeDDL(String DDL, StaticExecuteEnvironment env, OperationOwner owner) throws SQLException {
         lockRead(owner);
 
-        ExConnection connection = getConnection();
-
         Statement statement = null;
+        ExConnection connection = null;
 
         Result<Throwable> firstException = new Result<Throwable>();
         try {
+            connection = getConnection();
+
             env.before(this, connection, DDL, owner);
 
             lockConnection(owner);
@@ -1320,27 +1314,33 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     private void afterStatementExecute(Result<Throwable> firstException, final String command, final StaticExecuteEnvironment env, final ExConnection connection, final Statement statement, final OperationOwner owner) {
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                if(statement != null)
-                    statement.close();
-            }}, firstException);
+        if(connection != null) {
+            if (statement != null)
+                runSuppressed(new SQLRunnable() {
+                    public void run() throws SQLException {
+                        statement.close();
+                    }
+                }, firstException);
 
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                unlockConnection(owner);
-            }}, firstException);
+            runSuppressed(new SQLRunnable() {
+                public void run() throws SQLException {
+                    unlockConnection(owner);
+                }
+            }, firstException);
 
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                env.after(SQLSession.this, connection, command, owner);
-            }
-        }, firstException);
+            if(env != null)
+                runSuppressed(new SQLRunnable() {
+                    public void run() throws SQLException {
+                        env.after(SQLSession.this, connection, command, owner);
+                    }
+                }, firstException);
 
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                returnConnection(connection);
-            }}, firstException);
+            runSuppressed(new SQLRunnable() {
+                public void run() throws SQLException {
+                    returnConnection(connection);
+                }
+            }, firstException);
+        }
 
         unlockRead();
     }
@@ -1348,26 +1348,26 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     @StackMessage("message.sql.execute")
     private int executeDML(@ParamMessage String command, OperationOwner owner, TableOwner tableOwner) throws SQLException {
         lockRead(owner);
-        ExConnection connection = getConnection();
-
+        Statement statement = null;
+        ExConnection connection = null;
         int result = 0;
-        lockConnection(owner);
 
-        Statement statement = createSingleStatement(connection.sql);
+        Result<Throwable> firstException = new Result<Throwable>();
         try {
+            connection = getConnection();
+
+            lockConnection(owner);
+
+            statement = createSingleStatement(connection.sql);
 
             result = statement.executeUpdate(command);
         } catch (SQLException e) {
-            logger.error(statement.toString());
-            throw e;
-        } finally {
-            statement.close();
-
-            unlockConnection(owner);
-
-            returnConnection(connection);
-            unlockRead();
+            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString());
+            firstException.set(e);
         }
+
+        afterStatementExecute(firstException, command, null, connection, statement, owner);
+
         return result;
     }
 
@@ -1460,13 +1460,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public <H> void executeCommand(@ParamMessage final SQLCommand<H> command, final DynamicExecEnvSnapshot snapEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, H handler) throws SQLException, SQLHandledException {
         lockRead(owner);
 
-        snapEnv.beforeConnection(this, owner);
-
-        final ExConnection connection = getConnection();
-
         long runTime = 0;
         final Result<ReturnStatement> returnStatement = new Result<ReturnStatement>();
         PreparedStatement statement = null;
+        ExConnection connection = null;
 
         final String string = command.getString();
 
@@ -1474,6 +1471,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         StaticExecuteEnvironment env = command.env;
 
         try {
+            snapEnv.beforeConnection(this, owner);
+
+            connection = getConnection();
+
             env.before(this, connection, string, owner);
 
             lockConnection(snapEnv.needConnectionLock(), owner);
@@ -1504,32 +1505,38 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     private void afterExStatementExecute(final OperationOwner owner, final StaticExecuteEnvironment env, final DynamicExecEnvSnapshot execInfo, final ExConnection connection, final long runTime, final Result<ReturnStatement> returnStatement, final PreparedStatement statement, final String string, Result<Throwable> firstException) {
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                execInfo.afterStatement(SQLSession.this, connection, string, owner);
-            }}, firstException);
+        if(connection != null) {
+            runSuppressed(new SQLRunnable() {
+                public void run() throws SQLException {
+                    execInfo.afterStatement(SQLSession.this, connection, string, owner);
+                }
+            }, firstException);
 
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                env.after(SQLSession.this, connection, string, owner);
-            }}, firstException);
+            runSuppressed(new SQLRunnable() {
+                public void run() throws SQLException {
+                    env.after(SQLSession.this, connection, string, owner);
+                }
+            }, firstException);
 
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                if (statement != null)
-                    returnStatement.result.proceed(statement, runTime);
-            }
-        }, firstException);
+            if (statement != null)
+                runSuppressed(new SQLRunnable() {
+                    public void run() throws SQLException {
+                        returnStatement.result.proceed(statement, runTime);
+                    }
+                }, firstException);
 
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                unlockConnection(execInfo.needConnectionLock(), owner);
-            }}, firstException);
+            runSuppressed(new SQLRunnable() {
+                public void run() throws SQLException {
+                    unlockConnection(execInfo.needConnectionLock(), owner);
+                }
+            }, firstException);
 
-        runSuppressed(new SQLRunnable() {
-            public void run() throws SQLException {
-                returnConnection(connection);
-            }}, firstException);
+            runSuppressed(new SQLRunnable() {
+                public void run() throws SQLException {
+                    returnConnection(connection);
+                }
+            }, firstException);
+        }
 
         runSuppressed(new SQLRunnable() {
             public void run() throws SQLException {
@@ -1588,10 +1595,6 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
     public <K, V> void insertBatchRecords(String table, ImOrderSet<KeyField> keys, ImMap<ImMap<KeyField, K>, ImMap<PropertyField, V>> rows, Parser<K, V> parser, OperationOwner opOwner) throws SQLException {
 
-        lockRead(opOwner);
-
-        ExConnection connection = getConnection();
-
         ImOrderSet<PropertyField> properties = rows.getValue(0).keys().toOrderSet();
         ImOrderSet<Field> fields = SetFact.addOrderExcl(keys, properties);
 
@@ -1611,9 +1614,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         String command = "INSERT INTO " + table + " (" + insertString + ") VALUES (" + valueString + ")";
         PreparedStatement statement = null;
+        ExConnection connection = null;
+
+        lockRead(opOwner);
 
         Result<Throwable> firstException = new Result<Throwable>();
         try {
+            connection = getConnection();
+
             env.before(this, connection, command, opOwner);
 
             lockConnection(opOwner);
@@ -1883,12 +1891,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
         lockRead(opOwner);
 
-        ExConnection connection = getConnection();
+        ExConnection connection = null;
+        Statement statement = null;
 
-        lockConnection(opOwner);
-
-        Statement statement = createSingleStatement(connection.sql);
+        Result<Throwable> firstException = new Result<Throwable>();
         try {
+            connection = getConnection();
+
+            lockConnection(opOwner);
+
+            statement = createSingleStatement(connection.sql);
+
             ResultSet result = statement.executeQuery(select);
             try {
                 boolean next = result.next();
@@ -1931,17 +1944,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 result.close();
             }
         } catch (SQLException e) {
-            logger.error(statement.toString());
-            throw e;
-        } finally {
-            statement.close();
-
-            unlockConnection(opOwner);
-
-            returnConnection(connection);
-
-            unlockRead();
+            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString());
+            firstException.set(e);
         }
+
+        afterStatementExecute(firstException, select, null, connection, statement, opOwner);
     }
     
     private void checkTableOwner(String table, TableOwner owner) {
@@ -2080,17 +2087,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     
     public boolean tryRestore(OperationOwner opOwner, Connection connection, boolean isPrivate) {
         lockRead(opOwner);
-        temporaryTablesLock.lock();
         try {
-            if(isPrivate || Settings.get().isCommonUnique()) // вторая штука перестраховка, но такая опция все равно не используется
+            temporaryTablesLock.lock();
+            try {
+                if(isPrivate || Settings.get().isCommonUnique()) // вторая штука перестраховка, но такая опция все равно не используется
+                    return false;
+                // повалился common
+                assert sessionTablesMap.isEmpty();
+                return connectionPool.restoreCommon(connection);
+            } catch(Exception e) {
                 return false;
-            // повалился common
-            assert sessionTablesMap.isEmpty();
-            return connectionPool.restoreCommon(connection);
-        } catch(Exception e) {
-            return false;
+            } finally {
+                temporaryTablesLock.unlock();
+            }
         } finally {
-            temporaryTablesLock.unlock();
             unlockRead();
         }
     }
