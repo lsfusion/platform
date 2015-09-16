@@ -2,7 +2,6 @@ package lsfusion.server.logics.tasks.impl.recalculate;
 
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.query.Stat;
@@ -11,7 +10,6 @@ import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
-import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
@@ -33,15 +31,15 @@ public class RecalculateAggregationsTask extends GroupPropertiesSingleTask{
         if (property instanceof AggregateProperty && !notRecalculateSet.contains(property)) {
             String currentTask = String.format("Recalculate Aggregation: %s", property);
             startedTask(currentTask);
-            try (DataSession session = getDbManager().createSession()) {
+            try {
+                SQLSession sql = getDbManager().getThreadLocalSql();
                 long start = System.currentTimeMillis();
                 serviceLogger.info(String.format("Recalculate Aggregation started: %s", ((AggregateProperty) property).getSID()));
-                DBManager.run(session.sql, true, new DBManager.RunService() {
+                DBManager.run(sql, true, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                        ((AggregateProperty) property).recalculateAggregation(session.sql, session.env, getBL().LM.baseClass);
+                        ((AggregateProperty) property).recalculateAggregation(sql, getBL().LM.baseClass);
                     }
                 });
-                //session.apply(getBL());
                 long time = System.currentTimeMillis() - start;
                 if (time > maxRecalculateTime)
                     addMessage(property, time);

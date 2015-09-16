@@ -4,10 +4,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.Settings;
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.TableOwner;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.DBManager;
 import lsfusion.server.logics.property.AggregateProperty;
@@ -39,23 +36,22 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
     protected void runTask(final Object element) throws RecognitionException {
         String currentTask = String.format("Recalculate Class: %s", element);
         startedTask(currentTask);
-        try (DataSession session = getDbManager().createSession()) {
-
+        try {
+            SQLSession sql = getDbManager().getThreadLocalSql();
             if (element instanceof Integer) {
                 serviceLogger.info("Recalculate Exclusiveness");
                 long start = System.currentTimeMillis();
-                getBL().recalculateExclusiveness(session.sql, true);
-                //session.apply(getBL());
+                getBL().recalculateExclusiveness(sql, true);
                 long time = System.currentTimeMillis() - start;
                 if(time > maxRecalculateTime)
                     addMessage("Recalculate Exclusiveness", time);
                 serviceLogger.info(String.format("Recalculate Exclusiveness, %sms", time));
             } else if (element instanceof ImplementTable) {
-                DBManager.run(session.sql, true, new DBManager.RunService() {
+                DBManager.run(sql, true, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         serviceLogger.info(String.format("Recalculate Table Classes: %s", element));
                         long start = System.currentTimeMillis();
-                        DataSession.recalculateTableClasses((ImplementTable) element, sql, session.env, getBL().LM.baseClass);
+                        DataSession.recalculateTableClasses((ImplementTable) element, sql, getBL().LM.baseClass);
                         long time = System.currentTimeMillis() - start;
                         if (time > maxRecalculateTime)
                             addMessage(element, time);
@@ -65,23 +61,21 @@ public class RecalculateClassesTask extends GroupPropertiesSingleTask {
 
                 serviceLogger.info(String.format("Pack table %s", element));
                 long start = System.currentTimeMillis();
-                run(session.sql, new RunService() {
+                run(sql, new RunService() {
                     @Override
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                        sql.packTable((ImplementTable) element, session.env.getOpOwner(), TableOwner.global);
+                        sql.packTable((ImplementTable) element, OperationOwner.unknown, TableOwner.global);
                     }
                 });
-                //session.apply(getBL());
                 long time = System.currentTimeMillis() - start;
                 serviceLogger.info(String.format("Pack table: %s, %sms", element, time));
 
             } else if (element instanceof CalcProperty && !notRecalculateSet.contains(element)) {
-                DBManager.run(session.sql, true, new DBManager.RunService() {
+                DBManager.run(sql, true, new DBManager.RunService() {
                     public void run(SQLSession sql) throws SQLException, SQLHandledException {
                         serviceLogger.info(String.format("Recalculate Class: %s", ((CalcProperty) element).getSID()));
                         long start = System.currentTimeMillis();
-                        ((CalcProperty) element).recalculateClasses(sql, session.env, getBL().LM.baseClass);
-                        //session.apply(getBL());
+                        ((CalcProperty) element).recalculateClasses(sql, getBL().LM.baseClass);
                         long time = System.currentTimeMillis() - start;
                         if(time > maxRecalculateTime)
                             addMessage(element, time);

@@ -3,10 +3,10 @@ package lsfusion.server.logics.tasks.impl.recalculate;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.tasks.GroupPropertiesSingleTask;
-import lsfusion.server.session.DataSession;
 import org.antlr.runtime.RecognitionException;
 
 import java.sql.SQLException;
@@ -28,9 +28,10 @@ public class CheckAggregationsTask extends GroupPropertiesSingleTask{
         if (property instanceof AggregateProperty && !notRecalculateSet.contains(property)) {
             String currentTask = String.format("Check Aggregations: %s", property);
             startedTask(currentTask);
-            try (DataSession session = getDbManager().createSession()) {
+            try {
+                SQLSession sql = getDbManager().getThreadLocalSql();
                 long start = System.currentTimeMillis();
-                String result = ((AggregateProperty) property).checkAggregation(session.sql, session.env, getBL().LM.baseClass);
+                String result = ((AggregateProperty) property).checkAggregation(sql, getBL().LM.baseClass);
                 if (result != null && !result.isEmpty())
                     addMessage(result);
                 long time = System.currentTimeMillis() - start;

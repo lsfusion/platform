@@ -3,6 +3,7 @@ package lsfusion.server.logics.tasks.impl.recalculate;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CalcProperty;
@@ -32,11 +33,12 @@ public class CheckClassesTask extends GroupPropertiesSingleTask{
     protected void runTask(final Object property) throws RecognitionException {
         String currentTask = String.format("Check Classes: %s", property);
         startedTask(currentTask);
-        try (DataSession session = getDbManager().createSession()) {
+        try {
+            SQLSession sql = getDbManager().getThreadLocalSql();
             long start = System.currentTimeMillis();
             if(property instanceof Integer) {
                 serviceLogger.info("Check common classes");
-                String result = DataSession.checkClasses(session.sql, session.env, getBL().LM.baseClass);
+                String result = DataSession.checkClasses(sql, getBL().LM.baseClass);
                 if (result != null && !result.isEmpty())
                     addMessage(result);
                 long time = System.currentTimeMillis() - start;
@@ -45,7 +47,7 @@ public class CheckClassesTask extends GroupPropertiesSingleTask{
                 serviceLogger.info(String.format("Check common classes: %sms", time));
             } else if (property instanceof ImplementTable) {
                 serviceLogger.info(String.format("Check Table Classes: %s", ((ImplementTable) property).getName()));
-                String result = DataSession.checkTableClasses((ImplementTable) property, session.sql, session.env, getBL().LM.baseClass);
+                String result = DataSession.checkTableClasses((ImplementTable) property, sql, getBL().LM.baseClass);
                 if(result != null && !result.isEmpty())
                     addMessage(result);
                 long time = System.currentTimeMillis() - start;
@@ -54,7 +56,7 @@ public class CheckClassesTask extends GroupPropertiesSingleTask{
                 serviceLogger.info(String.format("Check Table Classes: %s, %sms", ((ImplementTable) property).getName(), time));
             } else if(property instanceof CalcProperty && !notRecalculateSet.contains(property)) {
                 serviceLogger.info(String.format("Check Classes: %s", ((CalcProperty) property).getSID()));
-                String result = DataSession.checkClasses((CalcProperty) property, session.sql, session.env, getBL().LM.baseClass);
+                String result = DataSession.checkClasses((CalcProperty) property, sql, getBL().LM.baseClass);
                 if(result != null && !result.isEmpty())
                     addMessage(result);
                 long time = System.currentTimeMillis() - start;
