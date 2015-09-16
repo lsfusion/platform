@@ -80,7 +80,7 @@ public class Settings {
 
     private int freeConnections = 5;
 
-    private boolean commonUnique = false;
+    private boolean commonUnique = true;
 
     private boolean disablePoolConnections = false;
 
