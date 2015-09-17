@@ -11,7 +11,8 @@ package lsfusion.utils.prim;
         * a standard adjacency list and then duplicating the logic to ensure each
         * edge appears twice.
         */
-        import java.util.*; // For HashMap
+
+import java.util.*;
 
 public final class UndirectedGraph<T> implements Iterable<T> {
     /* A map from nodes in the graph to sets of outgoing edges.  Each
@@ -36,6 +37,18 @@ public final class UndirectedGraph<T> implements Iterable<T> {
         return true;
     }
 
+    public void removeNode(T node) {
+        if (mGraph.get(node) != null && !mGraph.get(node).isEmpty()) {
+            throw new NoSuchElementException("Empty nodes can be removed only.");    
+        }
+        
+        mGraph.remove(node);
+    }
+    
+    public Set<T> getNodes() {
+        return mGraph.keySet();
+    }
+    
     /**
      * Given two nodes and a length, adds an arc of that length between those
      * nodes.  If the arc already existed, the length is updated to the
@@ -133,7 +146,7 @@ public final class UndirectedGraph<T> implements Iterable<T> {
     /**
      * Returns whether a given node is contained in the graph.
      *
-     * @param The node to test for inclusion.
+     * @param node The node to test for inclusion.
      * @return Whether that node is contained in the graph.
      */
     public boolean containsNode(T node) {
