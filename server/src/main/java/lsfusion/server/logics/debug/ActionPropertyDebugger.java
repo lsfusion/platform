@@ -19,11 +19,9 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.IdentityLazy;
-import lsfusion.server.classes.LogicalClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
@@ -35,6 +33,7 @@ import lsfusion.server.logics.scripted.EvalUtils;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import org.apache.log4j.Logger;
+import sun.management.jmxremote.LocalRMIServerSocketFactory;
 
 import javax.tools.*;
 import java.io.File;
@@ -92,7 +91,7 @@ public class ActionPropertyDebugger implements DebuggerService {
     private ActionPropertyDebugger() {
         try {
             if(isEnabled()) {
-                DebuggerService stub = (DebuggerService) UnicastRemoteObject.exportObject(this, 0);
+                DebuggerService stub = (DebuggerService) UnicastRemoteObject.exportObject(this, 0, new LocalhostClientSocketFactory(), new LocalRMIServerSocketFactory());
                 int port = SystemProperties.getDebuggerPort();
                 Registry registry = LocateRegistry.createRegistry(port);
                 registry.bind("lsfDebuggerService", stub);
