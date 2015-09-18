@@ -61,7 +61,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     
     public boolean hasContextMenuBinding(String sid) {
         OrderedMap contextMenuBindings = entity.getContextMenuBindings();
-        return contextMenuBindings.containsKey(sid);
+        return contextMenuBindings != null && contextMenuBindings.containsKey(sid);
     }
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
