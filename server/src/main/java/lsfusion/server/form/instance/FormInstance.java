@@ -882,7 +882,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         }
 
         ChangePropertySecurityPolicy securityPolicy = this.securityPolicy.property.change;
-        if (editAction != null && securityPolicy.checkPermission(editAction.property) && (property.isSelector() || property.hasContextMenuBinding(editActionSID) || securityPolicy.checkPermission(property.getPropertyObjectInstance().property))) {
+        if (editAction != null && (property.isSelector() || (securityPolicy.checkPermission(editAction.property) && (property.hasContextMenuBinding(editActionSID) || securityPolicy.checkPermission(property.getPropertyObjectInstance().property))))) {
             if (editActionSID.equals(CHANGE) || editActionSID.equals(GROUP_CHANGE)) { //ask confirm logics...
                 PropertyDrawEntity propertyDraw = property.getEntity();
                 if (!pushConfirm && propertyDraw.askConfirm) {
