@@ -1200,12 +1200,20 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return inTable.and(correctClasses.not());
     }
 
+    public static <P extends PropertyInterface> Where getIncorrectWhere(ImplementTable table, PropertyField field, BaseClass baseClass, final ImRevMap<KeyField, KeyExpr> mapKeys, Result<Expr> resultExpr) {
+        Expr fieldExpr = baseClass.getInconsistentTable(table).join(mapKeys).getExpr(field);
+        resultExpr.set(fieldExpr);
+        final Where inTable = fieldExpr.getWhere();
+        Where correctClasses = table.getClassWhere(field).getWhere(MapFact.addExcl(mapKeys, field, fieldExpr), true);
+        return inTable.and(correctClasses.not());
+    }
+
     public static String checkTableClasses(@ParamMessage ImplementTable table, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
         return checkTableClasses(table, sql, null, baseClass);
     }
 
     public static String checkTableClasses(@ParamMessage ImplementTable table, SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
-        Query<KeyField, PropertyField> query = getIncorrectQuery(table, baseClass);
+        Query<KeyField, Object> query = getIncorrectQuery(table, baseClass, true, true);
 
         String incorrect = env == null ? query.readSelect(sql) : query.readSelect(sql, env);
         if(!incorrect.isEmpty())
@@ -1213,10 +1221,27 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return "";
     }
 
-    private static Query<KeyField, PropertyField> getIncorrectQuery(ImplementTable table, BaseClass baseClass) {
+    private static Query<KeyField, Object> getIncorrectQuery(ImplementTable table, BaseClass baseClass, boolean includeProps, boolean check) {
         ImRevMap<KeyField, KeyExpr> mapKeys = table.getMapKeys();
-        Where where = getIncorrectWhere(table, baseClass, mapKeys);
-        return new Query<KeyField, PropertyField>(mapKeys, where);
+        Where where = (includeProps && !check) ? Where.FALSE : getIncorrectWhere(table, baseClass, mapKeys);
+        ImMap<Object, Expr> propExprs;
+        if(includeProps) {
+            Where keyWhere = where;
+            final ImValueMap<PropertyField, Expr> mPropExprs = table.properties.mapItValues();
+            for (int i=0,size=table.properties.size();i<size;i++) {
+                final PropertyField field = table.properties.get(i);
+                Result<Expr> propExpr = new Result<>();
+                Where propWhere = getIncorrectWhere(table, field, baseClass, mapKeys, propExpr);
+                where = where.or(propWhere);
+                mPropExprs.mapValue(i, check ? ValueExpr.TRUE.and(propWhere) : propExpr.result.and(propWhere.not()));
+            }
+            propExprs = BaseUtils.immutableCast(mPropExprs.immutableValue());
+            if(check)
+                propExprs = propExprs.addExcl("KEYS", ValueExpr.TRUE.and(keyWhere));
+        } else
+            propExprs = MapFact.EMPTY();
+
+        return new Query<KeyField, Object>(mapKeys, propExprs, where);
     }
 
     public static void recalculateTableClasses(ImplementTable table, SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {
@@ -1225,9 +1250,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     @StackMessage("logics.recalculating.data.classes")
     public static void recalculateTableClasses(ImplementTable table, SQLSession sql, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
-        Query<KeyField, PropertyField> query = getIncorrectQuery(table, baseClass);
+        Query<KeyField, PropertyField> query;
 
+        query = BaseUtils.immutableCast(getIncorrectQuery(table, baseClass, false, false));
         sql.deleteRecords(new ModifyQuery(table, query, env == null ? OperationOwner.unknown : env.getOpOwner(), TableOwner.global));
+
+        query = BaseUtils.immutableCast(getIncorrectQuery(table, baseClass, true, false));
+        sql.modifyRecords(new ModifyQuery(table, query, env == null ? OperationOwner.unknown : env.getOpOwner(), TableOwner.global));
     }
 
     // для оптимизации
