@@ -44,6 +44,9 @@ import lsfusion.server.logics.mutables.NFLazy;
 import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.*;
+import lsfusion.server.logics.property.actions.file.LoadActionProperty;
+import lsfusion.server.logics.property.actions.file.OpenActionProperty;
+import lsfusion.server.logics.property.actions.file.SaveActionProperty;
 import lsfusion.server.logics.property.actions.flow.*;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
@@ -63,7 +66,6 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.*;
 
-import static java.util.Arrays.copyOfRange;
 import static lsfusion.base.BaseUtils.add;
 import static lsfusion.server.logics.PropertyUtils.*;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
@@ -1415,6 +1417,16 @@ public abstract class LogicsModule {
 
     protected LAP addOFAProp(AbstractGroup group, String caption, LCP lp) { // обернем сразу в and
         return addProperty(group, new LAP(new OpenActionProperty(caption, lp)));
+    }
+
+    // ------------------- SAVE FILE ----------------- //
+
+    protected LAP addSFAProp(LCP lp) {
+        return addSFAProp(null, "sfa", lp);
+    }
+
+    protected LAP addSFAProp(AbstractGroup group, String caption, LCP lp) { // обернем сразу в and
+        return addProperty(group, new LAP(new SaveActionProperty(caption, lp)));
     }
 
     // ------------------- EVAL ----------------- //

@@ -49,6 +49,7 @@ import lsfusion.server.logics.mutables.Version;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.Event;
 import lsfusion.server.logics.property.actions.*;
+import lsfusion.server.logics.property.actions.file.FileActionType;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
 import lsfusion.server.logics.property.actions.importing.csv.ImportCSVDataActionProperty;
@@ -1111,12 +1112,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedFileAProp(boolean loadFile, LPWithParams property) {
+    public LPWithParams addScriptedFileAProp(FileActionType actionType, LPWithParams property) {
         LAP<?> res;
-        if (loadFile) {
-            res = addLFAProp((LCP) property.property);
-        } else {
-            res = addOFAProp((LCP) property.property);
+        switch (actionType) {
+            case LOAD:
+                res = addLFAProp((LCP) property.property);
+                break;
+            case OPEN:
+                res = addOFAProp((LCP) property.property);
+                break;
+            default: // SAVE
+                res = addSFAProp((LCP) property.property);
         }
         return new LPWithParams(res, property.usedParams);
     }

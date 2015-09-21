@@ -4,5 +4,5 @@ import java.io.IOException;
 import java.io.Serializable;
 
 public interface ClientAction extends Serializable {
-    public Object dispatch(ClientActionDispatcher dispatcher) throws IOException;
+    Object dispatch(ClientActionDispatcher dispatcher) throws IOException;
 }

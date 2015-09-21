@@ -1,4 +1,4 @@
-package lsfusion.server.logics;
+package lsfusion.server.logics.property.actions.file;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.classes.DataClass;
@@ -7,6 +7,8 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
+import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -20,7 +22,7 @@ public class LoadActionProperty extends SystemExplicitActionProperty {
 
     LCP<?> fileProperty;
 
-    LoadActionProperty(String caption, LCP fileProperty) {
+    public LoadActionProperty(String caption, LCP fileProperty) {
         super(caption, fileProperty.getInterfaceClasses(ClassType.filePolicy));
 
         this.fileProperty = fileProperty;

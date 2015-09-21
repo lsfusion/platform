@@ -1,4 +1,4 @@
-package lsfusion.server.logics;
+package lsfusion.server.logics.property.actions.file;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
@@ -10,6 +10,7 @@ import lsfusion.server.classes.StaticFormatFileClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
+import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -30,7 +31,7 @@ public class OpenActionProperty extends SystemExplicitActionProperty {
 
     LCP<?> fileProperty;
 
-    OpenActionProperty(String caption, LCP fileProperty) {
+    public OpenActionProperty(String caption, LCP fileProperty) {
         super(caption, fileProperty.getInterfaceClasses(ClassType.filePolicy));
 
         this.fileProperty = fileProperty;

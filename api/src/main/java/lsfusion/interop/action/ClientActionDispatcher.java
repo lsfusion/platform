@@ -3,51 +3,53 @@ package lsfusion.interop.action;
 // такая дебильная схема с Dispatcher'ом чтобы модульность не нарушать
 public interface ClientActionDispatcher {
 
-    public void execute(FormClientAction action);
+    void execute(FormClientAction action);
 
-    public Integer execute(ReportClientAction action);
+    Integer execute(ReportClientAction action);
 
-    public Object execute(RuntimeClientAction action);
+    Object execute(RuntimeClientAction action);
 
-    public void execute(ExportFileClientAction action);
+    void execute(ExportFileClientAction action);
 
-    public Object execute(ImportFileClientAction action);
+    Object execute(ImportFileClientAction action);
 
-    public Object execute(MessageFileClientAction action);
+    Object execute(MessageFileClientAction action);
 
-    public Object execute(ChooseClassClientAction action);
+    Object execute(ChooseClassClientAction action);
 
-    public void execute(UserChangedClientAction action);
+    void execute(UserChangedClientAction action);
 
-    public void execute(MessageClientAction action);
+    void execute(MessageClientAction action);
 
-    public int execute(ConfirmClientAction action);
+    int execute(ConfirmClientAction action);
 
-    public void execute(LogMessageClientAction action);
+    void execute(LogMessageClientAction action);
 
-    public void execute(OpenFileClientAction action);
+    void execute(OpenFileClientAction action);
 
-    public void execute(AudioClientAction action);
+    void execute(SaveFileClientAction action);
 
-    public void execute(RunPrintReportClientAction action);
+    void execute(AudioClientAction action);
 
-    public void execute(RunOpenInExcelClientAction action);
+    void execute(RunPrintReportClientAction action);
 
-    public void execute(RunEditReportClientAction action);
+    void execute(RunOpenInExcelClientAction action);
 
-    public void execute(HideFormClientAction action);
+    void execute(RunEditReportClientAction action);
 
-    public void execute(ProcessFormChangesClientAction action);
+    void execute(HideFormClientAction action);
 
-    public Object execute(RequestUserInputClientAction action);
+    void execute(ProcessFormChangesClientAction action);
 
-    public void execute(EditNotPerformedClientAction action);
+    Object execute(RequestUserInputClientAction action);
 
-    public void execute(UpdateEditValueClientAction action);
+    void execute(EditNotPerformedClientAction action);
 
-    public void execute(AsyncGetRemoteChangesClientAction action);
+    void execute(UpdateEditValueClientAction action);
 
-    public void execute(LogOutClientAction action);
+    void execute(AsyncGetRemoteChangesClientAction action);
+
+    void execute(LogOutClientAction action);
     
-    public void execute(FocusClientAction action);
+    void execute(FocusClientAction action);
 }

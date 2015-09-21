@@ -40,6 +40,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.scripted.ScriptingFormEntity.RegularFilterInfo;
 	import lsfusion.server.mail.SendEmailActionProperty.FormStorageType;
 	import lsfusion.server.mail.AttachmentFormat;
+	import lsfusion.server.logics.property.actions.file.FileActionType;
 	import lsfusion.server.logics.property.actions.flow.Inline;
 	import lsfusion.server.logics.property.actions.SystemEvent;
 	import lsfusion.server.logics.property.Event;
@@ -2279,14 +2280,18 @@ seekObjectActionPropertyDefinitionBody[List<TypedParameter> context, boolean dyn
 
 fileActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
-	boolean loadFile = false;
+	FileActionType actionType = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFileAProp(loadFile, $pe.property);
+		$property = self.addScriptedFileAProp(actionType, $pe.property);
 	}
 }
-	:	('LOADFILE' { loadFile = true; } | 'OPENFILE' { loadFile = false; }) 
+	:	(
+			'LOADFILE' { actionType = FileActionType.LOAD; } 
+		| 	'OPENFILE' { actionType = FileActionType.OPEN; }
+		|	'SAVEFILE' { actionType = FileActionType.SAVE; }
+		) 
 		pe=propertyExpression[context, dynamic]	
 	;
 

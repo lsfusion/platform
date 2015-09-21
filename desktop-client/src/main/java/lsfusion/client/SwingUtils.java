@@ -4,11 +4,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ERunnable;
+import lsfusion.base.IOUtils;
+import lsfusion.base.SystemUtils;
 import lsfusion.client.form.TableTransferHandler;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.interop.KeyStrokes;
 import org.jdesktop.swingx.SwingXUtilities;
+import org.jfree.ui.ExtensionFileFilter;
 import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
@@ -25,6 +28,7 @@ import java.util.*;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static lsfusion.client.ClientResourceBundle.getString;
 
 public class SwingUtils {
 
@@ -578,6 +582,48 @@ public class SwingUtils {
             }
         } else {
             process.run();
+        }
+    }
+
+    public static void showSaveFileDialog(Map<String, byte[]> files) {
+        try {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setCurrentDirectory(SystemUtils.loadCurrentDirectory());
+            boolean singleFile;
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            if (files.size() > 1) {
+                singleFile = false;
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            } else {
+                singleFile = true;
+                File file = new File(files.keySet().iterator().next());
+                fileChooser.setSelectedFile(file);
+                String extension = BaseUtils.getFileExtension(file);
+                ExtensionFileFilter filter = new ExtensionFileFilter("." + extension, extension);
+                fileChooser.addChoosableFileFilter(filter);
+            }
+            if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+                String path = fileChooser.getSelectedFile().getAbsolutePath();
+                for (String file : files.keySet()) {
+                    if (singleFile) {
+                        File file1 = new File(path);
+                        if (file1.exists()) {
+                            int answer = showConfirmDialog(fileChooser, getString("layout.menu.file.already.exists.replace"), 
+                                    getString("layout.menu.file.already.exists"), JOptionPane.QUESTION_MESSAGE, false);
+                            if (answer == JOptionPane.YES_OPTION) {
+                                IOUtils.putFileBytes(file1, files.get(file));
+                            }
+                        } else {
+                            IOUtils.putFileBytes(file1, files.get(file));
+                        }
+                    } else {
+                        IOUtils.putFileBytes(new File(path + "\\" + file), files.get(file));
+                    }
+                }
+                SystemUtils.saveCurrentDirectory(!singleFile ? new File(path) : new File(path.substring(0, path.lastIndexOf("\\"))));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -2,8 +2,6 @@ package lsfusion.client.form.dispatch;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.IOUtils;
-import lsfusion.base.SystemUtils;
 import lsfusion.client.Log;
 import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
@@ -213,28 +211,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(ExportFileClientAction action) {
-        try {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(SystemUtils.loadCurrentDirectory());
-            boolean singleFile;
-            if (action.files.size() > 1) {
-                singleFile = false;
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                fileChooser.setAcceptAllFileFilterUsed(false);
-            } else {
-                singleFile = true;
-                fileChooser.setSelectedFile(new File(action.files.keySet().iterator().next()));
-            }
-            if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-                String path = fileChooser.getSelectedFile().getAbsolutePath();
-                for (String file : action.files.keySet()) {
-                    IOUtils.putFileBytes(new File(singleFile ? path : path + "\\" + file), action.files.get(file));
-                }
-                SystemUtils.saveCurrentDirectory(!singleFile ? new File(path) : new File(path.substring(0, path.lastIndexOf("\\"))));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        SwingUtils.showSaveFileDialog(action.files);
     }
 
     public Object execute(ImportFileClientAction action) {
@@ -388,6 +365,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    public void execute(final SaveFileClientAction action) {
+        SwingUtils.showSaveFileDialog(action.getFileMap());    
     }
 
     public void execute(AudioClientAction action) {

@@ -88,10 +88,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = LogMessageClientAction.class)
     public GLogMessageAction convertAction(LogMessageClientAction action, LogicsAwareDispatchServlet servlet) throws IOException {
-        ArrayList<ArrayList<String>> arrayData = new ArrayList<ArrayList<String>>();
+        ArrayList<ArrayList<String>> arrayData = new ArrayList<>();
         for(List<String> row : action.data)
-            arrayData.add(new ArrayList<String>(row));
-        return new GLogMessageAction(action.failed, action.message, arrayData, new ArrayList<String>(action.titles));
+            arrayData.add(new ArrayList<>(row));
+        return new GLogMessageAction(action.failed, action.message, arrayData, new ArrayList<>(action.titles));
     }
 
     @Converter(from = MessageClientAction.class)
@@ -173,9 +173,14 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GOpenFileAction(FileUtils.saveFile(action.file, action.extension));
     }
 
+    @Converter(from = SaveFileClientAction.class)
+    public GOpenFileAction convertAction(SaveFileClientAction action) {
+        return new GOpenFileAction(FileUtils.saveFile(action.file, action.extension));
+    }
+
     @Converter(from = ExportFileClientAction.class)
     public GExportFileAction convertAction(ExportFileClientAction action) {
-        ArrayList<String> filePaths = new ArrayList<String>();
+        ArrayList<String> filePaths = new ArrayList<>();
         for (String fileName : action.files.keySet()) {
             filePaths.add(FileUtils.saveFile(fileName, action.files.get(fileName)));
         }
