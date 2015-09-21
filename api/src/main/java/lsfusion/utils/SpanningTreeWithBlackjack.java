@@ -13,37 +13,71 @@ import java.util.*;
  * Created by DAle on 20.08.2015.
  */
 
+/**
+ * Решает следующую задачу:
+ * Дан ориентированный взвешенный граф G, в котором если есть ребро (i, j), то не существует ребра (j, i). Вершины также имеют вес.
+ * Рассмотрим неориентированный граф G'', который получается из графа G заменой ориентированных ребер на неориентированные. 
+ * В графе G'' нужно найти остовное дерево, на котором достигается максимум функции f, где f = SUM(v(i)), по всем вершинам i графа G,
+ * где v(i) = MAX(weight(i), СУММ(weight(j, i))), по всем j таким, что в графе G есть ребро (j, i) и соответствующее ребро в графе G'' попало в остовное дерево. 
+ * <p>
+ * Предполагается, что графы рассматриваются сильно разреженные.
+ * <p>
+ * Краткая идея алгоритма.
+ * Выполняется перебор, который пытается удалять ребра графа, сохраняя его связность, до получения остовного дерева. 
+ * Ребра рассматриваются в порядке неубывания весов.
+ * Во время перебора поддерживается актуальное множество "мостов" графа, то есть ребер, удаление которых сделает граф несвязным.
+ * На каждом шаге:
+ * <ol><li>Если ребро не является мостом, удаляем его из графа, находим новые "мосты", и рекурсивно решаем задачу для оставшихся ребер графа.</li> 
+ * <li>Оставляем ребро в графе, если это не приводит к появлению цикла, и рекурсивно решаем задачу для оставшихся ребер графа.</li></ol>
+ * <p>
+ * Так как перебор даже для небольших графов выполняется слишком долго, то количество итераций алгоритма ограничивается некой константой iterations.
+ * Под итерацией алгоритма в данном случае подразумеваем количество удалений ребер из графа (и как следствие количество поисков "мостов" графа).
+ * Также вводится некий коэффициент ratio. 
+ * Перебор на исходном графе ограничивается количеством итераций равным iterations0 = iterations * ratio / 100.
+ * Затем ребро с минимальным весов фиксируется как принадлежащее искомому дереву и запускается новый перебор на оставшихся ребрах
+ * с количеством итераций iterations1 = (iterations - iterations0) * ratio / 100 и т.д.
+ * 
+ */
+
 public class SpanningTreeWithBlackjack<T> {
-    static final private int defaultIterations = 1000;  
-    static final private int ratio = 70;
+    static final private int DEFAULT_ITERATIONS = 1000;  
+    static final private int RATIO = 70;
     
     static private class Edge {
         public Edge(int from, int to, int w, boolean d) { this.from = from; this.to = to; this.weight = w; this.direct = d; }
+        
         public int from;
         public int to;
         public int weight;
         public boolean direct;
     }
     
-    private Map<T, Integer> index = new HashMap<>();
-    private ArrayList<Integer> weights = new ArrayList<>();
+    private Map<T, Integer> vertexIndex = new HashMap<>();
+    private List<Integer> weights = new ArrayList<>();
     private List<List<Edge>> graph = new ArrayList<>();
-
     private int nodesCnt;
-    
+
     public void addNode(T node, int weight) {
-        assert !index.containsKey(node);
-        index.put(node, index.size());
+        assert !vertexIndex.containsKey(node);
+        vertexIndex.put(node, vertexIndex.size());
         weights.add(weight);
         graph.add(new ArrayList<Edge>());
     }
 
-    void setNodeWeight(int index, int weight) {
-        weights.set(index, weight);
+    public void addEdge(T nodeFrom, T nodeTo, int weight) {
+        assert vertexIndex.containsKey(nodeFrom) && vertexIndex.containsKey(nodeTo);
+        int nodeFromIndex = vertexIndex.get(nodeFrom);
+        int nodeToIndex = vertexIndex.get(nodeTo);
+        addEdgeFrom(nodeFromIndex, new Edge(nodeFromIndex, nodeToIndex, weight, true));
+        addEdgeFrom(nodeToIndex, new Edge(nodeToIndex, nodeFromIndex, weight, false));
     }
     
-    void addEdgeFrom(int index, Edge addEdge) {
-        List<Edge> edges = graph.get(index);
+    private void setNodeWeight(int nodeIndex, int weight) {
+        weights.set(nodeIndex, weight);
+    }
+    
+    private void addEdgeFrom(int nodeIndex, Edge addEdge) {
+        List<Edge> edges = graph.get(nodeIndex);
         for (Edge edge : edges) {
             if (edge.from == addEdge.from && edge.to == addEdge.to) {
                 assert edge.direct == addEdge.direct;
@@ -53,27 +87,7 @@ public class SpanningTreeWithBlackjack<T> {
         }
         edges.add(addEdge);
     }
-    
-    public void addEdge(T nodeFrom, T nodeTo, int weight) {
-        assert index.containsKey(nodeFrom) && index.containsKey(nodeTo); 
-        int nodeFromIndex = index.get(nodeFrom);
-        int nodeToIndex = index.get(nodeTo);
-        addEdgeFrom(nodeFromIndex, new Edge(nodeFromIndex, nodeToIndex, weight, true));
-        addEdgeFrom(nodeToIndex, new Edge(nodeToIndex, nodeFromIndex, weight, false));
-    }
         
-    private void checkGraph() {
-        for (List<Edge> edges : graph) {
-            Set<Integer> neighbours = new HashSet<>();
-            for (Edge e : edges) {
-                if (neighbours.contains(e.to)) {
-                    throw new RuntimeException("Duplicated edges are forbidden");    
-                }
-                neighbours.add(e.to);
-            }
-        }
-    }
-    
     private void getComponent(int node, boolean[] visited, List<Integer> outComponent) {
         if (!visited[node]) {
             visited[node] = true;
@@ -105,7 +119,8 @@ public class SpanningTreeWithBlackjack<T> {
             this.totalIterations = iterations;
         }
 
-        private int findBridges(int node, UndirectedGraph<Integer> graph, int[] indices, int prevNode, List<Pair<Integer, Integer>> foundEdges, boolean[][] bridgeMatrix) {
+        // алгоритм нахождения мостов в графе за O(|E| + |V|)
+        private int findBridges(int node, UndirectedGraph<Integer> graph, int[] indices, int prevNode, List<Pair<Integer, Integer>> newBridges, boolean[][] bridgeMatrix) {
             indices[node] = curBridgesFinderIndex;
             ++curBridgesFinderIndex;
             int minIndex = indices[node];
@@ -113,7 +128,7 @@ public class SpanningTreeWithBlackjack<T> {
             for (int next : graph.edgesFrom(node).keySet()) {
                 if (next != prevNode) {
                     if (indices[next] == 0) {
-                        minIndex = Math.min(minIndex, findBridges(next, graph, indices, node, foundEdges, bridgeMatrix));
+                        minIndex = Math.min(minIndex, findBridges(next, graph, indices, node, newBridges, bridgeMatrix));
                     }
                     minIndex = Math.min(minIndex, indices[next]);
                 }
@@ -123,7 +138,7 @@ public class SpanningTreeWithBlackjack<T> {
                 if (!bridgeMatrix[prevNode][node]) {
                     bridgeMatrix[prevNode][node] = true;
                     bridgeMatrix[node][prevNode] = true;
-                    foundEdges.add(new Pair<>(prevNode, node));
+                    newBridges.add(new Pair<>(prevNode, node));
                 }
             }
             return minIndex;
@@ -131,10 +146,10 @@ public class SpanningTreeWithBlackjack<T> {
         
         private List<Pair<Integer, Integer>> findBridges(UndirectedGraph<Integer> graph, boolean[][] bridgeMatrix) {
             curBridgesFinderIndex = 1;
-            Arrays.fill(indicesForFindingBridges, 0);
-            List<Pair<Integer, Integer>> foundEdges = new ArrayList<>();
-            findBridges(component.get(0), graph, indicesForFindingBridges, -1, foundEdges, bridgeMatrix);
-            return foundEdges;
+            Arrays.fill(indicesForFindingBridges, 0); // переиспользование коллекции для оптимизации
+            List<Pair<Integer, Integer>> newBridges = new ArrayList<>();
+            findBridges(component.get(0), graph, indicesForFindingBridges, -1, newBridges, bridgeMatrix);
+            return newBridges;
         } 
         
         private boolean isAcyclicDfs(int node, int prev, UndirectedGraph<Integer> graph, int[] visitedColor) {
@@ -176,7 +191,7 @@ public class SpanningTreeWithBlackjack<T> {
             return res / 2;
         }
         
-        private void find(List<Edge> edges, int index, int iterations, Map<Integer, Integer> curResults, int curResult, UndirectedGraph<Integer> edgesToAdd, UndirectedGraph<Integer> edgesWithoutToRemove, boolean[][] bridgeMatrix) {
+        private void find(List<Edge> edges, int index, int iterations, int[] curResults, int curResult, UndirectedGraph<Integer> edgesToAdd, UndirectedGraph<Integer> edgesWithoutToRemove, boolean[][] bridgeMatrix) {
             if (curResult <= bestResult)
                 return;
             if (curIteration > iterations)
@@ -194,12 +209,12 @@ public class SpanningTreeWithBlackjack<T> {
                 // Пробуем удалить ребро
                 removeEdge(edgesWithoutToRemove, curEdge);
                 List<Pair<Integer, Integer>> newBridges = findBridges(edgesWithoutToRemove, bridgeMatrix);
-                int oldRes = curResults.get(curEdge.to);
+                int oldRes = curResults[curEdge.to];
                 int w = curEdge.weight;
                 int newRes = Math.max(weights.get(curEdge.to), oldRes - w);
-                curResults.put(curEdge.to, newRes);
+                curResults[curEdge.to] = newRes;
                 find(edges, index + 1, iterations, curResults, curResult + newRes - oldRes, edgesToAdd, edgesWithoutToRemove, bridgeMatrix);
-                curResults.put(curEdge.to, oldRes);
+                curResults[curEdge.to] = oldRes;
                 for (Pair<Integer, Integer> pair : newBridges) {
                     bridgeMatrix[pair.first][pair.second] = false;
                     bridgeMatrix[pair.second][pair.first] = false;
@@ -209,19 +224,19 @@ public class SpanningTreeWithBlackjack<T> {
             
             // Пробуем оставить ребро
             addEdge(edgesToAdd, curEdge);
-            if (bridgeMatrix[curEdge.from][curEdge.to] || graphIsAcyclic(edgesToAdd)) {
+            if (bridgeMatrix[curEdge.from][curEdge.to] || graphIsAcyclic(edgesToAdd)) { // такое условие для оптимизации
                 find(edges, index + 1, iterations, curResults, curResult, edgesToAdd, edgesWithoutToRemove, bridgeMatrix);                
             }
             removeEdge(edgesToAdd, curEdge);
         }
         
-        public Map<Integer, Integer> initStartValues(List<Integer> component, Collection<Edge> edges) {
-            Map<Integer, Integer> result = new HashMap<>();
-            for (Integer index : component) {
-                result.put(index, 0);
-            }
+        public int[] initStartValues(List<Integer> component, Collection<Edge> edges) {
+            int[] result = new int[nodesCnt];
             for (Edge e : edges) {
-                result.put(e.to, result.get(e.to) + e.weight); 
+                result[e.to] += e.weight; 
+            }
+            for (int node : component) {
+                result[node] = Math.max(result[node], weights.get(node));
             }
             return result;
         }
@@ -231,7 +246,7 @@ public class SpanningTreeWithBlackjack<T> {
             for (Edge e : edges) {
                 addEdge(graph, e);
             }
-            if (edges.size() == 0) {
+            if (edges.isEmpty()) {
                 for (int node : component) {
                     graph.addNode(node);
                 }
@@ -240,8 +255,10 @@ public class SpanningTreeWithBlackjack<T> {
         }
         
         public int find() {
+            // признак завершения полного перебора всех вариантов
             searchCompleted = false;
             
+            // находим нижнюю границу ответа
             bestResult = 0;
             for (Integer nodeIndex : component) {
                 bestResult += weights.get(nodeIndex);
@@ -250,19 +267,20 @@ public class SpanningTreeWithBlackjack<T> {
             int iterations = totalIterations;
             List<Edge> edges = new ArrayList<>(sortedEdges);
             
-            int firstEdgeIndex = 0;
-            UndirectedGraph<Integer> edgesToAdd = new UndirectedGraph<>();
-            UndirectedGraph<Integer> edgesWithoutToRemove = createUndirectedGraph(edges);
-            boolean[][] bridgeMatrix = new boolean[nodesCnt][nodesCnt];
+            int firstEdgeIndex = 0; // порядковый номер ребра, с которого мы начинаем перебор
+            UndirectedGraph<Integer> edgesToAdd = new UndirectedGraph<>(); // подграф, содержащий ребра, принадлежащие остовному дереву
+            UndirectedGraph<Integer> edgesWithoutToRemove = createUndirectedGraph(edges); // подграф, содержащий все ребра исходного графа за исключением удаленных из него
+            boolean[][] bridgeMatrix = new boolean[nodesCnt][nodesCnt]; // признак, является ли ребро "мостом"
             findBridges(edgesWithoutToRemove, bridgeMatrix);
             
             while (iterations > 0 && !searchCompleted && firstEdgeIndex < edges.size()) {
-                int localIterations = iterations * ratio / 100;
+                int localIterations = iterations * RATIO / 100;
                 if (localIterations == 0) break;
                 
-                Map<Integer, Integer> initPoints = initStartValues(component, edges);
+                // находим начальные суммы на всем графе
+                int[] initPoints = initStartValues(component, edges);
                 int sumValue = 0;
-                for (Integer value : initPoints.values()) {
+                for (int value : initPoints) {
                     sumValue += value;
                 }
                 
@@ -270,6 +288,7 @@ public class SpanningTreeWithBlackjack<T> {
                 find(edges, firstEdgeIndex, localIterations, initPoints, sumValue, edgesToAdd, edgesWithoutToRemove, bridgeMatrix);
                 
                 iterations -= localIterations;
+                // фиксируем в остовном дереве очередное ребрро
                 addEdge(edgesToAdd, edges.get(firstEdgeIndex));
                 if (!graphIsAcyclic(edgesToAdd)) {
 //                    removeEdge(edgesToAdd, edges.get(firstEdgeIndex));
@@ -304,25 +323,24 @@ public class SpanningTreeWithBlackjack<T> {
             }
         });
         
-        BestTreeFinder finder = new BestTreeFinder(component, componentEdges, iterations); //(BaseUtils.max(componentEdges.size() - component.size() + 1, 1)) * 3);
+        BestTreeFinder finder = new BestTreeFinder(component, componentEdges, iterations); 
         return finder.find();
     }
     
     public int calculate() {
-        return calculate(defaultIterations);
+        return calculate(DEFAULT_ITERATIONS);
     }
-    
+
     public int calculate(int iterations) {
-        checkGraph();
-        
+         //  Разбиваем граф на компоненты связности, для каждой компоненты решаем задачу отдельно 
         nodesCnt = graph.size();
+        int result = 0;
         boolean[] visited = new boolean[nodesCnt];
         
-        int result = 0;
         for (int i = 0; i < nodesCnt; ++i) {
             ArrayList<Integer> outComponent = new ArrayList<>();
-            getComponent(i, visited, outComponent);
-            if (outComponent.size() > 0) {
+            if (!visited[i]) {
+                getComponent(i, visited, outComponent);
                 result += calculateComponent(outComponent, iterations);
             }
         }
@@ -466,7 +484,7 @@ public class SpanningTreeWithBlackjack<T> {
     public static void test2() throws IOException {
         final int MAXNODES = 40;
         final int MAXCOST = 20;
-        final int ITERATIONS = 500;
+        final int ITERATIONS = 10000;
 
         FileWriter writer = new FileWriter("D:/spt.txt");
         
