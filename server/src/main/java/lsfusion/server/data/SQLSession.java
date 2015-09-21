@@ -1072,8 +1072,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             statement.execute(DDL);
 
-        } catch (SQLException e) {
-            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString());
+        } catch (Throwable e) {
+            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " " + e.getMessage());
             firstException.set(e);
         }
         
@@ -1285,7 +1285,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             return handled;
         }
         
-        logger.error(message); // duplicate keys валится при : неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses), неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями, недетерминированные ORDER функции (GROUP LAST и т.п.), нецелостной базой (значения классов в базе не правильные)
+        logger.error(message + " " + e.getMessage()); // duplicate keys валится при : неправильный вывод классов в таблицах (см. SessionTable.assertCheckClasses), неправильном неявном приведении типов (от широкого к узкому, DataClass.containsAll), проблемах с округлениями, недетерминированные ORDER функции (GROUP LAST и т.п.), нецелостной базой (значения классов в базе не правильные)
         return e;
     }
 
@@ -1362,8 +1362,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             statement = createSingleStatement(connection.sql);
 
             result = statement.executeUpdate(command);
-        } catch (SQLException e) {
-            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString());
+        } catch (Throwable e) {
+            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " " + e.getMessage());
             firstException.set(e);
         }
 
@@ -1642,8 +1642,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             statement.executeBatch();
 
-        } catch (SQLException e) {
-            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString());
+        } catch (Throwable e) {
+            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " " + e.getMessage());
             firstException.set(e);
         }
         
@@ -1944,8 +1944,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             } finally {
                 result.close();
             }
-        } catch (SQLException e) {
-            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString());
+        } catch (Throwable e) {
+            logger.error(statement == null ? "PREPARING STATEMENT" : statement.toString() + " " + e.getMessage());
             firstException.set(e);
         }
 
@@ -2096,7 +2096,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 // повалился common
                 assert sessionTablesMap.isEmpty();
                 return connectionPool.restoreCommon(connection);
-            } catch(Exception e) {
+            } catch(Throwable e) {
                 return false;
             } finally {
                 temporaryTablesLock.unlock();
