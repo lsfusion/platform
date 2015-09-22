@@ -1,6 +1,6 @@
 MODULE Service;
 
-REQUIRE System, Reflection, Time;
+REQUIRE System, Reflection, Time, Security;
 
 NAMESPACE Service;
 
@@ -262,7 +262,7 @@ FORM admin 'Администрирование'
                  TILMode, hostnameServerComputer, reupdateMode, singleTransaction,
                  turnExplainAnalizeOnCurrentUser, clearApplicationLog
     OBJECTS u=User
-    PROPERTIES(u) nameUser READONLY, explainAnalyzeModeUser, explainModeUser, loggerDebugEnabledUser, remoteLoggerDebugEnabledUser, remoteExLogEnabledUser, nameExecEnvUser, volatileStatsEnabledUser;
+    PROPERTIES(u) nameUser READONLY, nameMainRoleUser, explainAnalyzeModeUser, explainModeUser, loggerDebugEnabledUser, remoteLoggerDebugEnabledUser, remoteExLogEnabledUser, nameExecEnvUser, volatileStatsEnabledUser;
 ;
 
 DESIGN admin {
