@@ -3,6 +3,7 @@ package lsfusion.erp.utils;
 import com.google.common.base.Throwables;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.DataObject;
+import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
@@ -32,7 +33,7 @@ public class CancelJavaProcessActionProperty extends ScriptingActionProperty {
             if (threadInfo != null) {
                 for (Thread thread : Thread.getAllStackTraces().keySet()) {
                     if (thread.getName().equals(threadInfo.getThreadName()))
-                        thread.interrupt();
+                        ThreadUtils.interruptThread(context, thread);
                 }
             }
         } catch (Exception e) {
