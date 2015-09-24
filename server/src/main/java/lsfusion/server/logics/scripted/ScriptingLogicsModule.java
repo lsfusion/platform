@@ -790,6 +790,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP<?, ?> mainProperty = findLPByPropertyUsage(mainPropertyUsage);
         LAP onContextLAP = (LAP) onContextAction;
         onContextLAP.addToContextMenuFor(mainProperty, contextMenuCaption);
+        ((ActionProperty) onContextLAP.property).checkReadOnly = false;
     }
 
     public void setAsEditActionFor(LP onEditAction, String editActionSID, PropertyUsage mainPropertyUsage) throws ScriptingErrorLog.SemanticErrorException {

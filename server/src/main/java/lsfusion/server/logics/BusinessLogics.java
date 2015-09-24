@@ -16,6 +16,7 @@ import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.interop.Compare;
 import lsfusion.interop.event.IDaemonTask;
+import lsfusion.interop.exceptions.LogMessageLogicsException;
 import lsfusion.interop.form.screen.ExternalScreen;
 import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.server.ServerLoggers;
@@ -27,7 +28,6 @@ import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.OrObjectClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
-import lsfusion.interop.exceptions.LogMessageLogicsException;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.DiscountCardDaemonTask;
 import lsfusion.server.daemons.ScannerDaemonTask;
@@ -89,9 +89,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-import static lsfusion.base.BaseUtils.isRedundantString;
-import static lsfusion.base.BaseUtils.systemLogger;
-import static lsfusion.base.BaseUtils.serviceLogger;
+import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.logics.LogicsModule.*;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -792,6 +790,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             //добавляем в контекстное меню пункт для показа формы
             property.setContextMenuAction(property.getSID(), formActionProperty.caption);
             property.setEditAction(property.getSID(), formActionProperty.getImplement(property.getOrderInterfaces()));
+            if (property instanceof ActionProperty) {
+                ((ActionProperty) property).checkReadOnly = false;
+            }
         }
     }
 
