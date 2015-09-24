@@ -45,10 +45,10 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
     public abstract MapQuery<K, V, ?, ?> translateMap(MapValuesTranslate translate);
     public abstract IQuery<K, V> translateQuery(MapTranslate translate);
 
-    public CompiledQuery<K,V> compile(CompileOptions options) {
+    public CompiledQuery<K,V> compile(CompileOptions<V> options) {
         return compile(MapFact.<V, Boolean>EMPTYORDER(), options);
     }
-    public abstract CompiledQuery<K,V> compile(ImOrderMap<V, Boolean> orders, CompileOptions options);
+    public abstract CompiledQuery<K,V> compile(ImOrderMap<V, Boolean> orders, CompileOptions<V> options);
 
     public abstract ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders);
 
@@ -60,7 +60,7 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
 
     @StackMessage("message.query.execute")
     public void executeSQL(SQLSession session, ImOrderMap<V, Boolean> orders, int selectTop, QueryEnvironment env, ResultHandler<K, V> result) throws SQLException, SQLHandledException {
-        compile(orders, new CompileOptions(session.syntax, LimitOptions.get(selectTop))).execute(session, env, selectTop, result);
+        compile(orders, new CompileOptions<V>(session.syntax, LimitOptions.get(selectTop))).execute(session, env, selectTop, result);
     }
 
     public abstract <B> ClassWhere<B> getClassWhere(ImSet<? extends V> classProps);
@@ -86,14 +86,14 @@ public abstract class IQuery<K,V> extends AbstractInnerContext<IQuery<K, V>> imp
         outSelect(session, DataSession.emptyEnv(OperationOwner.debug));
     }
     public void outSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        compile(new CompileOptions(session.syntax)).outSelect(session, env);
+        compile(new CompileOptions<V>(session.syntax)).outSelect(session, env);
     }
 
     public String readSelect(SQLSession session) throws SQLException, SQLHandledException {
         return readSelect(session,  DataSession.emptyEnv(OperationOwner.unknown));
     }
     public String readSelect(SQLSession session, QueryEnvironment env) throws SQLException, SQLHandledException {
-        return compile(new CompileOptions(session.syntax)).readSelect(session, env);
+        return compile(new CompileOptions<V>(session.syntax)).readSelect(session, env);
     }
 
     public abstract Query<K, V> getQuery(); // по сути protectedQ  GH  N

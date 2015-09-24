@@ -229,7 +229,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
                      translateQuery(new PartialQueryTranslator(keyValues.mapValues(new GetValue<Expr, KeyExpr>() {
                          public Expr getMapValue(KeyExpr key) {
                              return ((DataClass)key.getType(getWhere())).getDefaultExpr();
-                         }}), true)).getWhere()).compile(new CompileOptions(PostgreDataAdapter.debugSyntax));
+                         }}), true)).getWhere()).compile(new CompileOptions<Object>(PostgreDataAdapter.debugSyntax));
     }
 
     public static <K> ImMap<K, ObjectValue> readValues(SQLSession session, BaseClass baseClass, ImMap<K,Expr> mapExprs, QueryEnvironment env) throws SQLException, SQLHandledException { // assert что в mapExprs только values

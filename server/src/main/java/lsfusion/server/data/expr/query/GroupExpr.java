@@ -231,7 +231,7 @@ public class GroupExpr extends AggrExpr<Expr,GroupType,GroupExpr.Query,GroupJoin
         Result<ImMap<String, SQLQuery>> subQueries = new Result<ImMap<String, SQLQuery>>();
         lsfusion.server.data.query.Query<KeyExpr,Expr> subQuery = new lsfusion.server.data.query.Query<KeyExpr,Expr>(getInner().getQueryKeys().toRevMap(),
                 group.keys().addExcl(query.getExprs()).toMap(), getInner().getFullWhere());
-        CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(new CompileOptions(source.syntax, subcontext));
+        CompiledQuery<KeyExpr, Expr> compiled = subQuery.compile(new CompileOptions<Expr>(source.syntax, subcontext));
         String fromSelect = compiled.fillSelect(new Result<ImMap<KeyExpr, String>>(), fromPropertySelect, fromWhereSelect, subQueries, source.params, null);
         
         ImCol<String> whereSelect = fromWhereSelect.result.mergeCol(group.mapColValues(new GetKeyValue<String, Expr, BaseExpr>() {

@@ -1256,7 +1256,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         sql.deleteRecords(new ModifyQuery(table, query, env == null ? OperationOwner.unknown : env.getOpOwner(), TableOwner.global));
 
         query = BaseUtils.immutableCast(getIncorrectQuery(table, baseClass, true, false));
-        sql.modifyRecords(new ModifyQuery(table, query, env == null ? OperationOwner.unknown : env.getOpOwner(), TableOwner.global));
+        sql.updateRecords(new ModifyQuery(table, query, env == null ? OperationOwner.unknown : env.getOpOwner(), TableOwner.global));
     }
 
     // для оптимизации

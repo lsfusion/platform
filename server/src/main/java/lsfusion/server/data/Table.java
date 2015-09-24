@@ -62,6 +62,14 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
     }
     public ImSet<PropertyField> properties;
 
+    public ImMap<PropertyField, Type> getPropTypes() {
+        return properties.mapValues(new GetValue<Type, PropertyField>() {
+            public Type getMapValue(PropertyField value) {
+                return value.type;
+            }
+        });
+    }
+
     public abstract StatKeys<KeyField> getStatKeys();
     public abstract ImMap<PropertyField, PropStat> getStatProps();
 

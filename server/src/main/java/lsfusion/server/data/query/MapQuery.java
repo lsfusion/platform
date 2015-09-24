@@ -13,7 +13,6 @@ import lsfusion.server.classes.BaseClass;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
-import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.MapValuesTranslate;
 import lsfusion.server.data.where.Where;
@@ -49,8 +48,8 @@ public class MapQuery<K,V,MK,MV> extends IQuery<K,V> {
         assert mapValues.assertValuesContains(query.getInnerValues()); // например pack может убирать часть значений
     }
 
-    public CompiledQuery<K, V> compile(ImOrderMap<V, Boolean> orders, CompileOptions options) {
-        return new CompiledQuery<K,V>(query.compile(orders.map(mapProps), options),mapKeys,mapProps,mapValues);
+    public CompiledQuery<K, V> compile(ImOrderMap<V, Boolean> orders, CompileOptions<V> options) {
+        return new CompiledQuery<K,V>(query.compile(orders.map(mapProps), options.map(mapProps)),mapKeys,mapProps,mapValues);
     }
 
     public ImOrderMap<V, CompileOrder> getCompileOrders(ImOrderMap<V, Boolean> orders) {

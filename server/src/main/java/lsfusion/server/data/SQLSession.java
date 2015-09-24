@@ -28,8 +28,6 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.logics.*;
-import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.session.DataSession;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
 import org.apache.commons.collections.Buffer;
@@ -2020,7 +2018,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     public int insertSessionSelect(String name, final IQuery<KeyField, PropertyField> query, final QueryEnvironment env, final TableOwner owner) throws SQLException, SQLHandledException {
         checkTableOwner(name, owner);
 
-        return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, userProvider), new ERunnable() {
+        return insertSessionSelect(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, owner, syntax, userProvider, null), new ERunnable() {
             public void run() throws Exception {
                 query.outSelect(SQLSession.this, env);
             }});
