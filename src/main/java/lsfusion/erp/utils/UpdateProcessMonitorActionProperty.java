@@ -423,7 +423,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 boolean skip = onlyJava;
                 if(pid != null){
                     idSet.add((long) pid);
-                    List<Object> threadInfo = getThreadInfo(pid, true, false, readAllocatedBytes);
+                    List<Object> threadInfo = getThreadInfo(pid, false, false, readAllocatedBytes);
                     if(threadInfo != null) {
                         javaProcesses.put(String.valueOf(pid), threadInfo);
                         skip = false;
@@ -523,15 +523,14 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     private List<Object> getThreadInfo(long id, boolean onlyActive, boolean checkStackTrace, boolean readAllocatedBytes) {
         ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
         ThreadInfo threadInfo = tBean.getThreadInfo(id, Integer.MAX_VALUE);
-        if(threadInfo == null) return null;
 
         Thread thread = getThreadById((int) id);
-        String status = String.valueOf(threadInfo.getThreadState());
-        String stackTrace = getJavaStack(threadInfo.getStackTrace());
-        String name = threadInfo.getThreadName();
-        String lockName = threadInfo.getLockName();
-        String lockOwnerId = String.valueOf(threadInfo.getLockOwnerId());
-        String lockOwnerName = threadInfo.getLockOwnerName();
+        String status = threadInfo == null ? null : String.valueOf(threadInfo.getThreadState());
+        String stackTrace = threadInfo == null ? null : getJavaStack(threadInfo.getStackTrace());
+        String name = threadInfo == null ? null : threadInfo.getThreadName();
+        String lockName = threadInfo == null ? null : threadInfo.getLockName();
+        String lockOwnerId = threadInfo == null ? null : String.valueOf(threadInfo.getLockOwnerId());
+        String lockOwnerName = threadInfo == null ? null : threadInfo.getLockOwnerName();
         LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
         String computer = logInfo == null ? null : logInfo.hostnameComputer;
         String user = logInfo == null ? null : logInfo.userName;
