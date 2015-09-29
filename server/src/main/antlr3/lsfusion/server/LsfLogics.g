@@ -48,6 +48,7 @@ grammar LsfLogics;
 	import lsfusion.server.logics.property.CaseUnionProperty;
 	import lsfusion.server.logics.property.IncrementType;
 	import lsfusion.server.data.expr.formula.SQLSyntaxType;
+    import lsfusion.server.logics.property.actions.ChangeEvent;
 	import lsfusion.server.logics.property.BooleanDebug;
 	import lsfusion.server.logics.property.PropertyFollowsDebug;
 	import lsfusion.server.logics.debug.ActionDebugInfo;
@@ -2713,10 +2714,20 @@ writeWhenStatement
 }
 	:	mainProp=mappedProperty 
 		'<-'
-		valueExpr=propertyExpression[$mainProp.mapping, false] 
+		{
+			if (inPropParseState()) {
+				self.setPrevScope(ChangeEvent.scope);
+			}
+		}
+		valueExpr=propertyExpression[$mainProp.mapping, false]
 		'WHEN'
 		('DO' { action = true; })? // DO - undocumented syntax
 		whenExpr=propertyExpression[$mainProp.mapping, false]
+		{
+			if (inPropParseState()) {
+				self.dropPrevScope(ChangeEvent.scope);
+			}
+		}
 		';'
 	;
 

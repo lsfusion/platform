@@ -11,10 +11,12 @@ import lsfusion.server.logics.property.infer.Inferred;
 public abstract class SessionCalcProperty<T extends PropertyInterface> extends SimpleIncrementProperty<T> {
 
     public final CalcProperty<T> property;
+    public final PrevScope scope;
 
-    public SessionCalcProperty(String caption, CalcProperty<T> property) {
+    public SessionCalcProperty(String caption, CalcProperty<T> property, PrevScope scope) {
         super(caption, property.getOrderInterfaces());
         this.property = property;
+        this.scope = scope;
     }
 
     public abstract OldProperty<T> getOldProperty();

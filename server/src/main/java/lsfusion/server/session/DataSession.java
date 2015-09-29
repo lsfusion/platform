@@ -1487,9 +1487,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                         break;
                     }
             }
-    
+
+            // здесь нужно было бы добавить, что если есть oldProperty с DB и EVENT scope'ами считать их один раз (для этого сделать applyTables и applyChanges), но с учетом setPrevScope'ов, ситуация когда таки oldProperty будут встречаться достаточно редкая
+
             for(CalcProperty<D> depend : dependProps) {
-                assert depend.isSingleApplyStored() || (depend instanceof OldProperty && ((OldProperty)depend).scope.onlyDB());
+                assert depend.isSingleApplyStored() || depend instanceof OldProperty;
     
                 if(neededProps!=null) { // управление pending'ом
                     assert !flush || !pendingSingleTables.containsKey(depend); // assert что если flush то уже обработано (так как в обратном лексикографике идет)

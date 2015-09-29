@@ -32,7 +32,6 @@ import static lsfusion.server.logics.ServerResourceBundle.getString;
 public class ChangedProperty<T extends PropertyInterface> extends SessionCalcProperty<T> {
 
     private final IncrementType type;
-    private final PrevScope scope;
 
     public static class Interface extends PropertyInterface<Interface> {
         Interface(int ID) {
@@ -41,9 +40,8 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     public ChangedProperty(CalcProperty<T> property, IncrementType type, PrevScope scope) {
-        super(property.caption + " (" + type + ")", property);
+        super(property.caption + " (" + type + ")", property, scope);
         this.type = type;
-        this.scope = scope;
 
         property.getOld(scope);// чтобы зарегить old
     }
@@ -109,8 +107,6 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
 
     // для resolve'а следствий в частности
     public PropertyChange<T> getFullChange(Modifier modifier) throws SQLException, SQLHandledException {
-        assert scope.onlyDB(); // так как event Apply
-
         ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
         Expr expr = property.getExpr(mapKeys, modifier);
         Where where;

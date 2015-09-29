@@ -2336,18 +2336,27 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private PrevScope prevScope = null;
     public void setPrevScope(Event event) {
-        assert prevScope == null;
-        prevScope = event.getScope();
+        setPrevScope(event.getScope());
     }
 
     public void dropPrevScope(Event event) {
-        assert prevScope.equals(event.getScope());
+        dropPrevScope(event.getScope());
+    }
+
+    // по сути оптимизация - когда контекст глобального события использовать в операторах изменений PrevScope.DB
+    public void setPrevScope(PrevScope scope) {
+        assert prevScope == null;
+        prevScope = scope;
+    }
+
+    public void dropPrevScope(PrevScope scope) {
+        assert prevScope.equals(scope);
         prevScope = null;
     }
 
     public LPWithParams addScriptedSessionProp(IncrementType type, LPWithParams property) {
         LCP newProp;
-        PrevScope scope = (prevScope == null ? PrevScope.DB : prevScope);
+        PrevScope scope = (type == null ? PrevScope.DB : (prevScope != null ? prevScope : PrevScope.EVENT)); // по сути оптимизация если scope известен использовать его
         if (type == null) {
             newProp = addOldProp((LCP) property.property, scope);
         } else {

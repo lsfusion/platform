@@ -19,7 +19,6 @@ import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
-import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.debug.ActionDebugInfo;
@@ -36,7 +35,6 @@ import lsfusion.server.logics.property.actions.flow.ChangeFlowType;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.property.actions.flow.ListCaseActionProperty;
 import lsfusion.server.logics.property.infer.ExClassSet;
-import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.ExecutionEnvironment;
 
 import java.sql.SQLException;
@@ -452,17 +450,15 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
 
     @IdentityLazy
     public ImSet<OldProperty> getSessionEventOldDepends() { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
-        return getEventOldDepends(SystemEvent.SESSION);
-    }
-    public ImSet<OldProperty> getEventOldDepends(SystemEvent event) { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
-        assert getSessionEnv(event) != null;
-        final PrevScope scope = event.getScope();
+        // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
+        assert getSessionEnv(SystemEvent.SESSION) != null;
         return getOldDepends().filterFn(new SFunctionSet<OldProperty>() {
             public boolean contains(OldProperty element) {
-                return element.scope == scope;
+                return element.scope == PrevScope.EVENT;
             }
         });
     }
+
     @IdentityLazy
     public ImSet<SessionCalcProperty> getGlobalEventSessionCalcDepends() { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
         assert getSessionEnv(SystemEvent.APPLY) != null;
