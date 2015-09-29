@@ -1,6 +1,7 @@
 package lsfusion.server.remote;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ConcurrentWeakHashMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.form.navigator.RemoteNavigator;
@@ -9,6 +10,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +21,8 @@ public class RemoteLoggerAspect {
 
     public static final Map<Integer, Long> userActivityMap = new ConcurrentHashMap<>();
     public static final Map<Integer, Map<Long, List<Long>>> pingInfoMap = new ConcurrentHashMap<>();
-    private static Map<Integer, Boolean> remoteLoggerDebugEnabled = new ConcurrentHashMap<Integer, Boolean>();
+    private static final Map<Integer, Timestamp> dateTimeCallMap = new ConcurrentWeakHashMap<>();
+    private static Map<Integer, Boolean> remoteLoggerDebugEnabled = new ConcurrentHashMap<>();
 
     @Around("(execution(* lsfusion.interop.RemoteLogicsInterface.*(..))" +
             " || execution(* lsfusion.interop.form.RemoteFormInterface.*(..))" +
@@ -27,6 +30,7 @@ public class RemoteLoggerAspect {
             " && !execution(* *.ping(..))" +
             "&& target(target)")
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {
+        putDateTimeCall(Thread.currentThread().getId(), new Timestamp(System.currentTimeMillis()));
         Integer user;
         if (target instanceof RemoteLogics) {
             user = ((RemoteLogics) target).getCurrentUser();
@@ -66,5 +70,13 @@ public class RemoteLoggerAspect {
     public boolean isRemoteLoggerDebugEnabled(Integer user) {
         Boolean lde = remoteLoggerDebugEnabled.get(user);
         return lde != null && lde;
+    }
+
+    public static Timestamp getDateTimeCall(int pid) {
+        return dateTimeCallMap.get(pid);
+    }
+
+    public static void putDateTimeCall(long pid, Timestamp timestamp) {
+        dateTimeCallMap.put((int) pid, timestamp);
     }
 }
