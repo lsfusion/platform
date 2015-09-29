@@ -113,6 +113,9 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             readOnlyPolicy.cls.edit.change.defaultPermission = false;
             readOnlyPolicy.cls.edit.remove.defaultPermission = false;
             readOnlyPolicy.property.change.permit(LM.getFormClose().property);
+            readOnlyPolicy.property.change.permit(LM.getFormOk().property);
+            readOnlyPolicy.property.change.permit(LM.getFormRefresh().property);
+            
             for (Property property : businessLogics.getProperties()) {
                 if (property instanceof FormActionProperty)
                     checkProperty(property, property);

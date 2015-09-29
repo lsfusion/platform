@@ -881,8 +881,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
             return;
         }
 
-        ChangePropertySecurityPolicy securityPolicy = this.securityPolicy.property.change;
-        if (editAction != null && (property.isSelector() || (securityPolicy.checkPermission(editAction.property) && (property.hasContextMenuBinding(editActionSID) || securityPolicy.checkPermission(property.getPropertyObjectInstance().property))))) {
+            if (checkEditActionPermission(editAction, editActionSID, property)) {
             if (editActionSID.equals(CHANGE) || editActionSID.equals(GROUP_CHANGE)) { //ask confirm logics...
                 PropertyDrawEntity propertyDraw = property.getEntity();
                 if (!pushConfirm && propertyDraw.askConfirm) {
@@ -897,6 +896,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         } else {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
         }
+    }
+    
+    private boolean checkEditActionPermission(ActionPropertyObjectInstance editAction, String editActionSID, PropertyDrawInstance property) {
+        ChangePropertySecurityPolicy securityPolicy = this.securityPolicy.property.change;
+        if (editAction != null) {
+            if (property.isSelector()) {
+                return true;
+            } else if (securityPolicy.checkPermission(editAction.property)) {
+                if (property.hasContextMenuBinding(editActionSID) || securityPolicy.checkPermission(property.propertyObject.property)) {
+                    return true;
+                }
+            }
+        }
+        return false;  
     }
 
     public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values) throws SQLException, IOException, SQLHandledException {

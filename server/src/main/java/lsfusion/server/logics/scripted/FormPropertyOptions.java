@@ -7,6 +7,7 @@ import lsfusion.server.form.entity.ActionPropertyObjectEntity;
 import lsfusion.server.form.entity.CalcPropertyObjectEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
+import lsfusion.server.logics.property.ActionProperty;
 
 import java.util.HashMap;
 import java.util.List;
@@ -181,6 +182,7 @@ public class FormPropertyOptions {
 
             addEditAction(action.property.getSID(), action);
             addContextMenuBinding(action.property.getSID(), caption);
+            ((ActionProperty) action.property).checkReadOnly = false;
         }
     }
 
