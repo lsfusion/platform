@@ -92,7 +92,7 @@ dateTimeSQLProcess 'Время запуска (SQL)' = DATA LOCAL DATETIME (VARS
 isActiveSQLProcess 'Активный (SQL)' = DATA LOCAL BOOLEAN (VARSTRING[10]);
 inTransactionSQLProcess 'В транзакции (SQL)' = DATA LOCAL BOOLEAN (VARSTRING[10]);
 startTransactionSQLProcess 'Время начала транзакции (SQL)' = DATA LOCAL DATETIME (VARSTRING[10]);
-attemptCountSQLProcess 'Номер попытки (SQL)' = DATA LOCAL INTEGER (VARSTRING[10]);
+attemptCountSQLProcess 'Номер попытки (SQL)' = DATA LOCAL VARSTRING[20] (VARSTRING[10]);
 statusMessageSQLProcess 'Статус (SQL)' = DATA LOCAL TEXT (VARSTRING[10]);
 
 lsfStackTraceProcess 'LSF след потока' = DATA LOCAL TEXT (VARSTRING[10]);
