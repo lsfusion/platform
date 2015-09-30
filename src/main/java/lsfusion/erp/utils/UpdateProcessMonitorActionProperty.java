@@ -572,8 +572,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
     private String getLSFStack(Thread thread) {
         try {
-            String lsfStack = thread == null ? null : ExecutionStackAspect.getStackString(thread, true);
-            return lsfStack == null ? null : lsfStack.substring(0, Math.min(lsfStack.length(), 10000));
+            return thread == null ? null : ExecutionStackAspect.getStackString(thread, true, true);
         } catch (Exception e) {
             return null;
         }
