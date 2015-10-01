@@ -65,7 +65,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private static ConcurrentWeakHashMap<Long, Long> threadAllocatedBytesBMap = new ConcurrentWeakHashMap<>();
 
     private Long startTransaction;
-    private int attemptCount;
+    private Map<String, Integer> attemptCountMap = new HashMap<>();
     public StatusMessage statusMessage;
 
     public static SQLSession getSQLSession(Integer sqlProcessId) {
@@ -106,8 +106,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         for(SQLSession sqlSession : sqlSessionMap.keySet()) {
             ExConnection connection = sqlSession.getDebugConnection();
             if(connection != null)
-                sessionMap.put(((PGConnection) connection.sql).getBackendPID(), Arrays.<Object>asList(sqlSession.getActiveThread(),
-                        sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.attemptCount, sqlSession.statusMessage,
+                sessionMap.put(((PGConnection) connection.sql).getBackendPID(), Arrays.asList(sqlSession.getActiveThread(),
+                        sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.getAttemptCountMap(), sqlSession.statusMessage,
                         sqlSession.userProvider.getCurrentUser(), sqlSession.userProvider.getCurrentComputer(),
                         sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout()));
         }
@@ -403,13 +403,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public void startTransaction(int isolationLevel, OperationOwner owner) throws SQLException, SQLHandledException {
-        startTransaction(isolationLevel, owner, 0);
+        startTransaction(isolationLevel, owner, new HashMap<String, Integer>());
     }
 
-    public void startTransaction(int isolationLevel, OperationOwner owner, int attemptCount) throws SQLException, SQLHandledException {
+    public void startTransaction(int isolationLevel, OperationOwner owner, Map<String, Integer> attemptCountMap) throws SQLException, SQLHandledException {
         lockWrite(owner);
         startTransaction = System.currentTimeMillis();
-        this.attemptCount = attemptCount;
+        this.attemptCountMap = attemptCountMap;
         assert isInTransaction() || transactionTables.isEmpty();
         try {
             if(Settings.get().isApplyVolatileStats())
@@ -432,7 +432,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     private void endTransaction(final OperationOwner owner) throws SQLException {
-        Result<Throwable> firstException = new Result<Throwable>();
+        Result<Throwable> firstException = new Result<>();
 
         assert isInTransaction();
         runSuppressed(new SQLRunnable() {
@@ -458,7 +458,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             }}, firstException);
 
         startTransaction = null;
-        attemptCount = 0;
+        attemptCountMap = new HashMap<>();
         unlockWrite();
 
         finishExceptions(firstException);
@@ -1416,6 +1416,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         try {
             snapEnv.beforeOuter(command, this, paramObjects, owner, pureTime);
 
+            SQLHandledException t;
             try {
                 long timeStarted = System.currentTimeMillis();
 
@@ -1427,9 +1428,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
                 return;
             } catch (SQLClosedException e) {
+                t = e;
                 if (e.isInTransaction() || !tryRestore(owner, e.connection, e.isPrivate))
                     throw e;
             } catch (SQLHandledException e) {
+                t = e;
                 if (!(e instanceof SQLTimeoutException && !((SQLTimeoutException) e).isTransactTimeout))
                     throw e; // update conflict'ы, deadlock'и, transactTimeout'ы
 
@@ -1441,18 +1444,53 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             // повторяем
             try {
-                attemptCount++;
+                incAttemptCount(attemptCountMap, t.getDescription());
                 if(setRepeatDate)
                     startTransaction = Calendar.getInstance().getTime().getTime();
                 executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, snapEnv, pureTime, false);
             } finally {
                 if(setRepeatDate)
                     startTransaction = null;
-                attemptCount--;
+                decAttemptCount(attemptCountMap, t.getDescription());
             }
         } finally {
             snapEnv.afterOuter(this, owner);
         }
+    }
+
+    public static Map<String, Integer> incAttemptCount(Map<String, Integer> attemptCountMap, String description) {
+        Integer count = attemptCountMap.get(description);
+        attemptCountMap.put(description, count == null ? 1 : (count + 1));
+        return attemptCountMap;
+    }
+
+    public static Map<String, Integer> decAttemptCount(Map<String, Integer> attemptCountMap, String description) {
+        Integer count = attemptCountMap.get(description);
+        if (count != null) {
+            if (count <= 1)
+                attemptCountMap.remove(description);
+            else
+                attemptCountMap.put(description, count - 1);
+        }
+        return attemptCountMap;
+    }
+
+    private String getAttemptCountMap() {
+        String result = "";
+        if (attemptCountMap != null)
+            for (Map.Entry<String, Integer> entry : attemptCountMap.entrySet()) {
+                result += entry.getValue() + "(" + entry.getKey() + ") ";
+            }
+        return result.isEmpty() ? "0" : result.trim();
+    }
+
+
+    public static int getAttemptCountSum(Map<String, Integer> attemptCountMap) {
+        int result = 0;
+        for(Map.Entry<String, Integer> entry : attemptCountMap.entrySet()) {
+            result += entry.getValue();
+        }
+        return result;
     }
 
     @StackMessage("message.sql.execute")
