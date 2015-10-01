@@ -5,9 +5,15 @@ import lsfusion.server.logics.debug.ActionDebugInfo;
 public class PropertyFollowsDebug {
     public final boolean isTrue;
     public final ActionDebugInfo debugInfo;
+    public final boolean isFull;
 
     public PropertyFollowsDebug(boolean isTrue, ActionDebugInfo debugInfo) {
+        this(isTrue, false, debugInfo);
+    }
+
+    public PropertyFollowsDebug(boolean isTrue, boolean isFull, ActionDebugInfo debugInfo) {
         this.isTrue = isTrue;
+        this.isFull = isFull;
         this.debugInfo = debugInfo;
     }
 }

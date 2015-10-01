@@ -750,7 +750,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         if (notNull != null) {
             setNotNull((LCP)property, notNull.debugInfo, notNullEvent, 
-                    notNullResolve != null ? ListFact.singleton(new PropertyFollowsDebug(false, notNullResolve.debugInfo)) : 
+                    notNullResolve != null ? ListFact.singleton(new PropertyFollowsDebug(false, true, notNullResolve.debugInfo)) :
                                              ListFact.<PropertyFollowsDebug>EMPTY());
         }
 

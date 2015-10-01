@@ -1840,10 +1840,14 @@ public abstract class LogicsModule {
             if(setAction!=null) {
 //                setAction.property.caption = "RESOLVE " + option.isTrue + " : " + property + " => " + implement.property;
                 CalcPropertyMapImplement<?, T> condition;
-                if(option.isTrue)
-                    condition = DerivedProperty.createAndNot(property.getChanged(IncrementType.SET, event.getScope()), implement);
-                else
-                    condition = DerivedProperty.createAnd(property, implement.mapChanged(IncrementType.DROP, event.getScope()));
+                if(option.isFull)
+                    condition = DerivedProperty.createAndNot(property, implement).mapChanged(IncrementType.SET, event.getScope());
+                else {
+                    if (option.isTrue)
+                        condition = DerivedProperty.createAndNot(property.getChanged(IncrementType.SET, event.getScope()), implement);
+                    else
+                        condition = DerivedProperty.createAnd(property, implement.mapChanged(IncrementType.DROP, event.getScope()));
+                }
                 setAction.mapEventAction(this, condition, event, true, option.debugInfo);
             }
         }
@@ -1851,10 +1855,6 @@ public abstract class LogicsModule {
         CalcProperty constraint = DerivedProperty.createAndNot(property, implement).property;
         constraint.caption = caption;
         addConstraint(constraint, false, debugInfo);
-    }
-
-    protected void setNotNull(LCP property) {
-        setNotNull(property, ListFact.singleton(new PropertyFollowsDebug(true, null)));
     }
 
     protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LCP<P> lp, ImList<PropertyFollowsDebug> resolve) {
