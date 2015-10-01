@@ -37,9 +37,4 @@ public class SQLUniqueViolationException extends SQLHandledException {
     public String toString() {
         return "UNIQUE_VIOLATION" + (possibleRaceCondition ? " POS_RACE" : "") ;
     }
-
-    @Override
-    public String getDescription() {
-        return "u";
-    }
 }

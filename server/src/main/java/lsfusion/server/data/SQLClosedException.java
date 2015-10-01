@@ -34,9 +34,4 @@ public class SQLClosedException extends SQLHandledException {
     public boolean willDefinitelyBeHandled() {
         return false;
     }
-
-    @Override
-    public String getDescription() {
-        return "cl";
-    }
 }
