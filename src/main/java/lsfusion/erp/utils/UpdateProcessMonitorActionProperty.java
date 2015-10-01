@@ -212,7 +212,8 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 Long startTransaction = (Long) sqlProcess.get(10);
                 return startTransaction == null ? NullValue.instance : new DataObject(new Timestamp(startTransaction), DateTimeClass.instance);
             case "attemptCountSQLProcess":
-                return new DataObject((int) sqlProcess.get(11));
+                String attemptCount = (String) sqlProcess.get(11);
+                return attemptCount == null ? NullValue.instance : new DataObject(attemptCount);
             case "statusMessageSQLProcess":
                 StatusMessage statusMessage = (StatusMessage) sqlProcess.get(12);
                 return statusMessage == null ? NullValue.instance : new DataObject(statusMessage.getMessage());
@@ -339,7 +340,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 Integer pid = sessionThread == null ? null : (Integer) sessionThread.get(0);
                 boolean baseInTransaction = sessionThread != null && (boolean) sessionThread.get(1);
                 Long startTransaction = sessionThread == null ? null : (Long) sessionThread.get(2);
-                int attemptCount = sessionThread == null ? 0 : (Integer) sessionThread.get(3);
+                String attemptCount = sessionThread == null ? "0" : (String) sessionThread.get(3);
                 StatusMessage statusMessage = sessionThread == null ? null : (StatusMessage) sessionThread.get(4);
                 boolean skip = onlyJava;
                 if(pid != null){
@@ -412,7 +413,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                 Integer pid = sessionThread == null ? null : (Integer) sessionThread.get(0);
                 boolean baseInTransaction = sessionThread != null && (boolean) sessionThread.get(1);
                 Long startTransaction = sessionThread == null ? null : (Long) sessionThread.get(2);
-                int attemptCount = sessionThread == null ? 0 : (Integer) sessionThread.get(3);
+                String attemptCount = sessionThread == null ? "0" : (String) sessionThread.get(3);
                 StatusMessage statusMessage = sessionThread == null ? null : (StatusMessage) sessionThread.get(4);
                 Integer userActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(5);
                 Integer computerActiveTask = sessionThread == null ? null : (Integer) sessionThread.get(6);
