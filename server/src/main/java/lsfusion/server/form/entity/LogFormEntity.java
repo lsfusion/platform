@@ -55,15 +55,20 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         ValueClass[] classes = getValueClassesList(property);
         entities = new ObjectEntity[classes.length + 1];
 
-        GroupObjectEntity paramsGroup = new GroupObjectEntity(genID(), "paramsGroup");
-        paramsGroup.setSingleClassView(ClassViewType.PANEL);
-
+        // не в одном group Object так как при поиске значений может давать "декартово произведение" (не все субд умеют нормально разбирать такие случаи), вообще должно решаться в общем случае, но пока так
         int index = 1;
         for (ValueClass valueClass : classes) {
-            ObjectEntity obj = new ObjectEntity(genID(), "param" + index, valueClass, valueClass.getCaption());
+            String sID = "param" + index;
+
+            GroupObjectEntity paramGroup = new GroupObjectEntity(genID(), sID + "Group");
+            paramGroup.setSingleClassView(ClassViewType.PANEL);
+
+            ObjectEntity obj = new ObjectEntity(genID(), sID, valueClass, valueClass.getCaption());
             entities[index-1] = obj;
-            paramsGroup.add(obj);
+            paramGroup.add(obj);
             index++;
+
+            addGroupObject(paramGroup, version);
         }
 
         params = Arrays.copyOf(entities, classes.length);
@@ -73,7 +78,6 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         entities[classes.length] = objSession;
         logGroup.add(objSession);
 
-        addGroupObject(paramsGroup, version);
         addGroupObject(logGroup, version);
 
         if (!lazyInit)
