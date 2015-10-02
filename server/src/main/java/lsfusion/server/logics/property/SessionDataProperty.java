@@ -46,5 +46,9 @@ public class SessionDataProperty extends DataProperty {
         return false;
     }
 
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return true;
+    }
 }
 

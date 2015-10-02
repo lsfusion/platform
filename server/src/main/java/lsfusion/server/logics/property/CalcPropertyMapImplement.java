@@ -3,7 +3,10 @@ package lsfusion.server.logics.property;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.immutable.ImCol;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.classes.ValueClass;
@@ -17,7 +20,6 @@ import lsfusion.server.form.instance.CalcPropertyObjectInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.cases.CalcCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
@@ -150,7 +152,12 @@ public class CalcPropertyMapImplement<P extends PropertyInterface, T extends Pro
         ActionPropertyMapImplement<?, P> editAction = property.getEditAction(editActionSID, filterProperty);
         return editAction == null ? null : editAction.map(mapping);
     }
-    
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return property.ignoreReadOnlyPolicy();
+    }
+
     public Inferred<T> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         return property.inferInterfaceClasses(commonValue, inferType).map(mapping);
     }

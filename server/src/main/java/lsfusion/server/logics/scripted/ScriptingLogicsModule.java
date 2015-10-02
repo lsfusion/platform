@@ -1113,7 +1113,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedFileAProp(FileActionType actionType, LPWithParams property) {
+    public LPWithParams addScriptedFileAProp(FileActionType actionType, LPWithParams property, LPWithParams fileNameProp) {
         LAP<?> res;
         switch (actionType) {
             case LOAD:
@@ -1123,7 +1123,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 res = addOFAProp((LCP) property.property);
                 break;
             default: // SAVE
-                res = addSFAProp((LCP) property.property);
+                res = addSFAProp((LCP) property.property, fileNameProp != null ? (LCP) fileNameProp.property : null);
         }
         return new LPWithParams(res, property.usedParams);
     }

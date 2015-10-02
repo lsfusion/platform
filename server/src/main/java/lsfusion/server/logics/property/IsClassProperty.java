@@ -174,4 +174,9 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     public ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
         return ExClassSet.logical;
     }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return true;
+    }
 }

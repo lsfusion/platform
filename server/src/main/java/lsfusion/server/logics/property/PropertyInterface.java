@@ -22,8 +22,6 @@ import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
-import lsfusion.server.serialization.ServerIdentitySerializable;
-import lsfusion.server.serialization.ServerSerializationPool;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChange;
@@ -120,6 +118,11 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 
     public ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty) {
         return null;
+    }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return false;
     }
 
     public Inferred<P> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {

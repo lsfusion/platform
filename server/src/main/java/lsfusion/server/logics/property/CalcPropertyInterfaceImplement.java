@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -18,7 +17,6 @@ import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.logics.property.infer.Inferred;
-import lsfusion.server.logics.property.infer.ExClassSet;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChange;
@@ -42,7 +40,9 @@ public interface CalcPropertyInterfaceImplement<P extends PropertyInterface> ext
     Object read(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
     ObjectValue readClasses(ExecutionContext context, ImMap<P, ? extends ObjectValue> interfaceValues) throws SQLException, SQLHandledException;
 
-    public ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty);
+    ActionPropertyMapImplement<?, P> mapEditAction(String editActionSID, CalcProperty filterProperty);
+
+    boolean ignoreReadOnlyPolicy();
 
     ImSet<DataProperty> mapChangeProps();
     boolean mapIsComplex();

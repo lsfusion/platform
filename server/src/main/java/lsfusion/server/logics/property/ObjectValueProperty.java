@@ -13,8 +13,9 @@ import lsfusion.server.form.view.DefaultFormView;
 import lsfusion.server.form.view.PropertyDrawView;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.actions.ChangeReadObjectActionProperty;
-import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.PropertyChanges;
 
 public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterface> {
@@ -65,5 +66,10 @@ public class ObjectValueProperty extends NoIncrementProperty<ClassPropertyInterf
     @Override
     public ExClassSet calcInferValueClass(ImMap<ClassPropertyInterface, ExClassSet> inferred, InferType inferType) {
         return getInterface().mapInferValueClass(inferred, inferType);
+    }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        return true;
     }
 }

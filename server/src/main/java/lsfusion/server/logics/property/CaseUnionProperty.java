@@ -27,8 +27,9 @@ import lsfusion.server.logics.mutables.interfaces.NFList;
 import lsfusion.server.logics.property.cases.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.derived.DerivedProperty;
-import lsfusion.server.logics.property.infer.*;
 import lsfusion.server.logics.property.infer.ExClassSet;
+import lsfusion.server.logics.property.infer.InferType;
+import lsfusion.server.logics.property.infer.Inferred;
 import lsfusion.server.session.DataChanges;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
@@ -438,6 +439,17 @@ public class CaseUnionProperty extends IncrementUnionProperty {
         return new CaseUnionDrillDownFormEntity(
                 canonicalName, getString("logics.property.drilldown.form.case.union"), this, LM
         );
+    }
+
+    @Override
+    public boolean ignoreReadOnlyPolicy() {
+        for (CalcCase<UnionProperty.Interface> calcCase : getCases()) {
+            for (DataProperty change : calcCase.implement.mapChangeProps()) {
+                if (change instanceof SessionDataProperty)
+                   return true;
+            }
+        }
+        return false;
     }
 }
 
