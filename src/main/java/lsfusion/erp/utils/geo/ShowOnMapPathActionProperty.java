@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.OpenUriClientAction;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -33,7 +32,7 @@ public class ShowOnMapPathActionProperty extends ScriptingActionProperty {
         try {
             LCP<PropertyInterface> isPOI = (LCP<PropertyInterface>) is(findClass("POI"));
             ImRevMap<PropertyInterface, KeyExpr> keys = isPOI.getMapKeys();
-            QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
+            QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<>(keys);
             query.addProperty("latitude", findProperty("latitudePOI").getExpr(keys.singleValue()));
             query.addProperty("longitude", findProperty("longitudePOI").getExpr(keys.singleValue()));
             query.addProperty("numberPathPOI", findProperty("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()));
@@ -42,7 +41,7 @@ public class ShowOnMapPathActionProperty extends ScriptingActionProperty {
             query.and(isPOI.property.getExpr(keys).getWhere());
             query.and(findProperty("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()).getWhere());
             ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(context, MapFact.singletonOrder((Object) "numberPathPOI", false));
-            String uri = "http://maps.google.com/?";
+            String uri = "https://www.google.com/maps/dir/";
             int index = 1;
             for (ImMap<Object, Object> values : result.valueIt()) {
                 BigDecimal latitude = (BigDecimal) values.get("latitude");
@@ -51,8 +50,7 @@ public class ShowOnMapPathActionProperty extends ScriptingActionProperty {
                 String description = (String) values.get("descriptionPathPOI");
                 String overDescription = description==null ? name : description;
                 if (latitude != null && longitude != null && overDescription!=null) {
-                    String prefix = index == 1 ? "saddr=" : (index == result.values().size() ? "&daddr=": "+to:");
-                    uri += prefix + overDescription.trim().replace(" ", "+").replace("\"", "") + "@" + latitude + "+" + longitude;
+                    uri += latitude + "," + longitude + "/";
                     index++;
                 }
             }
@@ -62,9 +60,7 @@ public class ShowOnMapPathActionProperty extends ScriptingActionProperty {
             else
                 context.requestUserInteraction(new OpenUriClientAction(new URI(uri)));
 
-        } catch (SQLException e) {
-        } catch (URISyntaxException e) {
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
+        } catch (SQLException | URISyntaxException | ScriptingErrorLog.SemanticErrorException ignored) {
         }
 
     }

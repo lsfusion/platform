@@ -19,13 +19,10 @@ public class JsonReader {
     }
 
     public static JSONObject read(final String url) throws IOException, JSONException {
-        final InputStream is = new URL(url).openStream();
-        try {
+        try (InputStream is = new URL(url).openStream()) {
             final BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
             final String jsonText = readAll(rd);
             return new JSONObject(jsonText);
-        } finally {
-            is.close();
         }
     }
 }

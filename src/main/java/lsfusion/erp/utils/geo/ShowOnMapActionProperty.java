@@ -1,8 +1,7 @@
 package lsfusion.erp.utils.geo;
 
+import com.google.common.base.Throwables;
 import lsfusion.interop.action.OpenUriClientAction;
-import lsfusion.server.classes.DoubleClass;
-import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.logics.DataObject;
@@ -47,12 +46,8 @@ public class ShowOnMapActionProperty extends ScriptingActionProperty {
 
                 context.requestUserInteraction(new OpenUriClientAction(new URI(url)));
             }
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (ScriptingErrorLog.SemanticErrorException e) {
-            throw new RuntimeException(e);
+        } catch (URISyntaxException | SQLException | ScriptingErrorLog.SemanticErrorException e) {
+            throw Throwables.propagate(e);
         }
     }
 }

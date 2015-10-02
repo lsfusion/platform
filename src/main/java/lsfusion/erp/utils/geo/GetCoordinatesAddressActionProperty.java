@@ -8,7 +8,6 @@ import com.google.code.geocoder.model.GeocoderResult;
 import lsfusion.server.data.SQLHandledException;
 import org.json.JSONException;
 import org.json.JSONObject;
-import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
@@ -20,7 +19,6 @@ import lsfusion.server.session.DataSession;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
@@ -49,7 +47,7 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
 
                 if (((String) findProperty("staticName").read(session, mapProvider)).contains("yandex")) {
 
-                    String url = "http://geocode-maps.yandex.ru/1.x/?geocode=" + address.trim().replace(" ", "+") + "&results=1&format=json";
+                    String url = "https://geocode-maps.yandex.ru/1.x/?geocode=" + address.trim().replace(" ", "+") + "&results=1&format=json";
 
                     final JSONObject response = JsonReader.read(url);
                     if (response != null) {
@@ -78,11 +76,7 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
                 findProperty("readLatitude").change(latitude, session);
                 findProperty("readLongitude").change(longitude, session);
             }
-        } catch (MalformedURLException ignored) {
-        } catch (IOException ignored) {
-        } catch (JSONException ignored) {
-        } catch (SQLException ignored) {
-        } catch (ScriptingErrorLog.SemanticErrorException ignored) {
+        } catch (IOException | JSONException | SQLException | ScriptingErrorLog.SemanticErrorException ignored) {
         }
     }
 }
