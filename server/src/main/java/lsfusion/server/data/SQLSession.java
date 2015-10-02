@@ -1444,14 +1444,18 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
 
             // повторяем
             try {
-                incAttemptCount(attemptCountMap, t.getDescription());
+                synchronized (attemptCountMap) {
+                    incAttemptCount(attemptCountMap, t.getDescription());
+                }
                 if(setRepeatDate)
                     startTransaction = Calendar.getInstance().getTime().getTime();
                 executeCommand(command, queryExecEnv, owner, paramObjects, transactTimeout, handler, snapEnv, pureTime, false);
             } finally {
                 if(setRepeatDate)
                     startTransaction = null;
-                decAttemptCount(attemptCountMap, t.getDescription());
+                synchronized (attemptCountMap) {
+                    decAttemptCount(attemptCountMap, t.getDescription());
+                }
             }
         } finally {
             snapEnv.afterOuter(this, owner);
