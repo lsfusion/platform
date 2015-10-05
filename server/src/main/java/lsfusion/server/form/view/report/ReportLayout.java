@@ -21,9 +21,9 @@ public abstract class ReportLayout {
         this.rowHeight = rowHeight;            
     }
 
-    protected List<ReportDrawField> reportFields = new ArrayList<ReportDrawField>();
-    protected Map<ReportDrawField, JRDesignTextField> captions = new HashMap<ReportDrawField, JRDesignTextField>();
-    protected Map<ReportDrawField, JRDesignTextField> textFields = new HashMap<ReportDrawField, JRDesignTextField>();
+    protected List<ReportDrawField> reportFields = new ArrayList<>();
+    protected Map<ReportDrawField, JRDesignTextField> captions = new HashMap<>();
+    protected Map<ReportDrawField, JRDesignTextField> textFields = new HashMap<>();
 
     public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
         reportFields.add(reportField);

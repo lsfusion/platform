@@ -207,7 +207,8 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                 }
             }
             if (printType != null) {
-                Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(), printType, SystemProperties.isDebug));
+                boolean toExcel = printType == FormPrintType.XLS || printType == FormPrintType.XLSX;
+                Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(toExcel), printType, SystemProperties.isDebug));
                 formPageCount.change(pageCount, context);
             }
             if (exportType == null && printType == null) {

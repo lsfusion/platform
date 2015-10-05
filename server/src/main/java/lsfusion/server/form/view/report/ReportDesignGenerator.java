@@ -45,7 +45,6 @@ public class ReportDesignGenerator {
     private FormView formView;
     private Set<Integer> hiddenGroupsId;
     private FormUserPreferences userPreferences;
-    private boolean toExcel;
 
     private Map<String, LinkedHashSet<List<Object>>> columnGroupObjects;
             
@@ -62,14 +61,13 @@ public class ReportDesignGenerator {
     private int charWidth = 8;
     private boolean toStretch = true; 
     
-    private Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
+    private Map<String, JasperDesign> designs = new HashMap<>();
 
     public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId, FormUserPreferences userPreferences, boolean toExcel, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) {
         this.formView = formView;
         this.hierarchy = hierarchy;
         this.hiddenGroupsId = hiddenGroupsId;
         this.userPreferences = userPreferences;
-        this.toExcel = toExcel;
         
         this.columnGroupObjects = columnGroupObjects;
 
@@ -103,12 +101,10 @@ public class ReportDesignGenerator {
                 rowHeight = (Integer) baseLM.reportRowHeight.read(session);
                 toStretch = BaseUtils.nvl((Boolean) baseLM.reportToStretch.read(session), false);
             }
-        } catch (SQLException e) {
-            ServerLoggers.systemLogger.warn("Error when reading report parameters", e);
-        } catch (SQLHandledException e) {
+        } catch (SQLException | SQLHandledException e) {
             ServerLoggers.systemLogger.warn("Error when reading report parameters", e);
         }
-    
+
         JasperDesign rootDesign = createJasperDesignObject(GroupObjectHierarchy.rootNodeName, true, false);
 
         iterateChildReports(rootDesign, null, 0);
@@ -133,24 +129,24 @@ public class ReportDesignGenerator {
 
             addParametersToDesign(design, sid);
 
-            JRDesignSubreport subreportElement = new JRDesignSubreport(designs.get(sid));
-            setExpressionsToSubreportElement(subreportElement, sid);
-            subreportElement.setStretchType(StretchTypeEnum.RELATIVE_TO_BAND_HEIGHT);
-            detail.addElement(subreportElement);
+            JRDesignSubreport subReportElement = new JRDesignSubreport(designs.get(sid));
+            setExpressionsToSubReportElement(subReportElement, sid);
+            subReportElement.setStretchType(StretchTypeEnum.RELATIVE_TO_BAND_HEIGHT);
+            detail.addElement(subReportElement);
 
             ((JRDesignSection)design.getDetailSection()).addBand(detail);
         }
     }
 
     private List<ReportDrawField> getAllowedGroupDrawFields(GroupObjectEntity group) {
-        List<ReportDrawField> fields = new ArrayList<ReportDrawField>();
+        List<ReportDrawField> fields = new ArrayList<>();
 
         GroupObjectUserPreferences groupObjectPreferences = null;
         if (userPreferences != null) {
             groupObjectPreferences = userPreferences.getUsedPreferences(group.getSID());
         }
         
-        List<Pair<PropertyDrawView, ColumnUserPreferences>> properties = new ArrayList<Pair<PropertyDrawView, ColumnUserPreferences>>();
+        List<Pair<PropertyDrawView, ColumnUserPreferences>> properties = new ArrayList<>();
         
         for (PropertyDrawView property : formView.getPropertiesList()) {
             ColumnUserPreferences columnUserPreferences = null;
@@ -158,7 +154,7 @@ public class ReportDesignGenerator {
                 columnUserPreferences = groupObjectPreferences.getColumnUserPreferences().get(property.getSID());
             }
             
-            properties.add(new Pair<PropertyDrawView, ColumnUserPreferences>(property, columnUserPreferences));
+            properties.add(new Pair<>(property, columnUserPreferences));
             
         }
         
@@ -268,7 +264,7 @@ public class ReportDesignGenerator {
                 }
                 
                 if (font != null) {
-                    groupCellStyle.setFontSize(font.fontSize);
+                    groupCellStyle.setFontSize((float) font.fontSize);
                     groupCellStyle.setBold(font.isBold());
                     groupCellStyle.setItalic(font.isItalic());
                 }
@@ -353,18 +349,18 @@ public class ReportDesignGenerator {
         return designField;
     }
 
-    private static void setExpressionsToSubreportElement(JRDesignSubreport subreport, String sid) {
-        JRDesignExpression subreportExpr =
+    private static void setExpressionsToSubReportElement(JRDesignSubreport subReport, String sid) {
+        JRDesignExpression subReportExpr =
                 ReportUtils.createExpression(ReportUtils.createParamString(sid + ReportConstants.reportSuffix), JasperReport.class);
-        subreport.setExpression(subreportExpr);
+        subReport.setExpression(subReportExpr);
 
         JRDesignExpression sourceExpr =
                 ReportUtils.createExpression(ReportUtils.createParamString(sid + ReportConstants.sourceSuffix), JRDataSource.class);
-        subreport.setDataSourceExpression(sourceExpr);
+        subReport.setDataSourceExpression(sourceExpr);
 
         JRDesignExpression paramsExpr =
                 ReportUtils.createExpression(ReportUtils.createParamString(sid + ReportConstants.paramsSuffix), Map.class);
-        subreport.setParametersMapExpression(paramsExpr);
+        subReport.setParametersMapExpression(paramsExpr);
     }
 
     private static void addParametersToDesign(JasperDesign design, String sid) throws JRException {
