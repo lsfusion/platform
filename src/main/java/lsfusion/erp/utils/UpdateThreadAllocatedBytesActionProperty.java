@@ -17,7 +17,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class UpdateThreadAllocatedBytesActionProperty extends ScriptingActionProperty {
-
+    private static Timer timer;
     public UpdateThreadAllocatedBytesActionProperty(ScriptingLogicsModule LM) {
         super(LM);
     }
@@ -25,25 +25,33 @@ public class UpdateThreadAllocatedBytesActionProperty extends ScriptingActionPro
     @Override
     protected void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
-            final boolean readAllocatedBytes = findProperty("readAllocatedBytes").read(context) != null;
-            final long period = Settings.get().getThreadAllocatedMemoryPeriod();
-            Timer timer = new Timer("ReadAllocatedBytes", true);
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
-                    updateThreadAllocatedBytesMap(tBean, readAllocatedBytes);
+            synchronized (this) {
+                final boolean readAllocatedBytes = findProperty("readAllocatedBytes").read(context) != null;
+                if(readAllocatedBytes == (timer == null)) {
+                    if (timer != null) {
+                        timer.cancel();
+                        timer = null;
+                    } else {
+                        final long period = Settings.get().getThreadAllocatedMemoryPeriod();
+
+                        timer = new Timer("ReadAllocatedBytes", true);
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
+                                updateThreadAllocatedBytesMap(tBean);
+                            }
+                        }, 0, (period <= 0 ? 1800000 : period) / 2);
+                    }
                 }
-            }, 0, (period <= 0 ? 1800000 : period) / 2);
+            }
         } catch (ScriptingErrorLog.SemanticErrorException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    private void updateThreadAllocatedBytesMap(ThreadMXBean tBean, boolean readAllocatedBytes) {
-        if (tBean instanceof com.sun.management.ThreadMXBean) {
-            if (((com.sun.management.ThreadMXBean) tBean).isThreadAllocatedMemorySupported() && readAllocatedBytes)
-                    SQLSession.updateThreadAllocatedBytesMap();
-        }
+    private void updateThreadAllocatedBytesMap(ThreadMXBean tBean) {
+        if (tBean instanceof com.sun.management.ThreadMXBean && ((com.sun.management.ThreadMXBean) tBean).isThreadAllocatedMemorySupported())
+            SQLSession.updateThreadAllocatedBytesMap();
     }
 }

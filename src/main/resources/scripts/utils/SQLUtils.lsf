@@ -59,7 +59,7 @@ cancelJavaProcess 'Снять java-процесс' = ACTION CUSTOM 'lsfusion.erp
 cancelSQLProcess 'Снять SQL-процесс' = ACTION CUSTOM 'lsfusion.erp.utils.CancelSQLProcessActionProperty' (VARSTRING[10]);
 
 readAllocatedBytes 'Показывать выделенную память' = DATA BOOLEAN ();
-WHEN SESSION CHANGED (readAllocatedBytes()) DO updateThreadAllocatedBytesAction();
+WHEN CHANGED (readAllocatedBytes()) DO updateThreadAllocatedBytesAction();
 onStarted() += ACTION updateThreadAllocatedBytesAction();
 
 processType 'Фильтр процессов'= DATA LOCAL ProcessType();
