@@ -61,8 +61,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private Integer idActiveThread;
 
     private static ConcurrentWeakHashMap<SQLSession, Integer> sqlSessionMap = new ConcurrentWeakHashMap<>();
-    private static ConcurrentWeakHashMap<Long, Long> threadAllocatedBytesAMap = new ConcurrentWeakHashMap<>();
-    private static ConcurrentWeakHashMap<Long, Long> threadAllocatedBytesBMap = new ConcurrentWeakHashMap<>();
+    private static ConcurrentHashMap<Long, Long> threadAllocatedBytesAMap = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<Long, Long> threadAllocatedBytesBMap = new ConcurrentHashMap<>();
 
     private Long startTransaction;
     private Map<String, Integer> attemptCountMap = new HashMap<>();
@@ -120,7 +120,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
 
     public static void updateThreadAllocatedBytesMap() {
-        threadAllocatedBytesAMap = new ConcurrentWeakHashMap<>(threadAllocatedBytesBMap);
+        threadAllocatedBytesAMap = new ConcurrentHashMap<>(threadAllocatedBytesBMap);
         threadAllocatedBytesBMap.clear();
         ThreadMXBean tBean = ManagementFactory.getThreadMXBean();
         if (tBean instanceof com.sun.management.ThreadMXBean) {
