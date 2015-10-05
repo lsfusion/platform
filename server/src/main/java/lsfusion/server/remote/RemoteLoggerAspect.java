@@ -21,7 +21,7 @@ public class RemoteLoggerAspect {
 
     public static final Map<Integer, Long> userActivityMap = new ConcurrentHashMap<>();
     public static final Map<Integer, Map<Long, List<Long>>> pingInfoMap = new ConcurrentHashMap<>();
-    private static final Map<Integer, Timestamp> dateTimeCallMap = new ConcurrentWeakHashMap<>();
+    private static final Map<Long, Timestamp> dateTimeCallMap = new ConcurrentHashMap<>();
     private static Map<Integer, Boolean> remoteLoggerDebugEnabled = new ConcurrentHashMap<>();
 
     @Around("(execution(* lsfusion.interop.RemoteLogicsInterface.*(..))" +
@@ -30,28 +30,33 @@ public class RemoteLoggerAspect {
             " && !execution(* *.ping(..))" +
             "&& target(target)")
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {
-        putDateTimeCall(Thread.currentThread().getId(), new Timestamp(System.currentTimeMillis()));
-        Integer user;
-        if (target instanceof RemoteLogics) {
-            user = ((RemoteLogics) target).getCurrentUser();
-        } else if (target instanceof RemoteForm) {
-            user = ((RemoteForm) target).getCurrentUser();
-        } else {
-            user = (Integer) ((RemoteNavigator) target).getUser().object;
+        final long id = Thread.currentThread().getId();
+        putDateTimeCall(id, new Timestamp(System.currentTimeMillis()));
+        try {
+            Integer user;
+            if (target instanceof RemoteLogics) {
+                user = ((RemoteLogics) target).getCurrentUser();
+            } else if (target instanceof RemoteForm) {
+                user = ((RemoteForm) target).getCurrentUser();
+            } else {
+                user = (Integer) ((RemoteNavigator) target).getUser().object;
+            }
+            long startTime = System.currentTimeMillis();
+            Object result = thisJoinPoint.proceed();
+            long runTime = System.currentTimeMillis() - startTime;
+
+            userActivityMap.put(user, startTime);
+
+            boolean debugEnabled = user != null && isRemoteLoggerDebugEnabled(user);
+
+            if (debugEnabled || runTime > Settings.get().getRemoteLogTime()) {
+                logger.info(logCall(thisJoinPoint, runTime));
+            }
+
+            return result;
+        } finally {
+            removeDateTimeCall(id);
         }
-        long startTime = System.currentTimeMillis();
-        Object result = thisJoinPoint.proceed();
-        long runTime = System.currentTimeMillis() - startTime;
-        
-        userActivityMap.put(user, startTime);
-
-        boolean debugEnabled = user != null && isRemoteLoggerDebugEnabled(user);
-
-        if (debugEnabled || runTime > Settings.get().getRemoteLogTime()) {
-            logger.info(logCall(thisJoinPoint, runTime));
-        }
-
-        return result;
     }
 
     private String logCall(ProceedingJoinPoint thisJoinPoint, long runTime) {
@@ -77,6 +82,10 @@ public class RemoteLoggerAspect {
     }
 
     public static void putDateTimeCall(long pid, Timestamp timestamp) {
-        dateTimeCallMap.put((int) pid, timestamp);
+        dateTimeCallMap.put(pid, timestamp);
+    }
+
+    public static void removeDateTimeCall(long pid) {
+        dateTimeCallMap.remove(pid);
     }
 }
