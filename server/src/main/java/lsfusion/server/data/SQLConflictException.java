@@ -12,9 +12,4 @@ public class SQLConflictException extends SQLHandledException {
     public String toString() {
         return updateConflict ? "UPDATE_CONFLICT" : "DEAD_LOCK"; 
     }
-
-    @Override
-    public String getDescription() {
-        return "cn";
-    }
 }
