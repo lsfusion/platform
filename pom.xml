@@ -34,12 +34,6 @@
             <artifactId>fax4j</artifactId>
             <version>0.43.1</version>
         </dependency>
-        <dependency>
-            <groupId>net.sf.jgap</groupId>
-            <artifactId>jgap</artifactId>
-            <version>3.4.4</version>
-        </dependency>
-
     </dependencies>
 
     <scm>
