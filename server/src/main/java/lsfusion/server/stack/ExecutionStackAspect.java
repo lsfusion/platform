@@ -104,29 +104,29 @@ public class ExecutionStackAspect {
     }
     
     public static String getStackString() {
-        return getStackString(Thread.currentThread(), false); // не concurrent по определению
+        return getStackString(Thread.currentThread(), false, false); // не concurrent по определению
     }
     
-    public static String getStackString(Thread thread, boolean checkConcurrent) {
+    public static String getStackString(Thread thread, boolean checkConcurrent, boolean cut) {
         String result = "";
         Stack<ExecutionStackItem> stack = getStack(thread);
         if (stack != null) {
             if(checkConcurrent) {
                 while (true) {
                     try {
-                        result = getStackString(stack);
+                        result = getStackString(stack, cut);
                         break;
                     } catch (ConcurrentModificationException ignored) {
                     }
                 }
             } else {
-                result = getStackString(stack);
+                result = getStackString(stack, cut);
             }
         }
         return BaseUtils.nullEmpty(result);    
     }
 
-    private static String getStackString(Stack<ExecutionStackItem> stack) {
+    private static String getStackString(Stack<ExecutionStackItem> stack, boolean cut) {
         String result = "";
         ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.size());
         boolean lastActionFound = false;
@@ -139,9 +139,9 @@ public class ExecutionStackAspect {
 
                 if (isLSFAction(item) && !lastActionFound) {
                     lastActionFound = true;
-                    result += getLastActionString(stack, (ExecuteActionStackItem) item);
+                    result += getLastActionString(stack, (ExecuteActionStackItem) item, cut);
                 } else {
-                    result += item;    
+                    result += cut ? trim(item.toString(), 1000) : item;
                 }
             }
         }
@@ -149,7 +149,7 @@ public class ExecutionStackAspect {
     }
     
     // для последнего action'а в стеке ищем вверх по стеку первый action с именем (до action'а с IN_DELEGATE)
-    private static String getLastActionString(Stack<ExecutionStackItem> stack, ExecuteActionStackItem lastAction) {
+    private static String getLastActionString(Stack<ExecutionStackItem> stack, ExecuteActionStackItem lastAction, boolean cut) {
         ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.indexOf(lastAction) + 1); 
         while (itemListIterator.hasPrevious()) {
             ExecutionStackItem item = itemListIterator.previous();
@@ -165,7 +165,11 @@ public class ExecutionStackAspect {
                 }
             }
         }
-        return lastAction.toString();
+        return cut ? trim(lastAction.toString(), 1000) : lastAction.toString();
+    }
+
+    private static String trim(String value, int length) {
+        return value == null ? null : value.substring(0, Math.min(value.length(), length));
     }
 
     private static boolean presentItem(ExecutionStackItem item) {
