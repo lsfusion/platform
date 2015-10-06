@@ -8,17 +8,18 @@ import lsfusion.server.logics.ServiceLogicsModule;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
+import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
 
 public class DropLRUActionProperty extends ScriptingActionProperty {
 
-    public DropLRUActionProperty(ServiceLogicsModule LM) {
-        super(LM);
+    public DropLRUActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
+        super(LM, classes);
     }
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        ALRUMap.forceRemoveAllLRU(1.0);
+        ALRUMap.forceRemoveAllLRU(((Double) context.getSingleDataKeyValue().object)/100.0);
     }
 }

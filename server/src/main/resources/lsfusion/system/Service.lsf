@@ -224,7 +224,9 @@ onStarted() += ACTION {
 restartServerAction 'Остановить сервер' = ACTION CUSTOM 'lsfusion.server.logics.service.RestartActionProperty' ();
 runGarbageCollector 'Запустить сборщик мусора' = ACTION CUSTOM 'lsfusion.server.logics.service.GarbageCollectorActionProperty' ();
 cancelRestartServerAction 'Отменить остановку сервера' = ACTION CUSTOM 'lsfusion.server.logics.service.CancelRestartActionProperty' ();
-dropLRU 'Очистить LRU' = ACTION CUSTOM 'lsfusion.server.logics.service.DropLRUActionProperty' ();
+dropLRUPercent 'Процент очистки LRU' = DATA DOUBLE ();
+dropLRUCustom 'Очистить LRU' = ACTION CUSTOM 'lsfusion.server.logics.service.DropLRUActionProperty' (DOUBLE);
+dropLRU 'Очистить LRU' () = ACTION dropLRUCustom(dropLRUPercent());
 makeHeapDump 'Сделать Heap Dump' = ACTION CUSTOM 'lsfusion.server.logics.service.MakeHeapDumpActionProperty' ();
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
@@ -258,7 +260,7 @@ FORM admin 'Администрирование'
                  threadCountMultiThread, recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
                  recalculateStatsMultiThreadAction,
                  packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
-                 vacuumDBAction, serviceDBAction, serviceDBMultiThreadAction, runGarbageCollector, getVMInfo, dropLRU, makeHeapDump, 
+                 vacuumDBAction, serviceDBAction, serviceDBMultiThreadAction, runGarbageCollector, getVMInfo, dropLRUPercent, dropLRU, makeHeapDump, 
                  TILMode, hostnameServerComputer, reupdateMode, singleTransaction,
                  turnExplainAnalizeOnCurrentUser, clearApplicationLog
     OBJECTS u=User
@@ -352,6 +354,7 @@ DESIGN admin {
             caption = 'Виртуальная машина';
             MOVE PROPERTY(runGarbageCollector());
             MOVE PROPERTY(getVMInfo());
+            MOVE PROPERTY(dropLRUPercent());
             MOVE PROPERTY(dropLRU());
             MOVE PROPERTY(makeHeapDump());
         }
