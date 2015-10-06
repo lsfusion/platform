@@ -28,6 +28,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.logics.*;
+import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
 import org.apache.commons.collections.Buffer;
@@ -1212,6 +1213,9 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 double ttime = BaseUtils.nullAdd(rtime, ptime);
                 if(noAnalyze || thr==0 || ttime >= thr) {
                     systemLogger.info(statement.toString() + " volatile : " + isVolatileStats() + " disabled nested loop : " + isDisabledNestLoop + " actual time : " + actualTime);
+                    systemLogger.info(ExecutionStackAspect.getStackString());
+                    if(ServerLoggers.isUserExLog())
+                        systemLogger.info(ExceptionUtils.getStackTrace());
                     for(String outRow : out)
                         systemLogger.info(outRow);
                 } //else {

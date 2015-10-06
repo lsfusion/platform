@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.caches.ValuesContext;
@@ -267,7 +268,18 @@ public abstract class SessionModifier implements Modifier {
 
         try {
             readProperty = property;
-            increment.add(property, property.readChangeTable(getSQL(), this, getBaseClass(), getQueryEnv()));
+            final SinglePropertyTableUsage changeTable = property.readChangeTable(getSQL(), this, getBaseClass(), getQueryEnv());
+            if(ServerLoggers.isUserExLog()) {
+                ServerLoggers.exInfoLogger.info("HINT INCREMENT : " + property.toString() + " " + property.getIncrementChange(this) + " " + property.getRecDepends());
+                if (changeTable.getCount() < 20) {
+                    changeTable.table.outClasses(getSQL(), getBaseClass(), new Processor<String>() {
+                        public void proceed(String value) {
+                            ServerLoggers.exInfoLogger.info(value);
+                        }
+                    });
+                }
+            }
+            increment.add(property, changeTable);
         } catch(Exception e) {
             throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
         } finally {
@@ -308,6 +320,10 @@ public abstract class SessionModifier implements Modifier {
             PrereadRows<P> readRows = new PrereadRows<P>(readedParamValues, readValues);
             if(prereadRows != null)
                 readRows = prereadRows.addExcl(readRows);
+
+            if(ServerLoggers.isUserExLog()) {
+                ServerLoggers.exInfoLogger.info("HINT PREREAD : " + property + " " + readRows + " " + property.getRecDepends());
+            }
 
             preread.put(property, readRows);
         } finally {
