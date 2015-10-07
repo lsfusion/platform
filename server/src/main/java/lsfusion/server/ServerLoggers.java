@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerLoggers {
     public static final Logger systemLogger = Logger.getLogger("SystemLogger");
@@ -90,8 +91,18 @@ public class ServerLoggers {
     private static Map<Integer, Boolean> userExLogs = new ConcurrentHashMap<>();
 
     public static void setUserExLog(Integer user, Boolean enabled) {
-        userExLogs.put(user, enabled != null && enabled);
+        final boolean newEnabled = enabled != null && enabled;
+        final Boolean prevBEnabled = userExLogs.put(user, newEnabled);
+        final boolean prevEnabled = prevBEnabled != null && prevBEnabled;
+        if(newEnabled != prevEnabled) {
+            if (newEnabled)
+                enabledUserExLog++;
+            else
+                enabledUserExLog--;
+        }
     }
+
+    public static int enabledUserExLog;
 
     public static boolean getUserExLog(Integer user) {
         Boolean useLog = userExLogs.get(user);
@@ -99,7 +110,7 @@ public class ServerLoggers {
     }
 
     public static boolean isUserExLog() {
-        return getUserExLog(ThreadLocalContext.get().getCurrentUser());
+        return enabledUserExLog > 0 && getUserExLog(ThreadLocalContext.get().getCurrentUser());
     }
 
 }

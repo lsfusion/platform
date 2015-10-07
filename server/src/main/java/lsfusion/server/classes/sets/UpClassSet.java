@@ -169,7 +169,7 @@ public class UpClassSet extends AUpClassSet<UpClassSet> implements ObjectValueCl
         MMap<IsClassField, ObjectValueClassSet> mMap = MapFact.mMap(OrObjectClassSet.<IsClassField>objectValueSetAdd());
         for(CustomClass customClass : wheres)
             mMap.addAll(customClass.getUpClassFields(onlyObjectClassFields));
-        return CustomClass.pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields);
+        return CustomClass.pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields, this);
     }
 
     public ObjectValueClassSet getValueClassSet() {

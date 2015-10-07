@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
-import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.Settings;
@@ -23,7 +22,6 @@ import lsfusion.server.logics.property.IsClassField;
 import lsfusion.server.logics.property.ObjectClassField;
 
 import java.util.Comparator;
-import java.util.Set;
 
 // IMMUTABLE
 public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet, ObjectValueClassSet {
@@ -450,6 +448,6 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
         MMap<IsClassField, ObjectValueClassSet> mMap = MapFact.mMap(up.getClassFields(onlyObjectClassFields), OrObjectClassSet.<IsClassField>objectValueSetAdd());
         for(ConcreteCustomClass customClass : set)
             mMap.add(customClass.dataProperty, customClass);
-        return CustomClass.pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields);
+        return CustomClass.pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields, this);
     }
 }

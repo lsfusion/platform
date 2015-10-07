@@ -550,13 +550,20 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             mMap.addAll(customClass.getUpClassFields(onlyObjectClassFields));
         if(this instanceof ConcreteCustomClass) // глуповато конечно,
             mMap.add(((ConcreteCustomClass)this).dataProperty, (ConcreteCustomClass)this);
-        return pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields);
+        return pack(mMap.immutable().toRevExclMap(), onlyObjectClassFields, getUpSet());
     }
 
 
-    public static ImRevMap<IsClassField, ObjectValueClassSet> pack(ImRevMap<IsClassField, ObjectValueClassSet> map, boolean onlyObjectClassFields) {
+    public static ImRevMap<IsClassField, ObjectValueClassSet> pack(ImRevMap<IsClassField, ObjectValueClassSet> map, boolean onlyObjectClassFields, ObjectValueClassSet baseClassSet) {
         // паковка по идее должна включать в себя случай, когда есть ClassField который полностью покрывает одну из таблиц, то эффективнее ее долить в ClassField, аналогичная оптимизация на количества ClassValueWhere
         // но пока из способа определения ClassField'а и методологии определения FULL, это большая редкость
+
+        // во многом оптимизация, но важно что дает детерменированность что для Abstract не вернется Concrete, а для Concrete - Abstract что приведет к бесконечной паковке, например в GroupExpr.followFalse
+        if(map.size() == 1) {
+            assert map.singleValue().containsAll(baseClassSet, false) && baseClassSet.containsAll(map.singleValue(), false);
+            return MapFact.singletonRev(map.singleKey(), baseClassSet);
+        }
+
         return map;
     }
 

@@ -80,7 +80,11 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public boolean containsAll(AndClassSet node, boolean implicitCast) {
-        return node instanceof ConcreteCustomClass && this==node;
+        if(node instanceof ConcreteClass)
+            return this == node;
+        if(node instanceof UpClassSet) // без этих проверок будет минимум assert false в CustomClass.pack валится
+            return ((UpClassSet)node).inSet(UpClassSet.FALSE, SetFact.singleton(this));
+        return getOr().containsAll((OrClassSet) node, implicitCast);
     }
 
     public ConcreteCustomClass getSingleClass() {

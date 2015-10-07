@@ -183,13 +183,13 @@ public class AutoHintsAspect {
                 }
             }
 
-            if(cacheHint==null || MapCacheAspect.checkCaches) {
+            if(cacheHint==null || MapCacheAspect.checkCaches()) {
                 Object result = proceed(thisJoinPoint, sessionModifier, resultHint);
                 if(result!=null)
                     return result;
 
                 if(cacheHint!=null)
-                    assert BaseUtils.hashEquals(cacheHint, resultHint.result);
+                    MapCacheAspect.logCaches(cacheHint, resultHint.result, thisJoinPoint, "HINT", property);
                 else
                     MapCacheAspect.cacheNoBig(implement, hashCaches, resultHint.result);
             } else
