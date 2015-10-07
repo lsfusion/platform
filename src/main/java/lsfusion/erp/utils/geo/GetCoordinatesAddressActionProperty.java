@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty {
+public class GetCoordinatesAddressActionProperty extends GeoActionProperty {
     private final ClassPropertyInterface POIInterface;
     private final ClassPropertyInterface mapProviderInterface;
 
@@ -45,7 +45,7 @@ public class GetCoordinatesAddressActionProperty extends ScriptingActionProperty
             String address = (String) fullAddress.object;
             if (address != null) {
 
-                if (((String) findProperty("staticName").read(session, mapProvider)).contains("yandex")) {
+                if (isYandex(context, mapProvider)) {
 
                     String url = "https://geocode-maps.yandex.ru/1.x/?geocode=" + address.trim().replace(" ", "+") + "&results=1&format=json";
 

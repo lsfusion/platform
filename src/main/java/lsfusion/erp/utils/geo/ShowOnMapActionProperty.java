@@ -16,7 +16,7 @@ import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-public class ShowOnMapActionProperty extends ScriptingActionProperty {
+public class ShowOnMapActionProperty extends GeoActionProperty {
     private final ClassPropertyInterface latitudeInterface;
     private final ClassPropertyInterface longitudeInterface;
     private final ClassPropertyInterface mapProviderInterface;
@@ -40,7 +40,7 @@ public class ShowOnMapActionProperty extends ScriptingActionProperty {
             DataObject addressMap = context.getDataKeyValue(addressInterface);
 
             if (latitude.object != null && longitude.object != null) {
-                String url =  ((String) findProperty("staticName").read(context, mapProvider)).contains("yandex")  ?
+                String url =  isYandex(context, mapProvider)  ?
                         ("http://maps.yandex.ru/?"+ "text=" + addressMap.object.toString().trim().replace(" ","%20").replace(",", "%2C") + "&ll=" + longitude.object + "+%2C" + latitude.object + "&z=17") :
                         ("http://maps.google.com/?q=loc:" + latitude.object + "+" + longitude.object);
 

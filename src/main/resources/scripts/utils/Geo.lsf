@@ -13,12 +13,13 @@ CLASS MapProvider 'Использовать карты' {
 }
 FORM mapProviders
     OBJECTS m = MapProvider
-    PROPERTIES(m) staticCaption
+    PROPERTIES(m) READONLY staticCaption
     DIALOG MapProvider OBJECT m
 ;
 
 userMapProvider = DATA MapProvider ();
 mapProvider = OVERRIDE MapProvider.yandex, userMapProvider();
+useTor 'Использовать для карт Tor' = DATA BOOLEAN ();
 
 nameUserMapProvider 'Использовать карты' () = staticCaption(userMapProvider());
 
@@ -37,12 +38,14 @@ readLongitude 'Координата Y' = DATA LOCAL NUMERIC[10,5] ();
 
 getCoordinatesAddressMapProvider = ACTION CUSTOM 'lsfusion.erp.utils.geo.GetCoordinatesAddressActionProperty' (STRING[255], MapProvider);
 getCoordinatesAddress(address) = ACTION getCoordinatesAddressMapProvider(address, mapProvider());
+recalculateDistancePOI = ACTION CUSTOM 'lsfusion.erp.utils.geo.RecalculateDistancePOIActionProperty' (POI);
 
 changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
 
-    EXEC getCoordinatesAddress (CONCAT ',', nameCountryPOI(POI), addressPOI(POI));
-    ASSIGN latitudePOI(POI) <- readLatitude();
-    ASSIGN longitudePOI(POI) <- readLongitude();
+    getCoordinatesAddress (CONCAT ',', nameCountryPOI(POI), addressPOI(POI));
+    latitudePOI(POI) <- readLatitude();
+    longitudePOI(POI) <- readLongitude();
+    recalculateDistancePOI(POI);
 
 }
 WHEN SESSION (SETCHANGED(nameCountryPOI(POI)) OR SETCHANGED(addressPOI(POI))) AND autoSynchronizeCoordinates() DO EXEC changeCoordinatesPOI(POI);
@@ -59,20 +62,22 @@ showOnMapPOI 'Показать на карте'= ACTION (POI) {
 numberPathPOI 'Номер' = DATA LOCAL INTEGER (POI);
 descriptionPathPOI 'Описание' = DATA LOCAL VARSTRING[200] (POI);
 
-showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapPathActionProperty' ();
+distancePOIPOI 'Расстояние' = DATA INTEGER (POI, POI);
+showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapPathActionProperty' (MapProvider);
 
 inPathPOI 'Вкл' = DATA LOCAL BOOLEAN (POI);
 startPathPOI 'Место старта'= DATA LOCAL POI();
 calculatePath 'Рассчитать путь'= ACTION CUSTOM 'lsfusion.erp.utils.geo.CalculatePathActionProperty' ();
 
 EXTEND FORM options
-    PROPERTIES() autoSynchronizeCoordinates, nameUserMapProvider
+    PROPERTIES() autoSynchronizeCoordinates, nameUserMapProvider, useTor
 ;
 
 DESIGN options {
     commons {
         MOVE PROPERTY(autoSynchronizeCoordinates());
         MOVE PROPERTY(nameUserMapProvider());
+        MOVE PROPERTY(useTor());
     }
 }
 

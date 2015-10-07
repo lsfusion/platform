@@ -6,14 +6,13 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.action.OpenUriClientAction;
+import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
-import lsfusion.server.logics.linear.LCP;
+import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
@@ -21,27 +20,34 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.util.Iterator;
 
-public class ShowOnMapPathActionProperty extends ScriptingActionProperty {
+public class ShowOnMapPathActionProperty extends GeoActionProperty {
+    private final ClassPropertyInterface mapProviderInterface;
 
-    public ShowOnMapPathActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
-        super(LM);
+    public ShowOnMapPathActionProperty(ScriptingLogicsModule LM, ValueClass... classes) throws ScriptingErrorLog.SemanticErrorException {
+        super(LM, classes);
+
+        Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
+        mapProviderInterface = i.next();
     }
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            LCP<PropertyInterface> isPOI = (LCP<PropertyInterface>) is(findClass("POI"));
-            ImRevMap<PropertyInterface, KeyExpr> keys = isPOI.getMapKeys();
-            QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<>(keys);
-            query.addProperty("latitude", findProperty("latitudePOI").getExpr(keys.singleValue()));
-            query.addProperty("longitude", findProperty("longitudePOI").getExpr(keys.singleValue()));
-            query.addProperty("numberPathPOI", findProperty("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()));
-            query.addProperty("namePOI", findProperty("namePOI").getExpr(keys.singleValue()));
-            query.addProperty("descriptionPathPOI", findProperty("descriptionPathPOI").getExpr(context.getModifier(), keys.singleValue()));
-            query.and(isPOI.property.getExpr(keys).getWhere());
-            query.and(findProperty("numberPathPOI").getExpr(context.getModifier(), keys.singleValue()).getWhere());
-            ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(context, MapFact.singletonOrder((Object) "numberPathPOI", false));
-            String uri = "https://www.google.com/maps/dir/";
+
+            DataObject mapProvider = context.getDataKeyValue(mapProviderInterface);
+            boolean isYandex = isYandex(context, mapProvider);
+
+            KeyExpr poiExpr = new KeyExpr("poi");
+            ImRevMap<String, KeyExpr> keys = MapFact.singletonRev("poi", poiExpr);
+            QueryBuilder<String, Object> query = new QueryBuilder<>(keys);
+            query.addProperty("latitude", findProperty("latitudePOI").getExpr(poiExpr));
+            query.addProperty("longitude", findProperty("longitudePOI").getExpr(poiExpr));
+            query.addProperty("numberPathPOI", findProperty("numberPathPOI").getExpr(context.getModifier(), poiExpr));
+            query.addProperty("namePOI", findProperty("namePOI").getExpr(poiExpr));
+            query.and(findProperty("numberPathPOI").getExpr(context.getModifier(), poiExpr).getWhere());
+            ImOrderMap<ImMap<String, Object>, ImMap<Object, Object>> result = query.execute(context, MapFact.singletonOrder((Object) "numberPathPOI", false));
+            String uri = "";
             int index = 1;
             for (ImMap<Object, Object> values : result.valueIt()) {
                 BigDecimal latitude = (BigDecimal) values.get("latitude");
@@ -50,7 +56,7 @@ public class ShowOnMapPathActionProperty extends ScriptingActionProperty {
                 String description = (String) values.get("descriptionPathPOI");
                 String overDescription = description==null ? name : description;
                 if (latitude != null && longitude != null && overDescription!=null) {
-                    uri += latitude + "," + longitude + "/";
+                    uri += isYandex ? (latitude + "%2C" + longitude + "~") : (latitude + "," + longitude + "/");
                     index++;
                 }
             }
@@ -58,7 +64,9 @@ public class ShowOnMapPathActionProperty extends ScriptingActionProperty {
             if (index <= result.values().size())
                 context.requestUserInteraction(new MessageClientAction("Не все координаты проставлены", "Ошибка"));
             else
-                context.requestUserInteraction(new OpenUriClientAction(new URI(uri)));
+                context.requestUserInteraction(new OpenUriClientAction(new URI((isYandex ?
+                        ("https://maps.yandex.ru/?rtt=auto&rtm=atm&rtext=" + (uri.endsWith("~") ? uri.substring(0, uri.length() - 1): uri)) :
+                        ("https://www.google.com/maps/dir/" + uri)))));
 
         } catch (SQLException | URISyntaxException | ScriptingErrorLog.SemanticErrorException ignored) {
         }
