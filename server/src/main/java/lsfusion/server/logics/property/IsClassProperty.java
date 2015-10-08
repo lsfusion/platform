@@ -108,7 +108,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     public static boolean fitClasses(ImMap<ClassPropertyInterface, ConcreteClass> mapValues, ValueClass valueClass, ConcreteClass value) { // оптимизация
-        return fitClass(value, valueClass) && fitInterfaceClasses(mapValues);
+        return !(value != null && !fitClass(value, valueClass)) && fitInterfaceClasses(mapValues);
     }
 
     @Override
