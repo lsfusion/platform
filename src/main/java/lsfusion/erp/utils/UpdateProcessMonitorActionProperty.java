@@ -435,7 +435,7 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
                     }
                 }
                 if(!skip)
-                resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList(pid == null ? null : RemoteLoggerAspect.getDateTimeCall(pid),
+                resultMap.put(getSQLThreadId(sessionThread, processId), Arrays.asList(pid == null ? null : RemoteLoggerAspect.getDateTimeCall((long) pid),
                         query, fullQuery, userActiveTask, computerActiveTask, address, dateTime,
                         active, state.equals("idle in transaction"), baseInTransaction, startTransaction, attemptCount, statusMessage,
                         lockOwnerId, lockOwnerName, processId, isDisabledNestLoop, queryTimeout));
