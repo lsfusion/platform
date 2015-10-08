@@ -77,7 +77,7 @@ public class RemoteLoggerAspect {
         return lde != null && lde;
     }
 
-    public static Timestamp getDateTimeCall(int pid) {
+    public static Timestamp getDateTimeCall(long pid) {
         return dateTimeCallMap.get(pid);
     }
 
