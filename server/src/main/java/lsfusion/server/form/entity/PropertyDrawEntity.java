@@ -147,7 +147,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             return editAction.getGroupChange();
         }
 
-        if (isSelector()) {
+        if (isSelector() && !hasContextMenuBinding(actionId)) {
             return getSelectorAction(property, entity);
         }
 
@@ -231,6 +231,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         result.putAll(contextMenuBindings);
         return result;
+    }
+
+    public boolean hasContextMenuBinding(String actionSid) {
+        OrderedMap contextMenuBindings = getContextMenuBindings();
+        return contextMenuBindings != null && contextMenuBindings.containsKey(actionSid);
     }
 
     public Map<KeyStroke, String> getKeyBindings() {

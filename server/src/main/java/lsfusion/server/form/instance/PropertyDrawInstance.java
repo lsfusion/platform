@@ -1,6 +1,5 @@
 package lsfusion.server.form.instance;
 
-import lsfusion.base.OrderedMap;
 import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -59,9 +58,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return entity.isSelector();
     }
     
-    public boolean hasContextMenuBinding(String sid) {
-        OrderedMap contextMenuBindings = entity.getContextMenuBindings();
-        return contextMenuBindings != null && contextMenuBindings.containsKey(sid);
+    public boolean hasContextMenuBinding(String actionSid) {
+        return entity.hasContextMenuBinding(actionSid);
     }
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
