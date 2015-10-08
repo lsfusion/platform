@@ -88,6 +88,9 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     public static boolean fitClass(ConcreteClass concreteClass, ValueClass valueClass) {
+        if(valueClass == null)
+            return true;
+
         // unknown, custom, concatenateClassSet
         if(concreteClass instanceof ValueClass)
             return valueClass.getUpSet().containsAll(concreteClass, true); // при изменениях, вызове custom action
@@ -105,7 +108,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     public static boolean fitClasses(ImMap<ClassPropertyInterface, ConcreteClass> mapValues, ValueClass valueClass, ConcreteClass value) { // оптимизация
-        return !(value != null && !fitClass(value, valueClass)) && fitInterfaceClasses(mapValues);
+        return fitClass(value, valueClass) && fitInterfaceClasses(mapValues);
     }
 
     @Override
