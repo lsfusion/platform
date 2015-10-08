@@ -224,7 +224,7 @@ public class Settings {
 
     private boolean groupByTables = true; //для recalculate
 
-    private long threadAllocatedMemoryPeriod = 300000; //every 5 minutes
+    private long threadAllocatedMemoryPeriod = 240000; //every 4 minutes
 
     public long getMaxRecalculateTime() {
         return maxRecalculateTime;
