@@ -62,6 +62,7 @@ showOnMapPOI 'Показать на карте'= ACTION (POI) {
 numberPathPOI 'Номер' = DATA LOCAL INTEGER (POI);
 descriptionPathPOI 'Описание' = DATA LOCAL VARSTRING[200] (POI);
 
+TABLE poiPoi (POI, POI); 
 distancePOIPOI 'Расстояние' = DATA INTEGER (POI, POI);
 showOnMapPath 'Показать точки на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapPathActionProperty' (MapProvider);
 
