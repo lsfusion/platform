@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,7 +84,7 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
 
 
     private Map<String, Boolean> getFilesList(String url) throws IOException {
-        Map<String, Boolean> result = new HashMap<>();
+        TreeMap<String, Boolean> result = new TreeMap<>();
 
         File[] filesList = new File(url).listFiles();
         if(filesList != null) {
