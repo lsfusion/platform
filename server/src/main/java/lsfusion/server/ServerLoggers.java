@@ -36,6 +36,8 @@ public class ServerLoggers {
 
     public static final Logger exInfoLogger = Logger.getLogger("ExInfoLogger");
 
+    public static final Logger hExInfoLogger = Logger.getLogger("HExInfoLogger");
+
     public static final Logger jdbcLogger = Logger.getLogger("JDBCLogger");
 
     public static final Logger scriptLogger = Logger.getLogger("ScriptLogger");

@@ -155,6 +155,22 @@
         </layout>
     </appender>
 
+    <appender name="hexinfolog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <param name="encoding" value="UTF-8" />
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="12"/>
+            <param name="activeFileName" value="logs/hexinfolog.log"/>
+            <param name="fileNamePattern" value="logs/hexinfolog-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="100485760"/> <!-- 100MB -->
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.EnhancedPatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %X{client} - %X{computer} - %X{remoteAddress} %5p %c{1} - %m%n%throwable{1000}"/>
+        </layout>
+    </appender>
+
     <appender name="jdbclog" class="org.apache.log4j.rolling.RollingFileAppender">
         <param name="encoding" value="UTF-8" />
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
@@ -314,6 +330,11 @@
     <category name="ExInfoLogger" additivity="false">
         <priority value="INFO"/>
         <appender-ref ref="exinfolog"/>
+    </category>
+
+    <category name="HExInfoLogger" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="hexinfolog"/>
     </category>
 
     <category name="JDBCLogger" additivity="false">

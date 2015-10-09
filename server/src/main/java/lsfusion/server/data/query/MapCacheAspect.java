@@ -164,7 +164,10 @@ public class MapCacheAspect {
     }
 
     public static <T> void logCaches(T cached, T calced, ProceedingJoinPoint jp, String action, CalcProperty property) {
-        ServerLoggers.exInfoLogger.info(jp.getThis() + " " + action + " " + (BaseUtils.hashEquals(cached, calced) ? " MATCH " : "NOMATCH CACHED : " + cached + " CALCED: ") + calced + " " + (property != null ? property.getRecDepends() : "" ) );
+        boolean match = BaseUtils.hashEquals(cached, calced);
+        if(!match)
+            match = match;
+        ServerLoggers.hExInfoLogger.info(jp.getThis() + " " + action + " " + (match ? " MATCH " : "NOMATCH CACHED : " + cached + " CALCED: ") + calced + " " + (property != null ? property.getRecDepends() : "" ) );
     }
 
     private static ThreadLocal<Boolean> recursiveUsedChanges = new ThreadLocal<>();

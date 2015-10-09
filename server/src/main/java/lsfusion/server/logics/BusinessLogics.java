@@ -954,24 +954,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     private void fillActionChangeProps() { // используется только для getLinks, соответственно построения лексикографики и поиска зависимостей
-        Map<OldProperty, Pair<PrevScope, ActionProperty>> prevs = new HashMap<>();
-
         for (Property property : getOrderProperties()) {
             if (property instanceof ActionProperty && !((ActionProperty) property).getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
                 ImMap<CalcProperty, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++) // вообще говоря DataProperty и IsClassProperty
                     change.getKey(i).addActionChangeProp(new Pair<Property<?>, LinkType>((ActionProperty)property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
-
-                final ActionProperty<?> action = (ActionProperty<?>) property;
-                final ImSet<SessionCalcProperty> sessionCalcDepends = action.getSessionCalcDepends(false);
-
-                for(SessionCalcProperty calc : sessionCalcDepends) {
-                    PrevScope scope = calc.scope;
-
-                    Pair<PrevScope, ActionProperty> already = prevs.put(calc.getOldProperty(), new Pair<PrevScope, ActionProperty>(scope, action));
-                    if(already != null && already.first != scope)
-                        System.out.println(already.second + " " + action + " " + calc);
-                }
             }
         }
     }
@@ -1252,23 +1239,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (Property property : list)
             if (property instanceof ActionProperty && (sessionEnv = ((ActionProperty) property).getSessionEnv(SystemEvent.SESSION))!=null)
                 mResult.exclAdd((ActionProperty) property, sessionEnv);
-        final ImOrderMap<ActionProperty, SessionEnvEvent> result = mResult.immutableOrder();
-
-        for(int i=0,size=result.size();i<size;i++) {
-            final ActionProperty<?> action = result.getKey(i);
-            final ImSet<SessionCalcProperty> sessionCalcDepends = action.getSessionCalcDepends(false);
-            for(SessionCalcProperty calc : sessionCalcDepends) {
-                if(calc instanceof OldProperty) {
-                    if(calc.scope == PrevScope.EVENT)
-                        calc = calc;
-                } else {
-                    if(calc.scope == PrevScope.DB)
-                        calc = calc;
-                }
-            }
-        }
-
-        return result;
+        return mResult.immutableOrder();
     }
 
     @IdentityLazy
