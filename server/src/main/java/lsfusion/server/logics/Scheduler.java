@@ -239,7 +239,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                 String parameter = (String) propertyValues.get("parameterScheduledTaskDetail");
                 List<String> params = new ArrayList<>();
                 if(parameter != null) {
-                    for(String param : parameter.split(";"))
+                    for(String param : parameter.split(","))
                         params.add(param);
                 }
                 Integer orderProperty = (Integer) propertyValues.get("orderScheduledTaskDetail");
