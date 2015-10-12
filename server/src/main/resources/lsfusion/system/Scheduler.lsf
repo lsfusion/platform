@@ -82,7 +82,15 @@ dateScheduledClientTaskLog 'Время'= DATA DATETIME (ScheduledClientTaskLog);
 isMessagesScheduledTaskLog 'Сообщения' (stl)= TRUE IF [=GROUP SUM 1 IF messageScheduledClientTaskLog(stcl) BY scheduledTaskLogScheduledClientTaskLog(stcl)](stl) AND NOT exceptionOccurredScheduledTaskLog(stl);
 
 stopScheduler 'Остановить планировщик' = ACTION CUSTOM 'lsfusion.server.StopSchedulerActionProperty' ();
+stopSchedulerApply 'Остановить планировщик' = ACTION {
+    stopScheduler();
+    apply();
+}
 runSetupScheduler 'Запустить планировщик' = ACTION CUSTOM 'lsfusion.server.SetupSchedulerActionProperty' ();
+runSetupSchedulerApply 'Запустить планировщик' = ACTION {
+    runSetupScheduler();
+    apply();
+}
 isStartedScheduler 'Запущен'  = DATA BOOLEAN ();
 isStoppedScheduler 'Остановлен' () = NOT isStartedScheduler();
 
@@ -99,7 +107,7 @@ changedScheduler () = GROUP SUM 1 IF (((CHANGED (runAtStartScheduledTask(t)) OR 
                                          OR CHANGED (scheduledTaskScheduledTaskDetail(td)) OR CHANGED (propertyScheduledTaskDetail(td)) 
                                          OR CHANGED (ignoreExceptionsScheduledTaskDetail(td)) OR CHANGED (timeoutScheduledTaskDetail(td)) OR CHANGED (parameterScheduledTaskDetail(td)))
                                          AND activeScheduledTask(scheduledTaskScheduledTaskDetail(td))) OR 
-                                                CHANGED(inDOWScheduledTask(dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail;
+                                                CHANGED(inDOWScheduledTask(dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW;
                                          ;
 WHEN changedScheduler() DO EXEC runSetupScheduler();
 WHEN DROPPED (td IS ScheduledTaskDetail) IF PREV(activeScheduledTaskDetail(td)) AND isStartedScheduler() DO EXEC runSetupScheduler();
@@ -130,7 +138,7 @@ FORM scheduledTask 'Планировщик'
     PROPERTIES (dow) numberDOW, staticCaption 
     PROPERTIES (dow, t) inDOWScheduledTask 
     
-    PROPERTIES () stopScheduler SHOWIF isStartedScheduler() TOOLBAR, runSetupScheduler SHOWIF isStoppedScheduler() TOOLBAR
+    PROPERTIES () stopSchedulerApply SHOWIF isStartedScheduler() TOOLBAR, runSetupSchedulerApply SHOWIF isStoppedScheduler() TOOLBAR
     
     ORDER BY numberDOW(dow)
     
@@ -156,6 +164,9 @@ DESIGN scheduledTask {
                     panelCaptionAbove = TRUE;
                     fill = 0.5;
                 }
+                PROPERTY(parameterScheduledTaskDetail(td)) {
+                    preferredSize = (-1, 18);
+                }
             }
             NEW logContainer {
                 caption = 'Лог';
@@ -176,8 +187,8 @@ DESIGN scheduledTask {
     NEW bottom {
         type = CONTAINERH;
         align = TRAILING;
-        MOVE PROPERTY(runSetupScheduler());
-        MOVE PROPERTY(stopScheduler());
+        MOVE PROPERTY(runSetupSchedulerApply());
+        MOVE PROPERTY(stopSchedulerApply());
     }
     MOVE functions.box;
 }

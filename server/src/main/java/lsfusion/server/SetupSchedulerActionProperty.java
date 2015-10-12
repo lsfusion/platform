@@ -9,7 +9,6 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 
@@ -31,10 +30,7 @@ public class SetupSchedulerActionProperty extends ScriptingActionProperty {
             } else {
                 context.delayUserInteraction(new MessageClientAction("Scheduler disabled, change serverComputer() to enable", "Scheduler disabled"));
             }
-            try (DataSession session = context.createSession()) {
-                findProperty("isStartedScheduler").change(isServer ? true : null, session);
-                session.apply(context.getBL());
-            }
+            findProperty("isStartedScheduler").change(isServer ? true : null, context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

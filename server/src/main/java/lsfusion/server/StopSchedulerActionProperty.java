@@ -8,7 +8,6 @@ import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
-import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 
@@ -22,9 +21,8 @@ public class StopSchedulerActionProperty extends ScriptingActionProperty {
     @Override
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         context.getLogicsInstance().getCustomObject(Scheduler.class).stopScheduledTasks();
-        try(DataSession session = context.createSession()) {
-            findProperty("isStartedScheduler").change((Object) null, session);
-            session.apply(context.getBL());
+        try {
+            findProperty("isStartedScheduler").change((Object) null, context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
