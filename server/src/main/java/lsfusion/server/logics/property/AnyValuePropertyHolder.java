@@ -13,6 +13,7 @@ import java.sql.SQLException;
 public class AnyValuePropertyHolder {
     private final LCP objectProperty;
     private final LCP stringProperty;
+    private final LCP textProperty;
     private final LCP intProperty;
     private final LCP longProperty;
     private final LCP doubleProperty;
@@ -29,11 +30,12 @@ public class AnyValuePropertyHolder {
     private final LCP customFileProperty;
     private final LCP excelFileProperty;
 
-    public AnyValuePropertyHolder(LCP objectProperty, LCP stringProperty, LCP intProperty, LCP longProperty, LCP doubleProperty, LCP numericProperty, LCP yearProperty,
+    public AnyValuePropertyHolder(LCP objectProperty, LCP stringProperty, LCP textProperty, LCP intProperty, LCP longProperty, LCP doubleProperty, LCP numericProperty, LCP yearProperty,
                                   LCP dateTimeProperty, LCP logicalProperty, LCP dateProperty, LCP timeProperty, LCP colorProperty, LCP wordFileProperty, LCP imageFileProperty,
                                   LCP pdfFileProperty, LCP customFileProperty, LCP excelFileProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && stringProperty.property.getType().getCompatible(StringClass.get(1))!=null
+                && textProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && intProperty.property.getType() == IntegerClass.instance
                 && longProperty.property.getType() == LongClass.instance
                 && doubleProperty.property.getType() == DoubleClass.instance
@@ -53,6 +55,7 @@ public class AnyValuePropertyHolder {
 
         this.objectProperty = objectProperty;
         this.stringProperty = stringProperty;
+        this.textProperty = textProperty;
         this.intProperty = intProperty;
         this.longProperty = longProperty;
         this.doubleProperty = doubleProperty;
@@ -74,6 +77,9 @@ public class AnyValuePropertyHolder {
         if (valueType instanceof ObjectType) {
             return objectProperty;
         } else if (valueType instanceof StringClass) {
+            if (valueType == StringClass.text) {
+                return textProperty;
+            }
             return stringProperty;
         } else if (valueType instanceof IntegerClass) {
             return intProperty;

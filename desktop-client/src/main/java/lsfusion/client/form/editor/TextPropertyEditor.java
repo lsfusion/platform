@@ -36,7 +36,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
     }
 
     public TextPropertyEditor(Component owner, Object value, ComponentDesign design) {
-        textArea = new JTextArea((String) value);
+        textArea = new JTextArea(value != null ? value.toString() : "");
         textArea.setWrapStyleWord(true);
         textArea.setLineWrap(true);
 

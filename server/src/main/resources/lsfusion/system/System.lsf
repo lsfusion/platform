@@ -121,6 +121,7 @@ importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);
 META defineAnyValue(name, param) 
     name##Object = DATA LOCAL Object (param);
     name##String = DATA LOCAL STRING[2000] (param);
+    name##Text = DATA LOCAL TEXT (param);
     name##Integer = DATA LOCAL INTEGER (param);
     name##Long = DATA LOCAL LONG (param);
     name##Double = DATA LOCAL DOUBLE (param);

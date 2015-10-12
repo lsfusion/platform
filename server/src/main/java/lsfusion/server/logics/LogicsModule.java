@@ -1521,6 +1521,7 @@ public abstract class LogicsModule {
         return new AnyValuePropertyHolder(
                 getLCPByName(sidPrefix + "Object"),
                 getLCPByName(sidPrefix + "String"),
+                getLCPByName(sidPrefix + "Text"),
                 getLCPByName(sidPrefix + "Integer"),
                 getLCPByName(sidPrefix + "Long"),
                 getLCPByName(sidPrefix + "Double"),
