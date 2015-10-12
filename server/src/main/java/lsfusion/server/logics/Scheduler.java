@@ -48,8 +48,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.commons.lang.StringUtils.trim;
+
 public class Scheduler extends LifecycleAdapter implements InitializingBean {
     private static final Logger logger = ServerLoggers.systemLogger;
+    private static final Logger schedulerLogger = Logger.getLogger("SchedulerLogger");
 
     public ScheduledExecutorService daemonTasksExecutor;
 
@@ -171,6 +174,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         ImRevMap<Object, KeyExpr> scheduledTaskKeys = MapFact.<Object, KeyExpr>singletonRev("scheduledTask", scheduledTaskExpr);
 
         QueryBuilder<Object, Object> scheduledTaskQuery = new QueryBuilder<>(scheduledTaskKeys);
+        scheduledTaskQuery.addProperty("nameScheduledTask", BL.schedulerLM.nameScheduledTask.getExpr(modifier, scheduledTaskExpr));
         scheduledTaskQuery.addProperty("runAtStartScheduledTask", BL.schedulerLM.runAtStartScheduledTask.getExpr(modifier, scheduledTaskExpr));
         scheduledTaskQuery.addProperty("startDateScheduledTask", BL.schedulerLM.startDateScheduledTask.getExpr(modifier, scheduledTaskExpr));
         scheduledTaskQuery.addProperty("timeFromScheduledTask", BL.schedulerLM.timeFromScheduledTask.getExpr(modifier, scheduledTaskExpr));
@@ -194,6 +198,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             ImMap<Object, Object> key = scheduledTaskResult.getKey(i);
             ImMap<Object, Object> value = scheduledTaskResult.getValue(i);
             DataObject currentScheduledTaskObject = new DataObject(key.getValue(0), BL.schedulerLM.scheduledTask);
+            String nameScheduledTask = trim((String) value.get("nameScheduledTask"));
             Boolean runAtStart = value.get("runAtStartScheduledTask") != null;
             Timestamp startDate = (Timestamp) value.get("startDateScheduledTask");
             Time timeFrom = (Time) value.get("timeFromScheduledTask");
@@ -250,7 +255,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
             }
 
             if (runAtStart) {
-                daemonTasksExecutor.schedule(new SchedulerTask(propertySIDMap, currentScheduledTaskObject, timeFrom, timeTo, daysOfWeek, daysOfMonth), 0, TimeUnit.MILLISECONDS);
+                daemonTasksExecutor.schedule(new SchedulerTask(nameScheduledTask, currentScheduledTaskObject, propertySIDMap, timeFrom, timeTo, daysOfWeek, daysOfMonth), 0, TimeUnit.MILLISECONDS);
             }
             if (startDate != null) {
                 long start = startDate.getTime();
@@ -262,11 +267,11 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                         start += periods * longPeriod;
                     }
                     if (afterFinish.equals(schedulerStartType))
-                        daemonTasksExecutor.scheduleWithFixedDelay(new SchedulerTask(propertySIDMap, currentScheduledTaskObject, timeFrom, timeTo, daysOfWeek, daysOfMonth), start - currentTime, longPeriod, TimeUnit.MILLISECONDS);
+                        daemonTasksExecutor.scheduleWithFixedDelay(new SchedulerTask(nameScheduledTask, currentScheduledTaskObject, propertySIDMap, timeFrom, timeTo, daysOfWeek, daysOfMonth), start - currentTime, longPeriod, TimeUnit.MILLISECONDS);
                     else
-                        daemonTasksExecutor.scheduleAtFixedRate(new SchedulerTask(propertySIDMap, currentScheduledTaskObject, timeFrom, timeTo, daysOfWeek, daysOfMonth), start - currentTime, longPeriod, TimeUnit.MILLISECONDS);
+                        daemonTasksExecutor.scheduleAtFixedRate(new SchedulerTask(nameScheduledTask, currentScheduledTaskObject, propertySIDMap, timeFrom, timeTo, daysOfWeek, daysOfMonth), start - currentTime, longPeriod, TimeUnit.MILLISECONDS);
                 } else if (start > currentTime) {
-                    daemonTasksExecutor.schedule(new SchedulerTask(propertySIDMap, currentScheduledTaskObject, timeFrom, timeTo, daysOfWeek, daysOfMonth), start - currentTime, TimeUnit.MILLISECONDS);
+                    daemonTasksExecutor.schedule(new SchedulerTask(nameScheduledTask, currentScheduledTaskObject, propertySIDMap, timeFrom, timeTo, daysOfWeek, daysOfMonth), start - currentTime, TimeUnit.MILLISECONDS);
                 }
             }
         }
@@ -278,10 +283,11 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
     }
 
     class SchedulerTask implements Runnable {
+        String nameScheduledTask;
+        private DataObject scheduledTaskObject;
         Time defaultTime = new Time(0, 0, 0);
         Context threadLocalContext;
         TreeMap<Integer, ScheduledTaskDetail> lapMap;
-        private DataObject scheduledTask;
         private Time timeFrom;
         private Time timeTo;
         private Set<String> daysOfWeek;
@@ -290,10 +296,11 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         private DataSession afterFinishLogSession;
         private boolean afterFinishErrorOccurred;
 
-        public SchedulerTask(TreeMap<Integer, ScheduledTaskDetail> lapMap, DataObject scheduledTask, Time timeFrom, Time timeTo, Set<String> daysOfWeek, Set<String> daysOfMonth) {
+        public SchedulerTask(String nameScheduledTask, DataObject scheduledTaskObject, TreeMap<Integer, ScheduledTaskDetail> lapMap, Time timeFrom, Time timeTo, Set<String> daysOfWeek, Set<String> daysOfMonth) {
             this.threadLocalContext = ThreadLocalContext.get();
+            this.nameScheduledTask = nameScheduledTask;
+            this.scheduledTaskObject = scheduledTaskObject;
             this.lapMap = lapMap;
-            this.scheduledTask = scheduledTask;
             this.timeFrom = timeFrom == null ? defaultTime : timeFrom;
             this.timeTo = timeTo == null ? defaultTime : timeTo;
             this.daysOfWeek = daysOfWeek;
@@ -303,7 +310,12 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
         public void run() {
             ExecuteLAPThread worker = null;
             try {
-                if(isTimeToRun(timeFrom, timeTo, daysOfWeek, daysOfMonth)) {
+                boolean isTimeToRun = isTimeToRun(timeFrom, timeTo, daysOfWeek, daysOfMonth);
+                schedulerLogger.info(String.format("Task %s. TimeFrom %s, TimeTo %s, daysOfWeek %s, daysOfMonth %s. %s",
+                        nameScheduledTask, timeFrom == null ? "-" : timeFrom, timeTo == null ? "-" : timeTo,
+                        daysOfWeek.isEmpty() ? "-" : daysOfWeek, daysOfMonth.isEmpty() ? "-" : daysOfMonth,
+                        isTimeToRun ? "Started successful" : "Not started due to conditions"));
+                if(isTimeToRun) {
                     for (ScheduledTaskDetail detail : lapMap.values()) {
                         if (detail != null) {
 
@@ -314,10 +326,10 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                                 if(ThreadLocalContext.get() == null)
                                     ThreadLocalContext.set(threadLocalContext);
                                 ThreadUtils.interruptThread(afterFinishLogSession.sql, worker);
-                                logger.error("Timeout error while running scheduler task (in executeLAP()) " + detail.lap.property.caption);
+                                schedulerLogger.error("Timeout error while running scheduler task (in executeLAP()) " + detail.lap.property.caption);
                                 try (DataSession timeoutLogSession = dbManager.createSession(getLogSql())){
                                     DataObject timeoutScheduledTaskLogFinishObject = timeoutLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
-                                    BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) timeoutLogSession, timeoutScheduledTaskLogFinishObject);
+                                    BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) timeoutLogSession, timeoutScheduledTaskLogFinishObject);
                                     BL.schedulerLM.propertyScheduledTaskLog.change(detail.lap.property.caption + " (" + detail.lap.property.getSID() + ")", timeoutLogSession, timeoutScheduledTaskLogFinishObject);
                                     BL.schedulerLM.resultScheduledTaskLog.change("Timeout error", timeoutLogSession, timeoutScheduledTaskLogFinishObject);
                                     BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, timeoutLogSession, timeoutScheduledTaskLogFinishObject);
@@ -325,7 +337,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
                                     timeoutLogSession.apply(BL);
                                 } catch (Exception ie) {
-                                    logger.error("Error while reporting exception in scheduler task (in executeLAPThread) " + detail.lap.property.caption + " : ", ie);
+                                    schedulerLogger.error("Error while reporting exception in scheduler task (in executeLAPThread) " + detail.lap.property.caption + " : ", ie);
                                 }
 
                             }
@@ -341,7 +353,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     } catch (SQLException | SQLHandledException ignored) {
                     }
                 }
-                logger.error("Error while running scheduler task (in SchedulerTask.run()):", e);
+                schedulerLogger.error("Error while running scheduler task (in SchedulerTask.run()):", e);
             }
         }
 
@@ -385,7 +397,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     if (executeLAP(detail))
                         exit = 0;
                 } catch (SQLException | SQLHandledException e) {
-                    logger.error("Error while running scheduler task (in ExecuteLAPThread):", e);
+                    schedulerLogger.error("Error while running scheduler task (in ExecuteLAPThread):", e);
                 }
             }
 
@@ -398,7 +410,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                     afterFinishErrorOccurred = false;
                     currentScheduledTaskLogFinishObject = afterFinishLogSession.addObject(BL.schedulerLM.scheduledTaskLog);
                     try {
-                        BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) beforeStartLogSession, currentScheduledTaskLogStartObject);
+                        BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) beforeStartLogSession, currentScheduledTaskLogStartObject);
                         BL.schedulerLM.propertyScheduledTaskLog.change(detail.lap.property.caption + " (" + detail.lap.property.getSID() + ")", beforeStartLogSession, currentScheduledTaskLogStartObject);
                         BL.schedulerLM.dateScheduledTaskLog.change(new Timestamp(System.currentTimeMillis()), beforeStartLogSession, currentScheduledTaskLogStartObject);
                         BL.schedulerLM.resultScheduledTaskLog.change("Запущено" + (detail.script == null ? "" : (" " + BaseUtils.truncate(detail.script, 191))), beforeStartLogSession, currentScheduledTaskLogStartObject);
@@ -429,7 +441,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                             }
                             String applyResult = mainSession.applyMessage(BL);
 
-                            BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                            BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
                             BL.schedulerLM.propertyScheduledTaskLog.change(detail.lap.property.caption + " (" + detail.lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
                             BL.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? (afterFinishErrorOccurred ? "Выполнено с ошибками" : "Выполнено успешно") : BaseUtils.truncate(applyResult, 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
                             if (applyResult != null)
@@ -441,17 +453,17 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
                             String finishResult = afterFinishLogSession.applyMessage(BL);
                             if (finishResult != null)
-                                logger.error("Error while saving scheduler task result " + detail.lap.property.caption + " : " + finishResult);
+                                schedulerLogger.error("Error while saving scheduler task result " + detail.lap.property.caption + " : " + finishResult);
                             return applyResult == null || detail.ignoreExceptions;
                         }
                     } catch (Exception e) {
                         //not timeout exception
                         if (e.getMessage() == null || !e.getMessage().contains("FATAL: terminating connection due to administrator command")) {
-                            logger.error("Error while running scheduler task (in executeLAP()) " + detail.lap.property.caption + " : ", e);
+                            schedulerLogger.error("Error while running scheduler task (in executeLAP()) " + detail.lap.property.caption + " : ", e);
 
                             try {
                                 Timestamp time = new Timestamp(System.currentTimeMillis());
-                                BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTask, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
+                                BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
                                 BL.schedulerLM.propertyScheduledTaskLog.change(detail.lap.property.caption + " (" + detail.lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
                                 BL.schedulerLM.resultScheduledTaskLog.change(BaseUtils.truncate(String.valueOf(e), 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
                                 BL.schedulerLM.exceptionOccurredScheduledTaskLog.change(true, afterFinishLogSession, currentScheduledTaskLogFinishObject);
@@ -465,7 +477,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
 
                                 afterFinishLogSession.apply(BL);
                             } catch (Exception ie) {
-                                logger.error("Error while reporting exception in scheduler task (in executeLAPThread) " + detail.lap.property.caption + " : ", ie);
+                                schedulerLogger.error("Error while reporting exception in scheduler task (in executeLAPThread) " + detail.lap.property.caption + " : ", ie);
                             }
                         }
                         return detail.ignoreExceptions;
@@ -503,7 +515,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                 try {
                     super.delayUserInteraction(action);
                 } catch (Exception e) {
-                    logger.error("Error while executing delayUserInteraction in SchedulerContext", e);
+                    schedulerLogger.error("Error while executing delayUserInteraction in SchedulerContext", e);
                     afterFinishErrorOccurred = true;
                 }
             }

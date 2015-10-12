@@ -14,6 +14,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public ConcreteCustomClass scheduledTaskLog;
     public ConcreteCustomClass scheduledClientTaskLog;
 
+    public LCP nameScheduledTask;
     public LCP runAtStartScheduledTask;
     public LCP startDateScheduledTask;
     public LCP timeFromScheduledTask;
@@ -63,6 +64,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public void initProperties() throws RecognitionException {
         super.initProperties();
 
+        nameScheduledTask = findProperty("nameScheduledTask");
         runAtStartScheduledTask = findProperty("runAtStartScheduledTask");
         startDateScheduledTask = findProperty("startDateScheduledTask");
         timeFromScheduledTask = findProperty("timeFromScheduledTask");
