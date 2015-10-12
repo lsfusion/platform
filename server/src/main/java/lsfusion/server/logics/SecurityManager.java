@@ -263,7 +263,12 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
     }
 
     public User readUser(String login, DataSession session) throws SQLException, SQLHandledException {
-        Integer userId = (Integer) authenticationLM.customUserLogin.read(session, new DataObject(login, StringClass.get(30)));
+        return readUser(login, false, session);
+    }
+
+    public User readUser(String login, boolean insensitive, DataSession session) throws SQLException, SQLHandledException {
+        Integer userId = insensitive ? (Integer) authenticationLM.customUserUpcaseLogin.read(session, new DataObject(login.toUpperCase(), StringClass.get(30))) :
+                (Integer) authenticationLM.customUserLogin.read(session, new DataObject(login, StringClass.get(30)));
         if (userId == null) {
             return null;
         }
@@ -352,10 +357,8 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
 
     public User authenticateUser(DataSession session, String login, String password) throws SQLException, SQLHandledException {
         boolean needAuthentication = true;
-
-        User user = readUser(login, session);
-
         boolean useLDAP = authenticationLM.useLDAP.read(session) != null;
+        User user = readUser(login, useLDAP, session);
         if (useLDAP) {
             String server = (String) authenticationLM.serverLDAP.read(session);
             Integer port = (Integer) authenticationLM.portLDAP.read(session);

@@ -26,7 +26,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LCP isLockedCustomUser;
     public LCP loginCustomUser;
+    public LCP upcaseLoginCustomUser;
     public LCP customUserLogin;
+    public LCP customUserUpcaseLogin;
     public LCP sha256PasswordCustomUser;
     public LCP calculatedHash;
     public LCP lastActivityCustomUser;
@@ -89,6 +91,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         loginCustomUser = findProperty("loginCustomUser");
         customUserLogin = findProperty("customUserLogin");
+        upcaseLoginCustomUser = findProperty("upcaseLoginCustomUser");
+        customUserUpcaseLogin = findProperty("customUserUpcaseLogin");
 
         sha256PasswordCustomUser = findProperty("sha256PasswordCustomUser");
         sha256PasswordCustomUser.setEchoSymbols(true);
