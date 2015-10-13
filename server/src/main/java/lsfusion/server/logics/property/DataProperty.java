@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
+import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
@@ -168,6 +169,13 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     protected void fillDepends(MSet<CalcProperty> depends, boolean events) { // для Action'а связь считается слабой
         if(events && event != null)
             depends.addAll(event.getDepends());
+//        if(!noClasses()) {
+//            for (ClassPropertyInterface remove : interfaces)
+//                if (remove.interfaceClass instanceof CustomClass)
+//                    depends.add(((CustomClass) remove.interfaceClass).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
+//            if (value instanceof CustomClass)
+//                depends.add(((CustomClass) value).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
+//        }
     }
 
     @Override

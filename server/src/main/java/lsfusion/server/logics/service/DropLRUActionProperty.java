@@ -11,15 +11,29 @@ import lsfusion.server.logics.scripted.ScriptingActionProperty;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.sql.SQLException;
+import java.util.Iterator;
 
 public class DropLRUActionProperty extends ScriptingActionProperty {
 
+    private final ClassPropertyInterface percentInterface;
+    private final ClassPropertyInterface randomInterface;
+
     public DropLRUActionProperty(ServiceLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
+
+        Iterator<ClassPropertyInterface> i = interfaces.iterator();
+        percentInterface = i.next();
+        randomInterface = i.next();
+
     }
 
     @Override
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        ALRUMap.forceRemoveAllLRU(((Double) context.getSingleDataKeyValue().object)/100.0);
+        final double percent = ((Double) context.getDataKeyValue(percentInterface).object) / 100.0;
+        if(context.getDataKeyValue(randomInterface).object != null) {
+            ALRUMap.forceRandomRemoveAllLRU(percent);
+        } else {
+            ALRUMap.forceRemoveAllLRU(percent);
+        }
     }
 }

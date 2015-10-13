@@ -88,6 +88,10 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
             public Type getType(int i) {
                 return params.get(i).getType(where);
             }
+
+            public boolean isToString() {
+                return true;
+            }
         });
     }
     public static String getSource(FormulaExprInterface expr, final CompileSource compile) {

@@ -557,7 +557,7 @@ public class Query<K,V> extends IQuery<K,V> {
     }
 
     public String toString() {
-        return "JQ";
+        return "{" + properties + "," + where + "," + mapKeys + "}";
     }
 
     protected boolean isComplex() {

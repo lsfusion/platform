@@ -39,6 +39,8 @@ import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.session.StructChanges;
 
+import java.util.Arrays;
+
 @Aspect
 public class MapCacheAspect {
     private final static Logger logger = Logger.getLogger(MapCacheAspect.class);
@@ -167,7 +169,7 @@ public class MapCacheAspect {
         boolean match = BaseUtils.hashEquals(cached, calced);
         if(!match)
             match = match;
-        ServerLoggers.hExInfoLogger.info(jp.getThis() + " " + action + " " + (match ? " MATCH " : "NOMATCH CACHED : " + cached + " CALCED: ") + calced + " " + (property != null ? property.getRecDepends() : "" ) );
+        ServerLoggers.hExInfoLogger.info(jp.getThis() + " " + action + " " + (match ? " MATCH " : "NOMATCH CACHED : " + cached + " CALCED: ") + calced + " ARGS " + Arrays.toString(jp.getArgs()) + (property != null ? "DEP " + property.getRecDepends() : "" ) );
     }
 
     private static ThreadLocal<Boolean> recursiveUsedChanges = new ThreadLocal<>();

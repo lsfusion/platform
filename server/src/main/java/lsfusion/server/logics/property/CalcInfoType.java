@@ -7,6 +7,10 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 // вычисление empty, full, notnull, классов
 public class CalcInfoType extends CalcClassType implements AlgInfoType {
 
+    public CalcInfoType(String caption) {
+        super(caption);
+    }
+
     public <P extends PropertyInterface> boolean isEmpty(CalcProperty<P> property) {
         return property.calcEmpty(this);
     }

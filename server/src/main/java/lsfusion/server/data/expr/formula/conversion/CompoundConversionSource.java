@@ -13,10 +13,10 @@ public class CompoundConversionSource implements ConversionSource {
     }
 
     @Override
-    public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env) {
+    public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {
         String result = null;
         for (ConversionSource conversionSource : conversionSources) {
-            result = conversionSource.getSource(type1, type2, src1, src2, syntax, env);
+            result = conversionSource.getSource(type1, type2, src1, src2, syntax, env, isToString);
             if (result != null) {
                 break;
             }

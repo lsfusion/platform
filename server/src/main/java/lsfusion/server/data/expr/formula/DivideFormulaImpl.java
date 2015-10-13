@@ -26,10 +26,10 @@ public class DivideFormulaImpl extends ArithmeticFormulaImpl {
         }
 
         @Override
-        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env) {
+        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {
             Type type = conversion.getType(type1, type2);
-            if (type != null) {
-                if(Settings.get().isUseSafeDivision()) {
+            if (type != null || isToString) {
+                if(Settings.get().isUseSafeDivision() && !isToString) {
                     return "(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")";
                 } else {
                     return "(" + src1 + "/" + src2 + ")";

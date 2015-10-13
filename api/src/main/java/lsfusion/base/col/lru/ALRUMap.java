@@ -1,5 +1,6 @@
 package lsfusion.base.col.lru;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Processor;
 import lsfusion.base.WeakIdentityHashSet;
 import lsfusion.base.col.ListFact;
@@ -105,8 +106,18 @@ public abstract class ALRUMap<E extends ALRUMap.AEntry<E>, S extends ALRUMap.ASe
         for(ALRUMap map : allMaps)
             map.forceRemoveLRU(percent);
     }
-    
+
+    public static void forceRandomRemoveAllLRU(double percent) {
+        for(ALRUMap map : allMaps)
+            map.forceRemoveLRU(percent);
+    }
+
     protected void forceRemoveLRU(double percent) {
+        for(S seg : segments)
+            seg.forceRemoveLRU(percent);
+    }
+
+    protected void forceRandomRemoveLRU(double percent) {
         for(S seg : segments)
             seg.forceRemoveLRU(percent);
     }
@@ -254,7 +265,26 @@ public abstract class ALRUMap<E extends ALRUMap.AEntry<E>, S extends ALRUMap.ASe
                 changeLock.unlock();
             }
         }
-        
+
+        protected void forceRandomRemoveLRU(double percent) {
+            changeLock.lock();
+            try {
+                int kept = 0;
+                int dropped = 0;
+                E last = tail.getBefore();
+                while (head != tail) {
+                    assert last != tail;
+                    if(dropped == 0 || ((double)kept / (double)(kept + dropped)) > percent) {
+                        last = removeLRU(last);
+                        dropped++;
+                    } else
+                        kept++;
+                }
+            } finally {
+                changeLock.unlock();
+            }
+        }
+
         protected void proceedSafeLockLRUEntries(Processor<E> processor) {
             changeLock.lock();
             MAddCol<E> entries = ListFact.mAddCol(size);

@@ -9,11 +9,12 @@ import lsfusion.server.data.where.classes.ClassWhere;
 
 public class CalcClassType extends CalcType implements AlgType {
 
-    public final static CalcInfoType PREVBASE = new CalcInfoType(); // определение классов, prev'ы имеют base классы (что правильно, но не удобно) 
-    public final static CalcClassType PREVSAME = new CalcClassType(); // определение классов, где prev'ы имеют те же классы (а не OBJECT)
-    public final static CalcClassType PREVSAME_KEEPIS = new CalcClassType(); // тоже самое что и сверху, но с IS'ами нужно для одной эвристики 
+    public final static CalcInfoType PREVBASE = new CalcInfoType("PREVBASE"); // определение классов, prev'ы имеют base классы (что правильно, но не удобно)
+    public final static CalcClassType PREVSAME = new CalcClassType("PREVSAME"); // определение классов, где prev'ы имеют те же классы (а не OBJECT)
+    public final static CalcClassType PREVSAME_KEEPIS = new CalcClassType("PREVSAME_KEEPIS"); // тоже самое что и сверху, но с IS'ами нужно для одной эвристики
 
-    public CalcClassType() {
+    public CalcClassType(String caption) {
+        super(caption);
     }
 
     public <P extends PropertyInterface> ClassWhere<Object> getClassValueWhere(CalcProperty<P> property) {

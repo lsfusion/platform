@@ -11,4 +11,6 @@ public interface ExprSource extends ExprType {
     SQLSyntax getSyntax();
 
     MStaticExecuteEnvironment getMEnv();
+
+    boolean isToString();
 }

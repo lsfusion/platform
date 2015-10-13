@@ -35,9 +35,9 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
         }
 
         @Override
-        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env) {
+        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {
             Type type = conversion.getType(type1, type2);
-            if (type != null) {
+            if (type != null || isToString) {
                 return "(" + src1 + "+" + src2 + ")";
             }
             return null;
@@ -52,7 +52,10 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
         }
 
         @Override
-        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env) {
+        public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {
+            if(isToString)
+                return "(" + src1 + "+" + src2 + ")";
+
             Type type = conversion.getType(type1, type2);
             if (type != null) {
                 if (!(type1 instanceof StringClass)) {

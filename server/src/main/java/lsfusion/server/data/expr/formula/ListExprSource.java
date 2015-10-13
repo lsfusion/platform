@@ -31,4 +31,8 @@ public abstract class ListExprSource extends ContextListExprType implements Expr
     public KeyType getKeyType() {
         return getCompileSource().keyType;
     }
+
+    public boolean isToString() {
+        return false;
+    }
 }

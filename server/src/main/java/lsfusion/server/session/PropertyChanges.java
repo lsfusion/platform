@@ -22,6 +22,11 @@ public class PropertyChanges extends AbstractValuesContext<PropertyChanges> {
 
     private final ImMap<CalcProperty, ModifyChange> changes;
 
+    @Override
+    public String toString() {
+        return changes.toString();
+    }
+
     public PropertyChanges(ImMap<CalcProperty, ModifyChange> changes) {
         this.changes = changes;
     }

@@ -39,7 +39,12 @@ public class StructChanges extends TwinImmutableObject {
     };
 
     private final ImMap<CalcProperty, ChangeType> changes;
-    
+
+    @Override
+    public String toString() {
+        return changes.toString();
+    }
+
     private StructChanges(StructChanges changes1, StructChanges changes2) {
         changes = changes1.changes.merge(changes2.changes, addValue);
     }
