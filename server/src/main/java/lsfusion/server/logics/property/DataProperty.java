@@ -7,9 +7,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.IdentityInstanceLazy;
-import lsfusion.server.caches.IdentityStartLazy;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.expr.Expr;
@@ -167,47 +165,22 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
 
     @Override
     protected void fillDepends(MSet<CalcProperty> depends, boolean events) { // для Action'а связь считается слабой
-        if(events && event != null)
-            depends.addAll(event.getDepends());
-//        if(!noClasses()) {
-//            for (ClassPropertyInterface remove : interfaces)
-//                if (remove.interfaceClass instanceof CustomClass)
-//                    depends.add(((CustomClass) remove.interfaceClass).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
-//            if (value instanceof CustomClass)
-//                depends.add(((CustomClass) value).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
-//        }
-    }
-
-    @Override
-    public ImSet<CalcProperty> calculateRecDepends() { // именно в recdepends, потому как в depends "порушиться"
-        ImSet<CalcProperty> result = super.calculateRecDepends();
-        if(!noClasses()) {
-            result = result.merge(interfaces.mapMergeSetValues(new GetValue<CalcProperty, ClassPropertyInterface>() {
-                public CalcProperty getMapValue(ClassPropertyInterface value) {
-                    return value.interfaceClass.getProperty();
-                }
-            })).merge(value.getProperty());
+        if(events) {
+            if (event != null)
+                depends.addAll(event.getDepends());
+            if (!noClasses()) {
+                for (ClassPropertyInterface remove : interfaces)
+                    if (remove.interfaceClass instanceof CustomClass)
+                        depends.add(((CustomClass) remove.interfaceClass).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
+                if (value instanceof CustomClass)
+                    depends.add(((CustomClass) value).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
+            }
         }
-        return result;
     }
 
     @Override
     protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents) {
-        MCol<Pair<Property<?>, LinkType>> mResult = ListFact.mCol();
-
-        mResult.addAll(getActionChangeProps()); // только у Data и IsClassProperty
-        if(!noClasses()) {
-            MSet<ChangedProperty> mRemoveDepends = SetFact.mSet();
-            for (ClassPropertyInterface remove : interfaces)
-                if (remove.interfaceClass instanceof CustomClass)
-                    mRemoveDepends.add(((CustomClass) remove.interfaceClass).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
-            if (value instanceof CustomClass)
-                mRemoveDepends.add(((CustomClass) value).getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
-            for (CalcProperty property : mRemoveDepends.immutable())
-                mResult.add(new Pair<Property<?>, LinkType>(property, LinkType.DEPEND));
-        }
-
-        return super.calculateLinks(calcEvents).mergeCol(mResult.immutableCol()); // чтобы удаления классов зацеплять
+        return super.calculateLinks(calcEvents).mergeCol(getActionChangeProps()); // только у Data и IsClassProperty
     }
 
     // не сильно структурно поэтому вынесено в метод

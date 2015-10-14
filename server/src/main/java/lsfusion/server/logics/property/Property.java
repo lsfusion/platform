@@ -426,13 +426,16 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         links = null;
     }
     public abstract ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events);
+    public ImSet<SessionCalcProperty> getSessionCalcDepends() {
+        return getSessionCalcDepends(true);
+    }
+
     public abstract ImSet<OldProperty> getParseOldDepends(); // именно так, а не через getSessionCalcDepends, так как может использоваться до инициализации логики
 
     public ImSet<OldProperty> getOldDepends() {
-        return getOldDepends(false);
-    }
-    public ImSet<OldProperty> getOldDepends(boolean events) {
-        return getSessionCalcDepends(events).mapMergeSetValues(new GetValue<OldProperty, SessionCalcProperty>() {
+        // без событий, так как либо используется в глобальных событиях когда вычисляемые события \ удаления отдельно отрабатываются
+        // в локальных же событиях вычисляемые и должны браться на начало сессии
+        return getSessionCalcDepends(false).mapMergeSetValues(new GetValue<OldProperty, SessionCalcProperty>() {
             public OldProperty getMapValue(SessionCalcProperty value) {
                 return value.getOldProperty();
             }});

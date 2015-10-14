@@ -261,7 +261,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             Boolean rec = used.getValue(i);
 
             // эвристика : усилим связи к session calc, предполагается 
-            ImSet<SessionCalcProperty> calcDepends = property.getSessionCalcDepends(true);
+            ImSet<SessionCalcProperty> calcDepends = property.getSessionCalcDepends();
             for(int j=0,sizeJ=calcDepends.size();j<sizeJ;j++)
                 mResult.add(new Pair<Property<?>, LinkType>(calcDepends.get(j), rec ? LinkType.RECEVENT : LinkType.EVENTACTION));
 
@@ -462,7 +462,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     @IdentityLazy
     public ImSet<SessionCalcProperty> getGlobalEventSessionCalcDepends() { // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
         assert getSessionEnv(SystemEvent.APPLY) != null;
-        return getSessionCalcDepends(true);
+        return getSessionCalcDepends();
     }
 
     private ActionPropertyMapImplement<?, P> callCompile(boolean forExecution) {

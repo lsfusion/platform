@@ -702,7 +702,7 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
 
     @IdentityLazy
     public ImMap<CalcProperty, Boolean> getSetOrDroppedDepends() {
-        ImSet<SessionCalcProperty> sessionDepends = getSessionCalcDepends(true);
+        ImSet<SessionCalcProperty> sessionDepends = getSessionCalcDepends();
         MMap<CalcProperty, Boolean> mResult = MapFact.mMap(addSetOrDropped);
         for(int i=0,size=sessionDepends.size();i<size;i++) {
             SessionCalcProperty property = sessionDepends.get(i);
