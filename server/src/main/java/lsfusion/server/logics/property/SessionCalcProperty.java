@@ -30,6 +30,6 @@ public abstract class SessionCalcProperty<T extends PropertyInterface> extends S
 
     @Override
     public ImSet<SessionCalcProperty> getSessionCalcDepends(boolean events) {
-        return SetFact.<SessionCalcProperty>singleton(this);
+        return super.getSessionCalcDepends(events).addExcl(this); // вызываем super так как могут быть вычисляемые события внутри (желательно для SetOrDropped оптимизации)
     }
 }

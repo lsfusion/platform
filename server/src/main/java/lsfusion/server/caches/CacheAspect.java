@@ -164,6 +164,38 @@ public class CacheAspect {
     }
 
 //    public final static SoftHashMap<IdentityInvocation, Object> lazyIdentityExecute = new SoftHashMap<IdentityInvocation, Object>();
+    private static class ConcurrentIdentityInvocationWeakMap {
+        private final int segmentShift;
+        private final int segmentMask;
+        private final IdentityInvocationWeakMap[] segments;
+
+        public ConcurrentIdentityInvocationWeakMap() {
+
+            final int DEFAULT_CONCURRENCY_LEVEL = 16;
+            int sshift = 0;
+            int ssize = 1;
+            while (ssize < DEFAULT_CONCURRENCY_LEVEL) {
+                ++sshift;
+                ssize <<= 1;
+            }
+            segmentShift = 32 - sshift;
+            segmentMask = ssize - 1;
+            this.segments = new IdentityInvocationWeakMap[DEFAULT_CONCURRENCY_LEVEL];
+
+            for (int i = 0; i < segments.length; i++)
+                segments[i] = new IdentityInvocationWeakMap();
+        }
+
+        private IdentityInvocationWeakMap segmentFor(int hash) {
+            return segments[(hash >>> segmentShift) & segmentMask];
+        }
+
+        public IdentityInvocationWeakMap segmentFor(Object target) {
+            return segmentFor(System.identityHashCode(target));
+        }
+    }
+
+    public final static ConcurrentIdentityInvocationWeakMap concurrentLazyIdentityExecute = new ConcurrentIdentityInvocationWeakMap();
     public final static IdentityInvocationWeakMap lazyIdentityExecute = new IdentityInvocationWeakMap();
     public final static LRUWSASVSMap<Object, Method, Object, Object> commonLruCache = new LRUWSASVSMap<Object, Method, Object, Object>(LRUUtil.G2);
     public final static LRUWSASVSMap<Object, Method, Object, Object> quickLruCache = new LRUWSASVSMap<Object, Method, Object, Object>(LRUUtil.L1);
@@ -181,21 +213,51 @@ public class CacheAspect {
     public static enum Type {
         SIMPLE, START, STRONG, QUICK
     } 
-    
+
+    private static class Waiting {};
+
     public static Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs, Type type) throws Throwable {
 //        if(args.length>0 && args[0] instanceof NoCacheInterface)
 //            return execute(target, thisJoinPoint, args, changedArgs);
         
         if(type == Type.STRONG) {
+//            synchronized (lazyIdentityExecute) {
+//                IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
+//                Object result = lazyIdentityExecute.get(invocation);
+//                if (result == null && !lazyIdentityExecute.containsKey(invocation)) { // здесь и в lazyExecute кривовато, но пока такой способ handl'ить null
+//                    result = execute(target, thisJoinPoint, args, changedArgs);
+//                    lazyIdentityExecute.put(invocation, result);
+//                }
+//                return result;
+//            }
+
+            final IdentityInvocationWeakMap lazyIdentityExecute = concurrentLazyIdentityExecute.segmentFor(target);
+            Object result = null;
+            IdentityInvocation invocation = null;
+
             synchronized (lazyIdentityExecute) {
-                IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
-                Object result = lazyIdentityExecute.get(invocation);
+                invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
+                result = lazyIdentityExecute.get(invocation);
                 if (result == null && !lazyIdentityExecute.containsKey(invocation)) { // здесь и в lazyExecute кривовато, но пока такой способ handl'ить null
-                    result = execute(target, thisJoinPoint, args, changedArgs);
+                    result = new Waiting();
                     lazyIdentityExecute.put(invocation, result);
                 }
-                return result;
             }
+
+            if(result instanceof Waiting) {
+                synchronized (result) { // dead lock по идее не возможен, так как не подразумевает рекурсивный вызов
+                    synchronized (lazyIdentityExecute) { // double check
+                        final Object doubleResult = lazyIdentityExecute.get(invocation);
+                        if(!(doubleResult instanceof Waiting)) // никто не успел высчитать результат до блокировки result
+                            return doubleResult;
+                    }
+                    result = execute(target, thisJoinPoint, args, changedArgs);
+                    synchronized (lazyIdentityExecute) {
+                        lazyIdentityExecute.put(invocation, result);
+                    }
+                }
+            }
+            return result;
         }
 
         LRUWSASVSMap<Object, Method, Object, Object> lruCache = null;
