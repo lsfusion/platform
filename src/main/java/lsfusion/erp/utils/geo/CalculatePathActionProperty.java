@@ -79,7 +79,6 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
                 }
 
                 if (coordinatesFlag) {
-                    int partSize = 25; //google restriction: max 25 origins and 25 destinations
                     int size = result.values().size();
                     if (size != 0) {
 

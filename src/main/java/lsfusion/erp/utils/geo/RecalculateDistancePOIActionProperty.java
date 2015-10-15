@@ -5,6 +5,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
@@ -71,12 +72,26 @@ public class RecalculateDistancePOIActionProperty extends DistanceGeoActionPrope
                 BigDecimal longitude = (BigDecimal) findProperty("longitudePOI").read(context, poiObject);
                 String latLong = latitude + "," + longitude;
 
+
                 try (DataSession session = context.createSession()) {
                     String destinations = "";
+                    int count = 0;
+                    int[] localDistances = new int[size];
                     for (int i = 0; i < size; i++) {
                         destinations += (destinations.isEmpty() ? "" : "|") + points.get(i);
+                        count++;
+                        if(count % partSize == 0) {
+                            ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", latLong, partSize));
+                            int[] partDistances = readDistances(partSize, latLong, destinations, useTor, 0);
+                            System.arraycopy(partDistances, 0, localDistances, count - partSize, partDistances.length);
+                            destinations = "";
+                        }
                     }
-                    int[] localDistances = readDistances(size, latLong, destinations, useTor, 0);
+                    if(!destinations.isEmpty()) {
+                        ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", latLong, count % partSize));
+                        int[] partDistances = readDistances(count % partSize, latLong, destinations, useTor, 0);
+                        System.arraycopy(partDistances, 0, localDistances, (int) Math.floor((double) count / partSize) * partSize, partDistances.length);
+                    }
                     for (int i = 0; i < points.size(); i++) {
                         findProperty("distancePOIPOI").change(localDistances[i], session, poiObject, poiMap.get(i));
                         findProperty("distancePOIPOI").change(localDistances[i], session, poiMap.get(i), poiObject);

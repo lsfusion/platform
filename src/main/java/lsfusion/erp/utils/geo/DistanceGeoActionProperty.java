@@ -25,6 +25,7 @@ import java.sql.SQLException;
 
 public class DistanceGeoActionProperty extends GeoActionProperty {
     NetLayer netLayer = null;
+    int partSize = 25; //google restriction: max 25 origins and 25 destinations
 
     public DistanceGeoActionProperty(ScriptingLogicsModule LM) throws ScriptingErrorLog.SemanticErrorException {
         super(LM);
