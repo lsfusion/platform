@@ -1430,7 +1430,7 @@ public class Settings {
         this.exLogChangeProperty = exLogChangeProperty;
     }
 
-    private boolean saleInvoiceDetailLog = false;
+    private boolean saleInvoiceDetailLog = false; // временный виталюровский лог
 
     public boolean isSaleInvoiceDetailLog() {
         return saleInvoiceDetailLog;

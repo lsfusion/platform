@@ -41,8 +41,8 @@ import java.sql.SQLException;
 public class Query<K,V> extends IQuery<K,V> {
 
     public final ImRevMap<K,KeyExpr> mapKeys;
-    public ImMap<V, Expr> properties;
-    public Where where;
+    public final ImMap<V, Expr> properties;
+    public final Where where;
 
     public Query(ImRevMap<K,KeyExpr> mapKeys) {
         this(mapKeys, Where.TRUE);

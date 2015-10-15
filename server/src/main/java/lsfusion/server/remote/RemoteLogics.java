@@ -15,6 +15,7 @@ import lsfusion.interop.form.screen.ExternalScreenParameters;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.auth.User;
 import lsfusion.server.classes.*;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
@@ -170,6 +171,9 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     private void initUserLastActivityUpdate() {
+        if(SystemProperties.isDebug) // чтобы не мешать при включенных breakPoint'ах
+            return;
+
         ScheduledExecutorService userLastActivityUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "user-last-activity-daemon"));
         userLastActivityUpdateExecutor.scheduleAtFixedRate(new Runnable() {
             @Override
@@ -180,6 +184,9 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     private void initPingInfoUpdate() {
+        if(SystemProperties.isDebug) // чтобы не мешать при включенных breakPoint'ах
+            return;
+
         ScheduledExecutorService pingInfoUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "ping-info-daemon"));
         pingInfoUpdateExecutor.scheduleAtFixedRate(new Runnable() {
             @Override

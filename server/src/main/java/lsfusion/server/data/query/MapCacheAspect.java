@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.translator.RemapValuesTranslator;
@@ -404,8 +405,15 @@ public class MapCacheAspect {
                 if(cacheQuery != null)
                     logCaches(((IQuery<K, String>)cacheQuery).getQuery(), query, thisJoinPoint, "QUERY", property);
 
-                if(!(checkCaches && cacheQuery!=null))
+                if(!(checkCaches && cacheQuery!=null)) {
+                    if(Settings.get().isSaleInvoiceDetailLog()) {
+                        final String propName = property.toString();
+                        if(propName.contains("Purchase.priceUserInvoiceDetail") || propName.contains("Purchase.calcBaseManufacturingPriceUserInvoiceDetail")) {
+                            ServerLoggers.exInfoLogger.info("CACHE : " + property + " QUERY : " + query.toString() + " ARGS " +  Arrays.toString(thisJoinPoint.getArgs()) + " UC " + implement.usedChanges);
+                        }
+                    }
                     cacheNoBig(implement, hashCaches, query);
+                }
 
                 logger.debug("getExpr - not cached "+property);
             } else {

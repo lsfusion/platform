@@ -216,10 +216,9 @@ public class CacheAspect {
 
     private static class Waiting {};
 
+    private static boolean disableCaches = false;
+
     public static Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs, Type type) throws Throwable {
-//        if(args.length>0 && args[0] instanceof NoCacheInterface)
-//            return execute(target, thisJoinPoint, args, changedArgs);
-        
         if(type == Type.STRONG) {
 //            synchronized (lazyIdentityExecute) {
 //                IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
@@ -259,6 +258,9 @@ public class CacheAspect {
             }
             return result;
         }
+
+        if(disableCaches)
+            return execute(target, thisJoinPoint, args, changedArgs);
 
         LRUWSASVSMap<Object, Method, Object, Object> lruCache = null;
         if(type == Type.QUICK) {

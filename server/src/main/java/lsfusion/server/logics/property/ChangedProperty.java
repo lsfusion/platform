@@ -40,7 +40,7 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     }
 
     public ChangedProperty(CalcProperty<T> property, IncrementType type, PrevScope scope) {
-        super(property.caption + " (" + type + ")", property, scope);
+        super("(" + type + ") " + property, property, scope);
         this.type = type;
 
         property.getOld(scope);// чтобы зарегить old
