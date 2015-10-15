@@ -45,6 +45,7 @@ changeCoordinatesPOI 'Рассчитать координаты'= ACTION (POI) {
     getCoordinatesAddress (CONCAT ',', nameCountryPOI(POI), addressPOI(POI));
     latitudePOI(POI) <- readLatitude();
     longitudePOI(POI) <- readLongitude();
+    apply();
     recalculateDistancePOI(POI);
 
 }
