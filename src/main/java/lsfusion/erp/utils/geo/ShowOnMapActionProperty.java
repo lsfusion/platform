@@ -41,7 +41,7 @@ public class ShowOnMapActionProperty extends GeoActionProperty {
 
             if (latitude.object != null && longitude.object != null) {
                 String url =  isYandex(context, mapProvider)  ?
-                        ("http://maps.yandex.ru/?"+ "text=" + addressMap.object.toString().trim().replace(" ","%20").replace(",", "%2C") + "&ll=" + longitude.object + "+%2C" + latitude.object + "&z=17") :
+                        ("http://maps.yandex.ru/?"+ "text=" + addressMap.object.toString().trim().replace(" ","%20").replace(",", "%2C").replace("\"", "") + "&ll=" + longitude.object + "+%2C" + latitude.object + "&z=17") :
                         ("http://maps.google.com/?q=loc:" + latitude.object + "+" + longitude.object);
 
                 context.requestUserInteraction(new OpenUriClientAction(new URI(url)));

@@ -40,7 +40,7 @@ getCoordinatesAddressMapProvider = ACTION CUSTOM 'lsfusion.erp.utils.geo.GetCoor
 getCoordinatesAddress(address) = ACTION getCoordinatesAddressMapProvider(address, mapProvider());
 recalculateDistancePOI = ACTION CUSTOM 'lsfusion.erp.utils.geo.RecalculateDistancePOIActionProperty' (POI);
 
-changeCoordinatesPOI 'Изменить координаты'= ACTION (POI) {
+changeCoordinatesPOI 'Рассчитать координаты'= ACTION (POI) {
 
     getCoordinatesAddress (CONCAT ',', nameCountryPOI(POI), addressPOI(POI));
     latitudePOI(POI) <- readLatitude();

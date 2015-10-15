@@ -79,25 +79,38 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
                 }
 
                 if (coordinatesFlag) {
+                    int partSize = 25; //google restriction: max 25 origins and 25 destinations
                     int size = result.values().size();
                     if (size != 0) {
 
                         Map<Pair<DataObject, DataObject>, Integer> distanceMap = getDistancesMap(context);
 
                         int[][] distances = new int[size][size];
-                        try(DataSession session = context.createSession()) {
-                            for (int i = 0; i < size; i++) {
+                        for (int i = 0; i < size; i++) {
+                            try (DataSession session = context.createSession()) {
+                                int[] localDistances = new int[size];
                                 String destinations = "";
+                                int count = 0;
                                 for (int j = 0; j < size; j++) {
                                     if (i != j) {
                                         Integer localDistance = distanceMap.get(Pair.create(poiMap.get(i), poiMap.get(j)));
-                                        if (localDistance == null)
+                                        if (localDistance == null) {
                                             destinations += (destinations.isEmpty() ? "" : "|") + points.get(j);
+                                            count++;
+                                            if (count % partSize == 0) {
+                                                ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", i + 1, partSize));
+                                                int[] partDistances = readDistances(partSize, points.get(i), destinations, useTor, 0);
+                                                System.arraycopy(partDistances, 0, localDistances, count - partSize, partDistances.length);
+                                                destinations = "";
+                                            }
+                                        }
                                     }
                                 }
-                                if(!destinations.isEmpty())
-                                    ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and others", i + 1));
-                                int[] localDistances = readDistances(size, points.get(i), destinations, useTor, 0);
+                                if (!destinations.isEmpty()) {
+                                    ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s, others", i + 1, count % partSize));
+                                    int[] partDistances = readDistances(count % partSize, points.get(i), destinations, useTor, 0);
+                                    System.arraycopy(partDistances, 0, localDistances, (int) Math.floor((double) count / partSize) * partSize, partDistances.length);
+                                }
                                 for (int j = 0; j < size; j++) {
                                     if (i != j) {
                                         Integer distance = distanceMap.get(Pair.create(poiMap.get(i), poiMap.get(j)));
@@ -108,8 +121,8 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
                                         distances[i][j] = distance;
                                     }
                                 }
+                                session.apply(context);
                             }
-                            session.apply(context);
                         }
 
                         //Hamiltonian
