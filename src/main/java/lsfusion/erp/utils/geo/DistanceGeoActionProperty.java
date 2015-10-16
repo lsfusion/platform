@@ -88,7 +88,7 @@ public class DistanceGeoActionProperty extends GeoActionProperty {
             } catch (HttpStatusException e) {
                 count--;
                 if(count <= 0)
-                    ServerLoggers.systemLogger.error(e);
+                    ServerLoggers.systemLogger.error("DistanceGeo Error: ", e);
             } catch (InterruptedException e) {
                 throw Throwables.propagate(e);
             }
