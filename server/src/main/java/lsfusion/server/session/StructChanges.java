@@ -87,7 +87,7 @@ public class StructChanges extends TwinImmutableObject {
 
     private static ImMap<CalcProperty, ChangeType> transformSetOrDropped(CalcProperty<?> prop, ImMap<CalcProperty, ChangeType> filteredChanges) {
         // assert что recDepends включает SetOrDroppedDepends, внутри вызова есть
-        ImMap<CalcProperty, Boolean> setDroppedDepends = prop.getSetOrDroppedDepends();
+        ImMap<CalcProperty, Byte> setDroppedDepends = prop.getSetOrDroppedDepends();
 
         if(!setDroppedDepends.keys().intersect(filteredChanges.keys())) // оптимизация, тут с prev'ом может быть пересечение, которое можно не заметить, но опять таки см. isFakeChange
             return filteredChanges;
@@ -109,15 +109,15 @@ public class StructChanges extends TwinImmutableObject {
 
     // должно быть синхронизировано с аналогичным методом в ChangedProperty
     // хотя тут ошибиться не так критично, так как в худшем случае пойдет по правильной но пессимистичной ветке (собсно уже сейчас может быть что Prev убьет SetOrChanged, а прямое свойство нет, но пока не хочется заморачиваться такой сложной оптимизацией)
-    private static boolean isFakeChange(ImMap<CalcProperty, Boolean> setDroppedDepends, CalcProperty property, Boolean changeSetDropped) {
+    private static boolean isFakeChange(ImMap<CalcProperty, Byte> setDroppedDepends, CalcProperty property, Boolean changeSetDropped) {
         if(property instanceof OldProperty)
             return isSingleFakeChange(setDroppedDepends, ((OldProperty) property).property, !changeSetDropped);
         return isSingleFakeChange(setDroppedDepends, property, changeSetDropped);
     }
 
-    private static boolean isSingleFakeChange(ImMap<CalcProperty, Boolean> setDroppedDepends, CalcProperty property, boolean changeSetDropped) {
-        Boolean setDropped = setDroppedDepends.get(property);
-        return setDropped != null && !setDropped.equals(changeSetDropped);
+    private static boolean isSingleFakeChange(ImMap<CalcProperty, Byte> setDroppedDepends, CalcProperty property, boolean changeSetDropped) {
+        Byte setDropped = setDroppedDepends.get(property);
+        return setDropped != null && (setDropped & CalcProperty.getSetDropped(!changeSetDropped)) != 0; // если есть "противоположное" чтение - то есть в изменениях SET а у свойства DROPPED, тогда изменение принципиально (может давать Fake Change)
     }
 
     public ChangeType getUsedChange(CalcProperty property) {

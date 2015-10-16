@@ -692,28 +692,32 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         return false;
     }
 
-    private final AddValue<CalcProperty, Boolean> addSetOrDropped = new SymmAddValue<CalcProperty, Boolean>() {
-        public Boolean addValue(CalcProperty key, Boolean prevValue, Boolean newValue) {
-            if(prevValue.equals(newValue))
-                return prevValue;
-            return null;
+    public static byte SET = 2;
+    public static byte DROPPED = 1;
+    public static byte getSetDropped(boolean setOrDropped) {
+        return setOrDropped ? SET : DROPPED;
+    }
+
+    private final AddValue<CalcProperty, Byte> addSetOrDropped = new SymmAddValue<CalcProperty, Byte>() {
+        public Byte addValue(CalcProperty key, Byte prevValue, Byte newValue) {
+            return (byte)(prevValue | newValue); // раньше and был, но тогда получалась проблема что если есть и SET и DROP, а скажем DROP "идет за" каким-то FINAL изменением, кэши getUsedChanges не совпадают (см. logCaches)
         }
     };
 
     @IdentityLazy
-    public ImMap<CalcProperty, Boolean> getSetOrDroppedDepends() {
+    public ImMap<CalcProperty, Byte> getSetOrDroppedDepends() {
         ImSet<SessionCalcProperty> sessionDepends = getSessionCalcDepends(true); // нужны и вычисляемые события, так как в логике вычислений (getExpr) используется
-        MMap<CalcProperty, Boolean> mResult = MapFact.mMap(addSetOrDropped);
+        MMap<CalcProperty, Byte> mResult = MapFact.mMap(addSetOrDropped);
         for(int i=0,size=sessionDepends.size();i<size;i++) {
             SessionCalcProperty property = sessionDepends.get(i);
             if(property instanceof ChangedProperty) {
                 ChangedProperty changed = (ChangedProperty) property;
                 Boolean setOrDropped = changed.getSetOrDropped();
                 if(setOrDropped != null)
-                    mResult.add(changed.property, setOrDropped);
+                    mResult.add(changed.property, getSetDropped(setOrDropped));
             }
         }
-        ImMap<CalcProperty, Boolean> result = mResult.immutable().removeNulls();
+        ImMap<CalcProperty, Byte> result = mResult.immutable();
         assert getRecDepends().containsAll(result.keys());
         return result;
     }
