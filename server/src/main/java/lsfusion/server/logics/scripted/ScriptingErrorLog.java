@@ -529,8 +529,12 @@ public class ScriptingErrorLog {
     }
 
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
-        String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);
-        emitSemanticError(msg, e);
+        if (parser.getCurrentParser() != null) {
+            SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);
+            String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);
+            emitSemanticError(msg, e);
+        } else {
+            throw new RuntimeException(message);
+        }
     }
 }
