@@ -27,7 +27,10 @@ namePOI 'Название'= ABSTRACT VARISTRING[200] (POI) PERSISTENT;
 
 nameCountryPOI 'Страна' (poi) = ABSTRACT VARISTRING[50] (POI) PERSISTENT;
 
-addressPOI 'Адрес' = ABSTRACT VARISTRING[100] (POI) PERSISTENT;
+mainAddressPOI 'Адрес' = ABSTRACT VARISTRING[100] (POI) PERSISTENT;
+additionalAddressPOI 'Адрес' = ABSTRACT VARISTRING[100] (POI) PERSISTENT;
+
+addressPOI 'Адрес' (poi) = OVERRIDE mainAddressPOI(poi), additionalAddressPOI(poi); 
 
 latitudePOI 'Координата X' = ABSTRACT NUMERIC[10,5] (POI);
 longitudePOI 'Координата Y' = ABSTRACT NUMERIC[10,5] (POI);
