@@ -47,6 +47,8 @@ public class RecalculateDistancePOIActionProperty extends DistanceGeoActionPrope
             query.addProperty("longitude", findProperty("longitudePOI").getExpr(poiExpr));
             query.and(findProperty("distancePOIPOI").getExpr(poiExpr, poiObject.getExpr()).getWhere().or(
                     findProperty("distancePOIPOI").getExpr(poiObject.getExpr(), poiExpr).getWhere()));
+            query.and(findProperty("latitudePOI").getExpr(poiExpr).getWhere());
+            query.and(findProperty("longitudePOI").getExpr(poiExpr).getWhere());
             ImOrderMap<ImMap<String, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(context.getSession());
 
             Map<Integer, DataObject> poiMap = new HashMap<>();
@@ -57,13 +59,10 @@ public class RecalculateDistancePOIActionProperty extends DistanceGeoActionPrope
 
                 BigDecimal latitude = (BigDecimal) values.get("latitude").getValue();
                 BigDecimal longitude = (BigDecimal) values.get("longitude").getValue();
-
-                if (latitude != null && longitude != null) {
-                    String latLong = latitude + "," + longitude;
-                    DataObject POI = result.getKey(i).singleValue();
-                    points.put(i, latLong);
-                    poiMap.put(i, POI);
-                }
+                String latLong = latitude + "," + longitude;
+                DataObject POI = result.getKey(i).singleValue();
+                points.put(i, latLong);
+                poiMap.put(i, POI);
             }
             int size = points.size();
             if (size > 0) {
