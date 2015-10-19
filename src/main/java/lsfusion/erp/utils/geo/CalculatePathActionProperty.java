@@ -21,10 +21,7 @@ import lsfusion.server.session.DataSession;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CalculatePathActionProperty extends DistanceGeoActionProperty {
 
@@ -125,21 +122,11 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
                         }
 
                         //Hamiltonian
-                        List<Long> vertices = new ArrayList<>();
-                        for(long i = 1; i <= distances.length; i++)
-                            vertices.add(i);
-                        HamiltonianCycleHelper h = new HamiltonianCycleHelper();
-                        h.addVertex(vertices);
-                        for(long i = 1; i <= distances.length; i++) {
-                            for (long j = 1; j <= distances.length; j++) {
-                                if (i < j)
-                                    h.addEdge(i, j, (long) distances[(int) i - 1][(int) j - 1]);
-                            }
-                        }
-
-                        List<Long> output = h.execute();
-                        for (int i = 1; i <= output.size(); i++) {
-                            findProperty("numberPathPOI").change(i, context, poiMap.get((int) (output.get(i - 1) - 1)));
+                        HamiltonianCycleHelper h = new HamiltonianCycleHelper(distances);
+                        int[] output = h.execute();
+                        
+                        for (int i = 0; i < output.length; i++) {
+                            findProperty("numberPathPOI").change(i + 1, context, poiMap.get(output[i]));
                         }
 
                     }

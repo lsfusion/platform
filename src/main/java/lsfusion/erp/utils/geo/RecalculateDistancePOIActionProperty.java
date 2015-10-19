@@ -92,8 +92,10 @@ public class RecalculateDistancePOIActionProperty extends DistanceGeoActionPrope
                         System.arraycopy(partDistances, 0, localDistances, (int) Math.floor((double) count / partSize) * partSize, partDistances.length);
                     }
                     for (int i = 0; i < points.size(); i++) {
-                        findProperty("distancePOIPOI").change(localDistances[i], session, poiObject, poiMap.get(i));
-                        findProperty("distancePOIPOI").change(localDistances[i], session, poiMap.get(i), poiObject);
+                        if (points.containsKey(i)) {
+                            findProperty("distancePOIPOI").change(localDistances[i], session, poiObject, poiMap.get(i));
+                            findProperty("distancePOIPOI").change(localDistances[i], session, poiMap.get(i), poiObject);
+                        }
                     }
                     session.apply(context);
                 }
