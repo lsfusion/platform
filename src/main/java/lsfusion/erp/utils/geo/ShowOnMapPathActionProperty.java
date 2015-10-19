@@ -49,6 +49,7 @@ public class ShowOnMapPathActionProperty extends GeoActionProperty {
             ImOrderMap<ImMap<String, Object>, ImMap<Object, Object>> result = query.execute(context, MapFact.singletonOrder((Object) "numberPathPOI", false));
             String uri = "";
             int index = 1;
+            String firstLatLong = null;
             for (ImMap<Object, Object> values : result.valueIt()) {
                 BigDecimal latitude = (BigDecimal) values.get("latitude");
                 BigDecimal longitude = (BigDecimal) values.get("longitude");
@@ -56,7 +57,10 @@ public class ShowOnMapPathActionProperty extends GeoActionProperty {
                 String description = (String) values.get("descriptionPathPOI");
                 String overDescription = description==null ? name : description;
                 if (latitude != null && longitude != null && overDescription!=null) {
-                    uri += isYandex ? (latitude + "%2C" + longitude + "~") : (latitude + "," + longitude + "/");
+                    String latLong = latitude + (isYandex ? "%2C" : ",") + longitude;
+                    uri += latLong + (isYandex ? "~" : "/");
+                    if(index == 1)
+                        firstLatLong = latLong;
                     index++;
                 }
             }
@@ -65,8 +69,8 @@ public class ShowOnMapPathActionProperty extends GeoActionProperty {
                 context.requestUserInteraction(new MessageClientAction("Не все координаты проставлены", "Ошибка"));
             else
                 context.requestUserInteraction(new OpenUriClientAction(new URI((isYandex ?
-                        ("https://maps.yandex.ru/?rtt=auto&rtm=atm&rtext=" + (uri.endsWith("~") ? uri.substring(0, uri.length() - 1): uri)) :
-                        ("https://www.google.com/maps/dir/" + uri)))));
+                        ("https://maps.yandex.ru/?rtt=auto&rtm=atm&rtext=" + uri + firstLatLong) :
+                        ("https://www.google.com/maps/dir/" + uri + firstLatLong)))));
 
         } catch (SQLException | URISyntaxException | ScriptingErrorLog.SemanticErrorException ignored) {
         }
