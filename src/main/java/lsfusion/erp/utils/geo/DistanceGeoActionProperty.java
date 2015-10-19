@@ -85,10 +85,10 @@ public class DistanceGeoActionProperty extends GeoActionProperty {
                 // do the request and wait for the response
                 byte[] responseBody = new HttpUtil().get(lowerNetLayer, httpServerNetAddress, url, timeoutInMs);
                 return new JSONObject(Jsoup.parse(new ByteArrayInputStream(responseBody), "utf-8", "").text());
-            } catch (HttpStatusException e) {
+            } catch (HttpStatusException | JSONException e) {
                 count--;
                 if(count <= 0)
-                    ServerLoggers.systemLogger.error("DistanceGeo Error: ", e);
+                    ServerLoggers.systemLogger.error("DistanceGeo Error, url: " + url, e);
             } catch (InterruptedException e) {
                 throw Throwables.propagate(e);
             }
