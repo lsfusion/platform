@@ -23,7 +23,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     }
 
     public static Where create(BaseExpr operator1, BaseExpr operator2) {
-        if(operator1.compatibleEquals(operator2))
+        if(checkEquals(operator1,operator2))
             return operator1.getWhere();
         if(operator1 instanceof StaticExpr && operator1.getClass() == operator2.getClass())
             return FALSE;

@@ -53,7 +53,7 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
     }
 
     public static Where create(BaseExpr operator1, BaseExpr operator2, Integer compareType) {
-        if(operator1.compatibleEquals(operator2))
+        if(checkEquals(operator1, operator2))
             return operator1.getWhere();
         return create(operator1, operator2, new LikeWhere(operator1, operator2, compareType));
     }

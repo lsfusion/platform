@@ -55,6 +55,8 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     }
 
     public abstract DataClass getCompatible(DataClass compClass, boolean or);
+
+    // очень аккуратно / нельзя использовать, так как если рассинхронизируется с equals, то будут неправильные кэши, скажем как раньше в EqualsWhere было, будет возвращать true, а кэши будут подхватываться и для различных valueExpr
     public boolean compatibleEquals(Object object, DataClass compareClass, Object compareObject) {
         DataClass compatible = getCompatible(compareClass, true);
         return compatible != null && compatible.read(object).equals(compatible.read(compareObject));

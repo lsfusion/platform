@@ -37,6 +37,10 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         this.operator2 = operator2;
     }
 
+    public static boolean checkEquals(BaseExpr operator1, BaseExpr operator2) {
+        return BaseUtils.hashEquals(operator1, operator2);
+    }
+
     public ImSet<OuterContext> calculateOuterDepends() {
         return SetFact.<OuterContext>toSet(operator1, operator2);
     }

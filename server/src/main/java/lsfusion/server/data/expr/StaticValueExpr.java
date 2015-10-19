@@ -99,13 +99,6 @@ public class StaticValueExpr extends StaticExpr<StaticClass> implements ParseVal
     }
 
     @Override
-    public boolean compatibleEquals(BaseExpr expr) {
-        return super.compatibleEquals(expr) || !sID && expr instanceof StaticValueExpr && !((StaticValueExpr)expr).sID &&
-                objectClass instanceof DataClass && ((StaticValueExpr) expr).objectClass instanceof DataClass &&
-                ((DataClass) objectClass).compatibleEquals(object, (DataClass) ((StaticValueExpr) expr).objectClass, ((StaticValueExpr) expr).object);
-    }
-
-    @Override
     public int getStaticEqualClass() {
         return 1;
     }

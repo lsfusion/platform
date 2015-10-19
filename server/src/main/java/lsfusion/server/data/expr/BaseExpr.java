@@ -277,10 +277,6 @@ public abstract class BaseExpr extends Expr {
         assert isIndexed();
         return false;
     }
-    
-    public boolean compatibleEquals(BaseExpr expr) {
-        return BaseUtils.hashEquals(this, expr);
-    }
 
     public final static int STATICEQUALCLASSES = 3; // количество "классов сравнения"
     // определят "класс сравнения", то есть класс в рамках которого если выражения не equals, то и их значения гарантировано не equals
