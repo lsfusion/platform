@@ -3,6 +3,7 @@ package lsfusion.server.data.where;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.implementations.HMap;
 import lsfusion.server.data.expr.BaseExpr;
+import lsfusion.server.data.expr.where.extra.BinaryWhere;
 
 public class EqualMap extends HMap<BaseExpr,Equal> {
 
@@ -38,7 +39,7 @@ public class EqualMap extends HMap<BaseExpr,Equal> {
             if(static1==null) {
                 equal1.staticExprs[i] = static2;
             } else
-            if(static2!=null && !static1.equals(static2)) // если равенство разных value, то false
+            if(static2!=null && BinaryWhere.checkStaticNotEquals(static1, static2)) // если равенство разных value, то false
                 return false;
         }
 

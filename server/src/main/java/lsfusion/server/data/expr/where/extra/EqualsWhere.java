@@ -25,9 +25,8 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     public static Where create(BaseExpr operator1, BaseExpr operator2) {
         if(checkEquals(operator1,operator2))
             return operator1.getWhere();
-        // !!!! завязано на верхнюю проверку, важно проверить соответствие классов, так как только в этом случае можно гарантировать неравенство с учетом implicit cast
-        if(operator1 instanceof StaticExpr && operator1.getClass() == operator2.getClass() && BaseUtils.hashEquals(((StaticExpr) operator1).getType(), ((StaticExpr) operator2).getType()))
-            return FALSE;
+        if(checkStaticClass(operator1, operator2) && checkStaticNotEquals(operator1, operator2))
+                return FALSE;
         return create(operator1, operator2, new EqualsWhere(operator1, operator2));
     }
 

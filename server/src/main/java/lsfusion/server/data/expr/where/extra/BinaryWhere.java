@@ -11,10 +11,9 @@ import lsfusion.interop.Compare;
 import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.caches.OuterContext;
 import lsfusion.server.caches.ParamLazy;
-import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.NotNullExpr;
-import lsfusion.server.data.expr.NotNullExprInterface;
+import lsfusion.server.classes.StaticClass;
+import lsfusion.server.data.StaticParamNotNullExpr;
+import lsfusion.server.data.expr.*;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.innerjoins.GroupJoinsWheres;
 import lsfusion.server.data.query.stat.KeyStat;
@@ -39,6 +38,22 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
 
     public static boolean checkEquals(BaseExpr operator1, BaseExpr operator2) {
         return BaseUtils.hashEquals(operator1, operator2);
+    }
+
+    public static boolean checkStaticNotEquals(BaseExpr operator1, BaseExpr operator2) {
+        assert checkStaticClass(operator1, operator2);
+        assert operator1 instanceof StaticExpr || operator1 instanceof StaticParamNotNullExpr;
+        assert operator2 instanceof StaticExpr || operator2 instanceof StaticParamNotNullExpr;
+        assert operator1.getClass() == operator2.getClass() || operator1 instanceof InfiniteExpr || operator2 instanceof InfiniteExpr;
+
+        // не равны, и если static, то типы у них одинаковые, потому как в противном случае СУБД будет считать, что равны, а сервер приложений нет
+        return !checkEquals(operator1, operator2) && !(operator1 instanceof StaticExpr && operator2 instanceof StaticExpr && !BaseUtils.hashEquals(((StaticExpr) operator1).getType(), ((StaticExpr) operator2).getType()));
+    }
+
+    public static boolean checkStaticClass(BaseExpr operator1, BaseExpr operator2) {
+        final int class1 = operator1.getStaticEqualClass(); // по аналогии с использованием в EqualMap
+        final int class2 = operator2.getStaticEqualClass();
+        return class1 >= 0 && class2 >= 0 && (class1 == class2 || class1 >= BaseExpr.STATICEQUALCLASSES || class2 >= BaseExpr.STATICEQUALCLASSES);
     }
 
     public ImSet<OuterContext> calculateOuterDepends() {
