@@ -15,6 +15,6 @@ public class SQLConflictException extends SQLHandledException {
 
     @Override
     public String getDescription() {
-        return "cn";
+        return updateConflict ? "cn" : "dd";
     }
 }
