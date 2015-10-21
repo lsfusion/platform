@@ -7,7 +7,6 @@ import lsfusion.interop.RemoteLogicsLoaderInterface;
 import lsfusion.interop.remote.RMIUtils;
 import org.apache.log4j.Logger;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,14 +65,6 @@ public class SingleBusinessLogicsProvider<T extends RemoteLogicsInterface> imple
 
     public void setExportName(String exportName) {
         this.exportName = exportName;
-    }
-
-    public boolean isSingleInstance() {
-        try {
-            return logics.isSingleInstance();
-        } catch (RemoteException e) {
-            return false;
-        }
     }
 
     public T getLogics() {

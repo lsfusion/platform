@@ -11,6 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.Properties;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
@@ -41,8 +42,12 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
             }
 
             handleJNLPRequest(request, response, codebaseUrl, "client.jnlp", "lsFusion Client", request.getServerName(),
-                              blProvider.getRegistryPort(), blProvider.getExportName(), blProvider.isSingleInstance(),
+                              blProvider.getRegistryPort(), blProvider.getExportName(), blProvider.getLogics().isSingleInstance(),
                               clientVMOptions.getInitHeapSize(), clientVMOptions.getMaxHeapSize());
+        } catch (RemoteException e) {
+            blProvider.invalidate();
+            logger.debug("Error handling jnlp request: ", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error generating jnlp. Please, try again.");
         } catch (Exception e) {
             logger.debug("Error handling jnlp request: ", e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Can't generate jnlp.");

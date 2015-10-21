@@ -6,7 +6,6 @@ public interface BusinessLogicsProvider<T extends RemoteLogicsInterface> {
     String getRegistryHost();
     int getRegistryPort();
     String getExportName();
-    boolean isSingleInstance();
 
     T getLogics();
 
