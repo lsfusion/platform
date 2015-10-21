@@ -28,7 +28,7 @@ public class TaskRunner {
     }
 
     public static int availableProcessors() {
-        return BaseUtils.max(Runtime.getRuntime().availableProcessors() / 2, 1);
+        return BaseUtils.max(Runtime.getRuntime().availableProcessors(), 1);
     }
 
     public void runTask(PublicTask task, Logger logger) throws InterruptedException {
