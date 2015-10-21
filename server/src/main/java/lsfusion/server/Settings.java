@@ -114,8 +114,6 @@ public class Settings {
     private int limitWhereJoinsCount = 15;
     private int limitWhereJoinsDegree = 2;
 
-    private boolean singleInstance;
-
     public int getLimitWhereJoinsDegree() {
         return limitWhereJoinsDegree;
     }
@@ -524,14 +522,6 @@ public class Settings {
 
     public int getAverageIntervalStat() {
         return averageIntervalStat;
-    }
-
-    public boolean isSingleInstance() {
-        return singleInstance;
-    }
-
-    public void setSingleInstance(boolean singleInstance) {
-        this.singleInstance = singleInstance;
     }
 
     public void setAverageIntervalStat(int averageIntervalStat) {

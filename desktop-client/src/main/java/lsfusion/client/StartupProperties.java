@@ -16,8 +16,6 @@ public class StartupProperties {
 
     public static final String LSFUSION_CLIENT_AUTOLOGIN = "lsfusion.client.autologin";
 
-    public static final String LSFUSION_CLIENT_SINGLEINSTANCE = "lsfusion.client.singleinstance";
-
     public static final String LSFUSION_CLIENT_CONNECTION_LOST_TIMEOUT = "lsfusion.client.connection.lost.timeout";
 
     public static final String LSFUSION_CLIENT_CONNECTION_LOST_PING_DELAY = "lsfusion.client.connection.lost.ping.delay";

@@ -169,14 +169,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
-    @Override
-    public boolean isSingleInstance() throws RemoteException {
-        logRemoteMethodStartCall("isSingleInstance");
-        boolean result = target.isSingleInstance();
-        logRemoteMethodEndVoidCall("isSingleInstance");
-        return result;
-    }
-
     public String  addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
         logRemoteMethodStartCall("addUser");
         String result = target.addUser(username, email, password, firstName, lastName, localeLanguage);

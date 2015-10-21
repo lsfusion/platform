@@ -11,7 +11,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.Properties;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
@@ -42,12 +41,8 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
             }
 
             handleJNLPRequest(request, response, codebaseUrl, "client.jnlp", "lsFusion Client", request.getServerName(),
-                              blProvider.getRegistryPort(), blProvider.getExportName(), blProvider.getLogics().isSingleInstance(),
+                              blProvider.getRegistryPort(), blProvider.getExportName(),
                               clientVMOptions.getInitHeapSize(), clientVMOptions.getMaxHeapSize());
-        } catch (RemoteException e) {
-            blProvider.invalidate();
-            logger.debug("Error handling jnlp request: ", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error generating jnlp. Please, try again.");
         } catch (Exception e) {
             logger.debug("Error handling jnlp request: ", e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Can't generate jnlp.");
@@ -62,7 +57,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
                                      String registryHost,
                                      int registryPort,
                                      String exportName) throws ServletException, IOException {
-        handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, appName, registryHost, registryPort, exportName, false, null, null);
+        handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, appName, registryHost, registryPort, exportName, null, null);
     }
 
     protected void handleJNLPRequest(HttpServletRequest request,
@@ -73,7 +68,6 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
                                      String registryHost,
                                      int registryPort,
                                      String exportName,
-                                     boolean singleInstance,
                                      String initHeapSize,
                                      String maxHeapSize) throws ServletException, IOException {
         logger.debug("Generating jnlp response.");
@@ -86,7 +80,6 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
             properties.put("jnlp.registryHost", registryHost);
             properties.put("jnlp.registryPort", String.valueOf(registryPort));
             properties.put("jnlp.exportName", exportName);
-            properties.put("jnlp.singleInstance", String.valueOf(singleInstance));
             properties.put("jnlp.initHeapSize", !isRedundantString(initHeapSize) ? initHeapSize : DEFAULT_INIT_HEAP_SIZE);
             properties.put("jnlp.maxHeapSize", !isRedundantString(maxHeapSize) ? maxHeapSize : DEFAULT_MAX_HEAP_SIZE);
 

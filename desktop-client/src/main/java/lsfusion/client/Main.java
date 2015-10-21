@@ -18,12 +18,9 @@ import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
+import lsfusion.utils.SpanningTreeWithBlackjack;
 import org.apache.log4j.Logger;
 
-import javax.jnlp.ServiceManager;
-import javax.jnlp.SingleInstanceListener;
-import javax.jnlp.SingleInstanceService;
-import javax.jnlp.UnavailableServiceException;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
@@ -89,13 +86,7 @@ public class Main {
     public static EventBus eventBus = new EventBus();
     private static ArrayList<IDaemonTask> daemonTasks;
 
-    static SingleInstanceService sis;
-    static SingleInstanceListener sisL;
-
     public static void start(final String[] args, ModuleFactory startModule) {
-
-        registerSingleInstanceListener();
-
         module = startModule;
 
         System.setProperty("sun.awt.exception.handler", ClientExceptionManager.class.getName());
@@ -128,40 +119,10 @@ public class Main {
         } catch (Exception e) {
             logger.error("Error during startup: ", e);
             e.printStackTrace();
-            removeSingleInstanceListener();
             System.exit(1);
         }
 
         startWorkingThreads();
-    }
-
-    private static void registerSingleInstanceListener() {
-        if(Boolean.parseBoolean(getSystemPropertyWithJNLPFallback(LSFUSION_CLIENT_SINGLEINSTANCE))) {
-            try {
-                sis = (SingleInstanceService) ServiceManager.lookup("javax.jnlp.SingleInstanceService");
-            } catch (UnavailableServiceException e) {
-                sis = null;
-            }
-            if (sis != null) {
-                sisL = new SingleInstanceListener() {
-                    @Override
-                    public void newActivation(String[] strings) {
-                        logger.error("Attempt of running one more client");
-                    }
-                };
-                sis.addSingleInstanceListener(sisL);
-            }
-        }
-    }
-
-    private static void removeSingleInstanceListener() {
-        if(sis != null && sisL != null)
-            sis.removeSingleInstanceListener(sisL);
-    }
-
-    public static String getSystemPropertyWithJNLPFallback(String propertyName) {
-        String value = System.getProperty(propertyName);
-        return value != null ? value : System.getProperty("jnlp." + propertyName);
     }
 
     private static void startWorkingThreads() {
@@ -423,7 +384,6 @@ public class Main {
             @Override
             public void run() {
                 //убиваемся, если через 5 секунд ещё не вышли
-                removeSingleInstanceListener();
                 SystemUtils.sleep(5000);
                 System.exit(0);
             }

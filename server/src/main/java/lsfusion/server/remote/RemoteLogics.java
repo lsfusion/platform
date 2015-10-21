@@ -332,10 +332,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return securityManager.checkFormExportPermission(canonicalName);
     }
 
-    public boolean isSingleInstance() throws RemoteException {
-        return Settings.get().isSingleInstance();
-    }
-
     @Override
     public byte[] readFile(String canonicalName, String... params) throws RemoteException {
         LCP<PropertyInterface> property = (LCP) businessLogics.findProperty(canonicalName);
