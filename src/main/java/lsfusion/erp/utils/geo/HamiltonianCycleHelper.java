@@ -7,7 +7,7 @@ import java.util.List;
 public class HamiltonianCycleHelper {
     private int[][] adjMatrix;
     private int vertexCnt;
-    final static private int exactAlgoVertexLimit = 17;         
+    final static private int exactAlgoVertexLimit = 18;         
     
     public HamiltonianCycleHelper(int[][] adjMatrix) {
         this.adjMatrix = adjMatrix;
@@ -24,8 +24,9 @@ public class HamiltonianCycleHelper {
     
     private int[] dynamicProgrammingSolution() {
         int memo[][] = new int[vertexCnt][1 << vertexCnt];
+        short prevVertex[][] = new short[vertexCnt][1 << vertexCnt]; 
         for (int[] row : memo) {
-            Arrays.fill(row, -1);
+            Arrays.fill(row, Integer.MAX_VALUE);
         }
         
         memo[0][1] = 0;
@@ -34,9 +35,13 @@ public class HamiltonianCycleHelper {
             for (int cur = 1; cur < vertexCnt; ++cur) {
                 if ((mask & (1 << cur)) != 0) {
                     for (int prev = 0; prev < vertexCnt; ++prev) {
-                        if ((mask & (1 << prev)) != 0) {
-                            if (memo[prev][mask ^ (1 << cur)] >= 0) {
-                                memo[cur][mask] = Math.min(memo[cur][mask], memo[prev][mask ^ (1 << cur)] + adjMatrix[prev][cur]);
+                        if (prev != cur && (mask & (1 << prev)) != 0) {
+                            int prevLen = memo[prev][mask ^ (1 << cur)];
+                            if (prevLen < Integer.MAX_VALUE) {
+                                if (prevLen + adjMatrix[prev][cur] < memo[cur][mask]) {
+                                    memo[cur][mask] = prevLen + adjMatrix[prev][cur];
+                                    prevVertex[cur][mask] = (short) prev;
+                                }
                             }
                         }
                     }
@@ -45,24 +50,28 @@ public class HamiltonianCycleHelper {
         }
 
         int res = Integer.MAX_VALUE;
-        for (int last = 1; last < vertexCnt; ++last) {
-            res = Math.min(res, memo[last][(1 << vertexCnt) - 1] + adjMatrix[last][0]);
-        }
-
-        // reconstruct path
         int curMask = (1 << vertexCnt) - 1;
-        int[] tour = new int[vertexCnt];
-        int last = 0;
-        for (int i = vertexCnt - 1; i >= 1; --i) {
-            int best = -1;
-            for (int j = 1; j < vertexCnt; ++j) {
-                if ((curMask & (1 << j)) != 0 && (best == -1 || memo[best][curMask] + adjMatrix[best][last] > memo[j][curMask] + adjMatrix[j][last])) {
-                    best = j;
+        int bestLast = 0;
+        
+        for (int last = 1; last < vertexCnt; ++last) {
+            if (memo[last][curMask] >= 0) {
+                int length = memo[last][curMask] + adjMatrix[last][0];
+                if (res > length) {
+                    res = length;
+                    bestLast = last; 
                 }
             }
-            tour[i] = best;
-            curMask ^= (1 << best);
-            last = best;
+        }
+        
+        // reconstruct path
+        int[] tour = new int[vertexCnt];
+        int last = bestLast;
+        
+        for (int i = vertexCnt - 1; i > 0; --i) {
+            tour[i] = last;
+            int newMask = curMask ^ (1 << last);             
+            last = prevVertex[last][curMask];
+            curMask = newMask; 
         }
         return tour;
     }  
@@ -74,7 +83,7 @@ public class HamiltonianCycleHelper {
         inTour[0] = true;
         
         for (int iter = 1; iter < vertexCnt; ++iter) {
-            int best = 0;
+            int best = -1;
             boolean first = true;
             int minVertexFound = 0;
             int vertexConnectTo = 0;
@@ -84,7 +93,7 @@ public class HamiltonianCycleHelper {
                     if (!inTour[next]) {
                         int increase; 
                         if (i + 1 == tour.size()) {
-                            increase = adjMatrix[tour.get(i)][next];    
+                            increase = adjMatrix[tour.get(i)][next] + adjMatrix[next][0] - adjMatrix[tour.get(i)][0];    
                         } else {
                             increase = adjMatrix[tour.get(i)][next] + adjMatrix[next][tour.get(i+1)] - adjMatrix[tour.get(i)][tour.get(i+1)];
                         }

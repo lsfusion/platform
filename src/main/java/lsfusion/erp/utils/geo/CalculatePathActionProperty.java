@@ -85,6 +85,7 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
                         for (int i = 0; i < size; i++) {
                             try (DataSession session = context.createSession()) {
                                 int[] localDistances = new int[size];
+                                List<Integer> queryIndices = new ArrayList<>();
                                 String destinations = "";
                                 int count = 0;
                                 for (int j = 0; j < size; j++) {
@@ -92,12 +93,16 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
                                         Integer localDistance = distanceMap.get(Pair.create(poiMap.get(i), poiMap.get(j)));
                                         if (localDistance == null) {
                                             destinations += (destinations.isEmpty() ? "" : "|") + points.get(j);
+                                            queryIndices.add(j);
                                             count++;
                                             if (count % partSize == 0) {
                                                 ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s others", i + 1, partSize));
                                                 int[] partDistances = readDistances(partSize, points.get(i), destinations, useTor, 0);
-                                                System.arraycopy(partDistances, 0, localDistances, count - partSize, partDistances.length);
+                                                for (int k = 0; k < partDistances.length; k++) {
+                                                    localDistances[queryIndices.get(k)] = partDistances[k]; 
+                                                }
                                                 destinations = "";
+                                                queryIndices.clear();
                                             }
                                         }
                                     }
@@ -105,13 +110,15 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
                                 if (!destinations.isEmpty()) {
                                     ServerLoggers.systemLogger.info(String.format("Getting distance between point %s and %s, others", i + 1, count % partSize));
                                     int[] partDistances = readDistances(count % partSize, points.get(i), destinations, useTor, 0);
-                                    System.arraycopy(partDistances, 0, localDistances, (int) Math.floor((double) count / partSize) * partSize, partDistances.length);
+                                    for (int k = 0; k < partDistances.length; k++) {
+                                        localDistances[queryIndices.get(k)] = partDistances[k];
+                                    }
                                 }
                                 for (int j = 0; j < size; j++) {
                                     if (i != j) {
                                         Integer distance = distanceMap.get(Pair.create(poiMap.get(i), poiMap.get(j)));
                                         if (distance == null) {
-                                            distance = localDistances[j - (i < j ? 1 : 0)]; //смещение, так как мы не получаем расстояния между i = j
+                                            distance = localDistances[j];
                                             findProperty("distancePOIPOI").change(distance, session, poiMap.get(i), poiMap.get(j));
                                         }
                                         distances[i][j] = distance;
