@@ -41,7 +41,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
             }
 
             handleJNLPRequest(request, response, codebaseUrl, "client.jnlp", "lsFusion Client", request.getServerName(),
-                              blProvider.getRegistryPort(), blProvider.getExportName(),
+                              blProvider.getRegistryPort(), blProvider.getExportName(), blProvider.isSingleInstance(),
                               clientVMOptions.getInitHeapSize(), clientVMOptions.getMaxHeapSize());
         } catch (Exception e) {
             logger.debug("Error handling jnlp request: ", e);
@@ -57,7 +57,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
                                      String registryHost,
                                      int registryPort,
                                      String exportName) throws ServletException, IOException {
-        handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, appName, registryHost, registryPort, exportName, null, null);
+        handleJNLPRequest(request, response, codebaseUrl, jnlpUrl, appName, registryHost, registryPort, exportName, false, null, null);
     }
 
     protected void handleJNLPRequest(HttpServletRequest request,
@@ -68,6 +68,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
                                      String registryHost,
                                      int registryPort,
                                      String exportName,
+                                     boolean singleInstance,
                                      String initHeapSize,
                                      String maxHeapSize) throws ServletException, IOException {
         logger.debug("Generating jnlp response.");
@@ -80,6 +81,7 @@ public class ClientJNLPRequestHandler implements HttpRequestHandler {
             properties.put("jnlp.registryHost", registryHost);
             properties.put("jnlp.registryPort", String.valueOf(registryPort));
             properties.put("jnlp.exportName", exportName);
+            properties.put("jnlp.singleInstance", String.valueOf(singleInstance));
             properties.put("jnlp.initHeapSize", !isRedundantString(initHeapSize) ? initHeapSize : DEFAULT_INIT_HEAP_SIZE);
             properties.put("jnlp.maxHeapSize", !isRedundantString(maxHeapSize) ? maxHeapSize : DEFAULT_MAX_HEAP_SIZE);
 

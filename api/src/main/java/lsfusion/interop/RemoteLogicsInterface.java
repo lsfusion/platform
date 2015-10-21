@@ -50,6 +50,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     boolean checkFormExportPermission(String canonicalName) throws RemoteException;
 
+    boolean isSingleInstance() throws RemoteException;
+
     int generateID() throws RemoteException;
 
     String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException;
