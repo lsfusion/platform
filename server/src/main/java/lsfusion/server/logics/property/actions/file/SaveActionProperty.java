@@ -19,11 +19,13 @@ import java.sql.SQLException;
 
 public class SaveActionProperty extends SystemExplicitActionProperty {
     private LCP<?> fileProperty;
+    private LCP<?> fileNameProp;
 
-    public SaveActionProperty(String caption, LCP fileProperty) {
+    public SaveActionProperty(String caption, LCP fileProperty, LCP fileNameProp) {
         super(caption, fileProperty.getInterfaceClasses(ClassType.filePolicy));
 
         this.fileProperty = fileProperty;
+        this.fileNameProp = fileNameProp;
     }
 
     @Override
@@ -34,12 +36,18 @@ public class SaveActionProperty extends SystemExplicitActionProperty {
             objects[i++] = context.getKeyValue(classInterface);
         }
         FileClass fileClass = (FileClass) fileProperty.property.getType();
+        Object fileNameObject = fileNameProp != null ? fileNameProp.read(context, objects) : null;
+        String fileName = fileNameObject != null ? fileNameObject.toString().trim() : "new file";
         for (byte[] file : fileClass.getFiles(fileProperty.read(context, objects))) {
+            String extension;
+            byte[] saveFile = file; 
             if (fileClass instanceof DynamicFormatFileClass) {
-                context.delayUserInterfaction(new SaveFileClientAction(BaseUtils.getFile(file), BaseUtils.getExtension(file)));
+                extension = BaseUtils.getExtension(file);
+                saveFile = BaseUtils.getFile(file);
             } else {
-                context.delayUserInterfaction(new SaveFileClientAction(file, BaseUtils.firstWord(((StaticFormatFileClass) fileClass).getOpenExtension(file), ",")));
+                extension = BaseUtils.firstWord(((StaticFormatFileClass) fileClass).getOpenExtension(file), ",");
             }
+            context.delayUserInterfaction(new SaveFileClientAction(saveFile, fileName + "." + extension));
         }
     }
 

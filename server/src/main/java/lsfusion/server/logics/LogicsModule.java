@@ -1421,12 +1421,12 @@ public abstract class LogicsModule {
 
     // ------------------- SAVE FILE ----------------- //
 
-    protected LAP addSFAProp(LCP lp) {
-        return addSFAProp(null, "sfa", lp);
+    protected LAP addSFAProp(LCP lp, LCP nameLP) {
+        return addSFAProp(null, "sfa", lp, nameLP);
     }
 
-    protected LAP addSFAProp(AbstractGroup group, String caption, LCP lp) { // обернем сразу в and
-        return addProperty(group, new LAP(new SaveActionProperty(caption, lp)));
+    protected LAP addSFAProp(AbstractGroup group, String caption, LCP lp, LCP nameProp) {
+        return addProperty(group, new LAP(new SaveActionProperty(caption, lp, nameProp)));
     }
 
     // ------------------- EVAL ----------------- //

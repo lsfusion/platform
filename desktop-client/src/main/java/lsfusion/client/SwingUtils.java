@@ -599,8 +599,10 @@ public class SwingUtils {
                 File file = new File(files.keySet().iterator().next());
                 fileChooser.setSelectedFile(file);
                 String extension = BaseUtils.getFileExtension(file);
-                ExtensionFileFilter filter = new ExtensionFileFilter("." + extension, extension);
-                fileChooser.addChoosableFileFilter(filter);
+                if (!BaseUtils.isRedundantString(extension)) {
+                    ExtensionFileFilter filter = new ExtensionFileFilter("." + extension, extension);
+                    fileChooser.addChoosableFileFilter(filter);
+                }
             }
             if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
                 String path = fileChooser.getSelectedFile().getAbsolutePath();

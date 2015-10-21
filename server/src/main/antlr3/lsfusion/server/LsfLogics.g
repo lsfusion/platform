@@ -2282,18 +2282,20 @@ seekObjectActionPropertyDefinitionBody[List<TypedParameter> context, boolean dyn
 fileActionPropertyDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
 @init {
 	FileActionType actionType = null;
+	LPWithParams fileProp = null;
+	LPWithParams fileNameProp = null;
+	
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedFileAProp(actionType, $pe.property);
+		$property = self.addScriptedFileAProp(actionType, fileProp, fileNameProp);
 	}
 }
 	:	(
-			'LOADFILE' { actionType = FileActionType.LOAD; } 
-		| 	'OPENFILE' { actionType = FileActionType.OPEN; }
-		|	'SAVEFILE' { actionType = FileActionType.SAVE; }
+			'LOADFILE' { actionType = FileActionType.LOAD; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } 
+		| 	'OPENFILE' { actionType = FileActionType.OPEN; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; }
+		|	'SAVEFILE' { actionType = FileActionType.SAVE; } pe=propertyExpression[context, dynamic] { fileProp = $pe.property; } ('NAME' npe=propertyExpression[context, dynamic] { fileNameProp = $npe.property; })?
 		) 
-		pe=propertyExpression[context, dynamic]	
 	;
 
 changeClassActionPropertyDefinitionBody[List<TypedParameter> context] returns [LPWithParams property]

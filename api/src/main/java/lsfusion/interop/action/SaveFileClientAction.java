@@ -6,16 +6,16 @@ import java.util.Map;
 
 public class SaveFileClientAction extends ExecuteClientAction {
     public final byte[] file;
-    public final String extension;
+    public final String name;
 
-    public SaveFileClientAction(byte[] file, String extension) {
+    public SaveFileClientAction(byte[] file, String name) {
         this.file = file;
-        this.extension = extension;
+        this.name = name;
     }
     
     public Map<String, byte[]> getFileMap() {
         Map<String, byte[]> result = new HashMap<>();
-        result.put("new file." + extension, file);
+        result.put(name, file);
         return result;
     }
 
