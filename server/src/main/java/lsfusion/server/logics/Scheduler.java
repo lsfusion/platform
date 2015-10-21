@@ -420,6 +420,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                             if (detail.script != null)
                                 BL.schedulerLM.scriptText.change(detail.script, mainSession);
                             ImOrderSet<ClassPropertyInterface> interfaces = detail.lap.listInterfaces;
+                            schedulerLogger.info("Before execute " + detail.lap.property.getSID());
                             if (interfaces.isEmpty())
                                 detail.lap.execute(mainSession);
                             else if (detail.params.isEmpty())
@@ -439,8 +440,9 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                                 }
                                 detail.lap.execute(mainSession, parsedParameters.toArray(new ObjectValue[parsedParameters.size()]));
                             }
+                            schedulerLogger.info("Before apply " + detail.lap.property.getSID());
                             String applyResult = mainSession.applyMessage(BL);
-
+                            schedulerLogger.info("After apply " + detail.lap.property.getSID());
                             BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) afterFinishLogSession, currentScheduledTaskLogFinishObject);
                             BL.schedulerLM.propertyScheduledTaskLog.change(detail.lap.property.caption + " (" + detail.lap.property.getSID() + ")", afterFinishLogSession, currentScheduledTaskLogFinishObject);
                             BL.schedulerLM.resultScheduledTaskLog.change(applyResult == null ? (afterFinishErrorOccurred ? "Выполнено с ошибками" : "Выполнено успешно") : BaseUtils.truncate(applyResult, 200), afterFinishLogSession, currentScheduledTaskLogFinishObject);
