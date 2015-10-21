@@ -119,5 +119,12 @@
             <artifactId>fax4j</artifactId>
             <version>0.43.1</version>
         </dependency>
+        <dependency>
+            <groupId>javax.jnlp</groupId>
+            <artifactId>jnlp-api</artifactId>
+            <version>7.0</version>
+            <scope>system</scope>
+            <systemPath>${java.home}/lib/javaws.jar</systemPath>
+        </dependency>
     </dependencies>
 </project>
