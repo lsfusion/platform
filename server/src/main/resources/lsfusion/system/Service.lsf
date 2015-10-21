@@ -29,13 +29,13 @@ recalculateFollowsMultiThreadAction 'Пересчитать следствия �
 recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно, timeout)' (INTEGER propertyTimeout)= ACTION recalculateStatsMultiThreadAction (NULL, propertyTimeout);
 
 threadCountMultiThread 'Количество потоков' = DATA LOCAL INTEGER (); 
-serviceDBMultiThreadAction 'Обслуживание БД (многопоточно)' = ACTION serviceDBMultiThreadAction(threadCountMultiThread());
-checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно)' = ACTION checkAggregationsMultiThreadAction(threadCountMultiThread());
-checkClassesMultiThreadAction 'Проверить классы (многопоточно)' = ACTION checkClassesMultiThreadAction(threadCountMultiThread());
-recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно)' = ACTION recalculateClassesMultiThreadAction(threadCountMultiThread());
-recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно)' = ACTION recalculateMultiThreadAction(threadCountMultiThread());
-recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно)' = ACTION recalculateFollowsMultiThreadAction (threadCountMultiThread());
-recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно)' = ACTION recalculateStatsMultiThreadAction (threadCountMultiThread());
+serviceDBMultiThreadAction 'Обслуживание БД (многопоточно)' = ACTION serviceDBMultiThreadAction(threadCountMultiThread(), NULL);
+checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно)' = ACTION checkAggregationsMultiThreadAction(threadCountMultiThread(), NULL);
+checkClassesMultiThreadAction 'Проверить классы (многопоточно)' = ACTION checkClassesMultiThreadAction(threadCountMultiThread(), NULL);
+recalculateClassesMultiThreadAction 'Пересчитать классы (многопоточно)' = ACTION recalculateClassesMultiThreadAction(threadCountMultiThread(), NULL);
+recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно)' = ACTION recalculateMultiThreadAction(threadCountMultiThread(), NULL);
+recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно)' = ACTION recalculateFollowsMultiThreadAction (threadCountMultiThread(), NULL);
+recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно)' = ACTION recalculateStatsMultiThreadAction (threadCountMultiThread(), NULL);
 
 analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'lsfusion.server.logics.service.AnalyzeDBActionProperty' ();
 vacuumDBAction 'Упаковать БД' = ACTION CUSTOM 'lsfusion.server.logics.service.VacuumDBActionProperty' ();
