@@ -17,7 +17,7 @@ public class LRUUtil {
     private final static Object lockCleanLRU = new Object();
     
     public static double multiplier = 1.0;
-    public static double MAX_MULTIPLIER = 50.0; // чтобы не рос до бесконечности, из - за того что некоторые кэши имеют максимальные пределы
+    public static double MAX_MULTIPLIER = 15.0; // чтобы не рос до бесконечности, из - за того что некоторые кэши имеют максимальные пределы
 
     public static int hash(int h) {
         // Spread bits to regularize both segment and index locations,
