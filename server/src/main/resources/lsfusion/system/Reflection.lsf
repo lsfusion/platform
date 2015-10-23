@@ -124,7 +124,7 @@ pageSizeGroupObject 'Размер шрифта' = DATA INTEGER (GroupObject);
 CLASS Table 'Таблица';
 TABLE tables (Table);
 
-sidTable 'Имя таблицы' = DATA VARSTRING[100] (Table);
+sidTable 'Имя таблицы' = DATA VARISTRING[100] (Table);
 tableSID 'Имя таблицы' (sID) = GROUP AGGR table BY sidTable (table) WHERE table IS Table;
 rowsTable 'Количество записей' = DATA INTEGER (Table);
 tableTableKey 'Таблица' = DATA Table (TableKey);
@@ -132,18 +132,18 @@ tableTableKey 'Таблица' = DATA Table (TableKey);
 CLASS TableKey 'Ключ';
 TABLE tableKey (TableKey);
 
-sidTableKey 'Код ключа' = DATA VARSTRING[100] (TableKey);
+sidTableKey 'Код ключа' = DATA VARISTRING[100] (TableKey);
 tableKeySID 'Ключ' (sID) = GROUP AGGR tableKey BY sidTableKey (tableKey) WHERE tableKey IS TableKey;
-classTableKey 'Класс ключа' = DATA VARSTRING[40] (TableKey);
+classTableKey 'Класс ключа' = DATA VARISTRING[40] (TableKey);
 classSIDTableKey 'SID класса ключа' = DATA VARSTRING[100] (TableKey);
-nameTableKey 'Имя ключа' = DATA VARSTRING[20] (TableKey);
+nameTableKey 'Имя ключа' = DATA VARISTRING[20] (TableKey);
 quantityTableKey 'Количество разновидностей' = DATA INTEGER (TableKey);
 
 CLASS TableColumn 'Колонка';
 TABLE tableColumn (TableColumn);
 
 tableTableColumn 'Таблица' = DATA Table(TableColumn);
-sidTableColumn 'Имя колонки' = DATA VARSTRING[100] (TableColumn);
+sidTableColumn 'Имя колонки' = DATA VARISTRING[100] (TableColumn);
 
 longSIDTableColumn(tableColumn) = sidTable(tableTableColumn(tableColumn)) + '.' + sidTableColumn(tableColumn);
 tableColumnLongSID 'Колонка' (sID) = GROUP AGGR tableColumn BY longSIDTableColumn(tableColumn) WHERE tableColumn IS TableColumn; 

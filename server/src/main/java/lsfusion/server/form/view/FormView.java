@@ -305,9 +305,9 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     private void initButtons(Version version) {
-        printButton = setupFormButton(entity.printActionPropertyDraw, "print", version);
+//        printButton = setupFormButton(entity.printActionPropertyDraw, "print", version);
         editButton = setupFormButton(entity.editActionPropertyDraw, "edit", version);
-        xlsButton = setupFormButton(entity.xlsActionPropertyDraw, "xls", version);
+//        xlsButton = setupFormButton(entity.xlsActionPropertyDraw, "xls", version);
         refreshButton = setupFormButton(entity.refreshActionPropertyDraw, "refresh", version);
         applyButton = setupFormButton(entity.applyActionPropertyDraw, "apply", version);
         cancelButton = setupFormButton(entity.cancelActionPropertyDraw, "cancel", version);
