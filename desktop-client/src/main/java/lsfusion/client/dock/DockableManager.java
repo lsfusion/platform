@@ -80,8 +80,17 @@ public class DockableManager {
     }
 
     public ClientFormDockable openForm(ClientNavigator navigator, String canonicalName, String formSID) throws IOException, ClassNotFoundException, JRException {
-        ClientFormDockable page = new ClientFormDockable(navigator, canonicalName, formSID, this);
-        openForm(page);
+        ClientFormDockable page;
+        if (MainFrame.forbidDuplicateForms && forms.getFormsList().contains(formSID)) {
+            page = (ClientFormDockable) control.getCDockable(control.getCDockableCount() - forms.getFormsList().size() + forms.getFormsList().indexOf(formSID));
+            if(page != null) {
+                page.toFront();
+                page.requestFocusInWindow();
+            }
+        } else {
+            page = new ClientFormDockable(navigator, canonicalName, formSID, this);
+            openForm(page);
+        }
         return page;
     }
 

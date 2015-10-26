@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.GwtClientUtils;
+import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.form.client.form.ui.dialog.GResizableModalForm;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
@@ -21,8 +22,12 @@ import lsfusion.gwt.form.shared.view.GForm;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.window.GModalityType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class DefaultFormsController implements FormsController {
     private final TabLayoutPanel tabsPanel;
+    private List<String> formsList = new ArrayList<>();
 
     public DefaultFormsController() {
         tabsPanel = new TabLayoutPanel(21, Style.Unit.PX);
@@ -67,29 +72,34 @@ public abstract class DefaultFormsController implements FormsController {
     }
 
     public void openForm(final String canonicalName, final String formSID, final GModalityType modalityType, final boolean suppressErrorMessages) {
-        final FormDockable dockable = modalityType.isModalWindow() ? null : addDockable(new FormDockable());
+        if(MainFrame.forbidDuplicateForms && formsList.contains(formSID)) {
+            tabsPanel.selectTab(formsList.indexOf(formSID));
+        } else {
 
-        NavigatorDispatchAsync.Instance.get().execute(new GetForm(canonicalName, formSID, modalityType.isModal(), null), new ErrorHandlingCallback<GetFormResult>() {
-            @Override
-            public void failure(Throwable caught) {
-                if (dockable != null) {
-                    removeDockable(dockable);
+            final FormDockable dockable = modalityType.isModalWindow() ? null : addDockable(new FormDockable(), formSID);
+
+            NavigatorDispatchAsync.Instance.get().execute(new GetForm(canonicalName, formSID, modalityType.isModal(), null), new ErrorHandlingCallback<GetFormResult>() {
+                @Override
+                public void failure(Throwable caught) {
+                    if (dockable != null) {
+                        removeDockable(dockable, formSID);
+                    }
+                    super.failure(caught);
                 }
-                super.failure(caught);
-            }
 
-            @Override
-            protected void showErrorMessage(Throwable caught) {
-                if (!suppressErrorMessages) {
-                    super.showErrorMessage(caught);
+                @Override
+                protected void showErrorMessage(Throwable caught) {
+                    if (!suppressErrorMessages) {
+                        super.showErrorMessage(caught);
+                    }
                 }
-            }
 
-            @Override
-            public void success(GetFormResult result) {
-                openFormAfterFontsInitialization(dockable, result.form, modalityType, null, null);
-            }
-        });
+                @Override
+                public void success(GetFormResult result) {
+                    openFormAfterFontsInitialization(dockable, result.form, modalityType, null, null);
+                }
+            });
+        }
     }
 
     public void openForm(GForm form, GModalityType modalityType, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {
@@ -106,7 +116,7 @@ public abstract class DefaultFormsController implements FormsController {
         });
     }
 
-    private void openForm(FormDockable dockable, GForm form, GModalityType modalityType, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
+    private void openForm(FormDockable dockable, final GForm form, GModalityType modalityType, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
         if (!GWT.isScript()) {
             form.caption += "(" + form.sID + ")";
         }
@@ -114,7 +124,7 @@ public abstract class DefaultFormsController implements FormsController {
             showModalForm(form, modalityType, initFilterEvent, hiddenHandler);
         } else {
             if (dockable == null) {
-                dockable = addDockable(new FormDockable(this, form));
+                dockable = addDockable(new FormDockable(this, form), form.sID);
             } else {
                 dockable.initialize(this, form);
             }
@@ -126,7 +136,7 @@ public abstract class DefaultFormsController implements FormsController {
                     if (hiddenHandler != null) {
                         hiddenHandler.onHidden();
                     }
-                    removeDockable(finalDockable);
+                    removeDockable(finalDockable, form.sID);
                 }
             });
         }
@@ -138,13 +148,15 @@ public abstract class DefaultFormsController implements FormsController {
         GResizableModalForm.showForm(this, form, modality.isDialog(), initFilterEvent, handler);
     }
 
-    private FormDockable addDockable(FormDockable dockable) {
+    private FormDockable addDockable(FormDockable dockable, String formSID) {
+        formsList.add(formSID);
         tabsPanel.add(dockable.getContentWidget(), dockable.getTabWidget());
         tabsPanel.selectTab(dockable.getContentWidget());
         return dockable;
     }
 
-    private void removeDockable(FormDockable dockable) {
+    private void removeDockable(FormDockable dockable, String formSID) {
+        formsList.remove(formSID);
         tabsPanel.remove(dockable.getContentWidget());
     }
 

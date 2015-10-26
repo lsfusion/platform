@@ -224,6 +224,20 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         }
     }
 
+    public boolean isForbidDuplicateForms() {
+        try {
+            boolean forbidDuplicateForms;
+            try (DataSession session = createSession()) {
+                QueryBuilder<Object, String> query = new QueryBuilder<>(MapFact.<Object, KeyExpr>EMPTYREV());
+                query.addProperty("forbidDuplicateForms", businessLogics.securityLM.forbidDuplicateFormsCurrentUser.getExpr());
+                forbidDuplicateForms = query.execute(session).singleValue().get("forbidDuplicateForms") != null;
+            }
+            return forbidDuplicateForms;
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public byte[] getCurrentUserInfoByteArray() {
         try {
             String userName;

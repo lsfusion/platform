@@ -32,6 +32,9 @@ overInUserRole 'Вкл.' (user, role) = mainRoleUser(user) == role OR inUserRole
 
 inMainRoleCustomUser(customUser, userRole) = mainRoleCustomUser(customUser) == userRole OR inUserRole(customUser, userRole);
 
+forbidDuplicateFormsUserRole 'Запретить открытие второй формы' = DATA BOOLEAN (UserRole);
+forbidDuplicateFormsCurrentUser 'Запретить открытие второй формы' () = forbidDuplicateFormsUserRole (mainRoleUser(currentUser()));
+
 permitViewAllPropertyUserRole 'Разрешить просмотр всех свойств' = DATA BOOLEAN (UserRole);
 permitViewAllPropertyUser 'Разрешить просмотр всех свойств' (user) = permitViewAllPropertyUserRole (mainRoleUser(user));
 forbidViewAllPropertyUserRole 'Запретить просмотр всех свойств' = DATA BOOLEAN (UserRole);
@@ -286,7 +289,7 @@ FORM securityPolicy 'Политика безопасности'
 
     OBJECTS ur=UserRole
     PROPERTIES(ur) READONLY nameUserRole, sidUserRole
-    PROPERTIES(ur) transactTimeoutUserRole, permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole, permitChangeAllPropertyUserRole,
+    PROPERTIES(ur) transactTimeoutUserRole, forbidDuplicateFormsUserRole, permitViewAllPropertyUserRole, forbidViewAllPropertyUserRole, permitChangeAllPropertyUserRole,
                    forbidChangeAllPropertyUserRole, nameDefaultFormsUserRole, permitAllFormsUserRole, forbidAllFormsUserRole
 
     OBJECTS p=Policy

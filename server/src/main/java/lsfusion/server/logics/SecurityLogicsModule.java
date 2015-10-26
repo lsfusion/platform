@@ -25,6 +25,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP forbidChangeProperty;
     public LCP notNullPermissionProperty;
 
+    public LCP forbidDuplicateFormsCurrentUser;
     public LCP permitViewAllPropertyUser;
     public LCP forbidChangeAllPropertyRole;
     public LCP forbidViewAllPropertyUser;
@@ -104,6 +105,7 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         // -- Разрешения для каждой роли
 
         // Разрешения для всех свойств
+        forbidDuplicateFormsCurrentUser = findProperty("forbidDuplicateFormsCurrentUser");
         permitViewAllPropertyUser = findProperty("permitViewAllPropertyUser");
         forbidViewAllPropertyUser = findProperty("forbidViewAllPropertyUser");
         permitChangeAllPropertyUser = findProperty("permitChangeAllPropertyUser");

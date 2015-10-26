@@ -34,6 +34,8 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     List<String> getDefaultForms() throws RemoteException;
 
+    boolean isForbidDuplicateForms() throws RemoteException;
+
     // пингование сервера
     ClientCallBackInterface getClientCallBack() throws RemoteException;
 

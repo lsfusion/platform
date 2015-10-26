@@ -41,6 +41,7 @@ import java.util.Map;
 public class MainFrame implements EntryPoint {
     private final NavigatorDispatchAsync dispatcher = NavigatorDispatchAsync.Instance.get();
     public static boolean configurationAccessAllowed;
+    public static boolean forbidDuplicateForms;
 
     private GNavigatorController navigatorController;
     private WindowsController windowsController;
@@ -110,6 +111,13 @@ public class MainFrame implements EntryPoint {
             @Override
             public void success(BooleanResult result) {
                 configurationAccessAllowed = result.value;
+            }
+        });
+
+        dispatcher.execute(new ForbidDuplicateFormsAction(), new ErrorHandlingCallback<BooleanResult>() {
+            @Override
+            public void success(BooleanResult result) {
+                forbidDuplicateForms = result.value;
             }
         });
 
