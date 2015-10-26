@@ -35,9 +35,15 @@ public class SaveActionProperty extends SystemExplicitActionProperty {
         for (ClassPropertyInterface classInterface : interfaces) {
             objects[i++] = context.getKeyValue(classInterface);
         }
+
+        String fileName = "new file";
+        if (fileNameProp != null) {
+            assert fileNameProp.property.interfaces.isEmpty(): "property expression after NAME should have no parameters";
+            Object fileNameObject = fileNameProp.read(context);
+            fileName = fileNameObject != null ? fileNameObject.toString().trim() : "";
+        }
+
         FileClass fileClass = (FileClass) fileProperty.property.getType();
-        Object fileNameObject = fileNameProp != null ? fileNameProp.read(context, objects) : null;
-        String fileName = fileNameObject != null ? fileNameObject.toString().trim() : "new file";
         for (byte[] file : fileClass.getFiles(fileProperty.read(context, objects))) {
             String extension;
             byte[] saveFile = file; 
