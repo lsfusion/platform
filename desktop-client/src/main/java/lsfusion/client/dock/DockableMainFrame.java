@@ -300,6 +300,7 @@ public class DockableMainFrame extends MainFrame {
             JComponent component = entry.getValue();
             if (window.position == AbstractWindowType.DOCKING_POSITION) {
                 ClientWindowDockable dockable = new ClientWindowDockable(window, entry.getValue());
+                dockable.setMinimizable(false);
                 navigatorController.recordDockable(component, dockable);
                 windowDockables.put(dockable, window);
             } else {

@@ -32,7 +32,7 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
 
         this.canonicalName = canonicalName;
 
-        setMinimizable(true);
+        setMinimizable(false);
         setMaximizable(true);
         setExternalizable(false);
         setRemoveOnClose(true);
