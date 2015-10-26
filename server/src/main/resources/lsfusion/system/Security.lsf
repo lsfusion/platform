@@ -158,7 +158,7 @@ forbidChangeUserProperty 'Запретить изменение свойства
 overForbidChangeUserProperty 'Запретить изменение свойства' (user, property) = 
     GROUP MAX forbidChangeUserRoleProperty(userRole, property) IF overInUserRole(user, userRole) BY user, property;
     
-notNullPermissionUserProperty (user, property) = OVERRIDE permitViewUserProperty(user, property), forbidViewUserProperty(user, property), permitChangeUserProperty(user, property), forbidChangeUserProperty(user, property);
+notNullPermissionUserProperty (user, property) = OVERRIDE overPermitViewUserProperty(user, property), overForbidViewUserProperty(user, property), overPermitChangeUserProperty(user, property), overForbidChangeUserProperty(user, property);
 
 CLASS DefaultForms 'Отображение форм при запуске' {
     none 'Не восстанавливать формы',
