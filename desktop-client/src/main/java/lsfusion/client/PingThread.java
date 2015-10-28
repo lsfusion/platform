@@ -27,7 +27,7 @@ public class PingThread extends Thread {
 
     private final int period;
     private final int interval = 30;//calculate ping every 30 seconds
-    private final int sendInterval = interval * 120;//every hour (120 calculate intervals)
+    private final int sendInterval = 120;//every hour (120 calculate intervals)
 
     private long oldIn, oldOut;
     private long sum;
