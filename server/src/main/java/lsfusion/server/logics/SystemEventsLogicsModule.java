@@ -85,6 +85,10 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LCP changesSession;
 
     public LCP pingComputerDateTimeFromDateTimeTo;
+    public LCP minTotalMemoryComputerDateTimeFromDateTimeTo;
+    public LCP maxTotalMemoryComputerDateTimeFromDateTimeTo;
+    public LCP minUsedMemoryComputerDateTimeFromDateTimeTo;;
+    public LCP maxUsedMemoryComputerDateTimeFromDateTimeTo;
 
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(SystemEventsLogicsModule.class.getResourceAsStream("/lsfusion/system/SystemEvents.lsf"), "/lsfusion/system/SystemEvents.lsf", baseLM, BL);
@@ -164,6 +168,10 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 //        baseLM.objectClassName.makeLoggable(this, true);
 
         pingComputerDateTimeFromDateTimeTo = findProperty("pingComputerDateTimeFromDateTimeTo");
+        minTotalMemoryComputerDateTimeFromDateTimeTo = findProperty("minTotalMemoryComputerDateTimeFromDateTimeTo");
+        maxTotalMemoryComputerDateTimeFromDateTimeTo = findProperty("maxTotalMemoryComputerDateTimeFromDateTimeTo");
+        minUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("minUsedMemoryComputerDateTimeFromDateTimeTo");
+        maxUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("maxUsedMemoryComputerDateTimeFromDateTimeTo");
     }
 
     public void logException(BusinessLogics bl, Throwable t, DataObject user, String clientName, boolean client) throws SQLException, SQLHandledException {

@@ -457,8 +457,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     for (Map.Entry<Long, List<Long>> pingEntry : entry.getValue().entrySet()) {
                         DataObject dateFrom = new DataObject(new Timestamp(pingEntry.getKey()), DateTimeClass.instance);
                         DataObject dateTo = new DataObject(new Timestamp(pingEntry.getValue().get(0)), DateTimeClass.instance);
-                        Integer ping = pingEntry.getValue().get(1).intValue();
-                        businessLogics.systemEventsLM.pingComputerDateTimeFromDateTimeTo.change(ping, session, computerObject, dateFrom, dateTo);
+                        businessLogics.systemEventsLM.pingComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(1).intValue(), session, computerObject, dateFrom, dateTo);
+                        businessLogics.systemEventsLM.minTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(2).intValue(), session, computerObject, dateFrom, dateTo);
+                        businessLogics.systemEventsLM.maxTotalMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(3).intValue(), session, computerObject, dateFrom, dateTo);
+                        businessLogics.systemEventsLM.minUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(4).intValue(), session, computerObject, dateFrom, dateTo);
+                        businessLogics.systemEventsLM.maxUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(5).intValue(), session, computerObject, dateFrom, dateTo);
                     }
                 }
                 session.apply(businessLogics);

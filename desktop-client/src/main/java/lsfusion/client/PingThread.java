@@ -26,6 +26,8 @@ public class PingThread extends Thread {
     private final Queue<Long> queue = new LinkedList<>();
 
     private final int period;
+    private final int interval = 30;//calculate ping every 30 seconds
+    private final int sendInterval = interval * 120;//every hour (120 calculate intervals)
 
     private long oldIn, oldOut;
     private long sum;
@@ -102,30 +104,38 @@ public class PingThread extends Thread {
 
             pingCounter++;
             currentPingList.add(pingTime);
-            //every 30 sec
-            if(pingCounter == 30) {
+            if(pingCounter == interval) {
                 globalCounter++;
                 Collections.sort(currentPingList);
                 globalPingList.addAll(currentPingList);
-                long newPing = currentPingList.get(15); //medium
+                long newPing = currentPingList.get(interval / 2); //medium
+                long totalMemory = Runtime.getRuntime().totalMemory() / 1048576;
+                long freeMemory = Runtime.getRuntime().freeMemory() / 1048576;
+                long usedMemory = totalMemory - freeMemory;
+
+                List<Long> lastMemories = pingInfoMap.get(lastTimeFrom);
+                Long minTotalMemory = lastMemories == null ? totalMemory : Math.min(totalMemory, lastMemories.get(2));
+                Long maxTotalMemory = lastMemories == null ? totalMemory : Math.max(totalMemory, lastMemories.get(3));
+                Long minUsedMemory = lastMemories == null ? usedMemory : Math.min(usedMemory, lastMemories.get(4));
+                Long maxUsedMemory = lastMemories == null ? usedMemory : Math.max(usedMemory, lastMemories.get(5));
+
                 long currentTime = System.currentTimeMillis();
                 if (differs(lastPing, newPing)) {
                     Collections.sort(globalPingList);
                     long globalMedian = globalPingList.get(globalPingList.size() / 2);
                     if(differs(lastPing, globalMedian)) {
-                        pingInfoMap.put(lastTimeFrom, Arrays.asList(currentTime, globalMedian));
+                        pingInfoMap.put(lastTimeFrom, Arrays.asList(currentTime, globalMedian, minTotalMemory, maxTotalMemory, minUsedMemory, maxUsedMemory));
                         globalPingList.clear();
                         lastTimeFrom = currentTime;
                         lastPing = globalMedian;
                     }
                 } else {
-                    pingInfoMap.put(lastTimeFrom, Arrays.asList(currentTime, newPing));
+                    pingInfoMap.put(lastTimeFrom, Arrays.asList(currentTime, newPing, minTotalMemory, maxTotalMemory, minUsedMemory, maxUsedMemory));
                 }
                 currentPingList.clear();
                 pingCounter = 0;
 
-                //every hour (30 sec * 120)
-                if(globalCounter == 120) {
+                if(globalCounter == sendInterval) {
                     try {
                         lastTimeFrom = currentTime;
                         Main.remoteLogics.sendPingInfo(computerId, pingInfoMap);

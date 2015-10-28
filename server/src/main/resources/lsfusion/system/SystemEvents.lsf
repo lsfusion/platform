@@ -131,6 +131,10 @@ userLoginConnectionSession 'Логин пользователя' = userLoginConn
 
 TABLE pingTable(Computer, DATETIME, DATETIME);
 pingComputerDateTimeFromDateTimeTo 'Пинг' = DATA INTEGER (Computer, DATETIME, DATETIME);
+minTotalMemoryComputerDateTimeFromDateTimeTo 'Минимум памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
+maxTotalMemoryComputerDateTimeFromDateTimeTo 'Максимум памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
+minUsedMemoryComputerDateTimeFromDateTimeTo 'Минимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
+maxUsedMemoryComputerDateTimeFromDateTimeTo 'Максимум использованной памяти' = DATA INTEGER (Computer, DATETIME, DATETIME);
 
 lastConnectionComputer(computer) = GROUP LAST connection BY computerConnection(connection);
 remoteAddressComputer 'IP пользователя' (computer) = remoteAddressConnection(lastConnectionComputer(computer));
@@ -144,7 +148,7 @@ maximumMemoryComputer 'Максимально доступная память д
 freeMemoryComputer 'Свободная память для JVM, МБ' (computer) = freeMemoryConnection(lastConnectionComputer(computer));
 javaVersionComputer 'Версия java' (computer) = javaVersionConnection(lastConnectionComputer(computer));
 
-countDaysClearPings 'За сколько дней хранить статистику пингов' = DATA INTEGER (); 
+countDaysClearPings 'За сколько дней хранить статистику пингов и памяти' = DATA INTEGER (); 
     
 EXTEND FORM options PROPERTIES countDaysClearPings();
 DESIGN options { log { MOVE PROPERTY(countDaysClearPings());} }    
@@ -152,6 +156,10 @@ DESIGN options { log { MOVE PROPERTY(countDaysClearPings());} }
 clearApplicationLog () += ACTION () NEWSESSION {
     IF countDaysClearPings() THEN {
         pingComputerDateTimeFromDateTimeTo(c, dFrom, dTo) <- NULL WHERE dTo <= subtractDateTimeDay(currentDateTime(), countDaysClearPings());
+        minTotalMemoryComputerDateTimeFromDateTimeTo(c, dFrom, dTo) <- NULL WHERE dTo <= subtractDateTimeDay(currentDateTime(), countDaysClearPings());
+        maxTotalMemoryComputerDateTimeFromDateTimeTo(c, dFrom, dTo) <- NULL WHERE dTo <= subtractDateTimeDay(currentDateTime(), countDaysClearPings());
+        minUsedMemoryComputerDateTimeFromDateTimeTo(c, dFrom, dTo) <- NULL WHERE dTo <= subtractDateTimeDay(currentDateTime(), countDaysClearPings());
+        maxUsedMemoryComputerDateTimeFromDateTimeTo(c, dFrom, dTo) <- NULL WHERE dTo <= subtractDateTimeDay(currentDateTime(), countDaysClearPings());
     }
     apply();
 }   
@@ -261,15 +269,27 @@ DESIGN changes {
 limitPing 'Пороговый пинг' = DATA INTEGER ();
 limitPingTimeSum 'Суммарное время выше порога, секунд' (computer, limitDFrom, limitDTo) = GROUP SUM subtractSeconds(dFrom, dTo) BY computer, limitDFrom, limitDTo
     IF pingComputerDateTimeFromDateTimeTo(computer, dFrom, dTo) > limitPing() AND limitDFrom < dFrom AND limitDTo > dTo;
+    
+limitMaxTotalMemory 'Пороговая память' = DATA INTEGER();
+limitMaxTotalMemoryTimeSum 'Суммарное время выше порога памяти, секунд' (computer, limitDFrom, limitDTo) = GROUP SUM subtractSeconds(dFrom, dTo) BY computer, limitDFrom, limitDTo
+    IF maxTotalMemoryComputerDateTimeFromDateTimeTo(computer, dFrom, dTo) > limitMaxTotalMemory() AND limitDFrom < dFrom AND limitDTo > dTo;
 
-FORM pings 'Журнал статистики пингов'
+limitMaxUsedMemory 'Пороговая использованная память' = DATA INTEGER();   
+limitMaxUsedMemoryTimeSum 'Суммарное время выше порога использованной памяти, секунд' (computer, limitDFrom, limitDTo) = GROUP SUM subtractSeconds(dFrom, dTo) BY computer, limitDFrom, limitDTo
+    IF maxUsedMemoryComputerDateTimeFromDateTimeTo(computer, dFrom, dTo) > limitMaxUsedMemory() AND limitDFrom < dFrom AND limitDTo > dTo;
+
+FORM pings 'Журнал клиентских приложений'
     OBJECTS limits = (limitDFrom = DATETIME, limitDTo = DATETIME) FIXED PANEL, c = Computer, dates = (dFrom = DATETIME, dTo = DATETIME)
     PROPERTIES(c) READONLY hostnameComputer, remoteAddressComputer, osVersionComputer, processorComputer, architectureComputer, coresComputer, 
                            physicalMemoryComputer, totalMemoryComputer, maximumMemoryComputer, freeMemoryComputer,
                            javaVersionComputer                                       
     PROPERTIES dFromObj = OBJVALUE(dFrom), dToObj = OBJVALUE(dTo), limitDFromObj = OBJVALUE(limitDFrom), limitDToObj = OBJVALUE(limitDTo),
-               limitPing() TODRAW limits, limitPingTimeSum(c, limitDFrom, limitDTo) TODRAW c, subtractSeconds(dFrom, dTo)
-    PROPERTIES(c,dFrom,dTo) READONLY pingComputerDateTimeFromDateTimeTo
+               limitPing() TODRAW limits, limitMaxTotalMemory() TODRAW limits, limitMaxUsedMemory() TODRAW limits, 
+               limitPingTimeSum(c, limitDFrom, limitDTo) TODRAW c, limitMaxTotalMemoryTimeSum(c, limitDFrom, limitDTo) TODRAW c, limitMaxUsedMemoryTimeSum(c, limitDFrom, limitDTo),
+               subtractSeconds(dFrom, dTo)
+    PROPERTIES(c,dFrom,dTo) READONLY pingComputerDateTimeFromDateTimeTo, 
+                            minTotalMemoryComputerDateTimeFromDateTimeTo, maxTotalMemoryComputerDateTimeFromDateTimeTo,
+                            minUsedMemoryComputerDateTimeFromDateTimeTo, maxUsedMemoryComputerDateTimeFromDateTimeTo
     FILTERS pingComputerDateTimeFromDateTimeTo(c,dFrom,dTo)
 ;
 
