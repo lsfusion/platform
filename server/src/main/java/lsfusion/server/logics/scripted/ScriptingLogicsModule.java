@@ -2316,11 +2316,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(mainProp, Collections.singletonList(property)).property;
     }
 
-    public void addScriptedConstraint(LP property, Event event, boolean checked, List<PropertyUsage> propUsages, String message, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedConstraint(LP property, Event event, boolean checked, List<PropertyUsage> propUsages, LP messageProperty, ActionDebugInfo debugInfo) throws ScriptingErrorLog.SemanticErrorException {
         if (!((LCP<?>)property).property.checkAlwaysNull(true)) {
             errLog.emitConstraintPropertyAlwaysNullError(parser);
         }
-        property.property.caption = message;
         ImSet<CalcProperty<?>> checkedProps = null;
         CalcProperty.CheckType type = (checked ? CalcProperty.CheckType.CHECK_ALL : CalcProperty.CheckType.CHECK_NO);
         if (checked && propUsages != null) {
@@ -2331,7 +2330,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             type = CalcProperty.CheckType.CHECK_SOME;
             checkedProps = mCheckedProps.immutable();
         }
-        addConstraint((LCP<?>) property, type, checkedProps, event, this, debugInfo);
+        addConstraint((LCP<?>) property, (LCP<?>) messageProperty, type, checkedProps, event, this, debugInfo);
     }
 
     private PrevScope prevScope = null;

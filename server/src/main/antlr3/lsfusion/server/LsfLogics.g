@@ -2644,7 +2644,7 @@ constraintStatement
 }
 @after {
 	if (inPropParseState()) {
-		self.addScriptedConstraint($expr.property.property, $et.event, checked, propUsages, $message.val, debugInfo);
+		self.addScriptedConstraint($expr.property.property, $et.event, checked, propUsages, $message.property.property, debugInfo);
 	}
 }
 	:	'CONSTRAINT'
@@ -2663,7 +2663,7 @@ constraintStatement
 		('CHECKED' { checked = true; }
 			('BY' list=nonEmptyPropertyUsageList { propUsages = $list.propUsages; })? 
 		)?
-		'MESSAGE' message=stringLiteral
+		'MESSAGE' message=propertyExpression[new ArrayList<TypedParameter>(), true]
 		';'
 	;
 

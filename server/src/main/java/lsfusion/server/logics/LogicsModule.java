@@ -1720,25 +1720,33 @@ public abstract class LogicsModule {
     }
 
     public void addConstraint(CalcProperty property, boolean checkChange) {
-        addConstraint(property, checkChange, null);
+        addConstraint(property, null, checkChange);
+    }
+
+    public void addConstraint(CalcProperty property, CalcProperty messageProperty, boolean checkChange) {
+        addConstraint(property, messageProperty, checkChange, null);
     }
 
     public void addConstraint(CalcProperty property, boolean checkChange, ActionDebugInfo debugInfo) {
-        addConstraint(addProp(property), checkChange, debugInfo);
+        addConstraint(addProp(property), null, checkChange, debugInfo);
     }
 
-    public void addConstraint(LCP<?> lp, boolean checkChange, ActionDebugInfo debugInfo) {
-        addConstraint(lp, (checkChange ? CalcProperty.CheckType.CHECK_ALL : CalcProperty.CheckType.CHECK_NO), null, Event.APPLY, this, debugInfo);
+    public void addConstraint(CalcProperty property, CalcProperty messageProperty, boolean checkChange, ActionDebugInfo debugInfo) {
+        addConstraint(addProp(property), messageProperty == null ? null : addProp(messageProperty), checkChange, debugInfo);
     }
 
-    protected void addConstraint(LCP<?> lp, CalcProperty.CheckType type, ImSet<CalcProperty<?>> checkProps, Event event, LogicsModule lm, ActionDebugInfo debugInfo) {
+    public void addConstraint(LCP<?> lp, LCP<?> messageLP, boolean checkChange, ActionDebugInfo debugInfo) {
+        addConstraint(lp, messageLP, (checkChange ? CalcProperty.CheckType.CHECK_ALL : CalcProperty.CheckType.CHECK_NO), null, Event.APPLY, this, debugInfo);
+    }
+
+    protected void addConstraint(LCP<?> lp, LCP<?> messageLP, CalcProperty.CheckType type, ImSet<CalcProperty<?>> checkProps, Event event, LogicsModule lm, ActionDebugInfo debugInfo) {
         if(!((CalcProperty)lp.property).noDB())
             lp = addCHProp(lp, IncrementType.SET, event.getScope());
         // assert что lp уже в списке properties
-        setConstraint((CalcProperty) lp.property, type, event, checkProps, debugInfo);
+        setConstraint((CalcProperty) lp.property, messageLP == null ? null : messageLP.property, type, event, checkProps, debugInfo);
     }
 
-    public <T extends PropertyInterface> void setConstraint(CalcProperty property, CalcProperty.CheckType type, Event event, ImSet<CalcProperty<?>> checkProperties, ActionDebugInfo debugInfo) {
+    public <T extends PropertyInterface> void setConstraint(CalcProperty property, CalcProperty messageProperty, CalcProperty.CheckType type, Event event, ImSet<CalcProperty<?>> checkProperties, ActionDebugInfo debugInfo) {
         assert type != CalcProperty.CheckType.CHECK_SOME || checkProperties != null;
         assert property.noDB();
 
@@ -1748,8 +1756,7 @@ public abstract class LogicsModule {
         ActionPropertyMapImplement<?, ClassPropertyInterface> constraintAction =
                 DerivedProperty.createListAction(
                         SetFact.<ClassPropertyInterface>EMPTY(),
-                        ListFact.<ActionPropertyMapImplement<?, ClassPropertyInterface>>toList(
-                                new LogPropertyActionProperty<T>(property).getImplement(),
+                        ListFact.toList(new LogPropertyActionProperty<T>(property, messageProperty).getImplement(),
                                 baseLM.cancel.property.getImplement(SetFact.<ClassPropertyInterface>EMPTYORDER())
                         )
                 );

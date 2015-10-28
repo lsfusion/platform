@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.LogMessageClientAction;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.entity.ObjectEntity;
 import lsfusion.server.form.instance.*;
@@ -13,7 +12,6 @@ import lsfusion.server.logics.property.CalcProperty;
 import lsfusion.server.logics.property.ClassPropertyInterface;
 import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
-import lsfusion.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -22,11 +20,13 @@ import java.util.List;
 public class LogPropertyActionProperty<P extends PropertyInterface> extends SystemExplicitActionProperty {
 
     private final CalcProperty<P> property;
+    private final CalcProperty<P> messageProperty;
 
-    public LogPropertyActionProperty(CalcProperty<P> property) {
-        super(property.caption, new ValueClass[]{});
+    public LogPropertyActionProperty(CalcProperty<P> property, CalcProperty<P> messageProperty) {
+        super(property.caption);
 
         this.property = property;
+        this.messageProperty = messageProperty;
     }
 
     @Override
@@ -36,13 +36,12 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
 
-        DataSession session = context.getSession();
-        FormInstance<?> formInstance = context.createFormInstance(context.getBL().LM.getLogForm(property), 
-                MapFact.<ObjectEntity, DataObject>EMPTY(), session, false, FormSessionScope.OLDSESSION, false, false, false, null);
+        try (FormInstance<?> formInstance = context.createFormInstance(context.getBL().LM.getLogForm(property),
+                MapFact.<ObjectEntity, DataObject>EMPTY(), context.getSession(), false, FormSessionScope.OLDSESSION, false, false, false, null)) {
+            String caption = messageProperty == null ? null : (String) messageProperty.read(context);
 
-        try {
-            List<String> titleRow = new ArrayList<String>();
-            List<List<String>> data = new ArrayList<List<String>>();
+            List<String> titleRow = new ArrayList<>();
+            List<List<String>> data = new ArrayList<>();
             ImOrderSet<FormRow> formRows = formInstance.getFormData(30).rows;
             for (int i = 0; i < formRows.size(); i++)
                 data.add(new ArrayList<String>());
@@ -95,9 +94,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
                     data.add(propertyRow);
                 }
             }*/
-            context.delayUserInteraction(new LogMessageClientAction(property.toString() + " :", titleRow, data, true));
-        } finally {
-            formInstance.close();
+            context.delayUserInteraction(new LogMessageClientAction(caption == null ? (property.toString() + " :") : caption, titleRow, data, true));
         }
 
         // todo : Раскомментить для использования форм....
