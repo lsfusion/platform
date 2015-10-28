@@ -1,6 +1,7 @@
 package lsfusion.client.form.sort;
 
 import lsfusion.base.OrderedMap;
+import lsfusion.base.Pair;
 import lsfusion.client.form.grid.GridTable;
 import lsfusion.client.logics.ClientGroupObject;
 import lsfusion.client.logics.ClientPropertyDraw;
@@ -103,7 +104,7 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
     }
 
     public final void changeOrder(T columnKey, Order modiType) {
-        if (columnKey == null) {
+        if (columnKey == null || noSort(columnKey)) {
             return;
         }
 
@@ -124,6 +125,10 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
         }
 
         orderChanged(columnKey, modiType);
+    }
+
+    private boolean noSort (T columnKey) {
+        return columnKey instanceof Pair && ((Pair) columnKey).first instanceof ClientPropertyDraw && ((ClientPropertyDraw) ((Pair) columnKey).first).noSort;
     }
 
     public final void clearOrders(ClientGroupObject groupObject) {

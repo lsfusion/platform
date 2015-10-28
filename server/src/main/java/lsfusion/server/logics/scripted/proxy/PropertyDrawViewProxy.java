@@ -38,6 +38,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.echoSymbols = echoSymbols;
     }
 
+    public void setNoSort(boolean noSort) {
+        target.noSort = noSort;
+    }
+
     public void setMinimumCharWidth(int minimumCharWidth) {
         target.setMinimumCharWidth(minimumCharWidth);
     }

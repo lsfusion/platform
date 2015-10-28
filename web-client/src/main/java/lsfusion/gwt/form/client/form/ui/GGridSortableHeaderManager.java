@@ -2,7 +2,9 @@ package lsfusion.gwt.form.client.form.ui;
 
 import lsfusion.gwt.form.shared.view.GGroupObject;
 import lsfusion.gwt.form.shared.view.GOrder;
+import lsfusion.gwt.form.shared.view.GPropertyDraw;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -45,7 +47,7 @@ public abstract class GGridSortableHeaderManager<T> {
     }
 
     public final void changeOrder(T columnKey, GOrder modiType) {
-        if (columnKey == null) {
+        if (columnKey == null || noSort(columnKey)) {
             return;
         }
 
@@ -71,6 +73,16 @@ public abstract class GGridSortableHeaderManager<T> {
     public void clearOrders(GGroupObject groupObject) {
         orderDirections.clear();
         ordersCleared(groupObject);
+    }
+
+    private boolean noSort(T columnKey) {
+        if (columnKey instanceof HashMap) {
+            for (Object entry : ((HashMap) columnKey).keySet()) {
+                if (entry instanceof GPropertyDraw && ((GPropertyDraw) entry).noSort)
+                    return true;
+            }
+        }
+        return false;
     }
 
     public Map<T, Boolean> getOrderDirections() {

@@ -56,6 +56,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
 
     public boolean echoSymbols;
+    public boolean noSort;
 
     public GKeyStroke editKey;
     public boolean showEditKey;
