@@ -71,6 +71,7 @@ sqrt = FORMULA 'sqrt($1)';
 percent = FORMULA '(($1)*($2)/100)';
 share = FORMULA '(($1)*100/($2))';
 round = FORMULA PG 'round(CAST(($1) as numeric),$2)', MS 'round(CAST(($1) as numeric(38,19)),$2)';
+abs = FORMULA 'abs($1)';
 delta = FORMULA 'abs(($1)-($2))';
 
 ln = FORMULA 'ln($1)';
