@@ -1,6 +1,5 @@
 package lsfusion.gwt.form.server;
 
-import com.google.gwt.core.client.GWT;
 import lsfusion.client.logics.ClientForm;
 import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.serialization.ClientSerializationPool;
@@ -12,7 +11,6 @@ import lsfusion.gwt.form.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.interop.RemoteLogicsInterface;
 import lsfusion.interop.action.FormClientAction;
-import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.form.ColumnUserPreferences;
 import lsfusion.interop.form.FormUserPreferences;
 import lsfusion.interop.form.GroupObjectUserPreferences;
@@ -52,12 +50,13 @@ public class FormSessionManagerImpl implements FormSessionManager, InitializingB
         gForm.canonicalName = canonicalName;
         gForm.sessionID = nextFormSessionID();
 
-        byte[] changes = firstChanges != null ? firstChanges : ((ProcessFormChangesClientAction) remoteForm.getRemoteChanges(-1, -1, false).actions[0]).formChanges;
-        gForm.initialFormChanges = ClientFormChangesToGwtConverter.getInstance().convertOrCast(
-                new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(changes)), clientForm),
-                -1,
-                blProvider
-        );
+        if (firstChanges != null) {
+            gForm.initialFormChanges = ClientFormChangesToGwtConverter.getInstance().convertOrCast(
+                    new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(firstChanges)), clientForm),
+                    -1,
+                    blProvider
+            );
+        }
 
         FormUserPreferences formUP = immutableMethods != null ? (FormUserPreferences)immutableMethods[0] : remoteForm.getUserPreferences();
         

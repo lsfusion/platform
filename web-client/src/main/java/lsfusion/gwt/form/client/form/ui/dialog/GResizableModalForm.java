@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.client.form.ui.dialog;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Window;
 import lsfusion.gwt.base.client.Dimension;
@@ -33,7 +34,12 @@ public class GResizableModalForm extends GResizableModalWindow {
             @Override
             protected void onInitialFormChangesReceived() {
                 super.onInitialFormChangesReceived();
-                initialFormChangesReceived();
+                Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                    @Override
+                    public void execute() {
+                        initialFormChangesReceived();
+                    }
+                });
             }
         };
 

@@ -22,7 +22,8 @@ import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
-import lsfusion.gwt.base.shared.actions.*;
+import lsfusion.gwt.base.shared.actions.NumberResult;
+import lsfusion.gwt.base.shared.actions.VoidResult;
 import lsfusion.gwt.form.client.HotkeyManager;
 import lsfusion.gwt.form.client.LoadingBlocker;
 import lsfusion.gwt.form.client.dispatch.DeferredRunner;
@@ -94,6 +95,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private final NativeHashMap<GGroupObject, Integer> pendingChangeCurrentObjectsRequests = new NativeHashMap<GGroupObject, Integer>();
     private final NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>> pendingChangePropertyRequests = new NativeHashMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Change>>();
 
+    private boolean initialFormChangesReceived = false;
     private boolean defaultOrdersInitialized = false;
     private boolean hasColumnGroupObjects;
 
@@ -147,17 +149,14 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         initializeDefaultOrders();
 
-        applyRemoteChanges(form.initialFormChanges);
-        form.initialFormChanges = null;
+        if (form.initialFormChanges != null) {
+            applyRemoteChanges(form.initialFormChanges);
+            form.initialFormChanges = null;
+        } else {
+            getRemoteChanges();
+        }
 
         initializeAutoRefresh();
-
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-                onInitialFormChangesReceived();
-            }
-        });
 
         hotkeyManager.install(this);
     }
@@ -427,6 +426,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         for (GTreeGroupController treeController : treeControllers.values()) {
             treeController.processFormChanges(fc);
+        }
+        
+        if (!initialFormChangesReceived) {
+            onInitialFormChangesReceived();
+            initialFormChangesReceived = true;
         }
 
         formLayout.hideEmptyContainerViews();

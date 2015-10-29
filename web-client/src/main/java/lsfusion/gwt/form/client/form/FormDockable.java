@@ -63,9 +63,13 @@ final class FormDockable {
                 contentWidget.setBlocked(false);
                 formsController.select(contentWidget);
             }
-        };
 
-        contentWidget.setContent(form);
+            @Override
+            protected void onInitialFormChangesReceived() {
+                contentWidget.setContent(this);
+                super.onInitialFormChangesReceived();
+            }
+        };
     }
 
     public void setHiddenHandler(WindowHiddenHandler hiddenHandler) {
