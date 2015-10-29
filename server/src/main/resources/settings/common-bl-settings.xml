@@ -504,6 +504,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="syncNavigatorElementsTask"/> <!--> так как ссылка на живой объект, а не varstring <-->
+                <ref bean="syncGroupObjectsTask"/>
             </set>
         </property>
         <property name="reflectionManager" ref="reflectionManager"/>
