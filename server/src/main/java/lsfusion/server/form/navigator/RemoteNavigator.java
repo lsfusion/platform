@@ -440,15 +440,18 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     businessLogics.authenticationLM.lastActivityCustomUser.change(new Timestamp(userActivity.getValue()), session, customUserObject);
 
                 }
-                session.apply(businessLogics);
+                String result = session.applyMessage(businessLogics);
+                if(result != null)
+                    logger.error("UpdateUserLastActivity error: " + result);
             }
         } catch (Exception e) {
-            logger.error("Error updating user activity: ", e);
+            logger.error("UpdateUserLastActivity error: ", e);
         }
     }
 
     public static void updatePingInfo(BusinessLogics businessLogics) {
         try {
+            logger.info("UpdatePingInfo started");
             Map<Integer, Map<Long, List<Long>>> pingInfoMap = new HashMap<>(RemoteLoggerAspect.pingInfoMap);
             RemoteLoggerAspect.pingInfoMap.clear();
             try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
@@ -464,10 +467,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                         businessLogics.systemEventsLM.maxUsedMemoryComputerDateTimeFromDateTimeTo.change(pingEntry.getValue().get(5).intValue(), session, computerObject, dateFrom, dateTo);
                     }
                 }
-                session.apply(businessLogics);
+                String result = session.applyMessage(businessLogics);
+                if(result == null)
+                    logger.info("UpdatePingInfo finished successfully");
+                else
+                    logger.error("UpdatePingInfo error: " + result);
             }
         } catch (Exception e) {
-            logger.error("Error updating user activity: ", e);
+            logger.error("UpdatePingInfo error: ", e);
             throw Throwables.propagate(e);
         }
     }
