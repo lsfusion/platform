@@ -57,21 +57,19 @@ public class NavigatorController implements INavigatorController {
         return av;
     }
 
-    public void openElement(ClientNavigatorElement element) {
+    public void openElement(ClientNavigatorElement element, int modifiers) {
         try {
             if (element instanceof ClientNavigatorForm) {
                 ClientNavigatorForm form = (ClientNavigatorForm) element;
                 if (form.modalityType.isModal()) {
-                    mainNavigator.openModalForm(form);
+                    mainNavigator.openModalForm(form, modifiers);
                 } else {
-                    mainNavigator.openForm(form);
+                    mainNavigator.openForm(form, modifiers);
                 }
             } else if (element instanceof ClientNavigatorAction) {
                 mainNavigator.openAction((ClientNavigatorAction) element);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }

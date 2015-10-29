@@ -105,7 +105,7 @@ public class PanelNavigatorView extends NavigatorView {
         public void mouseReleased(MouseEvent e) {
             setSelectedElement(selected);
             controller.update();
-            controller.openElement(getSelectedElement());
+            controller.openElement(getSelectedElement(), e.getModifiers());
         }
     }
 }

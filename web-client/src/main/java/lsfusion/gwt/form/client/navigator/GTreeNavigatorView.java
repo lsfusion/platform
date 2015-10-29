@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.client.navigator;
 
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Tree;
@@ -78,12 +79,12 @@ public class GTreeNavigatorView extends GNavigatorView {
         }
     }
 
-    private void doubleClicked() {
+    private void doubleClicked(NativeEvent event) {
         TreeNavigatorItem selectedItem = (TreeNavigatorItem) tree.getSelectedItem();
         if (selectedItem != null) {
             selected = selectedItem.element;
             navigatorController.update();
-            navigatorController.openElement(selected);
+            navigatorController.openElement(selected, event);
         }
     }
 
@@ -122,7 +123,7 @@ public class GTreeNavigatorView extends GNavigatorView {
         public void onBrowserEvent(Event event) {
             if (event.getTypeInt() == Event.ONDBLCLICK) {
                 stopPropagation(event);
-                doubleClicked();
+                doubleClicked(event);
             }
             super.onBrowserEvent(event);
         }

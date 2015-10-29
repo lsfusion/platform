@@ -2,6 +2,7 @@ package lsfusion.gwt.form.client.form;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
@@ -60,19 +61,23 @@ public abstract class DefaultFormsController implements FormsController {
                 String formSIDs = GwtClientUtils.getPageParameter("formSID");
                 if (formSIDs != null) {
                     for (String formSID : formSIDs.split(",")) {
-                        openForm(formSID, formSID, GModalityType.DOCKED);
+                        openForm(formSID, formSID, GModalityType.DOCKED, null);
                     }
                 }
             }
         });
     }
 
-    public void openForm(final String canonicalName, final String formSID, final GModalityType modalityType) {
-        openForm(canonicalName, formSID, modalityType, false);
+    public void openForm(final String canonicalName, final String formSID, final GModalityType modalityType, NativeEvent nativeEvent) {
+        openForm(canonicalName, formSID, modalityType, false, nativeEvent);
     }
 
     public void openForm(final String canonicalName, final String formSID, final GModalityType modalityType, final boolean suppressErrorMessages) {
-        if(MainFrame.forbidDuplicateForms && formsList.contains(formSID)) {
+        openForm(canonicalName, formSID, modalityType, suppressErrorMessages, null);
+    }
+
+    public void openForm(final String canonicalName, final String formSID, final GModalityType modalityType, final boolean suppressErrorMessages, NativeEvent nativeEvent) {
+        if(MainFrame.forbidDuplicateForms && formsList.contains(formSID) && (nativeEvent == null || !nativeEvent.getCtrlKey())) {
             tabsPanel.selectTab(formsList.indexOf(formSID));
         } else {
 

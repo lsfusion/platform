@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.client.navigator;
 
+import com.google.gwt.dom.client.NativeEvent;
 import lsfusion.gwt.form.client.form.FormsController;
 import lsfusion.gwt.form.shared.view.GNavigatorElement;
 import lsfusion.gwt.form.shared.view.window.GAbstractWindow;
@@ -82,11 +83,11 @@ public abstract class GNavigatorController implements GINavigatorController {
     }
 
     @Override
-    public void openElement(GNavigatorElement element) {
+    public void openElement(GNavigatorElement element, NativeEvent nativeEvent) {
         if (element instanceof GNavigatorForm) {
             GNavigatorForm form = (GNavigatorForm) element;
 
-            formsController.openForm(form.canonicalName, form.sid, form.modalityType);
+            formsController.openForm(form.canonicalName, form.sid, form.modalityType, nativeEvent);
         } else if (element instanceof GNavigatorAction) {
             formsController.executeNavigatorAction((GNavigatorAction) element);
         }

@@ -60,7 +60,7 @@ public class GPanelNavigatorView extends GNavigatorView {
             public void onMouseDown(MouseDownEvent event) {
                 selected = element;
                 navigatorController.update();
-                navigatorController.openElement(element);
+                navigatorController.openElement(element, event.getNativeEvent());
             }
         });
         return button;

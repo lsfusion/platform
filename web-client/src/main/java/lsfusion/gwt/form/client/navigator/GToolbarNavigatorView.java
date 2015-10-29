@@ -61,7 +61,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
             public void onMouseDown(MouseDownEvent event) {
                 selected = element;
                 navigatorController.update();
-                navigatorController.openElement(element);
+                navigatorController.openElement(element, event.getNativeEvent());
             }
         });
         button.setFocusable(false);

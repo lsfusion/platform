@@ -32,10 +32,7 @@ import org.apache.log4j.Logger;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -64,9 +61,9 @@ public class DockableMainFrame extends MainFrame {
         DeSerializer.NavigatorData navigatorData = DeSerializer.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());
 
         mainNavigator = new ClientNavigator(remoteNavigator, navigatorData.root, navigatorData.windows) {
-            public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
+            public void openForm(ClientNavigatorForm element, int modifiers) throws IOException, ClassNotFoundException {
                 try {
-                    dockableManager.openForm(this, element.getCanonicalName(), element.getSID());
+                    dockableManager.openForm(this, element.getCanonicalName(), element.getSID(), modifiers);
                 } catch (JRException e) {
                     throw new RuntimeException(e);
                 }
@@ -146,7 +143,7 @@ public class DockableMainFrame extends MainFrame {
                     break;
                 case NONE:
                 default:
-                    savedForms = new ArrayList<String>();
+                    savedForms = new ArrayList<>();
             }
             dockableManager.getForms().clear();
             ClientFormDockable page;

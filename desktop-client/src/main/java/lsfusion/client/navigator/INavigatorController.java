@@ -4,5 +4,5 @@ public interface INavigatorController {
 
     void update();
 
-    void openElement(ClientNavigatorElement element);
+    void openElement(ClientNavigatorElement element, int modifiers);
 }

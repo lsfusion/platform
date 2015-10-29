@@ -90,7 +90,7 @@ public class MenuNavigatorView extends NavigatorView {
         public void actionPerformed(ActionEvent e) {
             selected = element;
             controller.update();
-            controller.openElement(getSelectedElement());
+            controller.openElement(getSelectedElement(), e.getModifiers());
         }
     }
 

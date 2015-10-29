@@ -71,7 +71,7 @@ public class TreeNavigatorView extends NavigatorView {
             public void actionPerformed(ClientTreeActionEvent e) {
                 selected = (ClientNavigatorElement) e.getNode().getUserObject();
                 controller.update();
-                controller.openElement(selected);
+                controller.openElement(selected, 0);
             }
         });
     }

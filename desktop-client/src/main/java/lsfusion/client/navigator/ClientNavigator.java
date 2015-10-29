@@ -29,10 +29,10 @@ public abstract class ClientNavigator {
         return null;
     }
 
-    public void openModalForm(ClientNavigatorForm form) throws ClassNotFoundException, IOException {
-        openForm(form);
+    public void openModalForm(ClientNavigatorForm form, int modifiers) throws ClassNotFoundException, IOException {
+        openForm(form, modifiers);
     }
 
-    public abstract void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException;
+    public abstract void openForm(ClientNavigatorForm element, int modifiers) throws IOException, ClassNotFoundException;
     public abstract void openAction(ClientNavigatorAction action);
 }
