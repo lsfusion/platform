@@ -444,32 +444,6 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
                 }
             }
 
-            QueryBuilder<String, String> qp = new QueryBuilder<>(SetFact.singleton("propertyCN"));
-            Expr expr2 = reflectionLM.canonicalNameProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN"));
-            qp.and(expr2.getWhere());
-            qp.and(securityLM.notNullPermissionProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN")).getWhere());
-
-            qp.addProperty("cn", expr2);
-            qp.addProperty("permitView", securityLM.permitViewProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN")));
-            qp.addProperty("forbidView", securityLM.forbidViewProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN")));
-            qp.addProperty("permitChange", securityLM.permitChangeProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN")));
-            qp.addProperty("forbidChange", securityLM.forbidChangeProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN")));
-
-            ImCol<ImMap<String, Object>> propertyValues = qp.execute(session).values();
-            Map<String, Property> propertyCanonicalNames = getCanonicalNamesMap();
-            for (ImMap<String, Object> valueMap : propertyValues) {
-//                Property prop = businessLogics.getProperty(((String) valueMap.get("cn")).trim());
-                Property prop = propertyCanonicalNames.get(((String) valueMap.get("cn")).trim());
-                if (valueMap.get("forbidView") != null)
-                    policy.property.view.deny(prop);
-                else if (valueMap.get("permitView") != null)
-                    policy.property.view.permit(prop);
-                if (valueMap.get("forbidChange") != null)
-                    policy.property.change.deny(prop);
-                else if (valueMap.get("permitChange") != null)
-                    policy.property.change.permit(prop);
-            }
-
             user.addSecurityPolicy(policy);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -536,25 +510,20 @@ public class SecurityManager extends LifecycleAdapter implements InitializingBea
             Expr propExpr = reflectionLM.canonicalNameProperty.getExpr(session.getModifier(), qp.getMapExprs().get("propertyCN"));
             qp.and(propExpr.getWhere());
             qp.and(qp.getMapExprs().get("userId").compare(userObject, Compare.EQUALS));
-            qp.and(securityLM.notNullPermissionUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")).getWhere());
+            qp.and(securityLM.fullForbidViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")).getWhere().or(
+                    securityLM.fullForbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")).getWhere()));
 
             qp.addProperty("cn", propExpr);
-            qp.addProperty("permitView", securityLM.overPermitViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
-            qp.addProperty("forbidView", securityLM.overForbidViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
-            qp.addProperty("permitChange", securityLM.overPermitChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
-            qp.addProperty("forbidChange", securityLM.overForbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("fullForbidView", securityLM.fullForbidViewUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
+            qp.addProperty("fullForbidChange", securityLM.fullForbidChangeUserProperty.getExpr(session.getModifier(), qp.getMapExprs().get("userId"), qp.getMapExprs().get("propertyCN")));
 
             ImCol<ImMap<String, Object>> propValues = qp.execute(session).values();
             Map<String, Property> propertyCanonicalNames = getCanonicalNamesMap();
             for (ImMap<String, Object> valueMap : propValues) {
                 Property prop = propertyCanonicalNames.get(((String) valueMap.get("cn")).trim());
-                if (valueMap.get("permitView") != null)
-                    policy.property.view.permit(prop);
-                else if (valueMap.get("forbidView") != null)
+                if(valueMap.get("fullForbidView") != null)
                     policy.property.view.deny(prop);
-                if (valueMap.get("permitChange") != null)
-                    policy.property.change.permit(prop);
-                else if (valueMap.get("forbidChange") != null)
+                if(valueMap.get("fullForbidChange") != null)
                     policy.property.change.deny(prop);
             }
 

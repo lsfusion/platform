@@ -126,8 +126,15 @@ dataForbidViewUserRoleProperty 'Запретить просмотр свойст
 forbidViewUserRoleProperty 'Запретить просмотр свойства' (userRole, property) = OVERRIDE levelForbidViewUserRolePropertyGroup (userRole, parentProperty(property)), dataForbidViewUserRoleProperty (userRole, property) PERSISTENT;
 forbidViewUserProperty 'Запретить просмотр свойства' (user, property) = forbidViewUserRoleProperty(mainRoleUser(user), property) PERSISTENT;
 overForbidViewUserProperty 'Запретить просмотр свойства' (user, property) = 
-    GROUP MAX forbidViewUserRoleProperty(userRole, property) IF overInUserRole(user, userRole) BY user, property;
-    
+    TRUE IF NOT [=GROUP SUM 1 IF NOT forbidViewUserRoleProperty(userRole, property) AND overInUserRole(user, userRole) BY user, property] (user, property);
+
+fullForbidViewUserRoleProperty (userRole, property) = (OVERRIDE 
+    forbidViewProperty(property) AND NOT permitViewProperty(property),
+    forbidViewUserRoleProperty(userRole, property)) AND NOT permitViewUserRoleProperty(userRole, property);
+
+fullForbidViewUserProperty (user, property) = 
+    TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidViewUserRoleProperty(userRole, property) AND overInUserRole(user, userRole) BY user, property] (user, property);
+         
 dataPermitChangeUserRolePropertyGroup 'Разрешить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
 levelPermitChangeParentUserRolePropertyGroup (userRole, propertyGroup) =
@@ -156,10 +163,15 @@ dataForbidChangeUserRoleProperty 'Запретить изменение свой
 forbidChangeUserRoleProperty 'Запретить изменение свойства' (userRole, property) = OVERRIDE levelForbidChangeUserRolePropertyGroup (userRole, parentProperty(property)), dataForbidChangeUserRoleProperty (userRole, property) PERSISTENT;
 forbidChangeUserProperty 'Запретить изменение свойства' (user, property) = forbidChangeUserRoleProperty (mainRoleUser(user), property) PERSISTENT;
 overForbidChangeUserProperty 'Запретить изменение свойства' (user, property) = 
-    GROUP MAX forbidChangeUserRoleProperty(userRole, property) IF overInUserRole(user, userRole) BY user, property;
-    
-notNullPermissionUserProperty (user, property) = OVERRIDE overPermitViewUserProperty(user, property), overForbidViewUserProperty(user, property), overPermitChangeUserProperty(user, property), overForbidChangeUserProperty(user, property);
+    TRUE IF NOT [=GROUP SUM 1 IF NOT forbidChangeUserRoleProperty(userRole, property) AND overInUserRole(user, userRole) BY user, property] (user, property);    
 
+fullForbidChangeUserRoleProperty (userRole, property) = (OVERRIDE 
+    forbidChangeProperty(property) AND NOT permitChangeProperty(property),
+    forbidChangeUserRoleProperty(userRole, property)) AND NOT permitChangeUserRoleProperty(userRole, property);
+
+fullForbidChangeUserProperty (user, property) = 
+    TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidChangeUserRoleProperty(userRole, property) AND overInUserRole(user, userRole) BY user, property] (user, property);
+    
 CLASS DefaultForms 'Отображение форм при запуске' {
     none 'Не восстанавливать формы',
     restore 'Отображать сохранённые формы',

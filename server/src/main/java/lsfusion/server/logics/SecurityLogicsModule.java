@@ -30,12 +30,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public LCP forbidChangeAllPropertyRole;
     public LCP forbidViewAllPropertyUser;
     public LCP permitChangeAllPropertyUser;
-    public LCP overPermitViewUserProperty;
-    public LCP overForbidViewUserProperty;
-    public LCP overPermitChangeUserProperty;
-    public LCP overForbidChangeUserProperty;
+    public LCP fullForbidViewUserProperty;
+    public LCP fullForbidChangeUserProperty;
 
-    public LCP notNullPermissionUserProperty;
     public LCP defaultNumberUserNavigatorElement;
     public LCP defaultFormsUser;
     public LCP permitNavigatorElement;
@@ -112,12 +109,9 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         forbidChangeAllPropertyRole = findProperty("forbidChangeAllPropertyRole");
 
         // Разрешения для каждого свойства
-        overPermitViewUserProperty = findProperty("overPermitViewUserProperty");
-        overForbidViewUserProperty = findProperty("overForbidViewUserProperty");
-        overPermitChangeUserProperty = findProperty("overPermitChangeUserProperty");
-        overForbidChangeUserProperty = findProperty("overForbidChangeUserProperty");
+        fullForbidViewUserProperty = findProperty("fullForbidViewUserProperty");
+        fullForbidChangeUserProperty = findProperty("fullForbidChangeUserProperty");
 
-        notNullPermissionUserProperty = findProperty("notNullPermissionUserProperty");
         // ---- Политики для логики представлений
 
         // Открытие форм по умолчанию
