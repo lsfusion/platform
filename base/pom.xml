@@ -36,7 +36,7 @@
         <ecj.version>4.4</ecj.version>
         <olap4j.version>1.2.0</olap4j.version>
         <apache.poi.version>3.12</apache.poi.version>
-        <docking.frames.version>1.1.2p15</docking.frames.version>
+        <docking.frames.version>1.1.2p13</docking.frames.version>
         <jexcelapi.version>2.6.12</jexcelapi.version>
         <batik.version>1.7</batik.version>
         <barcode4j.version>2.0</barcode4j.version>
