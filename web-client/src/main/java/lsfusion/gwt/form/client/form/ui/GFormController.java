@@ -427,11 +427,6 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         for (GTreeGroupController treeController : treeControllers.values()) {
             treeController.processFormChanges(fc);
         }
-        
-        if (!initialFormChangesReceived) {
-            onInitialFormChangesReceived();
-            initialFormChangesReceived = true;
-        }
 
         formLayout.hideEmptyContainerViews();
 
@@ -439,6 +434,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
 
         // в конце скроллим все таблицы к текущим ключам
         applyScrollPositions();
+
+        if (!initialFormChangesReceived) {
+            onInitialFormChangesReceived();
+            initialFormChangesReceived = true;
+        }
     }
 
     private void applyScrollPositions() {
