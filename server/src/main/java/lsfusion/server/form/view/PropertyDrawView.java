@@ -110,9 +110,15 @@ public class PropertyDrawView extends ComponentView {
                 : getDefaultCaption();
     }
 
+    //Для Jasper'а экранируем кавычки
+    public String getReportCaption() {
+        String caption = getCaption();
+        return caption == null ? null : caption.replace("\"", "\\\"");
+    }
+
     public ReportDrawField getReportDrawField(int charWidth, int scale) {
 
-        ReportDrawField reportField = new ReportDrawField(getSID(), getCaption(), charWidth);
+        ReportDrawField reportField = new ReportDrawField(getSID(), getReportCaption(), charWidth);
 
         Type type = getType();
 
