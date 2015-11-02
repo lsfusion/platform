@@ -29,6 +29,7 @@ mainRoleUser(u) <- defaultMainRole() WHEN SET(u IS CustomUser);
 
 inUserRole 'Вкл.' = DATA BOOLEAN (CustomUser, UserRole);
 overInUserRole 'Вкл.' (user, role) = mainRoleUser(user) == role OR inUserRole(user, role);
+hasUserRoleCustomUser(user) = GROUP MAX overInUserRole(user, role) BY user;
 
 inMainRoleCustomUser(customUser, userRole) = mainRoleCustomUser(customUser) == userRole OR inUserRole(customUser, userRole);
 
@@ -133,7 +134,7 @@ fullForbidViewUserRoleProperty (userRole, property) = (OVERRIDE
     forbidViewUserRoleProperty(userRole, property)) AND NOT permitViewUserRoleProperty(userRole, property);
 
 fullForbidViewUserProperty (user, property) = 
-    TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidViewUserRoleProperty(userRole, property) AND overInUserRole(user, userRole) BY user, property] (user, property);
+    TRUE IF hasUserRoleCustomUser(user) AND NOT [=GROUP SUM 1 IF NOT fullForbidViewUserRoleProperty(userRole, property) AND overInUserRole(user, userRole) BY user, property] (user, property);
          
 dataPermitChangeUserRolePropertyGroup 'Разрешить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -170,7 +171,7 @@ fullForbidChangeUserRoleProperty (userRole, property) = (OVERRIDE
     forbidChangeUserRoleProperty(userRole, property)) AND NOT permitChangeUserRoleProperty(userRole, property);
 
 fullForbidChangeUserProperty (user, property) = 
-    TRUE IF NOT [=GROUP SUM 1 IF NOT fullForbidChangeUserRoleProperty(userRole, property) AND overInUserRole(user, userRole) BY user, property] (user, property);
+    TRUE IF hasUserRoleCustomUser(user) AND NOT [=GROUP SUM 1 IF NOT fullForbidChangeUserRoleProperty(userRole, property) AND overInUserRole(user, userRole) BY user, property] (user, property);
     
 CLASS DefaultForms 'Отображение форм при запуске' {
     none 'Не восстанавливать формы',
