@@ -110,8 +110,6 @@ permitViewUserRolePropertyGroup 'Разрешить просмотр групп�
 dataPermitViewUserRoleProperty 'Разрешить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
 permitViewUserRoleProperty 'Разрешить просмотр свойства' (userRole, property) = OVERRIDE levelPermitViewUserRolePropertyGroup (userRole, parentProperty(property)), dataPermitViewUserRoleProperty (userRole, property) PERSISTENT;
 permitViewUserProperty 'Разрешить просмотр свойства' (user, property) = permitViewUserRoleProperty(mainRoleUser(user), property) PERSISTENT;
-overPermitViewUserProperty 'Разрешить просмотр свойства' (user, property) = 
-    GROUP MAX permitViewUserRoleProperty(userRole, property) IF overInUserRole(user, userRole) BY user, property;
 
 dataForbidViewUserRolePropertyGroup 'Запретить просмотр группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -125,8 +123,6 @@ forbidViewUserRolePropertyGroup 'Запретить просмотр групп�
 dataForbidViewUserRoleProperty 'Запретить просмотр свойства' = DATA BOOLEAN (UserRole, Property);
 forbidViewUserRoleProperty 'Запретить просмотр свойства' (userRole, property) = OVERRIDE levelForbidViewUserRolePropertyGroup (userRole, parentProperty(property)), dataForbidViewUserRoleProperty (userRole, property) PERSISTENT;
 forbidViewUserProperty 'Запретить просмотр свойства' (user, property) = forbidViewUserRoleProperty(mainRoleUser(user), property) PERSISTENT;
-overForbidViewUserProperty 'Запретить просмотр свойства' (user, property) = 
-    TRUE IF NOT [=GROUP SUM 1 IF NOT forbidViewUserRoleProperty(userRole, property) AND overInUserRole(user, userRole) BY user, property] (user, property);
 
 fullForbidViewUserRoleProperty (userRole, property) = (OVERRIDE 
     forbidViewProperty(property) AND NOT permitViewProperty(property),
@@ -147,8 +143,6 @@ permitChangeUserRolePropertyGroup 'Разрешить изменение гру�
 dataPermitChangeUserRoleProperty 'Разрешить изменение свойства' = DATA BOOLEAN (UserRole, Property);
 permitChangeUserRoleProperty 'Разрешить изменение свойства' (userRole, property) = OVERRIDE levelPermitChangeUserRolePropertyGroup (userRole, parentProperty(property)), dataPermitChangeUserRoleProperty (userRole, property) PERSISTENT;
 permitChangeUserProperty 'Разрешить изменение свойства' (user, property) = permitChangeUserRoleProperty (mainRoleUser(user), property) PERSISTENT;
-overPermitChangeUserProperty 'Разрешить изменение свойства' (user, property) = 
-    GROUP MAX permitChangeUserRoleProperty(userRole, property) IF overInUserRole(user, userRole) BY user, property;
     
 dataForbidChangeUserRolePropertyGroup 'Запретить изменение группы свойств' = DATA BOOLEAN (UserRole, PropertyGroup);
 
@@ -162,8 +156,6 @@ forbidChangeUserRolePropertyGroup 'Запретить изменение гру�
 dataForbidChangeUserRoleProperty 'Запретить изменение свойства' = DATA BOOLEAN (UserRole, Property);
 forbidChangeUserRoleProperty 'Запретить изменение свойства' (userRole, property) = OVERRIDE levelForbidChangeUserRolePropertyGroup (userRole, parentProperty(property)), dataForbidChangeUserRoleProperty (userRole, property) PERSISTENT;
 forbidChangeUserProperty 'Запретить изменение свойства' (user, property) = forbidChangeUserRoleProperty (mainRoleUser(user), property) PERSISTENT;
-overForbidChangeUserProperty 'Запретить изменение свойства' (user, property) = 
-    TRUE IF NOT [=GROUP SUM 1 IF NOT forbidChangeUserRoleProperty(userRole, property) AND overInUserRole(user, userRole) BY user, property] (user, property);    
 
 fullForbidChangeUserRoleProperty (userRole, property) = (OVERRIDE 
     forbidChangeProperty(property) AND NOT permitChangeProperty(property),
@@ -209,7 +201,7 @@ overDefaultNumberUserNavigatorElement 'Номер по умолчанию' (user
 overPermitUserNavigatorElement 'Разрешить форму' (user, navigatorElement) = 
     GROUP MAX permitUserRoleNavigatorElement(userRole, navigatorElement) IF overInUserRole(user, userRole) BY user, navigatorElement;
 overForbidUserNavigatorElement 'Запретить форму' (user, navigatorElement) = 
-    GROUP MAX forbidUserRoleNavigatorElement(userRole, navigatorElement) IF overInUserRole(user, userRole) BY user, navigatorElement;
+    TRUE IF NOT [=GROUP SUM 1 IF NOT forbidUserRoleNavigatorElement(userRole, navigatorElement) AND overInUserRole(user, userRole) BY user, navigatorElement] (user, navigatorElement);        
 
 levelNavigatorElementNavigatorElement 'Уровень' (child, parent) = RECURSION 1l IF child IS NavigatorElement AND parent == child
                                                               STEP 2l IF parent == parentNavigatorElement($parent) PERSISTENT;
