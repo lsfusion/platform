@@ -17,11 +17,14 @@ FORM mapProviders
     DIALOG MapProvider OBJECT m
 ;
 
-userMapProvider = DATA MapProvider ();
-mapProvider = OVERRIDE MapProvider.yandex, userMapProvider();
+calculateUserMapProvider = DATA MapProvider ();
+calculateMapProvider = OVERRIDE MapProvider.yandex, calculateUserMapProvider();
+showUserMapProvider = DATA MapProvider ();
+showMapProvider = OVERRIDE MapProvider.yandex, showUserMapProvider();
 useTor 'Использовать для карт Tor' = DATA BOOLEAN ();
 
-nameUserMapProvider 'Использовать карты' () = staticCaption(userMapProvider());
+nameCalculateUserMapProvider 'Использовать карты (для расчёта)' () = staticCaption(calculateUserMapProvider());
+nameShowUserMapProvider 'Использовать карты (для показа)' () = staticCaption(showUserMapProvider());
 
 namePOI 'Название'= ABSTRACT VARISTRING[200] (POI) PERSISTENT;
 
@@ -40,7 +43,7 @@ readLatitude 'Координата X' = DATA LOCAL NUMERIC[10,5] ();
 readLongitude 'Координата Y' = DATA LOCAL NUMERIC[10,5] ();
 
 getCoordinatesAddressMapProvider = ACTION CUSTOM 'lsfusion.erp.utils.geo.GetCoordinatesAddressActionProperty' (STRING[255], MapProvider);
-getCoordinatesAddress(address) = ACTION getCoordinatesAddressMapProvider(address, mapProvider());
+getCoordinatesAddress(address) = ACTION getCoordinatesAddressMapProvider(address, calculateMapProvider());
 recalculateDistancePOI = ACTION CUSTOM 'lsfusion.erp.utils.geo.RecalculateDistancePOIActionProperty' (POI);
 
 calculateCoordinatesPOI 'Рассчитать координаты'= ACTION (POI) {
@@ -48,7 +51,6 @@ calculateCoordinatesPOI 'Рассчитать координаты'= ACTION (POI
     getCoordinatesAddress (CONCAT ',', nameCountryPOI(POI), addressPOI(POI));
     latitudePOI(POI) <- readLatitude();
     longitudePOI(POI) <- readLongitude();
-    apply();
     recalculateDistancePOI(POI);
 
 }
@@ -62,7 +64,7 @@ recalculateAllDistances 'Пересчитать все расстояния' = A
 
 // Показать на карте одну точку
 showOnMapMapProvider 'Показать на карте'= ACTION CUSTOM 'lsfusion.erp.utils.geo.ShowOnMapActionProperty' (DOUBLE, DOUBLE, MapProvider, STRING[100]);
-showOnMap(latitude, longitude, address) = ACTION showOnMapMapProvider (latitude, longitude, mapProvider(), address);
+showOnMap(latitude, longitude, address) = ACTION showOnMapMapProvider (latitude, longitude, showMapProvider(), address);
 
 showOnMapPOI 'Показать на карте'= ACTION (POI) {
     EXEC showOnMap (latitudePOI (POI), longitudePOI (POI), addressPOI(POI));
@@ -81,13 +83,14 @@ startPathPOI 'Место старта'= DATA LOCAL POI();
 calculatePath 'Рассчитать путь'= ACTION CUSTOM 'lsfusion.erp.utils.geo.CalculatePathActionProperty' ();
 
 EXTEND FORM options
-    PROPERTIES() autoSynchronizeCoordinates, nameUserMapProvider, useTor, recalculateAllDistances
+    PROPERTIES() autoSynchronizeCoordinates, nameCalculateUserMapProvider, nameShowUserMapProvider, useTor, recalculateAllDistances
 ;
 
 DESIGN options {
     commons {
         MOVE PROPERTY(autoSynchronizeCoordinates());
-        MOVE PROPERTY(nameUserMapProvider());
+        MOVE PROPERTY(nameCalculateUserMapProvider());
+        MOVE PROPERTY(nameShowUserMapProvider());
         MOVE PROPERTY(useTor());
         MOVE PROPERTY(recalculateAllDistances());
     }

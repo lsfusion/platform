@@ -43,12 +43,12 @@ public class RecalculateDistancePOIActionProperty extends DistanceGeoActionPrope
             KeyExpr poiExpr = new KeyExpr("poi");
             ImRevMap<String, KeyExpr> keys = MapFact.singletonRev("poi", poiExpr);
             QueryBuilder<String, Object> query = new QueryBuilder<>(keys);
-            query.addProperty("latitude", findProperty("latitudePOI").getExpr(poiExpr));
-            query.addProperty("longitude", findProperty("longitudePOI").getExpr(poiExpr));
+            query.addProperty("latitude", findProperty("latitudePOI").getExpr(context.getModifier(), poiExpr));
+            query.addProperty("longitude", findProperty("longitudePOI").getExpr(context.getModifier(), poiExpr));
             query.and(findProperty("distancePOIPOI").getExpr(poiExpr, poiObject.getExpr()).getWhere().or(
                     findProperty("distancePOIPOI").getExpr(poiObject.getExpr(), poiExpr).getWhere()));
-            query.and(findProperty("latitudePOI").getExpr(poiExpr).getWhere());
-            query.and(findProperty("longitudePOI").getExpr(poiExpr).getWhere());
+            query.and(findProperty("latitudePOI").getExpr(context.getModifier(), poiExpr).getWhere());
+            query.and(findProperty("longitudePOI").getExpr(context.getModifier(), poiExpr).getWhere());
             ImOrderMap<ImMap<String, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(context.getSession());
 
             Map<Integer, DataObject> poiMap = new HashMap<>();
