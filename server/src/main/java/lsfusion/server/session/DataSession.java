@@ -412,6 +412,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         sessionEventChangedOld.clear(sql, getOwner());
         sessionEventNotChangedOld.clear();
+        updateNotChangedOld.clear();
     }
 
     public static class UpdateChanges {
@@ -558,6 +559,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         } else
             assert sessionEventChangedOld.isEmpty();
         sessionEventNotChangedOld.clear();
+        updateNotChangedOld.clear();
 
         applyObject = null; // сбрасываем в том числе когда cancel потому как cancel drop'ает в том числе и добавление объекта
 
@@ -942,6 +944,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     // для OldProperty хранит изменения с предыдущего execute'а
     private IncrementTableProps sessionEventChangedOld = new IncrementTableProps(); // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
     private IncrementChangeProps sessionEventNotChangedOld = new IncrementChangeProps(); // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
+    private Map<OldProperty, Boolean> updateNotChangedOld = new HashMap<>(); // для того чтобы не заботиться об изменениях между локальными событиями
 
     // потом можно было бы оптимизировать создание OverrideSessionModifier'а (в рамках getPropertyChanges) и тогда можно создавать modifier'ы непосредственно при запуске
     private boolean inSessionEvent;
@@ -961,8 +964,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(!isInTransaction())
             for(CalcProperty prop : sessionEventNotChangedOld.getProperties()) {
                 OldProperty<PropertyInterface> old = (OldProperty<PropertyInterface>) prop;
-                if (!sessionEventChangedOld.contains(old) && CalcProperty.depends(old.property, changes))
-                    updateSessionEventNotChangedOld(this, old, false);
+                if (!sessionEventChangedOld.contains(old) && CalcProperty.depends(old.property, changes)) {
+                    if(isInSessionEvent()) { // если уже локальное событие, придется обновлять источник не откладывая на потом
+                        assert updateNotChangedOld.isEmpty();
+                        updateSessionEventNotChangedOld(this, old, false);
+                    } else {
+                        final Boolean prevDataChanged = updateNotChangedOld.get(old);
+                        if(prevDataChanged == null)
+                            updateNotChangedOld.put(old, false);
+                    }
+                }
             }
     }
 
@@ -994,6 +1005,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             ExecutionEnvironment env = (form != null ? form : this);
 
+            // обновляем прямо перед началом локального события, чтобы не заботиться о clearHints и других изменениях между локальными событиями
+            for(Map.Entry<OldProperty, Boolean> old : updateNotChangedOld.entrySet())
+                updateSessionEventNotChangedOld(env, old.getKey(), old.getValue());
+            updateNotChangedOld = new HashMap<>();
+
             inSessionEvent = true;
 
             try {
@@ -1008,7 +1024,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
             // закидываем старые изменения
             for(CalcProperty changedOld : sessionEventChangedOld.getProperties()) // assert что только old'ы
-                updateSessionEventNotChangedOld(env, (OldProperty<PropertyInterface>) changedOld, true);
+                updateNotChangedOld.put((OldProperty)changedOld, true);
             sessionEventChangedOld.clear(sql, getOwner());
         }
     }
