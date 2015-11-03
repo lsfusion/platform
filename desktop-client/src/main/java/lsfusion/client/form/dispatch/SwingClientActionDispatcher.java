@@ -312,7 +312,11 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         beforeModalActionInSameEDT(false);
         try {
             if (!action.extended) {
-                JOptionPane.showMessageDialog(getDialogParentContainer(), action.message, action.caption, JOptionPane.INFORMATION_MESSAGE);
+                JTextArea ta = new JTextArea(action.message);
+                ta.setEditable(false);
+                ta.setFont(null);
+                ta.setBackground(null);
+                JOptionPane.showMessageDialog(getDialogParentContainer(), ta, action.caption, JOptionPane.INFORMATION_MESSAGE);
             } else {
                 new ExtendedMessageDialog(getDialogParentContainer(), action.caption, action.message).setVisible(true);
             }
