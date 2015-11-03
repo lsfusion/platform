@@ -118,6 +118,8 @@ prevImported = DATA LOCAL INTEGER ();
 imported = DATA LOCAL BOOLEAN (INTEGER);
 importedString = DATA LOCAL BOOLEAN (VARSTRING[10]);
 
+ignorePrintType 'Игнорировать опции PRINT' = ABSTRACT BOOLEAN ();
+
 META defineAnyValue(name, param) 
     name##Object = DATA LOCAL Object (param);
     name##String = DATA LOCAL STRING[2000] (param);

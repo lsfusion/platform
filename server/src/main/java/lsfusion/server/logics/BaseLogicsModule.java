@@ -135,6 +135,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
     private LCP formResultProp;
     public LCP formPageCount;
     public LCP formExportFile;
+    public LCP ignorePrintType;
 
     public LCP imported;
     public LCP importedString;
@@ -400,6 +401,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends ScriptingLogi
         formResultProp = findProperty("formResult");
         formPageCount = findProperty("formPageCount");
         formExportFile = findProperty("formExportFile");
+        ignorePrintType = findProperty("ignorePrintType");
 
         imported = findProperty("imported");
         importedString = findProperty("importedString");

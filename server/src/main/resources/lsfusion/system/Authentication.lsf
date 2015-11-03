@@ -71,6 +71,8 @@ forbidChangePasswordCustomUser 'Запретить пользователю из
 forbidEditProfileCustomUser 'Запретить пользователю редактировать профиль' = DATA BOOLEAN (CustomUser);
 
 lastActivityCustomUser 'Последняя активность' = DATA DATETIME (CustomUser);
+ignorePrintTypeCustomUser 'Открывать печатные формы в интерактивном режиме' = DATA BOOLEAN (User);
+ignorePrintType() += ignorePrintTypeCustomUser(currentUser());
 
 calculateBase64Hash 'Вычислить Base64 хэш' = ACTION CUSTOM 'lsfusion.server.logics.authentication.CalculateBase64HashActionProperty' (STRING[10], STRING[30]);
 logOut 'Выйти' = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOutActionProperty' ();
@@ -115,7 +117,7 @@ FORM customUser 'Пользователь'
     OBJECTS u=CustomUser FIXED PANEL
     PROPERTIES(u) firstNameContact, lastNameContact, loginCustomUser,
     sha256PasswordCustomUser ON CHANGE changeSHA256PasswordCustomUser(u), emailContact,
-    forbidChangePasswordCustomUser, forbidEditProfileCustomUser, isLockedCustomUser, lastActivityCustomUser
+    forbidChangePasswordCustomUser, forbidEditProfileCustomUser, isLockedCustomUser, lastActivityCustomUser, ignorePrintTypeCustomUser
 
     EDIT CustomUser OBJECT u
 ;

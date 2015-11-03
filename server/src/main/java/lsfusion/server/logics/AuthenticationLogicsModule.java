@@ -2,7 +2,6 @@ package lsfusion.server.logics;
 
 import lsfusion.server.classes.AbstractCustomClass;
 import lsfusion.server.classes.ConcreteCustomClass;
-import lsfusion.server.classes.sets.AndClassSet;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LCP;
@@ -31,6 +30,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP sha256PasswordCustomUser;
     public LCP calculatedHash;
     public LCP lastActivityCustomUser;
+    public LCP ignorePrintTypeCustomUser;
     public LCP currentUser;
     public LCP currentUserName;
 
@@ -98,6 +98,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         calculatedHash = findProperty("calculatedHash");
 
         lastActivityCustomUser = findProperty("lastActivityCustomUser");
+        ignorePrintTypeCustomUser = findProperty("ignorePrintTypeCustomUser");
 
         useLDAP = findProperty("useLDAP");
         serverLDAP = findProperty("serverLDAP");

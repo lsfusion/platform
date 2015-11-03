@@ -60,6 +60,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
     private final LCP formResultProperty;
     private final LCP formPageCount;
     private final LCP formExportFile;
+    private final LCP ignorePrintType;
 
     private final AnyValuePropertyHolder chosenValueProperty;
 
@@ -107,6 +108,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                               LCP formResultProperty,
                               LCP formPageCount,
                               LCP formExportFile,
+                              LCP ignorePrintType,
                               AnyValuePropertyHolder chosenValueProperty,
                               ObjectEntity contextObject,
                               CalcProperty contextProperty,
@@ -117,6 +119,7 @@ public class FormActionProperty extends SystemExplicitActionProperty {
         this.formResultProperty = formResultProperty;
         this.formPageCount = formPageCount;
         this.formExportFile = formExportFile;
+        this.ignorePrintType = ignorePrintType;
         this.chosenValueProperty = chosenValueProperty;
 
         this.modalityType = modalityType;
@@ -207,8 +210,9 @@ public class FormActionProperty extends SystemExplicitActionProperty {
                 }
             }
             if (printType != null) {
-                boolean toExcel = printType == FormPrintType.XLS || printType == FormPrintType.XLSX;
-                Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(toExcel), printType, SystemProperties.isDebug));
+                FormPrintType pType = ignorePrintType.read(context) != null ? FormPrintType.PRINT : printType;
+                boolean toExcel = pType == FormPrintType.XLS || pType == FormPrintType.XLSX;
+                Object pageCount = context.requestUserInteraction(new ReportClientAction(form.getSID(), modalityType.isModal(), newRemoteForm.reportManager.getReportData(toExcel), pType, SystemProperties.isDebug));
                 formPageCount.change(pageCount, context);
             }
             if (exportType == null && printType == null) {
