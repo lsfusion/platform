@@ -1,6 +1,7 @@
 package lsfusion.server.data.expr.query;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
@@ -33,6 +34,15 @@ public class RecursiveTable extends Table {
             }});
     }
 
+    @Override
+    public boolean calcTwins(TwinImmutableObject o) {
+        return super.calcTwins(o) && statKeys.equals(((RecursiveTable)o).statKeys);
+    }
+
+    @Override
+    public int immutableHashCode() {
+        return 31 * super.immutableHashCode() + statKeys.hashCode();
+    }
 
     public ImMap<PropertyField, PropStat> getStatProps() { // assert что пустой если Logical рекурсия
         return getStatProps(this, Stat.MAX);

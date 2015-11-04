@@ -6,15 +6,16 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetKeyValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSSVSMap;
 import lsfusion.base.col.lru.LRUWVSMap;
-import lsfusion.interop.Compare;
 import lsfusion.server.Settings;
 import lsfusion.server.caches.AbstractOuterContext;
 import lsfusion.server.caches.ManualLazy;
@@ -31,6 +32,7 @@ import lsfusion.server.data.translator.MapTranslate;
 import lsfusion.server.data.translator.QueryTranslator;
 import lsfusion.server.data.where.DNFWheres;
 import lsfusion.server.data.where.Where;
+import lsfusion.utils.SpanningTreeWithBlackjack;
 import lsfusion.utils.prim.Prim;
 import lsfusion.utils.prim.UndirectedGraph;
 
@@ -128,6 +130,10 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return BaseUtils.hashEquals(who,what) || (what instanceof InnerJoin && ((InnerJoin)what).getInnerExpr(who)!=null);
     }
 
+    protected static boolean containsJoinAll(BaseJoin who, WhereJoin what) {
+        return BaseUtils.hashEquals(who,what) || (what instanceof InnerJoin && QueryJoin.getInnerExpr(((InnerJoin)what), who)!=null);
+    }
+
     public WhereJoins and(WhereJoins set) {
         return add(set);
     }
@@ -217,6 +223,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     // можно rows в StatKeys было закинуть как и ExecCost, но используется только в одном месте и могут быть проблемы с кэшированием
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, Result<Stat> rows, final KeyStat keyStat, Result<BaseExpr> newNotNull, MAddMap<BaseExpr, Boolean> proceededNotNulls, Result<ExecCost> tableCosts) {
 
+        // groups учавствует только в дополнительном фильтре
         final MAddMap<BaseJoin, Stat> joinStats = MapFact.mAddOverrideMap();
         final MAddMap<BaseExpr, Stat> exprStats = MapFact.mAddOverrideMap();
 
@@ -518,6 +525,24 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return new Stat(-Prim.mst(graph).calculateTotalEdgeCost(), true);
     }
 
+    private Stat getMSTExCost(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats) {
+        SpanningTreeWithBlackjack<BaseJoin> graph = new SpanningTreeWithBlackjack<BaseJoin>();
+        for(int i=0,size=joinStats.size();i<size;i++) {
+            BaseJoin node = joinStats.getKey(i);
+            graph.addNode(node, node.getJoins().isEmpty() ? 0 : joinStats.getValue(i).getWeight());
+        }
+
+        for(int i=0;i<balancedEdges.size();i++) {
+            BaseExpr bExpr = balancedEdges.getKey(i);
+            BaseJoin from = bExpr.getBaseJoin();
+            for(Edge edge : balancedEdges.getValue(i)) {
+                assert BaseUtils.hashEquals(edge.expr, bExpr);
+                graph.addEdge(from, edge.join, balancedStats.get(bExpr).getWeight());
+            }
+        }
+        return new Stat(graph.calculate(), true);
+    }
+
     private Stat getMTCost(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats, Stat totalBalanced) {
         MExclMap<BaseJoin, MExclSet<Edge>> mEdges = MapFact.mExclMap();
         for(int i=0,size=joinStats.size();i<size;i++) {
@@ -637,9 +662,29 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return rest;
     }
 
-    public <K extends BaseExpr> Where getPushWhere(ImSet<K> groups, ImMap<WhereJoin, Where> upWheres, final KeyStat stat, Stat currentStat, Stat currentJoinStat) {
-        // нужно попытаться опускаться ниже, устраняя "избыточные" WhereJoin'ы или InnerJoin'ы
+    private static class PushResult {
+        private final Stat runStat;
 
+        private final List<WhereJoin> joins;
+        private final MAddMap<WhereJoin, Where> upWheres;
+
+        public PushResult(Stat runStat, List<WhereJoin> joins, MAddMap<WhereJoin, Where> upWheres) {
+            this.runStat = runStat;
+
+            this.joins = joins;
+            this.upWheres = upWheres;
+        }
+
+        private <T extends Expr> Where getWhere(ImMap<T, ? extends Expr> translate) {
+            Where result = Where.TRUE;
+            for (WhereJoin where : joins)
+                result = result.and(upWheres.get(where)).and(BaseExpr.getOrWhere(where)); // чтобы не потерять or, правда при этом removeJoin должен "соответствовать" не TRUE calculateOrWhere
+
+            return GroupExpr.create(translate, result, translate.keys().toMap()).getWhere();
+        }
+    }
+
+    private <K extends BaseExpr> PushResult getPushJoins(ImSet<K> groups, ImMap<WhereJoin, Where> upWheres, final KeyStat stat, Stat currentStat, Stat currentJoinStat) {
         Comparator<WhereJoin> orderComplexity = new Comparator<WhereJoin>() {
             public int compare(WhereJoin o1, WhereJoin o2) {
                 long comp1 = o1.getComplexity(false);
@@ -659,13 +704,14 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 return 0;
             }};
 
+        Stat baseJoinStat = currentJoinStat;
+        Stat baseRowStat = currentStat;
+
         List<WhereJoin> current;
         WhereJoin[] cloned = wheres.clone();
         Arrays.sort(cloned, orderComplexity);
         current = BaseUtils.toList(cloned);
 
-        Stat startJoinStat = currentJoinStat; 
-        
         Result<Stat> rows = new Result<Stat>();
         Stat resultStat = getStatKeys(groups, rows, stat).rows;
         if(resultStat.lessEquals(currentJoinStat) && rows.result.lessEquals(currentStat)) {
@@ -703,17 +749,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             } else
                 it++;
         }
-        
-        if(!currentJoinStat.less(startJoinStat))
-            return null;
-        
-        if(Stat.ALOT.lessEquals(currentStat))
-            return null;
 
-        Where result = Where.TRUE;
-        for (WhereJoin where : current)
-            result = result.and(reducedUpWheres.get(where)).and(BaseExpr.getOrWhere(where)); // чтобы не потерять or, правда при этом removeJoin должен "соответствовать" не TRUE calculateOrWhere 
-        return result;
+        return new PushResult(baseRowStat.mult(currentJoinStat).div(baseJoinStat).or(currentStat), current, reducedUpWheres);
     }
 
     public <K extends BaseExpr> StatKeys<K> getStatKeys(ImSet<K> groups, final KeyStat keyStat, final KeyEqual keyEqual) {
@@ -786,40 +823,509 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         return removeJoin(join, wheres, upWheres, resultWheres);
     }
 
-    public <K extends Expr> Where getGroupPushWhere(ImMap<K, BaseExpr> joinMap, ImMap<WhereJoin, Where> upWheres, QueryJoin<K, ?, ?, ?> skipJoin, KeyStat keyStat, Stat currentStat, Stat currentJoinStat) {
-        Where pushWhere = getPushWhere(joinMap, upWheres, skipJoin, keyStat, currentStat, currentJoinStat);
-        if(pushWhere!=null) {
-            return GroupExpr.create(joinMap, pushWhere, joinMap.keys().toMap()).getWhere();
-        } else
-            return null;
+    public <K extends Expr> Where getGroupPushWhere(final ImMap<K, BaseExpr> joinMap, ImMap<WhereJoin, Where> upWheres, QueryJoin<K, ?, ?, ?> skipJoin, KeyStat keyStat, Where fullWhere, StatKeys<K> currentJoinStat) {
+        return getPushWhere(joinMap, upWheres, skipJoin, keyStat, fullWhere, currentJoinStat, null);
     }
 
-
-    public Where getPartitionPushWhere(ImMap<KeyExpr, BaseExpr> joinMap, ImSet<Expr> partitions, ImMap<WhereJoin, Where> upWheres, QueryJoin<KeyExpr, ?, ?, ?> skipJoin, KeyStat keyStat, Stat currentStat, Stat currentJoinStat) {
-        joinMap = joinMap.filterIncl(BaseUtils.<ImSet<KeyExpr>>immutableCast(AbstractOuterContext.getOuterSetKeys(partitions))); // так как в partitions могут быть не все ключи, то в явную добавим условия на не null для таких ключей
-        Where pushWhere = getPushWhere(joinMap, upWheres, skipJoin, keyStat, currentStat, currentJoinStat);
-        if(pushWhere!=null) {
-            ImMap<Expr, Expr> partMap = partitions.toMap();
-            return GroupExpr.create(new QueryTranslator(joinMap).translate(partMap), pushWhere, partMap).getWhere();
-        } else
-            return null;
-    }
-    
     // получает подможнство join'ов которое дает joinKeys, пропуская skipJoin. тут же алгоритм по определению достаточных ключей
-    // !!! ТЕОРЕТИЧЕСКИ НЕСМОТРЯ НА REMOVE из-за паковки может проталкивать бесконечно (впоследствии нужен будет GUARD), например X = L(G1 + G2) AND (G1 OR G2) спакуется в X = L(G1 + G2) AND (G1' OR G2) , (а не L(G1' + G2), и будет G1 проталкивать бесконечно) 
+    // !!! ТЕОРЕТИЧЕСКИ НЕСМОТРЯ НА REMOVE из-за паковки может проталкивать бесконечно (впоследствии нужен будет GUARD), например X = L(G1 + G2) AND (G1 OR G2) спакуется в X = L(G1 + G2) AND (G1' OR G2) , (а не L(G1' + G2), и будет G1 проталкивать бесконечно)
     //  но это очень редкая ситуация и важно проследить за ее природой, так как возможно есть аналогичные assertion'ы
     // может неправильно проталкивать в случае если скажем есть документы \ строки, строки "материализуются" и если они опять будут группироваться по документу, информация о том что он один уже потеряется
-    public <K extends Expr> Where getPushWhere(ImMap<K, BaseExpr> joinKeys, ImMap<WhereJoin, Where> upWheres, QueryJoin<K, ?, ?, ?> skipJoin, KeyStat keyStat, Stat currentStat, Stat currentJoinStat) {
+    private <K extends Expr, T extends Expr> Where getPushWhere(ImMap<K, BaseExpr> joinMap, ImMap<WhereJoin, Where> upWheres, QueryJoin<K, ?, ?, ?> skipJoin, KeyStat keyStat, Where fullWhere, StatKeys<K> currentJoinStat, Provider<ImMap<T, ? extends Expr>> getTranslate) {
         // joinKeys из skipJoin.getJoins()
 
-        assert joinKeys.equals(skipJoin.getJoins().filterIncl(joinKeys.keys()));
+        assert joinMap.equals(skipJoin.getJoins().filterIncl(joinMap.keys()));
         Result<ImMap<WhereJoin, Where>> upFitWheres = new Result<ImMap<WhereJoin, Where>>();
         WhereJoins removedJoins = removeJoin(skipJoin, upWheres, upFitWheres);
         if(removedJoins==null) {
             removedJoins = this;
             upFitWheres.set(upWheres);
         }
-        return removedJoins.getPushWhere(joinKeys.values().toSet(), upFitWheres.result, keyStat, currentStat, currentJoinStat);
+
+        return removedJoins.getPushWhere(joinMap, keyStat, fullWhere.getStatRows(), currentJoinStat, upFitWheres.result, getTranslate);
+    }
+
+    private static class PushJoinResult<K extends Expr> {
+        private final PushResult joins;
+        private final ImMap<K, BaseExpr> group;
+
+        public PushJoinResult(PushResult joins, ImMap<K, BaseExpr> group) {
+            this.joins = joins;
+            this.group = group;
+        }
+    }
+
+    private <K extends Expr, T extends Expr> Where getPushWhere(ImMap<K, BaseExpr> joinMap, KeyStat keyStat, Stat currentStat, StatKeys<K> currentJoinStat, ImMap<WhereJoin, Where> upWheres, Provider<ImMap<T, ? extends Expr>> getTranslate) {
+        assertJoinRowStat(currentStat, currentJoinStat);
+
+        final PushJoinResult<K> pushResult = getPushJoins(joinMap, keyStat, currentStat, currentJoinStat, upWheres, getTranslate, Settings.get().isUseOldPushJoins());
+        if(pushResult == null)
+            return null;
+        return pushResult.joins.getWhere(getTranslate == null ? BaseUtils.<ImMap<T, Expr>>immutableCast(pushResult.group) : getTranslate.get());
+
+//        PushJoinResult<K> oldPushResult = getPushJoins(joinMap, keyStat, currentStat, currentJoinStat, upWheres, getTranslate, true);
+//        PushJoinResult<K> pushResult = getPushJoins(joinMap, keyStat, currentStat, currentJoinStat, upWheres, getTranslate, false);
+//        if (pushResult == null) {
+//            if(oldPushResult != null)
+//                pushResult = pushResult;
+//            return null;
+//        }
+//
+//        Where where = pushResult.joins.getWhere(getTranslate == null ? BaseUtils.<ImMap<T, Expr>>immutableCast(pushResult.group) : getTranslate.get());
+//
+//        if(oldPushResult == null)
+//            pushResult = pushResult;
+//        else {
+//            if(!pushResult.joins.runStat.equals(oldPushResult.joins.runStat))
+//                pushResult = pushResult;
+//            if(!new HashSet<WhereJoin>(pushResult.joins.joins).equals(new HashSet<WhereJoin>(oldPushResult.joins.joins)))
+//                pushResult = pushResult;
+//            if(!pushResult.joins.upWheres.equals(oldPushResult.joins.upWheres))
+//                pushResult = pushResult;
+//
+//            Where oldWhere = oldPushResult.joins.getWhere(getTranslate == null ? BaseUtils.<ImMap<T, Expr>>immutableCast(oldPushResult.group) : getTranslate.get());
+//
+//            if(!BaseUtils.hashEquals(where, oldWhere))
+//                where = where;
+//        }
+//
+//        return where;
+    }
+
+    private <K extends Expr, T extends Expr> PushJoinResult<K> getPushJoins(ImMap<K, BaseExpr> joinMap, KeyStat keyStat, Stat currentStat, StatKeys<K> currentJoinStat, ImMap<WhereJoin, Where> upWheres, Provider<ImMap<T, ? extends Expr>> getTranslate, boolean old) {
+        PushJoinResult<K> pushResult;
+        Stat baseStat = currentStat.min(Stat.ALOT);
+        boolean checkSubsets = getTranslate == null;
+        if(old) {
+            pushResult = getOldPushJoins(joinMap, keyStat, currentStat, currentJoinStat, upWheres, checkSubsets);
+            if(baseStat.lessEquals(pushResult.joins.runStat)) // не уменьшили статистику
+                return null;
+            if(pushResult.group.isEmpty())
+                return null;
+        } else {
+            pushResult = getNewPushJoins(joinMap, keyStat, currentStat, currentJoinStat, upWheres, baseStat);
+            if(pushResult == null)
+                return null;
+        }
+        return pushResult;
+    }
+
+    // как правило работает, но в каких то очень редких случаях вроде синхронизации нет, надо будет потом разобраться, пока не критично
+    private <K extends Expr> void assertJoinRowStat(Stat currentStat, StatKeys<K> currentJoinStat) {
+//        assert currentJoinStat.rows.equals(StatKeys.create(currentStat, currentJoinStat.distinct).rows);
+    }
+
+    private <K extends Expr, T extends Expr> PushJoinResult<K> getOldPushJoins(ImMap<K, BaseExpr> joinMap, KeyStat keyStat, Stat currentStat, StatKeys<K> currentJoinStat, ImMap<WhereJoin, Where> upWheres, boolean checkSubsets) {
+        PushJoinResult<K> pushResult = getPushJoins(joinMap, keyStat, currentStat, currentJoinStat.rows, upWheres);
+
+        if(checkSubsets && joinMap.size() > 1) { // значит можно reduce делать,  && !pushResult.runStat.less(currentStat)
+            for(int i=0,size= joinMap.size();i<size;i++) {
+                K key = joinMap.getKey(i);
+                PushJoinResult<K> pushSingleResult = getPushJoins(MapFact.singleton(key, joinMap.getValue(i)), keyStat, currentStat, currentJoinStat.distinct.get(key), upWheres);
+                if(pushSingleResult.joins.runStat.lessEquals(pushResult.joins.runStat)) {
+                    pushResult = pushSingleResult;
+                }
+            }
+        }
+        return pushResult;
+    }
+
+    private <K extends Expr> PushJoinResult<K> getPushJoins(ImMap<K, BaseExpr> joinMap, KeyStat keyStat, Stat currentStat, Stat currentJoinStat, ImMap<WhereJoin, Where> upWheres) {
+        return new PushJoinResult<K>(getPushJoins(joinMap.values().toSet(), upWheres, keyStat, currentStat, currentJoinStat), joinMap);
+    }
+
+    private <K extends Expr, T extends Expr> PushJoinResult<K> getNewPushJoins(ImMap<K, BaseExpr> innerOuter, KeyStat keyStat, Stat innerRows, StatKeys<K> innerKeys, ImMap<WhereJoin, Where> upWheres, Stat baseStat) {
+        // преобразуем joins в reverse map, пока делаем просто и выбираем минимум innerKeys (то есть с меньшим числом разновидностей)
+        MMap<BaseExpr, K> mRevOuterInner = MapFact.mMap(MapFact.<BaseExpr, K>override());
+        for(int i=0,size=innerOuter.size();i<size;i++) {
+            K inner = innerOuter.getKey(i);
+            BaseExpr outer = innerOuter.getValue(i);
+            K revInner = mRevOuterInner.get(outer);
+            if(revInner == null || innerKeys.distinct.get(inner).less(innerKeys.distinct.get(revInner)))
+                mRevOuterInner.add(outer, inner);
+        }
+        ImRevMap<K, BaseExpr> revInnerOuter = mRevOuterInner.immutable().toRevExclMap().reverse();
+        if(revInnerOuter.size() != innerOuter.size())
+            innerKeys = new StatKeys<K>(innerKeys.rows, new DistinctKeys<K>(innerKeys.distinct.filterIncl(revInnerOuter.keys())));
+
+        // считаем начальную итерацию, вырезаем WhereJoins которые "входят" в group
+        final ImSet<ParamExpr> keepKeys = SetFact.<ParamExpr>EMPTY();
+        Comparator<PushElement> comparator = getComparator(keepKeys);
+        final ImSet<PushGroup<K>> groups = revInnerOuter.mapSetValues(new GetKeyValue<PushGroup<K>, K, BaseExpr>() {
+            public PushGroup<K> getMapValue(K key, BaseExpr value) {
+                return new PushGroup<K>(key, value);
+            }});
+        List<PushElement> newPriority = new ArrayList<>();
+        MExclSet<PushElement> mNewElements = SetFact.<PushElement>mExclSet(groups);
+        MExclSet<WhereJoin> mNewJoins = SetFact.mExclSet();
+        for(PushGroup<K> group : groups)
+            BaseUtils.addToOrderedList(newPriority, group, 0, comparator);
+        addJoins(Arrays.asList(wheres), upWheres, comparator, newPriority, groups, mNewElements, mNewJoins, null);
+        final PushIteration<K> initialIteration = new PushIteration<K>(mNewElements.immutable(), mNewJoins.immutable(), revInnerOuter, keepKeys, newPriority);
+
+        // перебираем
+        Result<BestResult> rBest = new Result<BestResult>(new BaseStat(baseStat));
+        recPushJoins(initialIteration, keyStat, innerRows, innerKeys, PushIteration.Reduce.NONE, rBest, false);
+
+        if(rBest.result instanceof BaseStat) // не нашли ничего лучше
+            return null;
+        final PushIteration<K> best = (PushIteration<K>) rBest.result;
+
+        MAddMap<WhereJoin, Where> bestUpWheres = MapFact.mAddOverrideMap();
+        for(PushElement element : best.elements)
+            if(element instanceof PushJoin) {
+                PushJoin join = (PushJoin)element;
+                bestUpWheres.add(join.join, join.upWhere);
+            }
+        return new PushJoinResult<K>(new PushResult(best.runStat, best.joins.toList().toJavaList(), bestUpWheres), best.innerOuter);
+    }
+
+    private static abstract class PushElement {
+
+        protected abstract OuterContext<?> getOuterContext();
+        protected abstract BaseJoin<?> getBaseJoin();
+
+        public boolean containsAll(WhereJoin join) {
+            return containsJoinAll(getBaseJoin(), join);
+        }
+
+        private InnerJoins getJoinFollows(Result<ImMap<InnerJoin,Where>> upWheres) {
+            return InnerExpr.getJoinFollows(getBaseJoin(), upWheres, null);
+        }
+
+        public long getComplexity() {
+            return getOuterContext().getComplexity(false);
+        }
+
+        public ImSet<ParamExpr> getKeys() {
+            return getOuterContext().getOuterKeys();
+        }
+    }
+
+    private static class PushJoin extends PushElement {
+
+        private final WhereJoin join;
+        private final Where upWhere;
+
+        public PushJoin(WhereJoin join, Where upWhere) {
+            this.join = join;
+            this.upWhere = upWhere;
+        }
+
+        protected OuterContext<?> getOuterContext() {
+            return join;
+        }
+
+        protected BaseJoin<?> getBaseJoin() {
+            return join;
+        }
+    }
+
+    private static class PushGroup<K extends Expr> extends PushElement {
+        private final K inner;
+        private final BaseExpr outer;
+
+        public PushGroup(K inner, BaseExpr outer) {
+            this.inner = inner;
+            this.outer = outer;
+        }
+
+        protected OuterContext<?> getOuterContext() {
+            return outer;
+        }
+
+        protected BaseJoin<?> getBaseJoin() {
+            return outer.getBaseJoin();
+        }
+    }
+
+    private static int getGroupPriority(PushElement o1) {
+        return o1 instanceof PushGroup ? 0 : 1; // group'ы лучше
+    }
+
+    private static int getKeysPriority(PushElement o1, ImSet<ParamExpr> keepKeys) {
+        return -o1.getKeys().remove(keepKeys).size(); // чем больше не keep ключей тем лучше
+    }
+
+
+    public static Comparator<PushElement> getComparator (final ImSet<ParamExpr> keepKeys) {
+        return new Comparator<PushElement>() {
+            public int compare(PushElement o1, PushElement o2) {
+                // группы
+                int compare = Integer.compare(getGroupPriority(o1), getGroupPriority(o2));
+                if(compare != 0)
+                    return compare;
+
+                // количество "свободных" (не keep) ключей, чтобы быстрее отсечения получить
+                compare = Integer.compare(getKeysPriority(o1, keepKeys), getKeysPriority(o2, keepKeys));
+                if(compare != 0)
+                    return compare;
+
+                // наименьшая "сложность" join'ов, чтобы отсечение лучше было
+                return Long.compare(o1.getComplexity(), o2.getComplexity());
+            }
+        };
+    }
+
+    private static abstract class BestResult {
+
+        protected Stat runStat;
+        protected abstract long getComplexity();
+
+        // обе должны быть убывающими при вырезании join'ов, без изменения PRIM
+        protected boolean primBetter(BestResult iteration) { // если лучше, то при remove'е join'ов не убирая ключи или группы результат не улучшишь
+            return runStat.less(iteration.runStat);
+        }
+        protected boolean secBetter(BestResult iteration) {
+            return getComplexity() < iteration.getComplexity();
+        }
+    }
+
+    private static class BaseStat extends BestResult {
+
+        public BaseStat(Stat baseStat) {
+            runStat = baseStat;
+        }
+
+        protected long getComplexity() { // мнтересует только если статистика строго меньше
+            return Long.MIN_VALUE;
+        }
+    }
+
+    private static class PushIteration<K extends Expr> extends BestResult {
+
+        private final ImSet<PushElement> elements; // для исключения избыточных WhereJoin
+        private final ImSet<WhereJoin> joins;
+        private final ImRevMap<K, BaseExpr> innerOuter;
+        private final ImSet<ParamExpr> keepKeys;
+        private final List<PushElement> priority; // только не keep в порядке компаратора
+
+        public PushIteration(ImSet<PushElement> elements, ImSet<WhereJoin> joins, ImRevMap<K, BaseExpr> innerOuter, ImSet<ParamExpr> keepKeys, List<PushElement> priority) {
+            this.elements = elements;
+            this.joins = joins;
+            this.innerOuter = innerOuter;
+            this.keepKeys = keepKeys;
+            this.priority = priority;
+        }
+
+        private WhereJoins getJoins() {
+            return new WhereJoins(joins);
+        }
+        private ImRevMap<K, BaseExpr> getInnerOuter() {
+            return innerOuter;
+        }
+
+        public boolean hasElement() {
+            return !priority.isEmpty();
+        }
+
+        public PushElement findElement() {
+            return priority.get(0);
+        }
+
+        private static <J> Stat calcMultStat(ImSet<J> groups, Stat rows, StatKeys<J> keys) {
+            Stat sum = Stat.ONE;
+            for(J group : groups)
+                sum = sum.mult(keys.distinct.get(group));
+            return sum.min(rows);
+        }
+
+        // MAX(Ri * MIN (*(Jo), Ro) / MIN(*(Ji), Ri)  , Ro)
+        private Stat calcRunStat(ImRevMap<K, BaseExpr> innerOuter, Stat outerRows, StatKeys<BaseExpr> outerKeys, Stat innerRows, StatKeys<K> innerKeys) {
+            return innerRows.mult(calcMultStat(innerOuter.valuesSet(), outerRows, outerKeys)).div(calcMultStat(innerOuter.keys(), innerRows, innerKeys)).max(outerRows);
+        }
+
+        private void calcRunStat(Stat innerRows, StatKeys<K> innerKeys, KeyStat keyStat) {
+            ImRevMap<K, BaseExpr> innerOuter = getInnerOuter();
+            WhereJoins joins = getJoins();
+
+            Result<Stat> rows = new Result<>();
+            StatKeys<BaseExpr> statKeys = joins.getStatKeys(innerOuter.valuesSet(), rows, keyStat);
+
+            runStat = calcRunStat(innerOuter, rows.result, statKeys, innerRows, innerKeys);
+        }
+
+        private long calcComplexity() {
+            long result = 0;
+            for(WhereJoin element : joins)
+                result += element.getComplexity(false);
+            for(BaseExpr expr : innerOuter.valueIt())
+                result += expr.getComplexity(false);
+            return result;
+        }
+
+        protected Long complexity;
+        @ManualLazy
+        protected long getComplexity() {
+            if(complexity == null)
+                complexity = calcComplexity();
+            return complexity;
+        }
+
+        private enum Reduce {
+            PRIM, // Stat, group keys + keyExprs
+            SEC, // PRIM (>=)= best ищем уменьшение SEC (если конечно не reducePrim)
+            NONE
+        }
+
+        public Reduce checkBest(Reduce forceReduce, Result<BestResult> bestIteration, Stat innerRows, StatKeys<K> innerKeys, KeyStat keyStat) { // возвращает если заведомо хуже best
+            if(forceReduce == Reduce.PRIM) // если REDUCE.PRIM то ничего не проверяем
+                return forceReduce;
+
+            if(forceReduce == Reduce.SEC) { // если ждем reduce'а вторичного признака, не считаем runStat до того как проверим вторичный признак (но считать runStat все равно придется, чтобы не увеличить его случайно)
+                assert bestIteration.result != null; // так как опция Reduce.SEC может включится только при равенстве Redisce.PRIM
+                if(!secBetter(bestIteration.result))
+                    return forceReduce;
+            }
+
+            // считаем runStat
+            calcRunStat(innerRows, innerKeys, keyStat);
+
+            // если best меньше
+            if(bestIteration.result != null && bestIteration.result.primBetter(this)) // помечаем что мы должны убрать кдюч, так как если мы уберем этот join, то join outer и row outer, а значит и runstat вырастут
+                return Reduce.PRIM;
+
+            // если текущая меньше
+            if(bestIteration.result == null || forceReduce == Reduce.SEC || primBetter(bestIteration.result) || secBetter(bestIteration.result)) // 2-я проверка - оптимизация
+                bestIteration.set(this); // здесь и внизу SEC не нужен, так как он ASSERT'ся и так
+
+            return Reduce.SEC;
+        }
+
+        public boolean hasNoReducePrim() { // оптимизация, если нет группировок и не keep ключей
+            final PushElement element = findElement();
+
+            // оптимизация завязана на реализацию findElement, assert что есть упорядочивание
+            return !(element instanceof PushGroup) && keepKeys.containsAll(element.getKeys());
+        }
+
+        public PushIteration<K> keepElement() {
+            final PushElement element = findElement();
+
+            List<PushElement> newPriority = new ArrayList<>(priority);
+            newPriority.remove(0);
+
+            // инкрементально пересчитываем кэши (keepkeys + priority)
+            ImSet<ParamExpr> addKeepKeys = element.getKeys().remove(this.keepKeys);
+
+            if(addKeepKeys.isEmpty()) // оптимизация
+                return new PushIteration<>(elements, joins, innerOuter, keepKeys, newPriority);
+
+            ImSet<ParamExpr> newKeepKeys = this.keepKeys.addExcl(addKeepKeys);
+
+            Comparator<PushElement> comparator = getComparator(newKeepKeys);
+            for(int i=1,size=priority.size();i<size;i++) { // обновляем priority с учетом изменения comparator\а
+                final PushElement rest = priority.get(i);
+                final ImSet<ParamExpr> restKeys = rest.getKeys();
+                if(restKeys.intersect(addKeepKeys)) { // если пересекаются ключи, выкидываем, добавляем еще раз
+                    newPriority.remove(rest);
+                    BaseUtils.addToOrderedList(newPriority, rest, 0, comparator);
+                }
+
+                if(rest instanceof PushJoin && this.keepKeys.containsAll(restKeys)) // оптимизация по comparator'у в priority, если все из keep выходим
+                    break;
+            }
+
+            return new PushIteration<K>(elements, joins, innerOuter, newKeepKeys, newPriority);
+        }
+
+        public PushIteration<K> removeElement(Result<Boolean> reducedPrim) { // group не просто вырезаем а заменяем на join с upWhere
+            PushElement element = findElement();
+
+            List<PushElement> newPriority = new ArrayList<>(priority);
+            newPriority.remove(0);
+
+            final ImSet<PushElement> removedElements = elements.removeIncl(element);
+            MExclSet<PushElement> mNewElements = SetFact.mExclSet(removedElements);
+
+            MExclSet<WhereJoin> mNewJoins; ImRevMap<K, BaseExpr> newInnerOuter; Set<ParamExpr> removedKeys;
+            if(element instanceof PushGroup) {
+                mNewJoins = SetFact.mExclSet(joins);
+                newInnerOuter = innerOuter.removeRev(((PushGroup<K>) element).inner);
+                removedKeys = null;
+            } else {
+                mNewJoins = SetFact.mExclSet(joins.removeIncl(((PushJoin) element).join));
+                newInnerOuter = innerOuter;
+                removedKeys = SetFact.mAddRemoveSet(element.getKeys().remove(this.keepKeys));
+            }
+
+            // добавляем follow элементы
+            Result<ImMap<InnerJoin, Where>> reduceFollowUpWheres = new Result<>();
+            Comparator<PushElement> comparator = getComparator(keepKeys);
+            addJoins(element.getJoinFollows(reduceFollowUpWheres).it(), reduceFollowUpWheres.result,
+                    comparator, newPriority, removedElements, mNewElements, mNewJoins, removedKeys);
+
+            if(element instanceof PushGroup) {
+                reducedPrim.set(true);
+            } else {
+                int i = 1, size = priority.size(); // докидываем не keep проверяя уменьшили мы ключ или нет
+                while (!removedKeys.isEmpty() && i < size) {
+                    SetFact.removeJavaAll(removedKeys, priority.get(i).getKeys());
+                    i++;
+                }
+                reducedPrim.set(!removedKeys.isEmpty()); // уменьшили количество ключей (ессно не keep) или группировку
+            }
+            return new PushIteration<>(mNewElements.immutable(), mNewJoins.immutable(), newInnerOuter, keepKeys, newPriority);
+        }
+    }
+
+    public static <WJ extends WhereJoin> void addJoins(Iterable<WJ> joins, ImMap<WJ, Where> upWheres, Comparator<PushElement> comparator, List<PushElement> newPriority, ImSet<? extends PushElement> elements, MExclSet<PushElement> mNewElements, MExclSet<WhereJoin> mNewJoins, Set<ParamExpr> removedKeys) {
+        for(WJ joinFollow : joins) { // пытаемся заменить reduceJoin, на его joinFollows
+            boolean found = false;
+            for(PushElement newElement : elements)
+                if(newElement.containsAll(joinFollow)) {
+                    found = true;
+                    break;
+                }
+            PushJoin followJoin = new PushJoin(joinFollow, upWheres.get(joinFollow));
+            if(!found) {
+                BaseUtils.addToOrderedList(newPriority, followJoin, 0, comparator);
+                mNewJoins.exclAdd(joinFollow);
+                mNewElements.exclAdd(followJoin);
+            }
+
+            if(removedKeys != null)
+                SetFact.removeJavaAll(removedKeys, followJoin.getKeys());
+        }
+    }
+
+    private <K extends Expr> void recPushJoins(PushIteration<K> iteration, KeyStat keyStat, Stat innerRows, StatKeys<K> innerKeys, PushIteration.Reduce forceReduce, Result<BestResult> best, boolean upKeep) {
+
+        if(!upKeep) // если сверху не обработали эту итерацию (здесь, а не в вырезании чтобы включить первую итерацию)
+            forceReduce = iteration.checkBest(forceReduce, best, innerRows, innerKeys, keyStat);
+
+        if(!iteration.hasElement())
+            return;
+
+        // оптимизация
+        if(forceReduce == PushIteration.Reduce.PRIM && iteration.hasNoReducePrim())
+            return;
+
+        // проверяем оставление
+        recPushJoins(iteration.keepElement(), keyStat, innerRows, innerKeys, forceReduce, best, true);
+
+        // проверяем удаление
+        Result<Boolean> reducedPrim = new Result<>();
+        final PushIteration<K> removeIteration = iteration.removeElement(reducedPrim);
+
+        if(removeIteration.getInnerOuter().isEmpty()) // если группировок не осталось выходим
+            return;
+
+        if (reducedPrim.result) // сбрасываем prim, если "ушел" один из значимых признаков (группировка или не keep ключ)
+            forceReduce = PushIteration.Reduce.NONE;
+
+        recPushJoins(removeIteration, keyStat, innerRows, innerKeys, forceReduce, best, false);
+    }
+
+    public Where getPartitionPushWhere(ImMap<KeyExpr, BaseExpr> joinMap, final ImSet<Expr> partitions, ImMap<WhereJoin, Where> upWheres, QueryJoin<KeyExpr, ?, ?, ?> skipJoin, KeyStat keyStat, Where fullWhere, StatKeys<KeyExpr> currentJoinStat) {
+        joinMap = joinMap.filterIncl(BaseUtils.<ImSet<KeyExpr>>immutableCast(AbstractOuterContext.getOuterSetKeys(partitions)));
+
+        final ImMap<KeyExpr, BaseExpr> fJoinMap = joinMap;
+        return getPushWhere(joinMap, upWheres, skipJoin, keyStat, fullWhere, currentJoinStat, new Provider<ImMap<Expr, ? extends Expr>>() {
+            public ImMap<Expr, ? extends Expr> get() {
+                return new QueryTranslator(fJoinMap).translate(partitions.toMap());
+            }
+        });
     }
 
     // может как MeanUpWheres сделать

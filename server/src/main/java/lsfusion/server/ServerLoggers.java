@@ -6,6 +6,7 @@ import lsfusion.interop.DaemonThreadFactory;
 import lsfusion.logging.FlushableRollingFileAppender;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
+import lsfusion.server.stack.ExecutionStackAspect;
 import org.apache.log4j.Logger;
 
 import java.util.Enumeration;
@@ -64,7 +65,7 @@ public class ServerLoggers {
     
     public static void assertLog(boolean assertion, String message) {
         if(!assertion)
-            assertLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
+            assertLogger.info(message + '\n' + ExecutionStackAspect.getExStackTrace());
         assert assertion : message;
     }
 

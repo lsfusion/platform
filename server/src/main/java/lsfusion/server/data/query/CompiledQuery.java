@@ -5,7 +5,6 @@ import lsfusion.server.data.query.stat.*;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.form.navigator.SQLSessionUserProvider;
 import lsfusion.server.session.PropertyChange;
-import org.apache.commons.lang.StringUtils;
 import lsfusion.base.*;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -692,12 +691,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             protected Where pushWhere(Where groupWhere, ImSet<KeyExpr> keys, ImMap<K, BaseExpr> innerJoins, StatKeys<K> statKeys, Result<SQLQuery> empty) {
                 Where fullWhere = groupWhere;
                 Where pushWhere = null;
-                if(innerJoins.size() > 1 && (pushWhere = whereJoins.getGroupPushWhere(innerJoins, upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
+                if((pushWhere = whereJoins.getGroupPushWhere(innerJoins, upWheres, innerJoin, keyStat, fullWhere, statKeys))!=null) // проталкивание предиката
                     fullWhere = fullWhere.and(pushWhere);
-                else
-                    for(K key : innerJoins.keyIt()) // проталкивание по одному ключу
-                        if((pushWhere = whereJoins.getGroupPushWhere(MapFact.singleton(key, innerJoin.group.get(key)), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.distinct.get(key)))!=null)
-                            fullWhere = fullWhere.and(pushWhere);
                 if(isEmptySelect(fullWhere, keys)) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
                     // getKeyEquals - для надежности, так как идет перетранслирование ключей и условие может стать false, а это критично, так как в emptySelect есть cast'ы, а скажем в GroupSelect, может придти EMPTY, ключи NULL и "Class Cast'ы" будут
                     empty.set(getEmptySelect(groupWhere));
@@ -810,7 +805,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(Settings.get().isPushOrderWhere()) {
                     StatKeys<KeyExpr> statKeys = innerJoin.getStatKeys(keyStat); // определяем ключи которые надо протолкнуть
                     Where pushWhere;
-                    if((pushWhere = whereJoins.getPartitionPushWhere(innerJoin.getJoins(), innerJoin.getPartitions(), upWheres, innerJoin, keyStat, fullWhere.getStatRows(), statKeys.rows))!=null) // проталкивание по многим ключам
+                    if((pushWhere = whereJoins.getPartitionPushWhere(innerJoin.getJoins(), innerJoin.getPartitions(), upWheres, innerJoin, keyStat, fullWhere, statKeys))!=null) // проталкивание по многим ключам
                         fullWhere = fullWhere.and(pushWhere);
                     if(isEmptySelect(fullWhere, group.valuesSet())) { // может быть когда проталкивается верхнее условие, а внутри есть NOT оно же
                         // getKeyEquals - для надежности, так как идет перетранслирование ключей и условие может стать false, а это критично, так как в emptySelect есть cast'ы, а скажем в GroupSelect, может придти EMPTY, ключи NULL и "Class Cast'ы" будут
@@ -978,7 +973,11 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 CompiledQuery<String, String> compiledQuery = new Query<String, String>(keys.addRevExcl(itKeys), props, where).compile(new CompileOptions<String>(syntax, subcontext, recursive && !useRecursionFunction));
                 String fromSelect = compiledQuery.fillSelect(keySelect, propertySelect, whereSelect, innerSubQueries, params, env);
 
-                subQueries.set(innerSubQueries.result);
+                ImMap<String, SQLQuery> compiledSubQueries = innerSubQueries.result;
+                if(subQueries.result != null) // по аналогии с subEnv
+                    compiledSubQueries = compiledSubQueries.addExcl(subQueries.result);
+                subQueries.set(compiledSubQueries);
+
                 ExecCost compiledBaseCost = compiledQuery.sql.baseCost;
                 if(baseCost.result != null)
                     compiledBaseCost = compiledBaseCost.or(baseCost.result);
@@ -1004,30 +1003,48 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     return syntax.getSelect(fromSelect, SQLSession.stringExpr(orderKeySelect, orderPropertySelect), whereSelect.result.toString(" AND "),"","","", "");
             }
 
-            public SQLQuery getParamSource(boolean useRecursionFunction, final boolean wrapStep) {
+            public SQLQuery getParamSource(final boolean useRecursionFunction, final boolean wrapStep) {
                 ImRevMap<KeyExpr, KeyExpr> mapIterate = innerJoin.getMapIterate();
 
                 Where initialWhere = innerJoin.getInitialWhere();
                 final Where baseInitialWhere = initialWhere;
-                Where stepWhere = innerJoin.getStepWhere();
 
-                boolean isLogical = innerJoin.isLogical();
-                boolean cyclePossible = innerJoin.isCyclePossible();
+                final boolean isLogical = innerJoin.isLogical();
+                final boolean cyclePossible = innerJoin.isCyclePossible();
 
                 boolean single = isSingle(innerJoin);
 
                 String rowPath = "qwpather";
 
-                ImMap<String, Type> props = queries.mapValues(new GetValue<Type, RecursiveExpr.Query>() {
-                    public Type getMapValue(RecursiveExpr.Query value) {
-                        return value.getType();
-                    }});
+                ImMap<String, Type> propTypes;
+                final MStaticExecuteEnvironment mSubEnv = StaticExecuteEnvironmentImpl.mEnv();
 
-                Expr concKeys = null; ArrayClass rowType = null;
-                if(cyclePossible && (!isLogical || useRecursionFunction)) {
-                    concKeys = ConcatenateExpr.create(mapIterate.keys().toOrderSet());
-                    rowType = ArrayClass.get(concKeys.getType(innerJoin.getClassWhere())); // classWhere а не initialWhere, чтобы общий тип был и не было проблем с cast'ом ConcatenateType'ов
-                    props = props.addExcl(rowPath, rowType);
+                ImMap<String, String> propertySelect;
+                if(isLogical) {
+                    propTypes = MapFact.EMPTY();
+                    propertySelect = queries.mapValues(new GetStaticValue<String>() {
+                        public String getMapValue() {
+                            return syntax.getBitString(true);
+                        }});
+                } else {
+                    propTypes = queries.mapValues(new GetValue<Type, RecursiveExpr.Query>() {
+                        public Type getMapValue(RecursiveExpr.Query value) {
+                            return value.getType(); // тут возможно baseInitialWhere надо
+                        }});
+                    propertySelect = queries.mapValues(new GetKeyValue<String, String, RecursiveExpr.Query>() {
+                        public String getMapValue(String key, RecursiveExpr.Query value) {
+                            return GroupType.SUM.getSource(ListFact.singleton(key), null, MapFact.<String, CompileOrder>EMPTYORDER(), value.getType(), syntax, mSubEnv);
+                        }});
+                }
+
+                Expr rowKeys = null; ArrayClass rowType = null; Expr rowSource = null;
+                final boolean needRow = cyclePossible && (!isLogical || useRecursionFunction);
+                if(needRow) {
+                    rowKeys = ConcatenateExpr.create(mapIterate.keys().toOrderSet());
+                    rowType = ArrayClass.get(rowKeys.getType(innerJoin.getClassWhere())); // classWhere а не initialWhere, чтобы общий тип был и не было проблем с cast'ом ConcatenateType'ов
+                    propTypes = propTypes.addExcl(rowPath, rowType);
+
+                    rowSource = FormulaExpr.createCustomFormula(syntax.getArrayConstructor("prm1", rowType, mSubEnv), rowType, rowKeys); // баг сервера, с какого-то бодуна ARRAY[char(8)] дает text[]
                 }
 
                 // проталкивание
@@ -1037,85 +1054,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 if(initialWhere==null)
                     return empty.result;
 
-                final MStaticExecuteEnvironment mSubEnv = StaticExecuteEnvironmentImpl.mEnv();
-
-                RecursiveJoin tableInnerJoin = innerJoin;
-                if(!BaseUtils.hashEquals(initialWhere, baseInitialWhere)) // проверка на hashEquals - оптимизация, само такое проталкивание нужно чтобы у RecursiveTable - статистика была правильной
-                    tableInnerJoin = new RecursiveJoin(innerJoin, initialWhere);
-
-                String recName = subcontext.wrapRecursion("rectable"); Result<ImRevMap<String, KeyExpr>> recKeys = new Result<ImRevMap<String, KeyExpr>>();
-                final Join<String> recJoin = tableInnerJoin.getRecJoin(props, recName, recKeys);
-                
-                final Where wrapClassWhere = wrapStep ? tableInnerJoin.getIsClassWhere() : null;
-
-                ImRevMap<String, Expr> initialExprs;
-                ImMap<String, Expr> stepExprs;
-                ImMap<String, String> propertySelect;
-                if(isLogical) {
-                    propertySelect = queries.mapValues(new GetStaticValue<String>() {
-                        public String getMapValue() {
-                            return syntax.getBitString(true);
-                        }});
-                    stepExprs = MapFact.EMPTY();
-                    initialExprs = MapFact.EMPTYREV();
-                } else {
-                    initialExprs = queries.mapRevValues(new GetValue<Expr, RecursiveExpr.Query>() {
-                        public Expr getMapValue(RecursiveExpr.Query value) {
-                            return value.initial;
-                        }});
-                    stepExprs = queries.mapValues(new GetKeyValue<Expr, String, RecursiveExpr.Query>() {
-                        public Expr getMapValue(String key, RecursiveExpr.Query value) {
-                            Expr step = value.step;
-                            if (wrapStep)
-                                step = SubQueryExpr.create(step.and(wrapClassWhere));
-                            return recJoin.getExpr(key).mult(step, (IntegralClass) value.getType());
-                        }});
-                    propertySelect = queries.mapValues(new GetKeyValue<String, String, RecursiveExpr.Query>() {
-                        public String getMapValue(String key, RecursiveExpr.Query value) {
-                            return GroupType.SUM.getSource(ListFact.singleton(key), null, MapFact.<String, CompileOrder>EMPTYORDER(), value.getType(), syntax, mSubEnv);
-                        }});
-                }
-
-                ImCol<String> havingSelect;
-                if(single)
-                    havingSelect = SetFact.singleton(propertySelect.get(queries.singleKey()) + " IS NOT NULL");
-                else
-                    havingSelect = SetFact.EMPTY();
-
-                if(wrapStep) // чтобы избавляться от проблем с 2-м использованием
-                    stepWhere = SubQueryExpr.create(stepWhere.and(wrapClassWhere));
-
-                Where recWhere;
-                if(cyclePossible && (!isLogical || useRecursionFunction)) {
-                    Expr prevPath = recJoin.getExpr(rowPath);
-
-                    Where noNodeCycle = concKeys.compare(prevPath, Compare.INARRAY).not();
-                    if(isLogical)
-                        recWhere = recJoin.getWhere().and(noNodeCycle);
-                    else {
-                        recWhere = Where.TRUE;
-                        ImValueMap<String, Expr> mStepExprs = stepExprs.mapItValues(); // "совместное" заполнение
-                        for(int i=0,size=stepExprs.size();i<size;i++) {
-                            String key = stepExprs.getKey(i);
-                            IntegralClass type = (IntegralClass)queries.get(key).getType();
-                            Expr maxExpr = type.getStaticExpr(type.getSafeInfiniteValue());
-                            mStepExprs.mapValue(i, stepExprs.getValue(i).ifElse(noNodeCycle, maxExpr)); // если цикл даем максимальное значение
-                            recWhere = recWhere.and(recJoin.getExpr(key).compare(maxExpr, Compare.LESS)); // останавливаемся если количество значений становится очень большим
-                        }
-                        stepExprs = mStepExprs.immutableValue();
-                    }
-
-                    Expr rowSource = FormulaExpr.createCustomFormula(syntax.getArrayConstructor("prm1", rowType, mSubEnv), rowType, concKeys); // баг сервера, с какого-то бодуна ARRAY[char(8)] дает text[]
-                    initialExprs = initialExprs.addRevExcl(rowPath, rowSource); // заполняем начальный путь
-                    stepExprs = stepExprs.addExcl(rowPath, FormulaExpr.createCustomFormula(syntax.getArrayConcatenate(rowType, "prm1", "prm2", mSubEnv), rowType, prevPath, rowSource)); // добавляем тек. вершину
-                } else
-                    recWhere = recJoin.getWhere();
-
-                ImMap<String, Type> columnTypes = initialExprs.addExcl(recKeys.result).mapValues(new GetValue<Type, Expr>() {
-                    public Type getMapValue(Expr value) {
-                        return value.getType(baseInitialWhere);
-                    }});
-                
+                // чтение params (outer / inner и типов)
                 boolean noDynamicSQL = syntax.noDynamicSQL();
 
                 String outerParams = null;
@@ -1123,7 +1062,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 ImList<FunctionType> types = null;
                 if(useRecursionFunction) {
                     ImSet<OuterContext> outerContext = SetFact.<OuterContext>merge(queries.valuesSet(), initialWhere);
-                    ImSet<ParseValue> values = SetFact.addExclSet(AbstractOuterContext.getOuterColValues(outerContext), AbstractOuterContext.getOuterStaticValues(outerContext)); // не static values 
+                    ImSet<ParseValue> values = SetFact.addExclSet(AbstractOuterContext.getOuterColValues(outerContext), AbstractOuterContext.getOuterStaticValues(outerContext)); // не static values
                     outerParams = "";
                     ImRevValueMap<ParseValue, String> mvInnerParams = values.mapItRevValues(); // "совместная" обработка / последействие
                     MList<FunctionType> mParamTypes = ListFact.mListMax(values.size());
@@ -1143,36 +1082,162 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                 } else
                     innerParams = params;
 
+                RecursiveJoin tableInnerJoin = innerJoin;
+                if(!BaseUtils.hashEquals(initialWhere, baseInitialWhere)) // проверка на hashEquals - оптимизация, само такое проталкивание нужно чтобы у RecursiveTable - статистика была правильной
+                    tableInnerJoin = new RecursiveJoin(innerJoin, initialWhere);
+
+                ImRevMap<String, KeyExpr> recKeys = tableInnerJoin.genKeyNames();
+                ImMap<String, Type> columnTypes = propTypes.addExcl(recKeys.mapValues(new GetValue<Type, KeyExpr>() {
+                    public Type getMapValue(KeyExpr value) {
+                        return value.getType(baseInitialWhere);
+                    }
+                }));
+
                 SubQueryContext pushContext = subcontext.pushRecursion();// чтобы имена не пересекались
                 
                 Result<ImOrderSet<String>> keyOrder = new Result<ImOrderSet<String>>(); Result<ImOrderSet<String>> propOrder = new Result<ImOrderSet<String>>();
-                Result<ImMap<String, SQLQuery>> initialSubQueries = new Result<>();
+                Result<ImMap<String, SQLQuery>> rSubQueries = new Result<>();
                 Result<ExecCost> baseCost = new Result<ExecCost>();
-                String initialSelect = getSelect(recKeys.result, initialExprs, columnTypes, initialWhere, keyOrder, propOrder, useRecursionFunction, false, innerParams, pushContext, baseCost, initialSubQueries, mSubEnv);
+
+                // INIT
+
+                String initialSelect = getInitialSelect(initialWhere, recKeys, columnTypes, innerParams, useRecursionFunction, isLogical, pushContext, needRow, rowPath, rowSource, keyOrder, propOrder, mSubEnv, rSubQueries, baseCost);
+
+                // STEP
+
                 if(!Settings.get().isDisableCompiledSubQueries())
                     pushContext = pushContext.pushSiblingSubQuery();
-                Result<ImMap<String, SQLQuery>> stepSubQueries = new Result<>();
-                String stepSelect = getSelect(recKeys.result, stepExprs, columnTypes, stepWhere.and(recWhere), keyOrder, propOrder, useRecursionFunction, true, innerParams, pushContext, baseCost, stepSubQueries, mSubEnv);
-                ImOrderSet<String> fieldOrder = keyOrder.result.addOrderExcl(propOrder.result);
-                ImMap<String, SQLQuery> subQueries = stepSubQueries.result.addExcl(initialSubQueries.result);
 
-                ImMap<String, String> keySelect = group.crossValuesRev(recKeys.result);
+                String recName = subcontext.wrapRecursion("rectable");
+
+                Result<ImMap<String, SQLQuery>> stepSubQueries = new Result<>();
+                String stepSelect = getStepSelect(tableInnerJoin, wrapStep, null, recName, recKeys, propTypes, columnTypes, innerParams, useRecursionFunction, pushContext, isLogical, needRow, rowPath, rowKeys, rowType, rowSource, keyOrder, propOrder, mSubEnv, stepSubQueries, baseCost);
+                rSubQueries.set(rSubQueries.result.addExcl(stepSubQueries.result));
+
+                int smallLimit = 0;
+                String stepSmallSelect = "";
+                if(useRecursionFunction) {
+                    int adjustCount = Settings.get().getAdjustRecursionStat();
+                    Stat adjustStat = new Stat(adjustCount);
+                    if (adjustStat.less(tableInnerJoin.getStatKeys().rows)) { // если статистика
+                        // выполняем с тем же контекстом чтобы проверить протолкнется ли такой предикат или нет (одновременно с самим запросом не получилось бы из-за подзапросов)
+                        Result<ImMap<String, SQLQuery>> smallSubQueries = new Result<>();
+                        stepSmallSelect = getStepSelect(tableInnerJoin, wrapStep, adjustStat, recName, recKeys, propTypes, columnTypes, innerParams, useRecursionFunction, pushContext, isLogical, needRow, rowPath, rowKeys, rowType, rowSource, keyOrder, propOrder, StaticExecuteEnvironmentImpl.mEnv(), smallSubQueries, new Result<ExecCost>());
+                        if(BaseUtils.hashEquals(stepSmallSelect, stepSelect) && BaseUtils.hashEquals(smallSubQueries.result, stepSubQueries.result)) { // в env'ы записываем только если протолкнулось
+                            stepSmallSelect = "";
+                        } else {
+                            smallLimit = adjustCount;
+
+                            if(!Settings.get().isDisableCompiledSubQueries())
+                                pushContext = pushContext.pushSiblingSubQuery();
+
+                            stepSmallSelect = getStepSelect(tableInnerJoin, wrapStep, adjustStat, recName, recKeys, propTypes, columnTypes, innerParams, useRecursionFunction, pushContext, isLogical, needRow, rowPath, rowKeys, rowType, rowSource, keyOrder, propOrder, mSubEnv, rSubQueries, baseCost);
+                        }
+                    }
+                }
+
+                // RESULT
+
+                ImOrderSet<String> columnOrder = keyOrder.result.addOrderExcl(propOrder.result);
+                ImMap<String, SQLQuery> subQueries = rSubQueries.result;
+
+                ImCol<String> havingSelect;
+                if(single)
+                    havingSelect = SetFact.singleton(propertySelect.get(queries.singleKey()) + " IS NOT NULL");
+                else
+                    havingSelect = SetFact.EMPTY();
+
+                ImMap<String, String> keySelect = group.crossValuesRev(recKeys);
                 mSubEnv.addVolatileStats();
                 String select;
                 if(useRecursionFunction) {
                     mSubEnv.addNoReadOnly();
-                    String fieldDeclare = Field.getDeclare(fieldOrder.mapOrderMap(columnTypes), syntax, mSubEnv);
-                    select = getGroupSelect(syntax.getRecursion(types, recName, initialSelect, stepSelect, fieldDeclare, outerParams, mSubEnv),
+                    String fieldDeclare = Field.getDeclare(columnOrder.mapOrderMap(columnTypes), syntax, mSubEnv);
+                    select = getGroupSelect(syntax.getRecursion(types, recName, initialSelect, stepSelect, stepSmallSelect, smallLimit, fieldDeclare, outerParams, mSubEnv),
                             keySelect, propertySelect, SetFact.<String>EMPTY(), havingSelect, SetFact.<String>EMPTY());
                 } else {
                     if(SQLQuery.countMatches(stepSelect, recName, subQueries) > 1) // почти у всех SQL серверов ограничение что не больше 2-х раз CTE можно использовать
                         return null;
-                    String recursiveWith = "WITH RECURSIVE " + recName + "(" + fieldOrder.toString(",") + ") AS ((" + initialSelect +
+                    String recursiveWith = "WITH RECURSIVE " + recName + "(" + columnOrder.toString(",") + ") AS ((" + initialSelect +
                             ") UNION " + (isLogical && cyclePossible?"":"ALL ") + "(" + stepSelect + ")) ";
                     select = recursiveWith + (isLogical ? syntax.getSelect(recName, SQLSession.stringExpr(keySelect, propertySelect), "", "", "", "", "")
                             : getGroupSelect(recName, keySelect, propertySelect, SetFact.<String>EMPTY(), havingSelect, SetFact.<String>EMPTY()));
                 }
                 return getSQLQuery("(" + select + ")", baseCost.result, subQueries, mSubEnv, baseInitialWhere, useRecursionFunction);
+            }
+
+            private String getInitialSelect(Where initialWhere, ImRevMap<String, KeyExpr> keyNames, ImMap<String, Type> columnTypes, ImRevMap<ParseValue, String> innerParams, boolean useRecursionFunction, boolean isLogical, SubQueryContext pushContext, boolean needRow, String rowPath, Expr rowSource, Result<ImOrderSet<String>> keyOrder, Result<ImOrderSet<String>> propOrder, MStaticExecuteEnvironment mSubEnv, Result<ImMap<String, SQLQuery>> subQueries, Result<ExecCost> baseCost) {
+                ImRevMap<String, Expr> initialExprs;
+                if(isLogical) {
+                    initialExprs = MapFact.EMPTYREV();
+                } else {
+                    initialExprs = queries.mapRevValues(new GetValue<Expr, RecursiveExpr.Query>() {
+                        public Expr getMapValue(RecursiveExpr.Query value) {
+                            return value.initial;
+                        }});
+                }
+
+                if(needRow) {
+                    initialExprs = initialExprs.addRevExcl(rowPath, rowSource); // заполняем начальный путь
+                }
+
+                assert initialExprs.addExcl(keyNames).mapValues(new GetValue<Type, Expr>() {
+                    public Type getMapValue(Expr value) {
+                        return value.getType(innerJoin.getInitialWhere());
+                    }
+                }).equals(columnTypes);
+
+                return getSelect(keyNames, initialExprs, columnTypes, initialWhere, keyOrder, propOrder, useRecursionFunction, false, innerParams, pushContext, baseCost, subQueries, mSubEnv);
+            }
+
+            private String getStepSelect(RecursiveJoin tableJoin, final boolean wrapStep, Stat adjustStat, String tableName, ImRevMap<String, KeyExpr> keyNames, ImMap<String, Type> propTypes, ImMap<String, Type> columnTypes, ImRevMap<ParseValue, String> innerParams, boolean useRecursionFunction, SubQueryContext pushContext, boolean isLogical, boolean needRow, String rowPath, Expr rowKeys, ArrayClass rowType, Expr rowSource, Result<ImOrderSet<String>> keyOrder, Result<ImOrderSet<String>> propOrder, MStaticExecuteEnvironment mSubEnv, Result<ImMap<String, SQLQuery>> subQueries, Result<ExecCost> baseCost) {
+                assert keyOrder.result != null && propOrder.result != null; // уже в initial должны быть заполнены
+
+                Where stepWhere = innerJoin.getStepWhere();
+                final Where wrapClassWhere = wrapStep ? tableJoin.getIsClassWhere() : null;
+                if(wrapStep) // чтобы избавляться от проблем с 2-м использованием
+                    stepWhere = SubQueryExpr.create(stepWhere.and(wrapClassWhere));
+
+                final Join<String> recJoin = tableJoin.getRecJoin(propTypes, tableName, keyNames, adjustStat);
+
+                ImMap<String, Expr> stepExprs;
+                if(isLogical) {
+                    stepExprs = MapFact.EMPTY();
+                } else {
+                    stepExprs = queries.mapValues(new GetKeyValue<Expr, String, RecursiveExpr.Query>() {
+                        public Expr getMapValue(String key, RecursiveExpr.Query value) {
+                            Expr step = value.step;
+                            if (wrapStep)
+                                step = SubQueryExpr.create(step.and(wrapClassWhere));
+                            return recJoin.getExpr(key).mult(step, (IntegralClass) value.getType());
+                        }});
+                }
+
+                Where recWhere;
+                if(needRow) {
+                    Expr prevPath = recJoin.getExpr(rowPath);
+
+                    Where noNodeCycle = rowKeys.compare(prevPath, Compare.INARRAY).not();
+                    if(isLogical)
+                        recWhere = recJoin.getWhere().and(noNodeCycle);
+                    else {
+                        recWhere = Where.TRUE;
+                        ImValueMap<String, Expr> mStepExprs = stepExprs.mapItValues(); // "совместное" заполнение
+                        for(int i=0,size=stepExprs.size();i<size;i++) {
+                            String key = stepExprs.getKey(i);
+                            IntegralClass type = (IntegralClass)queries.get(key).getType();
+                            Expr maxExpr = type.getStaticExpr(type.getSafeInfiniteValue());
+                            mStepExprs.mapValue(i, stepExprs.getValue(i).ifElse(noNodeCycle, maxExpr)); // если цикл даем максимальное значение
+                            recWhere = recWhere.and(recJoin.getExpr(key).compare(maxExpr, Compare.LESS)); // останавливаемся если количество значений становится очень большим
+                        }
+                        stepExprs = mStepExprs.immutableValue();
+                    }
+
+                    stepExprs = stepExprs.addExcl(rowPath, FormulaExpr.createCustomFormula(syntax.getArrayConcatenate(rowType, "prm1", "prm2", mSubEnv), rowType, prevPath, rowSource)); // добавляем тек. вершину
+                } else
+                    recWhere = recJoin.getWhere();
+
+                return getSelect(keyNames, stepExprs, columnTypes, stepWhere.and(recWhere), keyOrder, propOrder, useRecursionFunction, true, innerParams, pushContext, baseCost, subQueries, mSubEnv);
             }
 
             private SQLQuery getCTESource(boolean wrapExpr) {

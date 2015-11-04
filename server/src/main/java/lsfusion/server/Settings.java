@@ -666,6 +666,16 @@ public class Settings {
         this.limitHintIncrementStat = limitHintIncrementStat;
     }
 
+    private int adjustRecursionStat = 1000;
+
+    public int getAdjustRecursionStat() {
+        return adjustRecursionStat;
+    }
+
+    public void setAdjustRecursionStat(int adjustRecursionStat) {
+        this.adjustRecursionStat = adjustRecursionStat;
+    }
+
     public long getLimitApplyHintIncrementStat() {
         return limitApplyHintIncrementStat;
     }
@@ -1484,5 +1494,25 @@ public class Settings {
 
     public void setUpdateStatisticsLimit(int updateStatisticsLimit) {
         this.updateStatisticsLimit = updateStatisticsLimit;
+    }
+
+    private int maxRecursionStatsIterations = 3;
+
+    public int getMaxRecursionStatsIterations() {
+        return maxRecursionStatsIterations;
+    }
+
+    public void setMaxRecursionStatsIterations(int maxRecursionStatsIterations) {
+        this.maxRecursionStatsIterations = maxRecursionStatsIterations;
+    }
+
+    private boolean useOldPushJoins = false;
+
+    public boolean isUseOldPushJoins() {
+        return useOldPushJoins;
+    }
+
+    public void setUseOldPushJoins(boolean useOldPushJoins) {
+        this.useOldPushJoins = useOldPushJoins;
     }
 }

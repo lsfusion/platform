@@ -672,7 +672,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    public String getRecursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String fieldDeclare, String outerParams, TypeEnvironment typeEnv) {
+    public String getRecursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String stepSmallSelect, int smallLimit, String fieldDeclare, String outerParams, TypeEnvironment typeEnv) {
         assert types.size() == types.filterList(new SFunctionSet<FunctionType>() {
             public boolean contains(FunctionType element) {
                 return element instanceof Type;
@@ -680,9 +680,10 @@ public class PostgreDataAdapter extends DataAdapter {
 
         typeEnv.addNeedRecursion(types);
         String recursionName = genRecursionName(BaseUtils.<ImList<Type>>immutableCast(types));
-        return recursionName + "('" + recName +"'," +
-                "'(" + StringEscapeUtils.escapeSql(initialSelect)+")','(" +StringEscapeUtils.escapeSql(stepSelect)+")'"+(outerParams.length() == 0 ? "" : "," + outerParams)+") recursion ("
-                + fieldDeclare + ")";
+        return recursionName + "('" + recName +"'" +
+                ",'(" + StringEscapeUtils.escapeSql(initialSelect)+")'" + ",'(" +StringEscapeUtils.escapeSql(stepSelect)+")'" +
+                ",'(" + StringEscapeUtils.escapeSql(stepSmallSelect)+")'" + "," + smallLimit +
+                (outerParams.length() == 0 ? "" : "," + outerParams)+") recursion (" + fieldDeclare + ")";
     }
 
     @Override

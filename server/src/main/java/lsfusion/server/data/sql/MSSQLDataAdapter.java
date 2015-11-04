@@ -909,7 +909,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     }
     
     @Override
-    public String getRecursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String fieldDeclare, String outerParams, TypeEnvironment typeEnv) {
+    public String getRecursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String stepSmallSelect, int smallLimit, String fieldDeclare, String outerParams, TypeEnvironment typeEnv) {
         Recursion recursion = new Recursion(types, recName, initialSelect, stepSelect, fieldDeclare);
         typeEnv.addNeedRecursion(recursion);
         return "dbo." + recursion.getName() + "(" + outerParams+ ")";

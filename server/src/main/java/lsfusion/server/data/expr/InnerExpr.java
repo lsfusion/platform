@@ -72,7 +72,7 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
     }
 
     // множественное наследование
-    public static InnerJoins getFollowJoins(WhereJoin<?, ?> join, Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) { // куда-то надо же положить
+    public static InnerJoins getJoinFollows(BaseJoin<?> join, Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) { // куда-то надо же положить
         InnerJoins result = InnerJoins.EMPTY;
         ImMap<InnerJoin, Where> upResult = MapFact.EMPTY();
         ImSet<InnerExpr> innerExprs = getInnerExprs(join.getExprFollows(NotNullExpr.INNERJOINS, false), unionJoins);

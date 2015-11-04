@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.AddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
+import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.DistinctKeys;
@@ -55,6 +56,15 @@ public class StatKeys<K> extends TwinImmutableObject {
     public static <K> StatKeys<K> create(Stat rows, DistinctKeys<K> distinct) { //, ExecCost cost
         return new StatKeys<K>(distinct.getMax().min(rows), distinct); // , cost
     }
+
+    public StatKeys<K> decrease(final Stat dec) {
+        return new StatKeys<K>(dec, new DistinctKeys<K>(distinct.mapValues(new GetValue<Stat, Stat>() {
+            public Stat getMapValue(Stat value) {
+                return value.min(dec);
+            }
+        })));
+    }
+
 
     public <T> StatKeys<T> mapBack(ImMap<T, K> map) {
         return new StatKeys<T>(rows, distinct.mapBack(map)); // , cost

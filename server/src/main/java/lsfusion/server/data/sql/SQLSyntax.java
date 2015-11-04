@@ -186,7 +186,7 @@ public interface SQLSyntax {
 
     String getParamUsage(int num);
 
-    String getRecursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String fieldDeclare, String outerParams, TypeEnvironment typeEnv);
+    String getRecursion(ImList<FunctionType> types, String recName, String initialSelect, String stepSelect, String stepSmallSelect, int smallLimit, String fieldDeclare, String outerParams, TypeEnvironment typeEnv);
     String wrapSubQueryRecursion(String string);
 
     String getTableTypeName(SessionTable.TypeStruct tableType);

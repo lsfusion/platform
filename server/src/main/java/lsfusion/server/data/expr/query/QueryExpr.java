@@ -29,7 +29,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>, J exte
         T extends QueryExpr<K, I, J, T, IC>, IC extends QueryExpr.QueryInnerContext<K, I, J, T, IC>> extends InnerExpr {
 
     public I query;
-    public ImMap<K, BaseExpr> group; // вообще гря не reverseable
+    public ImMap<K, BaseExpr> group; // вообще гря не reverseable, например в Partition, Recursion
 
     public Type getType() {
         return getInner().getType();

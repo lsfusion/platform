@@ -23,6 +23,10 @@ public abstract class AMSet<K> extends ASet<K> implements MSet<K>, MExclSet<K>, 
             add(set.get(i));
     }
 
+    public Iterable<K> it() {
+        return this;
+    }
+
     public void keep(K element) {
         exclAdd(element);
     }

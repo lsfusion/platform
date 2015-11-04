@@ -2,6 +2,7 @@ package lsfusion.server.stack;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ConcurrentWeakHashMap;
+import lsfusion.base.ExceptionUtils;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
 import lsfusion.server.logics.property.ActionProperty;
@@ -106,7 +107,12 @@ public class ExecutionStackAspect {
     public static String getStackString() {
         return getStackString(Thread.currentThread(), false, false); // не concurrent по определению
     }
-    
+
+
+    public static String getExStackTrace() {
+        return getStackString() + '\n' + ExceptionUtils.getStackTrace();
+    }
+
     public static String getStackString(Thread thread, boolean checkConcurrent, boolean cut) {
         String result = "";
         Stack<ExecutionStackItem> stack = getStack(thread);

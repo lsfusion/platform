@@ -156,34 +156,44 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
     // теоретически можно было бы разными прогонами, но тогда функциональщиной пришлось бы заниматься, плюс непонятно как подставлять друг другу статистику / классы
     @IdentityLazy
     private Pair<Pair<ClassExprWhere, StatKeys<KeyExpr>>, Boolean> getRecClassesStats() {
-        Pair<ClassExprWhere, StatKeys<KeyExpr>> recursive = new Pair<ClassExprWhere, StatKeys<KeyExpr>>(getClassWhere(getInitialWhere()), getStatKeys(getInitialWhere()));
-        Pair<ClassExprWhere, StatKeys<KeyExpr>> result = recursive;
+        ClassExprWhere recClasses = getClassWhere(getInitialWhere());
+        StatKeys<KeyExpr> recStats = getStatKeys(getInitialWhere());
+
+        ClassExprWhere resultClasses = recClasses;
+        StatKeys<KeyExpr> resultStats = recStats;
 
         Where stepWhere = getStepWhere();
         boolean onlyInitial = true;
 
-        MAddSet<Pair<ClassExprWhere, StatKeys<KeyExpr>>> mChecked = SetFact.mAddSet();
+        MAddSet<ClassExprWhere> mCheckedClasses = SetFact.mAddSet();
+        MAddSet<StatKeys<KeyExpr>> mCheckedStats = SetFact.mAddSet();
 
-        while(!recursive.first.isFalse() && !mChecked.add(recursive)) {
-            Where recWhere = stepWhere.and(getRecJoin(MapFact.<String, Type>EMPTY(), "recursivetable", new Result<ImRevMap<String, KeyExpr>>(),
-                    recursive.first, recursive.second).getWhere());
+        int iterations = 0; int maxStatsIterations = Settings.get().getMaxRecursionStatsIterations();
+        while(!recClasses.isFalse() && !(mCheckedClasses.add(recClasses) && (iterations >= maxStatsIterations || mCheckedStats.add(recStats)))) {
+            Where recWhere = stepWhere.and(getRecJoin(MapFact.<String, Type>EMPTY(), "recursivetable", genKeyNames(),
+                    recClasses, recStats).getWhere());
             if(!recWhere.isFalse()) // значит будет еще итерация
                 onlyInitial = false;
-            recursive = new Pair<ClassExprWhere, StatKeys<KeyExpr>>(getClassWhere(recWhere), getStatKeys(recWhere));
-            result = new Pair<ClassExprWhere, StatKeys<KeyExpr>>(recursive.first.or(result.first), recursive.second.or(result.second));
+            recClasses = getClassWhere(recWhere);
+            recStats = getStatKeys(recWhere);
+
+            resultClasses = recClasses.or(resultClasses);
+            resultStats = recStats.or(resultStats);
+            iterations++;
         }
-        return new Pair<Pair<ClassExprWhere, StatKeys<KeyExpr>>, Boolean>(result, onlyInitial);
+        return new Pair<>(new Pair<>(resultClasses, resultStats), onlyInitial);
     }
 
-    public Join<String> getRecJoin(ImMap<String, Type> props, String name, Result<ImRevMap<String, KeyExpr>> keys) {
-        return getRecJoin(props, name, keys, getClassWhere(), getStatKeys());
+    // для recursive join статистика рекурсивной таблицы делается заведомо маленькой, так как после первых операций, как правило рекурсия начинает сходится и количество записей начинает резко падать
+    public Join<String> getRecJoin(ImMap<String, Type> props, String name, ImRevMap<String, KeyExpr> keyNames, Stat adjustStat) {
+        StatKeys<KeyExpr> statKeys = getStatKeys();
+        if(adjustStat != null)
+            statKeys = statKeys.decrease(adjustStat);
+        return getRecJoin(props, name, keyNames, getClassWhere(), statKeys);
     }
 
-    public Join<String> getRecJoin(ImMap<String, Type> props, String name, Result<ImRevMap<String, KeyExpr>> keys, final ClassExprWhere classWhere, StatKeys<KeyExpr> statKeys) {
+    public Join<String> getRecJoin(ImMap<String, Type> props, String name, ImRevMap<String, KeyExpr> keyNames, final ClassExprWhere classWhere, StatKeys<KeyExpr> statKeys) {
 
-        // генерируем имена
-        ImRevMap<String, KeyExpr> keyNames = group.keys().mapRevKeys(new CompiledQuery.GenNameIndex("rk", ""));
-        keys.set(keyNames);
         // генерируем поля таблицы
         ImRevMap<KeyField, KeyExpr> recKeys = keyNames.mapRevKeys(new GetKeyValue<KeyField, KeyExpr, String>() {
             public KeyField getMapValue(KeyExpr keyExpr, String name) {
@@ -198,6 +208,10 @@ public class RecursiveJoin extends QueryJoin<KeyExpr, RecursiveJoin.Query, Recur
                 classWhere.mapClasses(recKeys), statKeys.mapBack(recKeys));
 
         return new RemapJoin<String, PropertyField>(recTable.join(recKeys.join(getFullMapIterate())), recProps); // mapp'им на предыдушие ключи
+    }
+
+    public ImRevMap<String, KeyExpr> genKeyNames() {
+        return group.keys().mapRevKeys(new CompiledQuery.GenNameIndex("rk", ""));
     }
 
     private ImRevMap<KeyExpr, KeyExpr> getFullMapIterate() {

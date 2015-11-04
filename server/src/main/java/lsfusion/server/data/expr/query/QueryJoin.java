@@ -14,6 +14,7 @@ import lsfusion.server.data.query.ExprEnumerator;
 import lsfusion.server.data.query.InnerExprFollows;
 import lsfusion.server.data.query.InnerJoin;
 import lsfusion.server.data.query.InnerJoins;
+import lsfusion.server.data.query.stat.BaseJoin;
 import lsfusion.server.data.query.stat.UnionJoin;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.translator.MapTranslate;
@@ -107,7 +108,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
             return InnerExpr.getInnerJoins(thisObj);
         }
         public InnerJoins getJoinFollows(Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) {
-            return InnerExpr.getFollowJoins(thisObj, upWheres, unionJoins);
+            return InnerExpr.getJoinFollows(thisObj, upWheres, unionJoins);
         }
 
         public abstract T translateThis(MapTranslate translate);
@@ -166,7 +167,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
     }
 
     // множественное наследование
-    public static InnerExpr getInnerExpr(InnerJoin<?, ?> join, WhereJoin<?, ?> whereJoin) {
+    public static InnerExpr getInnerExpr(InnerJoin<?, ?> join, BaseJoin<?> whereJoin) {
         ImSet<InnerExpr> set = NotNullExpr.getInnerExprs(whereJoin.getExprFollows(NotNullExpr.INNERJOINS, true), null);
         for(int i=0,size=set.size();i<size;i++) {
             InnerExpr expr = set.get(i);

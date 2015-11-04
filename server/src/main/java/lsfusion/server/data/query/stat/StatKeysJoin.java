@@ -37,7 +37,7 @@ public class StatKeysJoin<K extends BaseExpr> extends AbstractOuterContext<StatK
     }
 
     public InnerJoins getJoinFollows(Result<ImMap<InnerJoin, Where>> upWheres, Result<ImSet<UnionJoin>> unionJoins) { // все равно использует getExprFollows
-        return InnerExpr.getFollowJoins(this, upWheres, unionJoins);
+        return InnerExpr.getJoinFollows(this, upWheres, unionJoins);
     }
 
     public ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive) {

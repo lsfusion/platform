@@ -8,8 +8,9 @@ public interface MExclSet<K> {
     void exclAddAll(ImSet<? extends K> set);
 
     ImSet<K> immutable();
+    Iterable<K> it();
 
     // для MCaseList
-    public int size();
-    public K single();
+    int size();
+    K single();
 }

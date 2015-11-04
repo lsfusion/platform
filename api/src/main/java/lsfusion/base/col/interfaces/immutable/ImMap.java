@@ -104,6 +104,7 @@ public interface ImMap<K, V> {
     <M, E1 extends Exception, E2 extends Exception> ImMap<K,M> mapValuesEx(GetExValue<M,V,E1,E2> getter) throws E1, E2;
 
     <M> ImSet<M> mapMergeSetValues(GetKeyValue<M, K, V> getter);
+    <M> ImSet<M> mapSetValues(GetKeyValue<M, K, V> getter);
 
     <M> ImMap<M,V> mapKeys(GetValue<M,K> getter);
 

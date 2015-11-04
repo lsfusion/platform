@@ -391,4 +391,9 @@ public class SetFact {
         for(T element : add)
             set.add(element);
     }
+
+    public static <T> void removeJavaAll(Set<T> set, ImSet<T> add) {
+        for(T element : add)
+            set.remove(element);
+    }
 }
