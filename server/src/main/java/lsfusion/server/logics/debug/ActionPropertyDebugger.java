@@ -25,13 +25,13 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.linear.LAP;
 import lsfusion.server.logics.linear.LP;
-import lsfusion.server.logics.property.ActionProperty;
-import lsfusion.server.logics.property.ExecutionContext;
-import lsfusion.server.logics.property.PropertyInterface;
+import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.flow.FlowResult;
 import lsfusion.server.logics.scripted.EvalUtils;
 import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
+import lsfusion.server.session.DataSession;
+import lsfusion.server.session.PropertyChange;
 import org.apache.log4j.Logger;
 import sun.management.jmxremote.LocalRMIServerSocketFactory;
 
@@ -75,18 +75,18 @@ public class ActionPropertyDebugger implements DebuggerService {
         return SystemProperties.isActionDebugEnabled;
     }
 
-    private final MAddMap<Pair<String, Integer>, ActionDebugInfo> firstInLineDelegates = MapFact.mAddMap(new SymmAddValue<Pair<String, Integer>, ActionDebugInfo>() {
-        public ActionDebugInfo addValue(Pair<String, Integer> key, ActionDebugInfo prevValue, ActionDebugInfo newValue) {
+    private final MAddMap<Pair<String, Integer>, DebugInfo> firstInLineDelegates = MapFact.mAddMap(new SymmAddValue<Pair<String, Integer>, DebugInfo>() {
+        public DebugInfo addValue(Pair<String, Integer> key, DebugInfo prevValue, DebugInfo newValue) {
             return newValue.offset > prevValue.offset ? prevValue : newValue;
         }
     });
-    public boolean isDebugFirstInLine(ActionDebugInfo debugInfo) {
+    public boolean isDebugFirstInLine(DebugInfo debugInfo) {
         return BaseUtils.hashEquals(firstInLineDelegates.get(debugInfo.getModuleLine()), debugInfo);
     }
 
     //в Java есть ограничение на количество имён в файле (~65000), поэтому нельзя всё впихнуть в один файл
     //приходится разбивать - пока просто для каждого модуля - свой класс
-    private Map<String, Class> delegatesHolderClasses = new HashMap<String, Class>();
+    private Map<String, Class> delegatesHolderClasses = new HashMap<>();
 
     private ActionPropertyDebugger() {
         try {
@@ -101,12 +101,12 @@ public class ActionPropertyDebugger implements DebuggerService {
         }
     } //singleton
 
-    private Set<ActionDebugInfo> delegates = new HashSet<ActionDebugInfo>();
+    private Set<DebugInfo> delegates = new HashSet<>();
 
-    public ImMap<String, ImSet<ActionDebugInfo>> getGroupDelegates() {
-        return SetFact.fromJavaSet(delegates).group(new BaseUtils.Group<String, ActionDebugInfo>() {
+    public ImMap<String, ImSet<DebugInfo>> getGroupDelegates() {
+        return SetFact.fromJavaSet(delegates).group(new BaseUtils.Group<String, DebugInfo>() {
             @Override
-            public String group(ActionDebugInfo key) {
+            public String group(DebugInfo key) {
                 return key.moduleName;
             }
         });
@@ -120,14 +120,19 @@ public class ActionPropertyDebugger implements DebuggerService {
         firstInLineDelegates.add(debugInfo.getModuleLine(), debugInfo);
     }
 
+    public synchronized <P extends PropertyInterface> void addDelegate(CalcPropertyDebugInfo debugInfo) {
+        delegates.add(debugInfo);
+        firstInLineDelegates.add(debugInfo.getModuleLine(), debugInfo);
+    }
+
     public synchronized <P extends PropertyInterface> void addParamInfo(ActionProperty<P> property, Map<String, P> paramsToInterfaces, Map<String, String> paramsToClassFQN) {
-        ParamDebugInfo<P> paramInfo = new ParamDebugInfo<P>(MapFact.fromJavaRevMap(paramsToInterfaces), MapFact.fromJavaMap(paramsToClassFQN));
+        ParamDebugInfo<P> paramInfo = new ParamDebugInfo<>(MapFact.fromJavaRevMap(paramsToInterfaces), MapFact.fromJavaMap(paramsToClassFQN));
 
         property.setParamInfo(paramInfo);
     }
 
-    public void compileDelegatesHolders(File sourceDir, ImMap<String, ImSet<ActionDebugInfo>> modules) throws IOException, ClassNotFoundException {
-        List<InMemoryJavaFileObject> filesToCompile = new ArrayList<InMemoryJavaFileObject>();
+    public void compileDelegatesHolders(File sourceDir, ImMap<String, ImSet<DebugInfo>> modules) throws IOException, ClassNotFoundException {
+        List<InMemoryJavaFileObject> filesToCompile = new ArrayList<>();
 
         generateDelegateClasses(modules, filesToCompile);
 
@@ -136,13 +141,13 @@ public class ActionPropertyDebugger implements DebuggerService {
         loadDelegateClasses(modules.keys(), sourceDir);
     }
 
-    private void generateDelegateClasses(ImMap<String, ImSet<ActionDebugInfo>> groupedActions, List<InMemoryJavaFileObject> filesToCompile) {
+    private void generateDelegateClasses(ImMap<String, ImSet<DebugInfo>> groupedActions, List<InMemoryJavaFileObject> filesToCompile) {
         for (int i = 0,size = groupedActions.size(); i < size; i++) {
             filesToCompile.add(createJavaFileObject(groupedActions.getKey(i), groupedActions.getValue(i)));
         }
     }
 
-    private InMemoryJavaFileObject createJavaFileObject(String moduleName, ImSet<ActionDebugInfo> infos) {
+    private InMemoryJavaFileObject createJavaFileObject(String moduleName, ImSet<DebugInfo> infos) {
         String holderClassName = DELEGATES_HOLDER_CLASS_NAME_PREFIX + moduleName;
 
         String holderFQN = DELEGATES_HOLDER_CLASS_FQN_PREFIX + moduleName;
@@ -152,20 +157,34 @@ public class ActionPropertyDebugger implements DebuggerService {
             "\n" +
             "import lsfusion.server.data.SQLHandledException;\n" +
             "import lsfusion.server.logics.property.ActionProperty;\n" +
+            "import lsfusion.server.logics.property.CalcProperty;\n" +
+            "import lsfusion.server.logics.property.ClassPropertyInterface;\n" +
+            "import lsfusion.server.logics.property.DataProperty;\n" +
             "import lsfusion.server.logics.property.ExecutionContext;\n" +
             "import lsfusion.server.logics.property.actions.flow.FlowResult;\n" +
+            "import lsfusion.server.session.DataSession;\n" +
+            "import lsfusion.server.session.PropertyChange;\n" +
             "\n" +
             "import java.sql.SQLException;\n" +
             "\n" +
             "public class " + holderClassName + " {\n";
 
-        for (ActionDebugInfo info : infos) {
+        for (DebugInfo info : infos) {
             String methodName = getMethodName(info);
-            String body = (info.delegationType == IN_DELEGATE ? "return action.executeImpl(context);" : "return null;");
-            sourceString +=
-                "    public static FlowResult " + methodName + "(ActionProperty action, ExecutionContext context) throws SQLException, SQLHandledException {\n" +
-                "        " + body + "\n" +
-                "    }\n";
+
+            if (info instanceof ActionDebugInfo) {
+                ActionDebugInfo actionDebugInfo = (ActionDebugInfo) info;
+                String body = (actionDebugInfo.delegationType == IN_DELEGATE ? "return action.executeImpl(context);" : "return null;");
+                sourceString +=
+                        "    public static FlowResult " + methodName + "(ActionProperty action, ExecutionContext context) throws SQLException, SQLHandledException {\n" +
+                        "        " + body + "\n" +
+                        "    }\n";
+            } else {
+                sourceString +=
+                        "    public static void " + methodName + "(DataSession session, CalcProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {\n" +
+                        "        session.changePropertyImpl((DataProperty) property, change);\n" +
+                        "    }\n";
+            }
         }
         sourceString += "}";
 
@@ -199,7 +218,7 @@ public class ActionPropertyDebugger implements DebuggerService {
         }
     }
 
-    private String getMethodName(ActionDebugInfo info) {
+    private String getMethodName(DebugInfo info) {
         return info.getMethodName(isDebugFirstInLine(info));
     }
 
@@ -239,15 +258,37 @@ public class ActionPropertyDebugger implements DebuggerService {
         }
 
         return result;
+    }
 
+    public void delegate(DataSession dataSession, DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
+        CalcPropertyDebugInfo debugInfo = property.getDebugInfo();
 
+        if (debugInfo == null || !isEnabled()) {
+            throw new IllegalStateException("Shouldn't happen: debug isn't enabled");
+        }
+
+        Class<?> delegatesHolderClass = delegatesHolderClasses.get(debugInfo.moduleName);
+        if (delegatesHolderClass != null) {
+            try {
+                Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo), DataSession.class, CalcProperty.class, PropertyChange.class);
+                method.invoke(delegatesHolderClass, dataSession, property, change);
+                return;
+            } catch (InvocationTargetException e) {
+                throw ExceptionUtils.propagate(e.getCause(), SQLException.class, SQLHandledException.class);
+            } catch (Exception e) {
+                logger.warn("Error while delegating to ActionPropertyDebugger: ", e);
+                dataSession.changePropertyImpl(property, change);
+            }
+        }
+
+        dataSession.changePropertyImpl(property, change);
     }
     
     private Object commonExecuteDelegate(Class<?> clazz, Method method, ActionProperty action, ExecutionContext context) throws InvocationTargetException, IllegalAccessException {
         return method.invoke(clazz, action, context);
     }
     
-    public static ThreadLocal<Boolean> watchHack = new ThreadLocal<Boolean>();
+    public static ThreadLocal<Boolean> watchHack = new ThreadLocal<>();
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
     private Object evalAction(ActionProperty action, ExecutionContext context, String namespace, String require, String priorities, String statements)
@@ -280,7 +321,7 @@ public class ActionPropertyDebugger implements DebuggerService {
 
         ImSet<Pair<LP, List<ResolveClassSet>>> locals = context.getAllLocalsInStack();
 
-        ExecutionContext<PropertyInterface> watchContext = new ExecutionContext<PropertyInterface>(MapFact.<PropertyInterface, ObjectValue>EMPTY(), context.getEnv());
+        ExecutionContext<PropertyInterface> watchContext = new ExecutionContext<>(MapFact.<PropertyInterface, ObjectValue>EMPTY(), context.getEnv());
 
         Pair<LAP<PropertyInterface>, Boolean> evalResult = evalAction(namespace, require, priorities, expression, paramsWithClasses, locals, watchContext.isPrevEventScope(), context.getBL());
         LAP<PropertyInterface> evalAction = evalResult.first;
@@ -346,7 +387,7 @@ public class ActionPropertyDebugger implements DebuggerService {
 
         String evalPropName = module.getNamespace() + "." + "evalStub";
 
-        return new Pair<LAP<PropertyInterface>, Boolean>((LAP<PropertyInterface>) module.findAction(evalPropName), forExHack);
+        return new Pair<>((LAP<PropertyInterface>) module.findAction(evalPropName), forExHack);
     }
 
     private static ActionWatchEntry getWatchEntry(ImMap<String, ObjectValue> row, String valueName) {
@@ -366,21 +407,21 @@ public class ActionPropertyDebugger implements DebuggerService {
         }).toJavaList(), value);
     }
     
-    private Map<Pair<String, Integer>, Object> breakpoints = new ConcurrentHashMap<Pair<String, Integer>, Object>();
+    private Map<Pair<String, Integer>, Object> breakpoints = new ConcurrentHashMap<>();
 
     @Override
     public void registerBreakpoint(String module, Integer line) throws RemoteException {
-        breakpoints.put(new Pair<String, Integer>(module, line), 0);
+        breakpoints.put(new Pair<>(module, line), 0);
     }
 
     @Override
     public void unregisterBreakpoint(String module, Integer line) throws RemoteException {
-        breakpoints.remove(new Pair<String, Integer>(module, line));
+        breakpoints.remove(new Pair<>(module, line));
     }
     
-    public boolean hasBreakpoint(ImSet<Pair<String, Integer>> actions) {
+    public boolean hasBreakpoint(ImSet<Pair<String, Integer>> actions, ImSet<Pair<String, Integer>> changeProps) {
         for (Pair<String, Integer> breakpoint : breakpoints.keySet()) {
-            if (actions.contains(breakpoint)) {
+            if (actions.contains(breakpoint) || changeProps.contains(breakpoint)) {
                 return true;
             }
         }

@@ -8,8 +8,4 @@ public class ActionDebugInfo extends DebugInfo {
         super(moduleName, line, offset);
         this.delegationType = delegationType;
     }
-
-    public String getMethodName(boolean firstInLine) {
-        return "action_" + line + (firstInLine ? "" : "_" + offset);
-    }
 }

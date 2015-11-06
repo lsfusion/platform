@@ -2693,10 +2693,20 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void propertyDefinitionCreated(LP property, int line, int offset) {
-        if (property != null && property.property instanceof CalcProperty) {
+        if (debugger.isEnabled() && !parser.isInsideNonEnabledMeta() && property != null && property.property instanceof CalcProperty) {
             CalcPropertyDebugInfo debugInfo = new CalcPropertyDebugInfo(getName(), line, offset);
 
-            ((CalcProperty) property.property).setDebugInfo(debugInfo);
+            if (property.property instanceof DataProperty) {
+                debugger.addDelegate(debugInfo);
+            }
+            if (property.property.getSID().equals(lastOpimizedJPropSID)) {
+                // для некоторых не выполняется (к примеру AS)
+//                assert ((CalcProperty) property.property).getDebugInfo() != null;
+            } else {
+                if (((CalcProperty) property.property).getDebugInfo() == null) {
+                    ((CalcProperty) property.property).setDebugInfo(debugInfo);
+                }
+            }
         }
     }
 

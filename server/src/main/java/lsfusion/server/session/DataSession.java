@@ -39,6 +39,7 @@ import lsfusion.server.form.instance.FormInstance;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.navigator.*;
 import lsfusion.server.logics.*;
+import lsfusion.server.logics.debug.ActionPropertyDebugger;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
@@ -838,6 +839,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     public void changeProperty(DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
+        if (property.getDebugInfo() != null) {
+            ActionPropertyDebugger.getInstance().delegate(this, property, change);
+        } else {
+            changePropertyImpl(property, change);
+        } 
+    }
+
+    public void changePropertyImpl(DataProperty property, PropertyChange<ClassPropertyInterface> change) throws SQLException, SQLHandledException {
         SinglePropertyTableUsage<ClassPropertyInterface> changeTable = null;
 
         ImSet<DataProperty> updateChanges;

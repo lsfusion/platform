@@ -21,10 +21,7 @@ import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
-import lsfusion.server.logics.debug.ActionDebugInfo;
-import lsfusion.server.logics.debug.ActionDelegationType;
-import lsfusion.server.logics.debug.ActionPropertyDebugger;
-import lsfusion.server.logics.debug.ParamDebugInfo;
+import lsfusion.server.logics.debug.*;
 import lsfusion.server.logics.linear.LP;
 import lsfusion.server.logics.property.actions.BaseEvent;
 import lsfusion.server.logics.property.actions.FormEnvironment;
@@ -198,6 +195,18 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         }
         for (ActionProperty actionProperty : getDependActions()) {
             result.addAll(actionProperty.getInnerDebugActions());
+        }
+        return result.immutable();
+    }
+
+    @IdentityLazy
+    private ImSet<Pair<String, Integer>> getChangePropsLocations() {
+        MSet<Pair<String, Integer>> result = SetFact.mSet();
+        for (CalcProperty property : getChangeProps()) {
+            CalcPropertyDebugInfo debugInfo = property.getDebugInfo();
+            if (debugInfo != null) {
+                result.add(new Pair<>(debugInfo.moduleName, debugInfo.line));
+            }
         }
         return result.immutable();
     }
@@ -468,7 +477,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     private ActionPropertyMapImplement<?, P> callCompile(boolean forExecution) {
         //не включаем компиляцию экшенов при дебаге
         if (forExecution && debugger.isEnabled() && !forceCompile()) {
-            if (debugger.steppingMode || debugger.hasBreakpoint(getInnerDebugActions())) {
+            if (debugger.steppingMode || debugger.hasBreakpoint(getInnerDebugActions(), getChangePropsLocations())) {
                 return null;
             }
         }

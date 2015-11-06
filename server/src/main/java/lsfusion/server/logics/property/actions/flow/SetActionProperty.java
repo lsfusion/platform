@@ -10,6 +10,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.derived.DerivedProperty;
 import lsfusion.server.session.DataSession;
@@ -136,5 +137,10 @@ public class SetActionProperty<P extends PropertyInterface, W extends PropertyIn
                 return createSetAction(context, writeTo.map(mapInnerInterfaces), writeFrom.map(mapInnerInterfaces), where, orders, ordersNotNull);
             }
         });
+    }
+
+    @Override
+    public ActionDelegationType getDelegationType(boolean modifyContext) {
+        return ActionDelegationType.IN_DELEGATE; // поменяли во время добавления дебага изменения data свойств, чтобы в стеке дебаггера отображались
     }
 }

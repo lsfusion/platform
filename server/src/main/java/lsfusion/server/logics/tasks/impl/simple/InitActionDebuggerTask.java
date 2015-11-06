@@ -5,22 +5,20 @@ import lsfusion.base.IOUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.BusinessLogics;
-import lsfusion.server.logics.debug.ActionDebugInfo;
 import lsfusion.server.logics.debug.ActionPropertyDebugger;
+import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.tasks.GroupSplitTask;
-import lsfusion.server.logics.tasks.SimpleBLTask;
 
 import java.io.File;
-import java.io.IOException;
 
 public class InitActionDebuggerTask extends GroupSplitTask<String> {
     @Override
     public String getCaption() {
-        return "Initialiazing actions' debugger";
+        return "Initializing actions' debugger";
     }
 
     File sourceDir;
-    ImMap<String, ImSet<ActionDebugInfo>> groupDelegates;
+    ImMap<String, ImSet<DebugInfo>> groupDelegates;
     
     @Override
     protected void runGroupTask(ImSet<String> objSet) {

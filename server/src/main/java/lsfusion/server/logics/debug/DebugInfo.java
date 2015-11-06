@@ -14,7 +14,11 @@ public class DebugInfo {
     }
 
     public Pair<String, Integer> getModuleLine() {
-        return new Pair<String, Integer>(moduleName, line);
+        return new Pair<>(moduleName, line);
+    }
+
+    public String getMethodName(boolean firstInLine) {
+        return "action_" + line + (firstInLine ? "" : "_" + offset);
     }
 
     @Override
@@ -26,7 +30,7 @@ public class DebugInfo {
             return false;
         }
 
-        ActionDebugInfo that = (ActionDebugInfo) o;
+        DebugInfo that = (DebugInfo) o;
 
         return line == that.line &&
                 offset == that.offset &&
