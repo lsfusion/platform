@@ -1266,21 +1266,21 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             message = "PREPARING STATEMENT";
         
 //        fifo.add("E"  + getCurrentTimeStamp() + " " + this + " " + e.getStackTrace());
-            
+
         boolean inTransaction = isInTransaction();
-        if(inTransaction)
+        if(inTransaction && syntax.hasTransactionSavepointProblem())
             problemInTransaction = Problem.EXCEPTION;
 
         SQLHandledException handled = null;
         boolean deadLock = false;
         if(syntax.isUpdateConflict(e) || (deadLock = syntax.isDeadLock(e)))
-            handled = new SQLConflictException(!deadLock, inTransaction);
+            handled = new SQLConflictException(!deadLock);
 
         if(syntax.isUniqueViolation(e))
-            handled = new SQLUniqueViolationException(inTransaction, false);
+            handled = new SQLUniqueViolationException(false);
 
         if(syntax.isTimeout(e) && !isForcedCancel()) // если forced cancel не перезапускаем, а просто вываливаемся с ошибкой
-            handled = new SQLTimeoutException(isTransactTimeout, inTransaction);
+            handled = new SQLTimeoutException(isTransactTimeout);
         
         if(syntax.isConnectionClosed(e)) {
             handled = new SQLClosedException(connection.sql, inTransaction, e, errorPrivate);
@@ -1442,19 +1442,21 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                     throw e;
             } catch (SQLHandledException e) {
                 t = e;
-                if (!(e instanceof SQLTimeoutException && !((SQLTimeoutException) e).isTransactTimeout))
+                if (!e.repeatCommand())
                     throw e; // update conflict'ы, deadlock'и, transactTimeout'ы
 
                 queryExecEnv.failed(command, snapEnv);
 
-                if (e.isInTransaction()) // транзакция все равно прервана
+                if (problemInTransaction != null) { // транзакция все равно прервана
+                    assert isInTransaction();
                     throw e;
+                }
             }
 
             // повторяем
             try {
                 synchronized (attemptCountMap) {
-                    incAttemptCount(attemptCountMap, t.getDescription());
+                    incAttemptCount(attemptCountMap, t.getDescription(false));
                 }
                 if(setRepeatDate)
                     startTransaction = Calendar.getInstance().getTime().getTime();
@@ -1463,7 +1465,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 if(setRepeatDate)
                     startTransaction = null;
                 synchronized (attemptCountMap) {
-                    decAttemptCount(attemptCountMap, t.getDescription());
+                    decAttemptCount(attemptCountMap, t.getDescription(false));
                 }
             }
         } finally {
@@ -1506,6 +1508,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return result;
     }
 
+    // SQLAnalyzeAspect
     @StackMessage("message.sql.execute")
     public <H> void executeCommand(@ParamMessage final SQLCommand<H> command, final DynamicExecEnvSnapshot snapEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, H handler) throws SQLException, SQLHandledException {
         lockRead(owner);
@@ -1520,6 +1523,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         Result<Throwable> firstException = new Result<Throwable>();
         StaticExecuteEnvironment env = command.env;
 
+        Savepoint savepoint = null;
         try {
             snapEnv.beforeConnection(this, owner);
 
@@ -1530,6 +1534,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
             lockConnection(snapEnv.needConnectionLock(), owner);
 
             snapEnv.beforeStatement(this, connection, string, owner);
+
+            if(isInTransaction() && syntax.hasTransactionSavepointProblem()) {
+                Integer count;
+                if (Settings.get().isUseSavepointsForExceptions() && snapEnv.hasRepeatCommand() && (count = attemptCountMap.get(SQLTimeoutException.ADJUSTTRANSTIMEOUT)) != null && count >= 1)
+                    savepoint = connection.sql.setSavepoint();
+            }
 
             statement = getStatement(command, paramObjects, connection, syntax, snapEnv, returnStatement);
             snapEnv.beforeExec(statement, this);
@@ -1547,6 +1557,27 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         } catch (Throwable t) { // по хорошему тоже надо через runSuppressed, но будут проблемы с final'ами
             t = handle(t, statement != null ? statement.toString() : "PREPARING STATEMENT", snapEnv.isTransactTimeout(), connection, privateConnection != null);
             firstException.set(t);
+
+            if(savepoint != null && t instanceof SQLHandledException && ((SQLHandledException)t).repeatCommand()) {
+                assert problemInTransaction == Problem.EXCEPTION;
+                final ExConnection fConnection = connection; final Savepoint fSavepoint = savepoint;
+                runSuppressed(new SQLRunnable() {
+                    public void run() throws SQLException, SQLHandledException {
+                        fConnection.sql.rollback(fSavepoint);
+                        problemInTransaction = null;
+                    }
+                }, firstException);
+                savepoint = null;
+            }
+        } finally {
+            if(savepoint != null && problemInTransaction == null) { // если был exception в транзакции никакой release уже не сработает
+                final ExConnection fConnection = connection; final Savepoint fSavepoint = savepoint;
+                runSuppressed(new SQLRunnable() {
+                    public void run() throws SQLException, SQLHandledException {
+                        fConnection.sql.releaseSavepoint(fSavepoint);
+                    }
+                }, firstException);
+            }
         }
 
         afterExStatementExecute(owner, env, snapEnv, connection, runTime, returnStatement, statement, string, firstException);

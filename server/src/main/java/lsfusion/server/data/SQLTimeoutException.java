@@ -4,9 +4,7 @@ public class SQLTimeoutException extends SQLHandledException {
     
     public final boolean isTransactTimeout;
 
-    public SQLTimeoutException(boolean isTransactTimeout, boolean isInTransaction) {
-        super(isInTransaction);
-        
+    public SQLTimeoutException(boolean isTransactTimeout) {
         this.isTransactTimeout = isTransactTimeout;
     }
 
@@ -14,8 +12,15 @@ public class SQLTimeoutException extends SQLHandledException {
         return "TIMEOUT" + (isTransactTimeout ? " MAX" : "");
     }
 
+    public static String ADJUSTTRANSTIMEOUT = "tt";
+
     @Override
-    public String getDescription() {
-        return "t";
+    public String getDescription(boolean wholeTransaction) {
+        return isTransactTimeout ? "ut" : (wholeTransaction ? ADJUSTTRANSTIMEOUT : "st");
+    }
+
+    @Override
+    public boolean repeatCommand() {
+        return !isTransactTimeout;
     }
 }

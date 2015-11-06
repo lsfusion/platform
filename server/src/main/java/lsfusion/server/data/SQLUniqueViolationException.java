@@ -8,16 +8,14 @@ public class SQLUniqueViolationException extends SQLHandledException {
     
     private final boolean possibleRaceCondition;
 
-    public SQLUniqueViolationException(Boolean isInTransaction, boolean possibleRaceCondition) {
-        super(isInTransaction);
-        
+    public SQLUniqueViolationException(boolean possibleRaceCondition) {
         this.possibleRaceCondition = possibleRaceCondition;
     }
     
     public SQLUniqueViolationException raceCondition() {
         assert !possibleRaceCondition;
-        
-        return new SQLUniqueViolationException(isInTransaction, true);
+
+        return new SQLUniqueViolationException(true);
     }
 
     @Override
@@ -39,7 +37,7 @@ public class SQLUniqueViolationException extends SQLHandledException {
     }
 
     @Override
-    public String getDescription() {
+    public String getDescription(boolean wholeTransaction) {
         return "u";
     }
 }

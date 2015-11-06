@@ -10,13 +10,17 @@ public class SQLClosedException extends SQLHandledException {
     public transient final Connection connection;
     public transient final SQLException wrapped;
     public final boolean isPrivate;
+    private final boolean isInTransaction;
+
+    public boolean isInTransaction() {
+        return isInTransaction;
+    }
     
     public SQLClosedException(Connection connection, boolean isInTransaction, SQLException wrapped, boolean isPrivate) {
-        super(isInTransaction);
-        
         this.connection = connection;
         this.wrapped = wrapped;
         this.isPrivate = isPrivate;
+        this.isInTransaction = isInTransaction;
     }
 
     public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) throws SQLException {
@@ -36,7 +40,7 @@ public class SQLClosedException extends SQLHandledException {
     }
 
     @Override
-    public String getDescription() {
+    public String getDescription(boolean wholeTransaction) {
         return "cl";
     }
 }

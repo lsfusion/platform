@@ -9,8 +9,6 @@ public class SQLTooLargeQueryException extends SQLHandledException {
     private final long rowSize;
 
     public SQLTooLargeQueryException(long rowCount, long limit, long rowSize) {
-        super(null);
-        
         this.rowCount = rowCount;
         this.limit = limit;
         this.rowSize = rowSize;
@@ -30,7 +28,7 @@ public class SQLTooLargeQueryException extends SQLHandledException {
     }
 
     @Override
-    public String getDescription() {
+    public String getDescription(boolean wholeTransaction) {
         return "lr";
     }
 }

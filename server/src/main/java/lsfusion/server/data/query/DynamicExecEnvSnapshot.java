@@ -28,6 +28,8 @@ public interface DynamicExecEnvSnapshot<OE, S extends DynamicExecEnvSnapshot<OE,
 
     void beforeExec(Statement statement, SQLSession session) throws SQLException;
 
+    boolean hasRepeatCommand();
+
     boolean isTransactTimeout();
 
     boolean needConnectionLock();

@@ -3,9 +3,7 @@ package lsfusion.server.data;
 public class SQLConflictException extends SQLHandledException {
 
     private final boolean updateConflict;
-    public SQLConflictException(boolean updateConflict, boolean isInTransaction) {
-        super(isInTransaction);
-        
+    public SQLConflictException(boolean updateConflict) {
         this.updateConflict = updateConflict;
     }
 
@@ -14,7 +12,7 @@ public class SQLConflictException extends SQLHandledException {
     }
 
     @Override
-    public String getDescription() {
+    public String getDescription(boolean wholeTransaction) {
         return updateConflict ? "cn" : "dd";
     }
 }

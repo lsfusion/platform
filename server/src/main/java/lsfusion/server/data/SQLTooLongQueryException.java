@@ -7,8 +7,6 @@ public class SQLTooLongQueryException extends SQLHandledException {
     private final String select;
 
     public SQLTooLongQueryException(String select) {
-        super(null);
-        
         this.select = select;
     }
 
@@ -26,7 +24,7 @@ public class SQLTooLongQueryException extends SQLHandledException {
     }
 
     @Override
-    public String getDescription() {
+    public String getDescription(boolean wholeTransaction) {
         return "ln";
     }
 }

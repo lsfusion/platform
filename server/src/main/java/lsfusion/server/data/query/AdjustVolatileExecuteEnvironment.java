@@ -178,6 +178,10 @@ public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment<
                 statement.setQueryTimeout(setTimeout);
         }
 
+        public boolean hasRepeatCommand() {
+            return setTimeout > 0;
+        }
+
         public ImMap<SQLQuery, MaterializedQuery> getMaterializedQueries() {
             return MapFact.EMPTY();
         }

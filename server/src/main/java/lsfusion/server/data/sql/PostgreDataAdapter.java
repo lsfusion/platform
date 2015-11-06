@@ -763,4 +763,9 @@ public class PostgreDataAdapter extends DataAdapter {
     public boolean hasNullWhereEstimateProblem() {
         return true;
     }
+
+    @Override
+    public boolean hasTransactionSavepointProblem() {
+        return true;
+    }
 }

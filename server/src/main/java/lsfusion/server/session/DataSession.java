@@ -1794,7 +1794,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     sql.pushNoTransactTimeout();
                     
                 try {
-                    SQLSession.incAttemptCount(attemptCountMap, ((SQLHandledException) t).getDescription());
+                    SQLSession.incAttemptCount(attemptCountMap, ((SQLHandledException) t).getDescription(true));
                     return transactApply(BL, update, interaction, attemptCountMap, autoAttemptCount, applyActions, keepProps);
                 } finally {
                     if(noTimeout)

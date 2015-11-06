@@ -1515,4 +1515,14 @@ public class Settings {
     public void setUseOldPushJoins(boolean useOldPushJoins) {
         this.useOldPushJoins = useOldPushJoins;
     }
+
+    private boolean useSavepointsForExceptions = true;
+
+    public boolean isUseSavepointsForExceptions() {
+        return useSavepointsForExceptions;
+    }
+
+    public void setUseSavepointsForExceptions(boolean useSavepointsForExceptions) {
+        this.useSavepointsForExceptions = useSavepointsForExceptions;
+    }
 }

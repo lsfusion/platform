@@ -715,6 +715,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return false;
     }
 
+    public boolean hasTransactionSavepointProblem() { // если при ошибке откатить можно только всю транзакцию
+        return false;
+    }
+
     protected String getPath() {
         throw new UnsupportedOperationException();
     }

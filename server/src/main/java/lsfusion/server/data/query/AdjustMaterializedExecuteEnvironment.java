@@ -571,6 +571,10 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             if(setTimeout > 0)
                 statement.setQueryTimeout(setTimeout);
         }
+
+        public boolean hasRepeatCommand() {
+            return setTimeout > 0;
+        }
     }
 
 }
