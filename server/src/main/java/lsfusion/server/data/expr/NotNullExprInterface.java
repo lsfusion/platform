@@ -9,8 +9,8 @@ public interface NotNullExprInterface {
 
     ImSet<NotNullExprInterface> getExprFollows(boolean includeInnerWithoutNotNull, boolean recursive);
 
+    boolean hasNotNull(); // используется именно для Follow, assert что getNotNullWhere будет DataWhere (см. реализацию fillFollowSet)
     void fillFollowSet(MSet<DataWhere> result); // default реализация есть
 
-    boolean hasNotNull();
     Where getNotNullWhere();
 }

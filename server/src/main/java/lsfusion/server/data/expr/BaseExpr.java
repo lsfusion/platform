@@ -258,10 +258,6 @@ public abstract class BaseExpr extends Expr {
         return getNotNullWhere(getUsed());
     }
 
-    public boolean hasNotNull() {
-        return !getNotNullWhere().isTrue();
-    }
-    
     public static Where getNotNullWhere(ImCol<? extends BaseExpr> exprs) {
         Where result = Where.TRUE;
         for(BaseExpr baseExpr : exprs)

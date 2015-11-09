@@ -77,6 +77,14 @@ public abstract class NotNullExpr extends VariableSingleClassExpr implements Not
         fillFollowSet(this, fillSet);
     }
 
+    public boolean hasNotNull() {
+        return hasNotNull(this);
+    }
+
+    public static boolean hasNotNull(NotNullExprInterface notNullExpr) {
+        return notNullExpr.getNotNullWhere() instanceof DataWhere;
+    }
+
     public static boolean hasExprFollowsWithoutNotNull(ImCol<BaseExpr> exprs) {
         for(int i=0,size=exprs.size();i<size;i++)
             if(exprs.get(i).hasExprFollowsWithoutNotNull())

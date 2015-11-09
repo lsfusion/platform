@@ -58,7 +58,11 @@ public class NotNullKeyExpr extends ParamExpr implements NotNullExprInterface {
         NotNullExpr.fillFollowSet(this, result);
     }
 
-    // упрощенная копия аналогичного метода в NotNullExpr 
+    public boolean hasNotNull() {
+        return NotNullExpr.hasNotNull(this);
+    }
+
+    // упрощенная копия аналогичного метода в NotNullExpr
     public ImSet<NotNullExprInterface> getExprFollows(boolean includeThis, boolean includeInnerWithoutNotNull, boolean recursive) {
         assert includeThis || recursive;
         if(includeThis) {

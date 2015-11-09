@@ -85,7 +85,7 @@ public abstract class StaticClassNotNullExpr extends NotNullExpr  implements Sta
 
     protected abstract ImCol<Expr> getParams();
 
-    protected boolean hasUnionNotNull() { // можно было бы просто hasNotNull использовать, но там рекурсивный вызов большой, ну и можно было бы calculateNotNullWhere перегрузить, но хочется getCommonWhere в одном месте оставить
+    protected boolean hasUnionNotNull() { // можно было бы calculateNotNullWhere перегрузить, но хочется getCommonWhere в одном месте оставить
         return true;
     }
 
