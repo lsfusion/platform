@@ -88,11 +88,14 @@ EXTEND FORM options
 
 DESIGN options {
     commons {
-        MOVE PROPERTY(autoSynchronizeCoordinates());
-        MOVE PROPERTY(nameCalculateUserMapProvider());
-        MOVE PROPERTY(nameShowUserMapProvider());
-        MOVE PROPERTY(useTor());
-        MOVE PROPERTY(recalculateAllDistances());
+        NEW coordinatesContainer {
+            caption = 'Навигация';
+                MOVE PROPERTY(autoSynchronizeCoordinates());
+                MOVE PROPERTY(nameCalculateUserMapProvider());
+                MOVE PROPERTY(nameShowUserMapProvider());
+                MOVE PROPERTY(useTor());
+                MOVE PROPERTY(recalculateAllDistances());	
+        }
     }
 }
 
