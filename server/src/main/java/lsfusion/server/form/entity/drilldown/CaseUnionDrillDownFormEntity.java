@@ -84,7 +84,8 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
             ContainerView propsContainer = design.createContainer(getString("logics.property.drilldown.form.where") + " " + (i + 1), version);
             propsContainer.setAlignment(FlexAlignment.STRETCH);
             propsContainer.add(design.get(propProperties.get(i)), version);
-            propsContainer.add(design.get(whereProperties.get(i)), version);
+            if (i < whereProperties.size()) // может быть else
+                propsContainer.add(design.get(whereProperties.get(i)), version);
             design.mainContainer.addAfter(propsContainer, valueContainer, version);
         }
         return design;
