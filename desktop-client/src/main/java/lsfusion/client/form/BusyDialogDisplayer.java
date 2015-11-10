@@ -62,7 +62,7 @@ public class BusyDialogDisplayer extends TimerTask {
     }
 
     public void hide() {
-        if(busyDialog.isVisible())
+        if(busyDialog != null && busyDialog.isVisible())
             busyDialog.setVisible(false);
     }
 
@@ -72,7 +72,6 @@ public class BusyDialogDisplayer extends TimerTask {
         if (drawingWindow != null) {
             if(Main.configurationAccessAllowed)
                 busyDialog.setStackMessage(serverMessageProvider.get());
-            busyDialog.updateProgressBar(++count);
         }
     }
 

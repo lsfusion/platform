@@ -26,7 +26,8 @@ class BusyDialog extends JDialog {
         JPanel messagePanel = new JPanel();
         messagePanel.add(statusMessage);
 
-        progressBar = new JProgressBar(0, 9);
+        progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
         JPanel progressPanel = new JPanel();
         progressPanel.add(progressBar);
 
@@ -64,8 +65,8 @@ class BusyDialog extends JDialog {
 
         if (devMode) {
             FontMetrics fm = stackMessage.getFontMetrics(stackMessage.getFont());
-            stackMessage.setMinimumSize(new Dimension(stackMessage.getWidth(), fm.getHeight() * 15)); //15 lines
-            setMinimumSize(new Dimension((int) (Main.frame.getRootPane().getWidth() * 0.50), fm.getHeight() * 22));
+            stackMessage.setMinimumSize(new Dimension(stackMessage.getWidth(), fm.getHeight() * 20)); //20 lines
+            setMinimumSize(new Dimension((int) (Main.frame.getRootPane().getWidth() * 0.50), fm.getHeight() * 27));
         } else {
             setResizable(false);
         }
@@ -100,10 +101,6 @@ class BusyDialog extends JDialog {
 //            }
 //        });
 //    }
-
-    public void updateProgressBar(int i) {
-        progressBar.setValue(i % 10);
-    }
 
     public void setStackMessage(String input) {
 
