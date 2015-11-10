@@ -226,15 +226,19 @@ META defineNumeratedDefault (object1, object2, property, captionV, seriesV)
     numerator###object1###object2 (object1, object2) <- defaultNumerator###object1###object2 () WHEN SET(property(object1, object2));
 END
 
-META defineNumeratedID(object, caption)
-    defaultNumerator##object = DATA Numerator ();
-    nameDefaultNumerator##object caption = nameNumerator(defaultNumerator##object()) IN defaultNumerator;
-    WHEN SET(o IS object) AND defaultNumerator##object() AND NOT id##object(o) DO {
-        id##object(o) <- CONCAT '', seriesNumerator(defaultNumerator##object()), curStringValueNumerator(defaultNumerator##object());  
-        incrementValueSessionNumerator(defaultNumerator##object());
+META defineNumeratedID(object, caption, prefix)
+    default##prefix##Numerator##object = DATA Numerator ();
+    nameDefault##prefix##Numerator##object caption = nameNumerator(default##prefix##Numerator##object()) IN defaultNumerator;
+    WHEN SET(o IS object) AND default##prefix##Numerator##object() AND NOT id##object(o) DO {
+        id##object(o) <- CONCAT '', seriesNumerator(default##prefix##Numerator##object()), curStringValueNumerator(default##prefix##Numerator##object());  
+        incrementValueSessionNumerator(default##prefix##Numerator##object());
     } 
     
-    EXTEND FORM defaultNumerators PROPERTIES() nameDefaultNumerator##object;
+    EXTEND FORM defaultNumerators PROPERTIES() nameDefault##prefix##Numerator##object;
+END
+
+META defineNumeratedID(object, caption)
+@defineNumeratedID(object, caption, );
 END
 // --------------------------------------------- Стандартные значения ---------------------------- //
 
