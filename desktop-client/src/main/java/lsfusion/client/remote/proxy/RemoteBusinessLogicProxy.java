@@ -3,6 +3,7 @@ package lsfusion.client.remote.proxy;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.TimePreferencies;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.screen.ExternalScreen;
@@ -36,10 +37,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
     }
 
     @Override
-    public String getUserTimeZone() throws RemoteException {
-        logRemoteMethodStartCall("getUserTimeZone");
-        String result = target.getUserTimeZone();
-        logRemoteMethodEndCall("getUserTimeZone", result);
+    public TimePreferencies getTimePreferencies() throws RemoteException {
+        logRemoteMethodStartCall("getTimePreferencies");
+        TimePreferencies result = target.getTimePreferencies();
+        logRemoteMethodEndCall("getTimePreferencies", result);
         return result;
     }
 

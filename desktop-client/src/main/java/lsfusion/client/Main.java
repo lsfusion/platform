@@ -10,10 +10,7 @@ import lsfusion.client.form.editor.rich.RichEditorPane;
 import lsfusion.client.remote.proxy.RemoteFormProxy;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.client.rmi.RMITimeoutSocketFactory;
-import lsfusion.interop.FormPrintType;
-import lsfusion.interop.GUIPreferences;
-import lsfusion.interop.RemoteLogicsInterface;
-import lsfusion.interop.RemoteLogicsLoaderInterface;
+import lsfusion.interop.*;
 import lsfusion.interop.event.EventBus;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.form.ReportGenerationData;
@@ -36,6 +33,7 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClassLoader;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static lsfusion.base.DateConverter.*;
@@ -195,7 +193,7 @@ public class Main {
                     logicsLogo = prefs.logicsLogo;
                     hideMenu = prefs.hideMenu;
 
-                    setupTimeZone();
+                    setupTimePreferences();
 
                     remoteNavigator = loginAction.getRemoteNavigator();
                     computerId = loginAction.getComputerId();
@@ -242,19 +240,33 @@ public class Main {
         });
     }
 
-    private static void setupTimeZone() throws RemoteException {
-        TimeZone timeZone = TimeZone.getTimeZone(remoteLogics.getUserTimeZone());
+    private static void setupTimePreferences() throws RemoteException {
+        TimePreferencies timePreferencies = remoteLogics.getTimePreferencies();
+        
+        TimeZone timeZone = TimeZone.getTimeZone(timePreferencies.userTimeZone);
         if (timeZone != null) {
             TimeZone.setDefault(timeZone);
         }
+
+        Date twoDigitYearStartDate = null;
+        if (timePreferencies.twoDigitYearStart != null) {
+            GregorianCalendar c = new GregorianCalendar(timePreferencies.twoDigitYearStart, 0, 1);
+            twoDigitYearStartDate = c.getTime();
+        }
         
         dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+        if (twoDigitYearStartDate != null) {
+            ((SimpleDateFormat) dateFormat).set2DigitYearStart(twoDigitYearStartDate);
+        }
 
 //        timeFormat = new SimpleDateFormat("HH:mm:ss");
         timeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
 
 //        dateTimeFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
         dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
+        if (twoDigitYearStartDate != null) {
+            ((SimpleDateFormat) dateTimeFormat).set2DigitYearStart(twoDigitYearStartDate);
+        }
 
         timeEditFormat = createTimeEditFormat(timeFormat);
         dateEditFormat = createDateEditFormat(dateFormat);

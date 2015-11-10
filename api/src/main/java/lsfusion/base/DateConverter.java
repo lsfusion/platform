@@ -71,19 +71,29 @@ public class DateConverter {
 
 
     public static SimpleDateFormat createDateEditFormat(DateFormat dateFormat) {
+        SimpleDateFormat result;
         if (!(dateFormat instanceof SimpleDateFormat)) {
             //используем паттерн по умолчанию
-            return new SimpleDateFormat("dd.MM.yy");
+            result = new SimpleDateFormat("dd.MM.yy");
+        } else {
+            result = createDateEditFormat((SimpleDateFormat) dateFormat);
+            result.set2DigitYearStart(((SimpleDateFormat) dateFormat).get2DigitYearStart());
         }
-        return createDateEditFormat((SimpleDateFormat)dateFormat);
+        
+        return result;
     }
 
     public static SimpleDateFormat createDateTimeEditFormat(DateFormat dateFormat) {
+        SimpleDateFormat result;
         if (!(dateFormat instanceof SimpleDateFormat)) {
             //используем паттерн по умолчанию
-            return new SimpleDateFormat("dd.MM.yy HH:mm:ss");
+            result = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
+        } else {
+            result = createDateEditFormat((SimpleDateFormat) dateFormat);
+            result.set2DigitYearStart(((SimpleDateFormat) dateFormat).get2DigitYearStart());
         }
-        return createDateEditFormat((SimpleDateFormat)dateFormat);
+        
+        return result;
     }
 
     public static SimpleDateFormat createDateEditFormat(SimpleDateFormat simpleFormat) {
@@ -119,6 +129,8 @@ public class DateConverter {
             }
         }
 
-        return new SimpleDateFormat(resultPattern.toString());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(resultPattern.toString());
+//        simpleDateFormat.set2DigitYearStart(new Date(45, 1, 1));
+        return simpleDateFormat;
     }
 }

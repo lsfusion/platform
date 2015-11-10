@@ -641,6 +641,7 @@
         <property name="securityManager" ref="securityManager"/>
         <property name="dbManager" ref="dbManager"/>
         <property name="clientVMOptions" ref="clientVMOptions"/>
+        <property name="twoDigitYearStart" value="${twoDigitYearStart:}"/>
         <property name="userTimeZone" value="${user.timeZone:}"/>
         <property name="userCountry" value="${user.country:}"/>
         <property name="userLanguage" value="${user.language:}"/>

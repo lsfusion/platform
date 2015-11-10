@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.GUIPreferences;
 import lsfusion.interop.RemoteLogicsInterface;
+import lsfusion.interop.TimePreferencies;
 import lsfusion.interop.VMOptions;
 import lsfusion.interop.event.IDaemonTask;
 import lsfusion.interop.exceptions.RemoteMessageException;
@@ -65,6 +66,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     private String displayName;
     private String name;
     
+    private Integer twoDigitYearStart;
     private String userTimeZone;
     private String userCountry;
     private String userLanguage;
@@ -105,6 +107,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public void setTwoDigitYearStart(Integer twoDigitYearStart) {
+        this.twoDigitYearStart = twoDigitYearStart;
     }
     
     public void setUserTimeZone(String userTimeZone) {
@@ -233,8 +239,8 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return new GUIPreferences(name, displayName, null, null, Boolean.parseBoolean(clientHideMenu));
     }
     
-    public String getUserTimeZone() throws RemoteException {
-        return userTimeZone;
+    public TimePreferencies getTimePreferencies() throws RemoteException {
+        return new TimePreferencies(userTimeZone, twoDigitYearStart);
     }
 
     public String getUserCountry() throws RemoteException {

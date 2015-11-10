@@ -16,7 +16,7 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     
     GUIPreferences getGUIPreferences() throws RemoteException;
     
-    String getUserTimeZone() throws RemoteException;
+    TimePreferencies getTimePreferencies() throws RemoteException;
 
     String getUserCountry() throws RemoteException;
 
