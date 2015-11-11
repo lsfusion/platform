@@ -1,7 +1,7 @@
 package lsfusion.client.form;
 
-import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.Main;
+import lsfusion.client.SwingUtils;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -9,12 +9,20 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import static lsfusion.client.ClientResourceBundle.getString;
+
 class BusyDialog extends JDialog {
 
-    //private JButton btnCancel;
+    private Timer longActionTimer;
+    private JButton btnCopy;
+    private JButton btnExit;
+    private JButton btnReconnect;
     private JLabel statusMessage;
     private JProgressBar progressBar;
     private Style defaultStyle;
@@ -24,10 +32,10 @@ class BusyDialog extends JDialog {
     static boolean devMode = Main.configurationAccessAllowed;
 
     public BusyDialog(Window parent, boolean modal) {
-        super(parent, ClientResourceBundle.getString("form.wait"), ModalityType.APPLICATION_MODAL);
+        super(parent, getString("form.wait"), ModalityType.APPLICATION_MODAL);
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
-        statusMessage = new JLabel(ClientResourceBundle.getString("form.loading"));
+        statusMessage = new JLabel(getString("form.loading"));
         JPanel messagePanel = new JPanel();
         messagePanel.add(statusMessage);
 
@@ -45,6 +53,9 @@ class BusyDialog extends JDialog {
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
         contentPane.add(topPanel);
 
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
         if (devMode) {
 
             StyleContext styleContext = new StyleContext();
@@ -58,17 +69,23 @@ class BusyDialog extends JDialog {
             JScrollPane stackPanel = new JScrollPane(stackMessage);
             stackPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             contentPane.add(stackPanel);
+
+            btnCopy = new JButton(getString("form.loading.copy"));
+            buttonPanel.add(btnCopy);
         }
 
-        //JPanel buttonPanel = new JPanel();
-        //buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        //btnCancel = new JButton("Cancel");
-        //buttonPanel.add(btnCancel);
-        //contentPane.add(buttonPanel, BorderLayout.SOUTH);
+        btnExit = new JButton(getString("form.loading.exit"));
+        btnExit.setEnabled(false);
+        buttonPanel.add(btnExit);
+        btnReconnect = new JButton(getString("form.loading.reconnect"));
+        btnReconnect.setEnabled(false);
+        buttonPanel.add(btnReconnect);
+        buttonPanel.setMaximumSize(new Dimension((int) buttonPanel.getPreferredSize().getWidth(), (int) (btnExit.getPreferredSize().getHeight() * 4)));
+        contentPane.add(buttonPanel, BorderLayout.SOUTH);
 
         pack();
 
-        //initUIHandlers();
+        initUIHandlers(this);
 
         setAlwaysOnTop(false);
 
@@ -88,33 +105,61 @@ class BusyDialog extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
-                Main.frame.setLocked(true);
+                if (Main.frame != null)
+                    Main.frame.setLocked(true);
             }
 
             @Override
             public void windowClosed(WindowEvent e) {
-                Main.frame.setLocked(false);
+                if (Main.frame != null)
+                    Main.frame.setLocked(false);
                 if(focusOwner != null)
                     focusOwner.requestFocusInWindow();
+                if(longActionTimer != null)
+                    longActionTimer.stop();
             }
         });
     }
 
-//    private void initUIHandlers() {
-//        btnCancel.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                cancel();
-//            }
-//        });
-//
-//        addWindowListener(new WindowAdapter() {
-//            @Override
-//            public void windowClosed(WindowEvent e) {
-//                cancel();
-//            }
-//        });
-//    }
+    private void initUIHandlers(final BusyDialog dialog) {
+        if(devMode) {
+            btnCopy.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    copyToClipboard();
+                }
+            });
+        }
+        btnExit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int answer = SwingUtils.showConfirmDialog(dialog, getString("form.loading.confirm"), "", JOptionPane.QUESTION_MESSAGE, 1, false, 0);
+                if (answer == JOptionPane.NO_OPTION) {
+                    return;
+                }
+                Main.shutdown();
+            }
+        });
+        btnReconnect.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int answer = SwingUtils.showConfirmDialog(dialog, getString("form.loading.confirm"), "", JOptionPane.QUESTION_MESSAGE, 1, false, 0);
+                if (answer == JOptionPane.NO_OPTION) {
+                    return;
+                }
+                Main.reconnect();
+            }
+        });
+
+        longActionTimer = new Timer(5000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                btnExit.setEnabled(true);
+                btnReconnect.setEnabled(true);
+            }
+        });
+        longActionTimer.start();
+    }
 
     public void setStackMessage(String input) {
 
@@ -141,8 +186,10 @@ class BusyDialog extends JDialog {
 
     }
 
-//    private void cancel() {
-//        this.dispose();
-//    }
+    private void copyToClipboard() {
+        String stackMessageText = stackMessage.getText();
+        if(stackMessageText != null)
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(stackMessage.getText()), null);
+    }
 
 }
