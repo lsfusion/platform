@@ -75,7 +75,8 @@ public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment<
         public final int timeout;
 
         // состояние сессии (точнее потока + сессии), есть assertion что не изменяются вплоть до окончания выполнения
-        public int transactTimeout; // param
+        public final int transactTimeout; // param
+
         public boolean sessionVolatileStats; // ThreadLocal
         public boolean noHandled; // ThreadLocal
         public boolean inTransaction; // LockWrite
@@ -91,6 +92,22 @@ public class AdjustVolatileExecuteEnvironment extends DynamicExecuteEnvironment<
             this.volatileStats = volatileStats;
             this.timeout = timeout;
             this.transactTimeout = transactTimeout;
+        }
+
+        private boolean forAnalyze;
+
+        public Snapshot(boolean volatileStats, int timeout, int transactTimeout, boolean forAnalyze) {
+            assert forAnalyze;
+            this.volatileStats = volatileStats;
+            this.timeout = timeout;
+            this.transactTimeout = transactTimeout;
+            this.forAnalyze = forAnalyze;
+        }
+
+        public Snapshot forAnalyze() {
+            assert !forAnalyze;
+
+            return new Snapshot(volatileStats, timeout, transactTimeout, true);
         }
 
         public void beforeOuter(SQLCommand command, SQLSession session, ImMap<String, ParseInterface> paramObjects, OperationOwner owner, PureTimeInterface runTime) throws SQLException {

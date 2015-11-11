@@ -1290,6 +1290,16 @@ public class Settings {
         this.subQueriesRowsThreshold = subQueriesRowsThreshold;
     }
 
+    private int subQueriesRowsMax = 100000; // какое число записей не материализовать никогда
+
+    public int getSubQueriesRowsMax() {
+        return subQueriesRowsMax;
+    }
+
+    public void setSubQueriesRowsMax(int subQueriesRowsMax) {
+        this.subQueriesRowsMax = subQueriesRowsMax;
+    }
+
     private int subQueriesRowCountCoeff = 1; // коэффициент, для оценки  - определяет баланс между размером таблицы, количеством подзапросов
 
     public int getSubQueriesRowCountCoeff() {

@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 public interface ResultHandler<K, V>  {
     void start();
-    
+
     void proceed(ImMap<K, Object> rowKey, ImMap<V, Object> rowValue) throws SQLException;
     
     void finish() throws SQLException;

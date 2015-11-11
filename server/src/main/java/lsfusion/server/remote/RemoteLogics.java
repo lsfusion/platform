@@ -162,6 +162,9 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     private void initOpenFormCountUpdate() {
+        if(SystemProperties.isDebug) // чтобы не мешать при включенных breakPoint'ах
+            return;
+
         ScheduledExecutorService openFormUpdateExecutor = Executors.newSingleThreadScheduledExecutor(new ContextAwareDaemonThreadFactory(getContext(), "open-form-count-daemon"));
         openFormUpdateExecutor.scheduleAtFixedRate(new Runnable() {
             @Override

@@ -27,7 +27,9 @@ public class SQLAnalyzeAspect {
         Object result = thisJoinPoint.proceed();
 
         if (explain && ( System.currentTimeMillis()-started) > Settings.get().getExplainThreshold()) {
-            thisJoinPoint.proceed(new Object[]{sql, new SQLAnalyze(command, noAnalyze), queryExecEnv, owner, paramObjects, new Result<Integer>()});
+            final DynamicExecEnvSnapshot analyzeEnv = queryExecEnv.forAnalyze();
+            assert !analyzeEnv.hasRepeatCommand();
+            thisJoinPoint.proceed(new Object[]{sql, new SQLAnalyze(command, noAnalyze), analyzeEnv, owner, paramObjects, new Result<Integer>()});
         }
 
         return result;

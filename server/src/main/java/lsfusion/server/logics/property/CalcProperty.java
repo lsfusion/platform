@@ -1571,6 +1571,8 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         ValueClass valueClass = getValueClass(ClassType.signaturePolicy);
         if(valueClass instanceof ConcatenateValueClass) // getClassProperty not supported
             return null;
+        if(valueClass == null)
+            return null;
         return IsClassProperty.getProperty(valueClass, "value");
     }
 

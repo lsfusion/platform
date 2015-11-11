@@ -272,58 +272,66 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         ServerLoggers.assertLog(outerQueries.containsAll(step.getMaterializedQueries()), "SHOULD CONTAIN ALL"); // может включать еще "верхние"
         final Node topNode = new Node(null, null, command);
         recCreateNode(command, topNode, outerQueries, nodes); // не важно inner или нет
-        if(nodes.isEmpty()) {
-            return new Step(true, step); // включение disableNestedLoop
-        }
+        if(!nodes.isEmpty()) { // оптимизация
+            nodes.add(topNode);
 
-        int split = Settings.get().getSubQueriesSplit();
-        final int threshold = new Stat(Settings.get().getSubQueriesRowsThreshold()).getWeight();
-        final int coeff = Settings.get().getSubQueriesRowCountCoeff();
+            int split = Settings.get().getSubQueriesSplit();
+            final int threshold = new Stat(Settings.get().getSubQueriesRowsThreshold()).getWeight();
+            final int max = new Stat(Settings.get().getSubQueriesRowsMax()).getWeight();
+            final int coeff = Settings.get().getSubQueriesRowCountCoeff();
 
-        final int target = (int) Math.round(((double)nodes.size()) / split);
+            final int target = (int) Math.round(((double)nodes.size()) / split);
 
-        Comparator<Node> comparator = new Comparator<Node>() {
-            private int getPriority(Node o) {
-                if(o == topNode) {
-                    if(o.degree > target) // если больше target по сути запретим выбирать
-                        return Integer.MAX_VALUE;
+            Comparator<Node> comparator = new Comparator<Node>() {
+                private int getPriority(Node o) {
+                    if(o == topNode) {
+                        if(o.degree > target) // если больше target по сути запретим выбирать
+                            return Integer.MAX_VALUE / 2;
+                    } else {
+                        if (o.size >= max) // если больше порога не выбираем вообще
+                            return Integer.MAX_VALUE;
+                    }
+
+                    return BaseUtils.max(o.size, threshold) * coeff + Math.abs(o.degree - target);
+                }
+                public int compare(Node o1, Node o2) {
+                    return Integer.compare(getPriority(o1), getPriority(o2));
+                }
+            };
+
+            PriorityQueue<Node> priority = new PriorityQueue<Node>(nodes.size(), comparator);
+            priority.addAll(nodes);
+
+            MOrderSet<SQLQuery> mNextQueries = SetFact.mOrderSet();
+            while(true) {
+                Node bestNode = priority.poll();
+
+                recRemoveChildren(bestNode, priority); // удаляем поддерево
+
+                if(bestNode.query == null) {
+                    assert bestNode == topNode;
+                    break;
                 }
 
-                return BaseUtils.max(o.size, threshold) * coeff + Math.abs(o.degree - target);
+                mNextQueries.add(bestNode.query);
+
+                // пересчитываем degree
+                Node parentNode = bestNode.parent;
+                while(parentNode != null) {
+                    priority.remove(parentNode); // важно сначала удалить, так как degree используется в компараторе
+                    parentNode.degree -= bestNode.degree;
+                    priority.add(parentNode);
+
+                    parentNode = parentNode.parent;
+                }
             }
-            public int compare(Node o1, Node o2) {
-                return Integer.compare(getPriority(o1), getPriority(o2));
-            }
-        };
+            final ImOrderSet<SQLQuery> nextQueries = mNextQueries.immutableOrder();
 
-        PriorityQueue<Node> priority = new PriorityQueue<Node>(nodes.size(), comparator);
-        priority.addAll(nodes);
-
-        MOrderSet<SQLQuery> mNextQueries = SetFact.mOrderSet();
-        while(true) {
-            Node bestNode = priority.poll();
-
-            recRemoveChildren(bestNode, priority); // удаляем поддерево
-
-            if(bestNode.query == null) {
-                assert priority.isEmpty();
-                break;
-            }
-
-            mNextQueries.add(bestNode.query);
-
-            // пересчитываем degree
-            Node parentNode = bestNode.parent;
-            while(parentNode != null) {
-                priority.remove(parentNode); // важно сначала удалить, так как degree используется в компараторе
-                parentNode.degree -= bestNode.degree;
-                priority.add(parentNode);
-
-                parentNode = parentNode.parent;
-            }
+            if(!nextQueries.isEmpty())
+                return new Step(nextQueries, step);
         }
 
-        return new Step(mNextQueries.immutableOrder(), step);
+        return new Step(true, step); // включение disableNestedLoop
     }
 
     private static int getDefaultTimeout(SQLCommand command, ImMap<SQLQuery, MaterializedQuery> queries) {
@@ -438,9 +446,9 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
         public final ImOrderSet<SQLQuery> queries;
 
         // состояние сессии (точнее потока + сессии), есть assertion что не изменяются вплоть до окончания выполнения
-        public ImMap<SQLQuery, MaterializedQuery> materializedOuterQueries; // param
-        public int transactTimeout; // param
-        public boolean sessionVolatileStats; // ThreadLocal
+        public final ImMap<SQLQuery, MaterializedQuery> materializedOuterQueries; // param
+        public final int transactTimeout; // param
+
         public boolean noHandled; // ThreadLocal
         public boolean inTransaction; // LockWrite
         public int secondsFromTransactStart; // LockWrite
@@ -470,6 +478,25 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
             ServerLoggers.assertLog(!queries.getSet().intersect(materializedOuterQueries.keys()), "SHOULD NOT INTERSECT"); // если быть точным queries должны быть строго выше materialized
 
             this.transactTimeout = transactTimeout;
+        }
+
+        // forAnalyze
+        private boolean forAnalyze;
+        public Snapshot(Step step, ImOrderSet<SQLQuery> queries, ImMap<SQLQuery, MaterializedQuery> materializedOuterQueries, int transactTimeout, ImMap<SQLQuery, MaterializedQuery> materializedQueries) {
+            this.step = step;
+            this.queries = queries;
+            this.materializedOuterQueries = materializedOuterQueries;
+            this.transactTimeout = transactTimeout;
+            this.materializedQueries = materializedQueries;
+            this.setTimeout = 0;
+            this.forAnalyze = true;
+        }
+
+        public Snapshot forAnalyze() {
+            assert materializedQueries != null;
+            assert !forAnalyze;
+
+            return new Snapshot(step, queries, materializedOuterQueries, transactTimeout, materializedQueries);
         }
 
         public void beforeOuter(SQLCommand command, SQLSession session, ImMap<String, ParseInterface> paramObjects, OperationOwner owner, PureTimeInterface pureTime) throws SQLException, SQLHandledException {
@@ -502,7 +529,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
         // assert что session.locked
         private void prepareEnv(SQLSession session) { // "смешивает" универсальное состояние (при отсуствии ограничений) и "местное", DynamicExecuteEnvironment.checkSnapshot выполняет обратную функцию
-            noHandled = session.isNoHandled();
+            noHandled = forAnalyze || session.isNoHandled();
             if(noHandled)
                 return;
 
