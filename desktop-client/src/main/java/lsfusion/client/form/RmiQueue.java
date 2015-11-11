@@ -6,7 +6,9 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Provider;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.ClientLoggers;
+import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
+import lsfusion.client.dock.DockableMainFrame;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.rmi.ConnectionLostManager;
 import lsfusion.interop.DaemonThreadFactory;
@@ -14,10 +16,10 @@ import lsfusion.interop.exceptions.FatalHandledRemoteException;
 import lsfusion.interop.exceptions.RemoteAbandonedException;
 import org.apache.log4j.Logger;
 
+import java.awt.*;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
-import java.util.ArrayDeque;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -63,12 +65,19 @@ public class RmiQueue {
         }
     }
 
+    public static void waitOnEdtSyncBlocker(long timeout) throws InterruptedException {
+        synchronized (edtSyncBlocker) {
+            if(timeout > 0)
+                edtSyncBlocker.wait(timeout);
+        }
+    }
+
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned) {
         return runRetryableRequest(request, abandoned, false);
     }
-    
+
     private static AtomicLong reqIdGen = new AtomicLong();
-    
+
     // вызывает request (предположительно remote) несколько раз, проблемы с целостностью предполагается что решается либо индексом, либо результат не так важен
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure) {
         int reqCount = 0;
@@ -80,7 +89,7 @@ public class RmiQueue {
                 } catch (Throwable t) {
                     if(abandoned.get()) // suppress'им все, failedRmiRequest'ы flush'ся отдельно
                         throw new RemoteAbandonedException();
-                        
+
                     if (t instanceof RemoteException) {
                         RemoteException remote = (RemoteException) t;
 
@@ -113,7 +122,7 @@ public class RmiQueue {
             if (registeredFailure) {
                 ConnectionLostManager.unregisterFailedRmiRequest(abandoned.get(), reqId);
             }
-        }        
+        }
     }
 
     public static void handleNotRetryableRemoteException(RemoteException remote) {
@@ -143,7 +152,10 @@ public class RmiQueue {
         return blockingRequest(request, false);
     }
 
-    private <T> T blockingRequest(final RmiRequest<T> request, boolean direct) {
+    boolean busyRunning;
+    boolean pendingBusyFlush;
+
+    private <T> T blockingRequest(final RmiRequest<T> request, final boolean direct) {
         SwingUtils.assertDispatchThread();
 
         if (!direct && syncsDepth != 0) {
@@ -152,27 +164,61 @@ public class RmiQueue {
             throw ex;
         }
 
-        BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
-        busyDisplayer.start();
+        BusyDialogDisplayer busyDisplayer = null;
+        //BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
+        //busyDisplayer.start();
 
         syncsDepth++;
+        long start = System.currentTimeMillis();
         try {
-            RmiFuture<T> rmiFuture;
+            final RmiFuture<T> rmiFuture;
             if (direct) {
-                rmiFuture = new RmiFuture<T>(request);
+                rmiFuture = new RmiFuture<>(request);
                 rmiExecutor.execute(rmiFuture);
             } else {
                 rmiFuture = execRmiRequestInternal(request);
             }
 
             while (!rmiFuture.isDone()) {
-                waitOnEdtSyncBlocker();
+                long timeout = 1000 - (System.currentTimeMillis() - start);
 
+                boolean flush = !direct;
+
+                if (timeout <= 0) { //секунда прошла, а запрос ещё выполняется
+                    if(busyDisplayer == null) {
+                        busyDisplayer = new BusyDialogDisplayer(serverMessageProvider);
+                        busyDisplayer.start();
+                    }
+
+                    busyRunning = true;
+
+                    busyDisplayer.show(new Runnable() {
+                        @Override
+                        public void run() {
+                            while (!rmiFuture.isDone() && !(!direct && isRmiFutureDone())) {
+                                try {
+                                    waitOnEdtSyncBlocker();
+                                } catch (InterruptedException e) {
+                                    logger.error(e);
+                                }
+                            }
+                        }
+                    });//показываем диалог
+
+                    busyRunning = false; //чтобы не выполнять обработку в EDT busyDialog (на всякий случай)
+                    if(pendingBusyFlush)
+                        flush = true;
+                    pendingBusyFlush = false;
+                } else
+                    waitOnEdtSyncBlocker(timeout); //blocker выполнения запроса, но не более 1 секунды
+
+
+                //дождались, выполняем остальное
                 ConnectionLostManager.blockIfHasFailed();
                 if (abandoned.get()) {
                     throw new RuntimeException("RmiQueue is abandoned");
                 }
-                if (!direct) {
+                if (flush) {
                     flushCompletedRequestsNow(true);
                 }
             }
@@ -186,7 +232,8 @@ public class RmiQueue {
             throw Throwables.propagate(t);
         } finally {
             syncsDepth--;
-            busyDisplayer.stop();
+            if(busyDisplayer != null)
+                busyDisplayer.stop();
         }
     }
 
@@ -226,6 +273,11 @@ public class RmiQueue {
     private void flushCompletedRequests() {
         SwingUtils.assertDispatchThread();
 
+        if(busyRunning) {
+            pendingBusyFlush = true;
+            return;
+        }
+
         if (abandoned.get()) {
             return;
         }
@@ -237,7 +289,8 @@ public class RmiQueue {
     }
 
     private void flushCompletedRequestsNow(boolean inSyncRequest) {
-        while (!rmiFutures.isEmpty() && rmiFutures.element().isDone()) {
+        assert !busyRunning;
+        while (isRmiFutureDone()) {
             try {
                 execNextFutureCallback();
             } catch (Throwable t) {
@@ -253,6 +306,10 @@ public class RmiQueue {
                 }
             }
         }
+    }
+
+    private boolean isRmiFutureDone() {
+        return !rmiFutures.isEmpty() && rmiFutures.element().isDone();
     }
 
     void editingStopped() {

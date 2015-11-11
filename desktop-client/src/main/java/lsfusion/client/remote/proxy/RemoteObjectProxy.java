@@ -3,7 +3,7 @@ package lsfusion.client.remote.proxy;
 import com.google.common.base.Throwables;
 import lsfusion.base.EProvider;
 import lsfusion.client.ClientLoggers;
-import lsfusion.client.form.BusyDisplayer;
+import lsfusion.client.form.BusyDialogDisplayer;
 import lsfusion.interop.remote.MethodInvocation;
 import lsfusion.interop.remote.PendingRemoteInterface;
 import org.apache.log4j.Logger;
@@ -43,7 +43,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
             }
         }
 
-        BusyDisplayer busyDisplayer = new BusyDisplayer(new EProvider<String>() {
+        final BusyDialogDisplayer busyDisplayer = new BusyDialogDisplayer(new EProvider<String>() {
             @Override
             public String getExceptionally() throws RemoteException {
                 return target.getRemoteActionMessage();

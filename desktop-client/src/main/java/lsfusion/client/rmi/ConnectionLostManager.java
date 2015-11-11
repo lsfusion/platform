@@ -122,7 +122,7 @@ public class ConnectionLostManager {
     public static void blockIfHasFailed() {
         SwingUtils.assertDispatchThread();
 
-        if (shouldBeBlocked() && blockDialog == null) {
+        if (shouldBeBlocked() && blockDialog == null && currentFrame != null) {
             currentFrame.setLocked(true);
 
             blockDialog = new BlockDialog(null, currentFrame, isConnectionLost(), true);
