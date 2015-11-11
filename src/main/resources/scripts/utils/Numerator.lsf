@@ -86,7 +86,7 @@ META defineNumberedAbstract(class)
 
     seriesNumber###class 'Серия/Номер' (o) = 
         CONCAT '', series###class(o), number###class(o) 
-        MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+        MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 PERSISTENT;
         
 END
 
@@ -118,7 +118,7 @@ META defineNumbered(class)
 
     seriesNumber###class 'Серия/Номер' (o) = 
         CONCAT '', series###class(o), number###class(o) 
-        MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+        MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 PERSISTENT;
         
 END
 
@@ -179,7 +179,7 @@ META defineNumerated(object1, object2)
 
     number###object1###object2 'Номер' = DATA STRING[18] (###object1, ###object2) MINCHARWIDTH 7;
     series###object1###object2 'Серия' = DATA STRING[2] (###object1, ###object2) FIXEDCHARWIDTH 3;
-    seriesNumber###object1###object2 'Серия/Номер' (object1, object2) = CONCAT '', series###object1###object2(object1, object2), number###object1###object2(object1, object2) MINCHARWIDTH 7 PREFCHARWIDTH 10 MAXCHARWIDTH 20 PERSISTENT;
+    seriesNumber###object1###object2 'Серия/Номер' (object1, object2) = CONCAT '', series###object1###object2(object1, object2), number###object1###object2(object1, object2) MINCHARWIDTH 7 PREFCHARWIDTH 15 MAXCHARWIDTH 20 PERSISTENT;
 
     numerator###object1###object2 = DATA Numerator (###object1, ###object2);
     nameNumerator###object1###object2 'Нумератор' (object1, object2) = nameNumerator(numerator###object1###object2(object1, object2)) MINCHARWIDTH 7 PREFCHARWIDTH 15;
