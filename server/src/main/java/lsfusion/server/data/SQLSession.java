@@ -14,6 +14,7 @@ import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.IntegerClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.PropStat;
@@ -1508,6 +1509,22 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return result;
     }
 
+    public void saveToDbForDebug(DynamicExecEnvSnapshot<?, ?> snapEnv, ImMap<String, ParseInterface> paramObjects) throws ClassNotFoundException, SQLException, SQLHandledException, InstantiationException, IllegalAccessException {
+        ImSet<SessionTable> materializedTables = snapEnv.getMaterializedQueries().values().mapColSetValues(new GetValue<SessionTable, MaterializedQuery>() {
+            public SessionTable getMapValue(MaterializedQuery value) {
+                return new SessionTable(value.tableName, value.keyFields, value.propFields);
+            }});
+        ImSet<SessionTable> paramTables = paramObjects.values().filterCol(new SFunctionSet<ParseInterface>() {
+            public boolean contains(ParseInterface element) {
+                return element.getSessionTable() != null;
+            }}).mapMergeSetValues(new GetValue<SessionTable, ParseInterface>() {
+            public SessionTable getMapValue(ParseInterface value) {
+                return value.getSessionTable();
+            }});
+
+        SessionTable.saveToDBForDebug(SetFact.addExclSet(materializedTables, paramTables), this);
+    }
+
     // SQLAnalyzeAspect
     @StackMessage("message.sql.execute")
     public <H> void executeCommand(@ParamMessage final SQLCommand<H> command, final DynamicExecEnvSnapshot snapEnv, final OperationOwner owner, ImMap<String, ParseInterface> paramObjects, H handler) throws SQLException, SQLHandledException {
@@ -2210,8 +2227,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     }
     
     private void checkSessionTables(ImMap<String, ParseInterface> paramObjects) {
-        for(ParseInterface paramObject : paramObjects.valueIt())
-            paramObject.checkSessionTable(this);
+        for(ParseInterface paramObject : paramObjects.valueIt()) {
+            SessionTable sessionTable = paramObject.getSessionTable();
+            if(sessionTable != null)
+                checkSessionTable(sessionTable);
+        }
     }
     
     public void checkSessionTable(SessionTable table) {

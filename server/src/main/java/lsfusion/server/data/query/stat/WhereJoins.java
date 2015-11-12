@@ -496,7 +496,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
         }
 
         // minimum spanning tree cost
-        Stat mst = getMSTCost(joinStats, balancedEdges, balancedStats);
+        Stat mst = getMSTExCost(joinStats, balancedEdges, balancedStats);
         if(pessStatType == 3)
             return mst;
         

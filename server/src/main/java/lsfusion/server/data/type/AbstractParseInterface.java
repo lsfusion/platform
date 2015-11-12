@@ -1,6 +1,7 @@
 package lsfusion.server.data.type;
 
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.sql.SQLSyntax;
 
 import java.sql.PreparedStatement;
@@ -40,6 +41,7 @@ public abstract class AbstractParseInterface implements ParseInterface {
         return new Null(type);
     }
 
-    public void checkSessionTable(SQLSession sql) {
+    public SessionTable getSessionTable() {
+        return null;
     }
 }

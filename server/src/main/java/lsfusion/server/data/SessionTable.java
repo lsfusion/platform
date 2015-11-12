@@ -88,6 +88,16 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
         this(name, keys, properties, tableClasses.first, tableClasses.second, count);
     }
 
+    // for debug
+    public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties) {
+        super(name, keys, properties, null, null);
+        initBaseClasses(ThreadLocalContext.getBusinessLogics().LM.baseClass);
+
+        StatKeys<KeyField> statKeys = SerializedTable.getStatKeys(this);
+        count = statKeys.rows.getCount();
+        distinctKeys = statKeys.distinct;
+        statProps = SerializedTable.getStatProps(this);
+    }
 
     private static Pair<DistinctKeys<KeyField>, ImMap<PropertyField, PropStat>> getStats(ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, final ImMap<ImMap<KeyField, DataObject>, ImMap<PropertyField, ObjectValue>> rows) {
         final ImList<MSet<DataObject>> distinctKeyValues = ListFact.toList(keys.size(), ListFact.<DataObject>mSet());
@@ -180,8 +190,8 @@ public class SessionTable extends Table implements ValuesContext<SessionTable>, 
             }
 
             @Override
-            public void checkSessionTable(SQLSession sql) {
-                sql.checkSessionTable(SessionTable.this);
+            public SessionTable getSessionTable() {
+                return SessionTable.this;
             }
         };
     }

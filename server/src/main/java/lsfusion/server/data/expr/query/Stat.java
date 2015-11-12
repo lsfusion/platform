@@ -94,6 +94,15 @@ public class Stat {
     public int getWeight() {
         return deg; // для алгоритма edmond'а нужен
     }
+
+    public int getCount() {
+        int statDegree = Settings.get().getStatDegree();
+        int result = 1;
+        for(int i=0,size=getWeight();i<size;i++) {
+            result = result * statDegree;
+        }
+        return result;
+    }
     
     public Stat avg(Stat add) {
         return new Stat((deg + add.deg) / 2, true);

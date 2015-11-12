@@ -1330,6 +1330,26 @@ public class Settings {
         this.useSafeDivision = useSafeDivision;
     }
 
+    private boolean useSafeScaleCast = false; // использовать safeCast, вместо cast (актуально только для useScaleOpType - 1
+
+    public boolean isUseSafeScaleCast() {
+        return useSafeScaleCast;
+    }
+
+    public void setUseSafeScaleCast(boolean useSafeScaleCast) {
+        this.useSafeScaleCast = useSafeScaleCast;
+    }
+
+    private int useScaleOpType = 0; // целая и дробная часть : MAX (0+1), SUM (2), соотвественно при 1 - идет CAST к типу (SAFE или не SAFE) определяется useSafeScaleCast, 2 - пока не реализовано поэтому работает как 0
+
+    public int getUseScaleOpType() {
+        return useScaleOpType;
+    }
+
+    public void setUseScaleOpType(int useScaleOpType) {
+        this.useScaleOpType = useScaleOpType;
+    }
+
     public boolean disableCompiledSubQueries = false;
 
     public boolean isDisableCompiledSubQueries() {

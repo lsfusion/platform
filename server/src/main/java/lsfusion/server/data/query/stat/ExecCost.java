@@ -24,14 +24,7 @@ public class ExecCost {
     }
 
     public int getDefaultTimeout() {
-        Settings settings = Settings.get();
-        int statDegree = settings.getStatDegree();
-        int result = 1;
-        for(int i=0,size=rows.getWeight();i<size;i++) {
-            result = result * statDegree;
-        }
-
-        return BaseUtils.max(result * settings.getTimeoutNanosPerRow() / 1000000, 1);
+        return BaseUtils.max(rows.getCount() * Settings.get().getTimeoutNanosPerRow() / 1000000, 1);
     }
 
     public int hashCode() {

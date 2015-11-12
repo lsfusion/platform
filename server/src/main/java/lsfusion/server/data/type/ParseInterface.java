@@ -1,7 +1,7 @@
 package lsfusion.server.data.type;
 
 import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.query.TypeEnvironment;
+import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.sql.SQLSyntax;
 
 import java.sql.PreparedStatement;
@@ -32,5 +32,5 @@ public interface ParseInterface {
         }
     };
     
-    void checkSessionTable(SQLSession sql);
+    SessionTable getSessionTable();
 }

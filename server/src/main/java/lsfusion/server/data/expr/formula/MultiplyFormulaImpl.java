@@ -6,10 +6,10 @@ import lsfusion.server.data.query.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
-public class MultiplyFormulaImpl extends ArithmeticFormulaImpl {
+public class MultiplyFormulaImpl extends ScaleFormulaImpl {
 
     public MultiplyFormulaImpl() {
-        super(IntegralTypeConversion.instance, MultiplyConversionSource.instance);
+        super(MultiplyConversionSource.instance);
     }
 
     @Override
@@ -17,18 +17,13 @@ public class MultiplyFormulaImpl extends ArithmeticFormulaImpl {
         return "multiplication";
     }
 
-    private static class MultiplyConversionSource extends AbstractConversionSource {
+    private static class MultiplyConversionSource extends ScaleConversionSource {
         public final static MultiplyConversionSource instance = new MultiplyConversionSource();
 
-        protected MultiplyConversionSource() {
-            super(IntegralTypeConversion.instance);
-        }
-
-        @Override
         public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {
             Type type = conversion.getType(type1, type2);
             if (type != null || isToString) {
-                return "(" + src1 + "*" + src2 + ")";
+                return getScaleSource("(" + src1 + "*" + src2 + ")", type, syntax, env, isToString);
             }
             return null;
         }

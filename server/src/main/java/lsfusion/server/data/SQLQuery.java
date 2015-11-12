@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.stat.ExecCost;
 import lsfusion.server.data.sql.SQLExecute;
@@ -275,7 +276,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         final ImOrderSet<String> keys = keyReaders.keys().toOrderSet();
         final ImOrderSet<String> properties = propertyReaders.keys().toOrderSet();
 
-        final ImOrderSet<KeyField> keyOrder = keys.mapOrder(SessionTableUsage.genKeys(keys, NullReader.typeGetter(keyReaders)).reverse());
+        final ImOrderSet<KeyField> keyOrder = keys.mapOrder(SessionTableUsage.genKeys(keys,  NullReader.typeGetter(keyReaders)).reverse());
         final ImOrderSet<PropertyField> propOrder = properties.mapOrder(SessionTableUsage.genProps(properties, NullReader.typeGetter(propertyReaders)).reverse());
 
         final PureTime pureTime = new PureTime();
@@ -293,7 +294,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
 
         String mapFields = SQLSession.stringExpr(keys.mapSet(keyOrder.mapOrderSetValues(Field.<KeyField>nameGetter(session.syntax))),
                                                 properties.mapSet(propOrder.mapOrderSetValues(Field.<PropertyField>nameGetter(session.syntax))));
-        return new MaterializedQuery(table, mapFields, actual.result, pureTime.get(), tableOwner);
+        return new MaterializedQuery(table, mapFields, SystemProperties.isDebug ? keyOrder : null, SystemProperties.isDebug ?  propOrder.getSet() : null, actual.result, pureTime.get(), tableOwner);
     }
 
     private static SQLExecute getExecute(SQLDML dml, ImMap<String, ParseInterface> queryParams, DynamicExecuteEnvironment queryExecEnv, ImMap<SQLQuery, MaterializedQuery> materializedQueries, PureTimeInterface pureTime, int transactTimeout, OperationOwner owner, TableOwner tableOwner) {

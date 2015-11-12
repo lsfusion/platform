@@ -9,6 +9,7 @@ import lsfusion.server.caches.hash.HashValues;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.Field;
 import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.Value;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -124,7 +125,8 @@ public class NullValue extends ObjectValue<NullValue> {
             return type;
         }
 
-        public void checkSessionTable(SQLSession sql) {
+        public SessionTable getSessionTable() {
+            return null;
         }
     }
     public ParseInterface getParse(Field field, SQLSyntax syntax) {

@@ -7,10 +7,10 @@ import lsfusion.server.data.query.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
 
-public class DivideFormulaImpl extends ArithmeticFormulaImpl {
+public class DivideFormulaImpl extends ScaleFormulaImpl {
 
     public DivideFormulaImpl() {
-        super(IntegralTypeConversion.instance, DivideConversionSource.instance);
+        super(DivideConversionSource.instance);
     }
 
     @Override
@@ -18,28 +18,25 @@ public class DivideFormulaImpl extends ArithmeticFormulaImpl {
         return "division";
     }
 
-    private static class DivideConversionSource extends AbstractConversionSource {
+    private static class DivideConversionSource extends ScaleConversionSource {
         public final static DivideConversionSource instance = new DivideConversionSource();
 
-        protected DivideConversionSource() {
-            super(IntegralTypeConversion.instance);
-        }
-
-        @Override
         public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {
             Type type = conversion.getType(type1, type2);
             if (type != null || isToString) {
+                String source;
                 if(Settings.get().isUseSafeDivision() && !isToString) {
-                    return "(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")";
+                    source = "(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")";
                 } else {
-                    return "(" + src1 + "/" + src2 + ")";
+                    source = "(" + src1 + "/" + src2 + ")";
                 }
+                return getScaleSource(source, type, syntax, env, isToString);
             }
             return null;
         }
     }
 
     public boolean hasNotNull() {
-        return Settings.get().isUseSafeDivision();
+        return super.hasNotNull() || Settings.get().isUseSafeDivision();
     }
 }
