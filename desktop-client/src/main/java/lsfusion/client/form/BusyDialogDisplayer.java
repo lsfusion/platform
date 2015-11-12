@@ -43,6 +43,7 @@ public class BusyDialogDisplayer extends TimerTask {
             drawingWindow.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             drawingWindow.repaint();
             drawingWindow = null;
+            busyDialog.unlockFrame();
             busyDialog.dispose();
             busyDialog = null;
         }
@@ -54,9 +55,7 @@ public class BusyDialogDisplayer extends TimerTask {
             hideSwingWorker = new HideSwingWorker(r);
             hideSwingWorker.execute();
             busyDialog.setVisible(true);
-        } catch(Exception e) {
-            System.out.println(e);
-        }finally {
+        } finally {
             if (hideSwingWorker != null)
                 hideSwingWorker.cancel(false);
         }

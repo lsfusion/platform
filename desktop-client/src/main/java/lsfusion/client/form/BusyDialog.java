@@ -101,25 +101,30 @@ class BusyDialog extends JDialog {
 
         setLocationRelativeTo(parent);
 
-        setFocusableWindowState(false);
-        //final Component focusOwner = Main.frame.getMostRecentFocusOwner();
+        setAutoRequestFocus(false);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
-                if (Main.frame != null)
-                    Main.frame.setLocked(true);
+                lockFrame();
             }
 
             @Override
             public void windowClosed(WindowEvent e) {
-                if (Main.frame != null)
-                    Main.frame.setLocked(false);
-                //if(focusOwner != null)
-                //    focusOwner.requestFocusInWindow();
+                //unlockFrame();
                 if(longActionTimer != null)
                     longActionTimer.stop();
             }
         });
+    }
+
+    public void lockFrame() {
+        if (Main.frame != null)
+            Main.frame.setLocked(true);
+    }
+
+    public void unlockFrame() {
+        if (Main.frame != null)
+            Main.frame.setLocked(false);
     }
 
     private void initUIHandlers(final BusyDialog dialog) {
