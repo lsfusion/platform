@@ -176,7 +176,7 @@ public abstract class AbstractContext implements Context {
     private static class MessageStack extends Stack<Object> {
 
         public synchronized String getMessage() {
-            return BaseUtils.toString(this, "\n");
+            return BaseUtils.toString(this, ". ");
         }
 
         public synchronized Object popOrEmpty() {
