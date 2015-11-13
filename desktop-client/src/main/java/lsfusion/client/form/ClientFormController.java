@@ -113,7 +113,12 @@ public class ClientFormController implements AsyncListener {
     private EditReportInvoker editReportInvoker = new EditReportInvoker() {
         @Override
         public void invokeEditReport() {
-            runEditReport();
+            RmiQueue.runAction(new Runnable() {
+                @Override
+                public void run() {
+                    runEditReport();
+                }
+            });
         }
     };
 
@@ -340,12 +345,17 @@ public class ClientFormController implements AsyncListener {
         }
         comboBox.addItemListener(new ItemAdapter() {
             @Override
-            public void itemSelected(ItemEvent e) {
-                try {
-                    setRegularFilter(filterGroup, ((ClientRegularFilterWrapper) e.getItem()).filter);
-                } catch (IOException ioe) {
-                    throw new RuntimeException(getString("form.error.changing.regular.filter"), ioe);
-                }
+            public void itemSelected(final ItemEvent e) {
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            setRegularFilter(filterGroup, ((ClientRegularFilterWrapper) e.getItem()).filter);
+                        } catch (IOException ioe) {
+                            throw new RuntimeException(getString("form.error.changing.regular.filter"), ioe);
+                        }
+                    }
+                });
             }
         });
 
@@ -360,17 +370,23 @@ public class ClientFormController implements AsyncListener {
         }
 
         checkBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent ie) {
-                try {
-                    if (ie.getStateChange() == ItemEvent.SELECTED) {
-                        setRegularFilter(filterGroup, singleFilter);
+
+            public void itemStateChanged(final ItemEvent ie) {
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (ie.getStateChange() == ItemEvent.SELECTED) {
+                                setRegularFilter(filterGroup, singleFilter);
+                            }
+                            if (ie.getStateChange() == ItemEvent.DESELECTED) {
+                                setRegularFilter(filterGroup, null);
+                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException(getString("form.error.changing.regular.filter"), e);
+                        }
                     }
-                    if (ie.getStateChange() == ItemEvent.DESELECTED) {
-                        setRegularFilter(filterGroup, null);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(getString("form.error.changing.regular.filter"), e);
-                }
+                }, true);
             }
         });
 
@@ -1271,9 +1287,19 @@ public class ClientFormController implements AsyncListener {
                 }
 
                 @Override
-                public void onResponse(long requestIndex, ReportGenerationData generationData) throws Exception {
+                public void onResponse(long requestIndex, final ReportGenerationData generationData) throws Exception {
                     if (generationData != null) {
-                        Main.frame.runReport(false, generationData, isDebug ? editReportInvoker : null);
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                Main.frame.runReport(false, generationData, isDebug ? editReportInvoker : null);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(getString("form.error.printing.form"), e);
+                                }
+                            }
+                        });
+
                     }
                 }
             });
@@ -1293,9 +1319,14 @@ public class ClientFormController implements AsyncListener {
                 }
 
                 @Override
-                public void onResponse(long requstIndex, ReportGenerationData generationData) throws Exception {
+                public void onResponse(long requstIndex, final ReportGenerationData generationData) throws Exception {
                     if (generationData != null) {
-                        Main.module.openInExcel(generationData);
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                Main.module.openInExcel(generationData);
+                            }
+                        });
                     }
                 }
             });

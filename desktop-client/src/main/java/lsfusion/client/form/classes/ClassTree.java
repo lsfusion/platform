@@ -1,6 +1,7 @@
 package lsfusion.client.form.classes;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.logics.classes.ClientClass;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.tree.*;
@@ -54,8 +55,13 @@ public abstract class ClassTree extends ClientTree {
         currentNode = new ClientTreeNode(rootClass, true, ClientTreeNode.SUB_TREE,
                 new ClientTreeAction(ClientResourceBundle.getString("form.classes.open"), true){
                     public void actionPerformed(ClientTreeActionEvent e){
-                        changeCurrentClass(getSelectionClass(), getSelectionNode());
-                        currentClassChanged();
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                changeCurrentClass(getSelectionClass(), getSelectionNode());
+                                currentClassChanged();
+                            }
+                        });
                     }
                 });
 

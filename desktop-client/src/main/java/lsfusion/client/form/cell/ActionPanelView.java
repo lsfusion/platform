@@ -3,10 +3,7 @@ package lsfusion.client.form.cell;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.ClientPropertyContextMenuPopup;
-import lsfusion.client.form.EditPropertyHandler;
-import lsfusion.client.form.PropertyEditor;
+import lsfusion.client.form.*;
 import lsfusion.client.form.dispatch.EditPropertyDispatcher;
 import lsfusion.client.form.editor.DialogBasedPropertyEditor;
 import lsfusion.client.logics.ClientGroupObjectValue;
@@ -62,7 +59,12 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (form.commitCurrentEditing()) {
-                    editDispatcher.executePropertyEditAction(property, columnKey, ServerResponse.CHANGE, null, null);
+                    RmiQueue.runAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            editDispatcher.executePropertyEditAction(property, columnKey, ServerResponse.CHANGE, null, null);
+                        }
+                    });
                 }
             }
         });
@@ -96,8 +98,13 @@ public class ActionPanelView extends JButton implements PanelView, EditPropertyH
         if (form.commitCurrentEditing()) {
             menu.show(property, this, point, new ClientPropertyContextMenuPopup.ItemSelectionListener() {
                 @Override
-                public void onMenuItemSelected(String actionSID) {
-                    editDispatcher.executePropertyEditAction(property, columnKey, actionSID, null, null);
+                public void onMenuItemSelected(final String actionSID) {
+                    RmiQueue.runAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            editDispatcher.executePropertyEditAction(property, columnKey, actionSID, null, null);
+                        }
+                    });
                 }
             });
         }

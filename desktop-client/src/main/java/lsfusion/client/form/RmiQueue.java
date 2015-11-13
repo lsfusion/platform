@@ -6,6 +6,7 @@ import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Provider;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.ClientLoggers;
+import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.exceptions.ClientExceptionManager;
 import lsfusion.client.rmi.ConnectionLostManager;
@@ -14,9 +15,12 @@ import lsfusion.interop.exceptions.FatalHandledRemoteException;
 import lsfusion.interop.exceptions.RemoteAbandonedException;
 import org.apache.log4j.Logger;
 
+import javax.swing.*;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,12 +67,19 @@ public class RmiQueue {
         }
     }
 
+    public static void waitOnEdtSyncBlocker(long timeout) throws InterruptedException {
+        synchronized (edtSyncBlocker) {
+            if(timeout > 0)
+                edtSyncBlocker.wait(timeout);
+        }
+    }
+
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned) {
         return runRetryableRequest(request, abandoned, false);
     }
-    
+
     private static AtomicLong reqIdGen = new AtomicLong();
-    
+
     // вызывает request (предположительно remote) несколько раз, проблемы с целостностью предполагается что решается либо индексом, либо результат не так важен
     public static <T> T runRetryableRequest(Callable<T> request, AtomicBoolean abandoned, boolean registeredFailure) {
         int reqCount = 0;
@@ -80,7 +91,7 @@ public class RmiQueue {
                 } catch (Throwable t) {
                     if(abandoned.get()) // suppress'им все, failedRmiRequest'ы flush'ся отдельно
                         throw new RemoteAbandonedException();
-                        
+
                     if (t instanceof RemoteException) {
                         RemoteException remote = (RemoteException) t;
 
@@ -113,7 +124,7 @@ public class RmiQueue {
             if (registeredFailure) {
                 ConnectionLostManager.unregisterFailedRmiRequest(abandoned.get(), reqId);
             }
-        }        
+        }
     }
 
     public static void handleNotRetryableRemoteException(RemoteException remote) {
@@ -143,50 +154,141 @@ public class RmiQueue {
         return blockingRequest(request, false);
     }
 
-    private <T> T blockingRequest(final RmiRequest<T> request, boolean direct) {
-        SwingUtils.assertDispatchThread();
+    static boolean busyRunning;
+    static List<Runnable> busyRunningRunnableList = new ArrayList<>();
+    boolean pendingBusyFlush;
 
-        if (!direct && syncsDepth != 0) {
-            IllegalStateException ex = new IllegalStateException("Nested sync request shouldn't occur.");
-            logger.error("Nested sync request: ", ex);
-            throw ex;
-        }
+    private <T> T blockingRequest(final RmiRequest<T> request, final boolean direct) {
 
-        BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
-        busyDisplayer.start();
+        if(!Main.busyDialog) {
+            SwingUtils.assertDispatchThread();
 
-        syncsDepth++;
-        try {
-            RmiFuture<T> rmiFuture;
-            if (direct) {
-                rmiFuture = new RmiFuture<T>(request);
-                rmiExecutor.execute(rmiFuture);
-            } else {
-                rmiFuture = execRmiRequestInternal(request);
+            if (!direct && syncsDepth != 0) {
+                IllegalStateException ex = new IllegalStateException("Nested sync request shouldn't occur.");
+                logger.error("Nested sync request: ", ex);
+                throw ex;
             }
 
-            while (!rmiFuture.isDone()) {
-                waitOnEdtSyncBlocker();
+            BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
+            busyDisplayer.start();
 
-                ConnectionLostManager.blockIfHasFailed();
-                if (abandoned.get()) {
-                    throw new RuntimeException("RmiQueue is abandoned");
+            syncsDepth++;
+            try {
+                RmiFuture<T> rmiFuture;
+                if (direct) {
+                    rmiFuture = new RmiFuture<T>(request);
+                    rmiExecutor.execute(rmiFuture);
+                } else {
+                    rmiFuture = execRmiRequestInternal(request);
                 }
-                if (!direct) {
-                    flushCompletedRequestsNow(true);
+
+                while (!rmiFuture.isDone()) {
+                    waitOnEdtSyncBlocker();
+
+                    ConnectionLostManager.blockIfHasFailed();
+                    if (abandoned.get()) {
+                        throw new RuntimeException("RmiQueue is abandoned");
+                    }
+                    if (!direct) {
+                        flushCompletedRequestsNow(true);
+                    }
                 }
+
+                return rmiFuture.get();
+            } catch (Throwable t) {
+                if (t instanceof ExecutionException) {
+                    t = t.getCause();
+                }
+
+                throw Throwables.propagate(t);
+            } finally {
+                syncsDepth--;
+                busyDisplayer.stop();
+            }
+        } else {
+            SwingUtils.assertDispatchThread();
+
+            if (!direct && syncsDepth != 0) {
+                IllegalStateException ex = new IllegalStateException("Nested sync request shouldn't occur.");
+                logger.error("Nested sync request: ", ex);
+                throw ex;
             }
 
-            return rmiFuture.get();
-        } catch (Throwable t) {
-            if (t instanceof ExecutionException) {
-                t = t.getCause();
-            }
+            BusyDialogDisplayer busyDisplayer = null;
+            //BusyDisplayer busyDisplayer = new BusyDisplayer(serverMessageProvider);
+            //busyDisplayer.start();
 
-            throw Throwables.propagate(t);
-        } finally {
-            syncsDepth--;
-            busyDisplayer.stop();
+            syncsDepth++;
+            long start = System.currentTimeMillis();
+            try {
+                final RmiFuture<T> rmiFuture;
+                if (direct) {
+                    rmiFuture = new RmiFuture<>(request);
+                    rmiExecutor.execute(rmiFuture);
+                } else {
+                    rmiFuture = execRmiRequestInternal(request);
+                }
+
+                while (!rmiFuture.isDone()) {
+                    long timeout = 1000 - (System.currentTimeMillis() - start);
+
+                    boolean flush = !direct;
+
+                    if (timeout <= 0) { //секунда прошла, а запрос ещё выполняется
+                        if(busyDisplayer == null) {
+                            busyDisplayer = new BusyDialogDisplayer(serverMessageProvider);
+                            busyDisplayer.start();
+                        }
+
+                        busyRunning = true;
+
+                        busyDisplayer.show(new Runnable() {
+                            @Override
+                            public void run() {
+                                while (!rmiFuture.isDone() && !(!direct && isRmiFutureDone())) {
+                                    try {
+                                        waitOnEdtSyncBlocker();
+                                    } catch (InterruptedException e) {
+                                        logger.error(e);
+                                    }
+                                }
+                            }
+                        });//показываем диалог
+
+                        busyRunning = false; //чтобы не выполнять обработку в EDT busyDialog (на всякий случай)
+                        for(Runnable r : busyRunningRunnableList) {
+                            SwingUtilities.invokeLater(r);
+                        }
+                        busyRunningRunnableList = new ArrayList<>();
+                        if(pendingBusyFlush)
+                            flush = true;
+                        pendingBusyFlush = false;
+                    } else
+                        waitOnEdtSyncBlocker(timeout); //blocker выполнения запроса, но не более 1 секунды
+
+
+                    //дождались, выполняем остальное
+                    ConnectionLostManager.blockIfHasFailed();
+                    if (abandoned.get()) {
+                        throw new RuntimeException("RmiQueue is abandoned");
+                    }
+                    if (flush) {
+                        flushCompletedRequestsNow(true);
+                    }
+                }
+
+                return rmiFuture.get();
+            } catch (Throwable t) {
+                if (t instanceof ExecutionException) {
+                    t = t.getCause();
+                }
+
+                throw Throwables.propagate(t);
+            } finally {
+                syncsDepth--;
+                if(busyDisplayer != null)
+                    busyDisplayer.stop();
+            }
         }
     }
 
@@ -203,6 +305,17 @@ public class RmiQueue {
             asyncStarted = true;
             asyncListener.onAsyncStarted();
         }
+    }
+
+    public static void runAction(Runnable r) {
+        runAction(r, false);
+    }
+
+    public static void runAction(Runnable r, boolean invokeLater) {
+        if (invokeLater)
+            SwingUtilities.invokeLater(r);
+        else
+            r.run();
     }
 
     private <T> RmiFuture<T> execRmiRequestInternal(RmiRequest<T> request) {
@@ -226,6 +339,11 @@ public class RmiQueue {
     private void flushCompletedRequests() {
         SwingUtils.assertDispatchThread();
 
+        if(busyRunning) {
+            pendingBusyFlush = true;
+            return;
+        }
+
         if (abandoned.get()) {
             return;
         }
@@ -237,7 +355,8 @@ public class RmiQueue {
     }
 
     private void flushCompletedRequestsNow(boolean inSyncRequest) {
-        while (!rmiFutures.isEmpty() && rmiFutures.element().isDone()) {
+        assert !busyRunning;
+        while (isRmiFutureDone()) {
             try {
                 execNextFutureCallback();
             } catch (Throwable t) {
@@ -253,6 +372,10 @@ public class RmiQueue {
                 }
             }
         }
+    }
+
+    private boolean isRmiFutureDone() {
+        return !rmiFutures.isEmpty() && rmiFutures.element().isDone();
     }
 
     void editingStopped() {

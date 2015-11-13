@@ -84,6 +84,7 @@ public class Main {
     private static ArrayList<IDaemonTask> daemonTasks;
 
     static SingleInstance singleInstance;
+    public static boolean busyDialog;
 
     public static void start(final String[] args, ModuleFactory startModule) {
 
@@ -230,6 +231,9 @@ public class Main {
                         task.setEventBus(eventBus);
                         task.start();
                     }
+
+                    busyDialog = remoteLogics.isBusyDialog();
+
                 } catch (Exception e) {
                     closeSplashScreen();
                     logger.error(getString("client.error.application.initialization"), e);

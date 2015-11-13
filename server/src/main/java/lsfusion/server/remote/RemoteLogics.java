@@ -345,6 +345,10 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return Settings.get().isSingleInstance();
     }
 
+    public boolean isBusyDialog() throws RemoteException {
+        return Settings.get().isBusyDialog();
+    }
+
     @Override
     public byte[] readFile(String canonicalName, String... params) throws RemoteException {
         LCP<PropertyInterface> property = (LCP) businessLogics.findProperty(canonicalName);

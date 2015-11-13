@@ -4,6 +4,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.GroupObjectController;
 import lsfusion.client.form.InternalEditEvent;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.queries.*;
 import lsfusion.client.logics.ClientGrid;
@@ -89,7 +90,12 @@ public class GridController {
             public void addListener() {
                 addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        form.runSingleGroupXlsExport(groupController);
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                form.runSingleGroupXlsExport(groupController);
+                            }
+                        });
                     }
                 });
             }
@@ -102,7 +108,12 @@ public class GridController {
             public void addListener() {
                 addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        form.runSingleGroupReport(groupController);
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                form.runSingleGroupReport(groupController);
+                            }
+                        });
                     }
                 });
             }
@@ -134,19 +145,24 @@ public class GridController {
             public void addListener() {
                 addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        try {
-                            ClientPropertyDraw property = getCurrentProperty();
-                            String caption = property.getCaption();
-                            if (property.baseType instanceof ClientIntegralClass) {
-                                ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(Math.max(table.getSelectedColumn(), 0));
-                                Object sum = form.calculateSum(property.getID(), columnKey.serialize());
-                                showPopupMenu(caption, sum);
-                            } else {
-                                showPopupMenu(caption, null);
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    ClientPropertyDraw property = getCurrentProperty();
+                                    String caption = property.getCaption();
+                                    if (property.baseType instanceof ClientIntegralClass) {
+                                        ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(Math.max(table.getSelectedColumn(), 0));
+                                        Object sum = form.calculateSum(property.getID(), columnKey.serialize());
+                                        showPopupMenu(caption, sum);
+                                    } else {
+                                        showPopupMenu(caption, null);
+                                    }
+                                } catch (Exception ex) {
+                                    throw new RuntimeException(ex);
+                                }
                             }
-                        } catch (Exception ex) {
-                            throw new RuntimeException(ex);
-                        }
+                        });
                     }
                 });
             }
@@ -158,11 +174,16 @@ public class GridController {
             public void addListener() {
                 addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        try {
-                            showPopupMenu(form.countRecords(groupController.getGroupObject().getID()));
-                        } catch (Exception ex) {
-                            throw new RuntimeException(ex);
-                        }
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    showPopupMenu(form.countRecords(groupController.getGroupObject().getID()));
+                                } catch (Exception ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            }
+                        });
                     }
                 });
             }
@@ -176,12 +197,17 @@ public class GridController {
                 addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        int rowIndex = table.getSelectedRow();
-                        int columnIndex = table.getSelectedColumn();
+                        final int rowIndex = table.getSelectedRow();
+                        final int columnIndex = table.getSelectedColumn();
                         if (rowIndex == -1 || columnIndex == -1)
                             JOptionPane.showMessageDialog(form.getLayout(), "Не выбрано ни одной колонки", "Сообщение", 0);
                         else
-                            table.editCellAt(rowIndex, columnIndex, new InternalEditEvent(table, ServerResponse.GROUP_CHANGE));
+                            RmiQueue.runAction(new Runnable() {
+                                @Override
+                                public void run() {
+                                    table.editCellAt(rowIndex, columnIndex, new InternalEditEvent(table, ServerResponse.GROUP_CHANGE));
+                                }
+                            });
                     }
                 });
 

@@ -2,6 +2,7 @@ package lsfusion.client.form.classes;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.logics.ClientObject;
 
 import javax.swing.*;
@@ -17,11 +18,17 @@ public class ClassChooserView extends JPanel {
         // создаем дерево для отображения классов
         ClassTree view = new ClassTree(object.getID(), object.baseClass) {
             protected void currentClassChanged() {
-                try {
-                    form.changeGridClass(object, getSelectionClass());
-                } catch (IOException e) {
-                    throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.current.class"), e);
-                }
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            form.changeGridClass(object, getSelectionClass());
+                        } catch (IOException e) {
+                            throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.current.class"), e);
+                        }
+                    }
+                });
+
             }
         };
 

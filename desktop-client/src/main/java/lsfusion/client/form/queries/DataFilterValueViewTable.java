@@ -1,10 +1,7 @@
 package lsfusion.client.form.queries;
 
 import lsfusion.client.SwingUtils;
-import lsfusion.client.form.GroupObjectLogicsSupplier;
-import lsfusion.client.form.PropertyEditor;
-import lsfusion.client.form.PropertyRenderer;
-import lsfusion.client.form.TableTransferHandler;
+import lsfusion.client.form.*;
 import lsfusion.client.form.cell.PropertyTableCellEditor;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.interop.KeyStrokes;
@@ -176,10 +173,15 @@ class DataFilterValueViewTable extends JTable implements TableTransferHandler.Ta
 
                 editorComponent.addKeyListener(new KeyAdapter() {
                     @Override
-                    public void keyPressed(KeyEvent e) {
-                        if (KeyEvent.VK_ENTER == e.getKeyCode() && stopCellEditing()) {
-                            valueFilterView.applyQuery();
-                        }
+                    public void keyPressed(final KeyEvent e) {
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (KeyEvent.VK_ENTER == e.getKeyCode() && stopCellEditing()) {
+                                    valueFilterView.applyQuery();
+                                }
+                            }
+                        });
                     }
                 });
 

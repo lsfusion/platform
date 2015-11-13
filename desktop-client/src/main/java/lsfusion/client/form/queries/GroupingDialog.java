@@ -15,6 +15,7 @@ import lsfusion.base.OrderedMap;
 import lsfusion.base.Pair;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.form.ItemAdapter;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.grid.GridTable;
 import lsfusion.client.form.grid.GridTableModel;
 import lsfusion.client.logics.ClientGroupObjectValue;
@@ -220,14 +221,24 @@ public abstract class GroupingDialog extends JDialog {
         JButton executeButton = new JButton(getString("form.queries.grouping.result"));
         executeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                updatePressed();
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        updatePressed();
+                    }
+                });
             }
         });
 
         JButton pivotButton = new JButton(getString("form.queries.grouping.pivot"));
         pivotButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                pivotPressed();
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        pivotPressed();
+                    }
+                });
             }
         });
 

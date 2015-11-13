@@ -2,6 +2,7 @@ package lsfusion.client.dock;
 
 import lsfusion.client.MainFrame;
 import lsfusion.client.form.ClientFormController;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.interop.form.RemoteFormInterface;
 import net.sf.jasperreports.engine.JRException;
@@ -48,7 +49,12 @@ public class ClientFormDockable extends ClientDockable {
 
     @Override
     public void onClosing() {
-        clientForm.closePressed();
+        RmiQueue.runAction(new Runnable() {
+            @Override
+            public void run() {
+                clientForm.closePressed();
+            }
+        });
     }
 
     @Override

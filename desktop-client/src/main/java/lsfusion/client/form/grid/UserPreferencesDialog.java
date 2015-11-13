@@ -4,6 +4,7 @@ import lsfusion.base.Pair;
 import lsfusion.client.ArrayListTransferHandler;
 import lsfusion.client.Main;
 import lsfusion.client.form.GroupObjectController;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.queries.TitledPanel;
 import lsfusion.client.logics.ClientGroupObjectValue;
 import lsfusion.client.logics.ClientPropertyDraw;
@@ -221,24 +222,34 @@ public abstract class UserPreferencesDialog extends JDialog {
         final JButton applyButton = new JButton(getString("form.grid.preferences.save.settings"));
         applyButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                try {
-                    applyButtonPressed(false);
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-                firePropertyChange("buttonPressed", null, null);
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            applyButtonPressed(false);
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        firePropertyChange("buttonPressed", null, null);
+                    }
+                });
             }
         });
 
         final JButton resetButton = new JButton(getString("form.grid.preferences.reset.settings"));
         resetButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                try {
-                    resetButtonPressed(false);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                firePropertyChange("buttonPressed", null, null);
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            resetButtonPressed(false);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        firePropertyChange("buttonPressed", null, null);
+                    }
+                });
             }
         });
 
@@ -303,24 +314,34 @@ public abstract class UserPreferencesDialog extends JDialog {
             final JButton applyForAllButton = new JButton(getString("form.grid.preferences.save.settings"));
             applyForAllButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    try {
-                        applyButtonPressed(true);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                    firePropertyChange("buttonPressed", null, null);
+                    RmiQueue.runAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                applyButtonPressed(true);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                            firePropertyChange("buttonPressed", null, null);
+                        }
+                    });
                 }
             });
 
             final JButton resetForAllButton = new JButton(getString("form.grid.preferences.reset.settings"));
             resetForAllButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    try {
-                        resetButtonPressed(true);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                    firePropertyChange("buttonPressed", null, null);
+                    RmiQueue.runAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                resetButtonPressed(true);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                            firePropertyChange("buttonPressed", null, null);
+                        }
+                    });
                 }
             });
 

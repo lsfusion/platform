@@ -178,6 +178,11 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface> extends R
         return result;
     }
 
+    @Override
+    public boolean isBusyDialog() throws RemoteException {
+        return target.isBusyDialog();
+    }
+
     public String  addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
         logRemoteMethodStartCall("addUser");
         String result = target.addUser(username, email, password, firstName, lastName, localeLanguage);

@@ -1,6 +1,7 @@
 package lsfusion.client.form.showtype;
 
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.queries.ToolbarGridButton;
 import lsfusion.client.logics.ClientShowType;
 import lsfusion.interop.ClassViewType;
@@ -69,7 +70,12 @@ public class ShowTypeView extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (classView != newClassView) {
-                controller.changeClassViewButtonClicked(newClassView);
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        controller.changeClassViewButtonClicked(newClassView);
+                    }
+                });
             }
         }
     }

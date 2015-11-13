@@ -9,6 +9,7 @@ import lsfusion.client.SwingUtils;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.ClientPropertyTable;
 import lsfusion.client.form.GroupObjectController;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.sort.MultiLineHeaderRenderer;
 import lsfusion.client.form.sort.TableSortableHeaderManager;
@@ -156,13 +157,24 @@ public class GridTable extends ClientPropertyTable {
         }
 
         sortableHeaderManager = new TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>>(this) {
-            protected void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType) {
-                GridTable.this.orderChanged(columnKey, modiType);
+            protected void orderChanged(final Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, final Order modiType) {
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        GridTable.this.orderChanged(columnKey, modiType);
+                    }
+                });
             }
 
             @Override
-            protected void ordersCleared(ClientGroupObject groupObject) {
-                GridTable.this.ordersCleared(groupObject);
+            protected void ordersCleared(final ClientGroupObject groupObject) {
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        GridTable.this.ordersCleared(groupObject);
+                    }
+                });
+
             }
 
             @Override
@@ -257,7 +269,12 @@ public class GridTable extends ClientPropertyTable {
             addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() > 1) {
-                        form.okPressed();
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                form.okPressed();
+                            }
+                        });
                     }
                 }
             });
@@ -1376,19 +1393,29 @@ public class GridTable extends ClientPropertyTable {
                 public void run() {
                     (forAllUsers ? generalGridPreferences : userGridPreferences).resetPreferences();
 
-                    resetCurrentPreferences(false);
+                    RmiQueue.runAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            resetCurrentPreferences(false);
 
-                    onSuccess.run();
-                    
-                    JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.reset.settings.successfully.complete"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
+                            onSuccess.run();
+
+                            JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.reset.settings.successfully.complete"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    });
                 }
             };
-            
+
             Runnable failureCallback = new Runnable() {
                 @Override
                 public void run() {
-                    resetCurrentPreferences(false);
-                    onFailure.run();
+                    RmiQueue.runAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            resetCurrentPreferences(false);
+                            onFailure.run();
+                        }
+                    });
                 }
             };
             
@@ -1403,24 +1430,35 @@ public class GridTable extends ClientPropertyTable {
             Runnable successCallback = new Runnable() {
                 @Override
                 public void run() {
-                    if (forAllUsers) {
-                        generalGridPreferences = new GridUserPreferences(currentGridPreferences);
-                        resetCurrentPreferences(false);
-                    } else {
-                        userGridPreferences = new GridUserPreferences(currentGridPreferences);
-                    }
+                    RmiQueue.runAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (forAllUsers) {
+                                generalGridPreferences = new GridUserPreferences(currentGridPreferences);
+                                resetCurrentPreferences(false);
+                            } else {
+                                userGridPreferences = new GridUserPreferences(currentGridPreferences);
+                            }
 
-                    onSuccess.run();
-                    
-                    JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.save.settings.successfully.complete"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
+                            onSuccess.run();
+
+                            JOptionPane.showMessageDialog(Main.frame, getString("form.grid.preferences.save.settings.successfully.complete"), getString("form.grid.preferences.save"), JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    });
+
                 }
             };
             
             Runnable failureCallback = new Runnable() {
                 @Override
                 public void run() {
-                    resetCurrentPreferences(false);
-                    onFailure.run();
+                    RmiQueue.runAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            resetCurrentPreferences(false);
+                            onFailure.run();
+                        }
+                    });
                 }
             };
             
@@ -1640,23 +1678,28 @@ public class GridTable extends ClientPropertyTable {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            try {
-                if (groupObject.pageSize != 0) {
-                    scrollToOldObject = false;
-                    form.changeGroupObject(groupObject, direction);
-                } else if (!rowKeys.isEmpty()) {
-                    switch (direction) {
-                        case HOME:
-                            selectRow(0);
-                            break;
-                        case END:
-                            selectRow(rowKeys.size() - 1);
-                            break;
+            RmiQueue.runAction(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (groupObject.pageSize != 0) {
+                            scrollToOldObject = false;
+                            form.changeGroupObject(groupObject, direction);
+                        } else if (!rowKeys.isEmpty()) {
+                            switch (direction) {
+                                case HOME:
+                                    selectRow(0);
+                                    break;
+                                case END:
+                                    selectRow(rowKeys.size() - 1);
+                                    break;
+                            }
+                        }
+                    } catch (IOException ioe) {
+                        throw new RuntimeException(getString("errors.error.moving.to.the.node"), ioe);
                     }
                 }
-            } catch (IOException ioe) {
-                throw new RuntimeException(getString("errors.error.moving.to.the.node"), ioe);
-            }
+            });
         }
     }
 

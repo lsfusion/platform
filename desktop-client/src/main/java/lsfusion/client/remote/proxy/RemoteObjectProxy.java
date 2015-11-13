@@ -3,6 +3,8 @@ package lsfusion.client.remote.proxy;
 import com.google.common.base.Throwables;
 import lsfusion.base.EProvider;
 import lsfusion.client.ClientLoggers;
+import lsfusion.client.Main;
+import lsfusion.client.form.BusyDialogDisplayer;
 import lsfusion.client.form.BusyDisplayer;
 import lsfusion.interop.remote.MethodInvocation;
 import lsfusion.interop.remote.PendingRemoteInterface;
@@ -43,24 +45,46 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
             }
         }
 
-        BusyDisplayer busyDisplayer = new BusyDisplayer(new EProvider<String>() {
-            @Override
-            public String getExceptionally() throws RemoteException {
-                return target.getRemoteActionMessage();
-            }
-        });
-        busyDisplayer.start();
+        if (!Main.busyDialog) {
+            final BusyDisplayer busyDisplayer = new BusyDisplayer(new EProvider<String>() {
+                @Override
+                public String getExceptionally() throws RemoteException {
+                    return target.getRemoteActionMessage();
+                }
+            });
+            busyDisplayer.start();
 
-        Object[] result;
-        try {
-            result = target.createAndExecute(creator, invocations);
-            logRemoteMethodEndCall("createAndExecute", result);
-            return result;
-        } catch (Exception e) {
-            Throwables.propagateIfPossible(e, RemoteException.class);
-            throw Throwables.propagate(e);
-        } finally {
-            busyDisplayer.stop();
+            Object[] result;
+            try {
+                result = target.createAndExecute(creator, invocations);
+                logRemoteMethodEndCall("createAndExecute", result);
+                return result;
+            } catch (Exception e) {
+                Throwables.propagateIfPossible(e, RemoteException.class);
+                throw Throwables.propagate(e);
+            } finally {
+                busyDisplayer.stop();
+            }
+        } else {
+            final BusyDialogDisplayer busyDisplayer = new BusyDialogDisplayer(new EProvider<String>() {
+                @Override
+                public String getExceptionally() throws RemoteException {
+                    return target.getRemoteActionMessage();
+                }
+            });
+            busyDisplayer.start();
+
+            Object[] result;
+            try {
+                result = target.createAndExecute(creator, invocations);
+                logRemoteMethodEndCall("createAndExecute", result);
+                return result;
+            } catch (Exception e) {
+                Throwables.propagateIfPossible(e, RemoteException.class);
+                throw Throwables.propagate(e);
+            } finally {
+                busyDisplayer.stop();
+            }
         }
     }
 

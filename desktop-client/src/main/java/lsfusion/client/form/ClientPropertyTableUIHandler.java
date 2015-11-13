@@ -29,7 +29,7 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
     }
 
     @SuppressWarnings("deprecation")
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(final MouseEvent e) {
         if (shouldIgnore(e)) {
             return;
         }
@@ -79,17 +79,22 @@ final class ClientPropertyTableUIHandler extends MouseAdapter {
         // todo: теперь rowHasFocus не обязательно, работает и без него,
         // todo: поэтому есть возможность корректно реализовать логику editOnSingleClick, если понадобится
         if (isLeftMouseButton && !(withCtrl || withShift) && (rowHasFocus || e.getClickCount() > 1)) {
-            ClientPropertyDraw property = table.getProperty(pressedRow, pressedCol);
-            if (table.editCellAt(pressedRow, pressedCol, e)) {
-                setDispatchComponent(e);
-                repostEvent(e);
-                table.prepareTextEditor();
-            } else {
-                if (property.baseType instanceof ClientImageClass) {
-                    ImagePropertyRenderer.expandImage((byte[]) table.getValueAt(pressedRow, pressedCol));
-                    e.consume();
+            final ClientPropertyDraw property = table.getProperty(pressedRow, pressedCol);
+            RmiQueue.runAction(new Runnable() {
+                @Override
+                public void run() {
+                    if (table.editCellAt(pressedRow, pressedCol, e)) {
+                        setDispatchComponent(e);
+                        repostEvent(e);
+                        table.prepareTextEditor();
+                    } else {
+                        if (property.baseType instanceof ClientImageClass) {
+                            ImagePropertyRenderer.expandImage((byte[]) table.getValueAt(pressedRow, pressedCol));
+                            e.consume();
+                        }
+                    }
                 }
-            }
+            });
         }
     }
 

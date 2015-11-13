@@ -55,13 +55,17 @@ public class GroupObjectController extends AbstractGroupObjectController {
             if (groupObject.filter.visible) {
                 filter = new FilterController(this, groupObject.filter) {
                     protected void remoteApplyQuery() {
-                        try {
-                            form.changeFilter(groupObject, getConditions());
-                        } catch (IOException e) {
-                            throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
-                        }
-
-                        grid.table.requestFocusInWindow();
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    form.changeFilter(groupObject, getConditions());
+                                    grid.table.requestFocusInWindow();
+                                } catch (IOException e) {
+                                    throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
+                                }
+                            }
+                        });
                     }
                 };
 
@@ -377,11 +381,17 @@ public class GroupObjectController extends AbstractGroupObjectController {
         comp.getActionMap().put("switchClassView", new AbstractAction() {
 
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    form.switchClassView(groupObject);
-                } catch (IOException e) {
-                    throw new RuntimeException(getString("errors.error.changing.type"), e);
-                }
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            form.switchClassView(groupObject);
+                        } catch (IOException e) {
+                            throw new RuntimeException(getString("errors.error.changing.type"), e);
+                        }
+                    }
+                });
+
             }
         });
 

@@ -116,6 +116,8 @@ public class Settings {
 
     private boolean singleInstance;
 
+    private boolean busyDialog;
+
     public int getLimitWhereJoinsDegree() {
         return limitWhereJoinsDegree;
     }
@@ -532,6 +534,14 @@ public class Settings {
 
     public void setSingleInstance(boolean singleInstance) {
         this.singleInstance = singleInstance;
+    }
+
+    public boolean isBusyDialog() {
+        return busyDialog;
+    }
+
+    public void setBusyDialog(boolean busyDialog) {
+        this.busyDialog = busyDialog;
     }
 
     public void setAverageIntervalStat(int averageIntervalStat) {

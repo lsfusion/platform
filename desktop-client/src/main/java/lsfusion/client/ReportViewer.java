@@ -3,6 +3,7 @@ package lsfusion.client;
 import com.google.common.base.Throwables;
 import lsfusion.base.SystemUtils;
 import lsfusion.client.exceptions.ClientExceptionManager;
+import lsfusion.client.form.RmiQueue;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.view.JRViewer;
 
@@ -51,11 +52,16 @@ public class ReportViewer extends JRViewer {
             editReportButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    try {
-                        editInvoker.invokeEditReport();
-                    } catch (RemoteException e1) {
-                        Throwables.propagate(e1);
-                    }
+                    RmiQueue.runAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                editInvoker.invokeEditReport();
+                            } catch (RemoteException e1) {
+                                Throwables.propagate(e1);
+                            }
+                        }
+                    });
                 }
             });
             tlbToolBar.add(editReportButton);

@@ -3,6 +3,7 @@ package lsfusion.client.form.queries;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.GroupObjectLogicsSupplier;
 import lsfusion.client.form.ItemAdapter;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.logics.*;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 import lsfusion.interop.Compare;
@@ -142,7 +143,12 @@ public class QueryConditionView extends JPanel implements FilterValueListener {
         delButton = new ToolbarGridButton(deleteIcon, ClientResourceBundle.getString("form.queries.filter.remove.condition"), new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
         delButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                uiHandlers.conditionRemoved(filter);
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        uiHandlers.conditionRemoved(filter);
+                    }
+                });
             }
         });
 

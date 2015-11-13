@@ -2,6 +2,7 @@ package lsfusion.client.form.grid;
 
 import lsfusion.client.Main;
 import lsfusion.client.form.GroupObjectController;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.queries.FilterView;
 import lsfusion.client.form.queries.ToolbarGridButton;
 
@@ -29,8 +30,13 @@ public class UserPreferencesButton extends ToolbarGridButton {
                     UserPreferencesDialog dialog = new UserPreferencesDialog(Main.frame, table, groupController, groupController.getForm().hasCanonicalName()) {
                         @Override
                         public void preferencesChanged() {
-                            setIcon(table.generalPreferencesSaved() || table.userPreferencesSaved() ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON);
-                            updateTooltip();
+                            RmiQueue.runAction(new Runnable() {
+                                @Override
+                                public void run() {
+                                    setIcon(table.generalPreferencesSaved() || table.userPreferencesSaved() ? PREFERENCES_SAVED_ICON : PREFERENCES_UNSAVED_ICON);
+                                    updateTooltip();
+                                }
+                            });
                         }
                     };
                     dialog.setVisible(true);

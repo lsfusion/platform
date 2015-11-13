@@ -2,6 +2,7 @@ package lsfusion.client.form.queries;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.GroupObjectLogicsSupplier;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.logics.ClientPropertyDraw;
 import lsfusion.client.logics.filter.ClientPropertyFilter;
 import lsfusion.interop.KeyStrokes;
@@ -50,7 +51,12 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
         applyButton.setVisible(false);
         applyButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.applyPressed();
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        controller.applyPressed();
+                    }
+                });
             }
         });
 
@@ -83,7 +89,12 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "applyQuery");
         getActionMap().put("applyQuery", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                controller.applyPressed();
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        controller.applyPressed();
+                    }
+                });
             }
         });
 
@@ -115,7 +126,12 @@ public abstract class QueryView extends JPanel implements QueryConditionView.UIH
             }
 
             public void actionPerformed(ActionEvent ae) {
-                controller.allRemovedPressed();
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        controller.allRemovedPressed();
+                    }
+                });
             }
         });
     }

@@ -52,6 +52,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
 
     boolean isSingleInstance() throws RemoteException;
 
+    boolean isBusyDialog() throws RemoteException;
+
     int generateID() throws RemoteException;
 
     String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException;

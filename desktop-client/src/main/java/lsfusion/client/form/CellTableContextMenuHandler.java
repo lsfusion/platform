@@ -52,8 +52,13 @@ public class CellTableContextMenuHandler {
         ClientPropertyDraw property = cellTable.getProperty(rowIndex, columnIndex);
         menu.show(property, jTable, point, new ClientPropertyContextMenuPopup.ItemSelectionListener() {
             @Override
-            public void onMenuItemSelected(String actionSID) {
-                jTable.editCellAt(rowIndex, columnIndex, new InternalEditEvent(jTable, actionSID));
+            public void onMenuItemSelected(final String actionSID) {
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        jTable.editCellAt(rowIndex, columnIndex, new InternalEditEvent(jTable, actionSID));
+                    }
+                });
             }
         });
     }

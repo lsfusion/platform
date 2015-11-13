@@ -59,7 +59,12 @@ public class ClientModalForm extends JDialog {
             @Override
             public void windowClosing(WindowEvent e) {
                 if (form != null) {
-                    form.closePressed();
+                    RmiQueue.runAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            form.closePressed();
+                        }
+                    });
                 }
             }
         });

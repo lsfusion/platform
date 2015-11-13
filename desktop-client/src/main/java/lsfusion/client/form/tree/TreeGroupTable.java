@@ -6,10 +6,7 @@ import com.sun.java.swing.plaf.windows.WindowsTreeUI;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.SwingUtils;
-import lsfusion.client.form.CellTableContextMenuHandler;
-import lsfusion.client.form.ClientFormController;
-import lsfusion.client.form.EditBindingMap;
-import lsfusion.client.form.EditPropertyHandler;
+import lsfusion.client.form.*;
 import lsfusion.client.form.cell.CellTableInterface;
 import lsfusion.client.form.cell.ClientAbstractCellEditor;
 import lsfusion.client.form.cell.ClientAbstractCellRenderer;
@@ -114,13 +111,23 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
 
         sortableHeaderManager = new TableSortableHeaderManager<ClientPropertyDraw>(this, true) {
-            protected void orderChanged(ClientPropertyDraw columnKey, Order modiType) {
-                TreeGroupTable.this.orderChanged(columnKey, modiType);
+            protected void orderChanged(final ClientPropertyDraw columnKey, final Order modiType) {
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        TreeGroupTable.this.orderChanged(columnKey, modiType);
+                    }
+                });
             }
 
             @Override
-            protected void ordersCleared(ClientGroupObject groupObject) {
-                TreeGroupTable.this.ordersCleared(groupObject);
+            protected void ordersCleared(final ClientGroupObject groupObject) {
+                RmiQueue.runAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        TreeGroupTable.this.ordersCleared(groupObject);
+                    }
+                });
             }
 
             @Override
@@ -165,14 +172,19 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
         addTreeWillExpandListener(new TreeWillExpandListener() {
             public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
-                TreeGroupNode node = (TreeGroupNode) event.getPath().getLastPathComponent();
+                final TreeGroupNode node = (TreeGroupNode) event.getPath().getLastPathComponent();
                 if (!synchronize && !manualExpand) {
                     if (node.group != null) {
-                        try {
-                            form.expandGroupObject(node.group, node.key);
-                        } catch (IOException e) {
-                            throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"), e);
-                        }
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    form.expandGroupObject(node.group, node.key);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"), e);
+                                }
+                            }
+                        });
                     }
                 }
                 if (node.hasOnlyExpandningNodeAsChild()) {
@@ -229,7 +241,12 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() > 1) {
-                        form.okPressed();
+                        RmiQueue.runAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                form.okPressed();
+                            }
+                        });
                     }
                 }
             });
@@ -240,20 +257,25 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() == 2 && !editPerformed) {
-                        TreePath path = getPathForRow(rowAtPoint(e.getPoint()));
+                        final TreePath path = getPathForRow(rowAtPoint(e.getPoint()));
                         if (path != null && !((TreeGroupTreeUI) getHierarhicalColumnRenderer().getUI()).isLocationInExpandControl(path, e.getX(), e.getY())) {
-                            TreeGroupNode node = (TreeGroupNode) path.getLastPathComponent();
+                            final TreeGroupNode node = (TreeGroupNode) path.getLastPathComponent();
 
                             if (node.isExpandable() && node.group != null) {
-                                try {
-                                    if (!isExpanded(path)) {
-                                        form.expandGroupObject(node.group, node.key);
-                                    } else {
-                                        form.collapseGroupObject(node.group, node.key);
+                                RmiQueue.runAction(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            if (!isExpanded(path)) {
+                                                form.expandGroupObject(node.group, node.key);
+                                            } else {
+                                                form.collapseGroupObject(node.group, node.key);
+                                            }
+                                        } catch (IOException ex) {
+                                            throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"), ex);
+                                        }
                                     }
-                                } catch (IOException ex) {
-                                    throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"), ex);
-                                }
+                                });
                             }
                         }
                     }

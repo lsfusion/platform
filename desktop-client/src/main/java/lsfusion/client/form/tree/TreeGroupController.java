@@ -5,6 +5,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.AbstractGroupObjectController;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.client.form.LogicsSupplier;
+import lsfusion.client.form.RmiQueue;
 import lsfusion.client.form.layout.ClientFormLayout;
 import lsfusion.client.form.panel.PanelController;
 import lsfusion.client.form.queries.FilterController;
@@ -40,13 +41,17 @@ public class TreeGroupController extends AbstractGroupObjectController {
         if (!treeGroup.plainTreeMode) {
             filter = new FilterController(this, treeGroup.filter) {
                 protected void remoteApplyQuery() {
-                    try {
-                        form.changeFilter(treeGroup, getConditions());
-                    } catch (IOException e) {
-                        throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
-                    }
-
-                    tree.requestFocusInWindow();
+                    RmiQueue.runAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                form.changeFilter(treeGroup, getConditions());
+                                tree.requestFocusInWindow();
+                            } catch (IOException e) {
+                                throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
+                            }
+                        }
+                    });
                 }
             };
 
