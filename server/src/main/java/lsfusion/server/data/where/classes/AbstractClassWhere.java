@@ -549,7 +549,10 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     }
 
     public OrObjectClassSet getOrSet(K key) {
-        return (OrObjectClassSet) getCommonClass(key).getOr();
+        AndClassSet commonClass = getCommonClass(key);
+        if(commonClass == null)
+            return null;
+        return (OrObjectClassSet) commonClass.getOr();
     }
 
     private static <K> ImMap<K,AndClassSet> initUpClassSets(ImMap<K, ValueClass> map) {
