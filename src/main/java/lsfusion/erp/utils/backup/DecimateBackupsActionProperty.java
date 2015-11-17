@@ -5,7 +5,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.classes.ValueClass;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.query.QueryBuilder;
@@ -39,9 +38,9 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
             KeyExpr backupExpr = new KeyExpr("Backup");
             ImRevMap<Object, KeyExpr> backupKeys = MapFact.<Object, KeyExpr>singletonRev("Backup", backupExpr);
 
-            QueryBuilder<Object, Object> backupQuery = new QueryBuilder<Object, Object>(backupKeys);
+            QueryBuilder<Object, Object> backupQuery = new QueryBuilder<>(backupKeys);
             backupQuery.addProperty("dateBackup", findProperty("dateBackup").getExpr(session.getModifier(), backupExpr));
-            backupQuery.addProperty("fileDeletedBackup", findProperty("fileDeletedBackup").getExpr(session.getModifier(), backupExpr));
+            backupQuery.and(findProperty("fileDeletedBackup").getExpr(session.getModifier(), backupExpr).getWhere().not());
 
             backupQuery.and(findProperty("dateBackup").getExpr(session.getModifier(), backupExpr).getWhere());
 
@@ -51,12 +50,13 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
                 DataObject backupObject = backupResult.getKey(i).valueIt().iterator().next();
 
                 Date dateBackup = (Date) backupResult.getValue(i).get("dateBackup").getValue();
-                boolean deletedBackup = backupResult.getValue(i).get("fileDeletedBackup").getValue() != null;
                 long delta = currentDate - dateBackup.getTime();
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(dateBackup);
-                //Если старше недели - оставляем только за понедельник, если старше месяца, только за первое число.
-                if (!deletedBackup && ((delta > month && calendar.get(Calendar.DAY_OF_MONTH) != 1) || (delta < month && delta > week && calendar.get(Calendar.DAY_OF_WEEK) != 2)))
+                boolean firstDay = calendar.get(Calendar.DAY_OF_MONTH) == 1;
+                boolean monday = calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY;
+                //Если старше недели - оставляем только за понедельник и за первое число, если старше месяца, только за первое число.
+                if ((delta > month && !firstDay) || (delta < month && delta > week && !firstDay && !monday))
                     findAction("deleteBackup").execute(session, backupObject);
 
             }
