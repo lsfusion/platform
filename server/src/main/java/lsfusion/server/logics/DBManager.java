@@ -434,11 +434,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     sql.renameIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
                 }
                 if (drop) {
-                    sql.dropIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
+                    sql.dropIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder, startAnyWay);
                 }
             }
         }
     }
+
+    private static boolean startAnyWay = false;
     
     private void checkUniqueDBName(NewDBStructure struct) {
         Map<Pair<String, String>, DBStoredProperty> sids = new HashMap<>();

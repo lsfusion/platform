@@ -645,12 +645,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         executeDDL("CREATE INDEX " + getIndexName(table, syntax, fields) + " ON " + table.getName(syntax) + " (" + columns + ")");
     }
 
-    public void dropIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) throws SQLException {
-        dropIndex(table, getOrderFields(keyFields, fields, order));
+    public void dropIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order, boolean ifExists) throws SQLException {
+        dropIndex(table, getOrderFields(keyFields, fields, order), ifExists);
     }
-    
-    public void dropIndex(Table table, ImOrderMap<String, Boolean> fields) throws SQLException {
-        executeDDL("DROP INDEX " + getIndexName(table, fields, syntax) + (syntax.isIndexNameLocal() ? " ON " + table.getName(syntax) : ""));
+
+    public void dropIndex(Table table, ImOrderMap<String, Boolean> fields, boolean ifExists) throws SQLException {
+        executeDDL("DROP INDEX " + (ifExists ? "IF EXISTS " : "" ) + getIndexName(table, fields, syntax) + (syntax.isIndexNameLocal() ? " ON " + table.getName(syntax) : ""));
     }
 
     public void renameIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order) throws SQLException {
