@@ -762,25 +762,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private void logClassChange(SingleKeyPropertyUsage changeTable, ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses, ImSet<ConcreteObjectClass> changedOldClasses, ImSet<ConcreteObjectClass> changedNewClasses, ClassChange change) throws SQLException, SQLHandledException {
-        SFunctionSet<ConcreteObjectClass> fset = new SFunctionSet<ConcreteObjectClass>() {
-            public boolean contains(ConcreteObjectClass element) {
-                return element.toString().contains("Sale_UserInvoiceDetail");
-            }
-        };
-        if(Settings.get().isSaleInvoiceDetailLog() && (!changedNewClasses.filterFn(fset).isEmpty() || !changedOldClasses.filterFn(fset).isEmpty())) {
-            ServerLoggers.exInfoLogger.info("CLASSCHANGE : " + changedNewClasses + " " + changedOldClasses + " " + addClasses + " " + removeClasses + " " + changeTable + " " + change);
-
-            if(changeTable != null && changeTable.getCount() < 40) {
-                changeTable.table.outClasses(sql, baseClass, new Processor<String>() {
-                    public void proceed(String value) {
-                        ServerLoggers.exInfoLogger.info(value);
-                    }
-                });
-            }
-        }
-    }
-
     public void dropChanges(DataProperty property) throws SQLException, SQLHandledException {
         if(!data.containsKey(property)) // оптимизация, см. использование
             return;
@@ -867,19 +848,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     return;
             }
 
-            String exLogChangeProperty = Settings.get().getExLogChangeProperty();
-            if(!exLogChangeProperty.isEmpty() && property.toString().contains(exLogChangeProperty)) {
-                logSessionEvents(property + " " + change.toString() + " " + changeTable, "CHANGE PROPERTY : ");
-                if (changeTable != null && ServerLoggers.isUserExLog() && changeTable.getCount() < 20) {
-                    changeTable.table.outClasses(sql, baseClass, new Processor<String>() {
-                        public void proceed(String value) {
-                            ServerLoggers.exInfoLogger.info(value);
-                        }
-                    });
-                }
-
-            }
-    
             updateChanges = SetFact.singleton(property);
     
             updateSessionEvents(updateChanges);
@@ -998,19 +966,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return inSessionEvent;
     }
 
-    public void logSessionEvents(Object object, String prefix) {
-        if(ServerLoggers.isUserExLog()) {
-            if(object instanceof ActionProperty)
-                object = object.toString() + " DEP : " + ((ActionProperty) object).getUsedProps() + " " + " CHANGE : " + ((ActionProperty) object).getChangeProps();
-            ServerLoggers.exInfoLogger.info(prefix + object);
-        }
-    }
 
     public <T extends PropertyInterface> void executeSessionEvents(FormInstance form) throws SQLException, SQLHandledException {
 //        ServerLoggers.assertLog(!isInTransaction(), "LOCAL EVENTS IN TRANSACTION"); // так как LogPropertyAction создает форму
         if(sessionEventChangedOld.getProperties().size() > 0) { // оптимизационная проверка
-
-            logSessionEvents(sessionEventChangedOld, "SESSION EVENT CHANGED OLD ");
 
             ExecutionEnvironment env = (form != null ? form : this);
 
@@ -1044,11 +1003,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(!sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
             return;
 
-        logSessionEvents(action, "START LOCAL EVENT : ");
-
         action.execute(env);
-
-        logSessionEvents(action, "END LOCAL EVENT : ");
     }
 
     @LogTime
@@ -1948,9 +1903,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     if (remove.contains(value)) {
                         Join<String> newJoin = news.join(query.getMapExprs().get(table.mapFields.getKey(i)));
                         removeWhere = removeWhere.or(newJoin.getWhere().and(isValueClass(newJoin.getExpr("value"), (CustomClass) value, usedNewClasses).not()));
-                        if (Settings.get().isSaleInvoiceDetailLog() && table.toString().contains("saleLedger")) {
-                            ServerLoggers.exinfoLog("PACKREMOVECLASSES : " + removeWhere + " " + usedNewClasses + " " + value + " " + news);
-                        }
                     }
                 } finally {
                     sql.statusMessage = null;
@@ -1961,37 +1913,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
     }
 
-    private <P extends PropertyInterface> void logClassDataChanges(@ParamMessage CalcProperty<P> property, SinglePropertyTableUsage<P> changeTable) throws SQLException, SQLHandledException {
-        if(property instanceof ClassDataProperty && Settings.get().isEnableClassDataChangesLog()) {
-            String propertyName = property.toString();
-            ServerLoggers.exInfoLogger.info("CLASSDATACHANGES : " + propertyName + " " + changeTable + " " + (news != null ? news : "null"));
-            if(Settings.get().isSaleInvoiceDetailLog() && propertyName.contains("Sale.UserInvoiceDetail") && changeTable.getCount() < 40) {
-                BaseClass baseClass = ((ClassDataProperty) property).getObjectSet().getBaseClass();
-                Processor<String> logger = new Processor<String>() {
-                    public void proceed(String value) {
-                        ServerLoggers.exInfoLogger.info(value);
-                    }
-                };
-                changeTable.table.outClasses(sql, baseClass, logger);
-                if(news != null && news.getCount() < 40) {
-                    logger.proceed(" --- ");
-                    news.table.outClasses(sql, baseClass, logger);
-                }
-            }
-        }
-    }
-
-    private void logNoClassDataChanges(CalcProperty property) {
-        if (property instanceof ClassDataProperty && Settings.get().isEnableClassDataChangesLog()) {
-            ClassDataProperty classData = (ClassDataProperty) property;
-            for (ConcreteCustomClass neededClass : classData.set.getSetConcreteChildren())
-                if (usedNewClasses.contains(neededClass) || usedOldClasses.contains(neededClass)
-                        || add.contains(neededClass) || remove.contains(neededClass) || singleAdd.containsKey(neededClass) || singleRemove.containsKey(neededClass)) {
-                    ServerLoggers.assertLog(false, "NOCLASSDATACHANGES : " + classData + " " + neededClass + " " + usedNewClasses.contains(neededClass) + " " + usedOldClasses.contains(neededClass) + add.contains(neededClass) + remove.contains(neededClass) + singleAdd.containsKey(neededClass) + singleRemove.containsKey(neededClass) + " " + getModifier().checkPropertyChanges() + " " + (news != null ? news.getCount() : "-1"));
-                }
-        }
-    }
-
     @StackMessage("message.session.apply.write")
     private <P extends PropertyInterface> void readStored(@ParamMessage CalcProperty<P> property, BusinessLogics<?> BL) throws SQLException, SQLHandledException {
         assert isInTransaction();
@@ -1999,12 +1920,9 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if(property.hasChanges(getModifier())) {
             SinglePropertyTableUsage<P> changeTable = property.readChangeTable(sql, getModifier(), baseClass, env);
 
-            logClassDataChanges(property, changeTable);
-
             apply.add(property, splitApplySingleStored(property,
                     changeTable, BL));
-        } else
-            logNoClassDataChanges(property);
+        }
     }
 
     protected SQLSession getSQL() {
@@ -2123,8 +2041,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 changeTable = change.materialize(sql, baseClass, env);
                 change = changeTable.getChange();
             }
-
-            logClassChange(changeTable == null ? upChangeTable : changeTable, addClasses, removeClasses, oldClasses, newClasses, change);
 
             ModifyResult tableChanged = change.modifyRows(news, sql, baseClass, Modify.MODIFY, env, getOwner(), SessionTable.matGlobalQuery);
             if(!tableChanged.dataChanged()) {
@@ -2444,24 +2360,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                             }
                         });
         changeTable.writeRows(sql, table.getReadSaveQuery(properties, modifier), baseClass, env, SessionTable.nonead);
-
-        if(Settings.get().isEnableClassDataChangesLog()) {
-            ImSet<CalcProperty> classProps = properties.filterFn(new SFunctionSet<CalcProperty>() {
-                public boolean contains(CalcProperty element) {
-                    return element instanceof ClassDataProperty;
-                }
-            });
-            if(!classProps.isEmpty()) {
-                ServerLoggers.exInfoLogger.info("READSAVECLASSDATACHANGES : " + classProps + " " + changeTable);
-                if(Settings.get().isSaleInvoiceDetailLog() && classProps.toString().contains("Sale.UserInvoiceDetail") && changeTable.getCount() < 40)
-                    changeTable.table.outClasses(sql, ((ClassDataProperty) classProps.iterator().next()).getObjectSet().getBaseClass(), new Processor<String>() {
-                        public void proceed(String value) {
-                            ServerLoggers.exInfoLogger.info(value);
-                        }
-                    });
-            }
-        }
-
         return changeTable;
     }
 

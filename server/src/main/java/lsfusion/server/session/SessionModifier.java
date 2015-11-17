@@ -269,16 +269,6 @@ public abstract class SessionModifier implements Modifier {
         try {
             readProperty = property;
             final SinglePropertyTableUsage changeTable = property.readChangeTable(getSQL(), this, getBaseClass(), getQueryEnv());
-            if(ServerLoggers.isUserExLog()) {
-                ServerLoggers.exInfoLogger.info("HINT INCREMENT : " + property.toString() + " " + property.getIncrementChange(this) + " " + property.getRecDepends());
-                if (changeTable.getCount() < 20) {
-                    changeTable.table.outClasses(getSQL(), getBaseClass(), new Processor<String>() {
-                        public void proceed(String value) {
-                            ServerLoggers.exInfoLogger.info(value);
-                        }
-                    });
-                }
-            }
             increment.add(property, changeTable);
         } catch(Exception e) {
             throw ExceptionUtils.propagate(e, SQLException.class, SQLHandledException.class);
@@ -320,10 +310,6 @@ public abstract class SessionModifier implements Modifier {
             PrereadRows<P> readRows = new PrereadRows<P>(readedParamValues, readValues);
             if(prereadRows != null)
                 readRows = prereadRows.addExcl(readRows);
-
-            if(ServerLoggers.isUserExLog()) {
-                ServerLoggers.exInfoLogger.info("HINT PREREAD : " + property + " " + readRows + " " + property.getRecDepends());
-            }
 
             preread.put(property, readRows);
         } finally {

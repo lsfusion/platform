@@ -1470,36 +1470,6 @@ public class Settings {
         this.disableAntiJoinOptimization = disableAntiJoinOptimization;
     }
 
-    private boolean enableClassDataChangesLog = true;
-
-    public boolean isEnableClassDataChangesLog() {
-        return enableClassDataChangesLog;
-    }
-
-    public void setEnableClassDataChangesLog(boolean enableClassDataChangesLog) {
-        this.enableClassDataChangesLog = enableClassDataChangesLog;
-    }
-
-    private String exLogChangeProperty = "";
-
-    public String getExLogChangeProperty() {
-        return exLogChangeProperty;
-    }
-
-    public void setExLogChangeProperty(String exLogChangeProperty) {
-        this.exLogChangeProperty = exLogChangeProperty;
-    }
-
-    private boolean saleInvoiceDetailLog = false; // временный виталюровский лог
-
-    public boolean isSaleInvoiceDetailLog() {
-        return saleInvoiceDetailLog;
-    }
-
-    public void setSaleInvoiceDetailLog(boolean saleInvoiceDetailLog) {
-        this.saleInvoiceDetailLog = saleInvoiceDetailLog;
-    }
-
     private boolean disableHiddenHintReallyChanged = true;
 
     public boolean isDisableHiddenHintReallyChanged() {

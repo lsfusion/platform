@@ -168,8 +168,6 @@ public class MapCacheAspect {
 
     public static <T> void logCaches(T cached, T calced, ProceedingJoinPoint jp, String action, CalcProperty property) {
         boolean match = BaseUtils.hashEquals(cached, calced);
-        if(!match)
-            match = match;
         ServerLoggers.hExInfoLogger.info(jp.getThis() + " " + action + " " + (match ? " MATCH " : "NOMATCH CACHED : " + cached + " CALCED: ") + calced + " ARGS " + Arrays.toString(jp.getArgs()) + (property != null ? "DEP " + property.getRecDepends() : "" ) );
     }
 
@@ -406,12 +404,6 @@ public class MapCacheAspect {
                     logCaches(((IQuery<K, String>)cacheQuery).getQuery(), query, thisJoinPoint, "QUERY", property);
 
                 if(!(checkCaches && cacheQuery!=null)) {
-                    if(Settings.get().isSaleInvoiceDetailLog()) {
-                        final String propName = property.toString();
-                        if(propName.contains("Purchase.priceUserInvoiceDetail") || propName.contains("Purchase.calcBaseManufacturingPriceUserInvoiceDetail")) {
-                            ServerLoggers.exInfoLogger.info("CACHE : " + property + " QUERY : " + query.toString() + " ARGS " +  Arrays.toString(thisJoinPoint.getArgs()) + " UC " + implement.usedChanges);
-                        }
-                    }
                     cacheNoBig(implement, hashCaches, query);
                 }
 
