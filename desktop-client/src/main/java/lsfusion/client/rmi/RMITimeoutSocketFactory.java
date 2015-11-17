@@ -30,6 +30,7 @@ public class RMITimeoutSocketFactory extends ZipSocketFactory implements Compres
         // http://download.oracle.com/javase/6/docs/technotes/guides/rmi/sunrmiproperties.html
         System.setProperty("sun.rmi.transport.tcp.readTimeout", timeoutValue);
         System.setProperty("sun.rmi.transport.proxy.connectTimeout", timeoutValue);
+        System.setProperty("sun.rmi.transport.tcp.handshakeTimeout", timeoutValue);
     }
 
     @Override
