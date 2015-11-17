@@ -1350,7 +1350,7 @@ public class Settings {
         this.useSafeScaleCast = useSafeScaleCast;
     }
 
-    private int useScaleOpType = 0; // целая и дробная часть : MAX (0+1), SUM (2), соотвественно при 1 - идет CAST к типу (SAFE или не SAFE) определяется useSafeScaleCast, 2 - пока не реализовано поэтому работает как 0
+    private int useScaleOpType = 1; // целая и дробная часть : MAX (0+1), SUM (2), соотвественно при 1 - идет CAST к типу (SAFE или не SAFE) определяется useSafeScaleCast, 2 - пока не реализовано поэтому работает как 0
 
     public int getUseScaleOpType() {
         return useScaleOpType;
