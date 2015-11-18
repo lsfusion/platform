@@ -105,7 +105,6 @@
                 <entry key="noTransSyncDB" value="${settings.noTransSyncDB:}"/>
                 <entry key="useUserChangesSync" value="${settings.useUserChangesSync:}"/>
                 <entry key="averageIntervalStat" value="${settings.averageIntervalStat:}"/>
-                <entry key="saleInvoiceDetailLog" value="${settings.saleInvoiceDetailLog:}"/>
                 <entry key="singleInstance" value="${jnlp.singleInstance:}"/>
                 <entry key="busyDialog" value="${settings.busyDialog:}"/>
             </map>
