@@ -73,7 +73,7 @@ import static lsfusion.base.BaseUtils.nvl;
 public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePendingRemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, RemoteFormListener, Unreferenced {
     protected final static Logger logger = ServerLoggers.systemLogger;
 
-    SQLSession sql;
+    private final SQLSession sql;
 
     final LogicsInstance logicsInstance;
     private final NavigatorsManager navigatorManager;
@@ -139,6 +139,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         this.remoteAddress = remoteAddress;
         this.sql = dbManager.createSQL(new WeakSQLSessionUserProvider(this));
+
+        ServerLoggers.remoteLifeLog("NAVIGATOR OPEN : " + this);
     }
 
     public boolean isFullClient() {
@@ -764,7 +766,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             if(setContext)
                 ThreadLocalContext.set(context);
                 
-            ServerLoggers.exinfoLog("NAVIGATOR CLOSE " + this + " " + sql);
+            ServerLoggers.remoteLifeLog("NAVIGATOR CLOSE " + this);
             try {
                 navigatorManager.navigatorClosed(this);
             } finally {
@@ -904,6 +906,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     @Override
     public String toString() {
-        return "RemoteNavigator[clientAddress: " + remoteAddress + "]";
+        return "RemoteNavigator[clientAddress: " + remoteAddress + "," + user + "," + System.identityHashCode(this) + "," + sql + "]";
     }
 }

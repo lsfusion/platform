@@ -5,6 +5,7 @@ import lsfusion.base.NavigatorInfo;
 import lsfusion.base.Pair;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
 import lsfusion.interop.remote.CallbackMessage;
+import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.User;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.data.SQLHandledException;

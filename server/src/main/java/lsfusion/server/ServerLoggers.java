@@ -91,6 +91,10 @@ public class ServerLoggers {
         exInfoLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
     }
 
+    public static void remoteLifeLog(String message) {
+        remoteLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
+    }
+
     private static Map<Integer, Boolean> userExLogs = new ConcurrentHashMap<>();
 
     public static void setUserExLog(Integer user, Boolean enabled) {

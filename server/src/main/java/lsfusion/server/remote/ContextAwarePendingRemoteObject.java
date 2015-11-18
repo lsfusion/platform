@@ -54,6 +54,8 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
     @Override
     public void unexportAndClean() {
+            ServerLoggers.remoteLifeLog("REMOTE UNEXPORT : " + this);
+
             synchronized (threads) {
                 for (Thread thread : threads) {
                     ServerLoggers.exinfoLog("FORCEFULLY STOPPED : " + thread + '\n' + ExceptionUtils.getStackTrace() + '\n' + ExceptionUtils.getStackTrace(thread.getStackTrace()));

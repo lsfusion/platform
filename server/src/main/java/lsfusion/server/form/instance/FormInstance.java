@@ -315,6 +315,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         this.interactive = interactive; // обязательно в конце чтобы assertion с endApply не рушить
 
         fireOnInit();
+
+        ServerLoggers.remoteLifeLog("FORM OPEN : " + this);
     }
 
     private void fillContainerShowIfs(MExclMap<ContainerView, CalcPropertyObjectInstance<?>> mContainerShowIfs, ContainerView container) {
@@ -1262,6 +1264,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         FocusListener<T> focusListener = getFocusListener();
         if (focusListener != null)
             focusListener.gainedFocus(this);
+    }
+
+    @Override
+    protected void finalClose(Object owner) throws SQLException {
+        ServerLoggers.remoteLifeLog("FORM CLOSE : " + this);
     }
 
     @Override
@@ -2238,6 +2245,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     @Override
     public String toString() {
-        return "FORM@"+System.identityHashCode(this) + " - " + entity.getSID();
+        return "FORM["+System.identityHashCode(this) + " - " + entity.getSID()+","+getClassListener()+"]";
     }
 }
