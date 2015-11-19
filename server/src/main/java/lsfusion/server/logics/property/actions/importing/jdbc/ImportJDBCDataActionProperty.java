@@ -34,7 +34,7 @@ public class ImportJDBCDataActionProperty extends ImportDataActionProperty {
             }
             List<Integer> sourceColumns = getSourceColumns(fieldMapping);
             
-            return new ImportJDBCIterator(rs, sourceColumns);
+            return new ImportJDBCIterator(rs, sourceColumns, properties);
             
         } catch (ClassNotFoundException | SQLException | IOException e) {
             throw Throwables.propagate(e);
