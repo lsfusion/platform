@@ -1797,6 +1797,16 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             }});
     }
 
+    private boolean noCancelInTransaction;
+
+    public boolean isNoCancelInTransaction() {
+        return noCancelInTransaction;
+    }
+
+    public void setNoCancelInTransaction(boolean noCancelInTransaction) {
+        this.noCancelInTransaction = noCancelInTransaction;
+    }
+
     public ApplyFilter applyFilter = ApplyFilter.NO;
     public void setApplyFilter(ApplyFilter applyFilter) {
         this.applyFilter = applyFilter;
@@ -2230,13 +2240,22 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     @Override
     public void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
+        cancelSession(keep);
+    }
+
+    public boolean cancelSession(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
         if(isInSessionEvent()) {
             inSessionEvent = false;
         }
 
         if(isInTransaction()) {
+            if(noCancelInTransaction) {
+                ServerLoggers.systemLogger.info("CANCEL SUPPRESSED");
+                return false;
+            }
+
             rollbackApply();
-            return;
+            return true;
         }
 
         keep = adjustKeep(keep);
@@ -2246,6 +2265,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         if (parentSession != null) {
             parentSession.copyDataTo(this, true, keep);
         }
+
+        return true;
     }
 
     private void rollbackApply() throws SQLException {

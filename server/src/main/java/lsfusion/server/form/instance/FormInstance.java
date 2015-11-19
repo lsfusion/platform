@@ -1238,15 +1238,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
     @Override
     public void cancel(FunctionSet<SessionDataProperty> keep) throws SQLException, SQLHandledException {
-        session.cancel(keep);
+        if(session.cancelSession(keep)) {
+            // пробежим по всем объектам
+            for (ObjectInstance object : getObjects())
+                if (object instanceof CustomObjectInstance)
+                    ((CustomObjectInstance) object).updateCurrentClass(session);
+            fireOnCancel();
 
-        // пробежим по всем объектам
-        for (ObjectInstance object : getObjects())
-            if (object instanceof CustomObjectInstance)
-                ((CustomObjectInstance) object).updateCurrentClass(session);
-        fireOnCancel();
-
-        dataChanged = true;
+            dataChanged = true;
+        }
     }
 
     // ------------------ Через эти методы сообщает верхним объектам об изменениях ------------------- //

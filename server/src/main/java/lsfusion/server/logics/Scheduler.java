@@ -150,6 +150,8 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
     private void changeCurrentDate() {
         try {
             try (DataSession session = dbManager.createSession()) {
+                session.setNoCancelInTransaction(true);
+
                 java.sql.Date currentDate = (java.sql.Date) BL.timeLM.currentDate.read(session);
                 java.sql.Date newDate = DateConverter.getCurrentDate();
                 logger.info(String.format("ChangeCurrentDate started: from %s to %s", currentDate, newDate));

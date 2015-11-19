@@ -94,7 +94,7 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
                     data.add(propertyRow);
                 }
             }*/
-            context.delayUserInteraction(new LogMessageClientAction(caption == null ? (property.toString() + " :") : caption, titleRow, data, true));
+            context.delayUserInteraction(new LogMessageClientAction(caption == null ? (property.toString() + " :") : caption, titleRow, data, !context.getSession().isNoCancelInTransaction()));
         }
 
         // todo : Раскомментить для использования форм....

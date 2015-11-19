@@ -1460,6 +1460,16 @@ public class Settings {
         this.noTransSyncDB = noTransSyncDB;
     }
 
+    private boolean startServerAnyWay = false;
+
+    public boolean isStartServerAnyWay() {
+        return startServerAnyWay;
+    }
+
+    public void setStartServerAnyWay(boolean startServerAnyWay) {
+        this.startServerAnyWay = startServerAnyWay;
+    }
+
     private boolean disableAntiJoinOptimization = false;
 
     public boolean isDisableAntiJoinOptimization() {
