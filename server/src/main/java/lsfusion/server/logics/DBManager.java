@@ -110,6 +110,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private boolean denyDropModules;
 
     private boolean denyDropTables;
+
+    public boolean needExtraUpdateStats = false;
     
     private BaseLogicsModule<?> LM;
 
@@ -158,6 +160,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public void setDenyDropTables(boolean denyDropTables) {
         this.denyDropTables = denyDropTables;
+    }
+
+    public void updateStats(SQLSession sql) throws SQLException, SQLHandledException {
+        businessLogics.updateStats(sql);
     }
     
     @Override
@@ -432,6 +438,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 }
                 if(oldDBStructure.version <= 19) {
                     sql.renameIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
+                }
+                if (oldDBStructure.version <= 20) {
+                    needExtraUpdateStats = true;
                 }
                 if (drop) {
                     sql.dropIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder, startAnyWay);
@@ -1886,7 +1895,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
 
         public NewDBStructure(DBVersion dbVersion) {
-            version = 20;
+            version = 21;
             this.dbVersion = dbVersion;
 
             for (Table table : LM.tableFactory.getImplementTablesMap().valueIt()) {
