@@ -741,7 +741,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         } else {
             tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null);
             keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.quantityTableKey, null);
-            propStats = readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.newQuantityTableColumn, reflectionLM.newNotNullQuantityTableColumn);
+            propStats = readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.quantityTableColumn, reflectionLM.notNullQuantityTableColumn);
         }
 
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {

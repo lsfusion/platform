@@ -50,8 +50,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP propertySID;
     public LCP propertyCanonicalName;
     public LCP propertyTableSID;
-    public LCP quantityProperty;
-    public LCP notNullQuantityProperty;
 
     public LCP sidNavigatorElement;
     public LCP numberNavigatorElement;
@@ -129,8 +127,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP tableColumnLongSID;
     public LCP tableColumnSID;
 
-    public LCP newQuantityTableColumn;
-    public LCP newNotNullQuantityTableColumn;
+    public LCP quantityTableColumn;
+    public LCP notNullQuantityTableColumn;
     public LCP notRecalculateTableColumn;
     public LAP recalculateAggregationTableColumn;
 
@@ -209,8 +207,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         propertySID = findProperty("propertySID");
         propertyCanonicalName = findProperty("propertyCanonicalName");
         propertyTableSID = findProperty("propertyTableSID");
-        quantityProperty = findProperty("quantityProperty");
-        notNullQuantityProperty = findProperty("notNullQuantityProperty");
 
         // ------- Логика представлений --------- //
 
@@ -318,8 +314,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         tableColumnLongSID = findProperty("tableColumnLongSID");
         tableColumnSID = findProperty("tableColumnSID");
 
-        newQuantityTableColumn = findProperty("newQuantityTableColumn");
-        newNotNullQuantityTableColumn = findProperty("newNotNullQuantityTableColumn");
+        quantityTableColumn = findProperty("quantityTableColumn");
+        notNullQuantityTableColumn = findProperty("notNullQuantityTableColumn");
 
         notRecalculateTableColumn = findProperty("notRecalculateTableColumn");
         recalculateAggregationTableColumn = findAction("recalculateAggregationTableColumn");

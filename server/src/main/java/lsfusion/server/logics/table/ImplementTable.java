@@ -460,25 +460,28 @@ public class ImplementTable extends GlobalTable { // последний инте
                 }
             }
 
+            for (PropertyField property : propertyFieldSet) {
+                DataObject propertyObject = safeReadClasses(session, reflectionLM.tableColumnLongSID, new DataObject(getName() + "." + property.getName()));
+                if(propertyObject == null && props != null && tableObject != null) {
+                    propertyObject = session.addObject(reflectionLM.tableColumn);
+                    reflectionLM.sidTableColumn.change(property.getName(), session, propertyObject);
+                    reflectionLM.tableTableColumn.change(tableObject.object, session, propertyObject);
+                }
+                if(propertyObject != null)
+                    reflectionLM.quantityTableColumn.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
+            }
+
             // не null значения и разреженность колонок
             MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
             for (PropertyField property : propertyFieldSet)
                 mNotNulls.exclAdd(property, readCount(session, join.getExpr(property).getWhere()));
             ImMap<Object, Object> notNulls = mNotNulls.immutable();
-
             for (PropertyField property : propertyFieldSet) {
-                DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(getName()), new DataObject(property.getName()));
-                if(propertyObject == null && props != null) {
-                    propertyObject = session.addObject(reflectionLM.property);
-                    reflectionLM.dbNameProperty.change(property.getName(), session, propertyObject);
-                    reflectionLM.tableSIDProperty.change(getName(), session, propertyObject);
-                }
-                if (propertyObject != null) {
-                    reflectionLM.quantityProperty.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
-
+                DataObject propertyObject = safeReadClasses(session, reflectionLM.tableColumnLongSID, new DataObject(getName() + "." + property.getName()));
+                if(propertyObject != null) {
                     Object notNull = BaseUtils.nvl(notNulls.get(property), 0);
                     Object quantity = BaseUtils.nvl(result.get(property), 0);
-                    reflectionLM.notNullQuantityProperty.change(notNull, session, propertyObject);
+                    reflectionLM.notNullQuantityTableColumn.change(notNull, session, propertyObject);
                     propStats = propStats.addExcl(getName() + "." + property.getName(), Pair.create((Integer) notNull, (Integer) quantity));
                 }
             }
