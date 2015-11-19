@@ -45,7 +45,8 @@ public class ReportDesignGenerator {
     private FormView formView;
     private Set<Integer> hiddenGroupsId;
     private FormUserPreferences userPreferences;
-
+    private Integer groupId;
+    
     private Map<String, LinkedHashSet<List<Object>>> columnGroupObjects;
             
     private static final int defaultPageWidth = 842;  //
@@ -63,10 +64,12 @@ public class ReportDesignGenerator {
     
     private Map<String, JasperDesign> designs = new HashMap<>();
 
-    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId, FormUserPreferences userPreferences, boolean toExcel, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects) {
+    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId, 
+                                 FormUserPreferences userPreferences, boolean toExcel, Map<String, LinkedHashSet<List<Object>>> columnGroupObjects, Integer groupId) {
         this.formView = formView;
         this.hierarchy = hierarchy;
         this.hiddenGroupsId = hiddenGroupsId;
+        this.groupId = groupId;
         this.userPreferences = userPreferences;
         
         this.columnGroupObjects = columnGroupObjects;
@@ -138,6 +141,17 @@ public class ReportDesignGenerator {
         }
     }
 
+    private boolean isValidProperty(GroupObjectEntity group, PropertyDrawView property, ColumnUserPreferences pref, Integer groupId) {
+        GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.getGroupsList());
+        GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
+
+        boolean hidden = pref != null && pref.userHide != null && pref.userHide;
+        // В отчет по одной группе объектов не добавляем свойства, которые идут в панель  
+        boolean validForGroupReports = !(property.entity.isForcedPanel() && groupId != null && groupId.equals(group.getID()));
+
+        return group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup) && !hidden && validForGroupReports; 
+    }
+    
     private List<ReportDrawField> getAllowedGroupDrawFields(GroupObjectEntity group) {
         List<ReportDrawField> fields = new ArrayList<>();
 
@@ -169,12 +183,7 @@ public class ReportDesignGenerator {
         });
         
         for (Pair<PropertyDrawView, ColumnUserPreferences> prop : properties) {
-            GroupObjectEntity applyGroup = prop.first.entity.propertyObject.getApplyObject(formView.entity.getGroupsList());
-            GroupObjectEntity drawGroup = prop.first.entity.getToDraw(formView.entity);
-            
-            boolean hidden = prop.second != null && prop.second.userHide != null && prop.second.userHide;
-            
-            if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup) && !hidden) {
+            if (isValidProperty(group, prop.first, prop.second, groupId)) {
                 int scale = 1;
                 LinkedHashSet<List<Object>> objects;
                 if(columnGroupObjects != null && (objects = columnGroupObjects.get(prop.first.getSID())) != null) // на не null на всякий случай проверка

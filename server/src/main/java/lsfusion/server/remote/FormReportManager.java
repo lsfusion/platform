@@ -78,7 +78,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
                 }
             }
             try {
-                ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel, null);
+                ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel, null, groupId);
                 Map<String, JasperDesign> designs = generator.generate();
                 String sid = getDefaultReportSID(toExcel, groupId);
                 String reportName;
@@ -216,7 +216,7 @@ public class FormReportManager<T extends BusinessLogics<T>, F extends FormInstan
             }
         }
         try {
-            ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel, columnGroupObjects);
+            ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, userPreferences, toExcel, columnGroupObjects, groupId);
             Map<String, JasperDesign> designs = generator.generate();
             for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
                 String id = entry.getKey();

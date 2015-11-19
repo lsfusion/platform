@@ -226,12 +226,17 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         }
     }
 
+    // В отчет по одной группе объектов не добавляем свойства, которые идут в панель  
+    private boolean validForGroupReports(PropertyDrawInstance property) {
+        return groupId == null || !groupId.equals(property.toDraw.getID()) || property.getForceViewType() != ClassViewType.PANEL;     
+    } 
+    
     private List<PropertyDrawInstance> filterProperties(ImSet<GroupObjectInstance> filterGroups) {
         List<PropertyDrawInstance> resultList = new ArrayList<PropertyDrawInstance>();
         for (PropertyDrawInstance property : form.properties) {
             GroupObjectInstance applyGroup = property.propertyObject.getApplyObject();
             // Отдельно рассматриваем случай свойства без параметров
-            if ((applyGroup == null || property.toDraw == applyGroup) && property.toDraw != null && filterGroups.contains(property.toDraw) ||  
+            if (((applyGroup == null || property.toDraw == applyGroup) && property.toDraw != null && filterGroups.contains(property.toDraw) && validForGroupReports(property)) ||  
                 (property.toDraw == null && applyGroup == null && property.propertyObject.property instanceof CalcProperty && property.propertyObject.property.getOrderInterfaces().isEmpty())) {
                 boolean add = true;
                 
