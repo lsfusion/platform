@@ -95,7 +95,7 @@ public class LoadingBlocker {
 
     public static class BlockerPopup extends PopupPanel {
         private SimplePanel messagePanel;
-        private Label messageLabel;
+        private HTML messageLabel;
 
         private int latestWindowHeight;
         private int latestWindowWidth;
@@ -107,7 +107,7 @@ public class LoadingBlocker {
             VerticalPanel vp = new VerticalPanel();
             vp.add(new Image(GWT.getModuleBaseURL() + "images/loading_bar.gif"));
 
-            messageLabel = new Label();
+            messageLabel = new HTML();
             messageLabel.addStyleName("messageLabel");
 
             messagePanel = new SimplePanel(messageLabel);
@@ -125,24 +125,26 @@ public class LoadingBlocker {
         }
 
         public void updateMessage(String message) {
-            String newMessage = EscapeUtils.unicodeEscape(message);
-            if (!GwtSharedUtils.nullEquals(newMessage, messageLabel.getText())) {
-                messageLabel.setText(EscapeUtils.unicodeEscape(message));
-            }
-
             boolean showMessage = message != null && !message.trim().isEmpty();
-            if (windowResized()) {
-                latestWindowWidth = Window.getClientWidth();
-                latestWindowHeight = Window.getClientHeight();
-                center();
-                int panelWidth = (int) (latestWindowWidth * 0.85);
-                int popupWidth = getOffsetWidth();
-                messagePanel.setWidth(panelWidth + "px");
-                Style messagePanelStyle = messagePanel.getElement().getStyle();
-                messagePanelStyle.setLeft(-panelWidth / 2 + popupWidth / 2, Style.Unit.PX);
+            if (showMessage) {
+                String newMessage = EscapeUtils.toHtml(EscapeUtils.unicodeEscape(message));
+                if (!GwtSharedUtils.nullEquals(newMessage, messageLabel.getHTML())) {
+                    messageLabel.setHTML(newMessage);
+                }
 
-                messagePanelStyle.setProperty("maxHeight", latestWindowHeight / 2 - 100, Style.Unit.PX);
-                messagePanelStyle.setBottom(-latestWindowHeight / 2 + 50, Style.Unit.PX);
+                if (windowResized()) {
+                    latestWindowWidth = Window.getClientWidth();
+                    latestWindowHeight = Window.getClientHeight();
+                    center();
+                    int panelWidth = (int) (latestWindowWidth * 0.85);
+                    int popupWidth = getOffsetWidth();
+                    messagePanel.setWidth(panelWidth + "px");
+                    Style messagePanelStyle = messagePanel.getElement().getStyle();
+                    messagePanelStyle.setLeft(-panelWidth / 2 + popupWidth / 2, Style.Unit.PX);
+
+                    messagePanelStyle.setProperty("maxHeight", latestWindowHeight / 2 - 100, Style.Unit.PX);
+                    messagePanelStyle.setBottom(-latestWindowHeight / 2 + 50, Style.Unit.PX);
+                }
             }
             messagePanel.setVisible(showMessage);
         }
