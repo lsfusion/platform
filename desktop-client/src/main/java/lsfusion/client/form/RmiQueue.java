@@ -36,6 +36,7 @@ public class RmiQueue {
 
     private final TableManager tableManager;
     private final Provider<String> serverMessageProvider;
+    private final Provider<List<Object>> serverMessageListProvider;
     private final AsyncListener asyncListener;
     private boolean asyncStarted = false;
     private int syncsDepth = 0;
@@ -45,8 +46,9 @@ public class RmiQueue {
 
     private AtomicBoolean abandoned = new AtomicBoolean();
 
-    public RmiQueue(TableManager tableManager, Provider<String> serverMessageProvider, AsyncListener asyncListener) {
+    public RmiQueue(TableManager tableManager, Provider<String> serverMessageProvider, Provider<List<Object>> serverMessageListProvider, AsyncListener asyncListener) {
         this.serverMessageProvider = serverMessageProvider;
+        this.serverMessageListProvider = serverMessageListProvider;
         this.tableManager = tableManager;
         this.asyncListener = asyncListener;
 
@@ -236,7 +238,7 @@ public class RmiQueue {
 
                     if (timeout <= 0) { //секунда прошла, а запрос ещё выполняется
                         if(busyDisplayer == null) {
-                            busyDisplayer = new BusyDialogDisplayer(serverMessageProvider);
+                            busyDisplayer = new BusyDialogDisplayer(serverMessageListProvider);
                             busyDisplayer.start();
                         }
 
