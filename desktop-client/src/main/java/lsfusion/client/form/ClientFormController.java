@@ -66,6 +66,13 @@ public class ClientFormController implements AsyncListener {
         }
     };
 
+    private final EProvider<List<Object>> serverMessageListProvider = new EProvider<List<Object>>() {
+        @Override
+        public List<Object> getExceptionally() throws Exception {
+            return remoteForm == null ? null : remoteForm.getRemoteActionMessageList();
+        }
+    };
+
     private final RmiQueue rmiQueue;
     private final SimpleChangePropertyDispatcher simpleDispatcher = new SimpleChangePropertyDispatcher(this);
 
@@ -152,7 +159,7 @@ public class ClientFormController implements AsyncListener {
         try {
             form = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
-            rmiQueue = new RmiQueue(tableManager, serverMessageProvider, this);
+            rmiQueue = new RmiQueue(tableManager, serverMessageProvider, serverMessageListProvider, this);
 
             formLayout = new ClientFormLayout(this, form.mainContainer);
 

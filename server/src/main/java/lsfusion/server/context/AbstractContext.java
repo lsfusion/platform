@@ -2,6 +2,7 @@ package lsfusion.server.context;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.ModalityType;
@@ -34,11 +35,15 @@ import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.UpdateCurrentClasses;
+import lsfusion.server.stack.AspectStackItem;
+import lsfusion.base.ProgressBar;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -164,6 +169,10 @@ public abstract class AbstractContext implements Context {
         return actionMessageStack.getMessage();
     }
 
+    public List<Object> getActionMessageList() {
+        return actionMessageStack.getMessageList();
+    }
+
     // тут нужно быть аккуратно с утечками
     public void pushActionMessage(Object segment) {
         actionMessageStack.push(segment);
@@ -181,6 +190,23 @@ public abstract class AbstractContext implements Context {
 
         public synchronized Object popOrEmpty() {
             return isEmpty() ? "" : pop();
+        }
+
+        public synchronized List<Object> getMessageList() {
+            List<Object> result = new ArrayList<>();
+            for (Object entry : this) {
+                if (entry instanceof List) {
+                    result.add(entry);
+                } else {
+                    if(entry instanceof AspectStackItem) {
+                        ImList<ProgressBar> progress = ((AspectStackItem) entry).getProgress();
+                        if(!progress.isEmpty())
+                            result.addAll(progress.toJavaList());
+                    }
+                    result.add(String.valueOf(entry));
+                }
+            }
+            return result;
         }
     }
 

@@ -3,6 +3,7 @@ package lsfusion.interop.remote;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
+import java.util.List;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
@@ -53,6 +54,9 @@ public class PendingRemoteObject extends RemoteObject implements PendingRemoteIn
     }
 
     public String getRemoteActionMessage() throws RemoteException {
+        return null;
+    }
+    public List<Object> getRemoteActionMessageList() throws RemoteException {
         return null;
     }
 }

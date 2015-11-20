@@ -3,10 +3,10 @@ package lsfusion.client.form;
 import lsfusion.base.Provider;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
-import org.jdesktop.swingworker.SwingWorker;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -16,9 +16,9 @@ public class BusyDialogDisplayer extends TimerTask {
     private Timer executionTimer;
     private Window drawingWindow;
     private BusyDialog busyDialog;
-    private final Provider<String> serverMessageProvider;
+    private final Provider<List<Object>> serverMessageProvider;
 
-    public BusyDialogDisplayer(Provider<String> serverMessageProvider) {
+    public BusyDialogDisplayer(Provider<List<Object>> serverMessageProvider) {
         this.serverMessageProvider = serverMessageProvider;
     }
 
@@ -70,8 +70,13 @@ public class BusyDialogDisplayer extends TimerTask {
     @Override
     public void run() {
         if (drawingWindow != null) {
-            if(Main.configurationAccessAllowed)
-                busyDialog.setStackMessage(serverMessageProvider.get());
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (busyDialog != null)
+                        busyDialog.updateBusyDialog(serverMessageProvider.get());
+                }
+            });
         }
     }
 

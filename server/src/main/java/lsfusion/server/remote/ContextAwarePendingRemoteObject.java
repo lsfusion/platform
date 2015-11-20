@@ -44,6 +44,10 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         return ThreadLocalContext.getActionMessage();
     }
 
+    public List<Object> getRemoteActionMessageList() throws RemoteException {
+        return ThreadLocalContext.getActionMessageList();
+    }
+
     public void addLinkedThread(Thread thread) {
         threads.add(thread);
     }

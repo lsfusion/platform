@@ -12,6 +12,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.io.*;
 import java.util.Scanner;
 
@@ -66,7 +68,8 @@ public abstract class MainFrame extends JFrame {
 
         add(content);
 
-        lockableUI = new LockableUI(new BufferedImageOpEffect(new BlurFilter()));
+        lockableUI = new LockableUI(new BufferedImageOpEffect(
+                new ConvolveOp(new Kernel(1, 1, new float[]{0.5f}), ConvolveOp.EDGE_NO_OP, null), new BlurFilter()));
 
         JXLayer layer = new JXLayer(getContentPane(), lockableUI);
         layer.setFocusable(false);

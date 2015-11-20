@@ -19,6 +19,7 @@ import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.remote.RemoteForm;
 
 import java.sql.SQLException;
+import java.util.List;
 
 public class WrapperContext extends AbstractContext implements Context {
     private final Context wrappedContext;
@@ -103,6 +104,10 @@ public class WrapperContext extends AbstractContext implements Context {
 
     public String getActionMessage() {
         return wrappedContext.getActionMessage();
+    }
+
+    public List<Object> getActionMessageList() {
+        return wrappedContext.getActionMessageList();
     }
 
     public void pushActionMessage(Object segment) {

@@ -25,6 +25,9 @@ import lsfusion.server.session.UpdateCurrentClasses;
 import org.apache.log4j.MDC;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class ThreadLocalContext {
@@ -136,6 +139,14 @@ public class ThreadLocalContext {
 
     public static String getActionMessage() {
         return get() != null ? get().getActionMessage() : "";
+    }
+
+    public static List<Object> getActionMessageList() {
+        return get() != null ? get().getActionMessageList() : new ArrayList<>();
+    }
+
+    public static void pushProgressMessage(String message, Integer progress, Integer total) {
+        pushActionMessage(Arrays.asList(message, progress, total));
     }
 
     public static void pushActionMessage(Object segment) {

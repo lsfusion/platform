@@ -1,5 +1,6 @@
 package lsfusion.server.stack;
 
+import lsfusion.base.ProgressBar;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
@@ -54,5 +55,24 @@ public class AspectStackItem implements ExecutionStackItem {
                 }
 
         return mStringParams.immutableList();
+    }
+
+    public ImList<ProgressBar> getProgress() {
+        Object[] args = thisJoinPoint.getArgs();
+        MList<ProgressBar> progressBarList = ListFact.mList();
+
+        Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
+        ImList<String> params = getArgs(thisJoinPoint, method);
+
+        Annotation[][] paramAnnotations = method.getParameterAnnotations();
+        for (int i = 0; i < paramAnnotations.length; i++)
+            for (Annotation paramAnnotation : paramAnnotations[i])
+                if (paramAnnotation instanceof StackProgress) {
+                    ProgressBar progressBar = (ProgressBar) args[i];
+                    progressBar.params = params.toString(",");
+                    progressBarList.add(progressBar);
+
+                }
+        return progressBarList.immutableList();
     }
 }

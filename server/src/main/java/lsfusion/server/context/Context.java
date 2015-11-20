@@ -27,6 +27,7 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.session.UpdateCurrentClasses;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 public interface Context {
@@ -50,6 +51,7 @@ public interface Context {
     Object[] requestUserInteraction(ClientAction... actions);
 
     String getActionMessage();
+    List<Object> getActionMessageList();
     void pushActionMessage(Object segment);
     Object popActionMessage();
     ScheduledExecutorService getExecutorService();

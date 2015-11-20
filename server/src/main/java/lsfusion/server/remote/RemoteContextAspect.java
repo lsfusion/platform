@@ -12,7 +12,8 @@ public class RemoteContextAspect {
     @Around("(execution(public * lsfusion.interop.RemoteLogicsInterface.*(..)) ||" +
             "execution(public * lsfusion.interop.form.RemoteFormInterface.*(..)) ||" +
             "execution(public * lsfusion.interop.navigator.RemoteNavigatorInterface.*(..)) ||" +
-            "execution(public * lsfusion.interop.remote.PendingRemoteInterface.getRemoteActionMessage(..)))" +
+            "execution(public * lsfusion.interop.remote.PendingRemoteInterface.getRemoteActionMessage(..)) ||" +
+            "execution(public * lsfusion.interop.remote.PendingRemoteInterface.getRemoteActionMessageList(..)))" +
             " && !execution(public * lsfusion.interop.RemoteLogicsInterface.ping(..))" +
             " && target(ro)")
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object ro) throws Throwable {

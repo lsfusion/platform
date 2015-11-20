@@ -66,10 +66,10 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
                 busyDisplayer.stop();
             }
         } else {
-            final BusyDialogDisplayer busyDisplayer = new BusyDialogDisplayer(new EProvider<String>() {
+            final BusyDialogDisplayer busyDisplayer = new BusyDialogDisplayer(new EProvider<List<Object>>() {
                 @Override
-                public String getExceptionally() throws RemoteException {
-                    return target.getRemoteActionMessage();
+                public List<Object> getExceptionally() throws RemoteException {
+                    return target.getRemoteActionMessageList();
                 }
             });
             busyDisplayer.start();
@@ -91,6 +91,11 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
     @Override
     public String getRemoteActionMessage() throws RemoteException {
         return target.getRemoteActionMessage();
+    }
+
+    @Override
+    public List<Object> getRemoteActionMessageList() throws RemoteException {
+        return target.getRemoteActionMessageList();
     }
 
     public Object getProperty(Object key) {
