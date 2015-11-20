@@ -346,7 +346,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     public boolean isBusyDialog() throws RemoteException {
-        return Settings.get().isBusyDialog();
+        return Settings.get().isBusyDialog() || SystemProperties.isDebug;
     }
 
     @Override
