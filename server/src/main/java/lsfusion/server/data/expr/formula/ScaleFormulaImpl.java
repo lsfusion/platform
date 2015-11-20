@@ -9,8 +9,8 @@ import lsfusion.server.data.type.Type;
 
 public abstract class ScaleFormulaImpl extends ArithmeticFormulaImpl {
 
-    public ScaleFormulaImpl(ScaleConversionSource conversionSource) {
-        super(IntegralTypeConversion.instance, conversionSource);
+    public ScaleFormulaImpl(IntegralTypeConversion typeConversion, ScaleConversionSource conversionSource) {
+        super(typeConversion, conversionSource);
     }
 
     public static boolean isCastScale() {
@@ -22,8 +22,8 @@ public abstract class ScaleFormulaImpl extends ArithmeticFormulaImpl {
 
     protected static abstract class ScaleConversionSource extends AbstractConversionSource {
 
-        public ScaleConversionSource() {
-            super(IntegralTypeConversion.instance);
+        public ScaleConversionSource(IntegralTypeConversion typeConversion) {
+            super(typeConversion);
         }
 
         public String getScaleSource(String src, Type type, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {

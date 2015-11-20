@@ -10,7 +10,7 @@ import lsfusion.server.data.type.Type;
 public class SumFormulaImpl extends ArithmeticFormulaImpl {
     public final static CompoundTypeConversion sumConversion = new CompoundTypeConversion(
             StringTypeConversion.instance,
-            IntegralTypeConversion.instance
+            IntegralTypeConversion.sumTypeConversion
     );
 
     public final static CompoundConversionSource sumConversionSource = new CompoundConversionSource(
@@ -31,7 +31,7 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
         public final static IntegralSumConversionSource instance = new IntegralSumConversionSource();
 
         protected IntegralSumConversionSource() {
-            super(IntegralTypeConversion.instance);
+            super(IntegralTypeConversion.sumTypeConversion);
         }
 
         @Override

@@ -9,7 +9,7 @@ import lsfusion.server.data.type.Type;
 public class SubtractFormulaImpl extends ArithmeticFormulaImpl {
 
     public SubtractFormulaImpl() {
-        super(IntegralTypeConversion.instance, SubtractConversionSource.instance);
+        super(IntegralTypeConversion.sumTypeConversion, SubtractConversionSource.instance);
     }
 
     @Override
@@ -21,7 +21,7 @@ public class SubtractFormulaImpl extends ArithmeticFormulaImpl {
         public final static SubtractConversionSource instance = new SubtractConversionSource();
 
         protected SubtractConversionSource() {
-            super(IntegralTypeConversion.instance);
+            super(IntegralTypeConversion.sumTypeConversion);
         }
 
         @Override

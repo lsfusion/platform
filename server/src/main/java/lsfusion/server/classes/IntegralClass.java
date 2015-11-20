@@ -44,7 +44,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     abstract int getWhole();
     abstract int getPrecision();
 
-    public DataClass getCompatible(DataClass compClass, boolean or) {
+    public IntegralClass getCompatible(DataClass compClass, boolean or) {
         if(!(compClass instanceof IntegralClass)) return null;
 
         IntegralClass integralClass = (IntegralClass)compClass;
@@ -54,7 +54,32 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
             return or ? integralClass : this;
         int whole = BaseUtils.cmp(getWhole(), integralClass.getWhole(), or);
         int precision = BaseUtils.cmp(getPrecision(), integralClass.getPrecision(), or);
+
         return NumericClass.get(whole+precision, precision);
+    }
+
+    public IntegralClass getMultiply(IntegralClass operator) {
+//        if(1==1) return (IntegralClass) getCompatible(operator, true);
+
+        if(!(this instanceof NumericClass) || !(operator instanceof NumericClass))
+            return getCompatible(operator, true);
+
+        int whole = getWhole() + operator.getWhole();
+        int precision = getPrecision() + operator.getPrecision();
+
+        return NumericClass.get(whole + precision, precision);
+    }
+
+    public IntegralClass getDivide(IntegralClass operator) {
+//        if(1==1) return (IntegralClass) getCompatible(operator, true);
+
+        if(!(this instanceof NumericClass) || !(operator instanceof NumericClass))
+            return getCompatible(operator, true);
+
+        int whole = getWhole() + operator.getPrecision();
+        int precision = getPrecision() + operator.getWhole();
+
+        return NumericClass.get(whole + precision, precision);
     }
 
     public boolean isSafeString(Object value) {

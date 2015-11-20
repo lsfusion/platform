@@ -2,7 +2,8 @@ package lsfusion.server.data.expr.formula;
 
 import lsfusion.server.Settings;
 import lsfusion.server.classes.DataClass;
-import lsfusion.server.data.expr.formula.conversion.*;
+import lsfusion.server.classes.IntegralClass;
+import lsfusion.server.data.expr.formula.conversion.IntegralTypeConversion;
 import lsfusion.server.data.query.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
 import lsfusion.server.data.type.Type;
@@ -10,7 +11,7 @@ import lsfusion.server.data.type.Type;
 public class DivideFormulaImpl extends ScaleFormulaImpl {
 
     public DivideFormulaImpl() {
-        super(DivideConversionSource.instance);
+        super(DivideTypeConversion.instance, DivideConversionSource.instance);
     }
 
     @Override
@@ -18,8 +19,21 @@ public class DivideFormulaImpl extends ScaleFormulaImpl {
         return "division";
     }
 
+    private static class DivideTypeConversion extends IntegralTypeConversion {
+        public final static DivideTypeConversion instance = new DivideTypeConversion();
+
+        @Override
+        public IntegralClass getIntegralClass(IntegralClass type1, IntegralClass type2) {
+            return type1.getDivide(type2);
+        }
+    }
+
     private static class DivideConversionSource extends ScaleConversionSource {
         public final static DivideConversionSource instance = new DivideConversionSource();
+
+        private DivideConversionSource() {
+            super(DivideTypeConversion.instance);
+        }
 
         public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {
             Type type = conversion.getType(type1, type2);

@@ -3,9 +3,15 @@ package lsfusion.server.data.expr.formula.conversion;
 import lsfusion.server.classes.IntegralClass;
 import lsfusion.server.data.type.Type;
 
-public class IntegralTypeConversion implements TypeConversion {
-    public final static IntegralTypeConversion instance = new IntegralTypeConversion();
+public abstract class IntegralTypeConversion implements TypeConversion {
 
+    public final static IntegralTypeConversion sumTypeConversion = new IntegralTypeConversion() {
+        public IntegralClass getIntegralClass(IntegralClass type1, IntegralClass type2) {
+            return (IntegralClass) type1.getCompatible(type2);
+        }
+    };
+
+    public abstract IntegralClass getIntegralClass(IntegralClass type1, IntegralClass type2);
     @Override
     public Type getType(Type type1, Type type2) {
         if (type1 == null && type2 instanceof IntegralClass) {
@@ -17,7 +23,7 @@ public class IntegralTypeConversion implements TypeConversion {
         }
 
         if (type1 instanceof IntegralClass && type2 instanceof IntegralClass) {
-            return type1.getCompatible(type2);
+            return getIntegralClass((IntegralClass) type1, (IntegralClass) type2);
         }
 
         return null;

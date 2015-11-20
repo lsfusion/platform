@@ -10,7 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class IntegerClass extends IntegralClass<Integer> {
+public class IntegerClass extends IntClass<Integer> {
 
     public final static IntegerClass instance = new IntegerClass();
 

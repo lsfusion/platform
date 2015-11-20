@@ -11,7 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class LongClass extends IntegralClass<Long> {
+public class LongClass extends IntClass<Long> {
 
     public final static LongClass instance = new LongClass();
 
