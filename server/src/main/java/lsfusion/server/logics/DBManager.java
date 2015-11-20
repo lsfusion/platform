@@ -443,14 +443,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     needExtraUpdateStats = true;
                 }
                 if (drop) {
-                    sql.dropIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder, startAnyWay);
+                    sql.dropIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder, Settings.get().isStartServerAnyWay());
                 }
             }
         }
     }
 
-    private static boolean startAnyWay = false;
-    
     private void checkUniqueDBName(NewDBStructure struct) {
         Map<Pair<String, String>, DBStoredProperty> sids = new HashMap<>();
         for (DBStoredProperty property : struct.storedProperties) {

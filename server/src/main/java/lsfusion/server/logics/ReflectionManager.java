@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.ServerLoggers;
+import lsfusion.server.Settings;
 import lsfusion.server.classes.*;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
@@ -98,7 +99,14 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     private DataSession createSession() throws SQLException {
         return dbManager.createSession();
     }
-    
+
+    private DataSession createSyncSession() throws SQLException {
+        DataSession session = createSession();
+        if(Settings.get().isStartServerAnyWay())
+            session.setNoCancelInTransaction(true);
+        return session;
+    }
+
     public boolean isSourceHashChanged() {
         return dbManager.sourceHashChanged;
     }
@@ -141,7 +149,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable table = new ImportTable(asList(nameField, captionField), elementsData);
 
         try {
-            try (DataSession session = createSession()) {
+            try (DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_NE");
                 IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyNavigatorElement), propsNavigatorElement, deletes);
                 service.synchronize(true, false);
@@ -168,7 +176,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         propsParent.add(new ImportProperty(numberField, reflectionLM.numberNavigatorElement.getMapping(keyElement), GroupType.MIN));
         ImportTable table = new ImportTable(asList(nameField, parentNameField, numberField), dataParents);
         try {
-            try (DataSession session = createSession()) {
+            try (DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_PT");
                 IntegrationService service = new IntegrationService(session, table, asList(keyElement, keyParent), propsParent);
                 service.synchronize(true, false);
@@ -294,7 +302,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable table = new ImportTable(asList(captionPropertyDrawField, sidPropertyDrawField, nameNavigatorElementField, sidGroupObjectField), dataPropertyDraws);
 
         try {
-            try (DataSession session = createSession()) {
+            try (DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_PD");
                 IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyPropertyDraw, keyGroupObject), propsPropertyDraw, deletes);
                 service.synchronize(true, false);
@@ -338,7 +346,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable table = new ImportTable(asList(canonicalNameNavigatorElementField, sidGroupObjectField), dataGroupObjectList);
 
         try {
-            try(DataSession session = createSession()) {
+            try(DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_GO");
                 IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyGroupObject), propsGroupObject, deletes);
                 service.synchronize(true, false);
@@ -420,7 +428,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                     storedPropertyField, isSetNotNullPropertyField, returnPropertyField,
                     classPropertyField, complexityPropertyField, tableSIDPropertyField), dataProperty);
 
-            try (DataSession session = createSession()) {
+            try (DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_PE");
                 IntegrationService service = new IntegrationService(session, table, Collections.singletonList(keyProperty), properties, deletes);
                 service.synchronize(true, false);
@@ -453,7 +461,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable table = new ImportTable(asList(canonicalNamePropertyField, parentSidField, numberPropertyField), dataParent);
 
         try {
-            try (DataSession session = createSession()) {
+            try (DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_PP");
                 IntegrationService service = new IntegrationService(session, table, asList(keyProperty, keyParent), properties);
                 service.synchronize(true, false);
@@ -504,7 +512,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable table2 = new ImportTable(asList(sidField, parentSidField, numberField), data2);
 
         try {
-            try (DataSession session = createSession()) {
+            try (DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_GP");
                 IntegrationService service = new IntegrationService(session, table, Collections.singletonList(key), props, deletes);
                 service.synchronize(true, false);
@@ -599,7 +607,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportTable tableColumns = new ImportTable(asList(tableSidField, tableColumnSidField, tableColumnLongSIDField), dataProps);
 
         try {
-            try(DataSession session = createSession()) {
+            try(DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_TE");
 
                 IntegrationService service = new IntegrationService(session, table, Collections.singletonList(tableKey), properties, delete);
