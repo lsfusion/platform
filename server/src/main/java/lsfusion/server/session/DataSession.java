@@ -20,6 +20,7 @@ import lsfusion.interop.action.ConfirmClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
+import lsfusion.server.SystemProperties;
 import lsfusion.server.caches.ManualLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.UpClassSet;
@@ -1000,7 +1001,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @LogTime
     @ThisMessage
     private void executeSessionEvent(ExecutionEnvironment env, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
-        if(!sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
+        if(!SystemProperties.isDebug && !sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
             return;
 
         action.execute(env);
