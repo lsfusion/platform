@@ -357,8 +357,8 @@ public class ReadActionProperty extends ScriptingActionProperty {
     }
 
     private void copyMDBToFile(String path, File file) throws IOException {
-        /*mdb://path:table;where*/
-        Pattern queryPattern = Pattern.compile("mdb:\\/\\/(.*):([^;]*)(?:;(.*))?");
+        /*mdb://path:table;where [NOT] condition1 [AND|OR conditionN]*/
+        Pattern queryPattern = Pattern.compile("mdb:\\/\\/(.*):([^;]*)(?:;([^;]*))*");
         Matcher queryMatcher = queryPattern.matcher(path);
         if (queryMatcher.matches()) {
             Database db = null;
@@ -368,21 +368,20 @@ public class ReadActionProperty extends ScriptingActionProperty {
 
                 Table table = db.getTable(queryMatcher.group(2));
 
-                String field = null;
-                String sign = null;
-                String value = null;
+                List<List<String>> wheresList = new ArrayList<>();
 
-                boolean isWhere = false;
-                String where = queryMatcher.group(3);
-                if(where != null) {
-                    Pattern wherePattern = Pattern.compile("([^=<>]*)([=<>]*)([^=<>]*)");
-                    Matcher whereMatcher = wherePattern.matcher(where);
-                    isWhere = whereMatcher.matches();
-                    if (isWhere) {
-                        field = whereMatcher.group(1);
-                        sign = whereMatcher.group(2);
-                        value = whereMatcher.group(3);
-                    }
+                String wheres = queryMatcher.group(3);
+                if(wheres != null) { //spaces in value are not permitted
+                        Pattern wherePattern = Pattern.compile("(?:\\s(AND|OR)\\s)?(?:(NOT)\\s)?([^=<>]+)(=|<|>|<=|>=)([^=<>\\s]+)");
+                        Matcher whereMatcher = wherePattern.matcher(wheres);
+                        while(whereMatcher.find()) {
+                            String condition = whereMatcher.group(1);
+                            String not = whereMatcher.group(2);
+                            String field = whereMatcher.group(3);
+                            String sign = whereMatcher.group(4);
+                            String value = whereMatcher.group(5);
+                            wheresList.add(Arrays.asList(condition, not, field, sign, value));
+                        }
                 }
 
                 List<Map<String, Object>> rows = new ArrayList<>();
@@ -390,24 +389,36 @@ public class ReadActionProperty extends ScriptingActionProperty {
                 for (Row rowEntry : table) {
 
                     boolean ignoreRow = false;
-                    if(isWhere) {
-                        if(!rowEntry.containsKey(field)) {
+
+                    for (List<String> where : wheresList) {
+                        String condition = where.get(0);
+                        boolean and = condition != null && condition.equals("AND");
+                        boolean or = condition != null && condition.equals("OR");
+                        boolean not = where.get(1) != null;
+                        String field = where.get(2);
+                        String sign = where.get(3);
+                        String value = where.get(4);
+
+
+                        if (!rowEntry.containsKey(field)) {
                             throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. No such column. Note: names are sensitive"));
                         }
+                        boolean conditionResult;
                         Object fieldValue = rowEntry.get(field);
                         if (fieldValue == null)
-                            ignoreRow = true;
+                            conditionResult = true;
                         else if (fieldValue instanceof Integer) {
-                            if (ignoreRowIntegerCondition(fieldValue, sign, value))
-                                ignoreRow = true;
+                            conditionResult = ignoreRowIntegerCondition(not, fieldValue, sign, value);
+                        } else if (fieldValue instanceof Double) {
+                            conditionResult = ignoreRowDoubleCondition(not, fieldValue, sign, value);
                         } else if (fieldValue instanceof java.util.Date) {
-                            if (ignoreRowDateCondition(fieldValue, sign, value))
-                                ignoreRow = true;
+                            conditionResult = ignoreRowDateCondition(not, fieldValue, sign, value);
                         } else {
-                            if (ignoreRowStringCondition(fieldValue, sign, value))
-                                ignoreRow = true;
+                            conditionResult = ignoreRowStringCondition(not, fieldValue, sign, value);
                         }
+                        ignoreRow = and ? (ignoreRow | conditionResult) : or ? (ignoreRow & conditionResult) : conditionResult;
                     }
+
                     if(!ignoreRow) {
                         Map<String, Object> row = new HashMap<>();
                         for (Map.Entry<String, Object> entry : rowEntry.entrySet()) {
@@ -426,11 +437,11 @@ public class ReadActionProperty extends ScriptingActionProperty {
                     db.close();
             }
         } else {
-            throw Throwables.propagate(new RuntimeException("Incorrect mdb url. Please use format: mdb://path:table;where"));
+            throw Throwables.propagate(new RuntimeException("Incorrect mdb url. Please use format: mdb://path:table;where [NOT] condition1 [AND|OR conditionN]"));
         }
     }
 
-    private boolean ignoreRowIntegerCondition(Object fieldValue, String sign, String value) {
+    private boolean ignoreRowIntegerCondition(boolean not, Object fieldValue, String sign, String value) {
         boolean ignoreRow = false;
         Integer intValue;
         try {
@@ -460,10 +471,43 @@ public class ReadActionProperty extends ScriptingActionProperty {
                     ignoreRow = true;
                 break;
         }
-        return ignoreRow;
+        return not != ignoreRow;
     }
 
-    private boolean ignoreRowDateCondition(Object fieldValue, String sign, String value) {
+    private boolean ignoreRowDoubleCondition(boolean not, Object fieldValue, String sign, String value) {
+        boolean ignoreRow = false;
+        Double doubleValue;
+        try {
+            doubleValue = Double.parseDouble(value);
+        } catch (Exception e) {
+            throw Throwables.propagate(new RuntimeException("Incorrect WHERE in mdb url. Invalid value"));
+        }
+        switch (sign) {
+            case "=":
+                if (!fieldValue.equals(doubleValue))
+                    ignoreRow = true;
+                break;
+            case ">=":
+                if (((Double) fieldValue).compareTo(doubleValue) < 0)
+                    ignoreRow = true;
+                break;
+            case ">":
+                if (((Double) fieldValue).compareTo(doubleValue) <= 0)
+                    ignoreRow = true;
+                break;
+            case "<=":
+                if (((Double) fieldValue).compareTo(doubleValue) > 0)
+                    ignoreRow = true;
+                break;
+            case "<":
+                if (((Double) fieldValue).compareTo(doubleValue) >= 0)
+                    ignoreRow = true;
+                break;
+        }
+        return not != ignoreRow;
+    }
+
+    private boolean ignoreRowDateCondition(boolean not, Object fieldValue, String sign, String value) {
         boolean ignoreRow = false;
         java.util.Date dateValue;
         try {
@@ -493,10 +537,10 @@ public class ReadActionProperty extends ScriptingActionProperty {
                     ignoreRow = true;
                 break;
         }
-        return ignoreRow;
+        return not != ignoreRow;
     }
 
-    private boolean ignoreRowStringCondition(Object fieldValue, String sign, String value) {
+    private boolean ignoreRowStringCondition(boolean not, Object fieldValue, String sign, String value) {
         boolean ignoreRow = false;
         String stringFieldValue = String.valueOf(fieldValue);
         switch (sign) {
@@ -521,6 +565,6 @@ public class ReadActionProperty extends ScriptingActionProperty {
                     ignoreRow = true;
                 break;
         }
-        return ignoreRow;
+        return not != ignoreRow;
     }
 }
