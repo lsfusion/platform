@@ -1002,4 +1002,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             return null;
         }
     }
+
+    @Override
+    public String toString() {
+        return "RF - " + form;
+    }
 }
