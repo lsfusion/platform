@@ -3,12 +3,14 @@ package lsfusion.server.form.navigator;
 import lsfusion.interop.remote.CallbackMessage;
 import lsfusion.interop.remote.ClientCallBackInterface;
 import lsfusion.interop.remote.RemoteObject;
+import lsfusion.server.ServerLoggers;
 
 import java.rmi.RemoteException;
+import java.rmi.server.Unreferenced;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientCallBackController extends RemoteObject implements ClientCallBackInterface {
+public class ClientCallBackController extends RemoteObject implements ClientCallBackInterface, Unreferenced {
     public interface UsageTracker {
         void used();
     }
@@ -17,8 +19,9 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
     private final UsageTracker usageTracker;
     private Boolean deniedRestart = null;
 
-    public ClientCallBackController(int port, UsageTracker usageTracker) throws RemoteException {
+    public ClientCallBackController(int port, String caption, UsageTracker usageTracker) throws RemoteException {
         super(port, true);
+        this.caption = caption;
         this.usageTracker = usageTracker;
     }
 
@@ -55,5 +58,10 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
         ArrayList result = new ArrayList(messages);
         messages.clear();
         return result.isEmpty() ? null : result;
+    }
+
+    private String caption;
+    public void unreferenced() {
+        ServerLoggers.remoteLifeLog("CALLBACK UNREFERENCED : " + caption);
     }
 }

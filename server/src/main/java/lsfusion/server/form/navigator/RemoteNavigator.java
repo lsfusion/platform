@@ -123,12 +123,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
         pausablesExecutor = Executors.newCachedThreadPool(new ContextAwareDaemonThreadFactory(context, "navigator-daemon"));
 
-        this.client = new ClientCallBackController(port, new ClientCallBackController.UsageTracker() {
-            @Override
-            public void used() {
-                updateLastUsedTime();
-            }
-        });
         this.classCache = new ClassCache();
 
         this.securityPolicy = currentUser.getSecurityPolicy();
@@ -141,6 +135,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         this.sql = dbManager.createSQL(new WeakSQLSessionUserProvider(this));
 
         ServerLoggers.remoteLifeLog("NAVIGATOR OPEN : " + this);
+
+        this.client = new ClientCallBackController(port, toString(), new ClientCallBackController.UsageTracker() {
+            @Override
+            public void used() {
+                updateLastUsedTime();
+            }
+        });
     }
 
     public boolean isFullClient() {
@@ -772,6 +773,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
             } finally {
                 unexportAndCleanLater();
             }
+        } else {
+            ServerLoggers.remoteLifeLog("NAVIGATOR ALREADY CLOSED " + this);
         }
     }
 

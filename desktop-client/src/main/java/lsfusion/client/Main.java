@@ -99,7 +99,7 @@ public class Main {
         System.setProperty("swing.bufferPerWindow", "false");
 
         // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
-        System.setProperty("sun.rmi.dgc.client.gcInterval", "60000");
+//        System.setProperty("sun.rmi.dgc.client.gcInterval", "60000");
 
         asyncTimeOut = Integer.parseInt(System.getProperty(LSFUSION_CLIENT_ASYNC_TIMEOUT, "50"));
 
