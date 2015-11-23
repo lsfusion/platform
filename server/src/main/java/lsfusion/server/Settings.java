@@ -1545,4 +1545,24 @@ public class Settings {
     public void setUseSavepointsForExceptions(boolean useSavepointsForExceptions) {
         this.useSavepointsForExceptions = useSavepointsForExceptions;
     }
+
+    private int maxLength = 128;
+
+    public int getMaxLength() {
+        return maxLength;
+    }
+
+    public void setMaxLength(int maxLength) {
+        this.maxLength = maxLength;
+    }
+
+    private int maxPrecision = 32;
+
+    public int getMaxPrecision() {
+        return maxPrecision;
+    }
+
+    public void setMaxPrecision(int maxPrecision) {
+        this.maxPrecision = maxPrecision;
+    }
 }

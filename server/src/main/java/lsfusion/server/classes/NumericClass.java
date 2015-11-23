@@ -3,6 +3,7 @@ package lsfusion.server.classes;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExtInt;
 import lsfusion.interop.Data;
+import lsfusion.server.Settings;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.TypeEnvironment;
 import lsfusion.server.data.sql.SQLSyntax;
@@ -111,6 +112,12 @@ public class NumericClass extends IntegralClass<BigDecimal> {
     }
 
     public static NumericClass get(int length, int precision) {
+        int maxLength = Settings.get().getMaxLength();
+        if(length >= maxLength)
+            length = maxLength;
+        int maxPrecision = Settings.get().getMaxPrecision();
+        if(precision >= maxPrecision)
+            precision = maxPrecision;
         return get((byte)length, (byte)precision);
     }
 
