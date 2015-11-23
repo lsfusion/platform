@@ -1546,7 +1546,7 @@ public class Settings {
         this.useSavepointsForExceptions = useSavepointsForExceptions;
     }
 
-    private int maxLength = 128;
+    private int maxLength = 127;
 
     public int getMaxLength() {
         return maxLength;
