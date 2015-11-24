@@ -1642,7 +1642,11 @@ nonEmptyPropertyUsageListWithIds returns [List<String> ids, List<PropertyUsage> 
 	;
 
 propertyUsageWithId returns [String id = null, PropertyUsage propUsage]
-	:	(pid=ID '=' { $id = $pid.text; } )? pu=propertyUsage { $propUsage = $pu.propUsage; }
+	:	(
+			pid=ID '=' { $id = $pid.text; }
+		|	sLiteral = stringLiteral '=' { $id = $sLiteral.val; } 
+		)? 
+		pu=propertyUsage { $propUsage = $pu.propUsage; }
 	;
 
 importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [ImportSourceFormat format, LPWithParams sheet, String separator, boolean noHeader, String charset, boolean attr]
