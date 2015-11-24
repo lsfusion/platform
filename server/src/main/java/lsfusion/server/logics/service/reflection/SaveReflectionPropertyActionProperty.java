@@ -17,8 +17,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import static org.apache.commons.lang.StringUtils.trimToEmpty;
-import static org.apache.commons.lang.StringUtils.trimToNull;
+import static org.apache.commons.lang3.StringUtils.trimToEmpty;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 public class SaveReflectionPropertyActionProperty extends ScriptingActionProperty {
     private ClassPropertyInterface reflectionPropertyInterface;

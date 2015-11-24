@@ -48,7 +48,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.commons.lang.StringUtils.trim;
+import static org.apache.commons.lang3.StringUtils.trim;
 
 public class Scheduler extends LifecycleAdapter implements InitializingBean {
     private static final Logger logger = ServerLoggers.systemLogger;

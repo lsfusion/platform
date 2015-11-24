@@ -32,6 +32,7 @@ import lsfusion.server.logics.scripted.ScriptingErrorLog;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import sun.management.jmxremote.LocalRMIServerSocketFactory;
 
@@ -293,7 +294,7 @@ public class ActionPropertyDebugger implements DebuggerService {
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
     private Object evalAction(ActionProperty action, ExecutionContext context, String namespace, String require, String priorities, String statements)
             throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
-        return evalAction(context, namespace, require, priorities, "{" + statements + "}", null);
+        return evalAction(context, namespace, require, priorities, "{" + StringEscapeUtils.unescapeJava(statements) + "}", null);
     }
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin
@@ -301,16 +302,16 @@ public class ActionPropertyDebugger implements DebuggerService {
         throws EvalUtils.EvaluationException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
 //        context.showStack();
-
         if (!isEnabled()) {
             throw new IllegalStateException("Action debugger isn't enabled!");
         }
 
         final String valueName = "sfdjdfkljgfk";
 
-        if (!expression.contains("ORDER")) // жестковато конечно пока, но будет работать
-            expression = "(" + expression + ")";
-        String actionText = "FOR " + valueName + " == " + expression + " DO watch();";
+        String escapedExpression = StringEscapeUtils.unescapeJava(expression);
+        if (!escapedExpression.contains("ORDER")) // жестковато конечно пока, но будет работать
+            escapedExpression = "(" + escapedExpression + ")";
+        String actionText = "FOR " + valueName + " == " + escapedExpression + " DO watch();";
         return evalAction(context, namespace, require, priorities, actionText, valueName);
     }
 

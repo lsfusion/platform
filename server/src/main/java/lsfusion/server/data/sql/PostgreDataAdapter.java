@@ -17,7 +17,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.property.ExecutionContext;
 import org.apache.commons.exec.*;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.postgresql.Driver;
 import org.postgresql.PGConnection;
 import org.postgresql.core.BaseConnection;
@@ -680,15 +680,19 @@ public class PostgreDataAdapter extends DataAdapter {
 
         typeEnv.addNeedRecursion(types);
         String recursionName = genRecursionName(BaseUtils.<ImList<Type>>immutableCast(types));
-        return recursionName + "('" + recName +"'" +
-                ",'(" + StringEscapeUtils.escapeSql(initialSelect)+")'" + ",'(" +StringEscapeUtils.escapeSql(stepSelect)+")'" +
-                ",'(" + StringEscapeUtils.escapeSql(stepSmallSelect)+")'" + "," + smallLimit +
-                (outerParams.length() == 0 ? "" : "," + outerParams)+") recursion (" + fieldDeclare + ")";
+        return recursionName + "('" + recName + "'" +
+                ",'(" + escapeSql(initialSelect) + ")'" + ",'(" + escapeSql(stepSelect) + ")'" +
+                ",'(" + escapeSql(stepSmallSelect) + ")'" + "," + smallLimit +
+                (outerParams.length() == 0 ? "" : "," + outerParams) + ") recursion (" + fieldDeclare + ")";
     }
 
     @Override
     public String wrapSubQueryRecursion(String string) {
-        return StringEscapeUtils.escapeSql(string);
+        return escapeSql(string);
+    }
+    
+    private String escapeSql(String sql) {
+        return StringUtils.replace(sql, "'", "''");
     }
 
     @Override

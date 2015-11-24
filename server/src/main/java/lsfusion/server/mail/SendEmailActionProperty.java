@@ -48,7 +48,7 @@ import static javax.mail.Message.RecipientType.TO;
 import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.base.BaseUtils.rtrim;
 import static lsfusion.server.logics.ServerResourceBundle.getString;
-import static org.apache.commons.lang.StringUtils.trimToNull;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 /**
  * User: DAle

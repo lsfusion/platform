@@ -17,9 +17,12 @@ import lsfusion.server.data.query.*;
 import lsfusion.server.data.query.stat.ExecCost;
 import lsfusion.server.data.sql.SQLExecute;
 import lsfusion.server.data.sql.SQLSyntax;
-import lsfusion.server.data.type.*;
+import lsfusion.server.data.type.ConcatenateType;
+import lsfusion.server.data.type.NullReader;
+import lsfusion.server.data.type.ParseInterface;
+import lsfusion.server.data.type.Reader;
 import lsfusion.server.session.SessionTableUsage;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

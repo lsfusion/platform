@@ -17,7 +17,7 @@
         <seven.zip.version>4.65.1.04</seven.zip.version>
         <xbasej.version>1.0.1</xbasej.version>
         <jacob.version>1.15-M3</jacob.version>
-        <commons.lang.version>2.5</commons.lang.version>
+        <commons.lang.version>3.4</commons.lang.version>
         <commons.collections.version>3.2</commons.collections.version>
         <commons.io.version>2.4</commons.io.version>
         <commons.codec.version>1.4</commons.codec.version>
@@ -599,8 +599,8 @@
                 <version>${jacob.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-lang</groupId>
-                <artifactId>commons-lang</artifactId>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
                 <version>${commons.lang.version}</version>
             </dependency>
             <dependency>

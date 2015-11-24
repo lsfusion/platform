@@ -3,7 +3,7 @@ package lsfusion.server.logics.scripted.converters;
 import lsfusion.interop.FontInfo;
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.converters.AbstractConverter;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.awt.*;
 
