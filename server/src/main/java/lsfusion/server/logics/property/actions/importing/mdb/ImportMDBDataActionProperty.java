@@ -2,6 +2,7 @@ package lsfusion.server.logics.property.actions.importing.mdb;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.server.classes.DateTimeClass;
 import lsfusion.server.classes.ValueClass;
 import lsfusion.server.logics.linear.LCP;
 import lsfusion.server.logics.property.actions.importing.ImportDataActionProperty;
@@ -9,10 +10,7 @@ import lsfusion.server.logics.property.actions.importing.ImportIterator;
 import lsfusion.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ImportMDBDataActionProperty extends ImportDataActionProperty {
     public ImportMDBDataActionProperty(ValueClass valueClass, ScriptingLogicsModule LM, List<String> ids, List<LCP> properties) {
@@ -37,8 +35,12 @@ public class ImportMDBDataActionProperty extends ImportDataActionProperty {
 
             for (Map<String, Object> row : rows) {
                 List<String> entryList = new ArrayList<>();
-                for (Object entry : row.values())
-                    entryList.add(entry == null ? null : String.valueOf(entry));
+                for (Object entry : row.values()) {
+                    if(entry instanceof Date)
+                        entryList.add(DateTimeClass.getDateTimeFormat().format(entry));
+                    else
+                        entryList.add(entry == null ? null : String.valueOf(entry));
+                }
                 rowsList.add(entryList);
             }
 
