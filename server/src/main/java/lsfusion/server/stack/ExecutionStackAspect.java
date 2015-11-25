@@ -174,6 +174,22 @@ public class ExecutionStackAspect {
         return cut ? trim(lastAction.toString(), 1000) : lastAction.toString();
     }
 
+    public static String getProgressBarLastActionString() {
+        String result = "";
+        Stack<ExecutionStackItem> stack = getStack();
+        ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.size());
+        while (itemListIterator.hasPrevious()) {
+            ExecutionStackItem item = itemListIterator.previous();
+            if (isLSFAction(item)) {
+                result = getLastActionString(stack, (ExecuteActionStackItem) item, false);
+                break;
+            } else {
+                result = item.toString();
+            }
+        }
+        return result;
+    }
+
     private static String trim(String value, int length) {
         return value == null ? null : value.substring(0, Math.min(value.length(), length));
     }

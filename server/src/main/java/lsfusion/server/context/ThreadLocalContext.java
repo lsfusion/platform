@@ -1,6 +1,7 @@
 package lsfusion.server.context;
 
 import lsfusion.base.ConcurrentWeakHashMap;
+import lsfusion.base.ProgressBar;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
@@ -146,7 +147,7 @@ public class ThreadLocalContext {
     }
 
     public static void pushProgressMessage(String message, Integer progress, Integer total) {
-        pushActionMessage(Arrays.asList(message, progress, total));
+        pushActionMessage(new ProgressBar(message, progress, total));
     }
 
     public static void pushActionMessage(Object segment) {

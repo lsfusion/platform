@@ -195,16 +195,14 @@ public abstract class AbstractContext implements Context {
         public synchronized List<Object> getMessageList() {
             List<Object> result = new ArrayList<>();
             for (Object entry : this) {
-                if (entry instanceof List) {
+                if (entry instanceof ProgressBar) {
                     result.add(entry);
-                } else {
-                    if(entry instanceof AspectStackItem) {
-                        ImList<ProgressBar> progress = ((AspectStackItem) entry).getProgress();
-                        if(!progress.isEmpty())
-                            result.addAll(progress.toJavaList());
-                    }
+                } else if (entry instanceof AspectStackItem) {
+                    ImList<ProgressBar> progress = ((AspectStackItem) entry).getProgress();
+                    if (!progress.isEmpty())
+                        result.addAll(progress.toJavaList());
+                } else
                     result.add(String.valueOf(entry));
-                }
             }
             return result;
         }
