@@ -43,7 +43,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.*;
 
-import static org.apache.commons.lang.StringUtils.trimToNull;
+import static lsfusion.base.BaseUtils.trimToNull;
 
 public class CustomRestoreActionProperty extends ScriptingActionProperty {
     private final ClassPropertyInterface backupInterface;

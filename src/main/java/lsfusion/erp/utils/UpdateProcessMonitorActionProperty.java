@@ -51,8 +51,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
-import static org.apache.commons.lang.StringUtils.trimToEmpty;
-import static org.apache.commons.lang.StringUtils.trimToNull;
+import static lsfusion.base.BaseUtils.trimToEmpty;
+import static lsfusion.base.BaseUtils.trimToNull;
 
 public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty {
 
