@@ -371,7 +371,6 @@ class BusyDialog extends JDialog {
                     }
                     result += leftPart + "\n";
                     w = rightPart;
-                    System.out.println(w.length());
                 }
                 line = w;
             }
