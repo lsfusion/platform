@@ -1001,7 +1001,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     @LogTime
     @ThisMessage
     private void executeSessionEvent(ExecutionEnvironment env, @ParamMessage ActionProperty<?> action) throws SQLException, SQLHandledException {
-        if(!SystemProperties.isDebug && !sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
+        if(!sessionEventChangedOld.getProperties().intersect(action.getSessionEventOldDepends()))// оптимизация аналогичная верхней
             return;
 
         action.execute(env);

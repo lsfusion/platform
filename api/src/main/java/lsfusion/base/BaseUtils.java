@@ -2546,5 +2546,21 @@ public class BaseUtils {
     
         commonClassSet3(vthis, cint, null,mAdd, checks);
     }
-    
+
+    public static String trimToEmpty(String str) {
+        return str == null?"":str.trim();
+    }
+
+    public static String trim(String str) {
+        return str == null?null:str.trim();
+    }
+
+    public static boolean isEmpty(String str) {
+        return str == null || str.length() == 0;
+    }
+
+    public static String trimToNull(String str) {
+        String ts = trim(str);
+        return isEmpty(ts)?null:ts;
+    }
 }
