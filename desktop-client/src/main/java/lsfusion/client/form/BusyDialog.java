@@ -359,12 +359,24 @@ class BusyDialog extends JDialog {
         String result = "";
         String line = "";
         for(String word : words) {
-            if(fm.stringWidth(line + " " + word) > maxWidth) {
+            String w = word;//
+            if(fm.stringWidth(line + " " + w) > maxWidth) {
                 result += line + "\n";
-                line = word;
+                while (fm.stringWidth(w) > maxWidth) {
+                    String leftPart = w;
+                    String rightPart = "";
+                    while (fm.stringWidth(leftPart) > maxWidth) {
+                        rightPart = leftPart.substring(leftPart.length() - 1) + rightPart;
+                        leftPart = leftPart.substring(0, leftPart.length() - 1);
+                    }
+                    result += leftPart + "\n";
+                    w = rightPart;
+                    System.out.println(w.length());
+                }
+                line = w;
             }
             else
-                line += " " + word;
+                line += " " + w;
         }
         if(!line.isEmpty())
             result += line + "\n";
