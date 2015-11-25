@@ -7,6 +7,7 @@ import lsfusion.client.logics.classes.ClientActionClass;
 import lsfusion.client.logics.classes.ClientFileClass;
 import lsfusion.gwt.base.client.ui.GAlignment;
 import lsfusion.gwt.base.client.ui.GFlexAlignment;
+import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.shared.view.*;
 import lsfusion.gwt.form.shared.view.classes.GClass;
@@ -274,7 +275,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.groupObject = convertOrCast(clientPropertyDraw.groupObject);
         if (!clientPropertyDraw.columnGroupObjects.isEmpty()) {
             propertyDraw.columnsName = clientPropertyDraw.columnsName;
-            propertyDraw.columnGroupObjects = new ArrayList<GGroupObject>();
+            propertyDraw.columnGroupObjects = new ArrayList<>();
             for (ClientGroupObject clientColumnGroup : clientPropertyDraw.columnGroupObjects) {
                 GGroupObject columnGroup = convertOrCast(clientColumnGroup);
                 propertyDraw.columnGroupObjects.add(columnGroup);
@@ -342,7 +343,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     public GEditBindingMap convertBindingMap(EditBindingMap editBindingMap) {
         HashMap<GKeyStroke, String> keyBindingMap = null;
         if (editBindingMap.getKeyBindingMap() != null) {
-            keyBindingMap = new HashMap<GKeyStroke, String>();
+            keyBindingMap = new HashMap<>();
             for (Map.Entry<KeyStroke, String> e : editBindingMap.getKeyBindingMap().entrySet()) {
                 GKeyStroke key = convertOrCast(e.getKey());
                 keyBindingMap.put(key, e.getValue());
@@ -350,7 +351,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
 
         LinkedHashMap<String, String> contextMenuBindingMap = editBindingMap.getContextMenuItems() != null
-                                                              ? new LinkedHashMap<String, String>(editBindingMap.getContextMenuItems())
+                                                              ? new LinkedHashMap<>(editBindingMap.getContextMenuItems())
                                                               : null;
         String mouseBinding = editBindingMap.getMouseAction();
 
@@ -459,7 +460,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         groupObject.showType = convertOrCast(clientGroupObject.showType);
         groupObject.toolbar = convertOrCast(clientGroupObject.toolbar);
         groupObject.filter = convertOrCast(clientGroupObject.filter);
-        groupObject.banClassView = new ArrayList<String>();
+        groupObject.banClassView = new ArrayList<>();
         for (ClassViewType banView : clientGroupObject.banClassView) {
             groupObject.banClassView.add(banView.name());
         }

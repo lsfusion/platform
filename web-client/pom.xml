@@ -212,10 +212,6 @@
             <artifactId>colorpicker</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.bfr.client</groupId>
-            <artifactId>gwt-selection</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.moxieapps.gwt.uploader</groupId>
             <artifactId>uploader</artifactId>
         </dependency>

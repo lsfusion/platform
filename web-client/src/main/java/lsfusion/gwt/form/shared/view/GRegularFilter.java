@@ -1,5 +1,7 @@
 package lsfusion.gwt.form.shared.view;
 
+import lsfusion.gwt.base.client.ui.GKeyStroke;
+
 import java.io.Serializable;
 
 public class GRegularFilter implements Serializable {

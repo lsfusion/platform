@@ -12,6 +12,7 @@ import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.jsni.Function;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
+import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.cellview.client.Column;
 import lsfusion.gwt.cellview.client.DataGrid;

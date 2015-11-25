@@ -119,5 +119,9 @@
             <groupId>stax</groupId>
             <artifactId>stax</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.bfr.client</groupId>
+            <artifactId>gwt-selection</artifactId>
+        </dependency>
     </dependencies>
 </project>

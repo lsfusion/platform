@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.client.form.ui;
+package lsfusion.gwt.base.client.ui;
 
 import com.bfr.client.selection.Range;
 import com.bfr.client.selection.RangeEndPoint;
@@ -25,6 +25,21 @@ public class CopyPasteUtils {
             });
         }
     }
+    
+    public static void putSelectionIntoClipboard() {
+        Range range = selection.getRange();
+        if (range != null) {
+            String rangeText = range.getText();
+            if (!rangeText.isEmpty()) {
+                setClipboardData(rangeText);    
+            }
+        }
+    }
+
+    public static native void setClipboardData(String text)
+    /*-{
+        $wnd.clipboardData.setData("text/plain", text); // в Firefox не работает
+    }-*/;
 
     public static void setEmptySelection(final Element element) {
         if (element != null && !GwtClientUtils.isIEUserAgent() && Range.getAdjacentTextElement(element, element, true, false) != null) {

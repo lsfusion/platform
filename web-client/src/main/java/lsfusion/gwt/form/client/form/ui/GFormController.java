@@ -20,6 +20,7 @@ import lsfusion.gwt.base.client.WrapperAsyncCallbackEx;
 import lsfusion.gwt.base.client.jsni.Function2;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
 import lsfusion.gwt.base.client.ui.DialogBoxHelper;
+import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.base.shared.actions.NumberResult;

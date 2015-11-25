@@ -3,10 +3,12 @@ package lsfusion.gwt.base.client.ui;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.EscapeUtils;
+import lsfusion.gwt.base.client.GwtClientUtils;
 
 public class DialogBoxHelper {
     public interface CloseCallback {
@@ -120,6 +122,18 @@ public class DialogBoxHelper {
 
             setText(caption);
             setWidget(mainPane);
+        }
+
+        // модальный диалог не воспринимает некоторые события. нам не хватает ctrl+C 
+        // поэтому на preview пытаемся руками затолкать в буфер обмена выделенный текст
+        @Override
+        protected void onPreviewNativeEvent(Event.NativePreviewEvent event) {
+            // в IE работает и так
+            if (!GwtClientUtils.isIEUserAgent() && GKeyStroke.isCopyToClipboardEvent(event.getNativeEvent())) {
+                CopyPasteUtils.putSelectionIntoClipboard();
+            }
+            
+            super.onPreviewNativeEvent(event);
         }
 
         private void createButtonsPanel(OptionType activeOption, OptionType[] options, CloseCallback closeCallback) {

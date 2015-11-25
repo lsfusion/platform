@@ -5,11 +5,11 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Window;
 import lsfusion.gwt.base.client.Dimension;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
+import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.base.shared.actions.NumberResult;
 import lsfusion.gwt.form.client.form.FormsController;
 import lsfusion.gwt.form.client.form.ui.GFormController;
 import lsfusion.gwt.form.shared.view.GForm;
-import lsfusion.gwt.form.shared.view.GKeyStroke;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.NativeEditEvent;
 

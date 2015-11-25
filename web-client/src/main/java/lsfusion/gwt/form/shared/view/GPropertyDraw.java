@@ -1,5 +1,6 @@
 package lsfusion.gwt.form.shared.view;
 
+import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.MainFrame;
 import lsfusion.gwt.form.client.form.ui.GFormController;

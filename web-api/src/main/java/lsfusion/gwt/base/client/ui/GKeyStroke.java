@@ -1,4 +1,4 @@
-package lsfusion.gwt.form.shared.view;
+package lsfusion.gwt.base.client.ui;
 
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.NativeEvent;

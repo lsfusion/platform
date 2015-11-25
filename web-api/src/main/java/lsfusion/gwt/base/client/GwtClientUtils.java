@@ -107,7 +107,7 @@ public class GwtClientUtils {
     }
 
     public static Map<String, String> getPageParameters() {
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         try {
             Dictionary dict = Dictionary.getDictionary("parameters");
             if (dict != null) {
@@ -204,7 +204,9 @@ public class GwtClientUtils {
     }
 
     public static boolean isIEUserAgent() {
-        return getUserAgent().contains("msie");
+        String userAgent = getUserAgent();
+        // надо бы как-то покрасивее определять браузер
+        return userAgent.contains("msie") || (userAgent.contains("rv:11.0") && !userAgent.contains("firefox"));
     }
 
     public static boolean isShowing(Widget widget) {
@@ -301,8 +303,8 @@ public class GwtClientUtils {
      * should always be consistent with lsfusion.client.form.TableTransferHandler#getClipboardTable(java.lang.String)
      */
     public static List<List<String>> getClipboardTable(String line) {
-        List<List<String>> table = new ArrayList<List<String>>();
-        List<String> row = new ArrayList<String>();
+        List<List<String>> table = new ArrayList<>();
+        List<String> row = new ArrayList<>();
 
         char[] charline = line.toCharArray();
 
@@ -339,7 +341,7 @@ public class GwtClientUtils {
                             row.add(GwtSharedUtils.nullEmpty(cell));
                             if (isRowEnd) {
                                 table.add(row);
-                                row = new ArrayList<String>();
+                                row = new ArrayList<>();
                             }
 
                             start = i;
@@ -355,7 +357,7 @@ public class GwtClientUtils {
                 row.add(GwtSharedUtils.nullEmpty(line.substring(start, i)));
                 if (isRowEnd) {
                     table.add(row);
-                    row = new ArrayList<String>();
+                    row = new ArrayList<>();
                 }
 
                 start = i;

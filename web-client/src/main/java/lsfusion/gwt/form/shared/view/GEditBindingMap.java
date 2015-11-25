@@ -1,6 +1,7 @@
 package lsfusion.gwt.form.shared.view;
 
 import com.google.gwt.dom.client.NativeEvent;
+import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.form.shared.view.grid.EditEvent;
 import lsfusion.gwt.form.shared.view.grid.InternalEditEvent;
 import lsfusion.gwt.form.shared.view.grid.NativeEditEvent;
@@ -10,7 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import static com.google.gwt.dom.client.BrowserEvents.CLICK;
-import static lsfusion.gwt.form.shared.view.GKeyStroke.*;
+import static lsfusion.gwt.base.client.ui.GKeyStroke.*;
 
 public class GEditBindingMap implements Serializable {
     public static final String CHANGE = "change";
@@ -18,8 +19,8 @@ public class GEditBindingMap implements Serializable {
     public static final String EDIT_OBJECT = "editObject";
     public static final String CHANGE_WYS = "change_wys";
 
-    public static interface EditEventFilter {
-        public boolean accept(NativeEvent e);
+    public interface EditEventFilter {
+        boolean accept(NativeEvent e);
     }
 
     public static final transient EditEventFilter numberEventFilter = new GEditBindingMap.EditEventFilter() {
@@ -96,14 +97,14 @@ public class GEditBindingMap implements Serializable {
 
     private HashMap<GKeyStroke,String> createKeyBindingMap() {
         if (keyBindingMap == null) {
-            keyBindingMap = new HashMap<GKeyStroke, String>();
+            keyBindingMap = new HashMap<>();
         }
         return keyBindingMap;
     }
 
     public LinkedHashMap<String, String> createContextMenuItems() {
         if (contextMenuBindingMap == null) {
-            contextMenuBindingMap = new LinkedHashMap<String, String>();
+            contextMenuBindingMap = new LinkedHashMap<>();
         }
         return contextMenuBindingMap;
     }

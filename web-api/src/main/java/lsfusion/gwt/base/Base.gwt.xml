@@ -9,6 +9,7 @@
     <!-- GIN configuration -->
     <inherits name="com.google.gwt.inject.Inject"/>
     <inherits name="net.customware.gwt.dispatch.Dispatch"/>
+    <inherits name="com.bfr.client.Selection"/>
 
     <source path='client'/>
     <source path='shared'/>
