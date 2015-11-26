@@ -15,6 +15,7 @@ public class BusyDialogDisplayer extends TimerTask {
 
     private Timer executionTimer;
     private Window drawingWindow;
+    private BlurWindow blurWindow;
     private BusyDialog busyDialog;
     private final Provider<List<Object>> serverMessageProvider;
 
@@ -28,6 +29,7 @@ public class BusyDialogDisplayer extends TimerTask {
             drawingWindow = Main.frame;
         }
 
+        blurWindow = new BlurWindow(drawingWindow);
         busyDialog = new BusyDialog(drawingWindow, true);
 
         if (drawingWindow != null) {
@@ -43,7 +45,8 @@ public class BusyDialogDisplayer extends TimerTask {
             drawingWindow.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             drawingWindow.repaint();
             drawingWindow = null;
-            busyDialog.unlockFrame();
+            blurWindow.dispose();
+            blurWindow = null;
             busyDialog.dispose();
             busyDialog = null;
         }
@@ -54,6 +57,7 @@ public class BusyDialogDisplayer extends TimerTask {
         try {
             hideSwingWorker = new HideSwingWorker(r);
             hideSwingWorker.execute();
+            blurWindow.setVisible(true);
             busyDialog.setVisible(true);
         } finally {
             if (hideSwingWorker != null)
@@ -63,8 +67,10 @@ public class BusyDialogDisplayer extends TimerTask {
     }
 
     public void hide() {
-        if(busyDialog != null && busyDialog.isVisible())
+        if(busyDialog != null && busyDialog.isVisible()) {
+            blurWindow.setVisible(false);
             busyDialog.setVisible(false);
+        }
     }
 
     @Override
@@ -73,8 +79,12 @@ public class BusyDialogDisplayer extends TimerTask {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    if (busyDialog != null)
-                        busyDialog.updateBusyDialog(serverMessageProvider.get());
+                    try {
+                        if (busyDialog != null)
+                            busyDialog.updateBusyDialog(serverMessageProvider.get());
+                    } catch (Throwable e) {
+                        stop();
+                    }
                 }
             });
         }

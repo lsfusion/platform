@@ -51,7 +51,7 @@ class BusyDialog extends JDialog {
         stackPanel = new JPanel();
         stackPanel.setBackground(null);
         stackPanel.setLayout(new GridBagLayout());
-        stackPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        stackPanel.setBorder(new EmptyBorder(0, 5, 5, 5));
 
         subStackPanel = new JPanel();
         subStackPanel.setLayout(new GridBagLayout());
@@ -85,9 +85,9 @@ class BusyDialog extends JDialog {
         setModal(modal);
 
         int screenWidth = Main.frame.getRootPane().getWidth();
+        int screenHeight = Main.frame.getRootPane().getHeight();
         if (devMode) {
-            FontMetrics fm = stackPanel.getFontMetrics(stackPanel.getFont());
-            setMinimumSize(new Dimension((int) (screenWidth * 0.50), fm.getHeight() * 25)); //25 lines
+            setMinimumSize(new Dimension((int) (screenWidth * 0.50), (int) (screenHeight * 0.50)));
         } else {
             setMinimumSize(new Dimension((int) (screenWidth * 0.30), (int) getMinimumSize().getHeight()));
             setMaximumSize(new Dimension((int) (screenWidth * 0.50), (int) getMaximumSize().getHeight()));
@@ -97,32 +97,14 @@ class BusyDialog extends JDialog {
         setLocationRelativeTo(parent);
 
         setAutoRequestFocus(false);
-        final Component focusOwner = Main.frame.getFocusOwner();
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowOpened(WindowEvent e) {
-                lockFrame();
-            }
+        this.addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowClosed(WindowEvent e) {
-                //unlockFrame();
-                if (focusOwner != null)
-                    focusOwner.requestFocusInWindow();
                 if(longActionTimer != null)
                     longActionTimer.stop();
             }
         });
-    }
-
-    public void lockFrame() {
-        if (Main.frame != null)
-            Main.frame.setLocked(true);
-    }
-
-    public void unlockFrame() {
-        if (Main.frame != null)
-            Main.frame.setLocked(false);
     }
 
     private void initUIHandlers(final BusyDialog dialog) {
@@ -169,7 +151,9 @@ class BusyDialog extends JDialog {
         JPanel topProgressBarPanel = new JPanel(new BorderLayout());
 
         JPanel messagePanel = new JPanel();
-        messagePanel.add(new JLabel(getString("form.loading")));
+        JLabel messageLabel = new JLabel(getString("form.loading"));
+        messageLabel.setFont(messageLabel.getFont().deriveFont((float) (messageLabel.getFont().getSize() * 1.5)));
+        messagePanel.add(messageLabel);
         topProgressBarPanel.add(messagePanel, BorderLayout.NORTH);
 
         if(showProgress) {
@@ -180,7 +164,6 @@ class BusyDialog extends JDialog {
             progressPanel.add(topProgressBar);
             topProgressBarPanel.add(progressPanel, BorderLayout.SOUTH);
         }
-        topProgressBarPanel.setMaximumSize(topProgressBarPanel.getPreferredSize());
         return topProgressBarPanel;
     }
 
@@ -218,11 +201,11 @@ class BusyDialog extends JDialog {
                     showTopProgressBar = false;
                 if (!stackLines.isEmpty()) {
                     if (!panels.isEmpty())
-                        panels.add(Box.createVerticalStrut(10));
+                        panels.add(Box.createVerticalStrut(5));
                     panels.add(createTextPanel(stackLines));
-                    panels.add(Box.createVerticalStrut(10));
+                    panels.add(Box.createVerticalStrut(5));
                 }
-                panels.add(createProgressBarPanel((ProgressBar) line, changed));
+                panels.add(createProgressBarPanel((ProgressBar) line));
                 stackLines = new LinkedHashMap<>();
                 progressBarCount++;
             } else {
@@ -231,7 +214,7 @@ class BusyDialog extends JDialog {
         }
         if(!stackLines.isEmpty()) {
             if(!panels.isEmpty())
-                panels.add(Box.createVerticalStrut(10));
+                panels.add(Box.createVerticalStrut(5));
             panels.add(createTextPanel(stackLines));
         }
 
@@ -280,7 +263,7 @@ class BusyDialog extends JDialog {
                     paramsLabel.setPreferredSize(new Dimension((int) messagePanel.getPreferredSize().getWidth(), (int) paramsLabel.getPreferredSize().getHeight()));
                     messageProgressPanel.add(paramsLabel);
                 }
-                messageProgressPanel.setBorder(new EmptyBorder(panels.isEmpty() ? 0 : 10, 10, 0, 10));
+                messageProgressPanel.setBorder(new EmptyBorder(panels.isEmpty() ? 0 : 5, 5, 0, 5));
                 panels.add(messageProgressPanel);
             }
 
@@ -325,12 +308,11 @@ class BusyDialog extends JDialog {
         } catch (BadLocationException ignored) {
         }
         textPane.setMaximumSize(textPane.getPreferredSize()); //to prevent stretch
-        textPane.setMargin(new Insets(0, 0, 0, 0));
-        textPane.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        textPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.GRAY, 1), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         return textPane;
     }
 
-    private JPanel createProgressBarPanel(ProgressBar progressBarLine, boolean changed) {
+    private JPanel createProgressBarPanel(ProgressBar progressBarLine) {
         JPanel messageProgressPanel = new JPanel(new GridLayout(progressBarLine.params == null ? 1 : 2, 1));
 
         JPanel messagePanel = new JPanel();
@@ -375,7 +357,7 @@ class BusyDialog extends JDialog {
                 line = w;
             }
             else
-                line += " " + w;
+                line += (line.isEmpty() ? "" : " ") + w;
         }
         if(!line.isEmpty())
             result += line + "\n";
