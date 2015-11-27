@@ -47,6 +47,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP complexityProperty;
     public LCP captionProperty;
     public LCP tableSIDProperty;
+    public LCP statsProperty;
+    public LCP maxStatsProperty;
     public LCP propertySID;
     public LCP propertyCanonicalName;
     public LCP propertyTableSID;
@@ -194,6 +196,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         // Свойства
         parentProperty = findProperty("parentProperty");
         tableSIDProperty = findProperty("tableSIDProperty");
+        statsProperty = findProperty("statsProperty");
+        maxStatsProperty = findProperty("maxStatsProperty");
         numberProperty = findProperty("numberProperty");
         dbNameProperty = findProperty("dbNameProperty");
         canonicalNameProperty = findProperty("canonicalNameProperty");

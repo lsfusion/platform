@@ -50,6 +50,14 @@ complexityProperty 'Сложность свойства' = DATA LONG (Property);
 captionProperty 'Заголовок' = DATA VARSTRING[250] (Property) IN base;
 tableSIDProperty 'Таблица' = DATA VARSTRING[100] (Property);
 
+statsProperty 'Кол-во записей' = DATA INTEGER (Property);
+maxStatsProperty 'Максимальное кол-во записей для логируемого свойства' = DATA INTEGER ();
+CONSTRAINT SET (userLoggableProperty(p)) AND maxStatsProperty() AND statsProperty(p) > maxStatsProperty() 
+           MESSAGE 'Количество записей логируемого свойства не может превышать ' + maxStatsProperty();
+
+EXTEND FORM options PROPERTIES maxStatsProperty();
+DESIGN options { commons { MOVE PROPERTY(maxStatsProperty()); } }
+
 propertySID 'Свойство' (sID) = GROUP NAGGR property BY dbNameProperty(property) WHERE property IS Property; // todo [dale]: временно, нужно для миграции на 15 версию БД
 propertyCanonicalName 'Свойство' (cn) = GROUP AGGR property BY canonicalNameProperty(property) WHERE property IS Property;
 propertyTableSID 'Свойство' (string, sID) = GROUP AGGR property BY tableSIDProperty(property), dbNameProperty(property) WHERE storedProperty(property);

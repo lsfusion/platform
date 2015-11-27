@@ -43,6 +43,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.query.MapCacheAspect;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
+import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.type.ObjectType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.Where;
@@ -70,10 +71,7 @@ import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.mail.NotificationActionProperty;
-import lsfusion.server.session.ApplyFilter;
-import lsfusion.server.session.DataSession;
-import lsfusion.server.session.SessionCreator;
-import lsfusion.server.session.SingleKeyTableUsage;
+import lsfusion.server.session.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -603,7 +601,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         //временное решение
         
         try {
-            SQLSession sql = getDbManager().getThreadLocalSql();            
+            SQLSession sql = getDbManager().getThreadLocalSql();
             
             systemLogger.info("Setting user logging for properties");
             setUserLoggableProperties(sql);
@@ -629,7 +627,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     private void setUserLoggableProperties(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
-        
+
+        Integer maxStatsProperty = null;
+        try {
+            maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
+        } catch (Exception ignored) {
+        }
+
         LCP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
         ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = keys.singleValue();
@@ -639,8 +643,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
-            LM.makeUserLoggable(systemEventsLM, (LCP) findProperty(values.get("CNProperty").toString().trim()));
+            LCP lcp = (LCP) findProperty(values.get("CNProperty").toString().trim());
+            Integer statsProperty = lcp != null ? getStatsProperty(lcp.property) : null;
+            if(statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty)
+                LM.makeUserLoggable(systemEventsLM, (LCP) findProperty(values.get("CNProperty").toString().trim()));
         }
+    }
+
+    public Integer getStatsProperty (Property property) {
+        Integer statsProperty = null;
+        if (property instanceof AggregateProperty) {
+            StatKeys classStats = ((AggregateProperty) property).getInterfaceClassStats();
+            if (classStats != null && classStats.rows != null)
+                statsProperty = classStats.rows.getCount();
+        }
+        return statsProperty;
     }
 
     private void setNotNullProperties(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {

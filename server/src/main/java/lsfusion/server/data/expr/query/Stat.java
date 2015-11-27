@@ -97,11 +97,13 @@ public class Stat {
 
     public int getCount() {
         int statDegree = Settings.get().getStatDegree();
-        int result = 1;
+        long result = 1;
         for(int i=0,size=getWeight();i<size;i++) {
             result = result * statDegree;
+            if(result > Integer.MAX_VALUE)
+                break;
         }
-        return result;
+        return (int) Math.min(result, Integer.MAX_VALUE);
     }
     
     public Stat avg(Stat add) {

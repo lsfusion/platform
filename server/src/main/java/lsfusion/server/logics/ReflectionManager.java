@@ -373,6 +373,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         ImportField classPropertyField = new ImportField(reflectionLM.propertyClassValueClass);
         ImportField complexityPropertyField = new ImportField(LongClass.instance);
         ImportField tableSIDPropertyField = new ImportField(reflectionLM.propertyTableValueClass);
+        ImportField statsPropertyField = new ImportField(IntegerClass.instance);
 
         ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertyCanonicalName.getMapping(canonicalNamePropertyField));
 
@@ -384,7 +385,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                     String classProperty = "";
                     String tableSID = "";
                     Long complexityProperty = null;
-                    
+
                     try {
                         classProperty = property.getClass().getSimpleName();
                         
@@ -405,7 +406,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                     dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), property.caption, property.loggable ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
-                            returnClass, classProperty, complexityProperty, tableSID));
+                            returnClass, classProperty, complexityProperty, tableSID, businessLogics.getStatsProperty(property)));
                 }
             }
 
@@ -420,13 +421,14 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             properties.add(new ImportProperty(classPropertyField, reflectionLM.classProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(complexityPropertyField, reflectionLM.complexityProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(tableSIDPropertyField, reflectionLM.tableSIDProperty.getMapping(keyProperty)));
+            properties.add(new ImportProperty(statsPropertyField, reflectionLM.statsProperty.getMapping(keyProperty)));
 
             List<ImportDelete> deletes = new ArrayList<>();
             deletes.add(new ImportDelete(keyProperty, LM.is(reflectionLM.property).getMapping(keyProperty), false));
 
             ImportTable table = new ImportTable(asList(canonicalNamePropertyField, dbNamePropertyField, captionPropertyField, loggablePropertyField,
                     storedPropertyField, isSetNotNullPropertyField, returnPropertyField,
-                    classPropertyField, complexityPropertyField, tableSIDPropertyField), dataProperty);
+                    classPropertyField, complexityPropertyField, tableSIDPropertyField, statsPropertyField), dataProperty);
 
             try (DataSession session = createSyncSession()) {
                 session.pushVolatileStats("RM_PE");
