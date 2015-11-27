@@ -637,16 +637,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         LCP<PropertyInterface> isProperty = LM.is(reflectionLM.property);
         ImRevMap<PropertyInterface, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = keys.singleValue();
-        QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<PropertyInterface, Object>(keys);
+        QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<>(keys);
         query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
         query.and(reflectionLM.userLoggableProperty.getExpr(key).getWhere());
         ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
-            LCP lcp = (LCP) findProperty(values.get("CNProperty").toString().trim());
-            Integer statsProperty = lcp != null ? getStatsProperty(lcp.property) : null;
-            if(statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty)
-                LM.makeUserLoggable(systemEventsLM, (LCP) findProperty(values.get("CNProperty").toString().trim()));
+            LP lp = findProperty(values.get("CNProperty").toString().trim());
+            Integer statsProperty = lp != null ? getStatsProperty(lp.property) : null;
+            if((statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) && lp instanceof LCP)
+                LM.makeUserLoggable(systemEventsLM, (LCP) lp);
         }
     }
 

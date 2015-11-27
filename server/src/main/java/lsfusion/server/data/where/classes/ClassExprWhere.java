@@ -63,10 +63,10 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
     public Stat getKeyStat(ParamExpr keyExpr, boolean forJoin) {
         AndClassSet classSet = wheres[0].get(keyExpr);
         if(classSet==null) {
-            if(keyExpr instanceof PullExpr)
+            //if(keyExpr instanceof PullExpr)
                 return Stat.ALOT;
-            else
-                throw new RuntimeException("no classes"); // см. ClassExprWhere.getKeyType
+            //else
+            //    throw new RuntimeException("no classes"); // см. ClassExprWhere.getKeyType
         } else
             return classSet.getTypeStat(forJoin);
     }
