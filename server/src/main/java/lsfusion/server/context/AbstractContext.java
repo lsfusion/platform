@@ -199,9 +199,10 @@ public abstract class AbstractContext implements Context {
                     result.add(entry);
                 } else if (entry instanceof AspectStackItem) {
                     ImList<ProgressBar> progress = ((AspectStackItem) entry).getProgress();
-                    if (!progress.isEmpty())
+                    if (progress.isEmpty())
+                        result.add(String.valueOf(entry));
+                    else
                         result.addAll(progress.toJavaList());
-                    result.add(String.valueOf(entry));
                 } else
                     result.add(String.valueOf(entry));
             }

@@ -25,12 +25,18 @@ public class AspectStackItem implements ExecutionStackItem {
             Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
 
             Annotation annotation = method.getAnnotation(StackMessage.class);
-            String resultMessage = ServerResourceBundle.getString(((StackMessage) annotation).value());
+            String resultMessage = annotation == null ? "" : ServerResourceBundle.getString(((StackMessage) annotation).value());
 
             ImList<String> params = getArgs(thisJoinPoint, method);
             if (!params.isEmpty()) {
                 resultMessage += " : " + params.toString(",");
             }
+
+            ImList<ProgressBar> progressList = getProgress();
+            if(!progressList.isEmpty()) {
+                resultMessage += ", " + progressList.toString(",");
+            }
+
             message = resultMessage;
         }
         return message;
@@ -69,7 +75,13 @@ public class AspectStackItem implements ExecutionStackItem {
             for (Annotation paramAnnotation : paramAnnotations[i])
                 if (paramAnnotation instanceof StackProgress) {
                     ProgressBar progressBar = (ProgressBar) args[i];
-                    progressBar.params = params.toString(",");
+                    String extraParams = params.toString(",");
+                    if(!extraParams.isEmpty()) {
+                        if(progressBar.params == null)
+                            progressBar.params = extraParams;
+                        else
+                            progressBar.params += (progressBar.params.isEmpty() ? "" : ", ") + extraParams;
+                    }
                     progressBarList.add(progressBar);
 
                 }

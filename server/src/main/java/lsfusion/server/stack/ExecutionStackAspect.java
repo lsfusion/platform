@@ -25,7 +25,7 @@ public class ExecutionStackAspect {
         return processStackItem(joinPoint, item);
     }
 
-    @Around("execution(@lsfusion.server.stack.StackMessage * *.*(..))")
+    @Around("execution(@lsfusion.server.stack.StackMessage * *.*(..)) || execution(@lsfusion.server.stack.StackProgress * *.*(..))")
     public Object callTwinMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         AspectStackItem item = new AspectStackItem(thisJoinPoint);
         return processStackItem(thisJoinPoint, item);

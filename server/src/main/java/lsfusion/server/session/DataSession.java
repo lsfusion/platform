@@ -48,6 +48,7 @@ import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.StackProgress;
 import lsfusion.server.stack.ThisMessage;
 
 import javax.swing.*;
@@ -1036,8 +1037,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         action.execute(env);
     }
 
-    @StackMessage("message.query.execute")
-    private boolean executeGlobalEvent(BusinessLogics BL, @ParamMessage Object property, @ParamMessage String progress) throws SQLException, SQLHandledException {
+    @StackProgress()
+    private boolean executeGlobalEvent(BusinessLogics BL, Object property, @StackProgress final ProgressBar progressBar) throws SQLException, SQLHandledException {
         if(property instanceof ActionProperty || property instanceof ActionPropertyValueImplement) {
             startPendingSingles(property instanceof ActionPropertyValueImplement ? ((ActionPropertyValueImplement) property).property : (ActionProperty) property);
 
@@ -1826,7 +1827,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         for (int i = 0, size = execActions.size(); i < size; i++) {
             try {
                 sql.statusMessage = new StatusMessage("event", execActions.get(i), i, size);
-                if (!executeGlobalEvent(BL, execActions.get(i), i + " of " + size))
+                if (!executeGlobalEvent(BL, execActions.get(i), new ProgressBar(getString("logics.server.apply.message"), i, size, execActions.get(i) + ", " + i + " of " + size)))
                     return false;
             } finally {
                 sql.statusMessage = null;

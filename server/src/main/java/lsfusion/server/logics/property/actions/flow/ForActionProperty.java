@@ -15,6 +15,7 @@ import lsfusion.server.caches.IdentityLazy;
 import lsfusion.server.classes.ConcreteCustomClass;
 import lsfusion.server.classes.CustomClass;
 import lsfusion.server.classes.ValueClass;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.LogTime;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.data.expr.Expr;
@@ -29,6 +30,7 @@ import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChange;
 import lsfusion.server.session.PropertySet;
 import lsfusion.server.session.UpdateCurrentClasses;
+import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ParamMessage;
 import lsfusion.server.stack.ThisMessage;
 
@@ -151,12 +153,16 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             }
             RowUpdateIterate<I> rowUpdate = new RowUpdateIterate<I>(rows);
             context.pushUpdate(rowUpdate);
+            ThreadLocalContext.pushProgressMessage(ExecutionStackAspect.getProgressBarLastActionString(), 0, rowUpdate.rows.size());
             try {
-                for (ImMap<I, DataObject> row : rowUpdate) {
+                for (int i = 0; i < rowUpdate.rows.size(); i++) {
+                    ImMap<I, DataObject> row = rowUpdate.rows.get(i);
                     ImMap<I, ObjectValue> newValues = MapFact.addExcl(innerValues, row);
                     if(addObject!=null)
                         newValues = MapFact.addExcl(newValues, addObject, context.addObject((ConcreteCustomClass) addClass));
-                    
+
+                    ThreadLocalContext.popActionMessage();
+                    ThreadLocalContext.pushProgressMessage(ExecutionStackAspect.getProgressBarLastActionString(), i + 1, rowUpdate.rows.size());
                     FlowResult actionResult = executeFor(context, newValues);
                     if (actionResult != FlowResult.FINISH) {
                         if (actionResult != FlowResult.BREAK) {
@@ -167,6 +173,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                 }
             } finally {
                 context.popUpdate();
+                ThreadLocalContext.popActionMessage();
             }
         } while (recursive && !rows.isEmpty());
 
