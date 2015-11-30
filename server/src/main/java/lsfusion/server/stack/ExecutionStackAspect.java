@@ -177,14 +177,16 @@ public class ExecutionStackAspect {
     public static String getProgressBarLastActionString() {
         String result = "";
         Stack<ExecutionStackItem> stack = getStack();
-        ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.size());
-        while (itemListIterator.hasPrevious()) {
-            ExecutionStackItem item = itemListIterator.previous();
-            if (isLSFAction(item)) {
-                result = getLastActionString(stack, (ExecuteActionStackItem) item, false);
-                break;
-            } else {
-                result = item.toString();
+        if(stack != null) {
+            ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.size());
+            while (itemListIterator.hasPrevious()) {
+                ExecutionStackItem item = itemListIterator.previous();
+                if (isLSFAction(item)) {
+                    result = getLastActionString(stack, (ExecuteActionStackItem) item, false);
+                    break;
+                } else {
+                    result = item.toString();
+                }
             }
         }
         return result;
