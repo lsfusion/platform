@@ -63,29 +63,8 @@ public class PingThread extends Thread {
             computerId = null;
         }
 
-        //при старте сбрасываем needRestart и needShutdown
-        resetRestartShutdown();
-
         while (true) {
             if (abandoned.get() || ConnectionLostManager.isConnectionLost()) {
-                return;
-            }
-
-            if (needShutdown()) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        Main.shutdown();
-                    }
-                });
-                return;
-            } else if (needRestart()) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        Main.reconnect();
-                    }
-                });
                 return;
             }
 
@@ -184,30 +163,6 @@ public class PingThread extends Thread {
             } catch (InterruptedException e) {
                 break;
             }
-        }
-    }
-
-    private boolean needRestart() {
-        try {
-            return Main.remoteNavigator.needRestart();
-        } catch (RemoteException e) {
-            return false;
-        }
-    }
-
-    private boolean needShutdown() {
-        try {
-            return Main.remoteNavigator.needShutdown();
-        } catch (RemoteException e) {
-            return false;
-        }
-    }
-
-    private void resetRestartShutdown() {
-        try {
-            Main.remoteNavigator.resetRestartShutdown();
-        } catch (RemoteException e) {
-            logger.error("Reconnect Error: ", e);
         }
     }
 

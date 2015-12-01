@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface RemoteLogicsInterface extends PendingRemoteInterface {
-
-    Integer getApiVersion() throws RemoteException;
     
     GUIPreferences getGUIPreferences() throws RemoteException;
     

@@ -388,41 +388,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         return securityPolicy.configurator != null && securityPolicy.configurator;
     }
 
-    @Override
-    public boolean needRestart() throws RemoteException {
-        boolean result;
-        try (DataSession session = createSession()) {
-            result = businessLogics.authenticationLM.needRestartCustomUser.read(session, user) != null;
-        } catch (SQLException | SQLHandledException e) {
-            logger.error("NeedRestart read exception: ", e);
-            result = false;
-        }
-        return result;
-    }
-
-    @Override
-    public boolean needShutdown() throws RemoteException {
-        boolean result;
-        try (DataSession session = createSession()) {
-            result = businessLogics.authenticationLM.needShutdownCustomUser.read(session, user) != null;
-        } catch (SQLException | SQLHandledException e) {
-            logger.error("NeedShutdown read exception: ", e);
-            result = false;
-        }
-        return result;
-    }
-
-    @Override
-    public void resetRestartShutdown() throws RemoteException {
-        try (DataSession session = createSession()) {
-            businessLogics.authenticationLM.needRestartCustomUser.change((Object) null, session, user);
-            businessLogics.authenticationLM.needShutdownCustomUser.change((Object) null, session, user);
-            session.apply(businessLogics);
-        } catch (SQLException | SQLHandledException e) {
-            logger.error("ResetRestartShutdown exception: ", e);
-        }
-    }
-
     public void gainedFocus(FormInstance<T> form) {
         //todo: не нужно, так что позже можно удалить
     }
