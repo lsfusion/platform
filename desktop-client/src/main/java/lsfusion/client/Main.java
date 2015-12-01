@@ -85,6 +85,7 @@ public class Main {
 
     static SingleInstance singleInstance;
     public static boolean busyDialog;
+    public static Integer apiVersion = null;
 
     public static void start(final String[] args, ModuleFactory startModule) {
 
@@ -179,6 +180,12 @@ public class Main {
                     }
 
                     remoteLogics = loginAction.getRemoteLogics();
+
+                    if(loginAction.needShutdown()) {
+                        JOptionPane.showMessageDialog(Main.frame, getString("client.error.need.restart"), "LSFusion", JOptionPane.WARNING_MESSAGE);
+                        Main.shutdown();
+                        return;
+                    }
 
                     String country = remoteLogics.getUserCountry();
                     String language = remoteLogics.getUserLanguage();
@@ -480,7 +487,8 @@ public class Main {
     private static void clean() {
 
         try {
-            remoteNavigator.close();
+            if(remoteNavigator != null)
+                remoteNavigator.close();
         } catch (Throwable ignore) {
         }
 

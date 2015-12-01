@@ -46,4 +46,8 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     // для конфигуратора методы
     boolean isConfigurationAccessAllowed() throws RemoteException;
+
+    boolean needRestart() throws RemoteException;
+    boolean needShutdown() throws RemoteException;
+    void resetRestartShutdown() throws RemoteException;
 }

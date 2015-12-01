@@ -33,6 +33,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LCP ignorePrintTypeCustomUser;
     public LCP currentUser;
     public LCP currentUserName;
+    public LCP needRestartCustomUser;
+    public LCP needShutdownCustomUser;
 
     public LCP hostnameComputer;
     public LCP scannerComPortComputer;
@@ -107,6 +109,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         userDNSuffixLDAP =  findProperty("userDNSuffixLDAP");
 
         generateLoginPassword = findAction("generateLoginPassword");
+
+        needRestartCustomUser = findProperty("needRestartCustomUser");
+        needShutdownCustomUser = findProperty("needShutdownCustomUser");
 
 
     }

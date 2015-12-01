@@ -79,6 +79,17 @@ logOut 'Выйти' = ACTION CUSTOM 'lsfusion.server.logics.authentication.LogOu
 reloginUser 'Сменить пользователя' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ReloginUserActionProperty' (CustomUser);
 
 generateLoginPassword 'Сгенерировать логин и пароль' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
+needRestartCustomUser 'Переподключить' = DATA BOOLEAN (CustomUser);
+restartCustomUser 'Переподключить' = ACTION (customUser) {
+    needRestartCustomUser(customUser) <- TRUE;
+    apply();
+} CONFIRM;
+
+needShutdownCustomUser 'Отключить' = DATA BOOLEAN (CustomUser);
+shutdownCustomUser 'Отключить' = ACTION (customUser) {
+    needShutdownCustomUser(customUser) <- TRUE;
+    apply();
+} CONFIRM;
 
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
 serverLDAP 'Сервер' = DATA VARSTRING[100] ();
@@ -140,7 +151,7 @@ FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY nameContact, loginCustomUser, emailContact
     PROPERTIES(u) forbidChangePasswordCustomUser, forbidEditProfileCustomUser, isLockedCustomUser READONLY,
-                  lastActivityCustomUser, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
+                  lastActivityCustomUser, restartCustomUser, shutdownCustomUser, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
 ;

@@ -154,6 +154,21 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
+    public boolean needRestart() throws RemoteException {
+        return target.needRestart();
+    }
+
+    @Override
+    public boolean needShutdown() throws RemoteException {
+        return target.needShutdown();
+    }
+
+    @Override
+    public void resetRestartShutdown() throws RemoteException {
+        target.resetRestartShutdown();
+    }
+
+    @Override
     public ServerResponse executeNavigatorAction(String navigatorActionSID) throws RemoteException {
         return target.executeNavigatorAction(navigatorActionSID);
     }

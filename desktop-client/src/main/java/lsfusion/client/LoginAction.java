@@ -209,4 +209,15 @@ public final class LoginAction {
     public void setAutoLogin(boolean autoLogin) {
         this.autoLogin = autoLogin;
     }
+
+    public boolean needShutdown() {
+        try {
+            Integer newApiVersion = remoteLogics.getApiVersion();
+            boolean needRestart = Main.apiVersion != null && newApiVersion != null && !newApiVersion.equals(Main.apiVersion);
+            Main.apiVersion = newApiVersion;
+            return needRestart;
+        } catch (RemoteException e) {
+            return false;
+        }
+    }
 }
