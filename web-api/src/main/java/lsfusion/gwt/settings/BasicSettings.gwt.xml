@@ -25,6 +25,9 @@
     <!-- выключить обфускацию стилей -->
     <!--<set-configuration-property name="CssResource.style" value="pretty" />-->
 
+    <!--Super Dev Mode doesn't like <script> tags. We have some in Uploader. Adding this just to ignore errors.-->
+    <set-configuration-property name='xsiframe.failIfScriptTag' value='FALSE'/>
+    
     <!-- For production most teams prefer to set the default log level to `OFF` -->
      <inherits name="com.allen_sauer.gwt.log.gwt-log-OFF" />
 

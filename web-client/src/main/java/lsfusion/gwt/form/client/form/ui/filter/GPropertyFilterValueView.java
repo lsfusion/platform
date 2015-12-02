@@ -21,12 +21,12 @@ public class GPropertyFilterValueView extends GFilterValueView {
             propertyView.add(property, property.getNotEmptyCaption());
         }
 
-        propertyValue.property = (GPropertyDraw) propertyView.getSelectedValue();
+        propertyValue.property = (GPropertyDraw) propertyView.getSelectedItem();
 
         propertyView.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent event) {
-                propertyValue.property = (GPropertyDraw) propertyView.getSelectedValue();
+                propertyValue.property = (GPropertyDraw) propertyView.getSelectedItem();
                 listener.valueChanged();
             }
         });

@@ -33,7 +33,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
         panel = vertical ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
         SimplePanel toolbarContainer = new SimplePanel(panel);
         if (vertical) {
-            toolbarContainer.setStyleName("verticaToolbar");
+            toolbarContainer.setStyleName("verticalToolbar");
             panel.setWidth("100%");
         } else {
             toolbarContainer.setStyleName("horizontalToolbar");

@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class GFilterConditionListBox extends ListBox {
-    List<Object> items = new ArrayList<Object>();
+    List<Object> items = new ArrayList<>();
 
     public void add(Object item) {
         items.add(item);
@@ -41,7 +41,7 @@ public class GFilterConditionListBox extends ListBox {
         return index != -1 ? items.get(index) : null;
     }
 
-    public Object getSelectedValue() {
+    public Object getSelectedItem() {
         return getObjectValue(getSelectedIndex());
     }
 

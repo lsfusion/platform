@@ -19,10 +19,10 @@ public class GFormLayout extends ResizableSimplePanel {
 
     private GContainer mainContainer;
 
-    private Map<GContainer, GAbstractContainerView> containerViews = new HashMap<GContainer, GAbstractContainerView>();
+    private Map<GContainer, GAbstractContainerView> containerViews = new HashMap<>();
 
-    private ArrayList<GComponent> defaultComponents = new ArrayList<GComponent>();
-    private ArrayList<DefaultFocusReceiver> defaultFocusReceivers = new ArrayList<DefaultFocusReceiver>();
+    private ArrayList<GComponent> defaultComponents = new ArrayList<>();
+    private ArrayList<DefaultFocusReceiver> defaultFocusReceivers = new ArrayList<>();
 
     public GFormLayout(GFormController iform, GContainer imainContainer) {
         this.form = iform;
@@ -31,9 +31,10 @@ public class GFormLayout extends ResizableSimplePanel {
 
         createContainerViews(imainContainer);
 
-        add(containerViews.get(imainContainer).getView());
+        Widget mainContainerView = containerViews.get(imainContainer).getView();
+        add(mainContainerView);
 
-        layoutImpl.setupMainContainer(containerViews.get(imainContainer).getView());
+        layoutImpl.setupMainContainer(mainContainerView);
     }
 
     private void createContainerViews(GContainer container) {

@@ -18,12 +18,12 @@ public class GObjectFilterValueView extends GFilterValueView {
         objectView.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent event) {
-                filterValue.object = (GObject) objectView.getSelectedValue();
+                filterValue.object = (GObject) objectView.getSelectedItem();
                 listener.valueChanged();
             }
         });
 
-        filterValue.object = (GObject) objectView.getSelectedValue();
+        filterValue.object = (GObject) objectView.getSelectedItem();
 
         add(objectView);
     }

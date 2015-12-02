@@ -74,9 +74,9 @@
         <jaxws-rt-version>2.2.10</jaxws-rt-version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
-        <gwt.version>2.6.0-patched-1</gwt.version>
+        <gwt.version>2.7.0-patched-1</gwt.version>
 
-        <gwt.plugin.version>2.6.0</gwt.plugin.version>
+        <gwt.plugin.version>2.7.0</gwt.plugin.version>
         <smartgwt.version>3.0p</smartgwt.version>
         <gwt.log.version>3.3.0</gwt.log.version>
         <gwt.dnd.version>3.3.0</gwt.dnd.version>
@@ -86,6 +86,8 @@
         <color.picker.version>2.1-patched</color.picker.version>
         <moxieapps.gwt.uploader.version>1.1.0</moxieapps.gwt.uploader.version>
         <gwt.selection.version>1.1</gwt.selection.version>
+        
+        <asm.version>5.0.4</asm.version>
 
         <!-- general properties -->
         <maven.test.skip>true</maven.test.skip>
@@ -557,6 +559,11 @@
     <dependencyManagement>
         <dependencies>
             <!--Common libraries-->
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>${asm.version}</version>
+            </dependency>
             <dependency>
                 <groupId>findbugs</groupId>
                 <artifactId>annotations</artifactId>

@@ -50,7 +50,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         propertyView.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent event) {
-                condition.property = (GPropertyDraw) propertyView.getSelectedValue();
+                condition.property = (GPropertyDraw) propertyView.getSelectedItem();
                 filterChanged();
             }
         });
@@ -83,7 +83,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         compareView.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent event) {
-                condition.compare = (GCompare) compareView.getSelectedValue();
+                condition.compare = (GCompare) compareView.getSelectedItem();
                 handler.conditionChanged();
             }
         });
@@ -115,13 +115,13 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         filterValues.addChangeHandler(new ChangeHandler() {
             @Override
             public void onChange(ChangeEvent event) {
-                condition.value = (GFilterValue) filterValues.getSelectedValue();
+                condition.value = (GFilterValue) filterValues.getSelectedItem();
                 filterChanged();
             }
         });
         add(filterValues);
 
-        condition.value = (GFilterValue) filterValues.getSelectedValue();
+        condition.value = (GFilterValue) filterValues.getSelectedItem();
 
         junctionView = new GFilterConditionListBox();
         junctionView.addStyleName("customFontPresenter");
@@ -163,7 +163,7 @@ public class GFilterConditionView extends ResizableHorizontalPanel implements GF
         }
         compareView.setItems(condition.property.baseType.getFilterCompares());
         compareView.setSelectedItem(condition.property.baseType.getDefaultCompare());
-        condition.compare = (GCompare) compareView.getSelectedValue();
+        condition.compare = (GCompare) compareView.getSelectedItem();
 
         handler.conditionChanged();
     }

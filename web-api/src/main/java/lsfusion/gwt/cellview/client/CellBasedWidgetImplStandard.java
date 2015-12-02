@@ -86,7 +86,7 @@ class CellBasedWidgetImplStandard extends CellBasedWidgetImpl {
 
   public CellBasedWidgetImplStandard() {
     // Initialize the set of non-bubbling events.
-    nonBubblingEvents = new HashSet<String>();
+    nonBubblingEvents = new HashSet<>();
     nonBubblingEvents.add(BrowserEvents.FOCUS);
     nonBubblingEvents.add(BrowserEvents.BLUR);
     nonBubblingEvents.add(BrowserEvents.LOAD);
@@ -102,11 +102,10 @@ class CellBasedWidgetImplStandard extends CellBasedWidgetImpl {
       }
 
       // Sink the non-bubbling event.
-      final Element elem = widget.getElement();
+      Element elem = widget.getElement();
       if (!isNonBubblingEventHandled(elem, typeName)) {
         elem.setAttribute("__gwtCellBasedWidgetImplDispatching" + typeName, "true");
         sinkEventImpl(elem, typeName);
-        markDisposeEventImpl(elem, typeName);
       }
       return -1;
     } else {
@@ -122,17 +121,6 @@ class CellBasedWidgetImplStandard extends CellBasedWidgetImpl {
       @lsfusion.gwt.cellview.client.CellBasedWidgetImplStandard::handleNonBubblingEvent(Lcom/google/gwt/user/client/Event;)(evt);
     });
   }-*/;
-
-    /**
-     * Dispose of an event listener on the element.
-     *
-     * @param elem     the element to sink the event on
-     * @param typeName the name of the event to sink
-     */
-    private native void markDisposeEventImpl(Element elem, String typeName) /*-{
-        @com.google.gwt.user.client.impl.DOMImpl::addDisposableEvent(Lcom/google/gwt/dom/client/Element;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;Z)
-            (elem, typeName, @lsfusion.gwt.cellview.client.CellBasedWidgetImplStandard::dispatchNonBubblingEvent, true);
-    }-*/;
 
     /**
    * Sink an event on the element.

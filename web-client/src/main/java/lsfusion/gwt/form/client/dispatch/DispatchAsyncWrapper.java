@@ -6,13 +6,13 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
+import lsfusion.gwt.base.client.GwtClientUtils;
 import net.customware.gwt.dispatch.client.AbstractDispatchAsync;
 import net.customware.gwt.dispatch.client.ExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchService;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchServiceAsync;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
-import lsfusion.gwt.base.client.GwtClientUtils;
 
 public class DispatchAsyncWrapper extends AbstractDispatchAsync {
     private static boolean useGETForGwtRPC = GwtClientUtils.getPageParameter("useGETForGwtRPC") != null;
@@ -21,7 +21,7 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
 
     private static StandardDispatchServiceAsync getRealServiceInstance() {
         if (realService == null) {
-            realService = (StandardDispatchServiceAsync) GWT.create(StandardDispatchService.class);
+            realService = GWT.create(StandardDispatchService.class);
             ((ServiceDefTarget) realService).setRpcRequestBuilder(new RpcRequestBuilder() {
                 @Override
                 protected RequestBuilder doCreate(String requestData, String serviceEntryPoint) {

@@ -269,7 +269,7 @@ textarea {
 
 /* ------------ Navigator windows  ------------ */
 
-.verticaToolbar {
+.verticalToolbar {
     overflow-x: hidden;
     overflow-y: auto;
     padding-right: 4px;

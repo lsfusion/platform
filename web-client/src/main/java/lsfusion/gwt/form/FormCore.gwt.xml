@@ -41,30 +41,26 @@
         ]]>
     </property-provider>
 
-    <define-property name="useFlex" values="true,false" />
-    <set-property name="useFlex" value="true" />
+    <!-- GFormLayout implementation using flex css syntax. -->
+    <replace-with class="lsfusion.gwt.form.client.form.ui.layout.flex.FlexFormLayoutImpl">
+        <when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>
+        <none>
+            <when-property-is name="user.agent" value="gecko1_8" />
+            <when-property-is name="user.agent" value="safari" />
+        </none>
+    </replace-with>
 
-    <set-property name="useFlex" value="false">
+    <!-- Tables-based GFormLayout implementation. -->
+    <replace-with class="lsfusion.gwt.form.client.form.ui.layout.table.TableFormLayoutImpl">
+        <when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>
         <any>
             <when-property-is name="user.agent" value="gecko1_8" />
             <when-property-is name="user.agent" value="safari" />
         </any>
         <!-- ignore ie11 for now -->
         <!--<none>-->
-            <!--&lt;!&ndash; ie11 is using gecko1_8 permutation, but we need to use flex impl for ie &ndash;&gt;-->
-            <!--<when-property-is name="is.user.agent.ie11" value="true" />-->
+        <!--&lt;!&ndash; ie11 is using gecko1_8 permutation, but we need to use flex impl for ie &ndash;&gt;-->
+        <!--<when-property-is name="is.user.agent.ie11" value="true" />-->
         <!--</none>-->
-    </set-property>
-
-    <!-- GFormLayout implementation using flex css syntax. -->
-    <replace-with class="lsfusion.gwt.form.client.form.ui.layout.flex.FlexFormLayoutImpl">
-        <when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>
-        <when-property-is name="useFlex" value="true"/>
-    </replace-with>
-
-    <!-- Tables-based GFormLayout implementation. -->
-    <replace-with class="lsfusion.gwt.form.client.form.ui.layout.table.TableFormLayoutImpl">
-        <when-type-is class="lsfusion.gwt.form.client.form.ui.layout.GFormLayoutImpl"/>
-        <when-property-is name="useFlex" value="false"/>
     </replace-with>
 </module>
