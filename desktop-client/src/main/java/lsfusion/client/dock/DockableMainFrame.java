@@ -32,7 +32,10 @@ import org.apache.log4j.Logger;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -48,7 +51,7 @@ public class DockableMainFrame extends MainFrame {
 
     private final ClientNavigatorActionDispatcher actionDispatcher;
 
-    private final LinkedHashMap<SingleCDockable, ClientAbstractWindow> windowDockables = new LinkedHashMap<SingleCDockable, ClientAbstractWindow>();
+    private final LinkedHashMap<SingleCDockable, ClientAbstractWindow> windowDockables = new LinkedHashMap<>();
     private final CControl mainControl;
     private final DockableManager dockableManager;
 
@@ -129,7 +132,7 @@ public class DockableMainFrame extends MainFrame {
     }
 
     public void focusPageIfNeeded() {
-        ClientFormDockable pageToFocus = null;
+        ClientDockable pageToFocus = null;
         DefaultFormsType showDefaultForms = null;
         try {
             showDefaultForms = remoteNavigator.showDefaultForms();
@@ -146,7 +149,7 @@ public class DockableMainFrame extends MainFrame {
                     savedForms = new ArrayList<>();
             }
             dockableManager.getForms().clear();
-            ClientFormDockable page;
+            ClientDockable page;
             for (String formCanonicalName : savedForms) {
                 if (formCanonicalName != null) {
                     page = dockableManager.openForm(mainNavigator, formCanonicalName, formCanonicalName);
@@ -274,7 +277,7 @@ public class DockableMainFrame extends MainFrame {
 
     private void initWindows() {
         ClientAbstractWindow formsWindow;
-        LinkedHashMap<ClientAbstractWindow, JComponent> windows = new LinkedHashMap<ClientAbstractWindow, JComponent>();
+        LinkedHashMap<ClientAbstractWindow, JComponent> windows = new LinkedHashMap<>();
 
         try {
             DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remoteNavigator.getCommonWindows()));
