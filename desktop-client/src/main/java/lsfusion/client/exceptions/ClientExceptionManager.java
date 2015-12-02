@@ -12,6 +12,7 @@ import lsfusion.interop.exceptions.RemoteClientException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
+import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -78,6 +79,8 @@ public class ClientExceptionManager {
                 boolean reported = false;
                 try {
                     reported = Main.clientExceptionLog("Client error", e);
+                } catch (ConnectException ex) {
+                    logger.error("Error reporting client connect exception: " + e.getMessage());
                 } catch (Throwable ex) {
                     logger.error("Error reporting client exception: " + e, ex);
                 }

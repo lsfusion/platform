@@ -606,6 +606,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
         client.notifyServerRestart();
     }
 
+    public synchronized void shutdownClient(boolean restart) throws RemoteException {
+        client.shutdownClient(restart);
+    }
+
     public void notifyServerRestartCanceled() throws RemoteException {
         client.notifyServerRestartCanceled();
     }

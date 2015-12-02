@@ -50,7 +50,7 @@ public class DeSerializer {
             }
         }
 
-        return new NavigatorData(elements.get(0), windows);
+        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows);
     }
 
     public static List<ClientNavigatorElement> deserializeListClientNavigatorElement(byte[] state, Map<String, ClientNavigatorWindow> windows) throws IOException {

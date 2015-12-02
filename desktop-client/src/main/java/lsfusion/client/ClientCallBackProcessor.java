@@ -34,6 +34,23 @@ public class ClientCallBackProcessor {
             case SERVER_RESTARTING:
                 notifyServerRestarting();
                 break;
+            case CLIENT_RESTART:
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        Main.reconnect();
+                    }
+                });
+                Main.reconnect();
+                break;
+            case CLIENT_SHUTDOWN:
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        Main.shutdown();
+                    }
+                });
+                break;
         }
     }
 

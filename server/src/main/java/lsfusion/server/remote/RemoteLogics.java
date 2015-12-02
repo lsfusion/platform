@@ -238,6 +238,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         //for filterIncl-alive
     }
 
+    @Override
+    public Integer getApiVersion() throws RemoteException {
+        return 1;
+    }
+
     public GUIPreferences getGUIPreferences() throws RemoteException {
         return new GUIPreferences(name, displayName, null, null, Boolean.parseBoolean(clientHideMenu));
     }

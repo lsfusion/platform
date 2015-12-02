@@ -4,8 +4,6 @@ import com.google.common.base.Throwables;
 import lsfusion.base.NavigatorInfo;
 import lsfusion.base.Pair;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
-import lsfusion.interop.remote.CallbackMessage;
-import lsfusion.server.ServerLoggers;
 import lsfusion.server.auth.User;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
 import lsfusion.server.data.SQLHandledException;
@@ -50,7 +48,7 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
     private ScheduledExecutorService executor;
 
-    private final Map<Pair<String, Integer>, RemoteNavigator> navigators = Collections.synchronizedMap(new HashMap<Pair<String, Integer>, RemoteNavigator>());
+    private final Map<Pair<String, Integer>, List<RemoteNavigator>> navigators = Collections.synchronizedMap(new HashMap<Pair<String, Integer>, List<RemoteNavigator>>());
 
     private AtomicBoolean removeExpiredScheduled = new AtomicBoolean(false);
 
@@ -117,11 +115,13 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
             Pair<String, Integer> loginKey = new Pair<>(navigatorInfo.login, navigatorInfo.computer);
 
             if (reuseSession) {
-                RemoteNavigator navigator = navigators.get(loginKey);
-                if (navigator != null) {
-                    navigator.disconnect();
-                    navigator.unexportAndClean();
-                    removeNavigator(loginKey);
+                List<RemoteNavigator> navigatorsList = navigators.get(loginKey);
+                if (navigatorsList != null) {
+                    for(RemoteNavigator navigator : navigatorsList) {
+                        navigator.disconnect();
+                        navigator.unexportAndClean();
+                        removeNavigator(loginKey);
+                    }
                 }
             }
 
@@ -170,7 +170,11 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
             if (newConnection != null) {
                 navigator.setConnection(new DataObject(newConnection.object, businessLogics.systemEventsLM.connection));
             }
-            navigators.put(key, navigator);
+            List<RemoteNavigator> navigatorsList = navigators.get(key);
+            if(navigatorsList == null)
+                navigatorsList = new ArrayList<>();
+            navigatorsList.add(navigator);
+            navigators.put(key, navigatorsList);
         }
     }
 
@@ -178,8 +182,12 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         try {
             try (DataSession session = dbManager.createSession()) {
                 synchronized (navigators) {
-                    removeNavigator(navigators.get(key), session);
-                    navigators.remove(key);
+                    List<RemoteNavigator> navigatorsList = navigators.get(key);
+                    if (navigatorsList != null) {
+                        for (RemoteNavigator navigator : navigatorsList)
+                            removeNavigator(navigator, session);
+                        navigators.remove(key);
+                    }
                 }
                 session.apply(businessLogics);
             }
@@ -202,14 +210,23 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
         try {
             try (DataSession session = dbManager.createSession()) {
                 synchronized (navigators) {
-                    for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext(); ) {
-                        RemoteNavigator navigator = iterator.next().getValue();
+                    for (Iterator<Map.Entry<Pair<String, Integer>, List<RemoteNavigator>>> iterator = navigators.entrySet().iterator(); iterator.hasNext(); ) {
+                        List<RemoteNavigator> navigatorsList = iterator.next().getValue();
                         //логика EXPIRED навигаторов неактуальна, пока не работает механизм восстановления сессии
                         //if (NavigatorFilter.EXPIRED.accept(navigator) || filter.accept(navigator)) {
-                        if (filter.accept(navigator)) {
-                            removeNavigator(navigator, session);
-                            iterator.remove();
+                        if(navigatorsList != null) {
+                            Iterator<RemoteNavigator> i = navigatorsList.iterator();
+                            while (i.hasNext()) {
+                                RemoteNavigator n = i.next();
+                                if(filter.accept(n)) {
+                                    removeNavigator(n, session);
+                                    i.remove();
+                                }
+                            }
+                            if(navigatorsList.isEmpty())
+                                iterator.remove();
                         }
+
                     }
                     if (navigators.isEmpty()) {
                         restartManager.forcedRestartIfPending();
@@ -237,32 +254,41 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
     public void updateEnvironmentProperty(CalcProperty property, ObjectValue value) throws SQLException {
         synchronized (navigators) {
-            for (RemoteNavigator remoteNavigator : navigators.values()) {
-                remoteNavigator.updateEnvironmentProperty(property, value);
+            for (List<RemoteNavigator> remoteNavigatorsList : navigators.values()) {
+                for(RemoteNavigator remoteNavigator : remoteNavigatorsList)
+                    remoteNavigator.updateEnvironmentProperty(property, value);
             }
         }
     }
 
     public void forceDisconnect(Pair<String, Integer> key) {
-        final RemoteNavigator navigator = navigators.get(key);
-        if (navigator != null) {
-            navigator.disconnect();
+        final List<RemoteNavigator> navigatorsList = navigators.get(key);
+        if (navigatorsList != null) {
+            for(RemoteNavigator navigator : navigatorsList) {
+                if (navigator != null) {
+                    navigator.disconnect();
 
-            removeNavigator(key);
-            navigator.unexportAndCleanLater();
+                    removeNavigator(key);
+                    navigator.unexportAndCleanLater();
+                }
+            }
         }
     }
 
     public boolean notifyServerRestart() {
         synchronized (navigators) {
             boolean canRestart = true;
-            for (RemoteNavigator remoteNavigator : navigators.values()) {
-                if (!remoteNavigator.isRestartAllowed()) {
-                    canRestart = false;
-                    try {
-                        remoteNavigator.notifyServerRestart();
-                    } catch (RemoteException e) {
-                        logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+            for (List<RemoteNavigator> remoteNavigatorsList : navigators.values()) {
+                if(remoteNavigatorsList != null) {
+                    for(RemoteNavigator remoteNavigator : remoteNavigatorsList) {
+                        if (!remoteNavigator.isRestartAllowed()) {
+                            canRestart = false;
+                            try {
+                                remoteNavigator.notifyServerRestart();
+                            } catch (RemoteException e) {
+                                logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+                            }
+                        }
                     }
                 }
             }
@@ -272,11 +298,35 @@ public class NavigatorsManager extends LifecycleAdapter implements InitializingB
 
     public void notifyServerRestartCanceled() {
         synchronized (navigators) {
-            for (RemoteNavigator remoteNavigator : navigators.values()) {
-                try {
-                    remoteNavigator.notifyServerRestartCanceled();
-                } catch (RemoteException e) {
-                    logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+            for (List<RemoteNavigator> remoteNavigatorsList : navigators.values()) {
+                if(remoteNavigatorsList != null) {
+                    for(RemoteNavigator remoteNavigator : remoteNavigatorsList) {
+                        try {
+                            remoteNavigator.notifyServerRestartCanceled();
+                        } catch (RemoteException e) {
+                            logger.error(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void shutdownCustomUser(DataObject customUser, boolean restart) {
+        synchronized (navigators) {
+            for (List<RemoteNavigator> remoteNavigatorsList : navigators.values()) {
+                if(remoteNavigatorsList != null) {
+                    for(RemoteNavigator remoteNavigator : remoteNavigatorsList) {
+                        try {
+                            if (remoteNavigator.getUser() != null && remoteNavigator.getUser().equals(customUser))
+                                remoteNavigator.shutdownClient(restart);
+                        } catch (RemoteException e) {
+                            if (restart)
+                                logger.error(getString("logics.server.remote.exception.on.shutdown.client"), e);
+                            else
+                                logger.error(getString("logics.server.remote.exception.on.restart.client"), e);
+                        }
+                    }
                 }
             }
         }

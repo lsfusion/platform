@@ -75,24 +75,26 @@ public class NavigatorController implements INavigatorController {
     }
 
     private void dfsAddElements(ClientNavigatorElement currentElement, ClientNavigatorWindow currentWindow, Map<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> result) {
-        if ((currentElement.window != null) && (currentElement.window.drawRoot)) {
-            result.get(currentElement.window).add(currentElement);
-        } else {
-            if (currentWindow != null) {
-                result.get(currentWindow).add(currentElement);
+        if(currentElement != null) {
+            if ((currentElement.window != null) && (currentElement.window.drawRoot)) {
+                result.get(currentElement.window).add(currentElement);
+            } else {
+                if (currentWindow != null) {
+                    result.get(currentWindow).add(currentElement);
+                }
             }
-        }
-        ClientNavigatorWindow nextWindow = currentElement.window == null ? currentWindow : currentElement.window;
+            ClientNavigatorWindow nextWindow = currentElement.window == null ? currentWindow : currentElement.window;
 
-        // считаем, что если currentWindow == null, то это baseElement и он всегда выделен, но не рисуется никуда
-        if (currentElement.window == null
-            || currentWindow == null
-            || currentElement == views.get(currentWindow).getSelectedElement()
-            || currentElement.window == currentWindow
-            || currentElement.window.drawRoot) {
-            for (ClientNavigatorElement element : currentElement.children) {
-                if (!result.get(nextWindow).contains(element)) {
-                    dfsAddElements(element, nextWindow, result);
+            // считаем, что если currentWindow == null, то это baseElement и он всегда выделен, но не рисуется никуда
+            if (currentElement.window == null
+                    || currentWindow == null
+                    || currentElement == views.get(currentWindow).getSelectedElement()
+                    || currentElement.window == currentWindow
+                    || currentElement.window.drawRoot) {
+                for (ClientNavigatorElement element : currentElement.children) {
+                    if (!result.get(nextWindow).contains(element)) {
+                        dfsAddElements(element, nextWindow, result);
+                    }
                 }
             }
         }

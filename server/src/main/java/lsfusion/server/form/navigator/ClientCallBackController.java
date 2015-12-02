@@ -15,7 +15,7 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
         void used();
     }
 
-    private final List<CallbackMessage> messages = new ArrayList<CallbackMessage>();
+    private final List<CallbackMessage> messages = new ArrayList<>();
     private final UsageTracker usageTracker;
     private Boolean deniedRestart = null;
 
@@ -32,6 +32,10 @@ public class ClientCallBackController extends RemoteObject implements ClientCall
     public synchronized void notifyServerRestart() {
         deniedRestart = false;
         addMessage(CallbackMessage.SERVER_RESTARTING);
+    }
+
+    public synchronized void shutdownClient(boolean restart) {
+        addMessage(restart ? CallbackMessage.CLIENT_RESTART : CallbackMessage.CLIENT_SHUTDOWN);
     }
 
     public synchronized void notifyServerRestartCanceled() {

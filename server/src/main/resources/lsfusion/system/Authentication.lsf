@@ -80,6 +80,9 @@ reloginUser 'Сменить пользователя' = ACTION CUSTOM 'lsfusion.
 
 generateLoginPassword 'Сгенерировать логин и пароль' = ACTION CUSTOM 'lsfusion.server.logics.property.actions.GenerateLoginPasswordActionProperty' (CustomUser);
 
+restartCustomUser 'Переподключить' = ACTION CUSTOM 'lsfusion.server.logics.authentication.RestartCustomUserActionProperty' (CustomUser) CONFIRM;
+shutdownCustomUser 'Отключить' = ACTION CUSTOM 'lsfusion.server.logics.authentication.ShutdownCustomUserActionProperty' (CustomUser) CONFIRM;
+
 useLDAP 'Использовать LDAP аутентификацию' = DATA BOOLEAN ();
 serverLDAP 'Сервер' = DATA VARSTRING[100] ();
 portLDAP 'Порт' = DATA INTEGER ();
@@ -140,7 +143,7 @@ FORM customUsers 'Пользователи'
     OBJECTS u=CustomUser
     PROPERTIES(u) READONLY nameContact, loginCustomUser, emailContact
     PROPERTIES(u) forbidChangePasswordCustomUser, forbidEditProfileCustomUser, isLockedCustomUser READONLY,
-                  lastActivityCustomUser, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
+                  lastActivityCustomUser, restartCustomUser, shutdownCustomUser, ADDFORM, EDITFORM FORCE PANEL, DELETE FORCE PANEL TOOLBAR
 
     PROPERTIES() useLDAP, serverLDAP, portLDAP, baseDNLDAP, userDNSuffixLDAP
 ;
