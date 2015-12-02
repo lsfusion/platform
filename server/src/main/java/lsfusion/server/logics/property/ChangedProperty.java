@@ -164,4 +164,11 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionCalcPro
     public Boolean getSetOrDropped() {
         return type.getSetOrDropped();
     }
+
+    @Override
+    public String getChangeExtSID() {
+        if((type == IncrementType.SET || type == IncrementType.DROP) && property instanceof IsClassProperty)
+            return "IS" + ((IsClassProperty)property).interfaces.single().interfaceClass.getSID();
+        return super.getChangeExtSID();
+    }
 }

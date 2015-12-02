@@ -33,7 +33,7 @@ public class IntegerClass extends IntClass<Integer> {
     }
 
     int getWhole() {
-        return 8;
+        return 10;
     }
 
     int getPrecision() {

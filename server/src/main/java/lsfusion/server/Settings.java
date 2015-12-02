@@ -1575,4 +1575,14 @@ public class Settings {
     public void setMaxPrecision(int maxPrecision) {
         this.maxPrecision = maxPrecision;
     }
+
+    private int maxEdgeIterations = 100;
+
+    public int getMaxEdgeIterations() {
+        return maxEdgeIterations;
+    }
+
+    public void setMaxEdgeIterations(int maxEdgeIterations) {
+        this.maxEdgeIterations = maxEdgeIterations;
+    }
 }

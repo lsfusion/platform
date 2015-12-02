@@ -220,4 +220,10 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
                 canonicalName, getString("logics.property.drilldown.form.data"), this, LM
         );
     }
+
+    @Override
+    public String getChangeExtSID() {
+        assert false; // так как должно быть canonicalName
+        return null;
+    }
 }

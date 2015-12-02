@@ -544,4 +544,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return true;
     }
 
+    public String getChangeExtSID() {
+        return null;
+    }
 }

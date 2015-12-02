@@ -7,6 +7,8 @@ import lsfusion.server.data.expr.where.cases.CaseExpr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.session.PropertyChanges;
 
+import java.util.Arrays;
+
 public class SessionDataProperty extends DataProperty {
 
     public SessionDataProperty(String caption, ValueClass value) {
@@ -49,6 +51,11 @@ public class SessionDataProperty extends DataProperty {
     @Override
     public boolean ignoreReadOnlyPolicy() {
         return true;
+    }
+
+    @Override
+    public String getChangeExtSID() {
+        return "sys" + hashCode(); // тут можно было бы сигнатуру вставить
     }
 }
 

@@ -65,4 +65,9 @@ public class ObjectClassProperty extends AggregateProperty<ClassPropertyInterfac
         if(mapObject instanceof ObjectEntity && !((CustomClass)((ObjectEntity)mapObject).baseClass).hasChildren())
             entity.forceViewType = ClassViewType.HIDE;
     }
+
+    @Override
+    public String getChangeExtSID() {
+        return "OBJECT";
+    }
 }

@@ -94,4 +94,10 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
     public Where getIsClassWhere(SingleClassExpr expr, ObjectValueClassSet set, boolean inconsistent) {
         return new IsClassWhere(expr, set, inconsistent);
     }
+
+    @Override
+    public String getChangeExtSID() {
+        assert false;
+        return null; // по идее всегда canonical name есть
+    }
 }

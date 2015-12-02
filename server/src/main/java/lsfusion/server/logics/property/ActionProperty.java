@@ -77,6 +77,30 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
         this.paramInfo = paramInfo;
     }
 
+    public static int compareChangeExtProps(Property p1, Property p2, boolean strictCompare) {
+        // если p1 не DataProperty
+        String c1 = p1.getChangeExtSID();
+        String c2 = p2.getChangeExtSID();
+
+        if(c1 == null && c2 == null) {
+            if(strictCompare)
+                return Integer.compare(p1.hashCode(), p2.hashCode());
+            return 0;
+        }
+
+        if(c1 == null)
+            return 1;
+
+        if(c2 == null)
+            return -1;
+
+        int result = c1.compareTo(c2);
+        if(strictCompare && result == 0)
+            return Integer.compare(p1.hashCode(), p2.hashCode());
+
+        return result;
+    }
+
     // assert что возвращает только DataProperty, ClassDataProperty, Set(IsClassProperty), Drop(IsClassProperty), ObjectClassProperty, для использования в лексикографике (calculateLinks)
     public ImMap<CalcProperty, Boolean> getChangeExtProps() {
         ActionPropertyMapImplement<?, P> compile = callCompile(false);

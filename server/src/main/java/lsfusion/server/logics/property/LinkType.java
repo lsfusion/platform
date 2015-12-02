@@ -11,4 +11,12 @@ public enum LinkType  {
     }
 
     public final static LinkType[] order = new LinkType[] {DEPEND, EVENTACTION, USEDACTION, RECCHANGE, RECEVENT, RECUSED};
+
+    public LinkType decrease() {
+        if(this == DEPEND)
+            return EVENTACTION;
+        if(this == RECCHANGE)
+            return RECEVENT;
+        throw new UnsupportedOperationException();
+    }
 }

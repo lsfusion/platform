@@ -526,10 +526,13 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
     }
 
     private Stat getMSTExCost(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats) {
+        int nodes = 0; int edges = 0;
+
         SpanningTreeWithBlackjack<BaseJoin> graph = new SpanningTreeWithBlackjack<BaseJoin>();
         for(int i=0,size=joinStats.size();i<size;i++) {
             BaseJoin node = joinStats.getKey(i);
             graph.addNode(node, node.getJoins().isEmpty() ? 0 : joinStats.getValue(i).getWeight());
+            nodes++;
         }
 
         for(int i=0;i<balancedEdges.size();i++) {
@@ -538,9 +541,12 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             for(Edge edge : balancedEdges.getValue(i)) {
                 assert BaseUtils.hashEquals(edge.expr, bExpr);
                 graph.addEdge(from, edge.join, balancedStats.get(bExpr).getWeight());
+                edges++;
             }
         }
-        return new Stat(graph.calculate(), true);
+
+        int maxIterations = Settings.get().getMaxEdgeIterations();
+        return new Stat(graph.calculate(BaseUtils.max(edges - nodes, 1) * maxIterations), true);
     }
 
     private Stat getMTCost(MAddMap<BaseJoin, Stat> joinStats, MAddExclMap<BaseExpr, Set<Edge>> balancedEdges, MAddExclMap<BaseExpr, Stat> balancedStats, Stat totalBalanced) {
