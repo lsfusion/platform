@@ -118,6 +118,8 @@ public class Settings {
 
     private boolean busyDialog;
 
+    private boolean safeCheckFileExistence;
+
     public int getLimitWhereJoinsDegree() {
         return limitWhereJoinsDegree;
     }
@@ -542,6 +544,14 @@ public class Settings {
 
     public void setBusyDialog(boolean busyDialog) {
         this.busyDialog = busyDialog;
+    }
+
+    public boolean isSafeCheckFileExistence() {
+        return safeCheckFileExistence;
+    }
+
+    public void setSafeCheckFileExistence(boolean safeCheckFileExistence) {
+        this.safeCheckFileExistence = safeCheckFileExistence;
     }
 
     public void setAverageIntervalStat(int averageIntervalStat) {
