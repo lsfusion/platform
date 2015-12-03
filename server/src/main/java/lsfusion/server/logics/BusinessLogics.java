@@ -1027,7 +1027,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if(c2 == null)
                 return -1;
 
-            assert !(c1.equals(c2) && !BaseUtils.hashEquals(o1,o2));
+            assert !(c1.equals(c2) && !BaseUtils.hashEquals(o1,o2) && !(o1 instanceof SessionDataProperty) && !(o2 instanceof SessionDataProperty));
             return c1.compareTo(c2);
         }
     };
