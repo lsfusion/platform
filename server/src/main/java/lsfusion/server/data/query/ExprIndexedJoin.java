@@ -1,24 +1,29 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.TwinImmutableObject;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.interop.Compare;
 import lsfusion.server.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
+import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.NotNullExprInterface;
 import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.stat.KeyStat;
 import lsfusion.server.data.query.stat.StatKeys;
 import lsfusion.server.data.query.stat.WhereJoin;
 import lsfusion.server.data.translator.MapTranslate;
+
+import java.security.Key;
 
 public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
 
@@ -50,11 +55,13 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
     public StatKeys<Integer> getStatKeys(KeyStat keyStat) {
         if(not)
             return new StatKeys<Integer>(SetFact.<Integer>EMPTY(), Stat.ONE);
-        else
-            if(compare.equals(Compare.EQUALS) && !givesNoKeys()) // если не дает ключей, нельзя уменьшать статистику, так как паковка может съесть другие join'ы и тогда будет висячий ключ
+        else {
+            if (compare.equals(Compare.EQUALS) && !givesNoKeys()) { // если не дает ключей, нельзя уменьшать статистику, так как паковка может съесть другие join'ы и тогда будет висячий ключ
+                assert false; // так как !compare.equals(Compare.EQUALS)
                 return new StatKeys<Integer>(SetFact.singleton(0), Stat.ONE);
-            else
+            } else
                 return new StatKeys<Integer>(SetFact.singleton(0), baseExpr.getTypeStat(keyStat, true));
+        }
     }
 
     protected int hash(HashContext hashContext) {
@@ -94,6 +101,14 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return not || super.givesNoKeys();
     }
 
+    public KeyExpr getKeyExpr() {
+        if(baseExpr instanceof KeyExpr) {
+            assert !not;
+            return (KeyExpr) baseExpr;
+        }
+        return null;
+    }
+
 
     private enum IntervalType {
         LEFT, RIGHT, FULL
@@ -119,10 +134,13 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
                 return IntervalType.FULL;
             }
         });
+        boolean hasKeyExprs = false; // оптимизация
         for(WhereJoin where : wheres) {
             if(where instanceof ExprIndexedJoin) {
                 ExprIndexedJoin eiJoin = (ExprIndexedJoin) where;
-                if(!eiJoin.givesNoKeys()) { // по идее эта проверка не нужна, но тогда могут появляться висячие ключи, хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
+                boolean hasKeyExpr = false;
+                if(!eiJoin.givesNoKeys() || (hasKeyExpr = (eiJoin.getKeyExpr() != null))) { // по идее эта проверка не нужна, но тогда могут появляться висячие ключи, хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
+                    hasKeyExprs = hasKeyExprs || hasKeyExpr;
                     IntervalType type = getIntervalType(eiJoin.compare);
                     if (type != null)
                         intervals.add(eiJoin.baseExpr, type);
@@ -139,6 +157,35 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
                     mResult.exclAdd(eiJoin);
             }
         }
-        return mResult.immutable();
+        ImSet<ExprIndexedJoin> result = mResult.immutable();
+
+        if(result.size() > 0) {
+            if(hasKeyExprs) { // оптимизация
+                // по идее эта обработка не нужна, но тогда могут появляться висячие ключи, хотя строго говоря потом можно наоборот поддержать эти случаи, тогда a>=1 AND a<=5 будет работать
+                MSet<KeyExpr> mInnerKeys = SetFact.mSet();
+                for(WhereJoin<?, ?> where : wheres) {
+                    if (where instanceof InnerJoin) {
+                        ImSet<BaseExpr> whereKeys = where.getJoins().values().filterCol(new SFunctionSet<BaseExpr>() {
+                            public boolean contains(BaseExpr element) {
+                                return element instanceof KeyExpr;
+                            }
+                        }).toSet();
+                        mInnerKeys.addAll(BaseUtils.<ImSet<KeyExpr>>immutableCast(whereKeys));
+                    }
+                }
+                final ImSet<KeyExpr> innerKeys = mInnerKeys.immutable();
+
+                result = result.filterFn(new SFunctionSet<ExprIndexedJoin>() {
+                    public boolean contains(ExprIndexedJoin element) {
+                        KeyExpr keyExpr = element.getKeyExpr();
+                        if(keyExpr != null && !innerKeys.contains(keyExpr)) // висячий ключ
+                            return false;
+                        return true;
+                    }
+                });
+            }
+        }
+
+        return result;
     }
 }
