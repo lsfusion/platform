@@ -106,7 +106,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return new AndClassSet[]{this};
     }
 
-    public Integer stat = 100000;
+    public Integer stat = 1000;
 
     @Override
     public int getCount() {

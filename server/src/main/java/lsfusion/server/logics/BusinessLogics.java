@@ -37,6 +37,7 @@ import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
 import lsfusion.server.data.expr.query.GroupExpr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.data.query.MapCacheAspect;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.QueryBuilder;
@@ -557,6 +558,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
+    private boolean needIndex(ObjectValueClassSet classSet) {
+        ImSet<ConcreteCustomClass> set = classSet.getSetConcreteChildren();
+        if(set.size() > 1) { // оптимизация
+            int count = classSet.getCount();
+            if(count >= Settings.get().getMinClassDataIndexCount()) {
+                Stat totStat = new Stat(count);
+                for (ConcreteCustomClass customClass : set)
+                    if (customClass.stat != null && new Stat(customClass.getCount()).less(totStat))
+                        return true;
+            }
+        }
+        return false;
+    }
+
     public void initClassDataProps() {
         ImMap<ImplementTable, ImSet<ConcreteCustomClass>> groupTables = getConcreteCustomClasses().group(new BaseUtils.Group<ImplementTable, ConcreteCustomClass>() {
             public ImplementTable group(ConcreteCustomClass customClass) {
@@ -589,6 +604,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 customClass.dataProperty = dataProperty;
             if(isFull) // неважно implicit или нет
                 table.setFullField(dataProperty);
+        }
+    }
+
+    public void initClassDataIndices() {
+        for(ObjectClassField classField : LM.baseClass.getUpObjectClassFields().keyIt()) {
+            ClassDataProperty classProperty = classField.getProperty();
+            if(needIndex(classProperty.set))
+                getDbManager().addIndex(Collections.<CalcProperty>singletonList(classProperty));
         }
     }
 
@@ -738,6 +761,60 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             updateStats(sql);
         } catch (Exception ignored) {
             ignored = ignored;
+        }
+
+        initClassStat();
+    }
+
+    public void initClassStat() { // по аналогии с initStats
+        try {
+            SQLSession sql = getDbManager().getThreadLocalSql();
+
+            updateClassStat(sql, true);
+        } catch (Exception ignored) {
+            ignored = ignored;
+        }
+    }
+
+    public void updateClassStat(SQLSession session, boolean useSIDs) throws SQLException, SQLHandledException {
+
+        Map<Integer, Integer> customObjectClassMap = new HashMap<>();
+        Map<String, Integer> customSIDObjectClassMap = new HashMap<>();
+
+        KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
+        ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object)"innerInvoice", customObjectClassExpr);
+
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("statCustomObjectClass", LM.statCustomObjectClass.getExpr(customObjectClassExpr));
+        if(useSIDs) {
+            query.addProperty("staticName", LM.staticName.getExpr(customObjectClassExpr));
+        }
+
+        query.and(LM.statCustomObjectClass.getExpr(customObjectClassExpr).getWhere());
+
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session, OperationOwner.unknown);
+
+        for (int i=0,size=result.size();i<size;i++) {
+            Integer statCustomObjectClass = (Integer) result.getValue(i).get("statCustomObjectClass");
+            if(useSIDs) {
+                String sID = (String)result.getValue(i).get("staticName");
+                if(sID != null)
+                    customSIDObjectClassMap.put(sID.trim(), statCustomObjectClass);
+            } else {
+                customObjectClassMap.put((Integer) result.getKey(i).getValue(0), statCustomObjectClass);
+            }
+        }
+
+        for(CustomClass customClass : LM.baseClass.getAllClasses()) {
+            if(customClass instanceof ConcreteCustomClass) {
+                Integer stat;
+                if(useSIDs) {
+                    assert customClass.ID == null;
+                    stat = customSIDObjectClassMap.get(customClass.getSID());
+                } else
+                    stat = customObjectClassMap.get(customClass.ID);
+                ((ConcreteCustomClass) customClass).stat = stat == null ? 1 : stat;
+            }
         }
     }
 

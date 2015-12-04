@@ -15,5 +15,5 @@ public interface ObjectClassField extends IsClassField {
 
     ImplementTable getTable();
 
-    CalcProperty getProperty();
+    ClassDataProperty getProperty();
 }

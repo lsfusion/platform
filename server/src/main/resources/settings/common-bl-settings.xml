@@ -356,6 +356,15 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <bean id="initClassDataIndicesTask" class="lsfusion.server.logics.tasks.impl.simple.InitClassDataIndicesTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="initReflectionEventsTask"/>  <!-- чисто для хака initStats -->
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
     <bean id="finishLogInitTask" class="lsfusion.server.logics.tasks.impl.FinishLogInitTask">
         <property name="dependencies">
             <set>
@@ -450,6 +459,7 @@
                 <ref bean="getPropertyListTask"/>
                 <ref bean="finalizePropsTask"/>
                 <ref bean="initIndicesTask"/>
+                <ref bean="initClassDataIndicesTask"/>
                 <ref bean="finalizeFormsTask"/>
             </set>
         </property>

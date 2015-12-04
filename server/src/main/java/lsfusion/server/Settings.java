@@ -1585,4 +1585,14 @@ public class Settings {
     public void setMaxEdgeIterations(int maxEdgeIterations) {
         this.maxEdgeIterations = maxEdgeIterations;
     }
+
+    private int minClassDataIndexCount = 1000; // при превышении какого количества записей строить индексы
+
+    public int getMinClassDataIndexCount() {
+        return minClassDataIndexCount;
+    }
+
+    public void setMinClassDataIndexCount(int minClassDataIndexCount) {
+        this.minClassDataIndexCount = minClassDataIndexCount;
+    }
 }

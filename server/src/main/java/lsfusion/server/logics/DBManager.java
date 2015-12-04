@@ -824,7 +824,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             }
 
             systemLogger.info("Updating class stats");
-            updateClassStat(sql);
+            businessLogics.updateClassStat(sql, false);
 
             systemLogger.info("Recalculating aggregations");
             recalculateAggregations(sql, recalculateProperties, false); // перерасчитаем агрегации
@@ -969,34 +969,6 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         try (DataSession session = createSession(OperationOwner.unknown)) { // по сути вложенная транзакция
             LM.baseClass.fillIDs(session, LM.staticCaption, LM.staticName, sIDChanges, objectSIDChanges);
             return session.apply(businessLogics);
-        }
-    }
-
-    private void updateClassStat(SQLSession session) throws SQLException, SQLHandledException {        
-
-        Map<Integer, Integer> customObjectClassMap = new HashMap<>();
-
-        KeyExpr customObjectClassExpr = new KeyExpr("customObjectClass");
-        ImRevMap<Object, KeyExpr> keys = MapFact.singletonRev((Object)"innerInvoice", customObjectClassExpr);
-
-        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-        query.addProperty("statCustomObjectClass", LM.statCustomObjectClass.getExpr(customObjectClassExpr));
-        query.and(LM.statCustomObjectClass.getExpr(customObjectClassExpr).getWhere());
-
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(session, OperationOwner.unknown);
-
-        for (int i=0,size=result.size();i<size;i++) {
-            Integer statCustomObjectClass = (Integer) result.getValue(i).get("statCustomObjectClass");
-            Integer id = (Integer) result.getKey(i).getValue(0);
-            if(id != null && statCustomObjectClass != null)
-                customObjectClassMap.put(id, statCustomObjectClass);
-        }
-
-        for(CustomClass customClass : LM.baseClass.getAllClasses()) {
-            if(customClass instanceof ConcreteCustomClass) {
-                Integer stat = customObjectClassMap.get(customClass.ID);
-                ((ConcreteCustomClass) customClass).stat = stat == null ? 1 : stat;
-            }
         }
     }
 
@@ -1648,13 +1620,17 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return resultChanges;
     }
 
-    @NFLazy
     public void addIndex(LCP<?>... lps) {
         List<CalcProperty> index = new ArrayList<>();
         for (LCP<?> lp : lps) {
             index.add((CalcProperty) lp.property);
         }
-        CalcProperty<? extends PropertyInterface> property = lps[0].property;
+        addIndex(index);
+    }
+
+    @NFLazy
+    public void addIndex(List<CalcProperty> index) {
+        CalcProperty<? extends PropertyInterface> property = index.get(0);
         indexes.put(index, property.getType() instanceof DataClass);
         property.markIndexed();
     }

@@ -83,7 +83,7 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
         return mapTable.table;
     }
 
-    public CalcProperty getProperty() {
+    public ClassDataProperty getProperty() {
         return this;
     }
 
