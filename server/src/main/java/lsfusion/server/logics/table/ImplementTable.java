@@ -2,6 +2,7 @@ package lsfusion.server.logics.table;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.ProgressBar;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -37,6 +38,7 @@ import lsfusion.server.logics.property.PropertyInterface;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.Modifier;
 import lsfusion.server.session.PropertyChanges;
+import lsfusion.server.stack.StackProgress;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -484,6 +486,38 @@ public class ImplementTable extends GlobalTable { // последний инте
             }
         }
         return propStats;
+    }
+
+    @StackProgress
+    public void overCalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, MSet<Integer> propertiesSet, @StackProgress ProgressBar progressBar) throws SQLException, SQLHandledException {
+        if (!SystemProperties.doNotCalculateStats) {
+
+            ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
+            lsfusion.server.data.query.Join<PropertyField> join = join(mapKeys);
+
+            MExclMap<Object, Object> mResult = MapFact.mExclMap();
+
+            for(PropertyField prop : properties) {
+                if (!(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat()))
+                    mResult.exclAdd(prop, readCount(session, GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, new KeyExpr("count"))).getWhere()));
+            }
+            ImMap<Object, Object> result = mResult.immutable();
+
+            // не null значения и разреженность колонок
+            MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
+            for (PropertyField property : properties)
+                mNotNulls.exclAdd(property, readCount(session, join.getExpr(property).getWhere()));
+            ImMap<Object, Object> notNulls = mNotNulls.immutable();
+
+            for (PropertyField property : properties) {
+                DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(getName()), new DataObject(property.getName()));
+
+                if (propertyObject != null && propertiesSet.contains((Integer) propertyObject.getValue())) {
+                    reflectionLM.quantityProperty.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
+                    reflectionLM.notNullQuantityProperty.change(BaseUtils.nvl(notNulls.get(property), 0), session, propertyObject);
+                }
+            }
+        }
     }
 
     public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats,

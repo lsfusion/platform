@@ -636,12 +636,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         KeyExpr key = keys.singleValue();
         QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<>(keys);
         query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
+        query.addProperty("statsProperty", reflectionLM.statsProperty.getExpr(key));
         query.and(reflectionLM.userLoggableProperty.getExpr(key).getWhere());
         ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
             LP lp = findProperty(values.get("CNProperty").toString().trim());
-            Integer statsProperty = lp != null ? getStatsProperty(lp.property) : null;
+            Integer statsProperty = (Integer) values.get("statsProperty");
+            statsProperty = statsProperty == null && lp != null ? getStatsProperty(lp.property) : statsProperty;
             if((statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) && lp instanceof LCP)
                 LM.makeUserLoggable(systemEventsLM, (LCP) lp);
         }
@@ -1561,6 +1563,43 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
         }
         recalculateClassStat(session);
+    }
+
+    public void overCalculateStats(DataSession session, Integer maxQuantityOverCalculate) throws SQLException, SQLHandledException {
+        int count = 0;
+        MSet<Integer> propertiesSet = getOverCalculatePropertiesSet(session, maxQuantityOverCalculate);
+        ImSet<ImplementTable> tables = LM.tableFactory.getImplementTables();
+        for (ImplementTable dataTable : tables) {
+            count++;
+            long start = System.currentTimeMillis();
+            serviceLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), dataTable));
+            dataTable.overCalculateStat(this.reflectionLM, session, propertiesSet,
+                    new ProgressBar("Recalculate Stats", count, tables.size(), String.format("Table: %s (%s of %s)", dataTable, count, tables.size())));
+            long time = System.currentTimeMillis() - start;
+            serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
+        }
+    }
+
+    public MSet<Integer> getOverCalculatePropertiesSet(DataSession session, Integer maxQuantity) throws SQLException, SQLHandledException {
+        KeyExpr propertyExpr = new KeyExpr("Property");
+        ImRevMap<Object, KeyExpr> propertyKeys = MapFact.singletonRev((Object) "Property", propertyExpr);
+
+        QueryBuilder<Object, Object> propertyQuery = new QueryBuilder<>(propertyKeys);
+        propertyQuery.addProperty("quantityProperty", reflectionLM.quantityProperty.getExpr(propertyExpr));
+        propertyQuery.and(reflectionLM.canonicalNameProperty.getExpr(propertyExpr).getWhere());
+        if(maxQuantity == null)
+            propertyQuery.and(reflectionLM.quantityProperty.getExpr(propertyExpr).getWhere().not()); //null quantityProperty
+        else
+            propertyQuery.and(reflectionLM.quantityProperty.getExpr(propertyExpr).getWhere().not().or( //null quantityProperty
+                    reflectionLM.quantityProperty.getExpr(propertyExpr).compare(new DataObject(maxQuantity).getExpr(), Compare.LESS_EQUALS))); //less or equals then maxQuantity
+
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = propertyQuery.execute(session);
+
+        MSet<Integer> resultSet = SetFact.mSet();
+        for (int i = 0, size = propertyResult.size(); i < size; i++) {
+            resultSet.add((Integer) propertyResult.getKey(i).get("Property"));
+        }
+        return resultSet;
     }
 
     public void recalculateClassStat(DataSession session) throws SQLException, SQLHandledException {

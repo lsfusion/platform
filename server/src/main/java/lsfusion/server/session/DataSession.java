@@ -1037,7 +1037,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         action.execute(env);
     }
 
-    @StackProgress()
+    @StackProgress
     private boolean executeGlobalEvent(BusinessLogics BL, Object property, @StackProgress final ProgressBar progressBar) throws SQLException, SQLHandledException {
         if(property instanceof ActionProperty || property instanceof ActionPropertyValueImplement) {
             startPendingSingles(property instanceof ActionPropertyValueImplement ? ((ActionPropertyValueImplement) property).property : (ActionProperty) property);

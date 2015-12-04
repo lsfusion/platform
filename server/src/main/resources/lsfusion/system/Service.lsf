@@ -11,6 +11,8 @@ recalculateClassesAction 'Пересчитать классы' = ACTION CUSTOM '
 recalculateAction 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateActionProperty' ();
 recalculateFollowsAction 'Пересчитать следствия и ограничения' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty' ();
 recalculateStatsAction 'Пересчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateStatsActionProperty' ();
+overCalculateStatsAction 'Дорасчитать статистику' = ACTION CUSTOM 'lsfusion.server.logics.service.OverCalculateStatsActionProperty' ();
+maxQuantityOverCalculate 'Пороговое кол-во дорасчёта' = DATA INTEGER ();
 
 serviceDBMultiThreadAction 'Обслуживание БД (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
 checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
@@ -19,6 +21,7 @@ recalculateClassesMultiThreadAction 'Пересчитать классы (мно
 recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
 recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
 recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
+overCalculateStatsMultiThreadAction 'Дорасчитать статистику (многопоточно, threadCount, timeout)' = ACTION CUSTOM 'lsfusion.server.logics.service.OverCalculateStatsMultiThreadActionProperty' (INTEGER, INTEGER) NULL;
 
 serviceDBMultiThreadAction 'Обслуживание БД (многопоточно, timeout)' (INTEGER propertyTimeout) = ACTION serviceDBMultiThreadAction (NULL, propertyTimeout);
 checkAggregationsMultiThreadAction 'Проверить агрегации (многопоточно, timeout)' (INTEGER propertyTimeout)= ACTION checkAggregationsMultiThreadAction (NULL, propertyTimeout);
@@ -27,6 +30,7 @@ recalculateClassesMultiThreadAction 'Пересчитать классы (мно
 recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно, timeout)' (INTEGER propertyTimeout)= ACTION recalculateMultiThreadAction (NULL, propertyTimeout);
 recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно, timeout)' (propertyTimeout)= ACTION recalculateFollowsMultiThreadAction (NULL, propertyTimeout);
 recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно, timeout)' (INTEGER propertyTimeout)= ACTION recalculateStatsMultiThreadAction (NULL, propertyTimeout);
+overCalculateStatsMultiThreadAction 'Дорасчитать статистику (многопоточно, timeout)' (INTEGER propertyTimeout)= ACTION overCalculateStatsMultiThreadAction (NULL, propertyTimeout);
 
 threadCountMultiThread 'Количество потоков' = DATA LOCAL INTEGER (); 
 serviceDBMultiThreadAction 'Обслуживание БД (многопоточно)' = ACTION serviceDBMultiThreadAction(threadCountMultiThread(), NULL);
@@ -36,6 +40,7 @@ recalculateClassesMultiThreadAction 'Пересчитать классы (мно
 recalculateMultiThreadAction 'Пересчитать агрегации (многопоточно)' = ACTION recalculateMultiThreadAction(threadCountMultiThread(), NULL);
 recalculateFollowsMultiThreadAction 'Пересчитать следствия и ограничения (многопоточно)' = ACTION recalculateFollowsMultiThreadAction (threadCountMultiThread(), NULL);
 recalculateStatsMultiThreadAction 'Пересчитать статистику (многопоточно)' = ACTION recalculateStatsMultiThreadAction (threadCountMultiThread(), NULL);
+overCalculateStatsMultiThreadAction 'Дорасчитать статистику (многопоточно)' = ACTION overCalculateStatsMultiThreadAction (threadCountMultiThread(), NULL);
 
 analyzeDBAction 'Анализ БД' = ACTION CUSTOM 'lsfusion.server.logics.service.AnalyzeDBActionProperty' ();
 vacuumDBAction 'Упаковать БД' = ACTION CUSTOM 'lsfusion.server.logics.service.VacuumDBActionProperty' ();
@@ -257,9 +262,9 @@ FORM admin 'Администрирование'
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
                  restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), 
                  checkAggregationsAction, checkClassesAction, checkAggregationsMultiThreadAction, checkClassesMultiThreadAction,
-                 recalculateClassesAction, recalculateAction, recalculateFollowsAction, recalculateStatsAction,
+                 recalculateClassesAction, recalculateAction, recalculateFollowsAction, recalculateStatsAction, overCalculateStatsAction, maxQuantityOverCalculate,
                  threadCountMultiThread, recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
-                 recalculateStatsMultiThreadAction,
+                 recalculateStatsMultiThreadAction, overCalculateStatsMultiThreadAction,
                  packAction, analyzeDBAction, uploadToDBAction, uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB,    
                  vacuumDBAction, serviceDBAction, serviceDBMultiThreadAction, runGarbageCollector, getVMInfo, dropLRUPercent, randomDropLRU, dropLRU, makeHeapDump, 
                  TILMode, hostnameServerComputer, reupdateMode, singleTransaction,
@@ -307,7 +312,9 @@ DESIGN admin {
                 MOVE PROPERTY(recalculateClassesAction());
                 MOVE PROPERTY(recalculateAction());
                 MOVE PROPERTY(recalculateFollowsAction());
-                MOVE PROPERTY(recalculateStatsAction());               
+                MOVE PROPERTY(recalculateStatsAction());
+                MOVE PROPERTY(overCalculateStatsAction());             
+                MOVE PROPERTY(maxQuantityOverCalculate());
             }
             NEW checkOneThread {
                 caption = 'Проверка целостности базы данных';
@@ -324,7 +331,8 @@ DESIGN admin {
                 MOVE PROPERTY(recalculateClassesMultiThreadAction());
                 MOVE PROPERTY(recalculateMultiThreadAction());
                 MOVE PROPERTY(recalculateFollowsMultiThreadAction());
-                MOVE PROPERTY(recalculateStatsMultiThreadAction());                   
+                MOVE PROPERTY(recalculateStatsMultiThreadAction());  
+                MOVE PROPERTY(overCalculateStatsMultiThreadAction());
             }
             NEW checkMultiThread {
                 caption = 'Проверка целостности базы данных';

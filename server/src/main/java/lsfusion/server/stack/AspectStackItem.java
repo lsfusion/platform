@@ -75,15 +75,16 @@ public class AspectStackItem implements ExecutionStackItem {
             for (Annotation paramAnnotation : paramAnnotations[i])
                 if (paramAnnotation instanceof StackProgress) {
                     ProgressBar progressBar = (ProgressBar) args[i];
-                    String extraParams = params.toString(",");
-                    if(!extraParams.isEmpty()) {
-                        if(progressBar.params == null)
-                            progressBar.params = extraParams;
-                        else
-                            progressBar.params += (progressBar.params.isEmpty() ? "" : ", ") + extraParams;
+                    if (progressBar != null) {
+                        String extraParams = params.toString(",");
+                        if (!extraParams.isEmpty()) {
+                            if (progressBar.params == null)
+                                progressBar.params = extraParams;
+                            else
+                                progressBar.params += (progressBar.params.isEmpty() ? "" : ", ") + extraParams;
+                        }
+                        progressBarList.add(progressBar);
                     }
-                    progressBarList.add(progressBar);
-
                 }
         return progressBarList.immutableList();
     }
