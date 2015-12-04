@@ -118,7 +118,7 @@ public class Settings {
 
     private boolean busyDialog;
 
-    private boolean safeCheckFileExistence;
+    private boolean safeCheckFileExistence = true;
 
     public int getLimitWhereJoinsDegree() {
         return limitWhereJoinsDegree;
