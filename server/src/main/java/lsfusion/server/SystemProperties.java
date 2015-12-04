@@ -13,15 +13,12 @@ public class SystemProperties {
 
     public static final String userDir = System.getProperty("user.dir");
 
-    public static void setGCIntervalIfNotDefined(String value) {
-        if (System.getProperty("sun.rmi.dgc.server.gcInterval") == null) {
-            System.setProperty("sun.rmi.dgc.server.gcInterval", value);
+    public static void setDGCParams() {
+        if (System.getProperty("sun.rmi.dgc.server.leaseValue") == null) {
+            System.setProperty("java.rmi.dgc.leaseValue", "1800000");
+            System.setProperty("java.rmi.dgc.checkInterval", "900000");
+            System.setProperty("sun.rmi.dgc.server.gcInterval", "3600000");
         }
-    }
-
-    public static void setDGCLeaseValue() {
-        System.setProperty("java.rmi.dgc.leaseValue", "30000");
-        System.setProperty("java.rmi.dgc.checkInterval", "15000");
     }
 
     public static void enableMailEncodeFileName() {

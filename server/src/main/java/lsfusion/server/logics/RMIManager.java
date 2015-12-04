@@ -24,7 +24,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 
@@ -103,11 +102,7 @@ public class RMIManager extends LifecycleAdapter implements InitializingBean {
 
     private void initRMI() {
         // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
-        SystemProperties.setGCIntervalIfNotDefined("600000");
-
-//        if (!SystemProperties.isDebug) {
-//            SystemProperties.setDGCLeaseValue();
-//        }
+        SystemProperties.setDGCParams();
 
         try {
             RMIUtils.initRMI();
