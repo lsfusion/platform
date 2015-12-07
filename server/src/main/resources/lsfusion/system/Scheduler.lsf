@@ -166,6 +166,7 @@ DESIGN scheduledTask {
                 }
                 PROPERTY(parameterScheduledTaskDetail(td)) {
                     preferredSize = (-1, 18);
+                    minimumSize = (-1, 18);
                 }
             }
             NEW logContainer {
