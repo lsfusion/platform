@@ -17,6 +17,8 @@ public class BusinessLogicsBootstrap {
 
     public static void start() {
         SystemProperties.enableMailEncodeFileName();
+        // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
+        SystemProperties.setDGCParams();
 
         long startTime = System.currentTimeMillis();
         logger.info("Server is starting...");

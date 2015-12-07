@@ -101,9 +101,6 @@ public class RMIManager extends LifecycleAdapter implements InitializingBean {
     }
 
     private void initRMI() {
-        // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
-        SystemProperties.setDGCParams();
-
         try {
             RMIUtils.initRMI();
         } catch (IOException e) {
