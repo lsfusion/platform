@@ -424,7 +424,7 @@ public class ImplementTable extends GlobalTable { // последний инте
         calculateStat(reflectionLM, session, null);
     }
 
-    public ImMap<String, Pair<Integer, Integer>> calculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImSet<PropertyField> props) throws SQLException, SQLHandledException {
+    public ImMap<String, Pair<Integer, Integer>> calculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props) throws SQLException, SQLHandledException {
         ImMap<String, Pair<Integer, Integer>> propStats = MapFact.EMPTY();
         if (!SystemProperties.doNotCalculateStats) {
             ValueExpr one = new ValueExpr(1, IntegerClass.instance);
@@ -441,10 +441,10 @@ public class ImplementTable extends GlobalTable { // последний инте
                 }
             }
 
-            ImSet<PropertyField> propertyFieldSet = props == null ? properties : props;
+            ImSet<PropertyField> propertyFieldSet = props == null ? properties : props.keys();
 
             for(PropertyField prop : propertyFieldSet)
-                if (props != null ? props.contains(prop) : !(prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat()))
+                if (props != null ? props.containsKey(prop) : !(prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat()))
                     mResult.exclAdd(prop, readCount(session, GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, new KeyExpr("count"))).getWhere()));
 
             mResult.exclAdd(0, readCount(session, inWhere));
@@ -471,7 +471,13 @@ public class ImplementTable extends GlobalTable { // последний инте
             for (PropertyField property : propertyFieldSet) {
                 DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(getName()), new DataObject(property.getName()));
                 if(propertyObject == null && props != null) {
-                    propertyObject = session.addObject(reflectionLM.property);
+                    String canonicalName = props.get(property);
+                    propertyObject = safeReadClasses(session, reflectionLM.propertyCanonicalName, new DataObject(canonicalName));
+                    if(propertyObject == null) {
+                        propertyObject = session.addObject(reflectionLM.property);
+                        reflectionLM.canonicalNameProperty.change(canonicalName, session, propertyObject);
+                    }
+                    reflectionLM.storedProperty.change(true, session, propertyObject);
                     reflectionLM.dbNameProperty.change(property.getName(), session, propertyObject);
                     reflectionLM.tableSIDProperty.change(getName(), session, propertyObject);
                 }

@@ -879,15 +879,15 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             for(Map.Entry<ImplementTable, List<CalcProperty>> entry : calcPropertiesMap.entrySet()) {
                 ImplementTable table = entry.getKey();
                 List<CalcProperty> properties = entry.getValue();
-                ImSet<PropertyField> fields = SetFact.EMPTY();
+                ImMap<PropertyField, String> fields = MapFact.EMPTY();
                 for(CalcProperty property : properties)
-                    fields = fields.addExcl(property.field);
+                    fields = fields.addExcl(property.field, property.getCanonicalName());
                 ImMap<String, Pair<Integer, Integer>> propStats;
                 try (DataSession session = createSession()) {
                     propStats = table.calculateStat(reflectionLM, session, fields);
                     session.apply(businessLogics);
                 }
-                table.updateStat(tableStats, null, propStats, false, fields);
+                table.updateStat(tableStats, null, propStats, false, fields.keys());
             }
         }
     }

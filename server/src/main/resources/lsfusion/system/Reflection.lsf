@@ -347,11 +347,11 @@ dumbPropertyGroup (pg) = ' ' IF pg IS PropertyGroup;
 
 FORM properties 'Свойства'
     OBJECTS p=Property
-    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty, dbNameProperty, tableSIDProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
+    PROPERTIES(p) READONLY captionProperty, canonicalNameProperty, dbNameProperty, tableSIDProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, quantityProperty, notNullQuantityProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     TREE treePropertiesObject tps=PropertyGroup PARENT parentPropertyGroup, ps=Property
     PROPERTIES(tps) READONLY captionPropertyGroup, SIDPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, parentPropertyGroup, numberPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup, dumbPropertyGroup
-    PROPERTIES(ps) READONLY captionProperty, canonicalNameProperty, dbNameProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
+    PROPERTIES(ps) READONLY captionProperty, canonicalNameProperty, dbNameProperty, returnProperty, classProperty, complexityProperty, parentProperty, numberProperty, quantityProperty, notNullQuantityProperty, userLoggableProperty EDITABLE, loggableProperty, storedProperty EDITABLE, isSetNotNullProperty EDITABLE
 
     ORDER BY numberProperty(p)
     ORDER BY numberPropertyGroup(tps)
