@@ -487,7 +487,7 @@ public class ImplementTable extends GlobalTable { // последний инте
                     Object notNull = BaseUtils.nvl(notNulls.get(property), 0);
                     Object quantity = BaseUtils.nvl(result.get(property), 0);
                     reflectionLM.notNullQuantityProperty.change(notNull, session, propertyObject);
-                    propStats = propStats.addExcl(getName() + "." + property.getName(), Pair.create((Integer) notNull, (Integer) quantity));
+                    propStats = propStats.addExcl(getName() + "." + property.getName(), Pair.create((Integer) quantity, (Integer) notNull));
                 }
             }
         }
