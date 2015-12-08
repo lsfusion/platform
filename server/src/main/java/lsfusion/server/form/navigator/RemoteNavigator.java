@@ -454,7 +454,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
 
     public static void updatePingInfo(BusinessLogics businessLogics) {
         try {
-            logger.info("UpdatePingInfo started");
             Map<Integer, Map<Long, List<Long>>> pingInfoMap = new HashMap<>(RemoteLoggerAspect.pingInfoMap);
             RemoteLoggerAspect.pingInfoMap.clear();
             try (DataSession session = ThreadLocalContext.getDbManager().createSession()) {
@@ -473,9 +472,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
                     }
                 }
                 String result = session.applyMessage(businessLogics);
-                if(result == null)
-                    logger.info("UpdatePingInfo finished successfully");
-                else
+                if(result != null)
                     logger.error("UpdatePingInfo error: " + result);
             }
         } catch (Exception e) {
