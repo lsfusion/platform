@@ -1,11 +1,17 @@
 package lsfusion.server.data;
 
-public class SQLTimeoutException extends SQLHandledException {
-    
-    public final boolean isTransactTimeout;
+import java.sql.SQLException;
 
-    public SQLTimeoutException(boolean isTransactTimeout) {
+public class SQLTimeoutException extends SQLHandledException {
+    public enum Type { INTERRUPT, CANCEL, TIMEOUT, TRANSACTTIMEOUT }
+
+    private final Boolean isTransactTimeout;
+    public final Type type;
+
+    public SQLTimeoutException(Boolean isTransactTimeout, Boolean isForcedCancel) {
         this.isTransactTimeout = isTransactTimeout;
+        this.type = isForcedCancel != null ? (isForcedCancel ? Type.INTERRUPT : Type.CANCEL) :
+                                                isTransactTimeout ? Type.TRANSACTTIMEOUT : Type.TIMEOUT;
     }
 
     public String toString() {
@@ -21,6 +27,19 @@ public class SQLTimeoutException extends SQLHandledException {
 
     @Override
     public boolean repeatCommand() {
-        return !isTransactTimeout;
+        return type == Type.TIMEOUT;
+    }
+
+    @Override
+    public boolean repeatApply(SQLSession sql, OperationOwner owner, int attempts) throws SQLException {
+        return type == Type.TRANSACTTIMEOUT || type == Type.TIMEOUT;
+    }
+
+    public boolean isTransactTimeout() {
+        return type == Type.TRANSACTTIMEOUT;
+    }
+
+    public boolean isCancel() {
+        return type == Type.CANCEL;
     }
 }

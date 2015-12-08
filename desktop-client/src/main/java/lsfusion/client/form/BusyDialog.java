@@ -22,6 +22,8 @@ class BusyDialog extends JDialog {
     private JButton btnCopy;
     private JButton btnExit;
     private JButton btnReconnect;
+    private JButton btnCancel;
+    private JButton btnInterrupt;
     private boolean indeterminateProgressBar = false;
     private Style defaultStyle;
     private Style highLightStyle;
@@ -29,8 +31,11 @@ class BusyDialog extends JDialog {
     private JPanel subStackPanel;
     private JScrollPane scrollPane;
     private Object[] prevLines;
-    static boolean devMode = Main.configurationAccessAllowed;
-    public GridBagConstraints fieldConstraints = null;
+    private static boolean devMode = Main.configurationAccessAllowed;
+    private GridBagConstraints fieldConstraints = null;
+
+    private boolean longAction;
+    private Integer processId = null;
 
     public BusyDialog(Window parent, boolean modal) {
         super(parent, getString("form.wait"), ModalityType.APPLICATION_MODAL);
@@ -73,6 +78,15 @@ class BusyDialog extends JDialog {
         btnReconnect = new JButton(getString("form.loading.reconnect"));
         btnReconnect.setEnabled(false);
         buttonPanel.add(btnReconnect);
+
+        btnCancel = new JButton(getString("form.loading.cancel"));
+        btnCancel.setEnabled(false);
+        buttonPanel.add(btnCancel);
+
+        btnInterrupt = new JButton(getString("form.loading.interrupt"));
+        btnInterrupt.setEnabled(false);
+        buttonPanel.add(btnInterrupt);
+
         buttonPanel.setMaximumSize(new Dimension((int) buttonPanel.getPreferredSize().getWidth(), (int) (btnExit.getPreferredSize().getHeight() * 4)));
         contentPane.add(buttonPanel);
 
@@ -137,11 +151,35 @@ class BusyDialog extends JDialog {
             }
         });
 
+        btnCancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int answer = SwingUtils.showConfirmDialog(dialog, getString("form.loading.cancel.confirm"), "", JOptionPane.QUESTION_MESSAGE, 1, false, 0);
+                if (answer == JOptionPane.NO_OPTION) {
+                    return;
+                }
+                Main.interrupt(processId, true);
+            }
+        });
+
+        btnInterrupt.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int answer = SwingUtils.showConfirmDialog(dialog, getString("form.loading.interrupt.confirm"), "", JOptionPane.QUESTION_MESSAGE, 1, false, 0);
+                if (answer == JOptionPane.NO_OPTION) {
+                    return;
+                }
+                Main.interrupt(processId, false);
+            }
+        });
+
         longActionTimer = new Timer(60000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 btnExit.setEnabled(true);
                 btnReconnect.setEnabled(true);
+                btnInterrupt.setEnabled(true);
+                longAction = true;
             }
         });
         longActionTimer.start();
@@ -189,6 +227,7 @@ class BusyDialog extends JDialog {
         LinkedHashMap<String, Boolean> stackLines = new LinkedHashMap<>();
 
         boolean showTopProgressBar = true;
+        boolean visibleCancelBtn = false;
         int progressBarCount = 0;
         List<Component> panels = new ArrayList<>();
         for (int i = 0; i < lines.length; i++) {
@@ -208,15 +247,21 @@ class BusyDialog extends JDialog {
                 panels.add(createProgressBarPanel((ProgressBar) line));
                 stackLines = new LinkedHashMap<>();
                 progressBarCount++;
-            } else {
+            } else if(line instanceof Integer) {
+                processId = (Integer) line;
+            } else if (line instanceof Boolean) {
+                visibleCancelBtn = true;
+            } else
                 stackLines.put((String) line, changed);
-            }
         }
         if(!stackLines.isEmpty()) {
             if(!panels.isEmpty())
                 panels.add(Box.createVerticalStrut(5));
             panels.add(createTextPanel(stackLines));
         }
+
+        if(longAction)
+            btnCancel.setEnabled(visibleCancelBtn);
 
         if(showTopProgressBar) {
             if(indeterminateProgressBar) {
@@ -246,6 +291,7 @@ class BusyDialog extends JDialog {
     public void setStackMessage(Object[] lines) {
 
         List<JPanel> panels = new ArrayList<>();
+        boolean visibleCancelBtn = false;
         for (Object line : lines) {
             if (line instanceof ProgressBar) {
                 JPanel messageProgressPanel = new JPanel(new GridLayout(2, 1));
@@ -265,7 +311,13 @@ class BusyDialog extends JDialog {
                 }
                 messageProgressPanel.setBorder(new EmptyBorder(panels.isEmpty() ? 0 : 5, 5, 0, 5));
                 panels.add(messageProgressPanel);
+            } else if(line instanceof Integer) {
+                processId = (Integer) line;
+            } else if(line instanceof Boolean) {
+                visibleCancelBtn = true;
             }
+
+            btnCancel.setEnabled(visibleCancelBtn);
 
         }
 

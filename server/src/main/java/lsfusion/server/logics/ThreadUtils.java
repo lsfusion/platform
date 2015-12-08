@@ -23,8 +23,17 @@ public class ThreadUtils {
 
     public static void interruptThread(SQLSession sqlSession, Thread thread) throws SQLException, SQLHandledException {
         if(thread != null) {
-            SQLSession.cancelExecutingStatement(sqlSession, thread.getId());
+            SQLSession.cancelExecutingStatement(sqlSession, thread.getId(), true);
             thread.interrupt();
         }
+    }
+
+    public static void cancelThread(Context context, Thread thread) throws SQLException, SQLHandledException {
+        cancelThread(context.getLogicsInstance().getDbManager().getStopSql(), thread);
+    }
+
+    public static void cancelThread(SQLSession session, Thread thread) throws SQLException, SQLHandledException {
+        if(thread != null)
+            SQLSession.cancelExecutingStatement(session, thread.getId(), false);
     }
 }

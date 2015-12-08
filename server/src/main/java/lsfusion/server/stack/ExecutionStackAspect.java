@@ -5,7 +5,6 @@ import lsfusion.base.ConcurrentWeakHashMap;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.HandledException;
-import lsfusion.server.logics.property.ActionProperty;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -21,13 +20,19 @@ public class ExecutionStackAspect {
     
     @Around("execution(lsfusion.server.logics.property.actions.flow.FlowResult lsfusion.server.logics.property.ActionProperty.execute(lsfusion.server.logics.property.ExecutionContext))")
     public Object execution(final ProceedingJoinPoint joinPoint) throws Throwable {
-        ExecuteActionStackItem item = new ExecuteActionStackItem((ActionProperty) joinPoint.getTarget());
+        ExecuteActionStackItem item = new ExecuteActionStackItem(joinPoint);
         return processStackItem(joinPoint, item);
     }
 
-    @Around("execution(@lsfusion.server.stack.StackMessage * *.*(..)) || execution(@lsfusion.server.stack.StackProgress * *.*(..))")
+    @Around("execution(@lsfusion.server.stack.StackMessage * *.*(..))")
     public Object callTwinMethod(ProceedingJoinPoint thisJoinPoint) throws Throwable {
         AspectStackItem item = new AspectStackItem(thisJoinPoint);
+        return processStackItem(thisJoinPoint, item);
+    }
+
+    @Around("execution(@lsfusion.server.stack.StackProgress * *.*(..))")
+    public Object callTwinMethod2(ProceedingJoinPoint thisJoinPoint) throws Throwable {
+        ProgressStackItem item = new ProgressStackItem(thisJoinPoint);
         return processStackItem(thisJoinPoint, item);
     }
 
@@ -156,7 +161,7 @@ public class ExecutionStackAspect {
     
     // для последнего action'а в стеке ищем вверх по стеку первый action с именем (до action'а с IN_DELEGATE)
     private static String getLastActionString(Stack<ExecutionStackItem> stack, ExecuteActionStackItem lastAction, boolean cut) {
-        ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.indexOf(lastAction) + 1); 
+        ListIterator<ExecutionStackItem> itemListIterator = stack.listIterator(stack.indexOf(lastAction) + 1);
         while (itemListIterator.hasPrevious()) {
             ExecutionStackItem item = itemListIterator.previous();
             if (isLSFAction(item)) {

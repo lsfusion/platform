@@ -484,6 +484,14 @@ public class Main {
         timer.start();
     }
 
+    public static void interrupt(Integer processId, boolean cancelable) {
+        try {
+            if (remoteNavigator != null && processId != null)
+                remoteNavigator.interrupt(processId, cancelable);
+        } catch (RemoteException ignore) {
+        }
+    }
+
     private static void clean() {
 
         try {

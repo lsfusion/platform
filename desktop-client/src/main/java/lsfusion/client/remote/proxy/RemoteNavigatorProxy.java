@@ -76,6 +76,10 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         target.close();
     }
 
+    public void interrupt(Integer processId, boolean cancelable) throws RemoteException {
+        target.interrupt(processId, cancelable);
+    }
+
     public ClientCallBackInterface getClientCallBack() throws RemoteException {
         return target.getClientCallBack();
     }

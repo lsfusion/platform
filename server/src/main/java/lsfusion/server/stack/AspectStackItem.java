@@ -1,6 +1,5 @@
 package lsfusion.server.stack;
 
-import lsfusion.base.ProgressBar;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MList;
@@ -11,45 +10,33 @@ import org.aspectj.lang.reflect.MethodSignature;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-public class AspectStackItem implements ExecutionStackItem {
-    private final ProceedingJoinPoint thisJoinPoint;
-    private String message;
+public class AspectStackItem extends ExecutionStackItem {
 
-    public AspectStackItem(ProceedingJoinPoint thisJoinPoint) {
-        this.thisJoinPoint = thisJoinPoint;
+    public AspectStackItem(ProceedingJoinPoint joinPoint) {
+        super(joinPoint);
     }
 
     @Override
     public String toString() {
-        if(message == null) {
-            Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
+        Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
 
-            Annotation annotation = method.getAnnotation(StackMessage.class);
-            String resultMessage = annotation == null ? "" : ServerResourceBundle.getString(((StackMessage) annotation).value());
+        Annotation annotation = method.getAnnotation(StackMessage.class);
+        String resultMessage = annotation == null ? "" : ServerResourceBundle.getString(((StackMessage) annotation).value());
 
-            ImList<String> params = getArgs(thisJoinPoint, method);
-            if (!params.isEmpty()) {
-                resultMessage += " : " + params.toString(",");
-            }
-
-            ImList<ProgressBar> progressList = getProgress();
-            if(!progressList.isEmpty()) {
-                resultMessage += ", " + progressList.toString(",");
-            }
-
-            message = resultMessage;
+        ImList<String> params = getArgs(joinPoint, method);
+        if (!params.isEmpty()) {
+            resultMessage += " : " + params.toString(",");
         }
-        return message;
-
+        return resultMessage;
     }
 
-    public static ImList<String> getArgs(ProceedingJoinPoint thisJoinPoint, Method method) {
-        Object[] args = thisJoinPoint.getArgs();
+    public static ImList<String> getArgs(ProceedingJoinPoint joinPoint, Method method) {
+        Object[] args = joinPoint.getArgs();
         MList<String> mStringParams = ListFact.mList();
 
         Annotation thisMessageAnnotation = method.getAnnotation(ThisMessage.class);
         if (thisMessageAnnotation != null) {
-            mStringParams.add(thisJoinPoint.getThis().toString());
+            mStringParams.add(joinPoint.getThis().toString());
         }
 
         Annotation[][] paramAnnotations = method.getParameterAnnotations();
@@ -61,31 +48,5 @@ public class AspectStackItem implements ExecutionStackItem {
                 }
 
         return mStringParams.immutableList();
-    }
-
-    public ImList<ProgressBar> getProgress() {
-        Object[] args = thisJoinPoint.getArgs();
-        MList<ProgressBar> progressBarList = ListFact.mList();
-
-        Method method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
-        ImList<String> params = getArgs(thisJoinPoint, method);
-
-        Annotation[][] paramAnnotations = method.getParameterAnnotations();
-        for (int i = 0; i < paramAnnotations.length; i++)
-            for (Annotation paramAnnotation : paramAnnotations[i])
-                if (paramAnnotation instanceof StackProgress) {
-                    ProgressBar progressBar = (ProgressBar) args[i];
-                    if (progressBar != null) {
-                        String extraParams = params.toString(",");
-                        if (!extraParams.isEmpty()) {
-                            if (progressBar.params == null)
-                                progressBar.params = extraParams;
-                            else
-                                progressBar.params += (progressBar.params.isEmpty() ? "" : ", ") + extraParams;
-                        }
-                        progressBarList.add(progressBar);
-                    }
-                }
-        return progressBarList.immutableList();
     }
 }

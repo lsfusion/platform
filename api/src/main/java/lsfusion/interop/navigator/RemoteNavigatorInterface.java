@@ -29,6 +29,8 @@ public interface RemoteNavigatorInterface extends PendingRemoteInterface {
 
     void close() throws RemoteException;
 
+    void interrupt(Integer processId, boolean cancelable) throws RemoteException;
+
     // ???
     DefaultFormsType showDefaultForms() throws RemoteException;
 

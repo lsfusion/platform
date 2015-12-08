@@ -5,13 +5,15 @@ import lsfusion.server.logics.ServerResourceBundle;
 import lsfusion.server.logics.debug.ActionDelegationType;
 import lsfusion.server.logics.debug.DebugInfo;
 import lsfusion.server.logics.property.ActionProperty;
+import org.aspectj.lang.ProceedingJoinPoint;
 
-public class ExecuteActionStackItem implements ExecutionStackItem {
+public class ExecuteActionStackItem extends ExecutionStackItem {
     private final ActionProperty property;
     private String propertyName;
 
-    public ExecuteActionStackItem(ActionProperty property) {
-        this.property = property;
+    public ExecuteActionStackItem(ProceedingJoinPoint joinPoint) {
+        super(joinPoint);
+        this.property = (ActionProperty) joinPoint.getTarget();
     }
     
     public ActionProperty getProperty() {

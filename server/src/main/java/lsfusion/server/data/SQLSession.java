@@ -142,13 +142,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         return executingStatement == null ? null : executingStatement.toString();
     }
 
-    public static void cancelExecutingStatement(SQLSession sqlSession, long processId) throws SQLException, SQLHandledException {
+    public static void cancelExecutingStatement(SQLSession sqlSession, long processId, boolean interrupt) throws SQLException, SQLHandledException {
         if(sqlSession != null) {
             Integer sqlProcessId = SQLSession.getSQLProcessId(processId);
             if(sqlProcessId != null) {
                 SQLSession cancelSession = SQLSession.getSQLSession(sqlProcessId);
                 if (cancelSession != null)
-                    cancelSession.setForcedCancel();
+                    cancelSession.setForcedCancel(interrupt);
                 sqlSession.executeDDL(((DataAdapter) sqlSession.syntax).getCancelActiveTaskQuery(sqlProcessId));
             }
         }
@@ -1033,18 +1033,19 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         noTransactTimeout.set(prevValue.equals(1) ? null : prevValue - 1);
     }
 
-    private boolean forcedCancel = false;
+    private Boolean forcedCancel = null; //true: interrupt, false: cancel
 
-    public void setForcedCancel() {
-        forcedCancel = true;
+    public void setForcedCancel(boolean interrupt) {
+        forcedCancel = interrupt;
     }
 
-    public boolean isForcedCancel() {
-        if(forcedCancel) {
-            forcedCancel = false;
-            return true;
+    public Boolean isForcedCancel() {
+        if(forcedCancel != null) {
+            boolean interrupt = forcedCancel;
+            forcedCancel = null;
+            return interrupt;
         }
-        return false;
+        return null;
     }
 
     public void executeDDL(String DDL) throws SQLException {
@@ -1280,8 +1281,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         if(syntax.isUniqueViolation(e))
             handled = new SQLUniqueViolationException(false);
 
-        if(syntax.isTimeout(e) && !isForcedCancel()) // если forced cancel не перезапускаем, а просто вываливаемся с ошибкой
-            handled = new SQLTimeoutException(isTransactTimeout);
+        if(syntax.isTimeout(e))
+            handled = new SQLTimeoutException(isTransactTimeout, isForcedCancel());
         
         if(syntax.isConnectionClosed(e)) {
             handled = new SQLClosedException(connection.sql, inTransaction, e, errorPrivate);

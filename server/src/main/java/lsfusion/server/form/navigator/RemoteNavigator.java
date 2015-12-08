@@ -756,6 +756,26 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends ContextAwarePe
     }
 
     @Override
+    public void interrupt(Integer processId, boolean cancelable) throws RemoteException {
+        try {
+            if (cancelable)
+                ThreadUtils.cancelThread(context, getThreadById(processId));
+            else
+                ThreadUtils.interruptThread(context, getThreadById(processId));
+        } catch (SQLException | SQLHandledException ignored) {
+        }
+    }
+
+    private Thread getThreadById(int id) {
+        for (Thread t : Thread.getAllStackTraces().keySet()) {
+            if (t.getId() == id) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public void unreferenced() {
         shutdown(true);
     }
