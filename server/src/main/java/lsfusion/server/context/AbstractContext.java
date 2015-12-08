@@ -35,8 +35,8 @@ import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.UpdateCurrentClasses;
+import lsfusion.server.stack.AspectStackItem;
 import lsfusion.base.ProgressBar;
-import lsfusion.server.stack.ExecutionStackItem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -195,20 +195,14 @@ public abstract class AbstractContext implements Context {
         public synchronized List<Object> getMessageList() {
             List<Object> result = new ArrayList<>();
             for (Object entry : this) {
-                if(entry instanceof ExecutionStackItem) {
-                    ExecutionStackItem stackItem = (ExecutionStackItem) entry;
-
-                    result.add(stackItem.processId);
-                    if (stackItem.isCancelable())
-                        result.add(true);
-
-                    ImList<ProgressBar> progress = stackItem.getProgress();
-                    if (progress == null || progress.isEmpty())
-                        result.add(String.valueOf(stackItem));
+                if (entry instanceof ProgressBar) {
+                    result.add(entry);
+                } else if (entry instanceof AspectStackItem) {
+                    ImList<ProgressBar> progress = ((AspectStackItem) entry).getProgress();
+                    if (progress.isEmpty())
+                        result.add(String.valueOf(entry));
                     else
                         result.addAll(progress.toJavaList());
-                } else if (entry instanceof ProgressBar) {
-                    result.add(entry);
                 } else
                     result.add(String.valueOf(entry));
             }
