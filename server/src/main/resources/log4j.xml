@@ -359,7 +359,7 @@
     </category>
 
     <category name="PausableInvocationsLogger" additivity="false">
-        <priority value="ALL"/>
+        <priority value="INFO"/>
         <appender-ref ref="invocationlog"/>
         <!--<appender-ref ref="stdout"/>-->
     </category>
