@@ -624,7 +624,26 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             SQLSession sql = getDbManager().getThreadLocalSql();
             
             systemLogger.info("Setting user logging for properties");
-            setUserLoggableProperties(sql);
+            try {
+                setUserLoggableProperties(sql);
+            } catch (Exception e) {
+                // пробуем еще раз но с reparse'ом, для явной типизации
+                useReparse = true;
+
+                ImSet<String> props = SetFact.toSet("canonicalName", "stats", "userLoggable");
+                reparse.set(props.mapKeyValues(new GetValue<String, String>() {
+                    public String getMapValue(String value) {
+                        return "Reflection_" + value + "Property_Property";
+                    }}, new GetValue<String, String>() {
+                    public String getMapValue(String value) {
+                        return "Reflection_" + value + "_Property";
+                    }}));
+
+                setUserLoggableProperties(sql);
+
+                reparse.set(null);
+                useReparse = false;
+            }
 
             systemLogger.info("Setting user not null constraints for properties");
             setNotNullProperties(sql);
@@ -645,6 +664,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             return null;
         }
     }
+
+    // временный хак для перехода на явную типизацию
+    public static boolean useReparse = false;
+    public static final ThreadLocal<ImMap<String, String>> reparse = new ThreadLocal<>();
 
     private void setUserLoggableProperties(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
 

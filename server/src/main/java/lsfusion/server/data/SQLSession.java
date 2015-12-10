@@ -2245,6 +2245,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         boolean poolPrepared = !env.isNoPrepare() && !Settings.get().isDisablePoolPreparedStatements() && command.getString().length() > Settings.get().getQueryPrepareLength();
 
         checkSessionTables(paramObjects);
+
+        ImMap<String, String> reparse;
+        if(BusinessLogics.useReparse && (reparse = BusinessLogics.reparse.get()) != null) { // временный хак
+            paramObjects = paramObjects.addExcl(reparse.mapValues(new GetValue<ParseInterface, String>() {
+                public ParseInterface getMapValue(final String value) {
+                    return new StringParseInterface() {
+                        public String getString(SQLSyntax syntax, StringBuilder envString, boolean usedRecursion) {
+                            return value;
+                        }
+                    };
+                }
+            }));
+        }
+
         final PreParsedStatement parse = command.preparseStatement(poolPrepared, paramObjects, syntax, isVolatileStats(), snapEnv.getMaterializedQueries(), env.hasRecursion());
 
         ParsedStatement parsed = null;
