@@ -158,6 +158,9 @@ public class EmailReceiver {
 
         List<List<Object>> dataEmails = new ArrayList<>();
         List<List<Object>> dataAttachments = new ArrayList<>();
+        //options to increase downloading big attachments
+        mailProps.put("mail.imaps.partialfetch", "true");
+        mailProps.put("mail.imaps.fetchsize", "819200");
         if(!isPOP3) { //imaps
             MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
             socketFactory.setTrustAllHosts(true);
@@ -183,6 +186,7 @@ public class EmailReceiver {
             String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
             String idEmail = (dateTimeSentEmail == null ? "" : dateTimeSentEmail.getTime()) + fromAddressEmail;
             String subjectEmail = message.getSubject();
+            ServerLoggers.systemLogger.info("downloading email: " + subjectEmail);
             Object messageContent = getEmailContent(message);
             MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) :
                     messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, message.getFileName()) :
