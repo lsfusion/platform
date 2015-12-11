@@ -1220,7 +1220,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
                 if(noAnalyze || thr==0 || ttime >= thr) {
                     systemLogger.info(statement.toString() + " volatile : " + isVolatileStats() + " disabled nested loop : " + isDisabledNestLoop + " actual time : " + actualTime);
                     systemLogger.info(ExecutionStackAspect.getStackString());
-                    if(ServerLoggers.isUserExLog())
+                    if(Settings.get().isExplainJavaStack())
                         systemLogger.info(ExceptionUtils.getStackTrace());
                     for(String outRow : out)
                         systemLogger.info(outRow);

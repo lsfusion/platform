@@ -1595,4 +1595,14 @@ public class Settings {
     public void setMinClassDataIndexCount(int minClassDataIndexCount) {
         this.minClassDataIndexCount = minClassDataIndexCount;
     }
+
+    private boolean explainJavaStack = false;
+
+    public boolean isExplainJavaStack() {
+        return explainJavaStack;
+    }
+
+    public void setExplainJavaStack(boolean explainJavaStack) {
+        this.explainJavaStack = explainJavaStack;
+    }
 }
