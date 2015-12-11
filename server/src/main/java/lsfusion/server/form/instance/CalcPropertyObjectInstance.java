@@ -1,5 +1,6 @@
 package lsfusion.server.form.instance;
 
+import lsfusion.base.SFunctionSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -72,13 +73,18 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         return expr;
     }
 
-    public boolean isReallyChanged(boolean hidden, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+    public boolean isReallyChanged(boolean hidden, Modifier modifier, ReallyChanged reallyChanged, final ImSet<GroupObjectInstance> groupObjects) throws SQLException, SQLHandledException {
         if(reallyChanged.containsChange(this))
             return true;
 
+        assert !objectUpdated(groupObjects); // так как по всему flow в том или ином виде сначала проверяются groupObjects
+
         boolean disableHint = hidden && Settings.get().isDisableHiddenHintReallyChanged();
             
-        ImRevMap<ObjectInstance,KeyExpr> keys = KeyExpr.getMapKeys(getObjectInstances().toSet());
+        ImRevMap<ObjectInstance,KeyExpr> keys = KeyExpr.getMapKeys(getObjectInstances().toSet().filterFn(new SFunctionSet<ObjectInstance>() {
+            public boolean contains(ObjectInstance element) {
+                return element.objectInGrid(groupObjects);
+            }}));
         WhereBuilder changedWhere = new WhereBuilder();
         if(disableHint) // обработка hint'ов может занять слишком долгое время и если спрятан, это может быть неоправдано
             AutoHintsAspect.pushDisabledRepeat();
@@ -113,7 +119,7 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         properties.add(property);
     }
 
-    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden) throws SQLException, SQLHandledException {
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden, ImSet<GroupObjectInstance> groupObjects) throws SQLException, SQLHandledException {
         if(changedProps.externalProps.contains(property))
             return true;
 
@@ -123,6 +129,6 @@ public class CalcPropertyObjectInstance<P extends PropertyInterface> extends Pro
         if(changedProps.wasRestart)
             return true;
         
-        return isReallyChanged(hidden, modifier, reallyChanged); // cache пока не используем так как за многим надо следить
+        return isReallyChanged(hidden, modifier, reallyChanged, groupObjects); // cache пока не используем так как за многим надо следить
     }
 }

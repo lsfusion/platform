@@ -272,8 +272,8 @@ public class AutoHintsAspect {
                     whereComplexity = changed.getComplexity(false);
                 long complexity = max(exprComplexity, whereComplexity);
                 int limitComplexity = catchHint.getLimitHintIncrementComplexity();
-                if(complexity > limitComplexity && property.hasChanges(propChanges)) // сложность большая, если нет изменений то ничем не поможешь
-                    if(interfaceValues.isEmpty() && queryType == PropertyQueryType.FULLCHANGED) {
+                if(complexity > limitComplexity && property.hasChanges(propChanges)) { // сложность большая, если нет изменений то ничем не поможешь
+                    if (interfaceValues.isEmpty() && queryType == PropertyQueryType.FULLCHANGED) {
                         ImRevMap<?, KeyExpr> mapKeys = result.getMapKeys();
                         if(whereComplexity > limitComplexity || exprComplexity > property.getExpr(mapKeys).getComplexity(false) * catchHint.getLimitComplexityGrowthCoeff()) { // вторая проверка как и использование limitComplexity а не prevComplexity (max с ним), чтобы заставить ее более агрессивно hint'ить, когда общая complexity зашкаливает (min не используется чтобы не hint'ить раньше времени)
                             long baseLimit = catchHint.getLimitHintIncrementStat();
@@ -290,6 +290,7 @@ public class AutoHintsAspect {
                         }
                     } else // запускаем getQuery уже без interfaceValues, соответственно уже оно если надо (в смысле что статистика будет нормальной) кинет exception
                         property.getQuery(calcType, propChanges, PropertyQueryType.FULLCHANGED, MapFact.EMPTY());
+                }
             }
         }
         return result;

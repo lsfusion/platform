@@ -35,8 +35,8 @@ public class NotFilterInstance extends FilterInstance {
         return filter.objectUpdated(gridGroups);
     }
 
-    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden) throws SQLException, SQLHandledException {
-        return filter.dataUpdated(changedProps, reallyChanged, modifier, hidden);
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden, ImSet<GroupObjectInstance> groupObjects) throws SQLException, SQLHandledException {
+        return filter.dataUpdated(changedProps, reallyChanged, modifier, hidden, groupObjects);
     }
 
     public void fillProperties(MSet<CalcProperty> properties) {

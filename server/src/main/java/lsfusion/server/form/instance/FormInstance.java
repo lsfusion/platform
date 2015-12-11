@@ -1444,9 +1444,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
     }
 
     private boolean propertyUpdated(CalcPropertyObjectInstance updated, ImSet<GroupObjectInstance> groupObjects, ChangedData changedProps, boolean hidden) throws SQLException, SQLHandledException {
-        return dataUpdated(updated, changedProps, hidden)
+        return objectUpdated(updated, groupObjects)
                 || groupUpdated(groupObjects, UPDATED_KEYS)
-                || objectUpdated(updated, groupObjects);
+                || dataUpdated(updated, changedProps, hidden, groupObjects);
     }
 
     private boolean groupUpdated(ImSet<GroupObjectInstance> groupObjects, int flags) {
@@ -1456,8 +1456,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
         return false;
     }
 
-    private boolean dataUpdated(Updated updated, ChangedData changedProps, boolean hidden) throws SQLException, SQLHandledException {
-        return updated.dataUpdated(changedProps, this, getModifier(), hidden);
+    private boolean dataUpdated(Updated updated, ChangedData changedProps, boolean hidden, ImSet<GroupObjectInstance> groupObjects) throws SQLException, SQLHandledException {
+        return updated.dataUpdated(changedProps, this, getModifier(), hidden, groupObjects);
     }
 
     void applyFilters() {

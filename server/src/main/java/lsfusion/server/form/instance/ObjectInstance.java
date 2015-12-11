@@ -80,7 +80,7 @@ public abstract class ObjectInstance extends CellInstance<ObjectEntity> implemen
     }
 
     public boolean objectUpdated(ImSet<GroupObjectInstance> gridGroups) { return !objectInGrid(gridGroups) && (updated & UPDATED_OBJECT)!=0; }
-    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden) { return false; }
+    public boolean dataUpdated(ChangedData changedProps, ReallyChanged reallyChanged, Modifier modifier, boolean hidden, ImSet<GroupObjectInstance> groupObjects) { return false; }
     public void fillProperties(MSet<CalcProperty> properties) { }
 
     protected Expr getExpr() {
