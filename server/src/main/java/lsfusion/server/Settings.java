@@ -1260,7 +1260,7 @@ public class Settings {
         this.disableGroupNotJoinsWheres = disableGroupNotJoinsWheres;
     }
 
-    private int defaultTypeExecuteEnvironment = 1;
+    private int defaultTypeExecuteEnvironment = 2;
 
     public int getDefaultTypeExecuteEnvironment() {
         return defaultTypeExecuteEnvironment;
