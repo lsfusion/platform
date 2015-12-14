@@ -36,9 +36,10 @@ public class EmailReceiver {
     String passwordAccount;
     boolean isPOP3;
     boolean deleteMessagesAccount;
+    Integer lastDaysAccount;
 
     public EmailReceiver(EmailLogicsModule emailLM, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
-                         String nameAccount, String passwordAccount, boolean isPOP3, boolean deleteMessagesAccount) {
+                         String nameAccount, String passwordAccount, boolean isPOP3, boolean deleteMessagesAccount, Integer lastDaysAccount) {
             mailProps.setProperty(isPOP3 ? "mail.pop3.host" : "mail.imap.host", receiveHostAccount);
         this.LM = emailLM;
         this.accountObject = accountObject;
@@ -48,6 +49,7 @@ public class EmailReceiver {
         this.passwordAccount = passwordAccount;
         this.isPOP3 = isPOP3;
         this.deleteMessagesAccount = deleteMessagesAccount;
+        this.lastDaysAccount = lastDaysAccount;
     }
 
     public void receiveEmail(ExecutionContext context) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
@@ -178,31 +180,39 @@ public class EmailReceiver {
         emailFolder.open(Folder.READ_WRITE);
 
         Timestamp dateTimeReceivedEmail = new Timestamp(Calendar.getInstance().getTime().getTime());
+        Timestamp minDateTime = null;
+        if(lastDaysAccount != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.DATE, -lastDaysAccount);
+            minDateTime = new Timestamp(calendar.getTime().getTime());
+        }
 
         Message[] messages = emailFolder.getMessages();
         for (Message message : messages) {
-            message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
             Timestamp dateTimeSentEmail = getSentDate(message);
-            String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
-            String idEmail = (dateTimeSentEmail == null ? "" : dateTimeSentEmail.getTime()) + fromAddressEmail;
-            String subjectEmail = message.getSubject();
-            ServerLoggers.systemLogger.info("downloading email: " + subjectEmail);
-            Object messageContent = getEmailContent(message);
-            MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) :
-                    messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, message.getFileName()) :
-                            messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
-            if (messageEmail == null) {
-                messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
-                ServerLoggers.systemLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
-            }
-            byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
-            dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
-                    fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
-            int counter = 1;
-            if (messageEmail.attachments != null) {
-                for (Map.Entry<String, byte[]> entry : messageEmail.attachments.entrySet()) {
-                    dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
-                    counter++;
+            if(minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
+                message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
+                String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
+                String idEmail = (dateTimeSentEmail == null ? "" : dateTimeSentEmail.getTime()) + fromAddressEmail;
+                String subjectEmail = message.getSubject();
+                ServerLoggers.systemLogger.info("downloading email: " + subjectEmail);
+                Object messageContent = getEmailContent(message);
+                MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent) :
+                        messageContent instanceof BASE64DecoderStream ? getMultipartBody64(subjectEmail, (BASE64DecoderStream) messageContent, message.getFileName()) :
+                                messageContent instanceof String ? new MultipartBody((String) messageContent, null) : null;
+                if (messageEmail == null) {
+                    messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
+                    ServerLoggers.systemLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
+                }
+                byte[] emlFileEmail = BaseUtils.mergeFileAndExtension(getEMLByteArray(message), "eml".getBytes());
+                dataEmails.add(Arrays.asList((Object) idEmail, dateTimeSentEmail, dateTimeReceivedEmail,
+                        fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
+                int counter = 1;
+                if (messageEmail.attachments != null) {
+                    for (Map.Entry<String, byte[]> entry : messageEmail.attachments.entrySet()) {
+                        dataAttachments.add(Arrays.asList((Object) idEmail, String.valueOf(counter), entry.getKey(), entry.getValue()));
+                        counter++;
+                    }
                 }
             }
         }

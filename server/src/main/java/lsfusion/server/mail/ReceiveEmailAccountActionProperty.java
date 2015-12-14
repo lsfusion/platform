@@ -57,9 +57,10 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
                 String nameReceiveAccountTypeAccount = (String) emailLM.nameReceiveAccountTypeAccount.read(context, accountObject);
                 boolean isPop3Account = nameReceiveAccountTypeAccount == null || nullTrim(nameReceiveAccountTypeAccount).equals("POP3");
                 boolean deleteMessagesAccount = emailLM.deleteMessagesAccount.read(context, accountObject) != null;
+                Integer lastDaysAccount = (Integer) emailLM.lastDaysAccount.read(context, accountObject);
 
                 receiveEmail(context, accountObject, receiveHostAccount, receivePortAccount, nameAccount, passwordAccount,
-                        isPop3Account, deleteMessagesAccount);
+                        isPop3Account, deleteMessagesAccount, lastDaysAccount);
 
             } catch (Exception e) {
                 logError(context, getString("mail.failed.to.receive.mail") + " : " + e.toString());
@@ -71,7 +72,7 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
     }
 
     private void receiveEmail(ExecutionContext context, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
-                              String nameAccount, String passwordAccount, boolean isPop3, boolean deleteMessagesAccount)
+                              String nameAccount, String passwordAccount, boolean isPop3, boolean deleteMessagesAccount, Integer lastDaysAccount)
             throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException, GeneralSecurityException {
         if (receiveHostAccount == null) {
             logError(context, getString("mail.pop3.host.not.specified.letters.will.not.be.received"));
@@ -79,7 +80,7 @@ public class ReceiveEmailAccountActionProperty extends ScriptingActionProperty {
         }
 
         EmailReceiver receiver = new EmailReceiver(emailLM, accountObject, nullTrim(receiveHostAccount),
-                receivePortAccount, nullTrim(nameAccount), nullTrim(passwordAccount), isPop3, deleteMessagesAccount);
+                receivePortAccount, nullTrim(nameAccount), nullTrim(passwordAccount), isPop3, deleteMessagesAccount, lastDaysAccount);
 
         receiver.receiveEmail(context);
     }

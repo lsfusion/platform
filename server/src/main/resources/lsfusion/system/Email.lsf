@@ -60,6 +60,7 @@ receiveAccountTypeAccount 'Тип учётной записи' = DATA ReceiveAcc
 nameReceiveAccountTypeAccount 'Тип учётной записи' (account) = staticCaption(receiveAccountTypeAccount(account));
 blindCarbonCopyAccount 'Копия (BCC)'= DATA VARSTRING[50](Account);
 deleteMessagesAccount 'Удалять сообщения с сервера' = DATA BOOLEAN(Account);
+lastDaysAccount 'Загружать письма не старше (дней)' = DATA INTEGER(Account);
 disableAccount 'Отключить отсылку и получение почты' = DATA BOOLEAN(Account);
 enableAccount 'Включить отсылку и получение почты' (account) = NOT disableAccount(account) AND account IS Account;
 
@@ -90,7 +91,7 @@ emailSent 'Отправлено' = DATA LOCAL BOOLEAN ();
 FORM account 'E-mail аккаунт'
     OBJECTS a = Account FIXED PANEL
     PROPERTIES(a) nameAccount, passwordAccount, fromAddressAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount,
-                  receivePortAccount, nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, 
+                  receivePortAccount, nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, lastDaysAccount, 
                   isDefaultNotificationAccount, isDefaultInboxAccount, disableAccount
     EDIT Account OBJECT a
 ;
@@ -99,7 +100,7 @@ FORM accounts 'E-mail аккаунты'
    
     OBJECTS a = Account
     PROPERTIES(a) READONLY nameAccount, passwordAccount, fromAddressAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount,
-                  receivePortAccount, nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, 
+                  receivePortAccount, nameEncryptedConnectionTypeAccount, blindCarbonCopyAccount, deleteMessagesAccount, lastDaysAccount,
                   isDefaultNotificationAccount, disableAccount
     PROPERTIES(a) ADDFORM, EDITFORM, DELETE TOOLBAR
 
@@ -139,7 +140,7 @@ FORM mail 'Почта'
     OBJECTS a=Account
 
     PROPERTIES(a) nameAccount, smtpHostAccount, smtpPortAccount, nameReceiveAccountTypeAccount, receiveHostAccount, receivePortAccount, nameEncryptedConnectionTypeAccount,
-                  fromAddressAccount, passwordAccount, blindCarbonCopyAccount, deleteMessagesAccount, 
+                  fromAddressAccount, passwordAccount, blindCarbonCopyAccount, deleteMessagesAccount, lastDaysAccount,
                   isDefaultNotificationAccount, isDefaultInboxAccount, disableAccount 
     PROPERTIES(a) FORCE PANEL ADDOBJ, DELETE TOOLBAR
     
