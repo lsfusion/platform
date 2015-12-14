@@ -173,7 +173,7 @@ class BusyDialog extends JDialog {
             }
         });
 
-        longActionTimer = new Timer(5000, new ActionListener() {
+        longActionTimer = new Timer(devMode ? 5000 : 60000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 btnExit.setEnabled(true);

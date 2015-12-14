@@ -216,16 +216,13 @@ public abstract class AbstractContext implements Context {
             timedMessageStack = new TimedMessageStack(new MessageStack());
         timedMessageStack.time = System.currentTimeMillis();
         timedMessageStack.messageStack.push(stackItem);
-
-        actionMessageStackMap.remove(stackItem.process); //для соблюдения правильного порядка
         actionMessageStackMap.put(stackItem.process, timedMessageStack);
     }
 
     public void popActionMessage(ExecutionStackItem stackItem) {
         TimedMessageStack timedMessageStack = actionMessageStackMap.get(stackItem.process);
-        if (timedMessageStack != null)
-            timedMessageStack.messageStack.popOrEmpty();
-        if (timedMessageStack == null || timedMessageStack.messageStack.isEmpty()) {
+        timedMessageStack.messageStack.popOrEmpty();
+        if (timedMessageStack.messageStack.isEmpty()) {
             actionMessageStackMap.remove(stackItem.process);
         }
     }
