@@ -54,8 +54,7 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
 import lsfusion.server.session.SingleKeyTableUsage;
-import lsfusion.server.stack.ParamMessage;
-import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.*;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.commons.codec.binary.Hex;
@@ -487,30 +486,35 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private void uploadTableToDB(SQLSession sql, final @ParamMessage GlobalTable implementTable, @ParamMessage String progress, final SQLSession sqlTo, final OperationOwner owner) throws SQLException, SQLHandledException {
         sqlTo.truncate(implementTable, owner);
 
+        final ProgressStackItemResult stackItem = new ProgressStackItemResult();
         try {
             final Result<Integer> proceeded = new Result<>(0);
             final int total = sql.getCount(implementTable, owner);
             ResultHandler<KeyField, PropertyField> reader = new ReadBatchResultHandler<KeyField, PropertyField>(10000) {
                 public void start() {
-                    ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
+                    stackItem.value = ThreadLocalContext.pushProgressMessage(getString("logics.upload.db"), proceeded.result, total);
                 }
 
                 public void proceedBatch(ImOrderMap<ImMap<KeyField, Object>, ImMap<PropertyField, Object>> batch) throws SQLException {
                     sqlTo.insertBatchRecords(implementTable, batch.getMap(), owner);
                     proceeded.set(proceeded.result + batch.size());
-                    ThreadLocalContext.popActionMessage();
-                    ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
+                    ThreadLocalContext.popActionMessage(stackItem.value);
+                    stackItem.value = ThreadLocalContext.pushProgressMessage(getString("logics.upload.db"), proceeded.result, total);
                 }
 
                 public void finish() throws SQLException {
-                    ThreadLocalContext.popActionMessage();
+                    ThreadLocalContext.popActionMessage(stackItem.value);
                     super.finish();
                 }
             };
             implementTable.readData(sql, LM.baseClass, owner, true, reader);
         } finally {
-            ThreadLocalContext.popActionMessage();
+            ThreadLocalContext.popActionMessage(stackItem.value);
         }
+    }
+
+    private class ProgressStackItemResult {
+        ProgressStackItem value;
     }
 /*    
     void checkLP(List<LP<?, ?>> lps) {
@@ -974,23 +978,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public String checkAggregations(SQLSession session) throws SQLException, SQLHandledException {
         List<AggregateProperty> checkProperties = businessLogics.getAggregateStoredProperties();
-
-        final Result<Integer> proceeded = new Result<>(0);
-        int total = checkProperties.size();
-        ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
-        try {
-            String message = "";
-            for (AggregateProperty property : checkProperties) {
-                message += property.checkAggregation(session, LM.baseClass);
-
-                proceeded.set(proceeded.result + 1);
-                ThreadLocalContext.popActionMessage();
-                ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
-            }
-            return message;
-        } finally {
-            ThreadLocalContext.popActionMessage();
+        String message = "";
+        for (int i = 0; i < checkProperties.size(); i++) {
+            AggregateProperty property = checkProperties.get(i);
+            message += property.checkAggregation(session, LM.baseClass, new ProgressBar(getString("logics.info.checking.aggregated.property"), i, checkProperties.size(), property.getSID()));
         }
+        return message;
     }
 
 //    public String checkStats(SQLSession session) throws SQLException, SQLHandledException {
@@ -1101,34 +1094,32 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         } else
             run.run(session);
     }
+
     public String recalculateAggregations(SQLSession session, final List<AggregateProperty> recalculateProperties, boolean isolatedTransaction) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
-        final Result<Integer> proceeded = new Result<>(0);
         final int total = recalculateProperties.size();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
-        ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
-        try {
-            for (final AggregateProperty property : recalculateProperties)
-                run(session, isolatedTransaction, new RunService() {
-                    public void run(SQLSession sql) throws SQLException, SQLHandledException {
-                        long start = System.currentTimeMillis();
-                        serviceLogger.info(String.format("Recalculate Aggregation started: %s", property.getSID()));
-                        property.recalculateAggregation(sql, LM.baseClass);
-
-                        proceeded.set(proceeded.result + 1);
-                        ThreadLocalContext.popActionMessage();
-                        ThreadLocalContext.pushActionMessage("Proceeded : " + proceeded.result + " of " + total);
-                        long time = System.currentTimeMillis() - start;
-                        String message = String.format("Recalculate Aggregation: %s, %sms", property.getSID(), time);
-                        serviceLogger.info(message);
-                        if(time > maxRecalculateTime)
-                            messageList.add(message);
-                    }
-                });
-        } finally {
-            ThreadLocalContext.popActionMessage();
+        for (int i = 0; i < recalculateProperties.size(); i++) {
+            recalculateAggregation(session, isolatedTransaction, new ProgressBar(getString("logics.recalculation.aggregations"), i, total), messageList, maxRecalculateTime, recalculateProperties.get(i));
         }
         return businessLogics.formatMessageList(messageList);
+    }
+
+    @StackProgress
+    private void recalculateAggregation(SQLSession session, boolean isolatedTransaction, @StackProgress final ProgressBar progressBar, final List<String> messageList, final long maxRecalculateTime, @ParamMessage final AggregateProperty property) throws SQLException, SQLHandledException {
+        run(session, isolatedTransaction, new RunService() {
+            public void run(SQLSession sql) throws SQLException, SQLHandledException {
+                long start = System.currentTimeMillis();
+                serviceLogger.info(String.format("Recalculate Aggregation started: %s", property.getSID()));
+                property.recalculateAggregation(sql, LM.baseClass);
+
+                long time = System.currentTimeMillis() - start;
+                String message = String.format("Recalculate Aggregation: %s, %sms", property.getSID(), time);
+                serviceLogger.info(message);
+                if (time > maxRecalculateTime)
+                    messageList.add(message);
+            }
+        });
     }
 
     public void recalculateTableClasses(SQLSession session, String tableName, boolean isolatedTransaction) throws SQLException, SQLHandledException {

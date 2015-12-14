@@ -24,6 +24,8 @@ public interface RemoteFormInterface extends PendingRemoteInterface {
 
     public ServerResponse throwInServerInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Throwable clientThrowable) throws RemoteException;
 
+    void interrupt(boolean cancelable) throws RemoteException;
+
     // события формы
 
     void gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException;

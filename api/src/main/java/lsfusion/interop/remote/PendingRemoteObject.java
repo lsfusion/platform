@@ -59,4 +59,8 @@ public class PendingRemoteObject extends RemoteObject implements PendingRemoteIn
     public List<Object> getRemoteActionMessageList() throws RemoteException {
         return null;
     }
+
+    @Override
+    public void interrupt(boolean cancelable) throws RemoteException {
+    }
 }

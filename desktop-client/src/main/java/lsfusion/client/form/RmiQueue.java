@@ -1,10 +1,7 @@
 package lsfusion.client.form;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ERunnable;
-import lsfusion.base.ExceptionUtils;
-import lsfusion.base.Provider;
-import lsfusion.base.SystemUtils;
+import lsfusion.base.*;
 import lsfusion.client.ClientLoggers;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
@@ -36,7 +33,7 @@ public class RmiQueue {
 
     private final TableManager tableManager;
     private final Provider<String> serverMessageProvider;
-    private final Provider<List<Object>> serverMessageListProvider;
+    private final InterruptibleProvider<List<Object>> serverMessageListProvider;
     private final AsyncListener asyncListener;
     private boolean asyncStarted = false;
     private int syncsDepth = 0;
@@ -46,7 +43,7 @@ public class RmiQueue {
 
     private AtomicBoolean abandoned = new AtomicBoolean();
 
-    public RmiQueue(TableManager tableManager, Provider<String> serverMessageProvider, Provider<List<Object>> serverMessageListProvider, AsyncListener asyncListener) {
+    public RmiQueue(TableManager tableManager, Provider<String> serverMessageProvider, InterruptibleProvider<List<Object>> serverMessageListProvider, AsyncListener asyncListener) {
         this.serverMessageProvider = serverMessageProvider;
         this.serverMessageListProvider = serverMessageListProvider;
         this.tableManager = tableManager;

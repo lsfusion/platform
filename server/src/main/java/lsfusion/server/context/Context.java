@@ -25,6 +25,7 @@ import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.UpdateCurrentClasses;
+import lsfusion.server.stack.ExecutionStackItem;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -52,8 +53,9 @@ public interface Context {
 
     String getActionMessage();
     List<Object> getActionMessageList();
-    void pushActionMessage(Object segment);
-    Object popActionMessage();
+    Thread getLastThread();
+    void pushActionMessage(ExecutionStackItem stackItem);
+    void popActionMessage(ExecutionStackItem stackItem);
     ScheduledExecutorService getExecutorService();
 
     // для создания форм

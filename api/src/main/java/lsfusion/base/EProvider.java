@@ -2,7 +2,7 @@ package lsfusion.base;
 
 import com.google.common.base.Throwables;
 
-public abstract class EProvider<T> implements Provider<T> {
+public abstract class EProvider<T> implements InterruptibleProvider<T> {
     @Override
     public T get() {
         try {

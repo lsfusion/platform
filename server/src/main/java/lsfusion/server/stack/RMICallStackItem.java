@@ -3,11 +3,10 @@ package lsfusion.server.stack;
 import lsfusion.server.remote.RemoteForm;
 import org.aspectj.lang.ProceedingJoinPoint;
 
-public class RMICallStackItem implements ExecutionStackItem {
-    private ProceedingJoinPoint joinPoint;
+public class RMICallStackItem extends ExecutionStackItem {
 
     public RMICallStackItem(ProceedingJoinPoint joinPoint) {
-        this.joinPoint = joinPoint;
+        super(joinPoint);
     }
     
     @Override

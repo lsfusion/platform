@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.Pair;
+import lsfusion.base.ProgressBar;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -27,6 +28,7 @@ import lsfusion.server.logics.property.infer.InferType;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.PropertyChanges;
 import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.StackProgress;
 import lsfusion.server.stack.ThisMessage;
 
 import java.sql.SQLException;
@@ -43,13 +45,17 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Cal
     }
 
     public String checkAggregation(SQLSession session, BaseClass baseClass) throws SQLException, SQLHandledException {
-        return checkAggregation(session, null, baseClass);
+        return checkAggregation(session, null, baseClass, null);
+    }
+
+    public String checkAggregation(SQLSession session, BaseClass baseClass, ProgressBar progressBar) throws SQLException, SQLHandledException {
+        return checkAggregation(session, null, baseClass, progressBar);
     }
 
     // проверяет агрегацию для отладки
     @ThisMessage
-    @StackMessage("logics.info.checking.aggregated.property")
-    public String checkAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException, SQLHandledException {
+    @StackProgress
+    public String checkAggregation(SQLSession session, QueryEnvironment env, BaseClass baseClass, @StackProgress ProgressBar progressBar) throws SQLException, SQLHandledException {
         session.pushVolatileStats(OperationOwner.unknown);
         
         try {

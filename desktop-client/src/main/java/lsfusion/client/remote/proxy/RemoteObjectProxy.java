@@ -51,6 +51,10 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
                 public String getExceptionally() throws RemoteException {
                     return target.getRemoteActionMessage();
                 }
+                @Override
+                public void interrupt(boolean cancelable) throws RemoteException {
+                    target.interrupt(cancelable);
+                }
             });
             busyDisplayer.start();
 
@@ -70,6 +74,10 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
                 @Override
                 public List<Object> getExceptionally() throws RemoteException {
                     return target.getRemoteActionMessageList();
+                }
+                @Override
+                public void interrupt(boolean cancelable) throws RemoteException {
+                    target.interrupt(cancelable);
                 }
             });
             busyDisplayer.start();
@@ -96,6 +104,11 @@ public abstract class RemoteObjectProxy<T extends PendingRemoteInterface> implem
     @Override
     public List<Object> getRemoteActionMessageList() throws RemoteException {
         return target.getRemoteActionMessageList();
+    }
+
+    @Override
+    public void interrupt(boolean cancelable) throws RemoteException {
+        target.interrupt(cancelable);
     }
 
     public Object getProperty(Object key) {

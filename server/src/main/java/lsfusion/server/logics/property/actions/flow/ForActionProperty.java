@@ -32,6 +32,7 @@ import lsfusion.server.session.PropertySet;
 import lsfusion.server.session.UpdateCurrentClasses;
 import lsfusion.server.stack.ExecutionStackAspect;
 import lsfusion.server.stack.ParamMessage;
+import lsfusion.server.stack.ProgressStackItem;
 import lsfusion.server.stack.ThisMessage;
 
 import java.sql.SQLException;
@@ -153,7 +154,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
             }
             RowUpdateIterate<I> rowUpdate = new RowUpdateIterate<I>(rows);
             context.pushUpdate(rowUpdate);
-            ThreadLocalContext.pushProgressMessage(ExecutionStackAspect.getProgressBarLastActionString(), 0, rowUpdate.rows.size());
+            ProgressStackItem stackItem = ThreadLocalContext.pushProgressMessage(ExecutionStackAspect.getProgressBarLastActionString(), 0, rowUpdate.rows.size());
             try {
                 for (int i = 0; i < rowUpdate.rows.size(); i++) {
                     ImMap<I, DataObject> row = rowUpdate.rows.get(i);
@@ -161,8 +162,8 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                     if(addObject!=null)
                         newValues = MapFact.addExcl(newValues, addObject, context.addObject((ConcreteCustomClass) addClass));
 
-                    ThreadLocalContext.popActionMessage();
-                    ThreadLocalContext.pushProgressMessage(ExecutionStackAspect.getProgressBarLastActionString(), i + 1, rowUpdate.rows.size());
+                    ThreadLocalContext.popActionMessage(stackItem);
+                    stackItem = ThreadLocalContext.pushProgressMessage(ExecutionStackAspect.getProgressBarLastActionString(), i + 1, rowUpdate.rows.size());
                     FlowResult actionResult = executeFor(context, newValues);
                     if (actionResult != FlowResult.FINISH) {
                         if (actionResult != FlowResult.BREAK) {
@@ -173,7 +174,7 @@ public class ForActionProperty<I extends PropertyInterface> extends ExtendContex
                 }
             } finally {
                 context.popUpdate();
-                ThreadLocalContext.popActionMessage();
+                ThreadLocalContext.popActionMessage(stackItem);
             }
         } while (recursive && !rows.isEmpty());
 

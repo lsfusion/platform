@@ -64,12 +64,22 @@ public class ClientFormController implements AsyncListener {
         public String getExceptionally() throws Exception {
             return remoteForm == null ? null : remoteForm.getRemoteActionMessage();
         }
+        @Override
+        public void interrupt(boolean cancelable) {
+        }
     };
 
     private final EProvider<List<Object>> serverMessageListProvider = new EProvider<List<Object>>() {
         @Override
         public List<Object> getExceptionally() throws Exception {
             return remoteForm == null ? null : remoteForm.getRemoteActionMessageList();
+        }
+        @Override
+        public void interrupt(boolean cancelable) {
+            try {
+                remoteForm.interrupt(cancelable);
+            } catch (Exception ignored) {
+            }
         }
     };
 

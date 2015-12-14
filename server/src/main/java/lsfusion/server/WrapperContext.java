@@ -17,6 +17,7 @@ import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.ObjectValue;
 import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.remote.RemoteForm;
+import lsfusion.server.stack.ExecutionStackItem;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -110,11 +111,15 @@ public class WrapperContext extends AbstractContext implements Context {
         return wrappedContext.getActionMessageList();
     }
 
-    public void pushActionMessage(Object segment) {
-        wrappedContext.pushActionMessage(segment);
+    public Thread getLastThread() {
+        return wrappedContext.getLastThread();
     }
 
-    public Object popActionMessage() {
-        return wrappedContext.popActionMessage();
+    public void pushActionMessage(ExecutionStackItem stackItem) {
+        wrappedContext.pushActionMessage(stackItem);
+    }
+
+    public void popActionMessage(ExecutionStackItem stackItem) {
+        wrappedContext.popActionMessage(stackItem);
     }
 }

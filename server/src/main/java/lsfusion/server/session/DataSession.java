@@ -46,10 +46,7 @@ import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.actions.SessionEnvEvent;
 import lsfusion.server.logics.table.IDTable;
 import lsfusion.server.logics.table.ImplementTable;
-import lsfusion.server.stack.ParamMessage;
-import lsfusion.server.stack.StackMessage;
-import lsfusion.server.stack.StackProgress;
-import lsfusion.server.stack.ThisMessage;
+import lsfusion.server.stack.*;
 
 import javax.swing.*;
 import java.sql.SQLException;
@@ -1038,6 +1035,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     @StackProgress
+    @Cancelable
     private boolean executeGlobalEvent(BusinessLogics BL, Object property, @StackProgress final ProgressBar progressBar) throws SQLException, SQLHandledException {
         if(property instanceof ActionProperty || property instanceof ActionPropertyValueImplement) {
             startPendingSingles(property instanceof ActionPropertyValueImplement ? ((ActionPropertyValueImplement) property).property : (ActionProperty) property);
@@ -1731,7 +1729,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 
             if(t instanceof SQLHandledException && ((SQLHandledException)t).repeatApply(sql, getOwner(), SQLSession.getAttemptCountSum(attemptCountMap))) { // update conflict или deadlock или timeout - пробуем еще раз
                 boolean noTimeout = false;
-                if(t instanceof SQLTimeoutException && ((SQLTimeoutException)t).isTransactTimeout) {
+                if(t instanceof SQLTimeoutException && ((SQLTimeoutException)t).isTransactTimeout()) {
                     if(interaction == null) {
                         autoAttemptCount++;
                         if(autoAttemptCount > Settings.get().getApplyAutoAttemptCountLimit()) {
@@ -1759,7 +1757,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 }
             }
 
-            throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
+            if (t instanceof SQLTimeoutException && ((SQLTimeoutException) t).isCancel())
+                return false;
+            else
+                throw ExceptionUtils.propagate(t, SQLException.class, SQLHandledException.class);
         }
     }
 

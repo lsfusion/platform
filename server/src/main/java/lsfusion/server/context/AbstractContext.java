@@ -2,6 +2,7 @@ package lsfusion.server.context;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ConcurrentWeakHashMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -26,25 +27,20 @@ import lsfusion.server.form.instance.FormSessionScope;
 import lsfusion.server.form.instance.PropertyObjectInterfaceInstance;
 import lsfusion.server.form.instance.listener.CustomClassListener;
 import lsfusion.server.form.instance.listener.FocusListener;
-import lsfusion.server.logics.DataObject;
-import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.NullValue;
-import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.*;
 import lsfusion.server.logics.property.DialogRequest;
 import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.UpdateCurrentClasses;
-import lsfusion.server.stack.AspectStackItem;
 import lsfusion.base.ProgressBar;
+import lsfusion.server.stack.ExecutionStackItem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -52,7 +48,7 @@ import static lsfusion.base.BaseUtils.serializeObject;
 import static lsfusion.server.data.type.TypeSerializer.serializeType;
 
 public abstract class AbstractContext implements Context {
-    public final MessageStack actionMessageStack = new MessageStack();
+    public final ConcurrentWeakHashMap<Thread, TimedMessageStack> actionMessageStackMap = new ConcurrentWeakHashMap<>();
 
     public abstract LogicsInstance getLogicsInstance();
 
@@ -76,7 +72,7 @@ public abstract class AbstractContext implements Context {
                         remoteForm.getImmutableMethods(),
                         Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(),
                         ModalityType.DIALOG_MODAL));
-        
+
         if (dialogInstance.getFormResult() == FormCloseType.CLOSE) {
             return null;
         }
@@ -115,7 +111,7 @@ public abstract class AbstractContext implements Context {
     public String getLogMessage() {
         throw new UnsupportedOperationException("getLogMessage is not supported");
     }
-    
+
     @Override
     public void delayUserInteraction(ClientAction action) {
         throw new UnsupportedOperationException("delayUserInteraction is not supported");
@@ -166,23 +162,75 @@ public abstract class AbstractContext implements Context {
     }
 
     public String getActionMessage() {
-        return actionMessageStack.getMessage();
+        String result = "";
+        for(MessageStack messageStack : getMessageStackList()) {
+            result += messageStack.getMessage();
+        }
+        return result;
     }
 
     public List<Object> getActionMessageList() {
-        return actionMessageStack.getMessageList();
+        List<Object> result = new ArrayList<>();
+        for(MessageStack messageStack : getMessageStackList()) {
+            result.addAll(messageStack.getMessageList());
+        }
+        return result;
+    }
+
+    public Thread getLastThread() {
+        List<Map.Entry<Thread, TimedMessageStack>> list = getSortedActionMessageStackMap();
+
+        List<Thread> threadList = new ArrayList<>();
+        for (Map.Entry<Thread, TimedMessageStack> entry : list)
+            threadList.add(entry.getKey());
+        //last one is interrupt thread
+        return threadList.size() < 2 ? null : threadList.get(threadList.size() - 2);
+    }
+
+    private List<MessageStack> getMessageStackList() {
+        List<Map.Entry<Thread, TimedMessageStack>> list = getSortedActionMessageStackMap();
+
+        List<MessageStack> messageStackList = new ArrayList<>();
+        for (Map.Entry<Thread, TimedMessageStack> entry : list)
+            messageStackList.add(entry.getValue().messageStack);
+        return messageStackList;
+    }
+
+    private List<Map.Entry<Thread, TimedMessageStack>> getSortedActionMessageStackMap() {
+        // Convert Map to List
+        List<Map.Entry<Thread, TimedMessageStack>> list = new ArrayList<>(actionMessageStackMap.entrySet());
+        // Sort list with comparator
+        Collections.sort(list, new Comparator<Map.Entry<Thread, TimedMessageStack>>() {
+            public int compare(Map.Entry<Thread, TimedMessageStack> o1,
+                               Map.Entry<Thread, TimedMessageStack> o2) {
+                return (o1.getValue().time).compareTo(o2.getValue().time);
+            }
+        });
+        return list;
     }
 
     // тут нужно быть аккуратно с утечками
-    public void pushActionMessage(Object segment) {
-        actionMessageStack.push(segment);
+    public void pushActionMessage(ExecutionStackItem stackItem) {
+        TimedMessageStack timedMessageStack = actionMessageStackMap.get(stackItem.process);
+        if(timedMessageStack == null)
+            timedMessageStack = new TimedMessageStack(new MessageStack());
+        timedMessageStack.time = System.currentTimeMillis();
+        timedMessageStack.messageStack.push(stackItem);
+
+        actionMessageStackMap.remove(stackItem.process); //для соблюдения правильного порядка
+        actionMessageStackMap.put(stackItem.process, timedMessageStack);
     }
 
-    public Object popActionMessage() {
-        return actionMessageStack.popOrEmpty();
+    public void popActionMessage(ExecutionStackItem stackItem) {
+        TimedMessageStack timedMessageStack = actionMessageStackMap.get(stackItem.process);
+        if (timedMessageStack != null)
+            timedMessageStack.messageStack.popOrEmpty();
+        if (timedMessageStack == null || timedMessageStack.messageStack.isEmpty()) {
+            actionMessageStackMap.remove(stackItem.process);
+        }
     }
 
-    private static class MessageStack extends Stack<Object> {
+    private static class MessageStack extends Stack<ExecutionStackItem> {
 
         public synchronized String getMessage() {
             return BaseUtils.toString(this, "\n");
@@ -195,12 +243,15 @@ public abstract class AbstractContext implements Context {
         public synchronized List<Object> getMessageList() {
             List<Object> result = new ArrayList<>();
             for (Object entry : this) {
-                if (entry instanceof ProgressBar) {
-                    result.add(entry);
-                } else if (entry instanceof AspectStackItem) {
-                    ImList<ProgressBar> progress = ((AspectStackItem) entry).getProgress();
-                    if (progress.isEmpty())
-                        result.add(String.valueOf(entry));
+                if (entry instanceof ExecutionStackItem) {
+                    ExecutionStackItem stackItem = (ExecutionStackItem) entry;
+
+                    if (stackItem.isCancelable())
+                        result.add(true);
+
+                    ImList<ProgressBar> progress = stackItem.getProgress();
+                    if (progress == null || progress.isEmpty())
+                        result.add(String.valueOf(stackItem));
                     else
                         result.addAll(progress.toJavaList());
                 } else
@@ -210,11 +261,20 @@ public abstract class AbstractContext implements Context {
         }
     }
 
+    private class TimedMessageStack {
+        private MessageStack messageStack;
+        private Long time;
+
+        public TimedMessageStack(MessageStack messageStack) {
+            this.messageStack = messageStack;
+        }
+    }
+
     private ScheduledExecutorService executor;
     @Override
     public ScheduledExecutorService getExecutorService() {
         if(executor==null)
-            synchronized (this) { 
+            synchronized (this) {
                 if(executor==null)
                     executor = Executors.newScheduledThreadPool(50, new ContextAwareDaemonThreadFactory(this, "newthread-pool"));
             }

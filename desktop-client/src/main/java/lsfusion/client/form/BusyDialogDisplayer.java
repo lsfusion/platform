@@ -1,6 +1,6 @@
 package lsfusion.client.form;
 
-import lsfusion.base.Provider;
+import lsfusion.base.InterruptibleProvider;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 
@@ -17,9 +17,9 @@ public class BusyDialogDisplayer extends TimerTask {
     private Window drawingWindow;
     private BlurWindow blurWindow;
     private BusyDialog busyDialog;
-    private final Provider<List<Object>> serverMessageProvider;
+    private final InterruptibleProvider<List<Object>> serverMessageProvider;
 
-    public BusyDialogDisplayer(Provider<List<Object>> serverMessageProvider) {
+    public BusyDialogDisplayer(InterruptibleProvider<List<Object>> serverMessageProvider) {
         this.serverMessageProvider = serverMessageProvider;
     }
 
@@ -80,8 +80,12 @@ public class BusyDialogDisplayer extends TimerTask {
                 @Override
                 public void run() {
                     try {
-                        if (busyDialog != null)
+                        if (busyDialog != null) {
                             busyDialog.updateBusyDialog(serverMessageProvider.get());
+                            Boolean needInterrupt = busyDialog.needInterrupt();
+                            if (needInterrupt != null)
+                                serverMessageProvider.interrupt(needInterrupt);
+                        }
                     } catch (Throwable e) {
                         stop();
                     }

@@ -1,7 +1,6 @@
 package lsfusion.server.context;
 
 import lsfusion.base.ConcurrentWeakHashMap;
-import lsfusion.base.ProgressBar;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
@@ -23,11 +22,12 @@ import lsfusion.server.logics.property.PullChangeProperty;
 import lsfusion.server.remote.RemoteForm;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.UpdateCurrentClasses;
+import lsfusion.server.stack.ExecutionStackItem;
+import lsfusion.server.stack.ProgressStackItem;
 import org.apache.log4j.MDC;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -146,17 +146,24 @@ public class ThreadLocalContext {
         return get() != null ? get().getActionMessageList() : new ArrayList<>();
     }
 
-    public static void pushProgressMessage(String message, Integer progress, Integer total) {
-        pushActionMessage(new ProgressBar(message, progress, total));
+    public static Thread getLastThread() {
+        return get() != null ? get().getLastThread() : null;
     }
 
-    public static void pushActionMessage(Object segment) {
+    public static ProgressStackItem pushProgressMessage(String message, Integer progress, Integer total) {
+        ProgressStackItem progressStackItem = new ProgressStackItem(message, progress, total);
+        pushActionMessage(progressStackItem);
+        return progressStackItem;
+    }
+
+    public static void pushActionMessage(ExecutionStackItem stackItem) {
         if (get() != null) {
-            get().pushActionMessage(segment);
+            get().pushActionMessage(stackItem);
         }
     }
 
-    public static Object popActionMessage() {
-        return get() != null ? get().popActionMessage() : "";
+    public static void popActionMessage(ExecutionStackItem stackItem) {
+        if(get() != null && stackItem != null)
+            get().popActionMessage(stackItem);
     }
 }

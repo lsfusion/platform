@@ -23,6 +23,7 @@ import lsfusion.interop.action.ProcessFormChangesClientAction;
 import lsfusion.interop.form.*;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.context.ContextAwareDaemonThreadFactory;
+import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.SQLHandledException;
 import lsfusion.server.form.instance.*;
 import lsfusion.server.form.instance.filter.FilterInstance;
@@ -33,6 +34,7 @@ import lsfusion.server.form.view.FormView;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.DataObject;
 import lsfusion.server.logics.ObjectValue;
+import lsfusion.server.logics.ThreadUtils;
 import lsfusion.server.serialization.SerializationType;
 import lsfusion.server.serialization.ServerContext;
 import lsfusion.server.serialization.ServerSerializationPool;
@@ -928,6 +930,20 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 return currentInvocation.resumeWithThrowable(clientThrowable);
             }
         });
+    }
+
+    @Override
+    public void interrupt(boolean cancelable) throws RemoteException {
+        try {
+            Thread thread = ThreadLocalContext.getLastThread();
+            if (thread != null) {
+                if (cancelable)
+                    ThreadUtils.cancelThread(context, thread);
+                else
+                    ThreadUtils.interruptThread(context, thread);
+            }
+        } catch (SQLException | SQLHandledException ignored) {
+        }
     }
 
     private ServerResponse continueInvocation(long requestIndex, long lastReceivedRequestIndex, int continueIndex, Callable<ServerResponse> continueRequest) throws RemoteException {
