@@ -10,11 +10,9 @@ import java.lang.reflect.Method;
 
 public abstract class ExecutionStackItem {
     protected ProceedingJoinPoint joinPoint;
-    public Thread process;
 
     public ExecutionStackItem(ProceedingJoinPoint joinPoint) {
         this.joinPoint = joinPoint;
-        this.process = Thread.currentThread();
     }
 
     public boolean isCancelable() {

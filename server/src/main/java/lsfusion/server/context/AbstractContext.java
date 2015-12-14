@@ -211,19 +211,22 @@ public abstract class AbstractContext implements Context {
 
     // тут нужно быть аккуратно с утечками
     public void pushActionMessage(ExecutionStackItem stackItem) {
-        TimedMessageStack timedMessageStack = actionMessageStackMap.get(stackItem.process);
-        if(timedMessageStack == null)
+        Thread thread = Thread.currentThread();
+        TimedMessageStack timedMessageStack = actionMessageStackMap.get(thread);
+        if (timedMessageStack == null) {
             timedMessageStack = new TimedMessageStack(new MessageStack());
+            actionMessageStackMap.put(thread, timedMessageStack);
+        }
         timedMessageStack.time = System.currentTimeMillis();
         timedMessageStack.messageStack.push(stackItem);
-        actionMessageStackMap.put(stackItem.process, timedMessageStack);
     }
 
     public void popActionMessage(ExecutionStackItem stackItem) {
-        TimedMessageStack timedMessageStack = actionMessageStackMap.get(stackItem.process);
+        Thread thread = Thread.currentThread();
+        TimedMessageStack timedMessageStack = actionMessageStackMap.get(thread);
         timedMessageStack.messageStack.popOrEmpty();
         if (timedMessageStack.messageStack.isEmpty()) {
-            actionMessageStackMap.remove(stackItem.process);
+            actionMessageStackMap.remove(thread);
         }
     }
 
