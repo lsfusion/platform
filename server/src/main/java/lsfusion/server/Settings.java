@@ -1280,14 +1280,14 @@ public class Settings {
         this.timeoutNanosPerRow = timeoutNanosPerRow;
     }
 
-    private int timeoutIncreaseCoeff = 2;
+    private int lastStepCoeff = 5; // для больших баз переходить на disableNestedLoop опасно
 
-    public int getTimeoutIncreaseCoeff() {
-        return timeoutIncreaseCoeff;
+    public int getLastStepCoeff() {
+        return lastStepCoeff;
     }
 
-    public void setTimeoutIncreaseCoeff(int timeoutIncreaseCoeff) {
-        this.timeoutIncreaseCoeff = timeoutIncreaseCoeff;
+    public void setLastStepCoeff(int lastStepCoeff) {
+        this.lastStepCoeff = lastStepCoeff;
     }
 
     private int subQueriesSplit = 4;

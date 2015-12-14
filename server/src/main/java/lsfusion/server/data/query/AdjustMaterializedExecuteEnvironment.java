@@ -1,7 +1,6 @@
 package lsfusion.server.data.query;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -140,7 +139,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
 
         // пытаемся вернуться назад
         long totalTime = runtime;
-        int coeff = Settings.get().getTimeoutIncreaseCoeff();
+        int coeff = Settings.get().getLastStepCoeff();
         Step runBack = step;
         assertNoRecheckBefore();
         MOrderExclSet<Step> mBackSteps = SetFact.mOrderExclSet();
@@ -200,7 +199,7 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
     private static Step getNextStep(Step current, SQLCommand command, Snapshot snapshot) {
         assert snapshot.step == current;
         ImMap<SQLQuery, MaterializedQuery> materializedQueries = snapshot.getMaterializedQueries();
-        int coeff = Settings.get().getTimeoutIncreaseCoeff();
+        int coeff = Settings.get().getLastStepCoeff();
         while (true) {
             Step next;
             if(current.isLastStep()) { // идем назад, но этому шагу и себе увеличиваем timeout
