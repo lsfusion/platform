@@ -11,7 +11,7 @@ public abstract class MutableClosedObject<O> extends MutableObject implements Au
     private boolean closed;
     @AssertSynchronized
     public void close(O owner) throws SQLException {
-        ServerLoggers.assertLog(!closed, "ALREADY CLOSED");
+        ServerLoggers.assertLog(!closed, "ALREADY CLOSED " + this);
         shutdown(owner, true);
     }
     
