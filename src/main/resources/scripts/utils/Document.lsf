@@ -406,7 +406,7 @@ END
 
 META defineDocumentAbstractHeaderClosed (objectClass)
     isClosed##objectClass 'Закрыт' = ABSTRACT BOOLEAN(objectClass) PERSISTENT;
-    isOpened##objectClass 'Не закрыт' (o) = o IS objectClass AND NOT isClosed##objectClass(o) PERSISTENT;
+    isOpened##objectClass 'Не закрыт' (o) = o IS objectClass AND NOT isClosed##objectClass(o) PERSISTENT INDEXED;
     close##objectClass 'Закрыть' (o) = ABSTRACT ACTION LIST (objectClass);
 END
 
