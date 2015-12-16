@@ -2902,13 +2902,52 @@ loggableStatement
 ////////////////////////////////// INDEX STATEMENT /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-indexStatement
+// duplicate of singleParameter because of different parse states
+singleParameterIndex[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
+@init {
+	String className = null;
+}
 @after {
 	if (inIndexParseState()) {
-		self.addScriptedIndex($list.propUsages);
+		$property = new LPWithParams(null, Collections.singletonList(self.getParamIndex(TP(className, $paramName.text), $context, $dynamic, insideRecursion)));
+	}
+}
+	:	(clsId=classId { className = $clsId.sid; })? paramName=parameter
+	;
+
+singleParameterIndexList[List<TypedParameter> context, boolean dynamic] returns [List<LPWithParams> props]
+    @init {
+    	props = new ArrayList<LPWithParams>();
+    }
+    	:	(first=singleParameterIndex[context, dynamic] { props.add($first.property); }
+    		(',' next=singleParameterIndex[context, dynamic] { props.add($next.property); })*)?
+    	;
+
+
+mappedPropertyOrSimpleExprParam[List<TypedParameter> context] returns [LPWithParams property]
+    :   (   toProp=propertyUsage '(' params=singleParameterIndexList[context, true] ')' { if(inIndexParseState()) { $property = self.findIndexProp($toProp.propUsage, $params.props, context); } }
+        |   param=singleParameterIndex[context, true] { $property = $param.property; }
+        )
+;
+
+nonEmptyMappedPropertyOrSimpleExprParamList[List<TypedParameter> context] returns [List<LPWithParams> props]
+@init {
+	$props = new ArrayList<LPWithParams>();
+}
+	:	first=mappedPropertyOrSimpleExprParam[context] { $props.add($first.property); }
+		(',' next=mappedPropertyOrSimpleExprParam[context] { $props.add($next.property); })*
+	;
+
+indexStatement
+@init {
+	List<TypedParameter> context = new ArrayList<TypedParameter>();
+}
+@after {
+	if (inIndexParseState()) {
+		self.addScriptedIndex(context, $list.props);
 	}	
 }
-	:	'INDEX' list=nonEmptyPropertyUsageList ';'
+	:	'INDEX' list=nonEmptyMappedPropertyOrSimpleExprParamList[context] ';'
 	;
 
 

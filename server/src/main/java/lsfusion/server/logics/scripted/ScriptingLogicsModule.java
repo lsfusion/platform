@@ -667,7 +667,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static class LPWithParams {
-        public LP property;
+        public LP property; // nullable
         public List<Integer> usedParams;
 
         public LPWithParams(LP property, List<Integer> usedParams) {
@@ -1739,8 +1739,17 @@ public class ScriptingLogicsModule extends LogicsModule {
             usedParams.add(mappedProp.usedParams);
         }
         return getCoeffParamsPlainList(props, usedParams, coeffs);
-    } 
-    
+    }
+
+    private final List<Integer> getParamsAssertList(List<LPWithParams> list) {
+        List<Integer> result = new ArrayList<>();
+        for(LPWithParams lp : list) {
+            assert lp.property == null;
+            result.add(BaseUtils.single(lp.usedParams));
+        }
+        return result;
+    }
+
     @SafeVarargs
     private final List<Object> getParamsPlainList(List<LPWithParams>... mappedPropLists) {
         List<LP> props = new ArrayList<>();
@@ -2445,15 +2454,20 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addScriptedIndex(LP property) throws ScriptingErrorLog.SemanticErrorException {
         checkCalculationProperty(property);
         indexedProperties.add((LCP) property);        
-    } 
+    }
+
+    public LPWithParams findIndexProp(PropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, List<TypedParameter> context) throws ScriptingErrorLog.SemanticErrorException {
+        LP toPropertyLP = findJoinMainProp(toPropertyUsage, toPropertyMapping, context);
+        // assert что все параметры, то есть property.null'ы и соответственно только integer'ы
+        return new LPWithParams(toPropertyLP, getParamsAssertList(toPropertyMapping));
+    }
     
-    
-    public void addScriptedIndex(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
-        LCP[] lps = new LCP[propUsages.size()];
-        for (int i = 0; i < propUsages.size(); i++) {
-            lps[i] = (LCP) findLPByPropertyUsage(propUsages.get(i));
-        }
-        addIndex(lps);
+    public void addScriptedIndex(List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+        ImOrderSet<String> keyNames = ListFact.fromJavaList(params).toOrderExclSet().mapOrderSetValues(new GetValue<String, TypedParameter>() {
+            public String getMapValue(TypedParameter value) {
+                return value.paramName;
+            }});
+        addIndex(keyNames, getParamsPlainList(lps).toArray());
     }
 
     public void addScriptedLoggable(List<PropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {

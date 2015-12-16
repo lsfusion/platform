@@ -18,6 +18,7 @@ import lsfusion.server.caches.IdentityStrongLazy;
 import lsfusion.server.classes.*;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ThreadLocalContext;
+import lsfusion.server.data.KeyField;
 import lsfusion.server.data.Time;
 import lsfusion.server.data.Union;
 import lsfusion.server.data.expr.StringAggUnionProperty;
@@ -1666,8 +1667,21 @@ public abstract class LogicsModule {
         return lp;
     }
 
-    public void addIndex(LCP<?>... lps) {
-        ThreadLocalContext.getDbManager().addIndex(lps);
+    public void addIndex(LCP lp) {
+        ImOrderSet<String> keyNames = SetFact.toOrderExclSet(lp.listInterfaces.size(), new GetIndex<String>() {
+            public String getMapValue(int i) {
+                return "key"+i;
+            }});
+        addIndex(keyNames, directLI(lp));
+    }
+
+    public void addIndex(CalcProperty property) {
+        addIndex(new LCP(property));
+    }
+
+    public void addIndex(ImOrderSet<String> keyNames, Object... params) {
+        ImList<CalcPropertyObjectInterfaceImplement<String>> index = PropertyUtils.readObjectImplements(keyNames, params);
+        ThreadLocalContext.getDbManager().addIndex(index);
     }
 
     protected void addPersistent(LCP lp) {

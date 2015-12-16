@@ -13,7 +13,7 @@ import lsfusion.server.session.PropertyChanges;
 
 import java.sql.SQLException;
 
-public class CalcPropertyRevImplement<P extends PropertyInterface, T> {
+public class CalcPropertyRevImplement<P extends PropertyInterface, T> implements CalcPropertyObjectInterfaceImplement<T> {
     
     public final CalcProperty<P> property;
     public final ImRevMap<P, T> mapping;

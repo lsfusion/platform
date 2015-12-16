@@ -121,7 +121,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private final ThreadLocal<SQLSession> threadLocalSql;
 
-    private final Map<List<? extends CalcProperty>, Boolean> indexes = new HashMap<>();
+    private final Map<ImList<CalcPropertyObjectInterfaceImplement<String>>, Boolean> indexes = new HashMap<>();
 
     public DBManager() {
         super(DBMANAGER_ORDER);
@@ -1611,19 +1611,23 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return resultChanges;
     }
 
-    public void addIndex(LCP<?>... lps) {
-        List<CalcProperty> index = new ArrayList<>();
-        for (LCP<?> lp : lps) {
-            index.add((CalcProperty) lp.property);
+    @NFLazy
+    public void addIndex(ImList<CalcPropertyObjectInterfaceImplement<String>> index) {
+        CalcPropertyRevImplement<?, String> propertyImplement = findProperty(index);
+        if(propertyImplement != null) {
+            indexes.put(index, propertyImplement.property.getType() instanceof DataClass);
+            if(BaseUtils.hashEquals(index.get(0), propertyImplement)) // если первый
+                propertyImplement.property.markIndexed();
         }
-        addIndex(index);
     }
 
-    @NFLazy
-    public void addIndex(List<CalcProperty> index) {
-        CalcProperty<? extends PropertyInterface> property = index.get(0);
-        indexes.put(index, property.getType() instanceof DataClass);
-        property.markIndexed();
+    private static CalcPropertyRevImplement<?, String> findProperty(ImList<CalcPropertyObjectInterfaceImplement<String>> index) {
+        for (CalcPropertyObjectInterfaceImplement<String> lp : index) {
+            if(lp instanceof CalcPropertyRevImplement) {
+                return (CalcPropertyRevImplement<?, String>) lp;
+            }
+        }
+        return null;
     }
 
     public String backupDB(ExecutionContext context, String dumpFileName, List<String> excludeTables) throws IOException, InterruptedException {
@@ -1859,7 +1863,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private class NewDBStructure extends DBStructure<Field> {
 
-        public NewDBStructure(DBVersion dbVersion) {
+        public <P extends PropertyInterface> NewDBStructure(DBVersion dbVersion) {
             version = 21;
             this.dbVersion = dbVersion;
 
@@ -1867,28 +1871,48 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                 tables.put(table, new HashMap<List<Field>, Boolean>());
             }
 
-            for (Map.Entry<List<? extends CalcProperty>, Boolean> index : indexes.entrySet()) {
-                Iterator<? extends CalcProperty> i = index.getKey().iterator();
-                if (!i.hasNext())
+            for (Map.Entry<ImList<CalcPropertyObjectInterfaceImplement<String>>, Boolean> index : indexes.entrySet()) {
+                ImList<CalcPropertyObjectInterfaceImplement<String>> indexFields = index.getKey();
+
+                if (indexFields.isEmpty())
                     throw new RuntimeException(getString("logics.policy.forbidden.to.create.empty.indexes"));
-                CalcProperty baseProperty = i.next();
+
+                CalcPropertyRevImplement<P, String> basePropertyImplement = (CalcPropertyRevImplement<P, String>) findProperty(indexFields);
+                assert basePropertyImplement != null; // исходя из логики addIndex
+
+                CalcProperty<P> baseProperty = basePropertyImplement.property;
+
                 if (!baseProperty.isStored())
                     throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
 
-                ImplementTable indexTable = baseProperty.mapTable.table;
+                ImplementTable baseIndexTable = baseProperty.mapTable.table;
+                ImRevMap<String, KeyField> baseMapKeys = basePropertyImplement.mapping.crossJoin(baseProperty.mapTable.mapKeys);
 
                 List<Field> tableIndex = new ArrayList<>();
-                tableIndex.add(baseProperty.field);
 
-                while (i.hasNext()) {
-                    CalcProperty property = i.next();
-                    if (!property.isStored())
-                        throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
-                    if (indexTable.findProperty(property.field.getName()) == null)
-                        throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables", baseProperty, property));
-                    tableIndex.add(property.field);
+                for (CalcPropertyObjectInterfaceImplement<String> indexField : indexFields) {
+                    Field field;
+                    if(indexField instanceof CalcPropertyRevImplement) {
+                        CalcPropertyRevImplement<P, String> propertyImplement = (CalcPropertyRevImplement<P, String>)indexField;
+                        CalcProperty<P> property = propertyImplement.property;
+
+                        if (!property.isStored())
+                            throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + property + ")");
+
+                        ImplementTable indexTable = property.mapTable.table;
+                        ImRevMap<String, KeyField> mapKeys = propertyImplement.mapping.crossJoin(property.mapTable.mapKeys);
+
+                        if (!BaseUtils.hashEquals(baseIndexTable, indexTable))
+                            throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables", baseProperty, property));
+                        if (!BaseUtils.hashEquals(baseMapKeys, mapKeys))
+                            throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.with.different.mappings", baseProperty, property, baseMapKeys, mapKeys));
+                        field = property.field;
+                    } else {
+                        field = baseMapKeys.get(((CalcPropertyObjectImplement<String>)indexField).object);
+                    }
+                    tableIndex.add(field);
                 }
-                tables.get(indexTable).put(tableIndex, index.getValue());
+                tables.get(baseIndexTable).put(tableIndex, index.getValue());
             }
 
             for (CalcProperty<?> property : businessLogics.getStoredProperties()) {

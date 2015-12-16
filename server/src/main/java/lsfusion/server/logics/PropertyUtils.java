@@ -122,8 +122,19 @@ public class PropertyUtils {
             }});
     }
 
+    private static <T> ImList<CalcPropertyObjectInterfaceImplement<T>> mapObjectLI(ImList<LI> linearImpl, final ImOrderSet<T> interfaces) {
+        return linearImpl.mapListValues(new GetValue<CalcPropertyObjectInterfaceImplement<T>, LI>() {
+            public CalcPropertyObjectInterfaceImplement<T> getMapValue(LI value) {
+                return value.mapObject(interfaces);
+            }});
+    }
+
     public static <T extends PropertyInterface> ImList<PropertyInterfaceImplement<T>> readImplements(ImOrderSet<T> listInterfaces, Object... params) {
         return mapLI(readLI(params), listInterfaces);
+    }
+
+    public static <T> ImList<CalcPropertyObjectInterfaceImplement<T>> readObjectImplements(ImOrderSet<T> listInterfaces, Object... params) {
+        return mapObjectLI(readLI(params), listInterfaces);
     }
 
     public static <T extends PropertyInterface> ImList<CalcPropertyInterfaceImplement<T>> readCalcImplements(ImOrderSet<T> listInterfaces, Object... params) {
@@ -172,6 +183,8 @@ public class PropertyUtils {
     static abstract class LI {
         abstract <T extends PropertyInterface<T>> PropertyInterfaceImplement<T> map(ImOrderSet<T> interfaces);
 
+        abstract <T> CalcPropertyObjectInterfaceImplement<T> mapObject(ImOrderSet<T> interfaces);
+
         abstract Object[] write();
 
     }
@@ -185,6 +198,10 @@ public class PropertyUtils {
 
         <T extends PropertyInterface<T>> CalcPropertyInterfaceImplement<T> map(ImOrderSet<T> interfaces) {
             return interfaces.get(intNum - 1);
+        }
+
+        <T> CalcPropertyObjectInterfaceImplement<T> mapObject(ImOrderSet<T> interfaces) {
+            return new CalcPropertyObjectImplement<>(interfaces.get(intNum - 1));
         }
 
         Object[] write() {
@@ -212,6 +229,15 @@ public class PropertyUtils {
                 return new ActionPropertyMapImplement<P, T>((ActionProperty<P>) lp.property, mapping);
             else
                 return new CalcPropertyMapImplement<P, T>((CalcProperty<P>) lp.property, mapping);
+        }
+
+        <T> CalcPropertyObjectInterfaceImplement<T> mapObject(final ImOrderSet<T> interfaces) {
+            ImRevMap<P, T> mapping = lp.listInterfaces.mapOrderRevValues(new GetIndex<T>() {
+                public T getMapValue(int i) {
+                    return interfaces.get(mapInt[i] - 1);
+                }});
+
+            return new CalcPropertyRevImplement<>((CalcProperty<P>) lp.property, mapping);
         }
 
         Object[] write() {

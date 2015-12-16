@@ -611,7 +611,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for(ObjectClassField classField : LM.baseClass.getUpObjectClassFields().keyIt()) {
             ClassDataProperty classProperty = classField.getProperty();
             if(needIndex(classProperty.set))
-                getDbManager().addIndex(Collections.<CalcProperty>singletonList(classProperty));
+                LM.addIndex(classProperty);
         }
     }
 
