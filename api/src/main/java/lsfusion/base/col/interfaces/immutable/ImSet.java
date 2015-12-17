@@ -55,6 +55,7 @@ public interface ImSet<T> extends FunctionSet<T>, ImCol<T> {
     <M> ImMap<T, M> mapValues(GetIndex<M> getter);
     <M> ImMap<T, M> mapValues(GetValue<M, T> getter);
     <MK, MV> ImMap<MK,MV> mapKeyValues(GetValue<MK, T> getterKey, GetValue<MV, T> getterValue);
+    <MK, MV> ImRevMap<MK,MV> mapRevKeyValues(GetValue<MK, T> getterKey, GetValue<MV, T> getterValue);
     <M> ImRevMap<T, M> mapRevValues(GetIndex<M> getter);
     <M> ImRevMap<T, M> mapRevValues(GetIndexValue<M, T> getter);
     <M> ImRevMap<T, M> mapRevValues(GetStaticValue<M> getter);

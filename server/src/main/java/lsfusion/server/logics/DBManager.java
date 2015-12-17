@@ -404,14 +404,40 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
         return droppedTables;
     }
-    
+
+    private static ImMap<String, ImRevMap<String, String>> getFieldToCanMap(DBStructure<?> dbStructure) {
+        return SetFact.fromJavaOrderSet(dbStructure.storedProperties).getSet().group(new BaseUtils.Group<String, DBStoredProperty>() {
+            public String group(DBStoredProperty value) {
+                return value.tableName;
+            }}).mapValues(new GetValue<ImRevMap<String, String>, ImSet<DBStoredProperty>>() {
+            public ImRevMap<String, String> getMapValue(ImSet<DBStoredProperty> value) {
+                return value.mapRevKeyValues(new GetValue<String, DBStoredProperty>() {
+                    public String getMapValue(DBStoredProperty value) {
+                        return value.getDBName();
+                    }}, new GetValue<String, DBStoredProperty>() {
+                    public String getMapValue(DBStoredProperty value) {
+                        return value.getCanonicalName();
+                    }});
+            }});
+
+    }
+
     // Удаляем несуществующие индексы и убираем из newDBStructure не изменившиеся индексы
     // Делаем это до применения migration script, то есть не пытаемся сохранить все возможные индексы по максимуму
-    private void checkIndices(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
+    private void checkIndices(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException, SQLHandledException {
+
+        ImMap<String, String> propertyChanges = MapFact.fromJavaMap(alterPropertyChangesNewInferAlgorithm(oldDBStructure, getChangesAfter(oldDBStructure.dbVersion, storedPropertyCNChanges), sql, businessLogics.getOrderProperties()));
+
+        ImMap<String, ImRevMap<String, String>> oldTableFieldToCan = MapFact.EMPTY(); ImMap<String, ImRevMap<String, String>> newTableFieldToCan = MapFact.EMPTY();
+        if(!propertyChanges.isEmpty()) { // оптимизация
+            oldTableFieldToCan = getFieldToCanMap(oldDBStructure);
+            newTableFieldToCan = getFieldToCanMap(newDBStructure);
+        }
+
         for (Map.Entry<Table, Map<List<String>, Boolean>> oldTableIndices : oldDBStructure.tables.entrySet()) {
             Table oldTable = oldTableIndices.getKey();
-            Table newTable = newDBStructure.getTable(oldTableIndices.getKey().getName());
-            Map<List<Field>, Boolean> newTableIndices = null; Map<List<String>, Pair<Boolean, List<Field>>> newTableIndicesNames = null;
+            Table newTable = newDBStructure.getTable(oldTable.getName());
+            Map<List<Field>, Boolean> newTableIndices = null; Map<List<String>, Pair<Boolean, List<Field>>> newTableIndicesNames = null; ImMap<String, String> fieldOldToNew = MapFact.EMPTY();
             if(newTable != null) {
                 newTableIndices = newDBStructure.tables.get(newTable);
                 newTableIndicesNames = new HashMap<>();
@@ -421,10 +447,22 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                         names.add(field.getName());
                     newTableIndicesNames.put(names, new Pair<>(entry.getValue(), entry.getKey()));
                 }
+
+                // old field -> old cn -> new cn -> ne field
+                if(!propertyChanges.isEmpty()) {
+                    ImRevMap<String, String> oldFieldToCan = oldTableFieldToCan.get(oldTable.getName());
+                    ImRevMap<String, String> newFieldToCan = newTableFieldToCan.get(newTable.getName());
+                    if(oldFieldToCan != null && newFieldToCan != null) // так как таблицы могут быть пустыми
+                        fieldOldToNew = oldFieldToCan.innerJoin(propertyChanges).innerCrossValues(newFieldToCan);
+                }
             }
 
             for (Map.Entry<List<String>, Boolean> oldIndex : oldTableIndices.getValue().entrySet()) {
                 List<String> oldIndexKeys = oldIndex.getKey();
+                ImOrderSet<String> oldIndexKeysSet = SetFact.fromJavaOrderSet(oldIndexKeys);
+
+                boolean replaced = BaseUtils.replaceListElements(oldIndexKeys, fieldOldToNew);
+
                 boolean oldOrder = oldIndex.getValue();
                 boolean drop = (newTable == null); // ушла таблица
                 if (!drop) {
@@ -436,13 +474,16 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     }
                 }
                 if(oldDBStructure.version <= 19) {
-                    sql.renameIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder);
+                    sql.renameIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldOrder);
                 }
                 if (oldDBStructure.version <= 20) {
                     needExtraUpdateStats = true;
                 }
                 if (drop) {
-                    sql.dropIndex(oldTable, oldTable.keys, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder, Settings.get().isStartServerAnyWay());
+                    sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldOrder, Settings.get().isStartServerAnyWay());
+                } else {
+                    if(replaced) // assert что keys совпадают
+                        sql.renameIndex(oldTable, oldTable.keys, oldIndexKeysSet, SetFact.fromJavaOrderSet(oldIndexKeys), oldOrder, Settings.get().isStartServerAnyWay());
                 }
             }
         }

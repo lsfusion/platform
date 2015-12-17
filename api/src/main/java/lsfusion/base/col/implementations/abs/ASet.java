@@ -265,6 +265,15 @@ public abstract class ASet<K> extends ACol<K> implements ImSet<K> {
         return mResult.immutable();
     }
 
+    public <MK, MV> ImRevMap<MK, MV> mapRevKeyValues(GetValue<MK, K> getterKey, GetValue<MV, K> getterValue) {
+        MRevMap<MK, MV> mResult = MapFact.mRevMap(size());
+        for(int i=0,size=size();i<size;i++) {
+            K element = get(i);
+            mResult.revAdd(getterKey.getMapValue(element), getterValue.getMapValue(element));
+        }
+        return mResult.immutableRev();
+    }
+
     public <M> ImRevMap<K, M> mapRevValues(GetIndex<M> getter) {
         ImRevValueMap<K, M> mResult = mapItRevValues();
         for(int i=0,size=size();i<size;i++)

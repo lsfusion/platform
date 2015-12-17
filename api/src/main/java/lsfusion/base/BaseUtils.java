@@ -1100,6 +1100,18 @@ public class BaseUtils {
         }
     }
 
+    public static <T> boolean replaceListElements(List<T> list, ImMap<T, T> to) {
+        boolean replaced = false;
+        for (int i = 0; i < list.size(); i++) {
+            T toElement = to.get(list.get(i));
+            if (toElement != null) {
+                list.set(i, toElement);
+                replaced = true;
+            }
+        }
+        return replaced;
+    }
+
     public static ArrayList<Integer> toListFromArray(int[] ints) {
         ArrayList<Integer> list = new ArrayList();
         for (int i : ints) {

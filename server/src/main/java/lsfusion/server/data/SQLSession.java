@@ -657,8 +657,16 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         renameIndex(table, getOrderFields(keyFields, fields, order));
     }
 
+    public void renameIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> oldFields, ImOrderSet<String> newFields, boolean order, boolean ifExists) throws SQLException {
+        renameIndex(table, getOrderFields(keyFields, oldFields, order), getOrderFields(keyFields, newFields, order), ifExists);
+    }
+
     public void renameIndex(Table table, ImOrderMap<String, Boolean> fields) throws SQLException {
         executeDDL("ALTER INDEX " + getOldIndexName(table, fields, syntax) + " RENAME TO " + getIndexName(table, fields, syntax));
+    }
+
+    public void renameIndex(Table table, ImOrderMap<String, Boolean> oldFields, ImOrderMap<String, Boolean> newFields, boolean ifExists) throws SQLException {
+        executeDDL("ALTER INDEX " + (ifExists ? "IF EXISTS " : "" ) + getIndexName(table, oldFields, syntax) + " RENAME TO " + getIndexName(table, newFields, syntax));
     }
 
 /*    public void addKeyColumns(String table, Map<KeyField, Object> fields, List<KeyField> keys) throws SQLException {
