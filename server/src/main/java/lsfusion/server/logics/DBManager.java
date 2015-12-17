@@ -898,9 +898,11 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     public void writeModulesHash() {
         try {
+            serviceLogger.info("Writing hashModules " + hashModules);
             DataSession session = createSession();
             businessLogics.LM.findProperty("hashModules").change(hashModules, session);
             session.apply(businessLogics);
+            serviceLogger.info("Writing hashModules finished successfully");
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -1212,6 +1214,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     }
 
     private boolean checkHashModulesChanged(String oldHash, String newHash) {
+        serviceLogger.info(String.format("Comparing hashModules: old %s, new %s", oldHash, newHash));
         return (oldHash == null || newHash == null) || !oldHash.equals(newHash);
     }
 
