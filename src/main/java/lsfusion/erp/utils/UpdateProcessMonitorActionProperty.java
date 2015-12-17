@@ -70,9 +70,9 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
 
             updateProcessMonitor(context, processType, readAllocatedBytes);
 
-            try (DataSession session = context.createSession()) {
-                findProperty("readAllocatedBytes").change(readAllocatedBytes ? true : null, session);
-                session.apply(context.getBL());
+            boolean baseReadAllocatedBytes = findProperty("readAllocatedBytes").read(context) != null;
+            if (baseReadAllocatedBytes != readAllocatedBytes) {
+                findProperty("readAllocatedBytes").change(readAllocatedBytes ? true : null, context);
             }
 
         } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
