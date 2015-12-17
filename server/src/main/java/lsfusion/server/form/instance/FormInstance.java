@@ -255,9 +255,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends ExecutionEnvironm
 
         for (GroupObjectInstance groupObject : groupObjects) {
             UpdateType updateType = groupObject.getUpdateType();
-            if (updateType != null) {
+            if (updateType == UpdateType.FIRST || updateType == UpdateType.LAST) {
                 groupObject.seek(updateType == UpdateType.LAST);
             } else {
+                assert updateType == UpdateType.PREV;
                 for (ObjectInstance object : groupObject.objects) {
                     // ставим на объекты из cache'а
                     if (object.getBaseClass() instanceof CustomClass && classListener != null) {

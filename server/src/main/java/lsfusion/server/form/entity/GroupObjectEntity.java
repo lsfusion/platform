@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
-import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetIndex;
 import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.base.identity.IdentityObject;
@@ -90,38 +89,40 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         }
     }
 
-    // конечно не очень красивое решение, но в противном случае пришлось бы дублировать логику определения GroupObject'ов для фильтров +
-    private boolean updateTypeRead;
+    // конечно не очень красивое решение с groupObject, но в противном случае пришлось бы дублировать логику определения GroupObject'ов для фильтров +
     @ManualLazy
     public UpdateType getUpdateType(GroupObjectInstance groupObject) throws SQLException, SQLHandledException {
-        UpdateType result = updateType;
-        if(result == null && !Settings.get().isDisableUpdateTypeHeur() && !updateTypeRead) {
-            // либо исключающий (для верхних групп объектов) фильтр, либо узкий (с низкой статистикой при "статичных" верхних объектах)
-            // в частности в таком случае нет смысла seek делать
-            Modifier modifier = Property.defaultModifier;
+        if(updateType == null) { // default
+            if(!Settings.get().isDisableUpdateTypeHeur()) {
+                // либо исключающий (для верхних групп объектов) фильтр, либо узкий (с низкой статистикой при "статичных" верхних объектах)
+                // в частности в таком случае нет смысла seek делать
+                Modifier modifier = Property.defaultModifier;
 
-            ImRevMap<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
-            Where dynamicWhere = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));
-            Where dynamicWhereAlt = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));
+                ImRevMap<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
+                Where dynamicWhere = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));
+                Where dynamicWhereAlt = groupObject.getWhere(mapKeys, modifier, null, new UpStaticParamsProcessor(groupObject));
 
-            boolean narrow = false;
-            if(dynamicWhere.means(dynamicWhereAlt.not())) // если из одного условия следует, что при других object'ах объекты не могут повториться очевидно искать ничего не надо
-                narrow = true;
-            else {
-                Where staticWhere = groupObject.getWhere(mapKeys, modifier, null, new NoUpProcessor(groupObject));
-
-                // сравниваем статистику фильтра со статистикой класса
-                Stat filterStat = dynamicWhere.and(staticWhere).getStatKeys(mapKeys.valuesSet()).rows;
-                Stat classStat = staticWhere.getStatKeys(mapKeys.valuesSet()).rows;
-
-                if(new Stat(Settings.get().getDivStatUpdateTypeHeur()).lessEquals(classStat.div(filterStat)))
+                boolean narrow = false;
+                if (dynamicWhere.means(dynamicWhereAlt.not())) // если из одного условия следует, что при других object'ах объекты не могут повториться очевидно искать ничего не надо
                     narrow = true;
+                else {
+                    Where staticWhere = groupObject.getWhere(mapKeys, modifier, null, new NoUpProcessor(groupObject));
+
+                    // сравниваем статистику фильтра со статистикой класса
+                    Stat filterStat = dynamicWhere.and(staticWhere).getStatKeys(mapKeys.valuesSet()).rows;
+                    Stat classStat = staticWhere.getStatKeys(mapKeys.valuesSet()).rows;
+
+                    if (new Stat(Settings.get().getDivStatUpdateTypeHeur()).lessEquals(classStat.div(filterStat)))
+                        narrow = true;
+                }
+                if (narrow)
+                    updateType = UpdateType.FIRST;
             }
-            if(narrow)
-                updateType = UpdateType.FIRST;
-            updateTypeRead = true;
+
+            if(updateType == null)
+                updateType = UpdateType.PREV;
         }
-        return result;
+        return updateType;
 
     }
 

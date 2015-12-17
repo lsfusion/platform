@@ -533,6 +533,7 @@ formGroupObjectUpdate returns [UpdateType updateType]
 }
 	:	'FIRST' { $updateType = UpdateType.FIRST; }
 	|	'LAST' { $updateType = UpdateType.LAST; }
+	|   'PREV' { $updateType = UpdateType.PREV; }
 	;
 
 formSingleGroupObjectDeclaration returns [String name, String className, String caption, ActionPropertyObjectEntity event] 

@@ -779,9 +779,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance> {
                 userSeeks = null;
             } else if (updateKeys) {
                 UpdateType updateType = getUpdateType();
-                if (updateType != null && objectsUpdated) {
-                    orderSeeks = updateType == UpdateType.LAST ? SEEK_END : updateType == UpdateType.FIRST ? SEEK_HOME : null;
+                if ((updateType == UpdateType.FIRST || updateType == UpdateType.LAST) && objectsUpdated) {
+                    orderSeeks = updateType == UpdateType.LAST ? SEEK_END : SEEK_HOME;
                 } else {  // изменились фильтры, порядки, вид, ищем текущий объект
+                    assert updateType == UpdateType.PREV;
                     orderSeeks = new SeekObjects(false, currentObject);
                 }
             }
