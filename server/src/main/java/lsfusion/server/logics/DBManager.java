@@ -686,6 +686,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             // бежим по свойствам
             List<DBStoredProperty> restNewDBStored = new ArrayList<>(newDBStructure.storedProperties);
+            List<AggregateProperty> recalculateTableProperties = new ArrayList<>();
             for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
                 Table oldTable = oldDBStructure.getTable(oldProperty.tableName);
 
@@ -713,6 +714,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                                         foundInterfaces.join((ImMap<PropertyInterface, KeyField>) newProperty.property.mapTable.mapKeys), oldTable.findProperty(oldProperty.getDBName()));
                                 systemLogger.info("Done");
                                 moved = true;
+                                if(newProperty.property instanceof AggregateProperty)
+                                    recalculateTableProperties.add((AggregateProperty) newProperty.property);
                             } else { // надо проверить что тип не изменился
                                 Type oldType = oldTable.findProperty(oldProperty.getDBName()).type;
                                 if (!oldType.equals(newProperty.property.field.type)) {
@@ -873,8 +876,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             systemLogger.info("Recalculating aggregations");
             recalculateAggregations(sql, recalculateProperties, false); // перерасчитаем агрегации
-            updateAggregationStats(recalculateProperties, tableStats);
-
+            updateAggregationStats(recalculateProperties, tableStats, false);
+            updateAggregationStats(recalculateTableProperties, tableStats, true);
             if(!noTransSyncDB)
                 sql.commitTransaction();
 
@@ -910,7 +913,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
-    private void updateAggregationStats(List<AggregateProperty> recalculateProperties, ImMap<String, Integer> tableStats) throws SQLException, SQLHandledException {
+    private void updateAggregationStats(List<AggregateProperty> recalculateProperties, ImMap<String, Integer> tableStats, boolean onlyTable) throws SQLException, SQLHandledException {
         Map<ImplementTable, List<CalcProperty>> calcPropertiesMap; // статистика для новых свойств
         if (Settings.get().isGroupByTables()) {
             calcPropertiesMap = new HashMap<>();
@@ -929,7 +932,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     fields = fields.addExcl(property.field, property.getCanonicalName());
                 ImMap<String, Pair<Integer, Integer>> propStats;
                 try (DataSession session = createSession()) {
-                    propStats = table.calculateStat(reflectionLM, session, fields);
+                    propStats = table.calculateStat(reflectionLM, session, fields, onlyTable);
                     session.apply(businessLogics);
                 }
                 table.updateStat(tableStats, null, propStats, false, fields.keys());

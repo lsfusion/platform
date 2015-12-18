@@ -1672,11 +1672,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (ImplementTable dataTable : tables) {
             count++;
             long start = System.currentTimeMillis();
-            serviceLogger.info(String.format("Recalculate Stats %s of %s: %s", count, tables.size(), dataTable));
-            dataTable.overCalculateStat(this.reflectionLM, session, propertiesSet,
-                    new ProgressBar("Recalculate Stats", count, tables.size(), String.format("Table: %s (%s of %s)", dataTable, count, tables.size())));
-            long time = System.currentTimeMillis() - start;
-            serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
+            if(dataTable.overCalculateStat(this.reflectionLM, session, propertiesSet,
+                    new ProgressBar("Recalculate Stats", count, tables.size(), String.format("Table: %s (%s of %s)", dataTable, count, tables.size())))) {
+                long time = System.currentTimeMillis() - start;
+                serviceLogger.info(String.format("Recalculate Stats: %s, %sms", String.valueOf(dataTable), time));
+            }
         }
     }
 
@@ -1685,13 +1685,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         ImRevMap<Object, KeyExpr> propertyKeys = MapFact.singletonRev((Object) "Property", propertyExpr);
 
         QueryBuilder<Object, Object> propertyQuery = new QueryBuilder<>(propertyKeys);
-        propertyQuery.addProperty("quantityProperty", reflectionLM.quantityProperty.getExpr(propertyExpr));
         propertyQuery.and(reflectionLM.canonicalNameProperty.getExpr(propertyExpr).getWhere());
         if(maxQuantity == null)
-            propertyQuery.and(reflectionLM.quantityProperty.getExpr(propertyExpr).getWhere().not()); //null quantityProperty
+            propertyQuery.and(reflectionLM.notNullQuantityProperty.getExpr(propertyExpr).getWhere().not()); //null quantityProperty
         else
-            propertyQuery.and(reflectionLM.quantityProperty.getExpr(propertyExpr).getWhere().not().or( //null quantityProperty
-                    reflectionLM.quantityProperty.getExpr(propertyExpr).compare(new DataObject(maxQuantity).getExpr(), Compare.LESS_EQUALS))); //less or equals then maxQuantity
+            propertyQuery.and(reflectionLM.notNullQuantityProperty.getExpr(propertyExpr).getWhere().not().or( //null quantityProperty
+                    reflectionLM.notNullQuantityProperty.getExpr(propertyExpr).compare(new DataObject(maxQuantity).getExpr(), Compare.LESS_EQUALS))); //less or equals then maxQuantity
 
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = propertyQuery.execute(session);
 
