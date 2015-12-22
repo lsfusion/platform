@@ -126,6 +126,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
     private void synchronizeNavigatorElements(ConcreteCustomClass elementCustomClass, Class<? extends NavigatorElement> filterJavaClass, boolean exactJavaClass, LCP deleteLP) {
 
+        systemLogger.info("synchronizeNavigatorElements collecting data started");
         ImportField nameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
         ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
 
@@ -139,6 +140,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
         }
         elementsData.add(asList((Object) "noParentGroup", "Без родительской группы"));
 
+        systemLogger.info("synchronizeNavigatorElements integration service started");
         List<ImportProperty<?>> propsNavigatorElement = new ArrayList<>();
         propsNavigatorElement.add(new ImportProperty(nameField, reflectionLM.canonicalNameNavigatorElement.getMapping(keyNavigatorElement)));
         propsNavigatorElement.add(new ImportProperty(captionField, reflectionLM.captionNavigatorElement.getMapping(keyNavigatorElement)));
@@ -155,6 +157,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 session.apply(businessLogics);
+                systemLogger.info("synchronizeNavigatorElements finished");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -163,12 +166,14 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
     public void synchronizeParents() {
 
+        systemLogger.info("synchronizeParents collecting data started");
         ImportField nameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
         ImportField parentNameField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
         ImportField numberField = new ImportField(reflectionLM.numberNavigatorElement);
 
         List<List<Object>> dataParents = getRelations(LM.root, getElementsWithParent(LM.root));
 
+        systemLogger.info("synchronizeParents integration service started");
         ImportKey<?> keyElement = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementCanonicalName.getMapping(nameField));
         ImportKey<?> keyParent = new ImportKey(reflectionLM.navigatorElement, reflectionLM.navigatorElementCanonicalName.getMapping(parentNameField));
         List<ImportProperty<?>> propsParent = new ArrayList<>();
@@ -182,6 +187,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 session.apply(businessLogics);
+                systemLogger.info("synchronizeParents finished");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -230,6 +236,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     private void migratePropertyDraws() {
+        systemLogger.info("migratePropertyDraws collecting data started");
         Map<String, String> nameChanges = dbManager.getPropertyDrawNamesChanges();
         
         ImportField oldPropertyDrawSIDField = new ImportField(reflectionLM.propertyDrawSIDClass);
@@ -249,6 +256,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 data.add(Arrays.<Object>asList(oldName.substring(oldFormName.length() + 1), oldFormName, newName.substring(newFormName.length() + 1), newFormName));
             }
 
+            systemLogger.info("migratePropertyDraws integration service started");
             List<ImportProperty<?>> properties = new ArrayList<>();
             properties.add(new ImportProperty(newPropertyDrawSIDField, reflectionLM.sidPropertyDraw.getMapping(keyProperty)));
             properties.add(new ImportProperty(newFormCanonicalNameField, reflectionLM.formPropertyDraw.getMapping(keyProperty), LM.object(reflectionLM.navigatorElement).getMapping(keyForm)));
@@ -259,6 +267,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyProperty), properties);
                 service.synchronize(false, false);
                 session.apply(businessLogics);
+                systemLogger.info("migratePropertyDraws finished");
             }
         } catch (Exception e) {
             Throwables.propagate(e);
@@ -266,6 +275,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
     
     public void synchronizePropertyDraws() {
+        systemLogger.info("synchronizePropertyDraws collecting data started");
         migratePropertyDraws();
         
         List<List<Object>> dataPropertyDraws = new ArrayList<>();
@@ -280,6 +290,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             }
         }
 
+        systemLogger.info("synchronizePropertyDraws integration service started");
         ImportField captionPropertyDrawField = new ImportField(reflectionLM.propertyCaptionValueClass);
         ImportField sidPropertyDrawField = new ImportField(reflectionLM.propertySIDValueClass);
         ImportField nameNavigatorElementField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
@@ -308,6 +319,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 session.apply(businessLogics);
+                systemLogger.info("synchronizePropertyDraws finished");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -315,7 +327,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     public void synchronizeGroupObjects() {
-
+        systemLogger.info("synchronizeGroupObjects collecting data started");
         List<List<Object>> dataGroupObjectList = new ArrayList<>();
         for (FormEntity<?> formElement : businessLogics.getFormEntities()) {
             String formCanonicalName = formElement.getCanonicalName();
@@ -330,6 +342,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             }
         }
 
+        systemLogger.info("synchronizeGroupObjects integration service started");
         ImportField canonicalNameNavigatorElementField = new ImportField(reflectionLM.navigatorElementCanonicalNameClass);
         ImportField sidGroupObjectField = new ImportField(reflectionLM.propertySIDValueClass);
 
@@ -352,6 +365,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 session.apply(businessLogics);
+                systemLogger.info("synchronizeGroupObjects finished");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -363,6 +377,8 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     public void synchronizePropertyEntities() {
+
+        systemLogger.info("synchronizePropertyEntities collecting data started");
         ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
         ImportField dbNamePropertyField = new ImportField(reflectionLM.propertySIDValueClass);
         ImportField captionPropertyField = new ImportField(reflectionLM.propertyCaptionValueClass);
@@ -410,6 +426,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 }
             }
 
+            systemLogger.info("synchronizePropertyEntities integration service started");
             List<ImportProperty<?>> properties = new ArrayList<>();
             properties.add(new ImportProperty(canonicalNamePropertyField, reflectionLM.canonicalNameProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(dbNamePropertyField, reflectionLM.dbNameProperty.getMapping(keyProperty)));
@@ -436,6 +453,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 session.apply(businessLogics);
+                systemLogger.info("synchronizePropertyEntities finished");
             }
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -443,6 +461,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
     }
 
     public void synchronizePropertyParents() {
+        systemLogger.info("synchronizePropertyParents collecting data started");
 
         ImportField canonicalNamePropertyField = new ImportField(reflectionLM.propertyCanonicalNameValueClass);
         ImportField numberPropertyField = new ImportField(reflectionLM.numberProperty);
@@ -454,6 +473,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 dataParent.add(asList(property.getCanonicalName(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
         }
 
+        systemLogger.info("synchronizePropertyParents integration service started");
         ImportKey<?> keyProperty = new ImportKey(reflectionLM.property, reflectionLM.propertyCanonicalName.getMapping(canonicalNamePropertyField));
         ImportKey<?> keyParent = new ImportKey(reflectionLM.propertyGroup, reflectionLM.propertyGroupSID.getMapping(parentSidField));
         List<ImportProperty<?>> properties = new ArrayList<>();
@@ -469,6 +489,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 session.apply(businessLogics);
+                systemLogger.info("synchronizePropertyParents finished");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -477,6 +498,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
     public void synchronizeGroupProperties() {
 
+        systemLogger.info("synchronizeGroupProperties collecting data started");
         ImportField sidField = new ImportField(reflectionLM.navigatorElementSIDClass);
         ImportField captionField = new ImportField(reflectionLM.navigatorElementCaptionClass);
         ImportField numberField = new ImportField(reflectionLM.numberPropertyGroup);
@@ -489,6 +511,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             data.add(asList(group.getSID(), (Object) group.caption));
         }
 
+        systemLogger.info("synchronizeGroupProperties integration service started");
         List<ImportProperty<?>> props = new ArrayList<>();
         props.add(new ImportProperty(sidField, reflectionLM.SIDPropertyGroup.getMapping(key)));
         props.add(new ImportProperty(captionField, reflectionLM.captionPropertyGroup.getMapping(key)));
@@ -522,6 +545,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                 service.synchronize(true, false);
                 session.popVolatileStats();
                 session.apply(businessLogics);
+                systemLogger.info("synchronizeGroupProperties finished");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -553,6 +577,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
     public void synchronizeTables() {
 
+        systemLogger.info("synchronizeTables collecting data started");
         ImportField tableSidField = new ImportField(reflectionLM.sidTable);
         ImportField tableKeySidField = new ImportField(reflectionLM.sidTableKey);
         ImportField tableKeyNameField = new ImportField(reflectionLM.nameTableKey);
@@ -580,6 +605,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
             }
         }
 
+        systemLogger.info("synchronizeTables integration service started");
         List<ImportProperty<?>> properties = new ArrayList<>();
         properties.add(new ImportProperty(tableSidField, reflectionLM.sidTable.getMapping(tableKey)));
 
@@ -623,6 +649,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
                 session.popVolatileStats();
                 session.apply(businessLogics);
+                systemLogger.info("synchronizeTables finished");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
