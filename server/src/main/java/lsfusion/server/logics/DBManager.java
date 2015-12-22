@@ -18,7 +18,10 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.GetValue;
 import lsfusion.interop.Compare;
 import lsfusion.server.*;
 import lsfusion.server.caches.IdentityStrongLazy;
-import lsfusion.server.classes.*;
+import lsfusion.server.classes.ByteArrayClass;
+import lsfusion.server.classes.ConcreteCustomClass;
+import lsfusion.server.classes.DataClass;
+import lsfusion.server.classes.StringClass;
 import lsfusion.server.classes.sets.ResolveClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.*;
@@ -54,7 +57,10 @@ import lsfusion.server.logics.table.ImplementTable;
 import lsfusion.server.session.DataSession;
 import lsfusion.server.session.SessionCreator;
 import lsfusion.server.session.SingleKeyTableUsage;
-import lsfusion.server.stack.*;
+import lsfusion.server.stack.ParamMessage;
+import lsfusion.server.stack.ProgressStackItem;
+import lsfusion.server.stack.StackMessage;
+import lsfusion.server.stack.StackProgress;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.commons.codec.binary.Hex;
@@ -105,6 +111,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
     private BusinessLogics<?> businessLogics;
 
     private boolean ignoreMigration;
+    private boolean migrationScriptWasRead = false;
 
     private boolean denyDropModules;
 
@@ -316,7 +323,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
                     }
 
                     public ImSet<CalcProperty> update(DataSession session, FormInstance form) {
-                        return SetFact.<CalcProperty>EMPTY();
+                        return SetFact.EMPTY();
                     }
 
                     public void registerForm(FormInstance form) {
@@ -584,6 +591,17 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 */    
+    
+    private OldDBStructure getOldDBStructure(SQLSession sql) throws SQLException, SQLHandledException, IOException {
+        DataInputStream inputDB = null;
+        StructTable structTable = StructTable.instance;
+        byte[] struct = (byte[]) sql.readRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), structTable.struct, OperationOwner.unknown);
+        if (struct != null) {
+            inputDB = new DataInputStream(new ByteArrayInputStream(struct));
+        }    
+        return new OldDBStructure(inputDB, sql);
+    }
+    
     public boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 //        checkLP(businessLogics.getNamedProperties());
 //        check(businessLogics.getOrderProperties());
@@ -607,18 +625,13 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         SQLSyntax syntax = adapter;
 
         // "старое" состояние базы
-        DataInputStream inputDB = null;
-        StructTable structTable = StructTable.instance;
-        byte[] struct = (byte[]) sql.readRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), structTable.struct, OperationOwner.unknown);
-        if (struct != null)
-            inputDB = new DataInputStream(new ByteArrayInputStream(struct));
-
-        OldDBStructure oldDBStructure = new OldDBStructure(inputDB, sql);
+        OldDBStructure oldDBStructure = getOldDBStructure(sql);
 
         checkModules(oldDBStructure);
 
+        // В этот момент в обычной ситуации migration script уже был обработан, вызов оставлен на всякий случай. Повторный вызов ничего не делает.
         runMigrationScript();
-
+        
         Map<String, String> columnsToDrop = new HashMap<>();
 
         boolean noTransSyncDB = Settings.get().isNoTransSyncDB();
@@ -685,7 +698,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             MExclSet<Pair<String, String>> mDropColumns = SetFact.mExclSet(); // вообще pend'ить нужно только classDataProperty, но их тогда надо будет отличать
 
             // бежим по свойствам
-            List<DBStoredProperty> restNewDBStored = new ArrayList<>(newDBStructure.storedProperties);
+            List<DBStoredProperty> restNewDBStored = new LinkedList<>(newDBStructure.storedProperties);
             List<AggregateProperty> recalculateTableProperties = new ArrayList<>();
             for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
                 Table oldTable = oldDBStructure.getTable(oldProperty.tableName);
@@ -752,7 +765,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             for (DBStoredProperty property : restNewDBStored) { // добавляем оставшиеся
                 sql.addColumn(property.getTable(), property.property.field);
-                if (struct != null && property.property instanceof AggregateProperty) // если все свойства "новые" то ничего перерасчитывать не надо
+                if (oldDBStructure.version > 0 && property.property instanceof AggregateProperty) // если все свойства "новые" то ничего перерасчитывать не надо
                     recalculateProperties.add((AggregateProperty) property.property);
             }
 
@@ -858,10 +871,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             newDBStructure.writeConcreteClasses(outDB);
 
             try {
-                sql.insertRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(outDBStruct.toByteArray(), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
+                sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(outDBStruct.toByteArray(), ByteArrayClass.instance)), true, TableOwner.global, OperationOwner.unknown);
             } catch (Exception e) {
-                ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(structTable.struct, (ObjectValue) new DataObject(new byte[0], ByteArrayClass.instance));
-                sql.insertRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, TableOwner.global, OperationOwner.unknown);
+                ImMap<PropertyField, ObjectValue> propFields = MapFact.singleton(StructTable.instance.struct, (ObjectValue) new DataObject(new byte[0], ByteArrayClass.instance));
+                sql.insertRecord(StructTable.instance, MapFact.<KeyField, DataObject>EMPTY(), propFields, true, TableOwner.global, OperationOwner.unknown);
             }
 
             if (oldDBStructure.version < 0) {
@@ -1262,26 +1275,41 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return (oldHash == null || newHash == null) || !oldHash.equals(newHash);
     }
 
+    private void reRunMigrationScript() {
+        migrationScriptWasRead = false;
+        
+        propertyCNChanges.clear();
+        propertyDrawNameChanges.clear();
+        storedPropertyCNChanges.clear();
+        classSIDChanges.clear(); 
+        tableSIDChanges.clear();
+        objectSIDChanges.clear();
+        
+        runMigrationScript();
+    }
 
-    private void runMigrationScript() {
+    private synchronized void runMigrationScript() {
         if (ignoreMigration) {
             //todo: добавить возможность задавать расположение для migration.script, чтобы можно было запускать разные логики из одного модуля
             return;
         }
 
-        try {
-            InputStream scriptStream = getClass().getResourceAsStream("/migration.script");
-            if (scriptStream != null) {
-                ANTLRInputStream stream = new ANTLRInputStream(scriptStream);
-                MigrationScriptLexer lexer = new MigrationScriptLexer(stream);
-                MigrationScriptParser parser = new MigrationScriptParser(new CommonTokenStream(lexer));
+        if (!migrationScriptWasRead) {
+            try {
+                InputStream scriptStream = getClass().getResourceAsStream("/migration.script");
+                if (scriptStream != null) {
+                    ANTLRInputStream stream = new ANTLRInputStream(scriptStream);
+                    MigrationScriptLexer lexer = new MigrationScriptLexer(stream);
+                    MigrationScriptParser parser = new MigrationScriptParser(new CommonTokenStream(lexer));
 
-                parser.self = this;
+                    parser.self = this;
 
-                parser.script();
+                    parser.script();
+                    migrationScriptWasRead = true;
+                }
+            } catch (Exception e) {
+                Throwables.propagate(e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -1299,9 +1327,9 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         Map<String, String> propertyChanges = alterPropertyChangesNewInferAlgorithm(oldData, getChangesAfter(oldData.dbVersion, storedPropertyCNChanges), sql, businessLogics.getStoredProperties());
         for (Map.Entry<String, String> entry : propertyChanges.entrySet()) {
             boolean found = false;
+            String newDBName = LM.getDBNamePolicy().transformToDBName(entry.getValue());
             for (DBStoredProperty oldProperty : oldData.storedProperties) {
                 if (entry.getKey().equals(oldProperty.getCanonicalName())) {
-                    String newDBName = LM.getDBNamePolicy().transformToDBName(entry.getValue());
                     renameColumn(sql, oldData, oldProperty, newDBName);
                     oldProperty.setCanonicalName(entry.getValue());
                     found = true;
@@ -1522,10 +1550,60 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         return map;
     }
 
+    // todo [dale]: временная реализация для переименования
+    // Проблемы текущего способа: 
+    // 1. Каноническое имя log-свойств сейчас определяется не из сигнатуры базового свойства, а из getInterfaces, которые могут не совпадать с сигнатурой
+    // 2. Мы считаем, что при миграции свойств не меняются имена классов параметров, а это может быть не так
+    // В дальнейшем. когда сделаем нормальные канонические имена у log-свойств, можно перенести этот функционал в setUserLoggableProperties 
+    // и добавлять изменения канонических имен log-свойств напрямую в storedPropertyCNChanges еще на том шаге
+    void addLogPropertiesToMigration(OldDBStructure oldData, DBVersion newDBVersion) {
+        Map<String, String> changes = getChangesAfter(oldData.dbVersion, propertyCNChanges);
+        Map<String, String> rChanges = BaseUtils.reverse(changes);
+        
+        Set<String> logProperties = new HashSet<>();
+        
+        for (List<BusinessLogics.NamedDecl> nameList : businessLogics.getNamedModuleProperties().values()) {
+            for (BusinessLogics.NamedDecl declaration : nameList) {
+                if (declaration.prop.property.getName().startsWith(PropertyCanonicalNameUtils.logPropPrefix)) {
+                    logProperties.add(declaration.prop.property.getCanonicalName());
+                }
+            }
+        }
+        
+        for (List<BusinessLogics.NamedDecl> nameList : businessLogics.getNamedModuleProperties().values()) {
+            for (BusinessLogics.NamedDecl declaration : nameList) {
+                if (declaration.prop.property.isNamed() && declaration.prop instanceof LCP && ((CalcProperty)declaration.prop.property).isFull(ClassType.useInsteadOfAssert.getCalc().getAlgInfo())) {
+                    String logPropCN = LogicsModule.getLogPropertyCN((LCP) declaration.prop, "System", businessLogics.systemEventsLM);
+                    if (logProperties.contains(logPropCN)) {
+                        String propCN = declaration.prop.property.getCanonicalName();
+                        if (rChanges.containsKey(propCN)) {
+                            String oldPropCN = rChanges.get(propCN);
+                            String oldName = "", oldNamespace = "";
+                            try {
+                                oldName = PropertyCanonicalNameParser.getName(oldPropCN);
+                                oldNamespace = PropertyCanonicalNameParser.getNamespace(oldPropCN);
+                            } catch (AbstractPropertyNameParser.ParseException e) {
+                                Throwables.propagate(e);
+                            }
+                            String oldLogPropCN = LogicsModule.getLogPropertyCN("System", oldNamespace, oldName, LogicsModule.getSignatureForLogProperty((LCP)declaration.prop, businessLogics.systemEventsLM));
+                            if (!storedPropertyCNChanges.containsKey(newDBVersion)) {
+                                storedPropertyCNChanges.put(newDBVersion, new ArrayList<SIDChange>());
+                            }
+                            storedPropertyCNChanges.get(newDBVersion).add(new SIDChange(oldLogPropCN, logPropCN));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     // Не разбирается с индексами. Было решено, что сохранять индексы необязательно.
     private void alterDBStructure(OldDBStructure oldData, NewDBStructure newData, SQLSession sql) throws SQLException, SQLHandledException {
         // Сохраним изменения имен свойств на форме для reflectionManager
         finalPropertyDrawNameChanges = getChangesAfter(oldData.dbVersion, propertyDrawNameChanges);
+        
+        // Обязательно до renameMigratingProperties, потому что в storedPropertyCNChanges добавляются изменения для log-свойств 
+        addLogPropertiesToMigration(oldData, newData.dbVersion);
         
         // Изменяем в старой структуре свойства из скрипта миграции, переименовываем поля в таблицах
         renameMigratingProperties(sql, oldData);
@@ -1753,6 +1831,32 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }
     }
 
+    // может вызываться до инициализации DBManager
+    private DBVersion getOldDBVersion(SQLSession sql) throws IOException, SQLException, SQLHandledException {
+        DBVersion dbVersion = new DBVersion("0.0");
+        
+        DataInputStream inputDB;
+        StructTable structTable = StructTable.instance;
+        byte[] struct = (byte[]) sql.readRecord(structTable, MapFact.<KeyField, DataObject>EMPTY(), structTable.struct, OperationOwner.unknown);
+        if (struct != null) {
+            inputDB = new DataInputStream(new ByteArrayInputStream(struct));
+            //noinspection ResultOfMethodCallIgnored
+            inputDB.read();
+            dbVersion = new DBVersion(inputDB.readUTF());
+        }
+        return dbVersion;
+    }
+
+    public Map<String, String> getPropertyCNChanges(SQLSession sql) {
+        runMigrationScript();
+        try {
+            return getChangesAfter(getOldDBVersion(sql), propertyCNChanges);
+        } catch (IOException | SQLException | SQLHandledException e) {
+            Throwables.propagate(e);
+        }
+        return new HashMap<>();
+    }
+    
     private void initSystemUser() {
         // считаем системного пользователя
         try {

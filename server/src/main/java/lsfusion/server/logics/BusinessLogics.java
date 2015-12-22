@@ -31,7 +31,10 @@ import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.DiscountCardDaemonTask;
 import lsfusion.server.daemons.ScannerDaemonTask;
-import lsfusion.server.data.*;
+import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.SQLHandledException;
+import lsfusion.server.data.SQLSession;
+import lsfusion.server.data.SessionTable;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -69,7 +72,10 @@ import lsfusion.server.logics.table.MapKeysTable;
 import lsfusion.server.logics.tasks.PublicTask;
 import lsfusion.server.logics.tasks.TaskRunner;
 import lsfusion.server.mail.NotificationActionProperty;
-import lsfusion.server.session.*;
+import lsfusion.server.session.ApplyFilter;
+import lsfusion.server.session.DataSession;
+import lsfusion.server.session.SessionCreator;
+import lsfusion.server.session.SingleKeyTableUsage;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -97,12 +103,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public static final List<String> defaultExcludedScriptPaths = Arrays.asList("lsfusion/system");
     public static final List<String> defaultIncludedScriptPaths = Arrays.asList("");
 
-    private List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
-    private Map<String, List<LogicsModule>> namespaceToModules = new HashMap<String, List<LogicsModule>>();
+    private List<LogicsModule> logicModules = new ArrayList<>();
+    private Map<String, List<LogicsModule>> namespaceToModules = new HashMap<>();
 
-    private final Map<String, LogicsModule> nameToModule = new HashMap<String, LogicsModule>();
+    private final Map<String, LogicsModule> nameToModule = new HashMap<>();
 
-    private final List<ExternalScreen> externalScreens = new ArrayList<ExternalScreen>();
+    private final List<ExternalScreen> externalScreens = new ArrayList<>();
 
     public BaseLogicsModule<T> LM;
     public ServiceLogicsModule serviceLM;
@@ -173,7 +179,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
     }
 
-    public LRUWSASVSMap<Object, Method, Object, Object> startLruCache = new LRUWSASVSMap<Object, Method, Object, Object>(LRUUtil.G2);
+    public LRUWSASVSMap<Object, Method, Object, Object> startLruCache = new LRUWSASVSMap<>(LRUUtil.G2);
     public void cleanCaches() {
         startLruCache = null;
         MapCacheAspect.cleanClassCaches();
@@ -242,7 +248,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return null;
     }
 
-    protected <T extends LogicsModule> T addModule(T module) {
+    protected <M extends LogicsModule> M addModule(M module) {
         logicModules.add(module);
         return module;
     }
@@ -267,11 +273,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         if (excludedPaths == null || excludedPaths.isEmpty()) {
             excludedPaths = defaultExcludedScriptPaths;
         } else {
-            excludedPaths = new ArrayList<String>(excludedPaths);
+            excludedPaths = new ArrayList<>(excludedPaths);
             excludedPaths.addAll(defaultExcludedScriptPaths);
         }
 
-        List<String> excludedLSF = new ArrayList<String>();
+        List<String> excludedLSF = new ArrayList<>();
 
         for (String filePath : excludedPaths) {
             if (filePath.contains("*")) {
@@ -341,7 +347,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public Map<String, Set<String>> buildModuleGraph() {
-        Map<String, Set<String>> graph = new HashMap<String, Set<String>>();
+        Map<String, Set<String>> graph = new HashMap<>();
         for (LogicsModule module : logicModules) {
             graph.put(module.getName(), new HashSet<String>());
         }
@@ -380,7 +386,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     private void checkCycles(Map<String, Set<String>> graph, String errorMessage) {
-        Set<String> used = new HashSet<String>();
+        Set<String> used = new HashSet<>();
         for (String vertex : graph.keySet()) {
             if (!used.contains(vertex)) {
                 String foundCycle = checkCycles(vertex, new LinkedList<String>(), used, graph);
@@ -394,8 +400,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     // Формирует .dot файл для построения графа иерархии модулей с помощью graphviz
     private void outDotFile() {
         try {
-            FileWriter fstream = new FileWriter("D:/lsf/modules.dot");
-            BufferedWriter out = new BufferedWriter(fstream);
+            FileWriter fStream = new FileWriter("D:/lsf/modules.dot");
+            BufferedWriter out = new BufferedWriter(fStream);
             out.write("digraph Modules {\n");
             out.write("\tsize=\"6,4\"; ratio = fill;\n");
             out.write("\tnode [shape=box, fontsize=60, style=filled];\n");
@@ -433,7 +439,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             checkCycles(graph, "there is a circular dependency introduced by order dependencies");
         }
 
-        Map<String, Integer> degree = new HashMap<String, Integer>();
+        Map<String, Integer> degree = new HashMap<>();
         for (LogicsModule module : logicModules) {
             degree.put(module.getName(), 0);
         }
@@ -444,7 +450,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
         }
 
-        Set<LogicsModule> usedModules = new LinkedHashSet<LogicsModule>();
+        Set<LogicsModule> usedModules = new LinkedHashSet<>();
         for (int i = 0; i < logicModules.size(); ++i) {
             for (LogicsModule module : logicModules) {
                 String moduleName = module.getName();
@@ -464,7 +470,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 }
             }
         }
-        return new ArrayList<LogicsModule>(usedModules);
+        return new ArrayList<>(usedModules);
     }
 
     private void addOrderDependencies(String orderDependencies, Map<String, Set<String>> graph) {
@@ -486,8 +492,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private void overrideModulesList(String startModuleName) {
 
-        Set<LogicsModule> was = new HashSet<LogicsModule>();
-        Queue<LogicsModule> queue = new LinkedList<LogicsModule>();
+        Set<LogicsModule> was = new HashSet<>();
+        Queue<LogicsModule> queue = new LinkedList<>();
 
         fillNameToModules();
 
@@ -513,7 +519,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             }
         }
 
-        logicModules = new ArrayList<LogicsModule>(was);
+        logicModules = new ArrayList<>(was);
         nameToModule.clear();
     }
 
@@ -532,7 +538,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             overrideModulesList(topModule);
         }
 
-        Map<LogicsModule, ImSet<LogicsModule>> recRequiredModules = new HashMap<LogicsModule, ImSet<LogicsModule>>();
+        Map<LogicsModule, ImSet<LogicsModule>> recRequiredModules = new HashMap<>();
         orderedModules = orderModules(orderDependencies, recRequiredModules);
 
         int moduleNumber = 0;
@@ -593,11 +599,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 classSet = tableClass.getUpSet();
 
             ClassDataProperty dataProperty = new ClassDataProperty(classSet.toString(), classSet);
-            LCP<ClassPropertyInterface> lp = new LCP<ClassPropertyInterface>(dataProperty);
-            LM.addProperty(null, new LCP<ClassPropertyInterface>(dataProperty));
+            LCP<ClassPropertyInterface> lp = new LCP<>(dataProperty);
+            LM.addProperty(null, new LCP<>(dataProperty));
             LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.<ResolveClassSet>singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));
             // именно такая реализация, а не implementTable, из-за того что getInterfaceClasses может попасть не в "класс таблицы", а мимо и тогда нарушится assertion что должен попасть в ту же таблицу, это в принципе проблема getInterfaceClasses
-            dataProperty.markStored(LM.tableFactory, new MapKeysTable<ClassPropertyInterface>(table, MapFact.singletonRev(dataProperty.interfaces.single(), table.keys.single())));
+            dataProperty.markStored(LM.tableFactory, new MapKeysTable<>(table, MapFact.singletonRev(dataProperty.interfaces.single(), table.keys.single())));
 
             // помечаем dataProperty
             for(ConcreteCustomClass customClass : set)
@@ -670,7 +676,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     public static final ThreadLocal<ImMap<String, String>> reparse = new ThreadLocal<>();
 
     private void setUserLoggableProperties(SQLSession sql) throws SQLException, IllegalAccessException, InstantiationException, ClassNotFoundException, SQLHandledException {
-
+        Map<String, String> changes = getDbManager().getPropertyCNChanges(sql);
+        
         Integer maxStatsProperty = null;
         try {
             maxStatsProperty = (Integer) reflectionLM.maxStatsProperty.read(sql, Property.defaultModifier, DataSession.emptyEnv(OperationOwner.unknown));
@@ -687,11 +694,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
         for (ImMap<Object, Object> values : result.valueIt()) {
-            LP lp = findProperty(values.get("CNProperty").toString().trim());
+            String canonicalName = values.get("CNProperty").toString().trim();
+            if (changes.containsKey(canonicalName)) {
+                canonicalName = changes.get(canonicalName);
+            }
+            LP lp = findProperty(canonicalName);
             Integer statsProperty = (Integer) values.get("statsProperty");
             statsProperty = statsProperty == null && lp != null ? getStatsProperty(lp.property) : statsProperty;
-            if((statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) && lp instanceof LCP)
+            if((statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) && lp instanceof LCP) {
                 LM.makeUserLoggable(systemEventsLM, (LCP) lp);
+            }
         }
     }
 
@@ -710,7 +722,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         LCP isProperty = LM.is(reflectionLM.property);
         ImRevMap<Object, KeyExpr> keys = isProperty.getMapKeys();
         KeyExpr key = keys.singleValue();
-        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
         query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
         query.and(reflectionLM.isSetNotNullProperty.getExpr(key).getWhere());
         ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
@@ -727,7 +739,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         LCP isNotification = LM.is(emailLM.notification);
         ImRevMap<Object, KeyExpr> keys = isNotification.getMapKeys();
         KeyExpr key = keys.singleValue();
-        QueryBuilder<Object, Object> query = new QueryBuilder<Object, Object>(keys);
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
         query.addProperty("isDerivedChange", emailLM.isEventNotification.getExpr(key));
         query.addProperty("subject", emailLM.subjectNotification.getExpr(key));
         query.addProperty("text", emailLM.textNotification.getExpr(key));
@@ -744,7 +756,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             KeyExpr notificationExpr2 = new KeyExpr("notification");
             ImRevMap<String, KeyExpr> newKeys2 = MapFact.toRevMap("property", propertyExpr2, "notification", notificationExpr2);
 
-            QueryBuilder<String, String> query2 = new QueryBuilder<String, String>(newKeys2);
+            QueryBuilder<String, String> query2 = new QueryBuilder<>(newKeys2);
             query2.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(propertyExpr2));
             query2.and(emailLM.inNotificationProperty.getExpr(notificationExpr2, propertyExpr2).getWhere());
             query2.and(notificationExpr2.compare(notificationObject, Compare.EQUALS));
@@ -783,7 +795,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
             updateStats(sql);
         } catch (Exception ignored) {
-            ignored = ignored;
         }
 
         initClassStat();
@@ -866,8 +877,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return tableStats;
     }
 
-    public <T> ImMap<String, T> readStatsFromDB(SQLSession sql, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException, SQLHandledException {
-        QueryBuilder<String, String> query = new QueryBuilder<String, String>(SetFact.toSet("key"));
+    public <V> ImMap<String, V> readStatsFromDB(SQLSession sql, LCP sIDProp, LCP statsProp, final LCP notNullProp) throws SQLException, SQLHandledException {
+        QueryBuilder<String, String> query = new QueryBuilder<>(SetFact.toSet("key"));
         Expr sidToObject = sIDProp.getExpr(query.getMapExprs().singleValue());
         query.and(sidToObject.getWhere());
         query.addProperty("property", statsProp.getExpr(sidToObject));
@@ -876,12 +887,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         return query.execute(sql, OperationOwner.unknown).getMap().mapKeyValues(new GetValue<String, ImMap<String, Object>>() {
             public String getMapValue(ImMap<String, Object> key) {
                 return ((String) key.singleValue()).trim();
-            }}, new GetValue<T, ImMap<String, Object>>() {
-            public T getMapValue(ImMap<String, Object> value) {
+            }}, new GetValue<V, ImMap<String, Object>>() {
+            public V getMapValue(ImMap<String, Object> value) {
                 if(notNullProp!=null) {
-                    return (T)new Pair<Integer, Integer>((Integer)value.get("property"), (Integer)value.get("notNull"));
+                    return (V) new Pair<>((Integer) value.get("property"), (Integer) value.get("notNull"));
                 } else
-                    return (T)value.singleValue();
+                    return (V)value.singleValue();
             }});
     }
 
@@ -950,14 +961,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public List<LP<?, ?>> getNamedProperties() {
-        List<LP<?, ?>> namedProperties = new ArrayList<LP<?, ?>>();
+        List<LP<?, ?>> namedProperties = new ArrayList<>();
         for (LogicsModule module : logicModules) {
             namedProperties.addAll(module.getNamedProperties());
         }
         return namedProperties;
     }
     
-    private static class NamedDecl {
+    // todo [dale]: Временно сделал public для переименования log-свойств
+    public static class NamedDecl {
         public final LP prop;
         public final String namespace;
         public final boolean defaultNamespace;
@@ -974,7 +986,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public Map<String, List<NamedDecl>> getNamedModuleProperties() {
-        Map<String, List<NamedDecl>> result = new HashMap<String, List<NamedDecl>>();
+        Map<String, List<NamedDecl>> result = new HashMap<>();
         for (Map.Entry<String, List<LogicsModule>> namespaceToModule : namespaceToModules.entrySet()) {
             String namespace = namespaceToModule.getKey();
             for(LogicsModule module : namespaceToModule.getValue()) {
@@ -982,7 +994,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                     String propertyName = namedModuleProperty.getKey();
                     List<NamedDecl> resultProps = result.get(propertyName);
                     if(resultProps == null) {
-                        resultProps = new ArrayList<NamedDecl>();
+                        resultProps = new ArrayList<>();
                         result.put(propertyName, resultProps);
                     }
                     for(LP prop : namedModuleProperty.getValue()) {
@@ -1074,7 +1086,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             if (property instanceof ActionProperty && !((ActionProperty) property).getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
                 ImMap<CalcProperty, Boolean> change = ((ActionProperty<?>) property).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++) // вообще говоря DataProperty и IsClassProperty
-                    change.getKey(i).addActionChangeProp(new Pair<Property<?>, LinkType>((ActionProperty)property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
+                    change.getKey(i).addActionChangeProp(new Pair<Property<?>, LinkType>(property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
             }
         }
     }
@@ -1093,7 +1105,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private static HSet<Link> buildOrder(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, List<Property> order, HSet<Link> removedLinks, boolean include, HSet<Property> component, boolean calcEvents) {
         HSet<Link> linksIn = linksMap.get(property);
         if (linksIn == null) { // уже были, linksMap - одновременно используется и как пометки, и как список, и как обратный обход
-            linksIn = new HSet<Link>();
+            linksIn = new HSet<>();
             linksMap.add(property, linksIn);
 
             ImSet<Link> links = property.getLinks(calcEvents);
@@ -1132,7 +1144,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             assert !(c1.equals(c2) && !BaseUtils.hashEquals(o1,o2) && !(o1 instanceof SessionDataProperty) && !(o2 instanceof SessionDataProperty));
             return c1.compareTo(c2);
         }
-    };
+    }
 
     private final static Comparator<Property> strictComparator = new PropComparator(true);
     private final static Comparator<Property> comparator = new PropComparator(false);
@@ -1254,7 +1266,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private static HSet<Property> buildList(HSet<Property> props, HSet<Property> exclude, HSet<Link> removedLinks, MOrderExclSet<Property> mResult, boolean calcEvents) {
         HSet<Property> proceeded;
 
-        List<Property> order = new ArrayList<Property>();
+        List<Property> order = new ArrayList<>();
         MAddMap<Property, HSet<Link>> linksMap = MapFact.mAddOverrideMap();
         for (int i = 0; i < props.size; i++) {
             Property property = props.get(i);
@@ -1263,12 +1275,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         }
 
         Result<Property> minProperty = new Result<>();
-        proceeded = new HSet<Property>();
+        proceeded = new HSet<>();
         for (int i = 0; i < order.size(); i++) { // тут нужн
             Property orderProperty = order.get(order.size() - 1 - i);
             if (!proceeded.contains(orderProperty)) {
                 minProperty.set(null);
-                HSet<Property> innerComponent = new HSet<Property>();
+                HSet<Property> innerComponent = new HSet<>();
                 findComponent(orderProperty, linksMap, proceeded, innerComponent, minProperty);
                 assert innerComponent.size > 0;
                 if (innerComponent.size == 1) // если цикла нет все ОК
@@ -1352,11 +1364,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     private static String findDependency(Property<?> property1, Property<?> property2, LinkType desiredType) {
         String result = "";
 
-        Stack<Link> forward = new Stack<Link>();
+        Stack<Link> forward = new Stack<>();
         if (findDependency(property1, property2, new HSet<Property>(), forward, desiredType))
             result += outDependency("FORWARD (" + forward.size() + ")", property1, forward) + '\n';
 
-        Stack<Link> backward = new Stack<Link>();
+        Stack<Link> backward = new Stack<>();
         if (findDependency(property2, property1, new HSet<Property>(), backward, desiredType))
             result += outDependency("BACKWARD (" + backward.size() + ")", property2, backward) + '\n';
 
@@ -1394,8 +1406,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         fillActionChangeProps();
 
         // сначала бежим по Action'ам с cancel'ами
-        HSet<Property> cancelActions = new HSet<Property>();
-        HSet<Property> rest = new HSet<Property>();
+        HSet<Property> cancelActions = new HSet<>();
+        HSet<Property> rest = new HSet<>();
         for (Property property : getOrderProperties())
             if(filter.contains(property)) {
                 if (ApplyFilter.isCheck(property))
@@ -1411,7 +1423,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
         // потом бежим по всем остальным, за исключением proceeded
         MOrderExclSet<Property> mRestResult = SetFact.mOrderExclSet();
-        HSet<Property> removed = new HSet<Property>();
+        HSet<Property> removed = new HSet<>();
         removed.addAll(rest.remove(proceeded));
         buildList(removed, proceeded, new HSet<Link>(), mRestResult, calcEvents); // потом этот cast уберем
         ImOrderSet<Property> restResult = mRestResult.immutableOrder();
@@ -1627,7 +1639,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     @IdentityLazy
     public List<CalcProperty> getCheckConstrainedProperties() {
-        List<CalcProperty> result = new ArrayList<CalcProperty>();
+        List<CalcProperty> result = new ArrayList<>();
         for (Property property : getPropertyList()) {
             if (property instanceof CalcProperty && ((CalcProperty) property).checkChange != CalcProperty.CheckType.CHECK_NO) {
                 result.add((CalcProperty) property);
@@ -1637,7 +1649,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     public List<CalcProperty> getCheckConstrainedProperties(CalcProperty<?> changingProp) {
-        List<CalcProperty> result = new ArrayList<CalcProperty>();
+        List<CalcProperty> result = new ArrayList<>();
         for (CalcProperty property : getCheckConstrainedProperties()) {
             if (property.checkChange == CalcProperty.CheckType.CHECK_ALL ||
                     property.checkChange == CalcProperty.CheckType.CHECK_SOME && property.checkProperties.contains(changingProp)) {
@@ -1779,10 +1791,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             public void run(final SQLSession sql) throws SQLException, SQLHandledException {
                 DataSession.runExclusiveness(new DataSession.RunExclusiveness() {
                     public void run(Query<String, String> query) throws SQLException, SQLHandledException {
-                        SingleKeyTableUsage<String> table = new SingleKeyTableUsage<String>(ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), new Type.Getter<String>() {
+                        SingleKeyTableUsage<String> table = new SingleKeyTableUsage<>(ObjectType.instance, SetFact.toOrderExclSet("sum", "agg"), new Type.Getter<String>() {
                             public Type getType(String key) {
                                 return key.equals("sum") ? ValueExpr.COUNTCLASS : StringClass.getv(false, ExtInt.UNLIMITED);
-                            }});
+                            }
+                        });
 
                         table.writeRows(sql, query, LM.baseClass, DataSession.emptyEnv(OperationOwner.unknown), SessionTable.nonead);
                         
@@ -1927,7 +1940,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
             String className = canonicalName.substring(canonicalName.indexOf('.') + 1);
 
             assert namespaceToModules.get(namespaceName) != null;
-            NamespaceElementFinder<R, P> finder = new NamespaceElementFinder<R, P>(moduleFinder, namespaceToModules.get(namespaceName));
+            NamespaceElementFinder<R, P> finder = new NamespaceElementFinder<>(moduleFinder, namespaceToModules.get(namespaceName));
             List<NamespaceElementFinder.FoundItem<R>> resList = finder.findInNamespace(namespaceName, className, param);
             assert resList.size() <= 1; 
             return resList.size() == 0 ? null : resList.get(0).value;
@@ -2020,7 +2033,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // Набор методов для поиска модуля, в котором находится элемент системы
-    private <T, P> LogicsModule getModuleContainingObject(String namespaceName, String name, P param, ModuleFinder<T, P> finder) {
+    private <C, P> LogicsModule getModuleContainingObject(String namespaceName, String name, P param, ModuleFinder<C, P> finder) {
         List<LogicsModule> modules = namespaceToModules.get(namespaceName);
         if (modules != null) {
             for (LogicsModule module : modules) {
