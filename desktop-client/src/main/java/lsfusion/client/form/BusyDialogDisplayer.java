@@ -88,6 +88,7 @@ public class BusyDialogDisplayer extends TimerTask {
                         }
                     } catch (Throwable e) {
                         stop();
+                        RmiQueue.busyRunning = false;
                     }
                 }
             });
