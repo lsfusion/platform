@@ -14,7 +14,6 @@ import lsfusion.base.col.lru.LRUWSVSMap;
 import lsfusion.server.ServerLoggers;
 import lsfusion.server.Settings;
 import lsfusion.server.classes.IntegerClass;
-import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.query.DistinctKeys;
 import lsfusion.server.data.expr.query.PropStat;
@@ -636,13 +635,28 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
         addIndex(table, getOrderFields(keyFields, order, fields));
     }
 
+    public boolean checkIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, boolean order) throws SQLException {
+        //in Postgres 9.5 will be 'create index if not exists'
+        boolean exists = true;
+        try {
+            executeDDL("SELECT 'public." + getIndexName(table, syntax, getOrderFields(keyFields, order, fields)) + "'::regclass");
+        } catch (SQLException e) {
+            exists = false;
+        }
+        return exists;
+     }
+
     public void addIndex(Table table, ImOrderMap<Field, Boolean> fields) throws SQLException {
         String columns = fields.toString(new GetKeyValue<String, Field, Boolean>() {
             public String getMapValue(Field key, Boolean value) {
                 return key.getName(syntax) + " " + syntax.getOrderDirection(false, value);
             }}, ",");
 
-        executeDDL("CREATE INDEX " + getIndexName(table, syntax, fields) + " ON " + table.getName(syntax) + " (" + columns + ")");
+        long start = System.currentTimeMillis();
+        String nameIndex = getIndexName(table, syntax, fields);
+        logger.info(String.format("Adding index started: %s", nameIndex));
+        executeDDL("CREATE INDEX " + nameIndex + " ON " + table.getName(syntax) + " (" + columns + ")");
+        logger.info(String.format("Adding index: %s, %sms", nameIndex, System.currentTimeMillis() - start));
     }
 
     public void dropIndex(Table table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, boolean order, boolean ifExists) throws SQLException {

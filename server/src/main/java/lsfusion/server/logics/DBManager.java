@@ -130,6 +130,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
     private final Map<ImList<CalcPropertyObjectInterfaceImplement<String>>, Boolean> indexes = new HashMap<>();
 
+    private int dbVersion;
+
     public DBManager() {
         super(DBMANAGER_ORDER);
 
@@ -650,7 +652,7 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             DBVersion newDBVersion = getCurrentDBVersion(oldDBStructure.dbVersion);
             NewDBStructure newDBStructure = new NewDBStructure(newDBVersion);
-            
+            dbVersion = newDBStructure.version;
             checkUniqueDBName(newDBStructure);
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
             newDBStructure.write(outDB);
@@ -924,6 +926,10 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
             hashModules = calculateHashModules();
             return checkHashModulesChanged(oldHashModules, hashModules);
         }
+    }
+
+    public Map<Table, Map<List<Field>, Boolean>> getTablesMap() {
+        return new NewDBStructure(new DBVersion(String.valueOf(dbVersion))).tables;
     }
 
     private void updateAggregationStats(List<AggregateProperty> recalculateProperties, ImMap<String, Integer> tableStats, boolean onlyTable) throws SQLException, SQLHandledException {

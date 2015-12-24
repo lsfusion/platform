@@ -7,6 +7,7 @@ NAMESPACE Service;
 serviceDBAction 'Обслуживание БД' = ACTION CUSTOM 'lsfusion.server.logics.service.ServiceDBActionProperty' ();
 checkAggregationsAction 'Проверить агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckAggregationsActionProperty' ();
 checkClassesAction 'Проверить классы' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckClassesActionProperty' ();
+checkIndicesAction 'Проверить индексы' = ACTION CUSTOM 'lsfusion.server.logics.service.CheckIndicesActionProperty' ();
 recalculateClassesAction 'Пересчитать классы' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateClassesActionProperty' ();
 recalculateAction 'Пересчитать агрегации' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateActionProperty' ();
 recalculateFollowsAction 'Пересчитать следствия и ограничения' = ACTION CUSTOM 'lsfusion.server.logics.service.RecalculateFollowsActionProperty' ();
@@ -261,7 +262,7 @@ FORM admin 'Администрирование'
                  selectedRowBackgroundColor, selectedRowBorderColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor,
                  reportCharWidth, reportRowHeight, reportNotToStretch, 
                  restartServerAction SHOWIF isNotServerRestarting(), cancelRestartServerAction SHOWIF isServerRestarting(), 
-                 checkAggregationsAction, checkClassesAction, checkAggregationsMultiThreadAction, checkClassesMultiThreadAction,
+                 checkAggregationsAction, checkClassesAction, checkIndicesAction, checkAggregationsMultiThreadAction, checkClassesMultiThreadAction,
                  recalculateClassesAction, recalculateAction, recalculateFollowsAction, recalculateStatsAction, overCalculateStatsAction, maxQuantityOverCalculate,
                  threadCountMultiThread, recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
                  recalculateStatsMultiThreadAction, overCalculateStatsMultiThreadAction,
@@ -320,6 +321,7 @@ DESIGN admin {
                 caption = 'Проверка целостности базы данных';
                 MOVE PROPERTY(checkClassesAction());
                 MOVE PROPERTY(checkAggregationsAction());
+                MOVE PROPERTY(checkIndicesAction());
             }            
         }
         NEW multiThread {

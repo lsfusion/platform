@@ -31,10 +31,7 @@ import lsfusion.server.classes.sets.ResolveOrObjectClassSet;
 import lsfusion.server.context.ThreadLocalContext;
 import lsfusion.server.daemons.DiscountCardDaemonTask;
 import lsfusion.server.daemons.ScannerDaemonTask;
-import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.SQLHandledException;
-import lsfusion.server.data.SQLSession;
-import lsfusion.server.data.SessionTable;
+import lsfusion.server.data.*;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.KeyExpr;
 import lsfusion.server.data.expr.ValueExpr;
@@ -1784,6 +1781,21 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (CalcProperty property : getStoredDataProperties(false))
             message += DataSession.checkClasses(property, session, LM.baseClass);
         return message;
+    }
+
+    public void checkIndices(SQLSession session) throws SQLException, SQLHandledException {
+        session.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
+        try {
+            for (Map.Entry<Table, Map<List<Field>, Boolean>> mapIndex : getDbManager().getTablesMap().entrySet())
+                for (Map.Entry<List<Field>, Boolean> index : mapIndex.getValue().entrySet()) {
+                    if (!getDbManager().getThreadLocalSql().checkIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue()))
+                        session.addIndex(mapIndex.getKey(), mapIndex.getKey().keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue());
+                }
+            session.commitTransaction();
+        } catch (Exception e) {
+            session.rollbackTransaction();
+            throw e;
+        }
     }
 
     public void recalculateExclusiveness(final SQLSession session, boolean isolatedTransactions) throws SQLException, SQLHandledException {
