@@ -442,11 +442,9 @@ public class ImplementTable extends GlobalTable { // последний инте
 
             ImSet<PropertyField> propertyFieldSet = props == null ? properties : props.keys();
 
-            if(!onlyTable) {
-                for (PropertyField prop : propertyFieldSet)
-                    if (props != null ? props.containsKey(prop) : !(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat()))
-                        mResult.exclAdd(prop, readCount(session, GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, new KeyExpr("count"))).getWhere()));
-            }
+            for (PropertyField prop : propertyFieldSet)
+                if (props != null ? props.containsKey(prop) : !(prop.type instanceof DataClass && !((DataClass) prop.type).calculateStat()))
+                    mResult.exclAdd(prop, readCount(session, GroupExpr.create(MapFact.singleton(0, join.getExpr(prop)), Where.TRUE, MapFact.singleton(0, new KeyExpr("count"))).getWhere()));
 
             mResult.exclAdd(0, readCount(session, inWhere));
             ImMap<Object, Object> result = mResult.immutable();
@@ -470,13 +468,10 @@ public class ImplementTable extends GlobalTable { // последний инте
             }
 
             // не null значения и разреженность колонок
-            ImMap<Object, Object> notNulls = null;
-            if(!onlyTable) {
-                MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
-                for (PropertyField property : propertyFieldSet)
-                    mNotNulls.exclAdd(property, readCount(session, join.getExpr(property).getWhere()));
-                notNulls = mNotNulls.immutable();
-            }
+            MExclMap<Object, Object> mNotNulls = MapFact.mExclMap();
+            for (PropertyField property : propertyFieldSet)
+                mNotNulls.exclAdd(property, readCount(session, join.getExpr(property).getWhere()));
+            ImMap<Object, Object> notNulls = mNotNulls.immutable();
 
             for (PropertyField property : propertyFieldSet) {
                 DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(getName()), new DataObject(property.getName()));
@@ -493,7 +488,7 @@ public class ImplementTable extends GlobalTable { // последний инте
                     }
                     reflectionLM.tableSIDProperty.change(getName(), session, propertyObject);
                 }
-                if (propertyObject != null && !onlyTable) {
+                if (propertyObject != null) {
                     reflectionLM.quantityProperty.change(BaseUtils.nvl(result.get(property), 0), session, propertyObject);
 
                     Object notNull = BaseUtils.nvl(notNulls.get(property), 0);

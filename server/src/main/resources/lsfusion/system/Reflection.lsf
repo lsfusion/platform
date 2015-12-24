@@ -171,8 +171,8 @@ tableColumnProperty(property) = tableColumnLongSID(tableSIDProperty(property) + 
 migrated = DATA BOOLEAN (); //tempProperty
 onStarted() += ACTION {
     IF NOT migrated() THEN {
-        quantityProperty(p) <- quantityTableColumn(tableColumnProperty(p));
-        notNullQuantityProperty(p) <- notNullQuantityTableColumn(tableColumnProperty(p));
+        quantityProperty(p) <- quantityTableColumn(tableColumnProperty(p)) WHERE quantityTableColumn(tableColumnProperty(p));
+        notNullQuantityProperty(p) <- notNullQuantityTableColumn(tableColumnProperty(p)) WHERE notNullQuantityTableColumn(tableColumnProperty(p));
         migrated() <- TRUE;
     }
 }
