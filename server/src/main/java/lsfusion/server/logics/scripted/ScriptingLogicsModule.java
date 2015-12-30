@@ -1089,7 +1089,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedUProp(Union.EXCLUSIVE, lpParams, "IF");
     }
 
-    public LPWithParams addScriptedCaseUProp(List<LPWithParams> whenProps, List<LPWithParams> thenProps, LPWithParams elseProp, boolean isExclusive) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedCaseUProp(List<LPWithParams> whenProps, List<LPWithParams> thenProps, LPWithParams elseProp, boolean isExclusive) {
         assert whenProps.size() > 0 && whenProps.size() == thenProps.size();
 
         List<LPWithParams> caseParamProps = new ArrayList<>();
@@ -1386,7 +1386,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return res;
     }
 
-    public LP addWatchLocalDataProperty(LP lp, List<ResolveClassSet> signature) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addWatchLocalDataProperty(LP lp, List<ResolveClassSet> signature) {
         assert lp.property instanceof SessionDataProperty;
         addModuleLP(lp);
         propClasses.put(lp, signature);
@@ -1420,19 +1420,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getScriptEditFormAction((CustomClass) cls, scope);
     }
 
-    public LPWithParams addScriptedConfirmProp(LPWithParams msgProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedConfirmProp(LPWithParams msgProp) {
         List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
         LAP asyncLAP = addConfirmAProp("lsFusion", resultParams.toArray());
         return new LPWithParams(asyncLAP, msgProp.usedParams);
     }
 
-    public LPWithParams addScriptedMessageProp(LPWithParams msgProp, boolean noWait) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedMessageProp(LPWithParams msgProp, boolean noWait) {
         List<Object> resultParams = getParamsPlainList(singletonList(msgProp));
         LAP asyncLAP = addMAProp("lsFusion", noWait, resultParams.toArray());
         return new LPWithParams(asyncLAP, msgProp.usedParams);
     }
 
-    public LPWithParams addScriptedAsyncUpdateProp(LPWithParams asyncProp) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedAsyncUpdateProp(LPWithParams asyncProp) {
         List<Object> resultParams = getParamsPlainList(singletonList(asyncProp));
         LAP asyncLAP = addAsyncUpdateAProp(resultParams.toArray());
         return new LPWithParams(asyncLAP, asyncProp.usedParams);
@@ -1470,7 +1470,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(res, property.usedParams);
     }
 
-    public LPWithParams addScriptedDrillDownActionProp(LPWithParams property) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedDrillDownActionProp(LPWithParams property) {
         LAP<?> res = addDrillDownAProp((LCP) property.property);
         return new LPWithParams(res, property.usedParams);
     }
@@ -1599,7 +1599,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultInterfaces;
     }
 
-    public LPWithParams addScriptedIfAProp(LPWithParams condition, LPWithParams trueAction, LPWithParams falseAction) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedIfAProp(LPWithParams condition, LPWithParams trueAction, LPWithParams falseAction) {
         List<LPWithParams> propParams = toList(condition, trueAction);
         if (falseAction != null) {
             propParams.add(falseAction);
@@ -1609,7 +1609,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(result, allParams);
     }
 
-    public LPWithParams addScriptedTryAProp(LPWithParams tryAction, LPWithParams finallyAction) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedTryAProp(LPWithParams tryAction, LPWithParams finallyAction) {
         List<LPWithParams> propParams = new ArrayList<>();
         if(tryAction != null)
             propParams.add(tryAction);
@@ -1741,7 +1741,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getCoeffParamsPlainList(props, usedParams, coeffs);
     }
 
-    private final List<Integer> getParamsAssertList(List<LPWithParams> list) {
+    private List<Integer> getParamsAssertList(List<LPWithParams> list) {
         List<Integer> result = new ArrayList<>();
         for(LPWithParams lp : list) {
             assert lp.property == null;
@@ -2234,7 +2234,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultProp;
     }
 
-    public LPWithParams addScriptedFocusActionProp(PropertyDrawEntity property) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedFocusActionProp(PropertyDrawEntity property) {
         return new LPWithParams(addFocusActionProp(property.getID()), new ArrayList<Integer>());
     }
     
@@ -2462,7 +2462,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(toPropertyLP, getParamsAssertList(toPropertyMapping));
     }
     
-    public void addScriptedIndex(List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedIndex(List<TypedParameter> params, List<LPWithParams> lps) {
         ImOrderSet<String> keyNames = ListFact.fromJavaList(params).toOrderExclSet().mapOrderSetValues(new GetValue<String, TypedParameter>() {
             public String getMapValue(TypedParameter value) {
                 return value.paramName;
@@ -2517,7 +2517,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return window;
     }
 
-    private PanelNavigatorWindow createPanelWindow(String name, String caption, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
+    private PanelNavigatorWindow createPanelWindow(String name, String caption, NavigatorWindowOptions options) {
         Orientation orientation = options.getOrientation();
         DockPosition dockPosition = options.getDockPosition();
 
@@ -2855,7 +2855,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void checkPropertyValue(LP property) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkPropertyValue(LP property) {
         if (property.property instanceof CalcProperty && !((CalcProperty)property.property).checkAlwaysNull(false) && !alwaysNullProperties.containsKey(property.property)) {
             String path = parser.getCurrentScriptPath(getName(), parser.getCurrentParserLineNumber(), "\n\t\t\t");
             String location = path + ":" + (parser.getCurrentParser().input.LT(1).getCharPositionInLine() + 1);

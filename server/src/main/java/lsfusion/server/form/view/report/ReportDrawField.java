@@ -19,6 +19,7 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public String pattern;
 
     public boolean hasColumnGroupObjects;
+    public String columnGroupName;
     public boolean hasCaptionProperty;
     public boolean hasFooterProperty;
 

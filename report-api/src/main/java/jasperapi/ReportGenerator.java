@@ -56,8 +56,8 @@ public class ReportGenerator {
     public static final String TRAY_PROPERTY_NAME = "print-tray";
     public static final String SHEET_COLLATE_PROPERTY_NAME = "sheet-collate";
 
-    public static final Map<String, Sides> SIDES_VALUES = new HashMap<String, Sides>();
-    public static final Map<String, MediaTray> TRAY_VALUES = new HashMap<String, MediaTray>();
+    public static final Map<String, Sides> SIDES_VALUES = new HashMap<>();
+    public static final Map<String, MediaTray> TRAY_VALUES = new HashMap<>();
     
     public final JRSwapFileVirtualizer virtualizer;  
     
@@ -151,8 +151,8 @@ public class ReportGenerator {
     }
 
     private ReportDependentDataSource iterateChildSubreports(String parentID, Map<String, Object> params, JRVirtualizer virtualizer) throws JRException {
-        Map<String, Object> localParams = new HashMap<String, Object>();
-        List<ReportDependentDataSource> childSources = new ArrayList<ReportDependentDataSource>();
+        Map<String, Object> localParams = new HashMap<>();
+        List<ReportDependentDataSource> childSources = new ArrayList<>();
 
         String repeatCountPropName = getRepeatCountPropName(parentID);
         ReportDependentDataSource source = new ReportDependentDataSource(data.get(parentID), childSources, repeatCountPropName);
@@ -174,7 +174,7 @@ public class ReportGenerator {
         ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(array));
         String rootID = objStream.readUTF();
         Map<String, java.util.List<String>> hierarchy = (Map<String, java.util.List<String>>) objStream.readObject();
-        return new Pair<String, Map<String, java.util.List<String>>>(rootID, hierarchy);
+        return new Pair<>(rootID, hierarchy);
     }
 
     private static Map<String, JasperDesign> retrieveReportDesigns(ReportGenerationData generationData) throws IOException, ClassNotFoundException {
@@ -183,11 +183,11 @@ public class ReportGenerator {
     }
 
     //corresponding serialization is in lsfusion.server.remote.FormReportManager.getReportSourcesByteArray()
-    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files) throws IOException, ClassNotFoundException {
+    public static SourcesGenerationOutput retrieveReportSources(ReportGenerationData generationData, Map<ByteArray, String> files) throws IOException {
         SourcesGenerationOutput output = new SourcesGenerationOutput();
         DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(generationData.reportSourceData));
         int size = dataStream.readInt();
-        output.data = new HashMap<String, ClientReportData>();
+        output.data = new HashMap<>();
         for (int i = 0; i < size; i++) {
             String sid = dataStream.readUTF();
             ClientReportData reportData = new ClientReportData(dataStream, files);
@@ -199,13 +199,13 @@ public class ReportGenerator {
         output.compositeFieldsObjects = retrievePropertyObjects(dataStream, compositePropsCnt);
 
         int compositeFieldsCnt = dataStream.readInt();
-        output.compositeObjectValues = new HashMap<String, Map<List<Object>, Object>>();
+        output.compositeObjectValues = new HashMap<>();
         for (int i = 0; i < compositeFieldsCnt; i++) {
             String fieldId = dataStream.readUTF();
-            Map<List<Object>, Object> data = new HashMap<List<Object>, Object>();
+            Map<List<Object>, Object> data = new HashMap<>();
             int valuesCnt = dataStream.readInt();
             for (int j = 0; j < valuesCnt; j++) {
-                List<Object> values = new ArrayList<Object>();
+                List<Object> values = new ArrayList<>();
                 String dataFieldId = fieldId;
                 if (fieldId.endsWith(headerSuffix)) {
                     dataFieldId = fieldId.substring(0, fieldId.length() - headerSuffix.length());
@@ -223,13 +223,13 @@ public class ReportGenerator {
 
         output.compositeColumnObjects = retrievePropertyObjects(dataStream, compositePropsCnt);
 
-        output.compositeColumnValues = new HashMap<String, List<List<Object>>>();
+        output.compositeColumnValues = new HashMap<>();
         for (int i = 0; i < compositePropsCnt; i++) {
             String fieldId = dataStream.readUTF();
-            List<List<Object>> data = new ArrayList<List<Object>>();
+            List<List<Object>> data = new ArrayList<>();
             int valuesCnt = dataStream.readInt();
             for (int j = 0; j < valuesCnt; j++) {
-                List<Object> values = new ArrayList<Object>();
+                List<Object> values = new ArrayList<>();
                 int objCnt = output.compositeColumnObjects.get(fieldId).size();
                 for (int k = 0; k < objCnt; k++) {
                     values.add(BaseUtils.deserializeObject(dataStream));
@@ -247,10 +247,10 @@ public class ReportGenerator {
     }
 
     private static Map<String, List<Integer>> retrievePropertyObjects(DataInputStream stream, int propCnt) throws IOException {
-        Map<String, List<Integer>> objects = new HashMap<String, List<Integer>>();
+        Map<String, List<Integer>> objects = new HashMap<>();
         for (int i = 0; i < propCnt; i++) {
             String fieldId = stream.readUTF();
-            List<Integer> objectsId = new ArrayList<Integer>();
+            List<Integer> objectsId = new ArrayList<>();
             int objectCnt = stream.readInt();
             for (int j = 0; j < objectCnt; j++) {
                 objectsId.add(stream.readInt());
@@ -298,14 +298,27 @@ public class ReportGenerator {
     private void transformBand(JasperDesign design, JRBand band, boolean ignorePagination) {
         if (band instanceof JRDesignBand) {
             JRDesignBand designBand = (JRDesignBand) band;
-            List<JRDesignElement> toDelete = new ArrayList<JRDesignElement>();
-            List<JRDesignElement> toAdd = new ArrayList<JRDesignElement>();
+            List<JRDesignElement> toDelete = new ArrayList<>();
+            List<JRDesignElement> toAdd = new ArrayList<>();
 
+            Map<String, List<JRDesignTextField>> fieldsInGroup = new HashMap<>();
+            for (JRElement element : band.getElements()) {
+                if (element instanceof JRDesignTextField) {
+                    String groupKey = element.getKey();
+                    if (groupKey != null) {
+                        if (!fieldsInGroup.containsKey(groupKey)) {
+                            fieldsInGroup.put(groupKey, new ArrayList<JRDesignTextField>());
+                        }
+                        fieldsInGroup.get(groupKey).add((JRDesignTextField) element);
+                    }
+                }
+            }
+            
             for (JRElement element : band.getElements()) {
                 if (element instanceof JRDesignTextField) {
                     JRDesignTextField textField = (JRDesignTextField) element;
                     if (textField.getExpression() != null) {
-                        transformTextField(design, textField, toAdd, toDelete);
+                        transformTextField(design, textField, fieldsInGroup, toAdd, toDelete);
                     }
                 } else if (ignorePagination && element instanceof JRDesignBreak) {
                     toDelete.add((JRDesignBreak) element);
@@ -320,7 +333,7 @@ public class ReportGenerator {
         }
     }
 
-    private void transformTextField(JasperDesign design, JRDesignTextField textField,
+    private void transformTextField(JasperDesign design, JRDesignTextField textField, Map<String, List<JRDesignTextField>> fieldsInGroup,
                                     List<JRDesignElement> toAdd, List<JRDesignElement> toDelete) {
         String exprText = textField.getExpression().getText();
         String id = null;
@@ -341,28 +354,30 @@ public class ReportGenerator {
                 toDelete.add(textField);
                 JRField removedField = design.removeField(id);
                 int newFieldsCount = compositeColumnValues.get(dataId).size();
-                List<JRDesignTextField> subFields = makeFieldPartition(textField, newFieldsCount);
+                if (newFieldsCount > 0) {
+                    List<JRDesignTextField> subFields = makeFieldPartition(textField, newFieldsCount, fieldsInGroup);
 
-                for (int i = 0; i < newFieldsCount; i++) {
-                    JRDesignExpression subExpr = new JRDesignExpression();
-                    if (exprText.startsWith("\"")) {  // caption без property
-                        subExpr.setText(exprText);
-                    } else {
-                        String fieldName = id + ClientReportData.beginMarker + i + ClientReportData.endMarker;
-                        subExpr.setText("$F{" + fieldName + "}");
-                        JRDesignField designField = new JRDesignField();
-                        designField.setName(fieldName);
-                        designField.setValueClassName(removedField.getValueClassName());
+                    for (int i = 0; i < newFieldsCount; i++) {
+                        JRDesignExpression subExpr = new JRDesignExpression();
+                        if (exprText.startsWith("\"")) {  // caption без property
+                            subExpr.setText(exprText);
+                        } else {
+                            String fieldName = id + ClientReportData.beginMarker + i + ClientReportData.endMarker;
+                            subExpr.setText("$F{" + fieldName + "}");
+                            JRDesignField designField = new JRDesignField();
+                            designField.setName(fieldName);
+                            designField.setValueClassName(removedField.getValueClassName());
 
-                        try {
-                            design.addField(designField);
-                        } catch (JRException e) {
-                            throw new RuntimeException(e);
+                            try {
+                                design.addField(designField);
+                            } catch (JRException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
+                        subFields.get(i).setExpression(subExpr);
                     }
-                    subFields.get(i).setExpression(subExpr);
+                    toAdd.addAll(subFields);
                 }
-                toAdd.addAll(subFields);
             }
         }
         if (textField.getPattern() == null) {
@@ -382,29 +397,56 @@ public class ReportGenerator {
         }
     }
 
-    // Разбивает поле на cnt полей с примерно одинаковой шириной
-    private static List<JRDesignTextField> makeFieldPartition(JRDesignTextField textField, int cnt) {
-        List<JRDesignTextField> res = new ArrayList<JRDesignTextField>();
-        int widthLeft = textField.getWidth();
-        int x = textField.getX();
-        int fieldsLeft = cnt;
-
-        for (int i = 0; i < cnt; i++) {
-            JRDesignTextField subField = (JRDesignTextField) textField.clone();
-
-            int subWidth = widthLeft / fieldsLeft;
-            subField.setWidth(subWidth);
-            subField.setX(x);
-
-            x += subWidth;
-            widthLeft -= subWidth;
-            --fieldsLeft;
-
-            res.add(subField);
+    private static Rectangle getBoundRectangle(JRDesignTextField textField, Map<String, List<JRDesignTextField>> fields) {
+        if (!fields.containsKey(textField.getKey())) {
+            return new Rectangle(textField.getX(), textField.getY(), textField.getWidth(), textField.getHeight());
+        } else {
+            boolean first = true;
+            int minX = 0, minY = 0 , maxX = 0, maxY = 0;
+            for (JRDesignTextField field : fields.get(textField.getKey())) {
+                if (first) {
+                    minX = field.getX(); minY = field.getY();
+                    maxX = field.getX() + field.getWidth(); maxY = field.getY() + field.getHeight();
+                    first = false;
+                } else {
+                    minX = Math.min(minX, field.getX());
+                    maxX = Math.max(maxX, field.getX() + field.getWidth());
+                    minY = Math.min(minY, field.getY());
+                    maxY = Math.max(maxY, field.getY() + field.getHeight());
+                }
+            }
+            return new Rectangle(minX, minY, maxX - minX, maxY - minY);
         }
-        return res;
     }
 
+    // Разбивает поле на cnt полей с примерно одинаковой шириной
+    private static List<JRDesignTextField> makeFieldPartition(JRDesignTextField textField, int cnt, Map<String, List<JRDesignTextField>> fields) {
+        List<JRDesignTextField> res = new ArrayList<>();
+
+        Rectangle boundRect = getBoundRectangle(textField, fields);
+        int baseX = (int) boundRect.getX();
+        
+        int xShift = (textField.getX() - baseX) / cnt;
+        int xEndShift = (textField.getX() + textField.getWidth() - baseX) / cnt;
+        int subWidth = (int)boundRect.getWidth() / cnt;
+        boolean rightmost = (textField.getX() + textField.getWidth() == boundRect.getX() + boundRect.getWidth());
+        
+        for (int i = 0; i < cnt; ++i) {
+            JRDesignTextField subField = (JRDesignTextField) textField.clone();
+            subField.setX(baseX + xShift);
+            int rightBound = (i+1 < cnt ? baseX + subWidth : (int)boundRect.getX() + (int)boundRect.getWidth());
+            if (rightmost) {
+                subField.setWidth(rightBound - subField.getX());
+            } else {
+                subField.setWidth(xEndShift - xShift);
+            }
+            res.add(subField);
+            baseX += subWidth;
+        }
+        
+        return res;
+    }
+    
     public static void exportToExcelAndOpen(ReportGenerationData generationData, FormPrintType type) {
         try {
             assert type.isExcel();
@@ -476,6 +518,7 @@ public class ReportGenerator {
             File tempFile = type == FormPrintType.XLS ? exportToXls(generationData) : exportToXlsx(generationData);
             FileInputStream fis = new FileInputStream(tempFile);
             byte[] array = new byte[(int) tempFile.length()];
+            //noinspection ResultOfMethodCallIgnored
             fis.read(array);
             JRVirtualizationHelper.clearThreadVirtualizer();
             return array;

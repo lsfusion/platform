@@ -42,23 +42,23 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     // Полная иерархия формы
     private GroupObjectHierarchy.ReportHierarchy fullFormHierarchy;
     private FormInstance<T> form;
-    private Map<String, ReportData> sources = new HashMap<String, ReportData>();
+    private Map<String, ReportData> sources = new HashMap<>();
     // ID группы при отчете для одной таблицы
     private final Integer groupId;
     private FormUserPreferences userPreferences;
     // ID тех групп, которые идут в отчет таблицей значений.
     private final Set<Integer> gridGroupsId;
-    private Map<Integer, GroupObjectInstance> idToInstance = new HashMap<Integer, GroupObjectInstance>();
+    private Map<Integer, GroupObjectInstance> idToInstance = new HashMap<>();
 
     public static class ColumnGroupCaptionsData {
         // объекты, от которых зависит свойство
-        public final Map<String, List<ObjectInstance>> propertyObjects = new HashMap<String, List<ObjectInstance>>();
+        public final Map<String, List<ObjectInstance>> propertyObjects = new HashMap<>();
         // объекты, идущие в колонки
-        public final Map<String, List<ObjectInstance>> columnObjects = new HashMap<String, List<ObjectInstance>>();
+        public final Map<String, List<ObjectInstance>> columnObjects = new HashMap<>();
         // таблицы значений свойств, ключ в таблице - набор значений объектов из propertyObjects
-        public final Map<String, Map<List<Object>, Object>> data = new HashMap<String, Map<List<Object>, Object>>();
+        public final Map<String, Map<List<Object>, Object>> data = new HashMap<>();
         // наборы различных значений объектов из columnObjects, идущих в колонки
-        public final Map<String, LinkedHashSet<List<Object>>> columnData = new HashMap<String, LinkedHashSet<List<Object>>>();
+        public final Map<String, LinkedHashSet<List<Object>>> columnData = new HashMap<>();
     }
     
     public ReportSourceGenerator(FormInstance<T> form, GroupObjectHierarchy.ReportHierarchy hierarchy,
@@ -85,7 +85,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
         QueryBuilder<ObjectInstance, Pair<Object, PropertyType>> newQuery;
         if (groupId == null) {
-            newQuery = new QueryBuilder<ObjectInstance, Pair<Object, PropertyType>>(GroupObjectInstance.getObjects(groups.getSet()));
+            newQuery = new QueryBuilder<>(GroupObjectInstance.getObjects(groups.getSet()));
         } else {
             GroupObjectInstance ourGroup = null;
             for (GroupObjectInstance group : groups) {
@@ -95,7 +95,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 }
             }
             assert ourGroup != null;
-            newQuery = new QueryBuilder<ObjectInstance, Pair<Object, PropertyType>>(ourGroup.objects);
+            newQuery = new QueryBuilder<>(ourGroup.objects);
         }
         MExclMap<Pair<Object, PropertyType>, Type> mTypes = MapFact.mExclMap();
         MOrderExclMap<Pair<Object, PropertyType>, Boolean> mOrders = MapFact.mOrderExclMap();
@@ -163,21 +163,21 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
             ImOrderSet<GroupObjectInstance> groups = parentGroups.mergeOrder(mLocalGroups.immutableOrder()); // тут хрен поймешь excl или нет
 
-            Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders = new Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>>();
-            Result<ImMap<Pair<Object, PropertyType>, Type>> propTypes = new Result<ImMap<Pair<Object, PropertyType>, Type>>();
+            Result<ImOrderMap<Pair<Object, PropertyType>, Boolean>> orders = new Result<>();
+            Result<ImMap<Pair<Object, PropertyType>, Type>> propTypes = new Result<>();
             ImMap<ObjectInstance, Type> keyTypes = GroupObjectInstance.getObjects(groups.getSet()).mapValues(new GetValue<Type, ObjectInstance>() {
                 public Type getMapValue(ObjectInstance value) {
                     return value.getType();
                 }});
 
             Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentTable, orders, propTypes);
-            SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>>(
+            SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<>(
                     form.session.sql, query, form.BL.LM.baseClass, form.getQueryEnv(), keyTypes, propTypes.result);
 
             try {
                 ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(form, orders.result);
 
-                List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<Pair<String, PropertyReaderInstance>>();
+                List<Pair<String, PropertyReaderInstance>> propertyList = new ArrayList<>();
                 for(PropertyDrawInstance property : filterProperties(groups.getSet())) {
                     propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property));
                     if (property.propertyCaption != null) {
@@ -194,7 +194,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 for (int i=0,size=resultData.size();i<size;i++) {
                     ImMap<Pair<Object, PropertyType>, Object> resultValue = resultData.getValue(i);
 
-                    List<Object> propertyValues = new ArrayList<Object>();
+                    List<Object> propertyValues = new ArrayList<>();
                     for(PropertyDrawInstance property : filterProperties(groups.getSet())) {
                         propertyValues.add(resultValue.get(new Pair<Object, PropertyType>(property, PropertyType.PLAIN)));
                         if (property.propertyCaption != null) {
@@ -232,7 +232,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     } 
     
     private List<PropertyDrawInstance> filterProperties(ImSet<GroupObjectInstance> filterGroups) {
-        List<PropertyDrawInstance> resultList = new ArrayList<PropertyDrawInstance>();
+        List<PropertyDrawInstance> resultList = new ArrayList<>();
         for (PropertyDrawInstance property : form.properties) {
             GroupObjectInstance applyGroup = property.propertyObject.getApplyObject();
             // Отдельно рассматриваем случай свойства без параметров
@@ -268,15 +268,15 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
                 ImCol<ObjectInstance> propObjects = property.propertyObject.getObjectInstances();
 
-                Map<List<Object>, Object> data = new HashMap<List<Object>, Object>();
-                Map<List<Object>, Object> captionData = new HashMap<List<Object>, Object>();
-                Map<List<Object>, Object> footerData = new HashMap<List<Object>, Object>();
-                LinkedHashSet<List<Object>> columnData = new LinkedHashSet<List<Object>>();
+                Map<List<Object>, Object> data = new HashMap<>();
+                Map<List<Object>, Object> captionData = new HashMap<>();
+                Map<List<Object>, Object> footerData = new HashMap<>();
+                LinkedHashSet<List<Object>> columnData = new LinkedHashSet<>();
 
                 for (int i=0,size=qResult.size();i<size;i++) {
                     ImMap<ObjectInstance, Object> key = qResult.getKey(i); ImMap<Object, Object> value = qResult.getValue(i);
 
-                    List<Object> values = new ArrayList<Object>();
+                    List<Object> values = new ArrayList<>();
                     for (ObjectInstance object : propObjects) {
                         values.add(key.get(object));
                     }
@@ -288,7 +288,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                         footerData.put(values, value.get(property.footerReader));
                     }
 
-                    List<Object> columnValues = new ArrayList<Object>();
+                    List<Object> columnValues = new ArrayList<>();
                     for (ObjectInstance object : GroupObjectInstance.getOrderObjects(columnGroupObjects)) {
                         columnValues.add(key.get(object));
                     }
@@ -312,7 +312,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
     private ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> getColumnPropQueryResult(ImOrderSet<GroupObjectInstance> groups, PropertyDrawInstance<?> property) throws SQLException, SQLHandledException {
         ImSet<ObjectInstance> objects = GroupObjectInstance.getObjects(groups.getSet());
-        QueryBuilder<ObjectInstance, Object> query = new QueryBuilder<ObjectInstance, Object>(objects);
+        QueryBuilder<ObjectInstance, Object> query = new QueryBuilder<>(objects);
         MOrderMap<Object, Boolean> mQueryOrders = MapFact.mOrderMap();
 
         Modifier modifier = form.getModifier();
@@ -345,7 +345,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     }
 
     private Set<GroupObjectInstance> getPropertyDependencies(PropertyDrawInstance<?> property) {
-        Set<GroupObjectInstance> groups = new HashSet<GroupObjectInstance>();
+        Set<GroupObjectInstance> groups = new HashSet<>();
         for (ObjectInstance object : property.propertyObject.getObjectInstances()) {
             groups.add(object.groupTo);
         }

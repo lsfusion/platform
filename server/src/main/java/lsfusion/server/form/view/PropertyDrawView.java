@@ -131,6 +131,9 @@ public class PropertyDrawView extends ComponentView {
         }
 
         reportField.hasColumnGroupObjects = !entity.getColumnGroupObjects().isEmpty();
+        if (reportField.hasColumnGroupObjects) {
+            reportField.columnGroupName = entity.columnsName;
+        }
         reportField.hasCaptionProperty = (entity.propertyCaption != null);
         reportField.hasFooterProperty = (entity.propertyFooter != null);
 

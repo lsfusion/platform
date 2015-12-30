@@ -321,12 +321,14 @@ public class ReportDesignGenerator {
         JRDesignExpression captionExpr = ReportUtils.createExpression(designCaptionText, reportField.captionClass);
         JRDesignTextField captionField = ReportUtils.createTextField(captionStyle, captionExpr, toStretch);
         captionField.setHorizontalAlignment(HorizontalAlignEnum.CENTER);
+        captionField.setKey(reportField.columnGroupName == null ? null : reportField.columnGroupName + ".caption");
 
         JRDesignExpression dataExpr = ReportUtils.createExpression(ReportUtils.createFieldString(reportField.sID), reportField.valueClass);
         JRDesignTextField dataField = ReportUtils.createTextField(style, dataExpr, toStretch);
         dataField.setHorizontalAlignment(HorizontalAlignEnum.getByValue(reportField.alignment));
         dataField.setPositionType(PositionTypeEnum.FLOAT);
         dataField.setBlankWhenNull(true);
+        dataField.setKey(reportField.columnGroupName);
 
         layout.add(reportField, captionField, dataField);
     }
