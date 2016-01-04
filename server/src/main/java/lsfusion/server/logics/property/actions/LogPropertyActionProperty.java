@@ -14,8 +14,7 @@ import lsfusion.server.logics.property.ExecutionContext;
 import lsfusion.server.logics.property.PropertyInterface;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class LogPropertyActionProperty<P extends PropertyInterface> extends SystemExplicitActionProperty {
 
@@ -66,6 +65,31 @@ public class LogPropertyActionProperty<P extends PropertyInterface> extends Syst
                     for (int j = 0; j < formRows.size(); j++)
                         data.get(j).add(BaseUtils.toCaption(formRows.get(j).values.get(property)));
                 }
+
+                if (!data.isEmpty()) {
+                    Set<Integer> duplicateColumns = new HashSet<>();
+                    for (int j = data.get(0).size() - 1; j > 0; j--)
+                        duplicateColumns.add(j);
+                    for (List<String> row : data) {
+                        for (int j1 = row.size() - 1; j1 > 0; j1--) {
+                            boolean duplicate = false;
+                            for (int j2 = j1 - 1; j2 >= 0; j2--) {
+                                if (j1 != j2 && row.get(j1).compareTo(row.get(j2)) == 0)
+                                    duplicate = true;
+                            }
+                            if (!duplicate)
+                                duplicateColumns.remove(j1);
+                        }
+                    }
+                    List<Integer> duplicateColumnsList = new ArrayList(duplicateColumns);
+                    Collections.sort(duplicateColumnsList, Collections.reverseOrder());
+                    for (int index : duplicateColumnsList) {
+                        for (List<String> row : data)
+                            row.remove(index);
+                        titleRow.remove(index);
+                    }
+                }
+
             }
     /*        for (FormRow formRow : formRows) {
                 ImMap<ImSet<ObjectInstance>, ImSet<PropertyDrawInstance>> groupRows = formRow.values.keys().group(new BaseUtils.Group<ImSet<ObjectInstance>, PropertyDrawInstance>() {
