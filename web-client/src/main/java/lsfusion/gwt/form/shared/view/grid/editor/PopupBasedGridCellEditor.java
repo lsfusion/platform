@@ -65,8 +65,8 @@ public abstract class PopupBasedGridCellEditor extends AbstractGridCellEditor {
                 @Override
                 public void setPosition(int offsetWidth, int offsetHeight) {
                     int wndHeight = Window.getClientHeight();
-                    int wndWidth =  Window.getClientHeight();
-                    int left = max(0, min(parent.getAbsoluteLeft(), wndWidth - offsetHeight));
+                    int wndWidth =  Window.getClientWidth();
+                    int left = max(0, min(parent.getAbsoluteLeft(), wndWidth - offsetWidth));
                     int top = max(0, min(parent.getAbsoluteBottom(), wndHeight - offsetHeight));
 
                     popup.setPopupPosition(left, top);
