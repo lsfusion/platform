@@ -1340,7 +1340,7 @@ public class Settings {
         this.explainThreshold = explainThreshold;
     }
 
-    private boolean useSafeDivision = false;
+    private boolean useSafeDivision = true;
 
     public boolean isUseSafeDivision() {
         return useSafeDivision;
