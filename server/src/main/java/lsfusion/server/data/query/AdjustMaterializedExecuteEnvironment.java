@@ -533,11 +533,12 @@ public class AdjustMaterializedExecuteEnvironment extends DynamicExecuteEnvironm
                 return;
 
             inTransaction = session.isInTransaction();
-            secondsFromTransactStart = session.getSecondsFromTransactStart();
-
             setTimeout = step.getTimeout();
-            if(setTimeout > 0) { // если есть транзакция, увеличиваем timeout до времени транзакции
-                setTimeout = BaseUtils.max(setTimeout, secondsFromTransactStart);
+
+            if(session.isInTransaction() && session.syntax.hasTransactionSavepointProblem() && !Settings.get().isUseSavepointsForExceptions()) { // если нет savepoint'ов увеличиваем до времени с начала транзакции
+                secondsFromTransactStart = session.getSecondsFromTransactStart();
+                if (setTimeout > 0) // если есть транзакция, увеличиваем timeout до времени транзакции
+                    setTimeout = BaseUtils.max(setTimeout, secondsFromTransactStart);
             }
 
             if(session.syntax.supportsDisableNestedLoop()) {

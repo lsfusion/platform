@@ -382,10 +382,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> {
     private Integer prevIsolation;
     private long transStartTime;
     public int getSecondsFromTransactStart() {
-        if(isInTransaction())
-            return (int) ((System.currentTimeMillis() - transStartTime)/1000);
-        else
-            return 0;
+        assert isInTransaction();
+        return (int) ((System.currentTimeMillis() - transStartTime)/1000);
     }
 
     public void startFakeTransaction(OperationOwner owner) throws SQLException, SQLHandledException {
