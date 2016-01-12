@@ -1,6 +1,7 @@
 package lsfusion.client;
 
 import com.jhlabs.image.BlurFilter;
+import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.interop.form.RemoteFormInterface;
 import lsfusion.interop.form.ReportGenerationData;
 import lsfusion.interop.navigator.RemoteNavigatorInterface;
@@ -146,5 +147,5 @@ public abstract class MainFrame extends JFrame {
     public abstract Integer runReport(String formSID, boolean isModal, ReportGenerationData generationData) throws IOException, ClassNotFoundException;
     public abstract Integer runReport(boolean isModal, ReportGenerationData generationData, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException;
 
-    public abstract void runForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener);
+    public abstract ClientFormDockable runForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener);
 }

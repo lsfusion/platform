@@ -209,7 +209,7 @@ class BusyDialog extends JDialog {
         Object[] lines = input.toArray();
 
         if(devMode)
-            setDevModeStackMessage(lines);
+            setStackMessageDevMode(lines);
         else
             setStackMessage(lines);
 
@@ -223,7 +223,7 @@ class BusyDialog extends JDialog {
         return value;
     }
 
-    public void setDevModeStackMessage(Object[] lines) {
+    public void setStackMessageDevMode(Object[] lines) {
 
         if (prevLines == null)
             prevLines = new Object[lines.length];

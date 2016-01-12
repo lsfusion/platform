@@ -406,6 +406,20 @@ textarea {
     word-wrap: break-word;
 }
 
+.busyDialog {
+    text-align: center;
+}
+
+.stackMessage {
+    margin: 5px 5px 5px 5px;
+    border: 1px solid gray;
+    padding: 5px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    /*!* Умный разбор длинных строк без пробелов по словам *!*/
+    word-break: break-word;
+}
+
 /* ------------ Table user preferences  ------------ */
 .dualListContainer {
     border-spacing: 3px;

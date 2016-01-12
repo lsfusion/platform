@@ -14,6 +14,8 @@ import org.jdesktop.jxlayer.plaf.effect.BufferedImageOpEffect;
 import org.jdesktop.jxlayer.plaf.ext.LockableUI;
 
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 // уничтожаемые формы
 abstract class ClientDockable extends DefaultMultipleCDockable {
@@ -24,6 +26,7 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
     private LockableUI contentLayerUI;
     private JXLayer contentLayer;
     private Component defaultComponent;
+    private ClientFormDockable blockingForm;
 
     private final CustomCloseAction closeAction;
 
@@ -81,14 +84,28 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
     }
 
     protected void setContent(String caption, Container contentContainer) {
+        setContent(caption, null, contentContainer);
+    }
+
+    protected void setContent(String caption, String tooltip, Container contentContainer) {
         this.contentContainer = contentContainer;
         this.contentLayerUI = new ShadowLayerUI();
         this.contentLayer = new JXLayer(contentContainer, contentLayerUI);
         contentLayer.setFocusable(false);
+        contentLayer.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                blockingForm.toFront();
+                blockingForm.requestFocusInWindow();
+            }
+        });
 
         getContentPane().add(contentLayer);
 
         setTitleText(caption);
+        if(tooltip != null)
+            setTitleToolTip(tooltip);
     }
 
     public void blockView() {
@@ -121,6 +138,10 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
         if (defaultComponent != null) {
             defaultComponent.requestFocusInWindow();
         }
+    }
+
+    public void setBlockingForm(ClientFormDockable blockingForm) {
+        this.blockingForm = blockingForm;
     }
 
     private final static class ShadowLayerUI extends LockableUI {

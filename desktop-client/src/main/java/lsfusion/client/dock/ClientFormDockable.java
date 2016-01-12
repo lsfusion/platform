@@ -42,9 +42,14 @@ public class ClientFormDockable extends ClientDockable {
             public void unblockView() {
                 ClientFormDockable.this.unblockView();
             }
+
+            @Override
+            public void setBlockingForm(ClientFormDockable blockingForm) {
+                ClientFormDockable.this.setBlockingForm(blockingForm);
+            }
         };
 
-        setContent(clientForm.getCaption(), clientForm.getLayout());
+        setContent(clientForm.getCaption(), clientForm.getTooltip(), clientForm.getLayout());
     }
 
     @Override

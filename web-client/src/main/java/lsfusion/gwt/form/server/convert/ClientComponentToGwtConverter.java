@@ -271,6 +271,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
         propertyDraw.creationScript = clientPropertyDraw.creationScript;
         propertyDraw.creationPath = clientPropertyDraw.creationPath;
+        propertyDraw.formPath = clientPropertyDraw.formPath;
 
         propertyDraw.groupObject = convertOrCast(clientPropertyDraw.groupObject);
         if (!clientPropertyDraw.columnGroupObjects.isEmpty()) {
@@ -497,6 +498,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         this.form = form;
 
         form.caption = clientForm.caption;
+        form.tooltip = clientForm.getTooltip();
         form.autoRefresh = clientForm.autoRefresh;
         form.mainContainer = convertOrCast(clientForm.mainContainer);
 

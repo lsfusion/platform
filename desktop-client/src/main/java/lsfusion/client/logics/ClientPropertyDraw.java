@@ -110,6 +110,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String creationScript;
     public String creationPath;
+    public String formPath;
     
     public ColorPreferences colorPreferences;
     
@@ -414,6 +415,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         creationScript = pool.readString(inStream);
         creationPath = pool.readString(inStream);
+        formPath = pool.readString(inStream);
 
         String mouseBinding = pool.readString(inStream);
         if (mouseBinding != null) {
@@ -482,7 +484,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                     "<b>" + getString("logics.objects") + ":</b> %5$s<br>" +
                     "<b>" + getString("logics.signature") + ":</b> %7$s <i>%3$s</i> (%6$s)<br>" +
                     "<b>" + getString("logics.script") + ":</b> %8$s<br>" +
-                    "<b>" + getString("logics.scriptpath") + ":</b> %9$s" +
+                    "<b>" + getString("logics.scriptpath") + ":</b> %9$s<br>" +
+                    "<b>" + getString("logics.formpath") + ":</b> %10$s" +
                     "</html>";
 
     public static final String EDIT_KEY_TOOL_TIP_FORMAT =
@@ -503,7 +506,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
             String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
             String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
-            return String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT, propCaption, editKeyText, sid, tableName, ifaceObjects, ifaceClasses, returnClass, script, scriptPath);
+            String scriptFormPath = formPath != null ? formPath.replace("\n", "<br>") : "";
+            return String.format(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
+                    propCaption, editKeyText, sid, tableName, ifaceObjects, ifaceClasses, returnClass, script, scriptPath, scriptFormPath);
         }
     }
 

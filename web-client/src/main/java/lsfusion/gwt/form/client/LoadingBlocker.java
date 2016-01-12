@@ -13,7 +13,7 @@ import lsfusion.gwt.base.shared.GwtSharedUtils;
 import lsfusion.gwt.form.client.form.ServerMessageProvider;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
-public class LoadingBlocker {
+public class LoadingBlocker extends LoadingManager {
     public static final int GLASS_SCREEN_SHOW_DELAY = 500;
     public static final int MESSAGE_UPDATE_PERIOD = 1000;
 

@@ -12,7 +12,7 @@ public interface FormsController {
 
     void openForm(String canonicalName, String formSID, GModalityType modalityType, NativeEvent nativeEvent);
 
-    void openForm(GForm form, GModalityType modalityType, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler);
+    Widget openForm(GForm form, GModalityType modalityType, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler);
 
     void select(Widget tabContent);
 

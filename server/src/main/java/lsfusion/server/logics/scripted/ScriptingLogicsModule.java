@@ -513,8 +513,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new ScriptingFormView(view, this);
     }
     
-    public void addScriptedForm(ScriptingFormEntity form) {
-        addFormEntity(form.getForm()).finalizeInit(getVersion());
+    public void addScriptedForm(ScriptingFormEntity form, int lineNumber) {
+        FormEntity formEntity = addFormEntity(form.getForm());
+        formEntity.creationPath = parser.getCurrentScriptPath(getName(), lineNumber, "\n");
+        formEntity.finalizeInit(getVersion());
     }
 
     public ScriptingFormEntity getFormForExtending(String name) throws ScriptingErrorLog.SemanticErrorException {

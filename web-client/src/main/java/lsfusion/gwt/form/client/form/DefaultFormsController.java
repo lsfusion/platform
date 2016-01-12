@@ -107,21 +107,21 @@ public abstract class DefaultFormsController implements FormsController {
         }
     }
 
-    public void openForm(GForm form, GModalityType modalityType, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {
-        openFormAfterFontsInitialization(null, form, modalityType, initFilterEvent, hiddenHandler);
+    public Widget openForm(GForm form, GModalityType modalityType, EditEvent initFilterEvent, WindowHiddenHandler hiddenHandler) {
+        return openFormAfterFontsInitialization(null, form, modalityType, initFilterEvent, hiddenHandler);
     }
 
-    private void openFormAfterFontsInitialization(final FormDockable dockable, final GForm form, final GModalityType modalityType, final EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
+    private Widget openFormAfterFontsInitialization(final FormDockable dockable, final GForm form, final GModalityType modalityType, final EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
         // перед открытием формы необходимо рассчитать размеры используемых шрифтов
-        GFontMetrics.calculateFontMetrics(form.usedFonts, new GFontMetrics.MetricsCallback() {
+        return GFontMetrics.calculateFontMetrics(form.usedFonts, new GFontMetrics.MetricsCallback() {
             @Override
-            public void metricsCalculated() {
-                openForm(dockable, form, modalityType, initFilterEvent, hiddenHandler);
+            public Widget metricsCalculated() {
+                return openForm(dockable, form, modalityType, initFilterEvent, hiddenHandler);
             }
         });
     }
 
-    private void openForm(FormDockable dockable, final GForm form, GModalityType modalityType, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
+    private Widget openForm(FormDockable dockable, final GForm form, GModalityType modalityType, EditEvent initFilterEvent, final WindowHiddenHandler hiddenHandler) {
         if (!GWT.isScript()) {
             form.caption += "(" + form.sID + ")";
         }
@@ -145,6 +145,11 @@ public abstract class DefaultFormsController implements FormsController {
                 }
             });
         }
+        return dockable.getContentWidget();
+    }
+
+    public void selectTab(Widget widget) {
+        tabsPanel.selectTab(widget);
     }
 
     private void showModalForm(GForm form, GModalityType modality, EditEvent initFilterEvent, final WindowHiddenHandler handler) {

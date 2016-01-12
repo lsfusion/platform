@@ -17,6 +17,7 @@ public class GForm implements Serializable {
     public String canonicalName;
 
     public String caption;
+    public String tooltip;
 
     public int autoRefresh;
 

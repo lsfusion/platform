@@ -48,6 +48,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     public KeyStroke keyStroke = null;
 
     public String caption = "";
+    public String canonicalName = "";
+    public String creationPath = "";
 
     public Integer overridePageWidth;
 
@@ -872,6 +874,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);
+        pool.writeString(outStream, canonicalName);
+        pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
         outStream.writeInt(autoRefresh);
     }
@@ -893,6 +897,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
         keyStroke = pool.readObject(inStream);
         caption = pool.readString(inStream);
+        canonicalName = pool.readString(inStream);
+        creationPath = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
         autoRefresh = inStream.readInt();
 

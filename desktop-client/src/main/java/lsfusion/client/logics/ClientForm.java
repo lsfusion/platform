@@ -28,6 +28,8 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
     public KeyStroke keyStroke = null;
 
     public String caption = "";
+    public String canonicalName = "";
+    public String creationPath = "";
 
     public int autoRefresh = 0;
 
@@ -160,6 +162,14 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
         return caption;
     }
 
+    public String getTooltip() {
+        return String.format("<html><body bgcolor=#FFFFE1>" +
+                "<b>%s</b><br/><hr>" +
+                "<b>sID:</b> %s<br/>" +
+                "<b>Путь:</b> %s<br/>" +
+                "</body></html>", caption, canonicalName, creationPath);
+    }
+
     public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders(ClientGroupObject group) {
         OrderedMap<ClientPropertyDraw, Boolean> result = new OrderedMap<ClientPropertyDraw, Boolean>();
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : defaultOrders.entrySet()) {
@@ -185,6 +195,8 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
 
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);
+        pool.writeString(outStream, canonicalName);
+        pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
         outStream.writeInt(autoRefresh);
     }
@@ -205,6 +217,8 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
 
         keyStroke = pool.readObject(inStream);
         caption = pool.readString(inStream);
+        canonicalName = pool.readString(inStream);
+        creationPath = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
         autoRefresh = inStream.readInt();
     }

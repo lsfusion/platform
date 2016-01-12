@@ -1,9 +1,11 @@
 package lsfusion.gwt.form.server.convert;
 
+import lsfusion.base.ProgressBar;
 import lsfusion.client.logics.ClientFormChanges;
 import lsfusion.client.logics.classes.ClientObjectClass;
 import lsfusion.client.logics.classes.ClientTypeSerializer;
 import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
+import lsfusion.gwt.form.client.window.GProgressBar;
 import lsfusion.gwt.form.server.FileUtils;
 import lsfusion.gwt.form.server.FormDispatchServlet;
 import lsfusion.gwt.form.server.FormSessionObject;
@@ -185,5 +187,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             filePaths.add(FileUtils.saveFile(fileName, action.files.get(fileName)));
         }
         return new GExportFileAction(filePaths);
+    }
+
+    @Converter(from = ProgressBar.class)
+    public GProgressBar convertProgressBar(ProgressBar progressBar) {
+        return new GProgressBar(progressBar.message, progressBar.progress, progressBar.total, progressBar.params);
     }
 }

@@ -347,10 +347,11 @@ scope {
 }
 @init {
 	boolean initialDeclaration = false;
+	int lineNumber = self.getParser().getCurrentParserLineNumber();
 }
 @after {
 	if (inPropParseState() && initialDeclaration) {
-		self.addScriptedForm($formStatement::form);
+		self.addScriptedForm($formStatement::form, lineNumber);
 	}
 }
 	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
@@ -569,10 +570,11 @@ formPropertiesList
 	List<List<String>> mapping = new ArrayList<List<String>>();
 	FormPropertyOptions commonOptions = null;
 	List<FormPropertyOptions> options = new ArrayList<FormPropertyOptions>();
+	int lineNumber = self.getParser().getCurrentParserLineNumber();
 }
 @after {
 	if (inPropParseState()) {
-		$formStatement::form.addScriptedPropertyDraws(properties, aliases, mapping, commonOptions, options, self.getVersion());
+		$formStatement::form.addScriptedPropertyDraws(properties, aliases, mapping, commonOptions, options, self.getVersion(), lineNumber);
 	}
 }
 	:	'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList
@@ -2668,7 +2670,7 @@ constraintStatement
 		('CHECKED' { checked = true; }
 			('BY' list=nonEmptyPropertyUsageList { propUsages = $list.propUsages; })? 
 		)?
-		'MESSAGE' message=propertyExpression[new ArrayList<TypedParameter>(), true]
+		'MESSAGE' message=propertyExpression[new ArrayList<TypedParameter>(), false]
 		';'
 	;
 

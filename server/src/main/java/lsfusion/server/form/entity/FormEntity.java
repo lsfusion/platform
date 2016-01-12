@@ -46,10 +46,7 @@ import org.apache.log4j.Logger;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static lsfusion.server.logics.ServerResourceBundle.getString;
 
@@ -74,6 +71,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public PropertyDrawEntity cancelActionPropertyDraw;
     public PropertyDrawEntity okActionPropertyDraw;
     public PropertyDrawEntity closeActionPropertyDraw;
+
+    public String creationPath;
 
     public NFMapList<Object, ActionPropertyObjectEntity<?>> eventActions = NFFact.mapList();
     public ImMap<Object, ImList<ActionPropertyObjectEntity<?>>> getEventActions() {
@@ -536,6 +535,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return addPropertyDraw(property, null, version, objects);
     }
 
+    public PropertyDrawEntity addPropertyDraw(LP property, Version version, String formPath, PropertyObjectInterfaceEntity... objects) {
+        return addPropertyDraw(property, null, version, formPath, objects);
+    }
+
     public void addPropertyDraw(LP[] properties, Version version, ObjectEntity... objects) {
         /*
         Map<ValueClass, ObjectEntity> classToObject = new HashMap<ValueClass, ObjectEntity>();
@@ -556,7 +559,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, GroupObjectEntity groupObject, Version version, PropertyObjectInterfaceEntity... objects) {
-        return addPropertyDraw(groupObject, property.createObjectEntity(objects), version);
+        return addPropertyDraw(property, groupObject, version, null, objects);
+    }
+
+    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P, ?> property, GroupObjectEntity groupObject, Version version, String formPath, PropertyObjectInterfaceEntity... objects) {
+        return addPropertyDraw(groupObject, property.createObjectEntity(formPath, objects), version);
     }
 
     public GroupObjectEntity getNFApplyObject(Collection<ObjectEntity> objects, Version version) {
@@ -586,7 +593,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public <I extends PropertyInterface, P extends Property<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImMap<I, ? extends PropertyObjectInterfaceEntity> mapping, Version version) {
-        return addPropertyDraw(null, PropertyObjectEntity.create(property, mapping, null, null), version);
+        return addPropertyDraw(null, PropertyObjectEntity.create(property, mapping, null, null, null), version);
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P, ?> propertyImplement, Version version) {
@@ -661,10 +668,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
     public <P extends PropertyInterface> CalcPropertyObjectEntity addPropertyObject(LCP<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
-        return new CalcPropertyObjectEntity<P>(property.property, objects, property.getCreationScript(), property.getCreationPath());
+        return new CalcPropertyObjectEntity<P>(property.property, objects, property.getCreationScript(), property.getCreationPath(), null);
     }
     public <P extends PropertyInterface> ActionPropertyObjectEntity<P> addPropertyObject(LAP<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {
-        return new ActionPropertyObjectEntity<P>(property.property, objects, property.getCreationScript(), property.getCreationPath());
+        return new ActionPropertyObjectEntity<P>(property.property, objects, property.getCreationScript(), property.getCreationPath(), null);
     }
 
     public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(Property<P> property, ImMap<P, ? extends PropertyObjectInterfaceEntity> objects) {

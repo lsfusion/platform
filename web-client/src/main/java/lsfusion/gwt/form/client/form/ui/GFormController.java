@@ -23,10 +23,10 @@ import lsfusion.gwt.base.client.ui.DialogBoxHelper;
 import lsfusion.gwt.base.client.ui.GKeyStroke;
 import lsfusion.gwt.base.client.ui.ResizableSimplePanel;
 import lsfusion.gwt.base.shared.GwtSharedUtils;
+import lsfusion.gwt.base.shared.actions.ListResult;
 import lsfusion.gwt.base.shared.actions.NumberResult;
 import lsfusion.gwt.base.shared.actions.VoidResult;
-import lsfusion.gwt.form.client.HotkeyManager;
-import lsfusion.gwt.form.client.LoadingBlocker;
+import lsfusion.gwt.form.client.*;
 import lsfusion.gwt.form.client.dispatch.DeferredRunner;
 import lsfusion.gwt.form.client.dispatch.FormDispatchAsync;
 import lsfusion.gwt.form.client.dispatch.NavigatorDispatchAsync;
@@ -106,12 +106,15 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     private boolean initialResizeProcessed = false;
 
     private HotkeyManager hotkeyManager = new HotkeyManager();
-
-    private LoadingBlocker blocker = new LoadingBlocker(this);
+    private LoadingManager loadingManager = MainFrame.isBusyDialog ? new GBusyDialogDisplayer(this) : new LoadingBlocker(this);
 
     private boolean blocked = false;
     private boolean selected = true;
     private boolean formHidden = false;
+
+    public FormsController getFormsController() {
+        return formsController;
+    }
 
     public GFormController(FormsController formsController, GForm gForm) {
         this(formsController, gForm, false, false);
@@ -536,13 +539,17 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
             block();
         }
 
-        formsController.openForm(form, modalityType, initFilterEvent, new WindowHiddenHandler() {
+        Widget blockingWidget = formsController.openForm(form, modalityType, initFilterEvent, new WindowHiddenHandler() {
             @Override
             public void onHidden() {
                 unblock();
                 handler.onHidden();
             }
         });
+
+        if (modalityType == GModalityType.DOCKED_MODAL) {
+            setBlockingWidget(blockingWidget);
+        }
     }
 
     public void showClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
@@ -603,7 +610,7 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
-                if (blocker.isVisible()) {
+                if (loadingManager.isVisible()) {
                     return true;
                 } else {
                     changePageSizeLater(groupObject, pageSize);
@@ -646,11 +653,11 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     public <T extends Result> void syncDispatch(FormBoundAction<T> action, AsyncCallback<T> callback) {
         //todo: возможно понадобится сделать чтото более сложное как в
         //todo: http://stackoverflow.com/questions/2061699/disable-user-interaction-in-a-gwt-container
-        blocker.start();
+        loadingManager.start();
         dispatcher.execute(action, new WrapperAsyncCallbackEx<T>(callback) {
             @Override
             public void preProcess() {
-                blocker.stop();
+                loadingManager.stop();
             }
         });
     }
@@ -957,6 +964,10 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
         //do nothing by default
     }
 
+    public void setBlockingWidget(Widget blockingWidget) {
+        //do nothing by default
+    }
+
     public void unblock() {
         //do nothing by default
     }
@@ -1096,6 +1107,16 @@ public class GFormController extends ResizableSimplePanel implements ServerMessa
     @Override
     public void getServerActionMessage(ErrorHandlingCallback<StringResult> callback) {
         dispatcher.executePriorityAction(new GetRemoteActionMessage(), callback);
+    }
+
+    @Override
+    public void getServerActionMessageList(ErrorHandlingCallback<ListResult> callback) {
+        dispatcher.executePriorityAction(new GetRemoteActionMessageList(), callback);
+    }
+
+    @Override
+    public void interrupt(boolean cancelable) {
+        dispatcher.executePriorityAction(new Interrupt(cancelable), new ErrorHandlingCallback<VoidResult>());
     }
 
     private static final class Change {

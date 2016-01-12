@@ -3,6 +3,7 @@ package lsfusion.gwt.form.server;
 import lsfusion.gwt.base.server.LogicsAwareDispatchServlet;
 import lsfusion.gwt.form.server.form.handlers.*;
 import lsfusion.gwt.form.server.navigator.handlers.*;
+import lsfusion.gwt.form.server.navigator.handlers.IsBusyDialogHandler;
 import lsfusion.interop.RemoteLogicsInterface;
 import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,9 @@ public class FormDispatchServlet extends LogicsAwareDispatchServlet<RemoteLogics
         registry.addHandler(new ChangePageSizeHandler(this));
         registry.addHandler(new GetInitialFilterPropertyHandler(this));
         registry.addHandler(new GetRemoteActionMessageHandler(this));
+        registry.addHandler(new GetRemoteActionMessageListHandler(this));
+        registry.addHandler(new InterruptHandler(this));
+        registry.addHandler(new IsBusyDialogHandler(this));
         registry.addHandler(new IsConfigurationAccessAllowedHandler(this));
         registry.addHandler(new ForbidDuplicateFormsHandler(this));
         registry.addHandler(new SaveUserPreferencesActionHandler(this));

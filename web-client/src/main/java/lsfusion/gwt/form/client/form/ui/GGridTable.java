@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.base.client.ErrorHandlingCallback;
 import lsfusion.gwt.base.client.jsni.Function;
 import lsfusion.gwt.base.client.jsni.NativeHashMap;
@@ -430,9 +431,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> {
         fonts.add(font);
         GFontMetrics.calculateFontMetrics(fonts, new GFontMetrics.MetricsCallback() {
             @Override
-            public void metricsCalculated() {
+            public Widget metricsCalculated() {
                 updatedColumnsImpl();
                 updateDataImpl();
+                return null;
             }
         });
     }

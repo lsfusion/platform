@@ -13,6 +13,7 @@ import lsfusion.base.identity.IDGenerator;
 import lsfusion.client.EditReportInvoker;
 import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
+import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.client.form.cell.PanelView;
 import lsfusion.client.form.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.dispatch.SimpleChangePropertyDispatcher;
@@ -205,6 +206,10 @@ public class ClientFormController implements AsyncListener {
 
     public String getFullCaption() {
         return form.getFullCaption();
+    }
+
+    public String getTooltip() {
+        return form.getTooltip();
     }
 
     public ClientFormLayout getLayout() {
@@ -1481,6 +1486,9 @@ public class ClientFormController implements AsyncListener {
         if (viewBlocked) {
             unblockView();
         }
+    }
+
+    public void setBlockingForm(ClientFormDockable blockingForm) {
     }
     
     public void blockView() {

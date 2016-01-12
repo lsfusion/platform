@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import jasperapi.ReportGenerator;
 import lsfusion.client.ClientReportUtils;
 import lsfusion.client.Main;
+import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.client.form.ClientFormController;
 import lsfusion.interop.FormPrintType;
 import lsfusion.interop.ModalityType;
@@ -44,6 +45,11 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     @Override
     protected void beforeModalActionInSameEDT(boolean blockView) {
         getFormController().block(blockView);
+    }
+
+    @Override
+    protected void setBlockingForm(ClientFormDockable blockingForm) {
+        getFormController().setBlockingForm(blockingForm);
     }
 
     @Override

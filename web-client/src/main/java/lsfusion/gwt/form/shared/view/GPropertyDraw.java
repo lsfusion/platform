@@ -31,6 +31,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
     public GClass[] interfacesTypes;
     public String creationScript;
     public String creationPath;
+    public String formPath;
 
     public GGroupObject groupObject;
     public String columnsName;
@@ -189,7 +190,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
             "<b>Объекты:</b> %s<br>" +
             "<b>Сигнатура:</b> %s <i>%s</i> (%s)<br>" +
             "<b>Скрипт:</b> %s<br>" +
-            "<b>Путь:</b> %s" +
+            "<b>Путь:</b> %s<br>" +
+            "<b>Объявление на форме:</b> %s" +
             "</html>";
 
     public static final String EDIT_KEY_TOOL_TIP_FORMAT =
@@ -210,7 +212,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader {
 
             String script = creationScript != null ? creationScript.replace("\n", "<br>") : "";
             String scriptPath = creationPath != null ? creationPath.replace("\n", "<br>") : "";
-            return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT, propCaption, editKeyText, sid, tableName, ifaceObjects, returnClass, sid, ifaceClasses, script, scriptPath);
+            String scriptFormPath = formPath != null ? formPath.replace("\n", "<br>") : "";
+            return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT + DETAILED_TOOL_TIP_FORMAT,
+                    propCaption, editKeyText, sid, tableName, ifaceObjects, returnClass, sid, ifaceClasses, script, scriptPath, scriptFormPath);
         }
     }
 

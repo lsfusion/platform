@@ -264,15 +264,16 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public void runForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
+    public ClientFormDockable runForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
         try {
-            dockableManager.openForm(mainNavigator, canonicalName, formSID, remoteForm, firstChanges, closeListener);
+            return dockableManager.openForm(mainNavigator, canonicalName, formSID, remoteForm, firstChanges, closeListener);
         } catch (Exception e) {
             if(closeListener != null)
                 closeListener.formClosed();
 
             Throwables.propagate(e);
         }
+        return null;
     }
 
     private void initWindows() {

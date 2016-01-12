@@ -1,17 +1,18 @@
 package lsfusion.gwt.form.client.form;
 
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.base.client.EscapeUtils;
 import lsfusion.gwt.form.client.form.ui.GFormController;
+import lsfusion.gwt.form.client.form.ui.TooltipManager;
 import lsfusion.gwt.form.client.form.ui.dialog.WindowHiddenHandler;
 import lsfusion.gwt.form.shared.view.GForm;
 
 final class FormDockable {
     private TabWidget tabWidget;
     private ContentWidget contentWidget;
+    private Widget blockingWidget; //GFormController
 
     private GFormController form;
 
@@ -58,10 +59,15 @@ final class FormDockable {
             }
 
             @Override
+            public void setBlockingWidget(Widget blocking) {
+                blockingWidget = blocking;
+            }
+
+            @Override
             public void unblock() {
                 tabWidget.setBlocked(false);
                 contentWidget.setBlocked(false);
-                formsController.select(contentWidget);
+                getFormsController().select(contentWidget);
             }
 
             @Override
@@ -89,14 +95,16 @@ final class FormDockable {
     }
 
 
-    public static class ContentWidget extends LayoutPanel {
+    public class ContentWidget extends LayoutPanel {
         private final Widget mask;
+        private FocusPanel maskWrapper;
         private Widget content;
 
         private ContentWidget(Widget content) {
             mask = new SimpleLayoutPanel();
             mask.setStyleName("dockableBlockingMask");
-
+            maskWrapper = new FocusPanel(mask);
+            maskWrapper.setStyleName("dockableBlockingMask");
             setContent(content);
         }
 
@@ -109,6 +117,19 @@ final class FormDockable {
             if (content != null) {
                 addFullSizeChild(content);
             }
+
+            maskWrapper.addClickHandler(new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent clickEvent) {
+                    if(content instanceof GFormController) {
+                        FormsController formsController = ((GFormController) content).getFormsController();
+                        if(formsController instanceof DefaultFormsController && blockingWidget != null) {
+                            ((DefaultFormsController) formsController).selectTab(blockingWidget);
+                        }
+                    }
+                }
+
+            });
         }
 
         private void addFullSizeChild(Widget child) {
@@ -118,9 +139,9 @@ final class FormDockable {
 
         public void setBlocked(boolean blocked) {
             if (blocked) {
-                addFullSizeChild(mask);
+                addFullSizeChild(maskWrapper);
             } else {
-                remove(mask);
+                remove(maskWrapper);
             }
 
             if (content instanceof GFormController) {
@@ -163,6 +184,22 @@ final class FormDockable {
                     closePressed();
                 }
             });
+
+            addDomHandler(new MouseOverHandler() {
+                @Override
+                public void onMouseOver(MouseOverEvent mouseOverEvent) {
+                    TooltipManager.get().showTooltip(mouseOverEvent.getClientX(), mouseOverEvent.getClientY(), form.getForm().tooltip);
+
+                }
+            }, MouseOverEvent.getType());
+
+            addDomHandler(new MouseOutHandler() {
+                @Override
+                public void onMouseOut(MouseOutEvent mouseOutEvent) {
+                    TooltipManager.get().hideTooltip();
+
+                }
+            }, MouseOutEvent.getType());
         }
 
         public void setBlocked(boolean blocked) {

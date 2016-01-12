@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,7 +50,7 @@ public class GFontMetrics {
         setCalculationsCount(callback, getCalculationsCount(callback) + 1);
     }
 
-    public static void calculateFontMetrics(ArrayList<GFont> fonts, MetricsCallback callback) {
+    public static Widget calculateFontMetrics(ArrayList<GFont> fonts, MetricsCallback callback) {
         fonts.add(GFont.DEFAULT_FONT);
 
         boolean allCalculated = true;
@@ -61,8 +62,9 @@ public class GFontMetrics {
             }
         }
         if (allCalculated) {
-            callback.metricsCalculated();
+            return callback.metricsCalculated();
         }
+        return null;
     }
 
     private static void calculate(final GFont font, final MetricsCallback callback) {
@@ -130,6 +132,6 @@ public class GFontMetrics {
     }
 
     public interface MetricsCallback {
-        void metricsCalculated();
+        Widget metricsCalculated();
     }
 }

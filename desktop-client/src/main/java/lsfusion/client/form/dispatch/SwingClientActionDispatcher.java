@@ -6,6 +6,7 @@ import lsfusion.client.Log;
 import lsfusion.client.Main;
 import lsfusion.client.MainFrame;
 import lsfusion.client.SwingUtils;
+import lsfusion.client.dock.ClientFormDockable;
 import lsfusion.client.form.ClientModalForm;
 import lsfusion.client.form.classes.ClassDialog;
 import lsfusion.client.logics.classes.ClientObjectClass;
@@ -147,13 +148,14 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         if (modality == ModalityType.DOCKED_MODAL) {
             pauseDispatching();
             beforeModalActionInSameEDT(true);
-            Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, action.firstChanges, new MainFrame.FormCloseListener() {
+            ClientFormDockable blockingForm = Main.frame.runForm(action.canonicalName, action.formSID, remoteForm, action.firstChanges, new MainFrame.FormCloseListener() {
                 @Override
                 public void formClosed() {
                     afterModalActionInSameEDT(true);
                     continueDispatching();
                 }
             });
+            setBlockingForm(blockingForm);
         } else if (modality.isModal()) {
             beforeModalActionInSameEDT(false);
             Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
@@ -170,6 +172,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     protected void beforeModalActionInSameEDT(boolean blockView) {
+    }
+
+    protected void setBlockingForm (ClientFormDockable blockingForm) {
     }
 
     protected void afterModalActionInSameEDT(boolean unblockView) {

@@ -41,6 +41,11 @@ public class CopyPasteUtils {
         $wnd.clipboardData.setData("text/plain", text); // в Firefox не работает
     }-*/;
 
+    public static native void setClipboardData2(String text)
+    /*-{
+        clipboard.copy(text)
+    }-*/;
+
     public static void setEmptySelection(final Element element) {
         if (element != null && !GwtClientUtils.isIEUserAgent() && Range.getAdjacentTextElement(element, element, true, false) != null) {
             // для вставки в Chrome без предварительного клика по ячейке, но валит весь селекшн в IE

@@ -226,7 +226,7 @@ public class ScriptingFormEntity {
         }
     }
 
-    public void addScriptedPropertyDraws(List<ScriptingLogicsModule.PropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedPropertyDraws(List<ScriptingLogicsModule.PropertyUsage> properties, List<String> aliases, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, int lineNumber) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
 
         boolean reverse = commonOptions.getNeighbourPropertyDraw() != null && commonOptions.isRightNeighbour();
@@ -262,7 +262,8 @@ public class ScriptingFormEntity {
                 MappedProperty prop = getPropertyWithMapping(pUsage, mapping);
 
                 checkPropertyParameters(prop.property, prop.mapping);
-                property = form.addPropertyDraw(prop.property, version, prop.mapping);
+                String formPath = LM.getParser().getCurrentScriptPath(LM.getName(), lineNumber, "\n");
+                property = form.addPropertyDraw(prop.property, version, formPath, prop.mapping);
             }
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
             applyPropertyOptions(property, propertyOptions, version);

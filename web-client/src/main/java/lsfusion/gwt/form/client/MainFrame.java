@@ -42,6 +42,7 @@ public class MainFrame implements EntryPoint {
     private final NavigatorDispatchAsync dispatcher = NavigatorDispatchAsync.Instance.get();
     public static boolean configurationAccessAllowed;
     public static boolean forbidDuplicateForms;
+    public static boolean isBusyDialog;
 
     private GNavigatorController navigatorController;
     private WindowsController windowsController;
@@ -118,6 +119,13 @@ public class MainFrame implements EntryPoint {
             @Override
             public void success(BooleanResult result) {
                 forbidDuplicateForms = result.value;
+            }
+        });
+
+        dispatcher.execute(new IsBusyDialogAction(), new ErrorHandlingCallback<BooleanResult>() {
+            @Override
+            public void success(BooleanResult result) {
+                isBusyDialog = result.value;
             }
         });
 
