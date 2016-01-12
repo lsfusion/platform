@@ -12,5 +12,6 @@ public class BlurWindow extends JDialog {
         setOpacity(0.5f);
         setSize(parent.getSize());
         setBackground(new Color(0, 0, 0, 128));
+        setFocusableWindowState(false);
     }
 }

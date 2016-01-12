@@ -301,6 +301,8 @@ public class ConnectionLostManager {
             initUIHandlers();
 
             setupDialogForDevMode();
+
+            setFocusableWindowState(false);
         }
 
         private void setupDialogForDevMode() {
