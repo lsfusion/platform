@@ -145,7 +145,7 @@ public abstract class DefaultFormsController implements FormsController {
                 }
             });
         }
-        return dockable.getContentWidget();
+        return dockable == null ? null : dockable.getContentWidget();
     }
 
     public void selectTab(Widget widget) {
