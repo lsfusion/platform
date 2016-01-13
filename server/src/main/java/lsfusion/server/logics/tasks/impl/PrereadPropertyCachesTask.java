@@ -11,6 +11,15 @@ public class PrereadPropertyCachesTask extends GroupPropertiesTask {
     }
 
     @Override
+    public boolean isEndLoggable() {
+        return true;
+    }
+
+    public String getEndCaption() {
+        return "Prereading caches for properties ended";
+    }
+
+    @Override
     protected boolean prerun() {
         if (SystemProperties.isDebug) {
             return false;

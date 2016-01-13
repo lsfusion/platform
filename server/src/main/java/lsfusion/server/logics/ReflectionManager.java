@@ -13,6 +13,7 @@ import lsfusion.server.classes.*;
 import lsfusion.server.data.KeyField;
 import lsfusion.server.data.PropertyField;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.query.Stat;
 import lsfusion.server.form.entity.FormEntity;
 import lsfusion.server.form.entity.GroupObjectEntity;
 import lsfusion.server.form.entity.PropertyDrawEntity;
@@ -422,7 +423,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                     dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), property.caption, property.loggable ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
-                            returnClass, classProperty, complexityProperty, tableSID, businessLogics.getStatsProperty(property)));
+                            returnClass, classProperty, complexityProperty, tableSID, Settings.get().isDisableSyncStatProps() ? Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property)));
                 }
             }
 

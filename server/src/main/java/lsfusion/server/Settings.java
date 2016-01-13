@@ -1605,4 +1605,14 @@ public class Settings {
     public void setExplainJavaStack(boolean explainJavaStack) {
         this.explainJavaStack = explainJavaStack;
     }
+
+    private boolean disableSyncStatProps = false;
+
+    public boolean isDisableSyncStatProps() {
+        return disableSyncStatProps;
+    }
+
+    public void setDisableSyncStatProps(boolean disableSyncStatProps) {
+        this.disableSyncStatProps = disableSyncStatProps;
+    }
 }

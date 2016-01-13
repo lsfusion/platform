@@ -34,6 +34,14 @@ public abstract class Task {
 
     public abstract String getCaption();
 
+    public boolean isEndLoggable() {
+        return false;
+    }
+
+    public String getEndCaption() {
+        return null;
+    }
+
     protected long getBaseComplexity() {
         return 1;
     }
@@ -130,6 +138,9 @@ public abstract class Task {
                 ThreadUtils.interruptThread(BL.getDbManager(), timeoutThread);
             }
         }
+
+        if(isEndLoggable())
+            logger.info(getEndCaption());
 
         for (Task from : dependsFrom.keySet()) {
             from.dependProceeded(BL, executor, monitor, taskCount, logger, this, taskQueue, throwableConsumer, propertyTimeout);
