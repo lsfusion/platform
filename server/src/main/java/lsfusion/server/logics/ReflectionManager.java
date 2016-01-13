@@ -423,7 +423,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
                     dataProperty.add(asList(property.getCanonicalName(),(Object) property.getDBName(), property.caption, property.loggable ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).isStored() ? true : null,
                             property instanceof CalcProperty && ((CalcProperty) property).reflectionNotNull ? true : null,
-                            returnClass, classProperty, complexityProperty, tableSID, Settings.get().isDisableSyncStatProps() ? Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property)));
+                            returnClass, classProperty, complexityProperty, tableSID, (Settings.get().isDisableSyncStatProps() ? (Integer)Stat.DEFAULT.getCount() : businessLogics.getStatsProperty(property))));
                 }
             }
 
