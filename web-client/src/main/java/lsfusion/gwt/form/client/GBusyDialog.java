@@ -229,7 +229,7 @@ public class GBusyDialog extends WindowBox {
             latestWindowHeight = Window.getClientHeight();
 
             int minWidth = (int) (latestWindowWidth * (devMode ? 0.5 : 0.3));
-            int minHeight = (int) (latestWindowHeight * 0.5);
+            int minHeight = (int) (latestWindowHeight * (devMode ? 0.5 : 0.1));
 
             int width = topPanel.getOffsetWidth() != 0 ? topPanel.getOffsetWidth() : minWidth;
             int height = mainPanel.getElement().getClientHeight() - bottomPanel.getElement().getClientHeight() -
