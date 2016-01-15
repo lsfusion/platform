@@ -342,6 +342,8 @@ public class ReportGenerator {
         } else if (exprText.startsWith("\"") && exprText.endsWith("\"")) {
             id = exprText.substring(1, exprText.length()-1);
         }
+        
+        boolean setPrintWhen = textField.getPrintWhenExpression() != null && textField.getPrintWhenExpression().getText() != null && textField.getPrintWhenExpression().getText().equals(exprText); 
 
         if (id != null) {
             String dataId = id;
@@ -375,6 +377,8 @@ public class ReportGenerator {
                             }
                         }
                         subFields.get(i).setExpression(subExpr);
+                        if (setPrintWhen)
+                            subFields.get(i).setPrintWhenExpression(subExpr);
                     }
                     toAdd.addAll(subFields);
                 }
