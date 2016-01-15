@@ -112,7 +112,7 @@ public class IsClassProperty extends AggregateProperty<ClassPropertyInterface> {
     }
 
     @Override
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents) {
+    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
         ImCol<Pair<Property<?>, LinkType>> actionChangeProps = getActionChangeProps(); // чтобы обnull'ить использование
         assert actionChangeProps.isEmpty();
         assert getDepends().isEmpty();

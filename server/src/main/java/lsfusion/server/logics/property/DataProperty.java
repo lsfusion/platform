@@ -1,11 +1,9 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.Pair;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MCol;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.caches.IdentityInstanceLazy;
 import lsfusion.server.classes.CustomClass;
@@ -179,8 +177,11 @@ public abstract class DataProperty extends CalcProperty<ClassPropertyInterface> 
     }
 
     @Override
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents) {
-        return super.calculateLinks(calcEvents).mergeCol(getActionChangeProps()); // только у Data и IsClassProperty
+    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
+        ImCol<Pair<Property<?>, LinkType>> result = super.calculateLinks(events);
+        if(events)
+            result = result.mergeCol(getActionChangeProps()); // только у Data и IsClassProperty
+        return result;
     }
 
     // не сильно структурно поэтому вынесено в метод

@@ -409,13 +409,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         getInterfaceClasses(ClassType.signaturePolicy);
     }
 
-    protected abstract ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents);
+    protected abstract ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events);
 
     private ImSet<Link> links;
     @ManualLazy
-    public ImSet<Link> getLinks(boolean calcEvents) { // чисто для лексикографики
+    public ImSet<Link> getLinks(boolean events) { // чисто для лексикографики
         if(links==null) {
-            links = calculateLinks(calcEvents).mapMergeSetValues(new GetValue<Link, Pair<Property<?>, LinkType>>() {
+            links = calculateLinks(events).mapMergeSetValues(new GetValue<Link, Pair<Property<?>, LinkType>>() {
                 public Link getMapValue(Pair<Property<?>, LinkType> value) {
                     return new Link(Property.this, value.first, value.second);
                 }});

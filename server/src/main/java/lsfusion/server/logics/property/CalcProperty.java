@@ -642,10 +642,10 @@ public abstract class CalcProperty<T extends PropertyInterface> extends Property
         actionChangeProps = null;
     }
 
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents) {
+    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
         MCol<Pair<Property<?>, LinkType>> mResult = ListFact.mCol();
 
-        for(CalcProperty depend : getDepends(calcEvents))
+        for(CalcProperty depend : getDepends(events))
             mResult.add(new Pair<Property<?>, LinkType>(depend, LinkType.DEPEND));
 
         return mResult.immutableCol();

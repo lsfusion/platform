@@ -1099,17 +1099,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // находит свойство входящее в "верхнюю" сильносвязную компоненту
-    private static HSet<Link> buildOrder(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, List<Property> order, HSet<Link> removedLinks, boolean include, HSet<Property> component, boolean calcEvents) {
+    private static HSet<Link> buildOrder(Property<?> property, MAddMap<Property, HSet<Link>> linksMap, List<Property> order, HSet<Link> removedLinks, boolean include, HSet<Property> component, boolean events) {
         HSet<Link> linksIn = linksMap.get(property);
         if (linksIn == null) { // уже были, linksMap - одновременно используется и как пометки, и как список, и как обратный обход
             linksIn = new HSet<>();
             linksMap.add(property, linksIn);
 
-            ImSet<Link> links = property.getLinks(calcEvents);
+            ImSet<Link> links = property.getLinks(events);
             for (int i = 0,size = links.size(); i < size; i++) {
                 Link link = links.get(i);
                 if (!removedLinks.contains(link) && component.contains(link.to) == include)
-                    buildOrder(link.to, linksMap, order, removedLinks, include, component, calcEvents).add(link);
+                    buildOrder(link.to, linksMap, order, removedLinks, include, component, events).add(link);
             }
             order.add(property);
         }
@@ -1260,7 +1260,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
     }
 
     // upComponent нужен так как изначально неизвестны все элементы
-    private static HSet<Property> buildList(HSet<Property> props, HSet<Property> exclude, HSet<Link> removedLinks, MOrderExclSet<Property> mResult, boolean calcEvents) {
+    private static HSet<Property> buildList(HSet<Property> props, HSet<Property> exclude, HSet<Link> removedLinks, MOrderExclSet<Property> mResult, boolean events) {
         HSet<Property> proceeded;
 
         List<Property> order = new ArrayList<>();
@@ -1268,7 +1268,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         for (int i = 0; i < props.size; i++) {
             Property property = props.get(i);
             if (linksMap.get(property) == null) // проверка что не было
-                buildOrder(property, linksMap, order, removedLinks, exclude == null, exclude != null ? exclude : props, calcEvents);
+                buildOrder(property, linksMap, order, removedLinks, exclude == null, exclude != null ? exclude : props, events);
         }
 
         Result<Property> minProperty = new Result<>();
@@ -1293,7 +1293,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 //                    printCycle("test", minLink, innerComponent, minCycle);
                     if (minLink.type.equals(LinkType.DEPEND)) { // нашли сильный цикл
                         MOrderExclSet<Property> mCycle = SetFact.mOrderExclSet();
-                        buildList(innerComponent, null, removedLinks, mCycle, calcEvents);
+                        buildList(innerComponent, null, removedLinks, mCycle, events);
                         ImOrderSet<Property> cycle = mCycle.immutableOrder();
 
                         String print = "";
@@ -1301,7 +1301,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                             print = (print.length() == 0 ? "" : print + " -> ") + property.toString();
                         throw new RuntimeException(getString("message.cycle.detected") + " : " + print + " -> " + minLink.to);
                     }
-                    buildList(innerComponent, null, removedLinks, mResult, calcEvents);
+                    buildList(innerComponent, null, removedLinks, mResult, events);
                 }
                 proceeded.exclAddAll(innerComponent);
             }
@@ -1412,17 +1412,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 else
                     rest.add(property);
             }
-        boolean calcEvents = filter != ApplyFilter.ONLY_DATA;
+        boolean events = filter != ApplyFilter.ONLY_DATA;
 
         MOrderExclSet<Property> mCancelResult = SetFact.mOrderExclSet();
-        HSet<Property> proceeded = buildList(cancelActions, new HSet<Property>(), new HSet<Link>(), mCancelResult, calcEvents);
+        HSet<Property> proceeded = buildList(cancelActions, new HSet<Property>(), new HSet<Link>(), mCancelResult, events);
         ImOrderSet<Property> cancelResult = mCancelResult.immutableOrder();
 
         // потом бежим по всем остальным, за исключением proceeded
         MOrderExclSet<Property> mRestResult = SetFact.mOrderExclSet();
         HSet<Property> removed = new HSet<>();
         removed.addAll(rest.remove(proceeded));
-        buildList(removed, proceeded, new HSet<Link>(), mRestResult, calcEvents); // потом этот cast уберем
+        buildList(removed, proceeded, new HSet<Link>(), mRestResult, events); // потом этот cast уберем
         ImOrderSet<Property> restResult = mRestResult.immutableOrder();
 
         // затем по всем кроме proceeded на прошлом шаге

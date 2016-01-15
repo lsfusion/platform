@@ -283,7 +283,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
     public abstract CalcPropertyMapImplement<?, P> calcWhereProperty();
 
     @Override
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents) {
+    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
         if(getEvents().isEmpty()) // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
             return SetFact.EMPTY();
 
@@ -294,7 +294,7 @@ public abstract class ActionProperty<P extends PropertyInterface> extends Proper
             Boolean rec = used.getValue(i);
 
             // эвристика : усилим связи к session calc, предполагается 
-            ImSet<SessionCalcProperty> calcDepends = property.getSessionCalcDepends(calcEvents); // в том числе и для событий усилим, хотя может быть определенная избыточность,когда в SessionCalc - другой SessionCalc, но это очень редкие случаи
+            ImSet<SessionCalcProperty> calcDepends = property.getSessionCalcDepends(events); // в том числе и для событий усилим, хотя может быть определенная избыточность,когда в SessionCalc - другой SessionCalc, но это очень редкие случаи
             for(int j=0,sizeJ=calcDepends.size();j<sizeJ;j++)
                 mResult.add(new Pair<Property<?>, LinkType>(calcDepends.get(j), rec ? LinkType.RECEVENT : LinkType.EVENTACTION));
 

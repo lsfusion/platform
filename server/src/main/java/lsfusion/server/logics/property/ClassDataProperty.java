@@ -5,7 +5,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.classes.BaseClass;
 import lsfusion.server.classes.ObjectValueClassSet;
 import lsfusion.server.classes.sets.AndClassSet;
@@ -67,7 +66,7 @@ public class ClassDataProperty extends CalcProperty<ClassPropertyInterface> impl
     }
 
     @Override
-    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean calcEvents) {
+    protected ImCol<Pair<Property<?>, LinkType>> calculateLinks(boolean events) {
         return getActionChangeProps();
     }
 
