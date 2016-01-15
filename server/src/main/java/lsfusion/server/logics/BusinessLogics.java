@@ -686,7 +686,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         KeyExpr key = keys.singleValue();
         QueryBuilder<PropertyInterface, Object> query = new QueryBuilder<>(keys);
         query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
-        query.addProperty("statsProperty", reflectionLM.statsProperty.getExpr(key));
+        query.addProperty("overStatsProperty", reflectionLM.overStatsProperty.getExpr(key));
         query.and(reflectionLM.userLoggableProperty.getExpr(key).getWhere());
         ImOrderMap<ImMap<PropertyInterface, Object>, ImMap<Object, Object>> result = query.execute(sql, OperationOwner.unknown);
 
@@ -696,7 +696,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 canonicalName = changes.get(canonicalName);
             }
             LP lp = findProperty(canonicalName);
-            Integer statsProperty = (Integer) values.get("statsProperty");
+            Integer statsProperty = (Integer) values.get("overStatsProperty");
             statsProperty = statsProperty == null && lp != null ? getStatsProperty(lp.property) : statsProperty;
             if((statsProperty == null || maxStatsProperty == null || statsProperty < maxStatsProperty) && lp instanceof LCP) {
                 LM.makeUserLoggable(systemEventsLM, (LCP) lp);
@@ -865,7 +865,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
         } else {
             tableStats = readStatsFromDB(sql, reflectionLM.tableSID, reflectionLM.rowsTable, null);
             keyStats = readStatsFromDB(sql, reflectionLM.tableKeySID, reflectionLM.quantityTableKey, null);
-            propStats = readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.newQuantityTableColumn, reflectionLM.newNotNullQuantityTableColumn);
+            propStats = readStatsFromDB(sql, reflectionLM.tableColumnLongSID, reflectionLM.quantityTableColumn, reflectionLM.notNullQuantityTableColumn);
         }
 
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {

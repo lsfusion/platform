@@ -48,6 +48,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP captionProperty;
     public LCP tableSIDProperty;
     public LCP statsProperty;
+    public LCP overStatsProperty;
     public LCP maxStatsProperty;
     public LCP propertySID;
     public LCP propertyCanonicalName;
@@ -131,8 +132,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LCP tableColumnLongSID;
     public LCP tableColumnSID;
 
-    public LCP newQuantityTableColumn;
-    public LCP newNotNullQuantityTableColumn;
+    public LCP quantityTableColumn;
+    public LCP notNullQuantityTableColumn;
     public LCP notRecalculateTableColumn;
     public LAP recalculateAggregationTableColumn;
 
@@ -197,6 +198,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         parentProperty = findProperty("parentProperty");
         tableSIDProperty = findProperty("tableSIDProperty");
         statsProperty = findProperty("statsProperty");
+        overStatsProperty = findProperty("overStatsProperty");
         maxStatsProperty = findProperty("maxStatsProperty");
         numberProperty = findProperty("numberProperty");
         dbNameProperty = findProperty("dbNameProperty");
@@ -322,8 +324,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         tableColumnLongSID = findProperty("tableColumnLongSID");
         tableColumnSID = findProperty("tableColumnSID");
 
-        newQuantityTableColumn = findProperty("newQuantityTableColumn");
-        newNotNullQuantityTableColumn = findProperty("newNotNullQuantityTableColumn");
+        quantityTableColumn = findProperty("quantityTableColumn");
+        notNullQuantityTableColumn = findProperty("notNullQuantityTableColumn");
 
         notRecalculateTableColumn = findProperty("notRecalculateTableColumn");
         recalculateAggregationTableColumn = findAction("recalculateAggregationTableColumn");

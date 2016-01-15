@@ -64,6 +64,7 @@ propertyTableSID 'Свойство' (string, sID) = GROUP AGGR property BY table
 
 quantityProperty 'Количество разновидностей' = DATA INTEGER (Property);
 notNullQuantityProperty 'Количество не null значений' = DATA INTEGER (Property);
+overStatsProperty 'Кол-во записей' (property) = OVERRIDE statsProperty(property), notNullQuantityProperty(property);
 
 CLASS PropertyDraw 'Свойство на форме';
 
@@ -163,25 +164,15 @@ tableColumnSID (sid) = GROUP MAX tableColumn BY sidTableColumn(tableColumn);
 propertyTableColumn 'Свойство' (tableColumn) = propertyTableSID(sidTable(tableTableColumn(tableColumn)), sidTableColumn(tableColumn));
 captionTableColumn 'Заголовок свойства' (tableColumn) = captionProperty(propertyTableColumn(tableColumn));
 canonicalNameTableColumn 'Каноническое имя свойства' (tableColumn) = canonicalNameProperty(propertyTableColumn(tableColumn));
-quantityTableColumn 'Количество разновидностей' = DATA INTEGER (TableColumn);
-newQuantityTableColumn 'Количество разновидностей (new)' (tableColumn) = quantityProperty(propertyTableColumn(tableColumn));
-notNullQuantityTableColumn 'Количество не null значений' = DATA INTEGER (TableColumn);
-newNotNullQuantityTableColumn 'Количество не null значений (new)' (tableColumn) = notNullQuantityProperty(propertyTableColumn(tableColumn));
+quantityTableColumn 'Количество разновидностей' (tableColumn) = quantityProperty(propertyTableColumn(tableColumn));
+notNullQuantityTableColumn 'Количество не null значений' (tableColumn) = notNullQuantityProperty(propertyTableColumn(tableColumn));
 tableColumnProperty(property) = tableColumnLongSID(tableSIDProperty(property) + '.' + dbNameProperty(property));
-migrated = DATA BOOLEAN (); //tempProperty
-onStarted() += ACTION {
-    IF NOT migrated() THEN {
-        quantityProperty(p) <- quantityTableColumn(tableColumnProperty(p)) WHERE quantityTableColumn(tableColumnProperty(p));
-        notNullQuantityProperty(p) <- notNullQuantityTableColumn(tableColumnProperty(p)) WHERE notNullQuantityTableColumn(tableColumnProperty(p));
-        migrated() <- TRUE;
-    }
-}
 
 toNumeric15p2(w) = NUMERIC[15,2](w);
 
 percentNotNullTableColumn 'Не null, %' (tableColumn) = IF rowsTable (tableTableColumn(tableColumn)) == 0
                                                           THEN 100.00
-                                                          ELSE toNumeric15p2(newNotNullQuantityTableColumn(tableColumn)) / rowsTable (tableTableColumn(tableColumn)) * 100;
+                                                          ELSE toNumeric15p2(notNullQuantityTableColumn(tableColumn)) / rowsTable (tableTableColumn(tableColumn)) * 100;
 sparseColumnsTable 'Количество разреженных колонок' (table) = GROUP SUM 1 BY tableTableColumn(tableColumn) IF percentNotNullTableColumn(tableColumn) < 50;
 
 notRecalculateTableColumn 'Не пересчитывать аггрегации' = DATA BOOLEAN (TableColumn);
@@ -245,7 +236,7 @@ FORM physicalModel 'Таблицы'
     PROPERTIES(tk) READONLY classTableKey, classSIDTableKey, nameTableKey, quantityTableKey
 
     OBJECTS tc=TableColumn
-    PROPERTIES(tc) READONLY sidTableColumn, captionTableColumn, canonicalNameTableColumn, propertyTableColumn, quantityTableColumn, newQuantityTableColumn, notNullQuantityTableColumn, newNotNullQuantityTableColumn,
+    PROPERTIES(tc) READONLY sidTableColumn, captionTableColumn, canonicalNameTableColumn, propertyTableColumn, quantityTableColumn, notNullQuantityTableColumn,
                    percentNotNullTableColumn
     PROPERTIES(tc) notRecalculateTableColumn, recalculateAggregationTableColumn, recalculateAggregationWithDependenciesTableColumn, 
             recalculateAggregationWithDependentsTableColumn, checkAggregationTableColumn
