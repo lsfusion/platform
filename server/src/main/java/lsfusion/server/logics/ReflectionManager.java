@@ -264,7 +264,7 @@ public class ReflectionManager extends LifecycleAdapter implements InitializingB
 
             ImportTable table = new ImportTable(asList(oldPropertyDrawSIDField, oldFormCanonicalNameField, newPropertyDrawSIDField, newFormCanonicalNameField), data);
 
-            try (DataSession session = createSession()) {
+            try (DataSession session = createSyncSession()) {
                 IntegrationService service = new IntegrationService(session, table, asList(keyForm, keyProperty), properties);
                 service.synchronize(false, false);
                 session.apply(businessLogics);
