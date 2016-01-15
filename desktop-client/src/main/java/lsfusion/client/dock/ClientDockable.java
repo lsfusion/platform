@@ -96,8 +96,10 @@ abstract class ClientDockable extends DefaultMultipleCDockable {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                blockingForm.toFront();
-                blockingForm.requestFocusInWindow();
+                if (blockingForm != null) {
+                    blockingForm.toFront();
+                    blockingForm.requestFocusInWindow();
+                }
             }
         });
 
