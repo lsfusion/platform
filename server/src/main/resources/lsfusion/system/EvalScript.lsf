@@ -10,6 +10,7 @@ scriptExecution 'Выполнить скрипт' () = ACTION EVAL scriptStorage
 
 actionBodyExecution 'Выполнить действие' () = ACTION EVAL CONCAT ' ', 'run() = ACTION {', scriptStorage(), ';\n};';
 formExecution 'Показать форму' () = ACTION EVAL CONCAT ' ', 'FORM form', scriptStorage(), ';\nrun() = ACTION FORM form;';
+javaActionBodyExecution 'Выполнить Java-код' () = ACTION EVAL CONCAT ' ', 'run() = ACTION CODE ', scriptStorage(), ' END;';
 
 CLASS Script 'Скрипт';
 TABLE script(Script);
@@ -85,7 +86,7 @@ FORM script 'Скрипт'
     OBJECTS s = Script FIXED PANEL
     PROPERTIES(s) nameScript SELECTOR EVENTS ON CHANGE s updateScriptStorage(s) 
     PROPERTIES() scriptStorage,
-                 scriptExecution, actionBodyExecution, formExecution, saveAsScriptAction
+                 scriptExecution, actionBodyExecution, formExecution, javaActionBodyExecution, saveAsScriptAction
     PROPERTIES(s) saveScriptAction
                  
     OBJECTS r = Row FIXED GRID
@@ -118,6 +119,7 @@ DESIGN script {
                 MOVE PROPERTY(scriptExecution()) { font = 'bold 24'; }
                 MOVE PROPERTY(actionBodyExecution()) { font = 'bold 24'; }
                 MOVE PROPERTY(formExecution()) { font = 'bold 24'; }
+                MOVE PROPERTY(javaActionBodyExecution()) { font = 'bold 24'; }
             }
         }
         MOVE r.box {

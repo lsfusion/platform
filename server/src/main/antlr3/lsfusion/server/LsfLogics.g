@@ -2119,14 +2119,21 @@ customActionPropertyDefinitionBody returns [LP property, List<ResolveClassSet> s
 @init {
 	boolean allowNullValue = false;
 	List<String> classes = null;
+	List<String> tokens = null;
 }
 @after {
 	if (inPropParseState()) {
-		$property = self.addScriptedCustomActionProp($classN.val, classes, allowNullValue);	
+	    if(tokens == null)
+	        $property = self.addScriptedCustomActionProp($classN.val, classes, allowNullValue);
+	    else
+		    $property = self.addScriptedCustomActionProp(tokens, $text, allowNullValue);
 		$signature = (classes == null ? Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null) : self.createClassSetsFromClassNames(classes)); 
 	}
 }
-	:	'CUSTOM' classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })? ('NULL' { allowNullValue = true; })?
+	:	'CUSTOM' 
+		(classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })? |
+	    'CODE' { tokens = self.grabJavaCode(); } 'END')
+	    ('NULL' { allowNullValue = true; })?
 	;
 
 

@@ -65,6 +65,7 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
+import org.codehaus.janino.SimpleCompiler;
 
 import javax.mail.Message;
 import javax.swing.*;
@@ -1154,6 +1155,57 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
+    public LP addScriptedCustomActionProp(List<String> javaTokens, String code, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
+        String script = "";
+        try {
+
+            int codePos = 0;
+            for (String javaToken : javaTokens) {
+                int tokenStartPos = code.indexOf(javaToken, codePos);
+                String whitespaces = codePos == 0 ? "" : code.substring(codePos, tokenStartPos);
+                script += whitespaces + javaToken.replace("'", "\"");
+                codePos = tokenStartPos + javaToken.length();
+            }
+
+            String javaClass = "import lsfusion.server.data.SQLHandledException;\n" +
+                    "import lsfusion.server.logics.property.ClassPropertyInterface;\n" +
+                    "import lsfusion.server.logics.property.ExecutionContext;\n" +
+                    "import lsfusion.server.logics.scripted.ScriptingActionProperty;\n" +
+                    "import lsfusion.server.logics.scripted.ScriptingLogicsModule;\n" +
+                    "\n" +
+                    "import java.sql.SQLException;\n" +
+                    "\n" +
+                    "public class ExecuteActionProperty extends ScriptingActionProperty {\n" +
+                    "\n" +
+                    "    public ExecuteActionProperty(ScriptingLogicsModule LM) {\n" +
+                    "        super(LM);\n" +
+                    "    }\n" +
+                    "\n" +
+                    "    @Override\n" +
+                    "    public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {\n" +
+                    "        try {\n" +
+                    script +
+                    "        } catch (Exception e) {\n" +
+                    "            e.printStackTrace();\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}";
+
+            SimpleCompiler sc = new SimpleCompiler();
+            sc.cook(javaClass);
+            Class<?> executeClass = sc.getClassLoader().loadClass("ExecuteActionProperty");
+
+            ActionProperty instance = (ActionProperty) executeClass.getConstructor(this.getClass()).newInstance(this);
+            if (instance instanceof ExplicitActionProperty && allowNullValue) {
+                ((ExplicitActionProperty) instance).allowNullValue = true;
+            }
+            return baseLM.addAProp(null, instance);
+        } catch (Exception e) {
+            errLog.emitCreatingClassInstanceError(parser, script);
+        }
+        return null;
+    }
+
     public LPWithParams addScriptedEmailProp(LPWithParams fromProp,
                                              LPWithParams subjProp,
                                              List<Message.RecipientType> recipTypes,
@@ -2188,6 +2240,10 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public List<String> grabMetaCode(String metaCodeName) throws ScriptingErrorLog.SemanticErrorException {
         return parser.grabMetaCode(metaCodeName);
+    }
+
+    public List<String> grabJavaCode() throws ScriptingErrorLog.SemanticErrorException {
+        return parser.grabJavaCode();
     }
 
     private LCP addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {

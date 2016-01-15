@@ -309,6 +309,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("meta code '%s' does not end with END keyword", name));
     }
 
+    public void emitJavaCodeNotEndedError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "java code does not end with END keyword");
+    }
+
     public void emitDistinctParamNamesError(ScriptParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "names of parameters should be distinct");
     }
