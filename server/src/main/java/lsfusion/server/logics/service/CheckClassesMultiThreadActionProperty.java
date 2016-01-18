@@ -35,6 +35,7 @@ public class CheckClassesMultiThreadActionProperty extends ScriptingActionProper
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         TaskRunner taskRunner = new TaskRunner(context.getBL());
         CheckClassesTask task = new CheckClassesTask();
+        boolean errorOccurred = false;
         try {
             ObjectValue threadCount = context.getKeyValue(threadCountInterface);
             ObjectValue propertyTimeout = context.getKeyValue(propertyTimeoutInterface);
@@ -42,13 +43,15 @@ public class CheckClassesMultiThreadActionProperty extends ScriptingActionProper
             taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount == null ? null : (Integer) threadCount.getValue(),
                     propertyTimeout == null ? null : (Integer) propertyTimeout.getValue());
         } catch (InterruptedException e) {
+            errorOccurred = true;
             task.logTimeoutTasks();
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Check Classes error", e);
             ThreadUtils.interruptThread(context, Thread.currentThread());
             taskRunner.interruptThreadPoolProcesses(context);
         } finally {
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.data.classes")) + task.getMessages(), getString("logics.checking.data.classes"), true));
+            context.delayUserInterfaction(new MessageClientAction(getString(errorOccurred ? "logics.check.failed" : "logics.check.completed",
+                    getString("logics.checking.data.classes")) + task.getMessages(), getString("logics.checking.data.classes"), true));
         }
     }
 }

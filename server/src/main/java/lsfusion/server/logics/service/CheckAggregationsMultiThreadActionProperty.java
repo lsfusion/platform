@@ -35,6 +35,7 @@ public class CheckAggregationsMultiThreadActionProperty extends ScriptingActionP
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         TaskRunner taskRunner = new TaskRunner(context.getBL());
         CheckAggregationsTask task = new CheckAggregationsTask();
+        boolean errorOccurred = false;
         try {
             ObjectValue threadCount = context.getKeyValue(threadCountInterface);
             ObjectValue propertyTimeout = context.getKeyValue(propertyTimeoutInterface);
@@ -42,13 +43,15 @@ public class CheckAggregationsMultiThreadActionProperty extends ScriptingActionP
             taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount == null ? null : (Integer) threadCount.getValue(),
                     propertyTimeout == null ? null : (Integer) propertyTimeout.getValue());
         } catch (InterruptedException e) {
+            errorOccurred = true;
             task.logTimeoutTasks();
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Check Aggregations error", e);
             ThreadUtils.interruptThread(context, Thread.currentThread());
             taskRunner.interruptThreadPoolProcesses(context);
         } finally {
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.check.completed", getString("logics.checking.aggregations")) + task.getMessages(), getString("logics.checking.aggregations")));
+            context.delayUserInterfaction(new MessageClientAction(getString(errorOccurred ? "logics.check.failed" : "logics.check.completed",
+                    getString("logics.checking.aggregations")) + task.getMessages(), getString("logics.checking.aggregations")));
         }
     }
 }

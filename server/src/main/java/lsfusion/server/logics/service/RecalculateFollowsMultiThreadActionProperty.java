@@ -35,6 +35,7 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
     public void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         TaskRunner taskRunner = new TaskRunner(context.getBL());
         RecalculateFollowsTask task = new RecalculateFollowsTask();
+        boolean errorOccurred = false;
         try {
             ObjectValue threadCount = context.getKeyValue(threadCountInterface);
             ObjectValue propertyTimeout = context.getKeyValue(propertyTimeoutInterface);
@@ -42,6 +43,7 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
             taskRunner.runTask(task, ServerLoggers.serviceLogger, threadCount == null ? null : (Integer) threadCount.getValue(),
                     propertyTimeout == null ? null : (Integer) propertyTimeout.getValue());
         } catch (InterruptedException e) {
+            errorOccurred = true;
             task.logTimeoutTasks();
             taskRunner.shutdownNow();
             ServerLoggers.serviceLogger.error("Recalculate Follows error", e);
@@ -49,7 +51,8 @@ public class RecalculateFollowsMultiThreadActionProperty extends ScriptingAction
             ThreadUtils.interruptThread(context, Thread.currentThread());
             taskRunner.interruptThreadPoolProcesses(context);
         } finally {
-            context.delayUserInterfaction(new MessageClientAction(getString("logics.recalculation.completed", getString("logics.recalculation.follows")) + task.getMessages(), getString("logics.recalculation.follows")));
+            context.delayUserInterfaction(new MessageClientAction(getString(errorOccurred ? "logics.recalculation.failed" : "logics.recalculation.completed",
+                    getString("logics.recalculation.follows")) + task.getMessages(), getString("logics.recalculation.follows")));
         }
     }
 }
