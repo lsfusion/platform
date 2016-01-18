@@ -327,6 +327,7 @@ public class Scheduler extends LifecycleAdapter implements InitializingBean {
                             if(worker.isAlive()) {
                                 if(ThreadLocalContext.get() == null)
                                     ThreadLocalContext.set(threadLocalContext);
+                                afterFinishErrorOccurred = true;
                                 ThreadUtils.interruptThread(afterFinishLogSession.sql, worker);
                                 schedulerLogger.error("Timeout error while running scheduler task (in executeLAP()) " + detail.lap.property.caption);
                                 try (DataSession timeoutLogSession = dbManager.createSession(getLogSql())){
