@@ -42,8 +42,10 @@ public class BusinessLogicsBootstrap {
 
                 registerShutdownHook();
 
-                if(DBManager.explicitMigrate)
+                if(DBManager.explicitMigrate) {
                     logger.info("Server needs to be started once again...");
+                    System.exit(0);
+                }
 
                 logger.info("Server has successfully started in " + (System.currentTimeMillis() - startTime) + " ms.");
             } catch (Throwable e) {
