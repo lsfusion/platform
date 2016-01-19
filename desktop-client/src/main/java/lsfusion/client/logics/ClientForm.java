@@ -5,6 +5,7 @@ import lsfusion.base.OrderedMap;
 import lsfusion.base.context.ApplicationContext;
 import lsfusion.base.context.ApplicationContextHolder;
 import lsfusion.base.context.ContextIdentityObject;
+import lsfusion.client.Main;
 import lsfusion.client.SwingUtils;
 import lsfusion.client.form.LogicsSupplier;
 import lsfusion.client.serialization.ClientCustomSerializable;
@@ -163,11 +164,13 @@ public class ClientForm extends ContextIdentityObject implements LogicsSupplier,
     }
 
     public String getTooltip() {
-        return String.format("<html><body bgcolor=#FFFFE1>" +
-                "<b>%s</b><br/><hr>" +
-                "<b>sID:</b> %s<br/>" +
-                "<b>Путь:</b> %s<br/>" +
-                "</body></html>", caption, canonicalName, creationPath);
+        return Main.configurationAccessAllowed ?
+                String.format("<html><body bgcolor=#FFFFE1>" +
+                        "<b>%s</b><br/><hr>" +
+                        "<b>sID:</b> %s<br/>" +
+                        "<b>Путь:</b> %s<br/>" +
+                        "</body></html>", caption, canonicalName, creationPath) :
+                String.format("<html><body bgcolor=#FFFFE1><b>%s</b></body></html>", caption);
     }
 
     public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders(ClientGroupObject group) {
