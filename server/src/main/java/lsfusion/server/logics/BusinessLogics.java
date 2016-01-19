@@ -633,7 +633,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 // пробуем еще раз но с reparse'ом, для явной типизации
                 useReparse = true;
 
-                ImSet<String> props = SetFact.toSet("canonicalName", "stats", "userLoggable");
+                ImSet<String> props = SetFact.toSet("canonicalName", "stats", "userLoggable", "notNullQuantity");
                 reparse.set(props.mapKeyValues(new GetValue<String, String>() {
                     public String getMapValue(String value) {
                         return "Reflection_" + value + "Property_Property";
