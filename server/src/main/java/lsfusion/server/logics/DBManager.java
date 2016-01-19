@@ -603,6 +603,8 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
         }    
         return new OldDBStructure(inputDB, sql);
     }
+
+    public static boolean explicitMigrate = false;
     
     public boolean synchronizeDB() throws SQLException, IOException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {
 //        checkLP(businessLogics.getNamedProperties());
@@ -652,6 +654,12 @@ public class DBManager extends LifecycleAdapter implements InitializingBean {
 
             DBVersion newDBVersion = getCurrentDBVersion(oldDBStructure.dbVersion);
             NewDBStructure newDBStructure = new NewDBStructure(newDBVersion);
+
+            if(newDBStructure.version >= 22 && oldDBStructure.version < 22) { // временно, для явной типизации
+                Settings.get().setStartServerAnyWay(true);
+                explicitMigrate = true;
+            }
+
             dbVersion = newDBStructure.version;
             checkUniqueDBName(newDBStructure);
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
