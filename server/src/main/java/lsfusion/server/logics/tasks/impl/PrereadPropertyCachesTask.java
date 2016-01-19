@@ -30,4 +30,9 @@ public class PrereadPropertyCachesTask extends GroupPropertiesTask {
     protected void runTask(Property property) {
         property.prereadCaches();
     }
+
+    @Override
+    protected int getSplitCount() {
+        return 1000000;
+    }
 }
