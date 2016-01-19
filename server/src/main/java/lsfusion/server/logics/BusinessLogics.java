@@ -636,10 +636,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
                 ImSet<String> props = SetFact.toSet("canonicalName", "stats", "userLoggable", "notNullQuantity");
                 reparse.set(props.mapKeyValues(new GetValue<String, String>() {
                     public String getMapValue(String value) {
-                        return "Reflection_" + value + "Property_Property";
+                        return "Reflection_" + value + "_Property";
                     }}, new GetValue<String, String>() {
                     public String getMapValue(String value) {
-                        return "Reflection_" + value + "_Property";
+                        return "Reflection_" + value + "Property_Property";
                     }}));
 
                 setUserLoggableProperties(sql);
