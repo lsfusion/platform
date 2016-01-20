@@ -1939,7 +1939,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Lifecy
 
     private LP findProperty(String namespace, String name, List<ResolveClassSet> classes) {
         assert namespaceToModules.get(namespace) != null;
-        NamespacePropertyFinder finder = new NamespacePropertyFinder(new SoftLPModuleFinder(), namespaceToModules.get(namespace));
+        NamespacePropertyFinder finder = new NamespacePropertyFinder(new EqualLPModuleFinder(false), namespaceToModules.get(namespace));
         List<NamespaceElementFinder.FoundItem<LP<?, ?>>> foundElements = finder.findInNamespace(namespace, name, classes);
         assert foundElements.size() <= 1;
         return foundElements.size() == 0 ? null : foundElements.get(0).value;
