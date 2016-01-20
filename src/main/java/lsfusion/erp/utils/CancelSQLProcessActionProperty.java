@@ -26,7 +26,7 @@ public class CancelSQLProcessActionProperty extends ScriptingActionProperty {
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             DataObject currentObject = context.getDataKeyValue(integerInterface);
-            Integer processId = (Integer) findProperty("idSQLProcess").read(context, currentObject);
+            Integer processId = (Integer) findProperty("idSQLProcess[VARSTRING[10]]").read(context, currentObject);
             SQLSession cancelSession = SQLSession.getSQLSessionMap().get(processId);
             if (cancelSession != null)
                 cancelSession.setForcedCancel(true);

@@ -29,19 +29,19 @@ public class DeleteBackupActionProperty extends ScriptingActionProperty {
         try (DataSession session = context.createSession()) {
             DataObject backupObject = context.getDataKeyValue(backupInterface);
 
-            String backupFilePath = (String) findProperty("fileBackup").read(session, backupObject);
-            String backupLogFilePath = (String) findProperty("fileLogBackup").read(session, backupObject);
+            String backupFilePath = (String) findProperty("file[Backup]").read(session, backupObject);
+            String backupLogFilePath = (String) findProperty("fileLog[Backup]").read(session, backupObject);
             File f = new File(backupFilePath);
             File fLog = new File(backupLogFilePath);
             if (fLog.exists()) {
                 fLog.delete();
             }
             if ((f.exists() && f.delete()) || !f.exists()) {
-                findProperty("fileDeletedBackup").change(true, session, backupObject);
+                findProperty("fileDeleted[Backup]").change(true, session, backupObject);
             }
             session.apply(context);
 
-            findAction("formRefresh").execute(context);
+            findAction("formRefresh[]").execute(context);
             
         } catch (Exception e) {
             Throwables.propagate(e);

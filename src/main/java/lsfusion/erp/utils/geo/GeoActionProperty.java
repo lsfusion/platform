@@ -27,7 +27,7 @@ public class GeoActionProperty extends ScriptingActionProperty {
     protected boolean isYandex(ExecutionContext context, DataObject mapProvider) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
         boolean isYandex = true;
         if (mapProvider != null) {
-            String providerName = ((String) findProperty("staticName").read(context, mapProvider));
+            String providerName = ((String) findProperty("staticName[Object]").read(context, mapProvider));
             isYandex = providerName == null || providerName.contains("yandex");
         }
         return isYandex;

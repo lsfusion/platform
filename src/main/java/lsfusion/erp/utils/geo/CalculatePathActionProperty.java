@@ -32,19 +32,19 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
 
     public void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         try {
-            boolean useTor = findProperty("useTor").read(context) != null;
+            boolean useTor = findProperty("useTor[]").read(context) != null;
 
             KeyExpr poiExpr = new KeyExpr("poi");
             ImRevMap<String, KeyExpr> keys = MapFact.singletonRev("poi", poiExpr);
             QueryBuilder<String, Object> query = new QueryBuilder<>(keys);
-            query.addProperty("latitude", findProperty("latitudePOI").getExpr(poiExpr));
-            query.addProperty("longitude", findProperty("longitudePOI").getExpr(poiExpr));
-            query.addProperty("numberPathPOI", findProperty("numberPathPOI").getExpr(context.getModifier(), poiExpr));
-            query.and(findProperty("inPathPOI").getExpr(context.getModifier(), poiExpr).getWhere());
+            query.addProperty("latitude", findProperty("latitude[POI]").getExpr(poiExpr));
+            query.addProperty("longitude", findProperty("longitude[POI]").getExpr(poiExpr));
+            query.addProperty("numberPathPOI", findProperty("numberPath[POI]").getExpr(context.getModifier(), poiExpr));
+            query.and(findProperty("inPath[POI]").getExpr(context.getModifier(), poiExpr).getWhere());
             ImOrderMap<ImMap<String, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(context.getSession());
 
             boolean coordinatesFlag = true;
-            Object startPathPOI = findProperty("startPathPOI").read(context.getSession().sql, context.getModifier(), context.getQueryEnv());
+            Object startPathPOI = findProperty("startPathPOI[]").read(context.getSession().sql, context.getModifier(), context.getQueryEnv());
             if (startPathPOI != null) {
                 Map<Integer, DataObject> poiMap = new HashMap<>();
                 Map<Integer, String> points = new HashMap<>();
@@ -119,7 +119,7 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
                                         Integer distance = distanceMap.get(Pair.create(poiMap.get(i), poiMap.get(j)));
                                         if (distance == null) {
                                             distance = localDistances[j];
-                                            findProperty("distancePOIPOI").change(distance, session, poiMap.get(i), poiMap.get(j));
+                                            findProperty("distancePOIPOI[POI,POI]").change(distance, session, poiMap.get(i), poiMap.get(j));
                                         }
                                         distances[i][j] = distance;
                                     }
@@ -133,7 +133,7 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
                         int[] output = h.execute();
                         
                         for (int i = 0; i < output.length; i++) {
-                            findProperty("numberPathPOI").change(i + 1, context, poiMap.get(output[i]));
+                            findProperty("numberPath[POI]").change(i + 1, context, poiMap.get(output[i]));
                         }
 
                     }
@@ -154,9 +154,9 @@ public class CalculatePathActionProperty extends DistanceGeoActionProperty {
         KeyExpr poi2Expr = new KeyExpr("poi");
         ImRevMap<String, KeyExpr> keys = MapFact.toRevMap("poi1", poi1Expr, "poi2", poi2Expr);
         QueryBuilder<String, Object> query = new QueryBuilder<>(keys);
-        query.addProperty("distancePOIPOI", findProperty("distancePOIPOI").getExpr(poi1Expr, poi2Expr));
-        query.and(findProperty("inPathPOI").getExpr(context.getModifier(), poi1Expr, poi2Expr).getWhere());
-        query.and(findProperty("distancePOIPOI").getExpr(poi1Expr, poi2Expr).getWhere());
+        query.addProperty("distancePOIPOI", findProperty("distancePOIPOI[POI,POI]").getExpr(poi1Expr, poi2Expr));
+        query.and(findProperty("inPath[POI]").getExpr(context.getModifier(), poi1Expr, poi2Expr).getWhere());
+        query.and(findProperty("distancePOIPOI[POI,POI]").getExpr(poi1Expr, poi2Expr).getWhere());
         ImOrderMap<ImMap<String, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(context.getSession());
 
         Map<Pair<DataObject, DataObject>, Integer> distanceMap = new HashMap<>();

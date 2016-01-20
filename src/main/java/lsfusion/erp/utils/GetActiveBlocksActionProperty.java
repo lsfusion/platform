@@ -54,16 +54,16 @@ public class GetActiveBlocksActionProperty extends ScriptingActionProperty {
 
         DataSession session = context.getSession();
 
-        Integer previousCount = (Integer) findProperty("previousCountActiveBlock").read(session);
+        Integer previousCount = (Integer) findProperty("previousCountActiveBlock[]").read(session);
         previousCount = previousCount == null ? 0 : previousCount;
 
         for (int i = 0; i < previousCount; i++) {
             DataObject currentObject = new DataObject(i);
-            findProperty("typeLockedObjectActiveBlock").change((Object) null, session, currentObject);
-            findProperty("idLockedObjectActiveBlock").change((Object) null, session, currentObject);
-            findProperty("processIdActiveBlock").change((Object) null, session, currentObject);
-            findProperty("modeActiveBlock").change((Object) null, session, currentObject);
-            findProperty("grantedActiveBlock").change((Object) null, session, currentObject);
+            findProperty("typeLockedObjectActiveBlock[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("idLockedObjectActiveBlock[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("processIdActiveBlock[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("modeActiveBlock[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("grantedActiveBlock[INTEGER]").change((Object) null, session, currentObject);
         }
 
         SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
@@ -135,15 +135,15 @@ public class GetActiveBlocksActionProperty extends ScriptingActionProperty {
                 String objectId = trim((String) entry.get("Object"));
                 Boolean granted = trim((String) entry.get("Status")).equals("GRANT") ? true : null;
 
-                findProperty("idLockedObjectActiveBlock").change(objectId, session, currentObject);
-                findProperty("processIdActiveBlock").change(processId, session, currentObject);
-                findProperty("modeActiveBlock").change(mode, session, currentObject);
-                findProperty("typeLockedObjectActiveBlock").change(lockedType, session, currentObject);
-                findProperty("grantedActiveBlock").change(granted, session, currentObject);
+                findProperty("idLockedObjectActiveBlock[INTEGER]").change(objectId, session, currentObject);
+                findProperty("processIdActiveBlock[INTEGER]").change(processId, session, currentObject);
+                findProperty("modeActiveBlock[INTEGER]").change(mode, session, currentObject);
+                findProperty("typeLockedObjectActiveBlock[INTEGER]").change(lockedType, session, currentObject);
+                findProperty("grantedActiveBlock[INTEGER]").change(granted, session, currentObject);
 
                 i++;
             }
-            findProperty("previousCountActiveBlock").change(i, session);
+            findProperty("previousCountActiveBlock[]").change(i, session);
                       
             
         }  else if (syntaxType == SQLSyntaxType.POSTGRES) {
@@ -198,20 +198,20 @@ public class GetActiveBlocksActionProperty extends ScriptingActionProperty {
                 Boolean granted = (Boolean) entry.get("granted");
 
                 if (type != null && type.equals("transactionid"))
-                    findProperty("idLockedObjectActiveBlock").change(transactionID, session, currentObject);
+                    findProperty("idLockedObjectActiveBlock[INTEGER]").change(transactionID, session, currentObject);
                 else if (type != null && type.equals("virtualxid"))
-                    findProperty("idLockedObjectActiveBlock").change(virtualxID, session, currentObject);
+                    findProperty("idLockedObjectActiveBlock[INTEGER]").change(virtualxID, session, currentObject);
                 else if (type != null && type.equals("relation"))
-                    findProperty("idLockedObjectActiveBlock").change(relationID, session, currentObject);
+                    findProperty("idLockedObjectActiveBlock[INTEGER]").change(relationID, session, currentObject);
 
-                findProperty("processIdActiveBlock").change(processId, session, currentObject);
-                findProperty("modeActiveBlock").change(mode, session, currentObject);
-                findProperty("typeLockedObjectActiveBlock").change(lockedType, session, currentObject);
-                findProperty("grantedActiveBlock").change(granted, session, currentObject);
+                findProperty("processIdActiveBlock[INTEGER]").change(processId, session, currentObject);
+                findProperty("modeActiveBlock[INTEGER]").change(mode, session, currentObject);
+                findProperty("typeLockedObjectActiveBlock[INTEGER]").change(lockedType, session, currentObject);
+                findProperty("grantedActiveBlock[INTEGER]").change(granted, session, currentObject);
 
                 i++;
             }
-            findProperty("previousCountActiveBlock").change(i, session);
+            findProperty("previousCountActiveBlock[]").change(i, session);
         }
     }
 

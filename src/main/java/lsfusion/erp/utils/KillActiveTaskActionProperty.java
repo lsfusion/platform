@@ -40,11 +40,11 @@ public class KillActiveTaskActionProperty extends ScriptingActionProperty {
     private void getActiveTasksFromDatabase(ExecutionContext context) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
 
         DataObject currentObject = context.getDataKeyValue(integerInterface);
-        Integer pid = (Integer) findProperty("idActiveTask").read(context, currentObject);
+        Integer pid = (Integer) findProperty("idActiveTask[INTEGER]").read(context, currentObject);
         
         context.getDbManager().getAdapter().killProcess(pid);
 
-        findProperty("idActiveTask").change((Object) null, context, currentObject);
+        findProperty("idActiveTask[INTEGER]").change((Object) null, context, currentObject);
 
     }
 }

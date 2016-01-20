@@ -47,7 +47,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
 
             if (templateObject != null) {
 
-                Object fileObject = findProperty("fileTemplate").read(context, templateObject);
+                Object fileObject = findProperty("file[Template]").read(context, templateObject);
                 if (fileObject != null) {
 
                     DataObject wordObject = new DataObject(fileObject, WordClass.get(false, false));
@@ -57,11 +57,11 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                     ImRevMap<Object, KeyExpr> templateEntryKeys = MapFact.singletonRev((Object) "TemplateEntry", templateEntryExpr);
 
                     QueryBuilder<Object, Object> templateEntryQuery = new QueryBuilder<>(templateEntryKeys);
-                    templateEntryQuery.addProperty("keyTemplateEntry", findProperty("keyTemplateEntry").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("valueTemplateEntry", findProperty("valueTemplateEntry").getExpr(context.getModifier(), templateEntryExpr));
-                    templateEntryQuery.addProperty("isTableTemplateEntry", findProperty("isTableTemplateEntry").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("keyTemplateEntry", findProperty("key[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("valueTemplateEntry", findProperty("value[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
+                    templateEntryQuery.addProperty("isTableTemplateEntry", findProperty("isTable[TemplateEntry]").getExpr(context.getModifier(), templateEntryExpr));
 
-                    templateEntryQuery.and(findProperty("templateTemplateEntry").getExpr(context.getModifier(), templateEntryQuery.getMapExprs().get("TemplateEntry")).compare(templateObject.getExpr(), Compare.EQUALS));
+                    templateEntryQuery.and(findProperty("template[TemplateEntry]").getExpr(context.getModifier(), templateEntryQuery.getMapExprs().get("TemplateEntry")).compare(templateObject.getExpr(), Compare.EQUALS));
 
                     ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> templateEntryResult = templateEntryQuery.execute(context);
 
@@ -101,7 +101,7 @@ public class ProcessTemplateActionProperty extends ScriptingActionProperty {
                         document.write(outputStream);
                     }
 
-                    findProperty("resultTemplate").change(outputStream.toByteArray(), context);
+                    findProperty("resultTemplate[]").change(outputStream.toByteArray(), context);
                 }
             }
         } catch (IOException | ScriptingErrorLog.SemanticErrorException e) {

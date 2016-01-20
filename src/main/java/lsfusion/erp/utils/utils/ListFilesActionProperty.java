@@ -54,19 +54,19 @@ public class ListFilesActionProperty extends ScriptingActionProperty {
 
                         Integer i = 0;
                         for (Map.Entry<String, Boolean> file : filesList.entrySet()) {
-                            findProperty("fileName").change(file.getKey(), context, new DataObject(i));
-                            findProperty("fileIsDirectory").change(file.getValue(), context, new DataObject(i));
+                            findProperty("fileName[INTEGER]").change(file.getKey(), context, new DataObject(i));
+                            findProperty("fileIsDirectory[INTEGER]").change(file.getValue(), context, new DataObject(i));
                             i++;
                         }
-                        Integer prevCount = (Integer) findProperty("prevCountFiles").read(context);
+                        Integer prevCount = (Integer) findProperty("prevCountFiles[]").read(context);
                         if (prevCount != null) {
                             while (i < prevCount) {
-                                findProperty("fileName").change((Object) null, context, new DataObject(i));
-                                findProperty("fileIsDirectory").change((Object) null, context, new DataObject(i));
+                                findProperty("fileName[INTEGER]").change((Object) null, context, new DataObject(i));
+                                findProperty("fileIsDirectory[INTEGER]").change((Object) null, context, new DataObject(i));
                                 i++;
                             }
                         }
-                        findProperty("prevCountFiles").change(filesList.size(), context);
+                        findProperty("prevCountFiles[]").change(filesList.size(), context);
                     } else {
                         throw Throwables.propagate(new RuntimeException("ReadActionProperty Error. File not found: " + path));
                     }

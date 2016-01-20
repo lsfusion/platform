@@ -39,16 +39,16 @@ public abstract class GetTasksActionProperty extends ScriptingActionProperty {
 
         DataSession session = context.getSession();
 
-        Integer previousCount = (Integer) findProperty("previousCountActiveTask").read(session);
+        Integer previousCount = (Integer) findProperty("previousCountActiveTask[]").read(session);
         previousCount = previousCount == null ? 0 : previousCount;
 
         for (int i = 0; i < previousCount; i++) {
             DataObject currentObject = new DataObject(i);
-            findProperty("idActiveTask").change((Object) null, session, currentObject);
-            findProperty("queryActiveTask").change((Object) null, session, currentObject);
-            findProperty("userActiveTask").change((Object) null, session, currentObject);
-            findProperty("addressUserActiveTask").change((Object) null, session, currentObject);
-            findProperty("dateTimeActiveTask").change((Object) null, session, currentObject);
+            findProperty("idActiveTask[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("queryActiveTask[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("userActiveTask[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("addressUserActiveTask[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("dateTimeActiveTask[INTEGER]").change((Object) null, session, currentObject);
         }
 
         SQLSyntaxType syntaxType = context.getDbManager().getAdapter().getSyntaxType();
@@ -102,15 +102,15 @@ public abstract class GetTasksActionProperty extends ScriptingActionProperty {
                 String address = trim((String) entry.get("client_net_address"));
                 Timestamp dateTime = (Timestamp) entry.get("start_time");
                 if (!query.equals(originalQuery)) {
-                    findProperty("idActiveTask").change(processId, session, currentObject);
-                    findProperty("queryActiveTask").change(query, session, currentObject);
-                    findProperty("userActiveTask").change(userActiveTask, session, currentObject);
-                    findProperty("addressUserActiveTask").change(address, session, currentObject);
-                    findProperty("dateTimeActiveTask").change(dateTime, session, currentObject);
+                    findProperty("idActiveTask[INTEGER]").change(processId, session, currentObject);
+                    findProperty("queryActiveTask[INTEGER]").change(query, session, currentObject);
+                    findProperty("userActiveTask[INTEGER]").change(userActiveTask, session, currentObject);
+                    findProperty("addressUserActiveTask[INTEGER]").change(address, session, currentObject);
+                    findProperty("dateTimeActiveTask[INTEGER]").change(dateTime, session, currentObject);
                     i++;
                 }
             }
-            findProperty("previousCountActiveTask").change(i, session);
+            findProperty("previousCountActiveTask[]").change(i, session);
 
         } else if (syntaxType == SQLSyntaxType.POSTGRES) {
 
@@ -163,21 +163,21 @@ public abstract class GetTasksActionProperty extends ScriptingActionProperty {
                     String userActiveTask = null;
                     String computerActiveTask = null;
                     if (sqlSession != null) {
-                        userActiveTask = (String) findProperty("nameUser").read(session,
+                        userActiveTask = (String) findProperty("name[User]").read(session,
                                 session.getObjectValue(context.getBL().authenticationLM.user, sqlSession.userProvider.getCurrentUser()));
-                        computerActiveTask = (String) findProperty("hostnameComputer").read(session,
+                        computerActiveTask = (String) findProperty("hostname[Computer]").read(session,
                                 session.getObjectValue(context.getBL().authenticationLM.computer, sqlSession.userProvider.getCurrentComputer()));
                     }
-                    findProperty("idActiveTask").change(processId, session, currentObject);
-                    findProperty("queryActiveTask").change(query, session, currentObject);
-                    findProperty("computerActiveTask").change(computerActiveTask, session, currentObject);
-                    findProperty("userActiveTask").change(userActiveTask, session, currentObject);
-                    findProperty("addressUserActiveTask").change(address, session, currentObject);
-                    findProperty("dateTimeActiveTask").change(dateTime, session, currentObject);
+                    findProperty("idActiveTask[INTEGER]").change(processId, session, currentObject);
+                    findProperty("queryActiveTask[INTEGER]").change(query, session, currentObject);
+                    findProperty("computerActiveTask[INTEGER]").change(computerActiveTask, session, currentObject);
+                    findProperty("userActiveTask[INTEGER]").change(userActiveTask, session, currentObject);
+                    findProperty("addressUserActiveTask[INTEGER]").change(address, session, currentObject);
+                    findProperty("dateTimeActiveTask[INTEGER]").change(dateTime, session, currentObject);
                     i++;
                 }
             }
-            findProperty("previousCountActiveTask").change(i, session);
+            findProperty("previousCountActiveTask[]").change(i, session);
         }
     }
 

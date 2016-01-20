@@ -5,133 +5,133 @@ REQUIRE System, Authentication, Time;
 GROUP created 'Создан' : public;
 
 META defineCreated(objectClass)
-    createdTime##objectClass 'Время создания'= DATA DATETIME (objectClass) IN created;
-    createdTime##objectClass (o) <- currentDateTime() WHEN SET(o IS objectClass);
+    createdTime 'Время создания'= DATA DATETIME (objectClass) IN created;
+    createdTime (objectClass o) <- currentDateTime() WHEN SET(o IS objectClass);
     
-    createdUser##objectClass = DATA CustomUser (objectClass);
-    createdNameUser##objectClass 'Создан пользователем' (o) = nameContact(createdUser##objectClass(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN created;
-    createdUser##objectClass (o) <- currentUser() WHEN SET(o IS objectClass);
+    createdUser = DATA CustomUser (objectClass);
+    createdNameUser 'Создан пользователем' (objectClass o) = name[Contact](createdUser(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN created;
+    createdUser (objectClass o) <- currentUser() WHEN SET(o IS objectClass);
     
-    createdComputer##objectClass = DATA Computer (objectClass);
-    createdHostnameComputer##objectClass 'Создан на компьютере' (o) = hostnameComputer(createdComputer##objectClass(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN created;
-    createdComputer##objectClass (o) <- currentComputer() WHEN SET(o IS objectClass);
+    createdComputer = DATA Computer (objectClass);
+    createdHostnameComputer 'Создан на компьютере' (objectClass o) = hostname(createdComputer(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN created;
+    createdComputer (objectClass o) <- currentComputer() WHEN SET(o IS objectClass);
 END
 
 META defineCreatedAbstract(objectClass)
-    createdTime##objectClass 'Время создания'= ABSTRACT DATETIME (objectClass) IN created;
+    createdTime 'Время создания'= ABSTRACT DATETIME (objectClass) IN created;
     
-    createdUser##objectClass = ABSTRACT CustomUser (objectClass);
-    createdNameUser##objectClass 'Создан пользователем' (o) = nameContact(createdUser##objectClass(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN created;
+    createdUser = ABSTRACT CustomUser (objectClass);
+    createdNameUser 'Создан пользователем' (objectClass o) = name[Contact](createdUser(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN created;
     
-    createdComputer##objectClass = ABSTRACT Computer (objectClass);
-    createdHostnameComputer##objectClass 'Создан на компьютере' (o) = hostnameComputer(createdComputer##objectClass(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN created;
+    createdComputer = ABSTRACT Computer (objectClass);
+    createdHostnameComputer 'Создан на компьютере' (objectClass o) = hostname(createdComputer(o)) MINCHARWIDTH 10 PREFCHARWIDTH 20 IN created;
 END
 
 META defineHistorizable(property, propPostfix, caption, type, object, objectIdentity, group)
-    data###property###object###propPostfix##Date caption = DATA type (###object, DATE) IN group;
+    data###property caption = DATA type (###object, DATE) IN group;
 
-    property###object###propPostfix##Date caption (object, date) = GROUP LAST  data###property###object###propPostfix##Date(object, dateIn)
-                                                                         BY    object, date
+    property caption (object, date) = GROUP LAST  data###property(###object object, DATE dateIn)
+                                                                         BY    object, DATE date
                                                                          ORDER dateIn
-                                                                         WHERE data###property###object###propPostfix##Date(object, dateIn) AND dateIn <= (date AS DATE) IN group;
+                                                                         WHERE data###property(object, dateIn) AND dateIn <= (date AS DATE) IN group;
 
-    over###property###object###propPostfix##Date caption = OVERRIDE property###object###propPostfix##Date(object, date), data###property###object###propPostfix##Date(object, date) IN group;
+    over###property caption = OVERRIDE property(###object object, DATE date), data###property(object, date) IN group;
 
-    property###object###propPostfix caption (object) = property###object###propPostfix##Date(object, currentDate()) IN group;
+    property caption (###object object) = property(object, currentDate()) IN group;
 
     FORM add###property###object###propPostfix caption
         OBJECTS a=###object FIXED PANEL, d=DATE FIXED PANEL
-        PROPERTIES objectIdentity(a) READONLY, OBJVALUE(d), data###property###object###propPostfix##Date(a, d)
+        PROPERTIES name(a) READONLY, OBJVALUE(d), data###property(a, d)
     ;
     DESIGN add###property###object###propPostfix {
-        PROPERTY(objectIdentity(a)) { focusable = FALSE; }
+        PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    add###property###object###propPostfix 'Добавить' (object) = ACTION FORM add###property###object###propPostfix OBJECTS a = object MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property 'Добавить' (###object object) = ACTION FORM add###property###object###propPostfix OBJECTS a = object MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property###object###propPostfix caption
         OBJECTS a=###object FIXED PANEL, d=DATE
-        PROPERTIES objectIdentity(a) READONLY, add###property###object###propPostfix(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property###object###propPostfix##Date(a, d)
-        FILTERS data###property###object###propPostfix##Date(a, d)
+        PROPERTIES name(a) READONLY, add###property(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property(a, d)
+        FILTERS data###property(a, d)
     ;
     DESIGN dialog###property###object###propPostfix {
-        PROPERTY(objectIdentity(a)) { focusable = FALSE; }
+        PROPERTY(name(a)) { focusable = FALSE; }
     }
 
-    dialog###property###object###propPostfix caption (object) = ACTION FORM dialog###property###object###propPostfix OBJECTS a = object MODAL SHORTCUT property###object###propPostfix ASONCHANGE property###object###propPostfix;
+    dialog###property caption (###object object) = ACTION FORM dialog###property###object###propPostfix OBJECTS a = object MODAL SHORTCUT property[###object] ASONCHANGE property[###object];
 END
 
 // ---------------------------------- Свойство объект-дата для (пример, стат.класса)------------------------------------------ //
 
 META defineHistorizableCustom(property, caption, type, typeIdentity, classIdentity, object, objectIdentity, group)
-    data###property###object##Date caption = DATA type (###object, DATE);
-    data###typeIdentity###classIdentity###property###object##Date caption (object, date) = typeIdentity###classIdentity(data###property###object##Date(object, date)) IN group;
+    data###property caption = DATA type (###object, DATE);
+    data###typeIdentity###classIdentity###property caption (###object object, DATE date) = typeIdentity(data###property(object, date)) IN group;
 
-    property###object##Date caption (object, date) = GROUP LAST  data###property###object##Date(object, dateIn)
-                                                           BY    object, date
+    property caption (object, date) = GROUP LAST  data###property(###object object, DATE dateIn)
+                                                           BY    object, DATE date
                                                            ORDER dateIn
-                                                           WHERE data###property###object##Date(object, dateIn) AND dateIn <= (date AS DATE) IN group;
+                                                           WHERE data###property(object, dateIn) AND dateIn <= (date AS DATE) IN group;
 
-    property###object caption (object) = property###object##Date(object, currentDate());
-    typeIdentity###classIdentity###property###object caption (object) = typeIdentity###classIdentity(property###object(object)) IN group;
+    property caption (###object object) = property(object, currentDate());
+    typeIdentity###classIdentity###property caption (###object object) = typeIdentity(property(object)) IN group;
 
     FORM add###property###object caption
         OBJECTS a=###object FIXED PANEL, d=DATE FIXED PANEL
-        PROPERTIES objectIdentity(a) READONLY, OBJVALUE(d), data###typeIdentity###classIdentity###property###object##Date(a, d)
+        PROPERTIES typeIdentity(a) READONLY, OBJVALUE(d), data###typeIdentity###classIdentity###property(a, d)
     ;
     DESIGN add###property###object {
-        PROPERTY(objectIdentity(a)) { focusable = FALSE; }
+        PROPERTY(typeIdentity(a)) { focusable = FALSE; }
     }
 
-    add###property###object 'Добавить' (object) = ACTION FORM add###property###object OBJECTS a = object MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property 'Добавить' (###object object) = ACTION FORM add###property###object OBJECTS a = object MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property###object caption
         OBJECTS a=###object FIXED PANEL, d=DATE
-        PROPERTIES objectIdentity(a) READONLY, add###property###object(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeIdentity###classIdentity###property###object##Date(a, d)
-        FILTERS data###property###object##Date(a, d)
+        PROPERTIES typeIdentity(a) READONLY, add###property(a) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###typeIdentity###classIdentity###property(a, d)
+        FILTERS data###property(a, d)
     ;
     DESIGN dialog###property###object {
-        PROPERTY(objectIdentity(a)) { focusable = FALSE; }
+        PROPERTY(typeIdentity(a)) { focusable = FALSE; }
     }
 
-    dialog###property###object caption (object) = ACTION FORM dialog###property###object OBJECTS a = object MODAL SHORTCUT typeIdentity###classIdentity###property###object ASONCHANGE typeIdentity###classIdentity###property###object;
+    dialog###property caption (###object object) = ACTION FORM dialog###property###object OBJECTS a = object MODAL SHORTCUT typeIdentity###classIdentity###property[###object] ASONCHANGE typeIdentity###classIdentity###property[###object];
 END
 
 // ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
 META defineHistorizable(property, caption, type, object1, object1Identity, object2, object2Identity, group)
-    data###property###object1###object2##Date caption = DATA type (###object1, ###object2, DATE) IN group;
+    data###property caption = DATA type (###object1, ###object2, DATE) IN group;
 
-    property###object1###object2##Date caption (object1, object2, date) = 
-        GROUP LAST  data###property###object1###object2##Date(object1, object2, dateIn)
-              BY    object1, object2, date
+    property caption (object1, object2, date) = 
+        GROUP LAST  data###property(###object1 object1, ###object2 object2, DATE dateIn)
+              BY    object1, object2, DATE date
               ORDER dateIn
-              WHERE data###property###object1###object2##Date(object1, object2, dateIn) AND dateIn <= (date AS DATE) IN group;
+              WHERE data###property(object1, object2, dateIn) AND dateIn <= (date AS DATE) IN group;
 
-    over###property###object1###object2##Date caption = OVERRIDE property###object1###object2##Date(object1, object2, date), data###property###object1###object2##Date(object1, object2, date);
+    over###property caption = OVERRIDE property(###object1 object1, ###object2 object2, DATE date), data###property(object1, object2, date);
 
-    property###object1###object2 caption (object1, object2) = property###object1###object2##Date(object1, object2, currentDate()) IN group;
+    property caption (###object1 object1, ###object2 object2) = property(object1, object2, currentDate()) IN group;
 
     FORM add###property###object1###object2 caption
         OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, d=DATE FIXED PANEL
-        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, OBJVALUE(d), data###property###object1###object2##Date(a, b, d)
+        PROPERTIES name(a) READONLY, name(b) READONLY, OBJVALUE(d), data###property(a, b, d)
     ;
     DESIGN add###property###object1###object2 {
-        PROPERTY(object1Identity(a)) { focusable = FALSE; }
-        PROPERTY(object2Identity(b)) { focusable = FALSE; }
+        PROPERTY(name(a)) { focusable = FALSE; }
+        PROPERTY(name(b)) { focusable = FALSE; }
     }
 
-    add###property###object1###object2 'Добавить' (object1, object2) = ACTION FORM add###property###object1###object2 OBJECTS a = object1, b = object2 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
+    add###property 'Добавить' (###object1 object1, ###object2 object2) = ACTION FORM add###property###object1###object2 OBJECTS a = object1, b = object2 MODAL TOOLBAR IMAGE 'add.png' EDITKEY 'INSERT';
 
     FORM dialog###property###object1###object2 caption
         OBJECTS a=###object1 FIXED PANEL, b=###object2 FIXED PANEL, d=DATE
-        PROPERTIES object1Identity(a) READONLY, object2Identity(b) READONLY, add###property###object1###object2(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property###object1###object2##Date(a, b, d)
-        FILTERS data###property###object1###object2##Date(a, b, d)
+        PROPERTIES name(a) READONLY, name(b) READONLY, add###property(a, b) TODRAW d FORCE PANEL, OBJVALUE(d) READONLY, data###property(a, b, d)
+        FILTERS data###property(a, b, d)
     ;
     DESIGN dialog###property###object1###object2 {
-        PROPERTY(object1Identity(a)) { focusable = FALSE; }
-        PROPERTY(object2Identity(b)) { focusable = FALSE; }
+        PROPERTY(name(a)) { focusable = FALSE; }
+        PROPERTY(name(b)) { focusable = FALSE; }
     }
 
-    dialog###property###object1###object2 caption (object1, object2) = ACTION FORM dialog###property###object1###object2 OBJECTS a = object1, b = object2 MODAL SHORTCUT property###object1###object2 ASONCHANGE property###object1###object2;
-    overDialog###property###object1###object2##Date caption (object1, object2) = ACTION FORM dialog###property###object1###object2 OBJECTS a = object1, b = object2 MODAL SHORTCUT over###property###object1###object2##Date;
+    dialog###property caption (###object1 object1, ###object2 object2) = ACTION FORM dialog###property###object1###object2 OBJECTS a = object1, b = object2 MODAL SHORTCUT property[###object1,###object2] ASONCHANGE property[###object1,###object2];
+    overDialog###property##Date caption (###object1 object1, ###object2 object2) = ACTION FORM dialog###property###object1###object2 OBJECTS a = object1, b = object2 MODAL SHORTCUT over###property[###object1,###object2,DATE];
 END

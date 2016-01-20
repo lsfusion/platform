@@ -41,11 +41,11 @@ public class ShowOnMapPathActionProperty extends GeoActionProperty {
             KeyExpr poiExpr = new KeyExpr("poi");
             ImRevMap<String, KeyExpr> keys = MapFact.singletonRev("poi", poiExpr);
             QueryBuilder<String, Object> query = new QueryBuilder<>(keys);
-            query.addProperty("latitude", findProperty("latitudePOI").getExpr(poiExpr));
-            query.addProperty("longitude", findProperty("longitudePOI").getExpr(poiExpr));
-            query.addProperty("numberPathPOI", findProperty("numberPathPOI").getExpr(context.getModifier(), poiExpr));
-            query.addProperty("namePOI", findProperty("namePOI").getExpr(poiExpr));
-            query.and(findProperty("numberPathPOI").getExpr(context.getModifier(), poiExpr).getWhere());
+            query.addProperty("latitude", findProperty("latitude[POI]").getExpr(poiExpr));
+            query.addProperty("longitude", findProperty("longitude[POI]").getExpr(poiExpr));
+            query.addProperty("numberPathPOI", findProperty("numberPath[POI]").getExpr(context.getModifier(), poiExpr));
+            query.addProperty("namePOI", findProperty("name[POI]").getExpr(poiExpr));
+            query.and(findProperty("numberPath[POI]").getExpr(context.getModifier(), poiExpr).getWhere());
             ImOrderMap<ImMap<String, Object>, ImMap<Object, Object>> result = query.execute(context, MapFact.singletonOrder((Object) "numberPathPOI", false));
             String uri = "";
             int index = 1;

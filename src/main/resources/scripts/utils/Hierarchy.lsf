@@ -9,53 +9,53 @@ META defineHierarchyAbstract(object)
 END
 
 META defineHierarchy (object, class)
-    parent###object = DATA class (class) AUTOSET;
+    parent = DATA class (class) AUTOSET;
     @defineHierarchyCustom(object, class);
 END
 
 META defineHierarchyAbstract (object, class)
-    parent###object = ABSTRACT class (class) PERSISTENT;
+    parent = ABSTRACT class (class) PERSISTENT;
     @defineHierarchyCustom(object, class);
 END
 
 META defineHierarchyCustom (object, class)
-    nameParent###object 'Родительский объект' = name###object(parent###object(object)) IN base;
+    nameParent 'Родительский объект' = name(parent(class object)) IN base;
 
-    level###object###object 'Уровень' (child, parent) = RECURSION 1l IF child IS class AND parent == child
-                                                                  STEP 2l IF parent == parent###object($parent) PERSISTENT;
+    level 'Уровень' (class child, class parent) = RECURSION 1l IF child IS class AND parent == child
+                                                                  STEP 2l IF parent == parent($parent) PERSISTENT;
 
-    object###object##Level (child, level) = GROUP MAX parent IF level == level###object###object(child, parent)
+    object (child, level) = GROUP MAX class parent IF LONG level == level(class child, parent)
                                                    BY child, level;
 
-    level###object 'Уровень' (child) = GROUP SUM 1 IF level###object###object(child, parent) BY child;
+    level 'Уровень' (child) = GROUP SUM 1 IF level(class child, class parent) BY child;
 
-    levelRoot###object###object 'Уровень' (child, parent) = PARTITION SUM 1 IF level###object###object(child, parent)
+    levelRoot 'Уровень' (class child, class parent) = PARTITION SUM 1 IF level(child, parent)
                                                                       BY child
-                                                                      ORDER DESC level###object###object(child, parent) PERSISTENT;
-    object###object##LevelRoot (child, level) = GROUP NAGGR parent BY child, levelRoot###object###object(child, parent);  
+                                                                      ORDER DESC level(child, parent) PERSISTENT;
+    object##Root (child, level) = GROUP NAGGR class parent BY class child, levelRoot(child, parent);  
 
-    isParent###object###object 'Является потомком' (child, parent) = TRUE IF level###object###object(child, parent);
+    isParent 'Является потомком' (class child, class parent) = TRUE IF level(child, parent);
 
-    childNumber###object 'Кол-во непосредственных потомков' (object) = GROUP SUM 1 BY parent###object(child) PERSISTENT;
+    childNumber 'Кол-во непосредственных потомков' (object) = GROUP SUM 1 BY parent(class child) PERSISTENT;
 
-    descendantNumber###object 'Кол-во всех потомков' (object) = GROUP SUM 1 IF isParent###object###object(child, parent) BY parent PERSISTENT;
+    descendantNumber 'Кол-во всех потомков' (object) = GROUP SUM 1 IF isParent(class child, class parent) BY parent PERSISTENT;
 
-    isLeaf###object 'Лист' (object) = object IS class AND NOT childNumber###object(object) PERSISTENT;
+    isLeaf 'Лист' (class object) = object IS class AND NOT childNumber(object) PERSISTENT;
 
-    isParentLeaf###object###object (child, parent) = isParent###object###object(child, parent) AND isLeaf###object(child);
+    isParentLeaf (class child, class parent) = isParent(child, parent) AND isLeaf(child);
 
-    canonicalName###object 'Полное имя' (object) = VARSTRING[255](
-                           [= GROUP CONCAT name###object(parent), ' / ' BY child ORDER DESC level###object###object(child, parent)](object))
+    canonicalName 'Полное имя' (class object) = VARSTRING[255](
+                           [= GROUP CONCAT name(class parent), ' / ' BY class child ORDER DESC level(child, parent)](object))
                            MINCHARWIDTH 50 MAXCHARWIDTH 100 PREFCHARWIDTH 100 PERSISTENT;
 END
 
 META defineHierarchyPlain(object)
-    object##1###object (child) = object###object##LevelRoot(child, 1) PERSISTENT;    
-    object##2###object (child) = object###object##LevelRoot(child, 2) PERSISTENT;    
-    object##3###object (child) = object###object##LevelRoot(child, 3) PERSISTENT;    
-    object##4###object (child) = object###object##LevelRoot(child, 4) PERSISTENT;    
-    object##5###object (child) = object###object##LevelRoot(child, 5) PERSISTENT;    
-    object##6###object (child) = object###object##LevelRoot(child, 6) PERSISTENT;    
+    object##1 (###object child) = object##Root(child, 1) PERSISTENT;    
+    object##2 (###object child) = object##Root(child, 2) PERSISTENT;    
+    object##3 (###object child) = object##Root(child, 3) PERSISTENT;    
+    object##4 (###object child) = object##Root(child, 4) PERSISTENT;    
+    object##5 (###object child) = object##Root(child, 5) PERSISTENT;    
+    object##6 (###object child) = object##Root(child, 6) PERSISTENT;    
 END
 
 META defineHierarchyPlainOrder(object, property, prefixName, prefix)

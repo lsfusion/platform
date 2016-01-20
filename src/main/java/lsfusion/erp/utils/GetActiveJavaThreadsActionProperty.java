@@ -45,22 +45,22 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
         ThreadMXBean thMxB = ManagementFactory.getThreadMXBean();
         
         ThreadInfo[] threadsInfo = thMxB.dumpAllThreads(true, false);
-            Integer previousCount = (Integer) findProperty("previousCountActiveJavaThread").read(session);
+            Integer previousCount = (Integer) findProperty("previousCountActiveJavaThread[]").read(session);
         previousCount = previousCount == null ? 0 : previousCount;
 
         ServerLoggers.systemLogger.info("GetActiveJavaThreads: reset started");
         
         for (int i = 0; i < previousCount; i++) {
             DataObject currentObject = new DataObject(i);
-            findProperty("idActiveJavaThread").change((Object) null, session, currentObject);
-            findProperty("stackTraceActiveJavaThread").change((Object) null, session, currentObject);
-            findProperty("nameActiveJavaThread").change((Object) null, session, currentObject);
-            findProperty("statusActiveJavaThread").change((Object) null, session, currentObject);
-            findProperty("lockNameActiveJavaThread").change((Object) null, session, currentObject);
-            findProperty("lockOwnerIdActiveJavaThread").change((Object) null, session, currentObject);
-            findProperty("lockOwnerNameActiveJavaThread").change((Object) null, session, currentObject);
-            findProperty("computerActiveJavaThread").change((Object) null, session, currentObject);
-            findProperty("userActiveJavaThread").change((Object) null, session, currentObject);
+            findProperty("idActiveJavaThread[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("stackTraceActiveJavaThread[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("nameActiveJavaThread[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("statusActiveJavaThread[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("lockNameActiveJavaThread[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("lockOwnerIdActiveJavaThread[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("lockOwnerNameActiveJavaThread[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("computerActiveJavaThread[INTEGER]").change((Object) null, session, currentObject);
+            findProperty("userActiveJavaThread[INTEGER]").change((Object) null, session, currentObject);
         }
 
         ServerLoggers.systemLogger.info("GetActiveJavaThreads: update started");
@@ -83,19 +83,19 @@ public class GetActiveJavaThreadsActionProperty extends ScriptingActionProperty 
 
             ServerLoggers.systemLogger.info("GetActiveJavaThreads: thread " + name);
 
-            findProperty("idActiveJavaThread").change(id, session, currentObject);
-            findProperty("stackTraceActiveJavaThread").change(stackTrace, session, currentObject);
-            findProperty("nameActiveJavaThread").change(name, session, currentObject);
-            findProperty("statusActiveJavaThread").change(status, session, currentObject);
-            findProperty("lockNameActiveJavaThread").change(lockName, session, currentObject);
-            findProperty("lockOwnerIdActiveJavaThread").change(lockOwnerId, session, currentObject);
-            findProperty("lockOwnerNameActiveJavaThread").change(lockOwnerName, session, currentObject);
-            findProperty("computerActiveJavaThread").change(computer, session, currentObject);
-            findProperty("userActiveJavaThread").change(user, session, currentObject);
+            findProperty("idActiveJavaThread[INTEGER]").change(id, session, currentObject);
+            findProperty("stackTraceActiveJavaThread[INTEGER]").change(stackTrace, session, currentObject);
+            findProperty("nameActiveJavaThread[INTEGER]").change(name, session, currentObject);
+            findProperty("statusActiveJavaThread[INTEGER]").change(status, session, currentObject);
+            findProperty("lockNameActiveJavaThread[INTEGER]").change(lockName, session, currentObject);
+            findProperty("lockOwnerIdActiveJavaThread[INTEGER]").change(lockOwnerId, session, currentObject);
+            findProperty("lockOwnerNameActiveJavaThread[INTEGER]").change(lockOwnerName, session, currentObject);
+            findProperty("computerActiveJavaThread[INTEGER]").change(computer, session, currentObject);
+            findProperty("userActiveJavaThread[INTEGER]").change(user, session, currentObject);
             if(id>max)
                 max = id;
         }        
-        findProperty("previousCountActiveJavaThread").change(max, session);
+        findProperty("previousCountActiveJavaThread[]").change(max, session);
         
         ServerLoggers.systemLogger.info("GetActiveJavaThreads: finished");
     }

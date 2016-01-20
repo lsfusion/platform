@@ -38,17 +38,17 @@ public class RecalculateDistancePOIActionProperty extends DistanceGeoActionPrope
         try {
 
             DataObject poiObject = context.getDataKeyValue(POIInterface);
-            boolean useTor = findProperty("useTor").read(context) != null;
+            boolean useTor = findProperty("useTor[]").read(context) != null;
 
             KeyExpr poiExpr = new KeyExpr("poi");
             ImRevMap<String, KeyExpr> keys = MapFact.singletonRev("poi", poiExpr);
             QueryBuilder<String, Object> query = new QueryBuilder<>(keys);
-            query.addProperty("latitude", findProperty("latitudePOI").getExpr(context.getModifier(), poiExpr));
-            query.addProperty("longitude", findProperty("longitudePOI").getExpr(context.getModifier(), poiExpr));
-            query.and(findProperty("distancePOIPOI").getExpr(poiExpr, poiObject.getExpr()).getWhere().or(
-                    findProperty("distancePOIPOI").getExpr(poiObject.getExpr(), poiExpr).getWhere()));
-            query.and(findProperty("latitudePOI").getExpr(context.getModifier(), poiExpr).getWhere());
-            query.and(findProperty("longitudePOI").getExpr(context.getModifier(), poiExpr).getWhere());
+            query.addProperty("latitude", findProperty("latitude[POI]").getExpr(context.getModifier(), poiExpr));
+            query.addProperty("longitude", findProperty("longitude[POI]").getExpr(context.getModifier(), poiExpr));
+            query.and(findProperty("distancePOIPOI[POI,POI]").getExpr(poiExpr, poiObject.getExpr()).getWhere().or(
+                    findProperty("distancePOIPOI[POI,POI]").getExpr(poiObject.getExpr(), poiExpr).getWhere()));
+            query.and(findProperty("latitude[POI]").getExpr(context.getModifier(), poiExpr).getWhere());
+            query.and(findProperty("longitude[POI]").getExpr(context.getModifier(), poiExpr).getWhere());
             ImOrderMap<ImMap<String, DataObject>, ImMap<Object, ObjectValue>> result = query.executeClasses(context.getSession());
 
             Map<Integer, DataObject> poiMap = new HashMap<>();
@@ -67,8 +67,8 @@ public class RecalculateDistancePOIActionProperty extends DistanceGeoActionPrope
             int size = points.size();
             if (size > 0) {
 
-                BigDecimal latitude = (BigDecimal) findProperty("latitudePOI").read(context, poiObject);
-                BigDecimal longitude = (BigDecimal) findProperty("longitudePOI").read(context, poiObject);
+                BigDecimal latitude = (BigDecimal) findProperty("latitude[POI]").read(context, poiObject);
+                BigDecimal longitude = (BigDecimal) findProperty("longitude[POI]").read(context, poiObject);
                 String latLong = latitude + "," + longitude;
 
 
@@ -93,8 +93,8 @@ public class RecalculateDistancePOIActionProperty extends DistanceGeoActionPrope
                     }
                     for (int i = 0; i < points.size(); i++) {
                         if (points.containsKey(i)) {
-                            findProperty("distancePOIPOI").change(localDistances[i], session, poiObject, poiMap.get(i));
-                            findProperty("distancePOIPOI").change(localDistances[i], session, poiMap.get(i), poiObject);
+                            findProperty("distancePOIPOI[POI,POI]").change(localDistances[i], session, poiObject, poiMap.get(i));
+                            findProperty("distancePOIPOI[POI,POI]").change(localDistances[i], session, poiMap.get(i), poiObject);
                         }
                     }
                     session.apply(context);

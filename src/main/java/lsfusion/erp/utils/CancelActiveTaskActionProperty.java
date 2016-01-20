@@ -41,7 +41,7 @@ public class CancelActiveTaskActionProperty extends ScriptingActionProperty {
     private void getActiveTasksFromDatabase(ExecutionContext context) throws SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException {
 
         DataObject currentObject = context.getDataKeyValue(integerInterface);
-        Integer pid = (Integer) findProperty("idActiveTask").read(context, currentObject);
+        Integer pid = (Integer) findProperty("idActiveTask[INTEGER]").read(context, currentObject);
 
         SQLSession cancelSession = SQLSession.getSQLSessionMap().get(pid);
         if (cancelSession != null)
@@ -49,7 +49,7 @@ public class CancelActiveTaskActionProperty extends ScriptingActionProperty {
 
         context.getSession().sql.executeDDL(context.getDbManager().getAdapter().getCancelActiveTaskQuery(pid));
 
-        findAction("getActiveTasksAction").execute(context);
+        findAction("getActiveTasksAction[]").execute(context);
 
     }
 }

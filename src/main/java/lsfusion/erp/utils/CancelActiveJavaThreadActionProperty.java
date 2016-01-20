@@ -42,7 +42,7 @@ public class CancelActiveJavaThreadActionProperty extends ScriptingActionPropert
     private void getActiveThreadsFromDatabase(ExecutionContext context) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         DataObject currentObject = context.getDataKeyValue(integerInterface);
-        Integer id = (Integer) findProperty("idActiveJavaThread").read(context, currentObject);
+        Integer id = (Integer) findProperty("idActiveJavaThread[INTEGER]").read(context, currentObject);
         ThreadInfo threadInfo = ManagementFactory.getThreadMXBean().getThreadInfo(id);
         if(threadInfo != null) {
             for (Thread thread : Thread.getAllStackTraces().keySet()) {
@@ -50,7 +50,7 @@ public class CancelActiveJavaThreadActionProperty extends ScriptingActionPropert
                     thread.stop();
             }
         }
-        findAction("getActiveJavaThreadsAction").execute(context);
+        findAction("getActiveJavaThreadsAction[]").execute(context);
     }
 }
                      

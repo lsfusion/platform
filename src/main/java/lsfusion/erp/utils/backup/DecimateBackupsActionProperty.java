@@ -39,10 +39,10 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
             ImRevMap<Object, KeyExpr> backupKeys = MapFact.<Object, KeyExpr>singletonRev("Backup", backupExpr);
 
             QueryBuilder<Object, Object> backupQuery = new QueryBuilder<>(backupKeys);
-            backupQuery.addProperty("dateBackup", findProperty("dateBackup").getExpr(session.getModifier(), backupExpr));
-            backupQuery.and(findProperty("fileDeletedBackup").getExpr(session.getModifier(), backupExpr).getWhere().not());
+            backupQuery.addProperty("dateBackup", findProperty("date[Backup]").getExpr(session.getModifier(), backupExpr));
+            backupQuery.and(findProperty("fileDeleted[Backup]").getExpr(session.getModifier(), backupExpr).getWhere().not());
 
-            backupQuery.and(findProperty("dateBackup").getExpr(session.getModifier(), backupExpr).getWhere());
+            backupQuery.and(findProperty("date[Backup]").getExpr(session.getModifier(), backupExpr).getWhere());
 
             ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> backupResult = backupQuery.executeClasses(session);
 
@@ -57,13 +57,13 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
                 boolean monday = calendar.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY;
                 //Если старше недели - оставляем только за понедельник и за первое число, если старше месяца, только за первое число.
                 if ((delta > month && !firstDay) || (delta < month && delta > week && !firstDay && !monday))
-                    findAction("deleteBackup").execute(session, backupObject);
+                    findAction("delete[Backup]").execute(session, backupObject);
 
             }
 
             session.apply(context);
 
-            findAction("formRefresh").execute(context);
+            findAction("formRefresh[]").execute(context);
 
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -73,7 +73,7 @@ public class DecimateBackupsActionProperty extends ScriptingActionProperty {
     @Override
     public ImMap<CalcProperty, Boolean> aspectChangeExtProps() {
         try {
-            return getChangeProps((CalcProperty) findProperty("dateBackup").property, (CalcProperty) findProperty("timeBackup").property);
+            return getChangeProps((CalcProperty) findProperty("date[Backup]").property, (CalcProperty) findProperty("time[Backup]").property);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             return null;
         }

@@ -59,7 +59,7 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
         DataObject backupObject = context.getDataKeyValue(backupInterface);
         String dbName = null;
         try {
-            String fileBackup = (String) findProperty("fileBackup").read(context, backupObject);
+            String fileBackup = (String) findProperty("file[Backup]").read(context, backupObject);
             Map<String, CustomRestoreTable> tables = getTables(context);
             if (new File(fileBackup).exists() && !tables.isEmpty()) {
                 dbName = context.getDbManager().customRestoreDB(fileBackup, tables.keySet());
@@ -82,10 +82,10 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
         KeyExpr tableExpr = new KeyExpr("Table");
         ImRevMap<Object, KeyExpr> tableKeys = MapFact.<Object, KeyExpr>singletonRev("Table", tableExpr);
         QueryBuilder<Object, Object> tableQuery = new QueryBuilder<>(tableKeys);
-        tableQuery.addProperty("sidTable", findProperty("sidTable").getExpr(context.getModifier(), tableExpr));
-        tableQuery.addProperty("restoreObjectsTable", findProperty("restoreObjectsTable").getExpr(context.getModifier(), tableExpr));
-        tableQuery.and(findProperty("sidTable").getExpr(context.getModifier(), tableExpr).getWhere());
-        tableQuery.and(findProperty("inCustomRestoreTable").getExpr(context.getModifier(), tableExpr).getWhere());
+        tableQuery.addProperty("sidTable", findProperty("sid[Table]").getExpr(context.getModifier(), tableExpr));
+        tableQuery.addProperty("restoreObjectsTable", findProperty("restoreObjects[Table]").getExpr(context.getModifier(), tableExpr));
+        tableQuery.and(findProperty("sid[Table]").getExpr(context.getModifier(), tableExpr).getWhere());
+        tableQuery.and(findProperty("inCustomRestore[Table]").getExpr(context.getModifier(), tableExpr).getWhere());
         ImOrderMap<ImMap<Object, DataObject>, ImMap<Object, ObjectValue>> tableResult = tableQuery.executeClasses(context.getSession());
         Map<String, CustomRestoreTable> tables = new HashMap<>();
         Map<String, List<Object>> tableMap = new HashMap<>();
@@ -107,14 +107,14 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
             QueryBuilder<Object, Object> tableColumnQuery = new QueryBuilder<>(tableColumnKeys);
 
             String[] exportNames = new String[]{"sidTableColumn", "canonicalNameTableColumn", "replaceOnlyNullTableColumn"};
-            LCP[] exportProperties = findProperties("sidTableColumn", "canonicalNameTableColumn", "replaceOnlyNullTableColumn");
+            LCP[] exportProperties = findProperties("sid[TableColumn]", "canonicalName[TableColumn]", "replaceOnlyNull[TableColumn]");
             for (int j = 0; j < exportProperties.length; j++) {
                 tableColumnQuery.addProperty(exportNames[j], exportProperties[j].getExpr(context.getModifier(), tableColumnExpr));
             }
-            tableColumnQuery.and(findProperty("propertyTableColumn").getExpr(context.getModifier(), tableColumnExpr).getWhere());
-            tableColumnQuery.and(findProperty("inCustomRestoreTableColumn").getExpr(context.getModifier(), tableColumnExpr).getWhere());
-            tableColumnQuery.and(findProperty("canonicalNameTableColumn").getExpr(context.getModifier(), tableColumnExpr).getWhere());
-            tableColumnQuery.and(findProperty("tableTableColumn").getExpr(context.getModifier(), tableColumnExpr).compare(tableObject.getExpr(), Compare.EQUALS));
+            tableColumnQuery.and(findProperty("property[TableColumn]").getExpr(context.getModifier(), tableColumnExpr).getWhere());
+            tableColumnQuery.and(findProperty("inCustomRestore[TableColumn]").getExpr(context.getModifier(), tableColumnExpr).getWhere());
+            tableColumnQuery.and(findProperty("canonicalName[TableColumn]").getExpr(context.getModifier(), tableColumnExpr).getWhere());
+            tableColumnQuery.and(findProperty("table[TableColumn]").getExpr(context.getModifier(), tableColumnExpr).compare(tableObject.getExpr(), Compare.EQUALS));
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> tableColumnResult = tableColumnQuery.execute(context.getSession());
             for (ImMap<Object, Object> columnEntry : tableColumnResult.values()) {
                 String sidTableColumn = trimToNull((String) columnEntry.get("sidTableColumn"));
@@ -133,10 +133,10 @@ public class CustomRestoreActionProperty extends ScriptingActionProperty {
             KeyExpr tableKeyExpr = new KeyExpr("TableKey");
             ImRevMap<Object, KeyExpr> tableKeyKeys = MapFact.<Object, KeyExpr>singletonRev("TableKey", tableKeyExpr);
             QueryBuilder<Object, Object> tableKeyQuery = new QueryBuilder<>(tableKeyKeys);
-            tableKeyQuery.addProperty("nameTableKey", findProperty("nameTableKey").getExpr(context.getModifier(), tableKeyExpr));
-            tableKeyQuery.addProperty("classSIDTableKey", findProperty("classSIDTableKey").getExpr(context.getModifier(), tableKeyExpr));
-            tableKeyQuery.and(findProperty("nameTableKey").getExpr(context.getModifier(), tableKeyExpr).getWhere());
-            tableKeyQuery.and(findProperty("tableTableKey").getExpr(context.getModifier(), tableKeyExpr).compare(tableObject.getExpr(), Compare.EQUALS));
+            tableKeyQuery.addProperty("nameTableKey", findProperty("name[TableKey]").getExpr(context.getModifier(), tableKeyExpr));
+            tableKeyQuery.addProperty("classSIDTableKey", findProperty("classSID[TableKey]").getExpr(context.getModifier(), tableKeyExpr));
+            tableKeyQuery.and(findProperty("name[TableKey]").getExpr(context.getModifier(), tableKeyExpr).getWhere());
+            tableKeyQuery.and(findProperty("table[TableKey]").getExpr(context.getModifier(), tableKeyExpr).compare(tableObject.getExpr(), Compare.EQUALS));
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> tableKeyResult = tableKeyQuery.execute(context.getSession(), MapFact.singletonOrder((Object) "nameTableKey", false));
             for (ImMap<Object, Object> keyEntry : tableKeyResult.values()) {
                 String nameTableKey = trimToNull((String) keyEntry.get("nameTableKey"));

@@ -32,9 +32,9 @@ public class SaveBackupActionProperty extends ScriptingActionProperty {
 
             DataObject backupObject = context.getDataKeyValue(backupInterface);
 
-            String fileBackup = ((String) findProperty("fileBackup").read(context.getSession(), backupObject));
-            String fileBackupName = ((String) findProperty("nameBackup").read(context.getSession(), backupObject));
-            boolean fileDeletedBackup = findProperty("fileDeletedBackup").read(context.getSession(), backupObject) != null;
+            String fileBackup = ((String) findProperty("file[Backup]").read(context.getSession(), backupObject));
+            String fileBackupName = ((String) findProperty("name[Backup]").read(context.getSession(), backupObject));
+            boolean fileDeletedBackup = findProperty("fileDeleted[Backup]").read(context.getSession(), backupObject) != null;
             if (fileBackup != null && !fileDeletedBackup) {
                 assert fileBackupName != null;
                 File file = new File(fileBackup.trim());

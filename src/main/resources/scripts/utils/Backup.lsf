@@ -3,48 +3,48 @@ MODULE Backup;
 REQUIRE System, Reflection, SchedulerDefaultData;
 
 makeBackup 'Копировать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.BackupActionProperty' () TOOLBAR;
-saveBackup 'Скачать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
-deleteBackup 'Удалить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' (Backup) CONFIRM;
+save 'Скачать'= ACTION CUSTOM 'lsfusion.erp.utils.backup.SaveBackupActionProperty' (Backup) TOOLBAR;
+delete 'Удалить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DeleteBackupActionProperty' (Backup) CONFIRM;
 decimateBackups 'Проредить'= ACTION CUSTOM 'lsfusion.erp.utils.backup.DecimateBackupsActionProperty' () TOOLBAR CONFIRM;
 
 customRestore 'Восстановить таблицы' = ACTION CUSTOM 'lsfusion.erp.utils.backup.CustomRestoreActionProperty' (Backup);
-inCustomRestoreTable 'Вкл' = DATA BOOLEAN (Table);
-restoreObjectsTable 'Восстанавливать удалённые объекты' = DATA BOOLEAN (Table);
-inCustomRestoreTableColumn 'Вкл' = DATA BOOLEAN (TableColumn);
-replaceOnlyNullTableColumn 'Не замещать' = DATA BOOLEAN (TableColumn);
+inCustomRestore 'Вкл' = DATA BOOLEAN (Table);
+restoreObjects 'Восстанавливать удалённые объекты' = DATA BOOLEAN (Table);
+inCustomRestore 'Вкл' = DATA BOOLEAN (TableColumn);
+replaceOnlyNull 'Не замещать' = DATA BOOLEAN (TableColumn);
 
 CLASS Backup 'Резервная копия';
 TABLE backup(Backup);
 
-dateBackup 'Дата' = DATA DATE (Backup);
-timeBackup 'Время' = DATA TIME (Backup);
-fileBackup 'Адрес файла' = DATA VARSTRING[200] (Backup);
-nameBackup 'Имя файла' = DATA VARSTRING[100] (Backup);
-fileLogBackup 'Адрес лога файла' = DATA VARSTRING[200] (Backup);
-fileDeletedBackup 'Файл удалён' = DATA BOOLEAN (Backup);
-logBackup 'Лог' = DATA TEXT (Backup);
+date 'Дата' = DATA DATE (Backup);
+time 'Время' = DATA TIME (Backup);
+file 'Адрес файла' = DATA VARSTRING[200] (Backup);
+name 'Имя файла' = DATA VARSTRING[100] (Backup);
+fileLog 'Адрес лога файла' = DATA VARSTRING[200] (Backup);
+fileDeleted 'Файл удалён' = DATA BOOLEAN (Backup);
+log 'Лог' = DATA TEXT (Backup);
 
 backupFileName 'Имя файла резервной копии' = DATA LOCAL VARSTRING[100] ();
 backupFilePath 'Файл резервной копии' = DATA LOCAL VARSTRING[200]();
 
-excludeTable 'Исключить' = DATA LOCAL BOOLEAN (Table);
+exclude 'Исключить' = DATA LOCAL BOOLEAN (Table);
 
 TABLE backupTable(Backup, Table);
-excludeBackupTable 'Исключена' = DATA BOOLEAN (Backup, Table);
+exclude 'Исключена' = DATA BOOLEAN (Backup, Table);
 
 FORM backup 'Резервное копирование'
     OBJECTS b = Backup
     PROPERTIES() decimateBackups TODRAW b FORCE PANEL, makeBackup TODRAW b FORCE PANEL
-    PROPERTIES(b) saveBackup TODRAW b FORCE PANEL
-    PROPERTIES(b) READONLY dateBackup, timeBackup, fileBackup, fileDeletedBackup, logBackup FORCE PANEL
-    PROPERTIES(b) deleteBackup
+    PROPERTIES(b) save TODRAW b FORCE PANEL
+    PROPERTIES(b) READONLY date, time, file, fileDeleted, log FORCE PANEL
+    PROPERTIES(b) delete
     
     OBJECTS t1 = Table
-    PROPERTIES(t1) sidTable, excludeTable
+    PROPERTIES(t1) sid, exclude
     
     OBJECTS t2 = Table
-        PROPERTIES(t2) sidTable
-        PROPERTIES(b,t2) excludeBackupTable
+        PROPERTIES(t2) sid
+        PROPERTIES(b,t2) exclude
 ;
 
 DESIGN backup {
@@ -58,7 +58,7 @@ DESIGN backup {
         }
         NEW rightPane {
             fill = 1;
-            MOVE PROPERTY(logBackup(b)) {
+            MOVE PROPERTY(log(b)) {
                 fill = 1;
                 panelCaptionAbove = TRUE;
             }
@@ -72,25 +72,25 @@ DESIGN backup {
 
 FORM backups 'Резервные копии'
     OBJECTS b=Backup
-    PROPERTIES(b) READONLY nameBackup, fileBackup, fileDeletedBackup
-    FILTERS NOT fileDeletedBackup(b)
+    PROPERTIES(b) READONLY name, file, fileDeleted
+    FILTERS NOT fileDeleted(b)
     DIALOG Backup OBJECT b
 ;
 
 FORM customRestore 'Восстановление данных'
     OBJECTS t = Table
-    PROPERTIES(t) inCustomRestoreTable, restoreObjectsTable, sidTable READONLY
-    FILTERGROUP active FILTER 'Только включенные' inCustomRestoreTable(t) 
+    PROPERTIES(t) inCustomRestore, restoreObjects, sid READONLY
+    FILTERGROUP active FILTER 'Только включенные' inCustomRestore(t) 
         
     OBJECTS tc=TableColumn
-    PROPERTIES(tc) inCustomRestoreTableColumn, replaceOnlyNullTableColumn
-    PROPERTIES(tc) READONLY sidTableColumn, captionTableColumn, canonicalNameTableColumn
-    FILTERS tableTableColumn(tc) == t
+    PROPERTIES(tc) inCustomRestore, replaceOnlyNull
+    PROPERTIES(tc) READONLY sid, caption, canonicalName
+    FILTERS table(tc) == t
 
     
     OBJECTS b = Backup FIXED PANEL
-    PROPERTIES(b) nameBackup SELECTOR, customRestore
-    ORDER BY nameBackup(b) DESC
+    PROPERTIES(b) name SELECTOR, customRestore
+    ORDER BY name(b) DESC
 ;
 
 NAVIGATOR {

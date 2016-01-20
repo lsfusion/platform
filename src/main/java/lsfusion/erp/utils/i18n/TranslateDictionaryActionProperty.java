@@ -36,9 +36,9 @@ public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
 
             if (dictionaryObject != null && termObject != null) {
 
-                Boolean insensitive = findProperty("insensitiveDictionary").read(context.getSession(), dictionaryObject) != null;
-                LCP insensitiveLP = findProperty("insensitiveTranslationDictionaryEntryDictionaryTerm");
-                LCP sensitiveLP = findProperty("translationDictionaryEntryDictionaryTerm");
+                Boolean insensitive = findProperty("insensitive[Dictionary]").read(context.getSession(), dictionaryObject) != null;
+                LCP insensitiveLP = findProperty("insensitiveTranslationDictionaryEntry[Dictionary,VARSTRING[50]]");
+                LCP sensitiveLP = findProperty("translationDictionaryEntry[Dictionary,VARSTRING[50]]");
 
                 String source = (String) termObject.object;
                 if (insensitive)
@@ -84,7 +84,7 @@ public class TranslateDictionaryActionProperty extends ScriptingActionProperty {
                             }
                         }
                     }
-                    findProperty("translationResult").change(result, context);
+                    findProperty("translationResult[]").change(result, context);
                 }
             }
         } catch (ScriptingErrorLog.SemanticErrorException ignored) {

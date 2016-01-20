@@ -5,40 +5,40 @@ REQUIRE System, MasterData;
 CLASS Template 'Шаблон';
 TABLE template(Template);
 
-nameTemplate 'Имя' = DATA VARSTRING[100] (Template);
-fileTemplate 'Файл шаблона' (Template) = DATA EXCELFILE (Template);
-loadFileTemplate 'Загрузить шаблон'(t) = ACTION LOADFILE fileTemplate(t);
-openFileTemplate 'Открыть шаблон'(t) = ACTION OPENFILE fileTemplate(t);
-idTemplate 'Идентификатор' = DATA VARISTRING[100] (Template) MINCHARWIDTH 5 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
+name 'Имя' = DATA VARSTRING[100] (Template);
+file 'Файл шаблона' (Template) = DATA EXCELFILE (Template);
+loadFile 'Загрузить шаблон'(Template t) = ACTION LOADFILE file(t);
+openFile 'Открыть шаблон'(Template t) = ACTION OPENFILE file(t);
+id 'Идентификатор' = DATA VARISTRING[100] (Template) MINCHARWIDTH 5 MAXCHARWIDTH 10 PREFCHARWIDTH 10;
 
-processTemplate = ACTION CUSTOM 'lsfusion.erp.utils.excel.ProcessTemplateActionProperty' (Template);
+process = ACTION CUSTOM 'lsfusion.erp.utils.excel.ProcessTemplateActionProperty' (Template);
 
 resultTemplate = DATA LOCAL EXCELFILE ();
 openResultTemplate () = ACTION OPENFILE resultTemplate();
 
-openProcessTemplate 'Сгенерировать документ' = ACTION (template) {
-    processTemplate(template);
+openProcess 'Сгенерировать документ' = ACTION (Template template) {
+    process(template);
     openResultTemplate();
 }
 
 CLASS TemplateEntry 'Строка шаблона';
 TABLE templateEntry(TemplateEntry);
 
-templateTemplateEntry 'Шаблон' = DATA Template (TemplateEntry);
-keyTemplateEntry 'Параметр' = DATA VARSTRING[100](TemplateEntry);
-valueTemplateEntry 'Значение' = DATA LOCAL TEXT (TemplateEntry);
+template 'Шаблон' = DATA Template (TemplateEntry);
+key 'Параметр' = DATA VARSTRING[100](TemplateEntry);
+value 'Значение' = DATA LOCAL TEXT (TemplateEntry);
 
 FORM template 'Шаблон Excel'
 
     OBJECTS t = Template FIXED PANEL
-    PROPERTIES (t) nameTemplate, idTemplate
-    PROPERTIES (t) loadFileTemplate, openFileTemplate
+    PROPERTIES (t) name, id
+    PROPERTIES (t) loadFile, openFile
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) keyTemplateEntry, valueTemplateEntry, ADDOBJ, DELETESESSION
-    PROPERTIES (t) TODRAW te FORCE PANEL TOOLBAR openProcessTemplate
+    PROPERTIES (te) key, value, ADDOBJ, DELETESESSION
+    PROPERTIES (t) TODRAW te FORCE PANEL TOOLBAR openProcess
 
-    FILTERS templateTemplateEntry (te) == t
+    FILTERS template (te) == t
 
     EDIT Template OBJECT t
 ;
@@ -50,13 +50,13 @@ DESIGN template {
         MOVE t.box {
             type = CONTAINERH;
             NEW row1 {
-                MOVE PROPERTY(nameTemplate(t));
-                MOVE PROPERTY(idTemplate(t));
+                MOVE PROPERTY(name(t));
+                MOVE PROPERTY(id(t));
             };
             NEW row2 {
                 type = CONTAINERH;
-                MOVE PROPERTY(loadFileTemplate(t));
-                MOVE PROPERTY(openFileTemplate(t));
+                MOVE PROPERTY(loadFile(t));
+                MOVE PROPERTY(openFile(t));
             };
         }
         MOVE te.box;
@@ -67,19 +67,19 @@ DESIGN template {
 FORM templates 'Шаблоны Excel'
 
     OBJECTS t = Template
-    PROPERTIES (t) READONLY nameTemplate, idTemplate
+    PROPERTIES (t) READONLY name, id
     PROPERTIES (t) ADDFORM, EDITFORM, DELETE
 
     OBJECTS te = TemplateEntry
-    PROPERTIES (te) READONLY keyTemplateEntry, valueTemplateEntry
+    PROPERTIES (te) READONLY key, value
 
-    FILTERS templateTemplateEntry (te) == t
+    FILTERS template (te) == t
 ;
 
 FORM dialogTemplates 'Шаблоны Excel'
 
     OBJECTS t = Template
-    PROPERTIES (t) READONLY nameTemplate, idTemplate
+    PROPERTIES (t) READONLY name, id
     PROPERTIES (t) ADDFORM, EDITFORM, DELETE
 
     DIALOG Template OBJECT t

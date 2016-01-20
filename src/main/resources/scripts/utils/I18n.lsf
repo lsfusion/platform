@@ -7,41 +7,41 @@ REQUIRE System, MasterData, Utils;
 CLASS Dictionary 'Словарь';
 TABLE dictionary (Dictionary);
 
-nameDictionary 'Наименование' = DATA VARISTRING[50](Dictionary);
+name 'Наименование' = DATA VARISTRING[50](Dictionary);
 
-insensitiveDictionary 'Нечувствительный к регистру' = DATA BOOLEAN (Dictionary);
+insensitive 'Нечувствительный к регистру' = DATA BOOLEAN (Dictionary);
 
 CLASS DictionaryEntry 'Слова';
 TABLE dictionaryEntry (DictionaryEntry);
 
-dictionaryDictionaryEntry 'Словарь' = DATA Dictionary (DictionaryEntry);
-termDictionaryEntry 'Термин' = DATA VARSTRING[50] (DictionaryEntry);
-insensitiveTermDictionaryEntry(dictionaryEntry) = upper (termDictionaryEntry(dictionaryEntry));
-translationDictionaryEntry 'Перевод' = DATA VARSTRING[50] (DictionaryEntry);
+dictionary 'Словарь' = DATA Dictionary (DictionaryEntry);
+term 'Термин' = DATA VARSTRING[50] (DictionaryEntry);
+insensitiveTerm(DictionaryEntry dictionaryEntry) = upper (term(dictionaryEntry));
+translation 'Перевод' = DATA VARSTRING[50] (DictionaryEntry);
 
-dictionaryEntryDictionaryTerm = GROUP AGGR dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), termDictionaryEntry(dictionaryEntry) WHERE dictionaryEntry IS DictionaryEntry;
-translationDictionaryEntryDictionaryTerm 'Перевод' (dictionary, term) = translationDictionaryEntry(dictionaryEntryDictionaryTerm(dictionary, term));
-nameDictionaryDictionaryEntry 'Словарь' (dictionaryEntry) = nameDictionary(dictionaryDictionaryEntry(dictionaryEntry));
-insensitiveDictionaryEntryDictionaryTerm = GROUP MAX dictionaryEntry BY dictionaryDictionaryEntry(dictionaryEntry), insensitiveTermDictionaryEntry(dictionaryEntry);
-insensitiveTranslationDictionaryEntryDictionaryTerm 'Нечувствительный к регистру перевод' = translationDictionaryEntry (dictionaryEntryDictionaryTerm(dictionary, term));
+dictionaryEntryTerm = GROUP AGGR DictionaryEntry dictionaryEntry BY dictionary(dictionaryEntry), term(dictionaryEntry) WHERE dictionaryEntry IS DictionaryEntry;
+translationDictionaryEntry 'Перевод' (Dictionary dictionary, VARSTRING[50] term) = translation(dictionaryEntryTerm(dictionary, term));
+nameDictionary 'Словарь' (DictionaryEntry dictionaryEntry) = name(dictionary(dictionaryEntry));
+insensitiveDictionaryEntryTerm = GROUP MAX DictionaryEntry dictionaryEntry BY dictionary(dictionaryEntry), insensitiveTerm(dictionaryEntry);
+insensitiveTranslationDictionaryEntry 'Нечувствительный к регистру перевод' = translation (dictionaryEntryTerm(Dictionary dictionary, VARSTRING[50] term));
 
 CLASS Language 'Язык';
 TABLE language(Language);
 
-nameLanguage 'Наименование' = DATA VARISTRING[50](Language);
+name 'Наименование' = DATA VARISTRING[50](Language);
 
-localeLanguage 'Locale' = DATA STRING[5] (Language);
+locale 'Locale' = DATA STRING[5] (Language);
 
 FORM language 'Язык'
     OBJECTS l = Language FIXED PANEL
-    PROPERTIES(l) nameLanguage, localeLanguage
+    PROPERTIES(l) name, locale
 
     EDIT Language OBJECT l
 ;
 
 FORM languages 'Языки'
     OBJECTS l = Language
-    PROPERTIES(l) READONLY nameLanguage, localeLanguage
+    PROPERTIES(l) READONLY name, locale
     PROPERTIES(l)          ADDFORM, EDITFORM, DELETE
 
     DIALOG Language OBJECT l
@@ -53,10 +53,10 @@ NAVIGATOR {
     }
 }
 
-languageFromDictionary = DATA Language (Dictionary);
-nameLanguageFromDictionary 'С языка'(dictionary) = nameLanguage(languageFromDictionary(dictionary));
-languageToDictionary = DATA Language (Dictionary);
-nameLanguageToDictionary 'На язык'(dictionary) = nameLanguage(languageToDictionary(dictionary));
+languageFrom = DATA Language (Dictionary);
+nameLanguageFrom 'С языка'(Dictionary dictionary) = name(languageFrom(dictionary));
+languageTo = DATA Language (Dictionary);
+nameLanguageTo 'На язык'(Dictionary dictionary) = name(languageTo(dictionary));
 
 translationInput 'Текст для перевода' = DATA LOCAL TEXT ();
 translationResult 'Переведённый текст' = DATA LOCAL TEXT ();
@@ -64,18 +64,18 @@ translationResult 'Переведённый текст' = DATA LOCAL TEXT ();
 // ------------------------------------ Перевод через Google Translate -------------------------------- //
 
 languageFromTranslation = DATA Language ();
-nameLanguageFromTranslation 'С языка'() = nameLanguage(languageFromTranslation());
+nameLanguageFromTranslation 'С языка'() = name(languageFromTranslation());
 languageToTranslation = DATA Language ();
-nameLanguageToTranslation 'На язык'() = nameLanguage(languageToTranslation());
+nameLanguageToTranslation 'На язык'() = name(languageToTranslation());
 
 translate  = ACTION CUSTOM 'lsfusion.erp.utils.i18n.TranslateActionProperty' (TEXT, Language, Language);
 
-translateTermDictionaryEntry 'Перевести' = ACTION (dictionaryEntry) {
+translateTerm 'Перевести' = ACTION (DictionaryEntry dictionaryEntry) {
 
-    EXEC translate (TEXT(termDictionaryEntry(dictionaryEntry)),
-            languageFromDictionary(dictionaryDictionaryEntry(dictionaryEntry)),
-            languageToDictionary(dictionaryDictionaryEntry(dictionaryEntry)));
-    ASSIGN translationDictionaryEntry(dictionaryEntry) <- VARSTRING[50](translationResult());
+    EXEC translate (TEXT(term(dictionaryEntry)),
+            languageFrom(dictionary(dictionaryEntry)),
+            languageTo(dictionary(dictionaryEntry)));
+    ASSIGN translation(dictionaryEntry) <- VARSTRING[50](translationResult());
 }
 
 translateText 'Перевести' = ACTION () {
@@ -84,9 +84,9 @@ translateText 'Перевести' = ACTION () {
 
 // ------------------------------------ Перевод через словарь -------------------------------- //
 
-translateDictionary  = ACTION CUSTOM 'lsfusion.erp.utils.i18n.TranslateDictionaryActionProperty' (Dictionary, TEXT);
+translate  = ACTION CUSTOM 'lsfusion.erp.utils.i18n.TranslateDictionaryActionProperty' (Dictionary, TEXT);
 
-WHEN SESSION CHANGED (translationInput()) AND dictionary IS Dictionary DO EXEC translateDictionary(dictionary, translationInput());
+WHEN SESSION CHANGED (translationInput()) AND Dictionary dictionary IS Dictionary DO EXEC translate(dictionary, translationInput());
 
 FORM translation 'Перевод'
     PROPERTIES() translationInput, translationResult, nameLanguageFromTranslation, nameLanguageToTranslation,
@@ -133,11 +133,11 @@ languageName 'Название (иностр.)' = DATA VARISTRING[110] (MultiLan
 
 FORM dictionary 'Словарь'
     OBJECTS d = Dictionary FIXED PANEL
-    PROPERTIES(d) nameDictionary, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
+    PROPERTIES(d) name, insensitive, nameLanguageFrom, nameLanguageTo
 
     OBJECTS e = DictionaryEntry
-    PROPERTIES(e) termDictionaryEntry, translationDictionaryEntry, translateTermDictionaryEntry, ADDOBJ, DELETESESSION
-    FILTERS       dictionaryDictionaryEntry(e) == d
+    PROPERTIES(e) term, translation, translateTerm, ADDOBJ, DELETESESSION
+    FILTERS       dictionary(e) == d
 
     EDIT Dictionary OBJECT d
 
@@ -170,7 +170,7 @@ DESIGN dictionary {
 
 FORM dictionaries 'Словари'
     OBJECTS d = Dictionary
-    PROPERTIES(d) READONLY nameDictionary, insensitiveDictionary, nameLanguageFromDictionary, nameLanguageToDictionary
+    PROPERTIES(d) READONLY name, insensitive, nameLanguageFrom, nameLanguageTo
 
     PROPERTIES(d) ADDFORM, EDITFORM, DELETE
 

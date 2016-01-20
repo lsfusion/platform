@@ -73,8 +73,8 @@ public class GetCoordinatesAddressActionProperty extends GeoActionProperty {
                     }
                 }
 
-                findProperty("readLatitude").change(latitude, session);
-                findProperty("readLongitude").change(longitude, session);
+                findProperty("readLatitude[]").change(latitude, session);
+                findProperty("readLongitude[]").change(longitude, session);
             }
         } catch (IOException | JSONException | SQLException | ScriptingErrorLog.SemanticErrorException ignored) {
         }

@@ -64,15 +64,15 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
     protected void executeCustom(ExecutionContext<ClassPropertyInterface> context) throws SQLException {
 
         try {
-            boolean readAllocatedBytes = findProperty("readAllocatedBytes").read(context) != null;
-            String processType = trimToEmpty((String) findProperty("nameProcessType").read(context));
-            context.getSession().cancel(SetFact.singleton((SessionDataProperty) findProperty("processType").property));
+            boolean readAllocatedBytes = findProperty("readAllocatedBytes[]").read(context) != null;
+            String processType = trimToEmpty((String) findProperty("nameProcessType[]").read(context));
+            context.getSession().cancel(SetFact.singleton((SessionDataProperty) findProperty("processType[]").property));
 
             updateProcessMonitor(context, processType, readAllocatedBytes);
 
-            boolean baseReadAllocatedBytes = findProperty("readAllocatedBytes").read(context) != null;
+            boolean baseReadAllocatedBytes = findProperty("readAllocatedBytes[]").read(context) != null;
             if (baseReadAllocatedBytes != readAllocatedBytes) {
-                findProperty("readAllocatedBytes").change(readAllocatedBytes ? true : null, context);
+                findProperty("readAllocatedBytes[]").change(readAllocatedBytes ? true : null, context);
             }
 
         } catch (SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
@@ -99,19 +99,19 @@ public class UpdateProcessMonitorActionProperty extends ScriptingActionProperty 
         if(!activeSQL)
             javaProcesses.putAll(getJavaProcesses(idSet, active || activeJava, readAllocatedBytes));
 
-        ImOrderSet<LCP> propsJava = getProps(findProperties("idThreadProcess", "stackTraceJavaProcess", "nameJavaProcess", "statusJavaProcess",
-                "lockNameJavaProcess", "lockOwnerIdProcess", "lockOwnerNameProcess", "nameComputerJavaProcess", "nameUserJavaProcess", "lsfStackTraceProcess",
-                "threadAllocatedBytesProcess", "lastThreadAllocatedBytesProcess"));
+        ImOrderSet<LCP> propsJava = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "stackTraceJavaProcess[VARSTRING[10]]", "nameJavaProcess[VARSTRING[10]]", "statusJavaProcess[VARSTRING[10]]",
+                "lockNameJavaProcess[VARSTRING[10]]", "lockOwnerIdProcess[VARSTRING[10]]", "lockOwnerNameProcess[VARSTRING[10]]", "nameComputerJavaProcess[VARSTRING[10]]", "nameUserJavaProcess[VARSTRING[10]]", "lsfStackTraceProcess[VARSTRING[10]]",
+                "threadAllocatedBytesProcess[VARSTRING[10]]", "lastThreadAllocatedBytesProcess[VARSTRING[10]]"));
 
-        ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess", "dateTimeCallProcess", "querySQLProcess", "addressUserSQLProcess", "dateTimeSQLProcess",
-                "isActiveSQLProcess", "inTransactionSQLProcess", "startTransactionSQLProcess", "attemptCountSQLProcess", "statusMessageSQLProcess",
-                "computerProcess", "userProcess", "lockOwnerIdProcess", "lockOwnerNameProcess", "fullQuerySQLProcess", "idSQLProcess",
-                "isDisabledNestLoopProcess", "queryTimeoutProcess"));
+        ImOrderSet<LCP> propsSQL = getProps(findProperties("idThreadProcess[VARSTRING[10]]", "dateTimeCallProcess[VARSTRING[10]]", "querySQLProcess[VARSTRING[10]]", "addressUserSQLProcess[VARSTRING[10]]", "dateTimeSQLProcess[VARSTRING[10]]",
+                "isActiveSQLProcess[VARSTRING[10]]", "inTransactionSQLProcess[VARSTRING[10]]", "startTransactionSQLProcess[VARSTRING[10]]", "attemptCountSQLProcess[VARSTRING[10]]", "statusMessageSQLProcess[VARSTRING[10]]",
+                "computerProcess[VARSTRING[10]]", "userProcess[VARSTRING[10]]", "lockOwnerIdProcess[VARSTRING[10]]", "lockOwnerNameProcess[VARSTRING[10]]", "fullQuerySQLProcess[VARSTRING[10]]", "idSQLProcess[VARSTRING[10]]",
+                "isDisabledNestLoopProcess[VARSTRING[10]]", "queryTimeoutProcess[VARSTRING[10]]"));
 
         int rowsJava = writeRows(context, propsJava, javaProcesses, true);
         int rowsSQL = writeRows(context, propsSQL, sqlProcesses, false);
         if (rowsJava == 0 && rowsSQL == 0)
-            findAction("formRefresh").execute(context);
+            findAction("formRefresh[]").execute(context);
 
     }
 

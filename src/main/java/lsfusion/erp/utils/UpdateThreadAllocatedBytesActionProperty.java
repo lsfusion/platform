@@ -26,7 +26,7 @@ public class UpdateThreadAllocatedBytesActionProperty extends ScriptingActionPro
     protected void executeCustom(final ExecutionContext<ClassPropertyInterface> context) throws SQLException {
         try {
             synchronized (this) {
-                final boolean readAllocatedBytes = findProperty("readAllocatedBytes").read(context) != null;
+                final boolean readAllocatedBytes = findProperty("readAllocatedBytes[]").read(context) != null;
                 if(readAllocatedBytes == (timer == null)) {
                     if (timer != null) {
                         timer.cancel();
